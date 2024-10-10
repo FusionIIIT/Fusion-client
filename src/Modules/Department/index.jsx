@@ -1,5 +1,6 @@
 import React from "react";
 import { Text } from "@mantine/core";
+import { Route, Routes } from "react-router-dom";
 import CustomBreadcrumbs from "../../components/Breadcrumbs";
 import DepartmentPage from "./DepartmentPage"; // Correct capitalization
 
@@ -8,7 +9,10 @@ function Department() {
     <>
       <CustomBreadcrumbs />
       <Text>Owais is my friend</Text>
-      <DepartmentPage />
+      {/* <DepartmentPage /> */}
+      <Routes>
+        <Route path="/" element={<DepartmentPage />} />
+      </Routes>
     </>
   );
 }
