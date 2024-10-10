@@ -23,19 +23,22 @@ export default function ComplaintCard(props) {
     ...props,
   };
 
-  console.log("ComplaintCard props:", {
-    label,
-    date,
-    location,
-    description,
-    status,
-  });
+  const getStatusColor = (status) => {
+    switch (status.toLowerCase()) {
+      case 'resolved':
+        return 'green';
+      case 'pending':
+        return 'yellow';
+      default:
+        return 'gray';
+    }
+  };
 
   return (
     <Box
       sx={(theme) => ({
         border: `2px solid ${theme.colors.dark[9]}`,
-        borderRadius: theme.radius.sm,
+        borderRadius: theme.radius.md,
         padding: theme.spacing.md,
         backgroundColor: theme.white,
         boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
@@ -43,31 +46,37 @@ export default function ComplaintCard(props) {
         maxWidth: "600px",
       })}
     >
-      <Stack spacing="sm">
+      <Stack spacing="md">
         <Group position="apart" align="center">
-          <div style={{ display: "flex", alignItems: "center", gap: "40px" }}>
-            <Text weight={700} size="lg" style={{ marginRight: "10px" }}>
-              {label || "No Label"}
-            </Text>
-            {status === "Pending" ? (
-              <Badge color="red" variant="filled" size="md">
-                Status: {status}
-              </Badge>
-            ) : (
-              <Badge color="green" variant="filled" size="md">
-                Status: {status}
-              </Badge>
-            )}
-          </div>
+          <Text weight={700} size="lg">
+            {label || "No Label"}
+          </Text>
+          <Badge 
+            color={getStatusColor(status)} 
+            variant="filled" 
+            size="lg"
+            style={{ minWidth: '100px', textAlign: 'center' }}
+          >
+            {status}
+          </Badge>
         </Group>
-
         <Group grow>
-          <TextInput placeholder="Date" value={date} size="md" />
-          <TextInput placeholder="Location" value={location} size="md" />
+          <TextInput 
+            label="Date"
+            placeholder="Enter date" 
+            value={date} 
+            size="md" 
+          />
+          <TextInput 
+            label="Location"
+            placeholder="Enter location" 
+            value={location} 
+            size="md" 
+          />
         </Group>
-
         <Textarea
-          placeholder="Description"
+          label="Description"
+          placeholder="Enter description"
           value={description}
           size="md"
           minRows={3}

@@ -62,7 +62,7 @@ export default function AddHostel() {
                 <Text 
                     align="left" 
                     mb="xl" 
-                    size="xl" 
+                    size="24px" 
                     style={{ color: '#757575', fontWeight: 'bold' }}
                 >
                     Add Hostel

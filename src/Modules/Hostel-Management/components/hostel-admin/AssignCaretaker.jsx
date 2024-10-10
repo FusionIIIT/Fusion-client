@@ -5,12 +5,11 @@ import {
     Text,
     Button,
     Paper,
-    Title,
     Group,
     Stack
 } from '@mantine/core';
 
-const AssignWarden = () => {
+export default function AssignCaretaker() {
     const [document, setDocument] = useState(null);
     const fileInputRef = useRef(null);
 
@@ -23,14 +22,13 @@ const AssignWarden = () => {
 
     const handleAttachClick = () => {
         if (fileInputRef.current) {
-            fileInputRef.current.click(); // Programmatically trigger the hidden file input
+            fileInputRef.current.click();
         }
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Handle form submission, including the attached file
-        console.log('Warden assigned with document:', document);
+        console.log('Caretaker assigned with document:', document);
     };
 
     return (
@@ -56,7 +54,7 @@ const AssignWarden = () => {
                     size="24px" 
                     style={{ color: '#757575', fontWeight: 'bold' }}
                 >
-                    Assign Warden
+                    Assign Caretaker
                 </Text>
 
                 <Box>
@@ -73,11 +71,11 @@ const AssignWarden = () => {
 
                 <Box>
                     <Text component="label" size="lg" fw={500}>
-                        Warden_Id:
+                        Caretaker Username:
                     </Text>
                     <Select
-                        placeholder="Tushar11"
-                        data={['Tushar11', 'Warden2', 'Warden3']}
+                        placeholder="Caretaker1"
+                        data={['Caretaker1', 'Caretaker2', 'Caretaker3']}
                         w="100%"
                         styles={{ root: { marginTop: 5 } }}
                     />
@@ -88,7 +86,7 @@ const AssignWarden = () => {
                         Note:
                     </Text>
                     <Text size="md" c="dimmed">
-                        To assign a new warden to a hostel you need to have a permission document attached.
+                        To assign a new caretaker to a hostel, you need to have a permission document attached.
                     </Text>
                 </Group>
 
@@ -110,6 +108,4 @@ const AssignWarden = () => {
             </Stack>
         </Paper>
     );
-};
-
-export default AssignWarden;
+}

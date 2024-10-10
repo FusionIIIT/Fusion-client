@@ -1,8 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Group, Text, Box, Container } from "@mantine/core";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import NoticeBoard from "./all-actors/NoticeBoard";
 import Complaints from "./students/Complaints";
+import GuestRoomBooking from "./students/GuestRoomBooking";
+import LeaveForm from "./students/LeaveForm";
+import LeaveStatus from "./students/LeaveStatus";
+import Fine from "./students/Fine";
 
 const sections = [
   "Notice Board",
@@ -12,25 +16,55 @@ const sections = [
   "Complaint",
   "Students Alloted rooms",
 ];
+
 const subSections = {
-  Leave: ["Leave Form", "Leave Status"],
+  "Leave": ["Leave Form", "Leave Status"],
+  "Guest Room": ["Book Guest Room", "Booking Status"]
 };
 
-// Create a map of components for each section
-const sectionComponents = {
+const components = {
   "Notice Board": NoticeBoard,
-  Complaint: Complaints,
-  // Add other components here for different sections if needed
-  // 'My Fine': MyFineComponent,
-  // 'Leave': LeaveComponent,
-  // etc.
+  "Complaint": Complaints,
+  "Guest Room_Book Guest Room": GuestRoomBooking,
+  "Leave_Leave Form": LeaveForm,
+  "Leave_Leave Status": LeaveStatus,
+  "My Fine": Fine,
+  // Add other components here
+  // "Guest Room_Booking Status": BookingStatusComponent,
+  // "Leave_Leave Form": LeaveFormComponent,
+  // "Leave_Leave Status": LeaveStatusComponent,
 };
 
 export default function SectionNavigation() {
   const [activeSection, setActiveSection] = useState("Notice Board");
+  const [activeSubSection, setActiveSubSection] = useState(null);
 
-  // Get the component for the active section
-  const ActiveComponent = sectionComponents[activeSection];
+  useEffect(() => {
+    // Auto-select the first subsection when a main section is selected
+    if (subSections[activeSection]) {
+      setActiveSubSection(subSections[activeSection][0]);
+    } else {
+      setActiveSubSection(null);
+    }
+  }, [activeSection]);
+
+  const getComponentKey = () => {
+    if (activeSubSection) {
+      return `${activeSection}_${activeSubSection}`;
+    }
+    return activeSection;
+  };
+
+  const ActiveComponent = components[getComponentKey()];
+
+  const handleSectionClick = (section) => {
+    setActiveSection(section);
+    if (subSections[section]) {
+      setActiveSubSection(subSections[section][0]);
+    } else {
+      setActiveSubSection(null);
+    }
+  };
 
   return (
     <Container size="xl" p="xs">
@@ -45,7 +79,7 @@ export default function SectionNavigation() {
               size="sm"
               color={activeSection === section ? "#4299E1" : "#718096"}
               style={{ cursor: "pointer", whiteSpace: "nowrap" }}
-              onClick={() => setActiveSection(section)}
+              onClick={() => handleSectionClick(section)}
             >
               {section}
             </Text>
@@ -58,15 +92,15 @@ export default function SectionNavigation() {
         ))}
         <CaretRight size={20} weight="bold" color="#718096" />
       </Group>
-
       {subSections[activeSection] && (
         <Group spacing="xs" mt="xs">
           {subSections[activeSection].map((subSection, index) => (
             <React.Fragment key={subSection}>
               <Text
                 size="sm"
-                color="#4299E1"
+                color={activeSubSection === subSection ? "#4299E1" : "#718096"}
                 style={{ cursor: "pointer", whiteSpace: "nowrap" }}
+                onClick={() => setActiveSubSection(subSection)}
               >
                 {subSection}
               </Text>
@@ -79,16 +113,14 @@ export default function SectionNavigation() {
           ))}
         </Group>
       )}
-
-        <br />
-        {ActiveComponent ? (
-          <Box style={{ width: "100%", height: "calc(85vh - 56px)", overflowY: "auto" }}>
-            <ActiveComponent />
-          </Box>
-        ) : (
-          <Text>Content for {activeSection}</Text>
-        )}
-
+      <br />
+      {ActiveComponent ? (
+        <Box style={{ width: "100%", height: "calc(85vh - 56px)", overflowY: "auto" }}>
+          <ActiveComponent />
+        </Box>
+      ) : (
+        <Text>Content for {activeSubSection || activeSection}</Text>
+      )}
     </Container>
   );
 }
