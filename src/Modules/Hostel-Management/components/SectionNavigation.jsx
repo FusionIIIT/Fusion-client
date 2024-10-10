@@ -36,7 +36,6 @@ export default function SectionNavigation() {
     <Container size="xl" p="xs">
       <Group
         spacing="xs"
-        noWrap
         style={{ overflowX: "auto", padding: "8px 0" }}
       >
         <CaretLeft size={20} weight="bold" color="#718096" />

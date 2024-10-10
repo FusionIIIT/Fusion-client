@@ -2,14 +2,16 @@ import React, { useState } from "react";
 import { Group, Text, Box, Container } from "@mantine/core";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import NoticeBoard from "./all-actors/NoticeBoard";
-import viewHostel from "./hostel-admin/viewHostel";
+import ViewHostel from "./hostel-admin/ViewHostel";
+import AddHostel from "./hostel-admin/AddHostel";
+import AssignWarden from "./hostel-admin/AssignWarden";
 
 const sections = [
   "Notice Board",
   "View Hostel",
   "Manage Caretakers",
   "Manage Warden",
-  "Manage Hostel ",
+  "Manage Hostel",
   "View Transactions",
 ];
 const subSections = {
@@ -19,7 +21,10 @@ const subSections = {
 // Create a map of components for each section
 const sectionComponents = {
   "Notice Board": NoticeBoard,
-  "View Hostel": viewHostel,
+  "View Hostel": ViewHostel,
+  "Manage Hostel": AddHostel,
+  "Manage Warden": AssignWarden,
+  
   // Add other components here for different sections if needed
   // 'My Fine': MyFineComponent,
   // 'Leave': LeaveComponent,
@@ -36,7 +41,6 @@ export default function SectionNavigation() {
     <Container size="xl" p="xs">
       <Group
         spacing="xs"
-        noWrap
         style={{ overflowX: "auto", padding: "8px 0" }}
       >
         <CaretLeft size={20} weight="bold" color="#718096" />

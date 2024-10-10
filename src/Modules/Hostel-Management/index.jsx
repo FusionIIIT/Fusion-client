@@ -24,7 +24,7 @@ function HostelPage() {
           overflow: "hidden",
         }}
       >
-        <SectionNavigationAdmin />
+        <SectionNavigation />
       </div>
       <div style={{ flex: 2.5, height: "100%", overflow: "hidden" }}>
         <SideNotifications />

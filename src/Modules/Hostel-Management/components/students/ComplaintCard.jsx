@@ -34,37 +34,43 @@ export default function ComplaintCard(props) {
   return (
     <Box
       sx={(theme) => ({
-        border: `2px solid ${theme.colors.gray[3]}`,
+        border: `2px solid ${theme.colors.dark[9]}`,
         borderRadius: theme.radius.sm,
-        padding: theme.spacing.sm,
+        padding: theme.spacing.md,
         backgroundColor: theme.white,
         boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
         width: "100%",
-        maxWidth: "680px",
+        maxWidth: "600px",
       })}
     >
-      <Stack spacing="xs">
+      <Stack spacing="sm">
         <Group position="apart" align="center">
           <div style={{ display: "flex", alignItems: "center", gap: "40px" }}>
-            <Text weight={700} size="sm" style={{ marginRight: "10px" }}>
+            <Text weight={700} size="lg" style={{ marginRight: "10px" }}>
               {label || "No Label"}
             </Text>
-            <Badge color="red" variant="filled" size="sm">
-              Status: {status}
-            </Badge>
+            {status === "Pending" ? (
+              <Badge color="red" variant="filled" size="md">
+                Status: {status}
+              </Badge>
+            ) : (
+              <Badge color="green" variant="filled" size="md">
+                Status: {status}
+              </Badge>
+            )}
           </div>
         </Group>
 
         <Group grow>
-          <TextInput placeholder="Date" value={date} size="xs" />
-          <TextInput placeholder="Location" value={location} size="xs" />
+          <TextInput placeholder="Date" value={date} size="md" />
+          <TextInput placeholder="Location" value={location} size="md" />
         </Group>
 
         <Textarea
           placeholder="Description"
           value={description}
-          size="xs"
-          minRows={2}
+          size="md"
+          minRows={3}
         />
       </Stack>
     </Box>

@@ -1,11 +1,11 @@
 import React from "react";
-import { Box, Button, Group, Text, Stack, Select } from "@mantine/core";
+import { Box, Button, Group, Text, Stack, Select, ScrollArea } from "@mantine/core";
 import ComplaintCard from "./ComplaintCard"; // Assuming ComplaintCard is in the same directory
 
 export default function Complaints() {
   return (
     <Box
-      p="md"
+      p="xl"
       style={(theme) => ({
         width: '100%',
         margin: "0 auto",
@@ -13,82 +13,82 @@ export default function Complaints() {
         backgroundColor: theme.white,
         border: `1px solid ${theme.colors.gray[3]}`,
         borderRadius: theme.radius.md,
+        display: 'flex',
+        flexDirection: 'column',
       })}
     >
-      {/* Header with title and button */}
-      <Group position="apart" style={{ width: "100%" }} mb="md">
+      <Group position="apart" style={{ width: "100%" }} mb="lg">
         <Text 
           align="left" 
           mb="xl" 
-          size="xl" 
-          style={{ color: '#757575', weight: 'bold' }} // Gray color
+          size="24px" 
+          style={{ color: '#757575', fontWeight: 'bold' }}
         >
           Register Complaints
         </Text>
-        {/* Use flexbox to push the button to the right */}
         <div style={{ marginLeft: "auto" }}>
-          <Button color="dark">Make Complaint</Button>
+          <Button size="lg">Make Complaint</Button>
         </div>
       </Group>
 
-      <Stack spacing="xs">
-        {/* Active Complaints Section */}
-        <Group position="apart" align="center">
-          <Text weight={500}>Active Complaints</Text>
-          <Group spacing="xs">
-            <Text size="sm" color="dimmed">
-              Sort By:
-            </Text>
-            <Select
-              placeholder="Date"
-              data={[{ value: "date", label: "Date" }]} // Sample data, add more options as needed
-              style={{ width: "80px" }}
-              variant="unstyled"
-            />
+      <ScrollArea style={{ flex: 1 }}>
+        <Stack spacing="md">
+          <Group position="apart" align="center">
+            <Text weight={500} size="xl">Active Complaints</Text>
+            <Group spacing="xs">
+              <Text size="lg" color="dimmed">
+                Sort By:
+              </Text>
+              <Select
+                placeholder="Date"
+                data={[{ value: "date", label: "Date" }]}
+                style={{ width: "100px" }}
+                variant="unstyled"
+                size="lg"
+              />
+            </Group>
           </Group>
-        </Group>
+          
+          <ComplaintCard
+            label="Label"
+            date="Date"
+            location="Location"
+            description="Description"
+            status="Pending"
+          />
 
-        {/* Sample Complaint Card for Active Complaints */}
-        <ComplaintCard
-          label="Label"
-          date="Date"
-          location="Location"
-          description="Description"
-          status="Pending"
-        />
-
-        {/* Past Complaints Section */}
-        <Group position="apart" align="center" mt="md">
-          <Text weight={500}>Past Complaints</Text>
-          <Group spacing="xs">
-            <Text size="sm" color="dimmed">
-              Sort By:
-            </Text>
-            <Select
-              placeholder="Date"
-              data={[{ value: "date", label: "Date" }]} // Sample data, add more options as needed
-              style={{ width: "80px" }}
-              variant="unstyled"
-            />
+          <Group position="apart" align="center" mt="lg">
+            <Text weight={500} size="xl">Past Complaints</Text>
+            <Group spacing="xs">
+              <Text size="lg" color="dimmed">
+                Sort By:
+              </Text>
+              <Select
+                placeholder="Date"
+                data={[{ value: "date", label: "Date" }]}
+                style={{ width: "100px" }}
+                variant="unstyled"
+                size="lg"
+              />
+            </Group>
           </Group>
-        </Group>
 
-        {/* Sample Complaint Cards for Past Complaints */}
-        <ComplaintCard
-          label="Label"
-          date="Date"
-          location="Location"
-          description="Description"
-          status="Resolved"
-        />
-        <ComplaintCard
-          label="Label"
-          date="Date"
-          location="Location"
-          description="Description"
-          status="Resolved"
-        />
-      </Stack>
+          <ComplaintCard
+            label="Label"
+            date="Date"
+            location="Location"
+            description="Description"
+            status="Resolved"
+          />
+          <ComplaintCard
+            label="Label"
+            date="Date"
+            location="Location"
+            description="Description"
+            status="Resolved"
+          />
+        </Stack>
+      </ScrollArea>
     </Box>
   );
 }

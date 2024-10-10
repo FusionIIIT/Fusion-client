@@ -72,11 +72,11 @@ export default function ViewHostel() {
       })}
     >
     <Text 
-            align="left" 
-            mb="xl" 
-            size="xl" 
-            style={{ color: '#757575', weight: 'bold' }} // Gray color
-          >            View Hostel
+        align="left" 
+        mb="xl" 
+        size="xl" 
+        style={{ color: '#757575', fontWeight: 'bold' }}
+    >            View Hostel
           </Text>
       <Card
         shadow="sm"
