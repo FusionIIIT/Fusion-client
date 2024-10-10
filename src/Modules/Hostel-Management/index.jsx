@@ -1,31 +1,36 @@
-import React from 'react';
-import { useMantineTheme } from '@mantine/core';
-import NoticeBoard from './components/all-actors/NoticeBoard';
-import SideNotifications from './components/all-actors/SideNotifications';
+import React from "react";
+import { useMantineTheme } from "@mantine/core";
+import SideNotifications from "./components/all-actors/SideNotifications";
+import SectionNavigation from "./components/SectionNavigation";
 
-const HostelPage = () => {
+function HostelPage() {
   const theme = useMantineTheme();
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      flexDirection: 'row', 
-      height: '90vh',
-      overflow: 'hidden'
-    }}>
-      <div style={{ 
-        flex: 7.5, 
-        marginRight: theme.spacing.md, 
-        height: '100%',
-        overflow: 'hidden'
-      }}>
-        <NoticeBoard />
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        height: "90vh",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        style={{
+          flex: 7.5,
+          marginRight: theme.spacing.md,
+          height: "100%",
+          overflow: "hidden",
+        }}
+      >
+        {/* <NoticeBoard /> */}
+        <SectionNavigation />
       </div>
-      <div style={{ flex: 2.5, height: '100%', overflow: 'hidden' }}>
+      <div style={{ flex: 2.5, height: "100%", overflow: "hidden" }}>
         <SideNotifications />
       </div>
     </div>
   );
-};
+}
 
 export default HostelPage;
