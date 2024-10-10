@@ -39,7 +39,7 @@ export default function NoticeBoard() {
       >
         Hostel Notice Board
       </Text>
-      <ScrollArea style={{ flex: 1, height: 'calc(85vh - 56px)'}}>
+      <ScrollArea style={{ flex: 1, height: 'calc(66vh)'}}>
         <Stack spacing="md" pb="md">
           {noticeEntries.length > 0 ? (
             noticeEntries.map((entry) => (

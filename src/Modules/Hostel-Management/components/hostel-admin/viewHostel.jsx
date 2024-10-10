@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Card, Select, Grid, Text, Container, Box } from "@mantine/core";
+import { Card, Select, Grid, Text, Paper, Box } from "@mantine/core";
 
 // Define data for all hostels
 const hostelsData = {
@@ -56,29 +56,49 @@ export default function ViewHostel() {
   const hostel = hostelsData[selectedHall];
 
   return (
-    <Container size="md" px="md">
+     <Paper
+      shadow="md"
+      p="md"
+      withBorder
+      sx={(theme) => ({
+        position: 'fixed',
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: theme.white,
+        border: `1px solid ${theme.colors.gray[3]}`,
+        borderRadius: theme.radius.md,
+      })}
+    >
+    <Text 
+            align="left" 
+            mb="xl" 
+            size="xl" 
+            style={{ color: '#757575', weight: 'bold' }} // Gray color
+          >            View Hostel
+          </Text>
       <Card
         shadow="sm"
         padding="sm"
         radius="md"
         withBorder
-        style={{
-          maxWidth: "2000px",
+        style={(theme) => ({
+          height:"100%",
+          width:"100%",
           margin: "auto",
-        }}
+          backgroundColor: theme.white,
+        })}
       >
         {/* Grey Background for Heading */}
         <Box
           style={{
-            backgroundColor: "#f1f3f5", // Grey background
             padding: "5px",
             borderTopLeftRadius: "6px",
             borderTopRightRadius: "6px",
           }}
         >
-          <Text align="center" weight={700} size="xl">
-            View Hostel
-          </Text>
+          
         </Box>
 
         {/* Added margin-top for space between the heading and dropdown */}
@@ -122,6 +142,6 @@ export default function ViewHostel() {
           ))}
         </Grid>
       </Card>
-    </Container>
+    </Paper>
   );
 }

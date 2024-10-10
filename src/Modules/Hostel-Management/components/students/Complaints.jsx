@@ -6,16 +6,24 @@ export default function Complaints() {
   return (
     <Box
       p="md"
-      style={{
-        maxWidth: "800px",
+      style={(theme) => ({
+        width: '100%',
         margin: "0 auto",
-        backgroundColor: "#f8f9fa",
-      }}
+        height: "78vh",
+        backgroundColor: theme.white,
+        border: `1px solid ${theme.colors.gray[3]}`,
+        borderRadius: theme.radius.md,
+      })}
     >
       {/* Header with title and button */}
       <Group position="apart" style={{ width: "100%" }} mb="md">
-        <Text size="xl" weight={700}>
-          Complaints
+        <Text 
+          align="left" 
+          mb="xl" 
+          size="xl" 
+          style={{ color: '#757575', weight: 'bold' }} // Gray color
+        >
+          Register Complaints
         </Text>
         {/* Use flexbox to push the button to the right */}
         <div style={{ marginLeft: "auto" }}>

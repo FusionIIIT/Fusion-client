@@ -2,15 +2,15 @@ import React, { useState } from "react";
 import { Group, Text, Box, Container } from "@mantine/core";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import NoticeBoard from "./all-actors/NoticeBoard";
-import Complaints from "./students/Complaints";
+import viewHostel from "./hostel-admin/viewHostel";
 
 const sections = [
   "Notice Board",
-  "My Fine",
-  "Leave",
-  "Guest Room",
-  "Complaint",
-  "Students Alloted rooms",
+  "View Hostel",
+  "Manage Caretakers",
+  "Manage Warden",
+  "Manage Hostel ",
+  "View Transactions",
 ];
 const subSections = {
   Leave: ["Leave Form", "Leave Status"],
@@ -19,7 +19,7 @@ const subSections = {
 // Create a map of components for each section
 const sectionComponents = {
   "Notice Board": NoticeBoard,
-  Complaint: Complaints,
+  "View Hostel": viewHostel,
   // Add other components here for different sections if needed
   // 'My Fine': MyFineComponent,
   // 'Leave': LeaveComponent,

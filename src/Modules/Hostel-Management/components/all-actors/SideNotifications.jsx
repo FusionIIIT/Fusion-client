@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Paper, Button, ScrollArea, Box, Group } from '@mantine/core';
-import { Bell, Megaphone } from 'phosphor-react';
 
 // Dummy data
 const dummyNotifications = [
