@@ -50,7 +50,7 @@ export default function App() {
           }
         />
         <Route
-          path="/department"
+          path="/department/*"
           element={
             <Layout>
               <Department />
