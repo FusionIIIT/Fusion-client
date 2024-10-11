@@ -5,6 +5,8 @@ import NoticeBoard from "./all-actors/NoticeBoard";
 import ViewHostel from "./hostel-admin/ViewHostel";
 import AddHostel from "./hostel-admin/AddHostel";
 import AssignWarden from "./hostel-admin/AssignWarden";
+import AssignBatch from "./hostel-admin/AssignBatch";
+import AssignCaretaker from "./hostel-admin/AssignCaretaker";
 
 const sections = [
   "Notice Board",
@@ -12,6 +14,7 @@ const sections = [
   "Manage Caretakers",
   "Manage Warden",
   "Manage Hostel",
+  "Add Hostel",
   "View Transactions",
 ];
 const subSections = {
@@ -22,8 +25,10 @@ const subSections = {
 const sectionComponents = {
   "Notice Board": NoticeBoard,
   "View Hostel": ViewHostel,
-  "Manage Hostel": AddHostel,
+  "Manage Hostel": AssignBatch,
   "Manage Warden": AssignWarden,
+  "Manage Caretakers": AssignCaretaker,
+  "Add Hostel": AddHostel,
   
   // Add other components here for different sections if needed
   // 'My Fine': MyFineComponent,

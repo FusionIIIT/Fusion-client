@@ -1,10 +1,10 @@
 import React from "react";
 import { Box, Paper, Button, Group, Text, Stack, Select, ScrollArea } from "@mantine/core";
-import ComplaintCard from "./ComplaintCard"; // Assuming ComplaintCard is in the same directory
+import FineCard from "./FineCard"; // Assuming FineCard is in the same directory
 
-export default function Complaints() {
+export default function Fines() {
   return (
-    <Paper
+   <Paper
       shadow="md"
       p="md"
       withBorder
@@ -19,23 +19,21 @@ export default function Complaints() {
         borderRadius: theme.radius.md,
       })}
     >
-      <Group position="apart" style={{ width: "100%" }} mb="xl">
+      <Group position="apart" style={{ width: "100%" }} mb="lg">
         <Text 
           align="left" 
+          mb="xl" 
           size="24px" 
           style={{ color: '#757575', fontWeight: 'bold' }}
         >
-          Register Complaints
+          My Fines
         </Text>
-        <div style={{ marginLeft: "auto" }}>
-          <Button size="xl">Make Complaint</Button>
-        </div>
       </Group>
 
       <ScrollArea style={{ flex: 1 }}>
         <Stack spacing="md">
           <Group position="apart" align="center">
-            <Text weight={500} size="xl" color="dimmed">Active Complaints</Text>
+            <Text weight={500} size="xl">Active Fines</Text>
             <Group spacing="xs">
               <Text size="lg" color="dimmed">
                 Sort By:
@@ -50,16 +48,15 @@ export default function Complaints() {
             </Group>
           </Group>
           
-          <ComplaintCard
-            label="Label"
-            date="Date"
-            location="Location"
-            description="Description"
-            status="Pending"
+          <FineCard
+            amount={5000}
+            hall="Hall-1"
+            details="Details"
+            reason="Reason"
           />
 
           <Group position="apart" align="center" mt="lg">
-            <Text weight={500} size="xl" color="dimmed">Past Complaints</Text>
+            <Text weight={500} size="xl">Past Fines' History</Text>
             <Group spacing="xs">
               <Text size="lg" color="dimmed">
                 Sort By:
@@ -74,19 +71,19 @@ export default function Complaints() {
             </Group>
           </Group>
 
-          <ComplaintCard
-            label="Label"
-            date="Date"
-            location="Location"
-            description="Description"
-            status="Resolved"
+          <FineCard
+            amount={2000}
+            hall="Hall-1"
+            details="Details"
+            reason="Reason"
+            isPastFine={true}
           />
-          <ComplaintCard
-            label="Label"
-            date="Date"
-            location="Location"
-            description="Description"
-            status="Resolved"
+          <FineCard
+            amount={500}
+            hall="Hall-3"
+            details="Details"
+            reason="Reason"
+            isPastFine={true}
           />
         </Stack>
       </ScrollArea>

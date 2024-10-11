@@ -71,14 +71,13 @@ export default function ViewHostel() {
         borderRadius: theme.radius.md,
       })}
     >
-      <Text
-        align="left"
-        mb="xl"
-        size="xl"
-        style={{ color: "#757575", fontWeight: "bold" }}
-      >
-        View Hostel
-      </Text>
+    <Text 
+        align="left" 
+        mb="xl" 
+        size="24px" 
+        style={{ color: '#757575', fontWeight: 'bold' }}
+    >            View Hostel
+          </Text>
       <Card
         shadow="sm"
         padding="sm"

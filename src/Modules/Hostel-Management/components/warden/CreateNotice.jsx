@@ -3,18 +3,19 @@ import {
   TextInput,
   Textarea,
   Button,
-  FileInput,
   Group,
-  Box,
-  Title,
+  Stack,
+  Text,
+  Paper,
   Notification,
+  Select,
 } from '@mantine/core';
 
 const CreateNotice = ({ onSubmit, existingAnnouncement }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [file, setFile] = useState(null);
   const [date, setDate] = useState('');
+  const [scope, setScope] = useState('');
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState({ opened: false, message: '', color: '' });
 
@@ -22,8 +23,8 @@ const CreateNotice = ({ onSubmit, existingAnnouncement }) => {
     if (existingAnnouncement) {
       setTitle(existingAnnouncement.title);
       setDescription(existingAnnouncement.description);
-      setFile(existingAnnouncement.file);
       setDate(existingAnnouncement.date);
+      setScope(existingAnnouncement.scope);
     } else {
       resetForm();
     }
@@ -32,9 +33,8 @@ const CreateNotice = ({ onSubmit, existingAnnouncement }) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
-
     try {
-      const announcement = { title, description, file, date };
+      const announcement = { title, description, date, scope };
       await onSubmit(announcement);
       setNotification({ opened: true, message: 'Announcement submitted successfully!', color: 'green' });
       resetForm();
@@ -48,39 +48,99 @@ const CreateNotice = ({ onSubmit, existingAnnouncement }) => {
   const resetForm = () => {
     setTitle('');
     setDescription('');
-    setFile(null);
     setDate('');
+    setScope('');
   };
 
   return (
-    <Box sx={{ padding: '20px', backgroundColor: '#fff', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)' }}>
-      <Title order={3} mb="md">
-        {existingAnnouncement ? 'Edit Announcement' : 'Create Announcement'}
-      </Title>
-      <form onSubmit={handleSubmit}>
-        <TextInput label="Title" value={title} onChange={(e) => setTitle(e.currentTarget.value)} required mb="md" />
-        <Textarea label="Description" value={description} onChange={(e) => setDescription(e.currentTarget.value)} required mb="md" />
-        <FileInput label="Attach File" value={file} onChange={(file) => setFile(file)} accept="application/pdf,image/*" mb="md" />
-        <TextInput label="Date" type="date" value={date} onChange={(e) => setDate(e.currentTarget.value)} required mb="md" />
-        <Group position="right">
-          <Button type="submit" variant="filled" color="blue" loading={loading}>
-            {existingAnnouncement ? 'Update' : 'Submit'}
-          </Button>
-          <Button type="button" variant="outline" color="gray" onClick={resetForm}>Clear</Button>
-        </Group>
-      </form>
-
-      {notification.opened && (
-        <Notification
-          title="Notification"
-          color={notification.color}
-          onClose={() => setNotification({ ...notification, opened: false })}
-          style={{ marginTop: '10px' }}
+    <Paper
+      shadow="md"
+      p="md"
+      withBorder
+      sx={(theme) => ({
+        position: 'fixed',
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: theme.white,
+        border: `1px solid ${theme.colors.gray[3]}`,
+        borderRadius: theme.radius.md,
+      })}
+    >
+      <Stack spacing="lg">
+        <Text 
+          align="left" 
+          mb="xl" 
+          size="24px" 
+          style={{ color: '#757575', fontWeight: 'bold' }}
         >
-          {notification.message}
-        </Notification>
-      )}
-    </Box>
+          {existingAnnouncement ? 'Edit Announcement' : 'Create Announcement'}
+        </Text>
+
+        <form onSubmit={handleSubmit}>
+          <Stack spacing="md">
+            <TextInput
+              label={<Text component="label" size="lg" fw={500}>Title:</Text>}
+              value={title}
+              onChange={(e) => setTitle(e.currentTarget.value)}
+              required
+              styles={{ root: { marginTop: 5 } }}
+            />
+
+            <Textarea
+              label={<Text component="label" size="lg" fw={500}>Description:</Text>}
+              value={description}
+              onChange={(e) => setDescription(e.currentTarget.value)}
+              required
+              styles={{ root: { marginTop: 5 } }}
+            />
+
+            <TextInput
+              label={<Text component="label" size="lg" fw={500}>Date:</Text>}
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.currentTarget.value)}
+              required
+              styles={{ root: { marginTop: 5 } }}
+            />
+
+            <Select
+              label={<Text component="label" size="lg" fw={500}>Announcement Scope:</Text>}
+              placeholder="Select scope"
+              value={scope}
+              onChange={setScope}
+              data={[
+                { value: 'global', label: 'Global' },
+                { value: 'local', label: 'Local' },
+              ]}
+              required
+              styles={{ root: { marginTop: 5 } }}
+            />
+
+            <Group position="right" spacing="sm" mt="xl">
+              <Button type="button" variant="outline" onClick={resetForm}>
+                Clear
+              </Button>
+              <Button type="submit" variant="filled" loading={loading}>
+                {existingAnnouncement ? 'Update' : 'Submit'}
+              </Button>
+            </Group>
+          </Stack>
+        </form>
+
+        {notification.opened && (
+          <Notification
+            title="Notification"
+            color={notification.color}
+            onClose={() => setNotification({ ...notification, opened: false })}
+            style={{ marginTop: '10px' }}
+          >
+            {notification.message}
+          </Notification>
+        )}
+      </Stack>
+    </Paper>
   );
 };
 
