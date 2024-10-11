@@ -56,16 +56,16 @@ export default function ViewHostel() {
   const hostel = hostelsData[selectedHall];
 
   return (
-     <Paper
+    <Paper
       shadow="md"
       p="md"
       withBorder
       sx={(theme) => ({
-        position: 'fixed',
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
+        position: "fixed",
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
         backgroundColor: theme.white,
         border: `1px solid ${theme.colors.gray[3]}`,
         borderRadius: theme.radius.md,
@@ -84,13 +84,12 @@ export default function ViewHostel() {
         radius="md"
         withBorder
         style={(theme) => ({
-          height:"100%",
-          width:"100%",
+          height: "100%",
+          width: "100%",
           margin: "auto",
           backgroundColor: theme.white,
         })}
       >
-        {/* Grey Background for Heading */}
         <Box
           style={{
             padding: "5px",
@@ -98,49 +97,56 @@ export default function ViewHostel() {
             borderTopRightRadius: "6px",
           }}
         >
-          
+          {/* Optional heading space */}
         </Box>
 
-        {/* Added margin-top for space between the heading and dropdown */}
         <Select
           data={Object.keys(hostelsData)}
           placeholder="Select Hall"
           value={selectedHall}
           onChange={setSelectedHall}
           mb="md"
-          mt="lg" // Added margin-top to create space
+          mt="lg"
         />
 
         {/* Display Data of Selected Hostel */}
-        <Grid>
-          {[
-            { label: "Name:", value: hostel.name },
-            { label: "Code:", value: hostel.code },
-            { label: "Category:", value: hostel.category },
-            { label: "Capacity:", value: hostel.capacity },
-            { label: "Room Type:", value: hostel.roomType },
-            { label: "Batch Assigned:", value: hostel.batchAssigned },
-            { label: "Number Of Rooms:", value: hostel.numberOfRooms },
-            { label: "Caretaker Name:", value: hostel.caretakerName },
-            { label: "Warden Name:", value: hostel.wardenName },
-          ].map((item, index) => (
-            <Grid.Col span={12} key={index}>
-              <Grid
-                style={{
-                  backgroundColor: index % 2 === 0 ? "#f8f9fa" : "white",
-                  padding: "8px 16px",
-                }}
-              >
-                <Grid.Col span={6}>
-                  <Text weight={500}>{item.label}</Text>
-                </Grid.Col>
-                <Grid.Col span={6}>
-                  <Text align="right">{item.value}</Text>
-                </Grid.Col>
-              </Grid>
-            </Grid.Col>
-          ))}
-        </Grid>
+        <Box
+          style={{
+            height: "420px", // Set a fixed height for the scrollable area
+            overflowY: "auto", // Enable vertical scrolling when content exceeds the height
+            paddingRight: "8px", // Some padding to prevent the text from touching the scrollbar
+          }}
+        >
+          <Grid>
+            {[
+              { label: "Name:", value: hostel.name },
+              { label: "Code:", value: hostel.code },
+              { label: "Category:", value: hostel.category },
+              { label: "Capacity:", value: hostel.capacity },
+              { label: "Room Type:", value: hostel.roomType },
+              { label: "Batch Assigned:", value: hostel.batchAssigned },
+              { label: "Number Of Rooms:", value: hostel.numberOfRooms },
+              { label: "Caretaker Name:", value: hostel.caretakerName },
+              { label: "Warden Name:", value: hostel.wardenName },
+            ].map((item, index) => (
+              <Grid.Col span={12} key={index}>
+                <Grid
+                  style={{
+                    backgroundColor: index % 2 === 0 ? "#e3f2fd" : "white",
+                    padding: "8px 16px",
+                  }}
+                >
+                  <Grid.Col span={6}>
+                    <Text weight={500}>{item.label}</Text>
+                  </Grid.Col>
+                  <Grid.Col span={6}>
+                    <Text align="right">{item.value}</Text>
+                  </Grid.Col>
+                </Grid>
+              </Grid.Col>
+            ))}
+          </Grid>
+        </Box>
       </Card>
     </Paper>
   );

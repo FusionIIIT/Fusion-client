@@ -37,7 +37,7 @@ function Component({ name, roomNo, hallName, hallNo }) {
         {/* Top Section with Light Gray Background */}
         <Box
           style={{
-            backgroundColor: "#f1f3f5",
+            backgroundColor: "#e3f2fd",
             padding: "10px",
             borderTopLeftRadius: "6px",
             borderTopRightRadius: "6px",
