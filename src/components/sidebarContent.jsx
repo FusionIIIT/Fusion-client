@@ -142,7 +142,7 @@ const Modules = [
     label: "Hostel Management",
     id: "hostel_management",
     icon: <HostelIcon size={18} />,
-    url: "/",
+    url: "/hostel",
   },
   {
     label: "Other Academic Procedure",
