@@ -1,27 +1,31 @@
 import React from "react";
 import SpecialTable from "./SpecialTable";
-import { data } from "./data";
+import studentData from "./data";
 
 const columns = [
   {
-    accessorKey: "name.firstName",
-    header: "Special Name",
+    accessorKey: "id",
+    header: "ID",
   },
   {
-    accessorKey: "name.lastName",
-    header: "Last Name",
+    accessorKey: "name",
+    header: "Name",
   },
   {
-    accessorKey: "address",
-    header: "Address",
+    accessorKey: "department",
+    header: "Department",
   },
   {
-    accessorKey: "city",
-    header: "City",
+    accessorKey: "gender",
+    header: "Gender",
   },
   {
-    accessorKey: "state",
-    header: "State",
+    accessorKey: "dob",
+    header: "DOB",
+  },
+  {
+    accessorKey: "phno",
+    header: "Phone Number",
   },
 ];
 
@@ -30,7 +34,7 @@ function Faculty() {
     <SpecialTable
       title="Faculties"
       columns={columns}
-      data={data}
+      data={studentData.Faculty}
       rowOptions={["3", "4", "6"]}
     />
   );

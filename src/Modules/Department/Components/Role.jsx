@@ -12,8 +12,8 @@ import { useRef, useState } from "react";
 import CustomBreadcrumbs from "../../../components/Breadcrumbs.jsx";
 import classes from "../styles/Departmentmodule.module.css";
 import Faculty from "./Faculty.jsx";
-import Student from "./Student.jsx";
-import Alumni from "./Alumni.jsx";
+import Studentcat from "./Studentcat.jsx";
+import Alumnicat from "./Alumnicat.jsx";
 
 // Import all the components here
 //   import ComplaintForm from "./components/ComplaintForm.jsx";
@@ -54,11 +54,11 @@ function Role() {
       case "2":
         return <Faculty />;
       case "3":
-        return <Student />;
+        return <Studentcat />;
       case "4":
         return <p>Announcements</p>;
       case "5":
-        return <Alumni />;
+        return <Alumnicat />;
       case "6":
         return <p>Stock</p>;
       default:

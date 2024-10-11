@@ -1,6 +1,6 @@
 import React from "react";
 import SpecialTable from "./SpecialTable";
-import { data } from "./data";
+import data from "./data";
 
 const columns = [
   {
@@ -28,7 +28,7 @@ const columns = [
 function Student() {
   return (
     <SpecialTable
-      title="Students"
+      title="Student"
       columns={columns}
       data={data}
       rowOptions={["3", "4", "6"]}
