@@ -9,6 +9,7 @@ import LoginPage from "./pages/login";
 import ForgotPassword from "./pages/forgotPassword";
 import AcademicPage from "./Modules/Academic/index";
 import ValidateAuth from "./helper/validateauth";
+import Prescription from "./Modules/Health Center/Medical Relief/Prescription";
 
 export default function App() {
   const location = useLocation();
@@ -45,6 +46,14 @@ export default function App() {
           element={
             <Layout>
               <Profile />
+            </Layout>
+          }
+        />
+        <Route
+          path="/medical-relief/prescription"
+          element={
+            <Layout>
+              <Prescription />
             </Layout>
           }
         />
