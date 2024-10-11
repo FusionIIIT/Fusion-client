@@ -44,7 +44,7 @@ const TabsComponent = ({ actor }) => {
   
 
   return (
-    <Tabs defaultValue="schedule" variant="outline">
+    <Tabs defaultValue="schedule" variant="pills" >
       <Tabs.List>
         {getTabs().map((tab) => (
           <Tabs.Tab key={tab.value} value={tab.value}>
