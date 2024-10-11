@@ -5,18 +5,19 @@ import PlacementRecordsTable from "./components/PlacementRecordsTable";
 import AddPlacementEventForm from "./components/AddPlacementEventForm";
 import { useSelector } from "react-redux";
 import { Calendar } from "@mantine/dates";
+import PlacementCalendar from "./components/PlacementCalendar";
 
 const studentTabs = [
   { value: "schedule", label: "Placement Schedule" },
   { value: "stats", label: "Placement Stats" },
   { value: "download-cv", label: "Download CV" },
-  { value: "placement-calander", label: "Placement Calander" },
+  { value: "placement-calendar", label: "Placement Calendar" },
 ];
 
 const chairmanTabs = [
   { value: "schedule", label: "Placement Schedule" },
   { value: "stats", label: "Placement Stats" },
-  { value: "placement-calander", label: "Placement Calander" },
+  { value: "placement-calendar", label: "Placement Calendar" },
 ];
 
 const tpoTabs = [
@@ -24,7 +25,7 @@ const tpoTabs = [
   { value: "send-notifications", label: "Send Notifications" },
   { value: "stats", label: "Placement Stats" },
   { value: "add-record", label: "Add Placement Record" },
-  { value: "placement-calander", label: "Placement Calander" },
+  { value: "placement-calendar", label: "Placement Calendar" },
 ];
 
 const tabComponents = {
@@ -32,19 +33,19 @@ const tabComponents = {
     "schedule": <Text>Placement Schedule</Text>,
     stats: <PlacementRecordsTable />,
     "download-cv": <Text>Download your CV here.</Text>,
-    "placement-calander": <Text>Placement Calander</Text>,
+    "placement-calendar": <PlacementCalendar />, // Corrected spelling
   },
   chairman: {
     "schedule": <Text>Placement Schedule</Text>,
     stats: <PlacementRecordsTable />,
-    "placement-calander": <Text>Placement Calander</Text>,
+    "placement-calendar": <PlacementCalendar />, // Corrected spelling
   },
   tpo: {
     "schedule": <Text>Placement Schedule</Text>,
     "send-notifications": <Text>Send Notifications Here.</Text>,
     stats: <PlacementRecordsTable />,
     "add-record": <AddPlacementRecordForm />,
-    "placement-calander": <Text>Placement Calander</Text>,
+    "placement-calendar": <PlacementCalendar />, // Corrected spelling
   },
 };
 
