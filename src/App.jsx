@@ -9,7 +9,8 @@ import LoginPage from "./pages/login";
 import ForgotPassword from "./pages/forgotPassword";
 import AcademicPage from "./Modules/Academic/index";
 import ValidateAuth from "./helper/validateauth";
-import Prescription from "./Modules/Health Center/Medical Relief/Prescription";
+import Apply from "./Modules/Health Center/Patient/Medical Relief/Apply";
+import { Approval } from "./Modules/Health Center/Patient/Medical Relief/Approval";
 
 export default function App() {
   const location = useLocation();
@@ -49,14 +50,25 @@ export default function App() {
             </Layout>
           }
         />
+
         <Route
-          path="/medical-relief/prescription"
+          path="/patient/medical-relief/apply"
           element={
             <Layout>
-              <Prescription />
+              <Apply />
             </Layout>
           }
         />
+
+        <Route
+          path="/patient/medical-relief/approval"
+          element={
+            <Layout>
+              <Approval />
+            </Layout>
+          }
+        />
+
         <Route path="/accounts/login" element={<LoginPage />} />
         <Route path="/reset-password" element={<ForgotPassword />} />
       </Routes>
