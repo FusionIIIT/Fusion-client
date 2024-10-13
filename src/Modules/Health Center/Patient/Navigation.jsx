@@ -17,7 +17,7 @@ function Navigation() {
         <ArrowCircleLeftOutlinedIcon fontSize="large" />
 
         <NavLink
-          to="/history"
+          to="/patient/history"
           style={({ isActive }) => ({
             textDecoration: "none",
             fontSize: "1.25rem",
@@ -59,7 +59,7 @@ function Navigation() {
         <Divider orientation="vertical" />
 
         <NavLink
-          to="/announcements"
+          to="/patent/announcements"
           style={({ isActive }) => ({
             textDecoration: "none",
             fontSize: "1.25rem",

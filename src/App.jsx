@@ -10,7 +10,10 @@ import ForgotPassword from "./pages/forgotPassword";
 import AcademicPage from "./Modules/Academic/index";
 import ValidateAuth from "./helper/validateauth";
 import Apply from "./Modules/Health Center/Patient/Medical Relief/Apply";
-import { Approval } from "./Modules/Health Center/Patient/Medical Relief/Approval";
+import Approval from "./Modules/Health Center/Patient/Medical Relief/Approval";
+import History from "./Modules/Health Center/Patient/History/History";
+import Prescription from "./Modules/Health Center/Patient/History/Prescription";
+import Announcement from "./Modules/Health Center/Patient/Announcements/Announcement";
 
 export default function App() {
   const location = useLocation();
@@ -47,6 +50,33 @@ export default function App() {
           element={
             <Layout>
               <Profile />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/patient/history"
+          element={
+            <Layout>
+              <History />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/patient/history/view"
+          element={
+            <Layout>
+              <Prescription />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/patent/announcements"
+          element={
+            <Layout>
+              <Announcement />
             </Layout>
           }
         />

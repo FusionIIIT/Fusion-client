@@ -1,38 +1,46 @@
-import { Radio, Table } from "@mantine/core";
 import { NavLink } from "react-router-dom";
-import SystemUpdateAltIcon from "@mui/icons-material/SystemUpdateAlt";
+import { Radio, Table } from "@mantine/core";
 import FaceIcon from "@mui/icons-material/Face";
+import SystemUpdateAltIcon from "@mui/icons-material/SystemUpdateAlt";
 import Navigation from "../Navigation";
 
-function Approval() {
+function History() {
   const elements = [
     {
-      uploaded: "09/09/2024",
-      approval: "11/09/2024",
-      description: "Testing PHC",
-      file: "",
-      status: "Approved",
+      treated: "GS Sandhu",
+      date: "11/09/2024",
+      details: "Fever",
+      report: "",
+      prescription: "View",
     },
     {
-      uploaded: "12/09/2024",
-      approval: "12/09/2024",
-      description: "Fever",
-      file: "",
-      status: "Approved",
+      treated: "A Shivi",
+      date: "12/09/2024",
+      details: "Tooth Pain",
+      report: "",
+      prescription: "View",
     },
   ];
 
   const rows = elements.map((element) => (
-    <Table.Tr key={element.uploaded}>
+    <Table.Tr key={element.treated}>
       <Table.Td>
-        <FaceIcon /> {element.uploaded}
+        <FaceIcon />
+        {element.treated}
       </Table.Td>
-      <Table.Td>{element.approval}</Table.Td>
-      <Table.Td>{element.description}</Table.Td>
+      <Table.Td>{element.date}</Table.Td>
+      <Table.Td>{element.details}</Table.Td>
       <Table.Td>
-        <SystemUpdateAltIcon /> {element.file}
+        {element.report ? <SystemUpdateAltIcon /> : <SystemUpdateAltIcon />}
       </Table.Td>
-      <Table.Td>{element.status}</Table.Td>
+      <Table.Td>
+        <NavLink
+          to="/patient/history/view"
+          style={{ textDecoration: "none", color: "#4C1D95" }}
+        >
+          {element.prescription}
+        </NavLink>
+      </Table.Td>
     </Table.Tr>
   ));
 
@@ -48,7 +56,7 @@ function Approval() {
             border: "1px solid",
             backgroundColor: "white",
             borderRadius: "9999px",
-            width: "22rem",
+            width: "9rem",
           }}
         >
           <NavLink
@@ -59,22 +67,7 @@ function Approval() {
             }}
           >
             <Radio
-              label="Apply for Medical Relief"
-              color="grape"
-              variant="outline"
-            />
-          </NavLink>
-
-          <NavLink
-            to="/patient/medical-relief/approval"
-            style={{
-              textDecoration: "none",
-              color: "black",
-              marginLeft: "20px",
-            }}
-          >
-            <Radio
-              label="Approval Status"
+              label="Prescription"
               color="grape"
               variant="outline"
               defaultChecked
@@ -83,16 +76,15 @@ function Approval() {
         </div>
 
         <br />
-
         <div>
           <Table withTableBorder withColumnBorders highlightOnHover>
             <Table.Thead>
               <Table.Tr style={{ backgroundColor: "#6D28D9", color: "white" }}>
-                <Table.Th>Uploaded Date</Table.Th>
-                <Table.Th>Approval Date</Table.Th>
-                <Table.Th>Description</Table.Th>
-                <Table.Th>File</Table.Th>
-                <Table.Th>Status</Table.Th>
+                <Table.Th>Treated By</Table.Th>
+                <Table.Th>Date</Table.Th>
+                <Table.Th>Details</Table.Th>
+                <Table.Th>Report</Table.Th>
+                <Table.Th>View Prescription</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody
@@ -107,4 +99,4 @@ function Approval() {
   );
 }
 
-export default Approval;
+export default History;
