@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { Container, Group, Divider } from "@mantine/core";
-import ArrowCircleLeftOutlinedIcon from "@mui/icons-material/ArrowCircleLeftOutlined";
-import ArrowCircleRightOutlinedIcon from "@mui/icons-material/ArrowCircleRightOutlined";
 
 function Navigation() {
   const [isApplying, setIsApplying] = useState(true);
@@ -14,8 +12,6 @@ function Navigation() {
   return (
     <Container>
       <Group position="center" spacing="xl" p="md">
-        <ArrowCircleLeftOutlinedIcon fontSize="large" />
-
         <NavLink
           to="/patient/history"
           style={({ isActive }) => ({
@@ -88,8 +84,6 @@ function Navigation() {
         >
           Medical Relief
         </NavLink>
-
-        <ArrowCircleRightOutlinedIcon fontSize="large" />
       </Group>
     </Container>
   );
