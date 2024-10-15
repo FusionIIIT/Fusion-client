@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Group, Text, Box, Container } from "@mantine/core";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import NoticeBoardWardenCaretaker from "./all-actors/NoticeBoardWardenCaretaker";
-import CreateNotice from "./warden/CreateNotice";
+// import CreateNotice from "./warden/CreateNotice";
+import StudentInfo from "./warden/StudentInfo";
 
 const sections = [
   "Notice Board",
@@ -13,10 +14,9 @@ const sections = [
 ];
 const subSections = {};
 
-
 const components = {
   "Notice Board": NoticeBoardWardenCaretaker,
-  "Student Info": CreateNotice,
+  "Student Info": StudentInfo,
   // Add other components here
   // "Guest Room_Booking Status": BookingStatusComponent,
   // "Leave_Leave Form": LeaveFormComponent,
@@ -56,10 +56,7 @@ export default function SectionNavigation() {
 
   return (
     <Container size="xl" p="xs">
-      <Group
-        spacing="xs"
-        style={{ overflowX: "auto", padding: "8px 0" }}
-      >
+      <Group spacing="xs" style={{ overflowX: "auto", padding: "8px 0" }}>
         <CaretLeft size={20} weight="bold" color="#718096" />
         {sections.map((section, index) => (
           <React.Fragment key={section}>
@@ -103,7 +100,13 @@ export default function SectionNavigation() {
       )}
       <br />
       {ActiveComponent ? (
-        <Box style={{ width: "100%", height: "calc(85vh - 56px)", overflowY: "auto" }}>
+        <Box
+          style={{
+            width: "100%",
+            height: "calc(85vh - 56px)",
+            overflowY: "auto",
+          }}
+        >
           <ActiveComponent />
         </Box>
       ) : (
