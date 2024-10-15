@@ -14,13 +14,12 @@ function NavCom() {
   return (
     <Container>
       <Group position="center" spacing="xl" p="md">
-        {/* Left Arrow (Disable if first group is shown) */}
         <ArrowCircleLeftOutlinedIcon
           fontSize="large"
-          onClick={showFirstGroup ? null : toggleGroup} // Disable click if first group is shown
+          onClick={showFirstGroup ? null : toggleGroup}
           style={{
             cursor: showFirstGroup ? "not-allowed" : "pointer",
-            opacity: showFirstGroup ? 0.5 : 1, // Dim the icon if disabled
+            opacity: showFirstGroup ? 0.5 : 1,
           }}
         />
 
@@ -111,7 +110,7 @@ function NavCom() {
             <Divider orientation="vertical" />
 
             <NavLink
-              to="/compounder/medical-relief"
+              to="/compounder/medical-relief/inbox"
               style={({ isActive }) => ({
                 textDecoration: "none",
                 fontSize: "1.25rem",
@@ -124,13 +123,12 @@ function NavCom() {
           </>
         )}
 
-        {/* Right Arrow (Disable if second group is shown) */}
         <ArrowCircleRightOutlinedIcon
           fontSize="large"
-          onClick={showFirstGroup ? toggleGroup : null} // Disable click if second group is shown
+          onClick={showFirstGroup ? toggleGroup : null}
           style={{
             cursor: showFirstGroup ? "pointer" : "not-allowed",
-            opacity: showFirstGroup ? 1 : 0.5, // Dim the icon if disabled
+            opacity: showFirstGroup ? 1 : 0.5,
           }}
         />
       </Group>

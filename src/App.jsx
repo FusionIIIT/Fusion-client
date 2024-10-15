@@ -16,6 +16,8 @@ import Prescription from "./Modules/Health Center/Patient/History/Prescription";
 import Announcement from "./Modules/Health Center/Patient/Announcements/Announcement";
 import HistoryCompounder from "./Modules/Health Center/Compounder/History/HistoryComp";
 import UpdatePatient from "./Modules/Health Center/Compounder/History/UpdatePatient";
+import Inbox from "./Modules/Health Center/Compounder/Medical Relief/Inbox";
+import Application from "./Modules/Health Center/Compounder/Medical Relief/Application";
 
 export default function App() {
   const location = useLocation();
@@ -115,6 +117,24 @@ export default function App() {
           element={
             <Layout>
               <UpdatePatient />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/compounder/medical-relief/inbox"
+          element={
+            <Layout>
+              <Inbox />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/compounder/medical-relief/application"
+          element={
+            <Layout>
+              <Application />
             </Layout>
           }
         />
