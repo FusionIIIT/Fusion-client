@@ -105,7 +105,7 @@ const Modules = [
     label: "Department Portal",
     id: "department",
     icon: <DepartmentIcon size={18} />,
-    url: "/",
+    url: "/department",
   },
   { label: "Research", id: "rspc", icon: <ResearchIcon size={18} />, url: "/" },
   {
