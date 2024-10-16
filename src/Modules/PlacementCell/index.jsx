@@ -1,66 +1,44 @@
 import React from "react";
-import { Text, Tabs } from "@mantine/core";
+import { Text, Tabs, Container } from "@mantine/core";
 import AddPlacementRecordForm from "./components/AddPlacementRecordForm";
 import PlacementRecordsTable from "./components/PlacementRecordsTable";
-import AddPlacementEventForm from "./components/AddPlacementEventForm";
 import { useSelector } from "react-redux";
-import { Calendar } from "@mantine/dates";
 import PlacementCalendar from "./components/PlacementCalendar";
+import PlacementSchedule from "./components/PlacementSchedule";
 
 const studentTabs = [
-  { value: "schedule", label: "Placement Schedule" },
-  { value: "stats", label: "Placement Stats" },
-  { value: "download-cv", label: "Download CV" },
-  { value: "placement-calendar", label: "Placement Calendar" },
+  { value: "schedule", label: "Placement Schedule", component: <PlacementSchedule /> },
+  { value: "stats", label: "Placement Stats", component: <PlacementRecordsTable /> },
+  { value: "download-cv", label: "Download CV", component: <Text>Download your CV here.</Text> },
+  { value: "placement-calendar", label: "Placement Calendar", component: <PlacementCalendar /> },
 ];
 
 const chairmanTabs = [
-  { value: "schedule", label: "Placement Schedule" },
-  { value: "stats", label: "Placement Stats" },
-  { value: "placement-calendar", label: "Placement Calendar" },
+  { value: "schedule", label: "Placement Schedule", component: <PlacementSchedule /> },
+  { value: "stats", label: "Placement Stats", component: <PlacementRecordsTable /> },
+  { value: "placement-calendar", label: "Placement Calendar", component: <PlacementCalendar /> },
 ];
 
 const tpoTabs = [
-  { value: "schedule", label: "Placement Schedule" },
-  { value: "send-notifications", label: "Send Notifications" },
-  { value: "stats", label: "Placement Stats" },
-  { value: "add-record", label: "Add Placement Record" },
-  { value: "placement-calendar", label: "Placement Calendar" },
+  { value: "schedule", label: "Placement Schedule", component: <PlacementSchedule /> },
+  { value: "send-notifications", label: "Send Notifications", component: <Text>Send Notifications Here.</Text> },
+  { value: "stats", label: "Placement Stats", component: <PlacementRecordsTable /> },
+  { value: "add-record", label: "Add Placement Record", component: <AddPlacementRecordForm /> },
+  { value: "placement-calendar", label: "Placement Calendar", component: <PlacementCalendar /> },
 ];
-
-const tabComponents = {
-  student: {
-    "schedule": <Text>Placement Schedule</Text>,
-    stats: <PlacementRecordsTable />,
-    "download-cv": <Text>Download your CV here.</Text>,
-    "placement-calendar": <PlacementCalendar />, // Corrected spelling
-  },
-  chairman: {
-    "schedule": <Text>Placement Schedule</Text>,
-    stats: <PlacementRecordsTable />,
-    "placement-calendar": <PlacementCalendar />, // Corrected spelling
-  },
-  tpo: {
-    "schedule": <Text>Placement Schedule</Text>,
-    "send-notifications": <Text>Send Notifications Here.</Text>,
-    stats: <PlacementRecordsTable />,
-    "add-record": <AddPlacementRecordForm />,
-    "placement-calendar": <PlacementCalendar />, // Corrected spelling
-  },
-};
 
 function PlacementCellPage() {
   const role = useSelector((state) => state.user.role);
 
   const tabs = role === "student" ? studentTabs
-              : role === "placement chairman" ? chairmanTabs
-              : role === "placement officer" ? tpoTabs
-              : [];
+    : role === "placement chairman" ? chairmanTabs
+      : role === "placement officer" ? tpoTabs
+        : [];
 
   return (
     <div style={{ padding: "20px" }}>
-      <Tabs variant="outline">
-        <Tabs.List>
+      <Tabs defaultValue="tab1" variant="outline">
+             <Tabs.List>
           {tabs.map((tab) => (
             <Tabs.Tab key={tab.value} value={tab.value}>
               {tab.label}
@@ -69,12 +47,19 @@ function PlacementCellPage() {
         </Tabs.List>
 
         {tabs.map((tab) => (
-          <Tabs.Panel key={tab.value} value={tab.value} pt="xs">
-            {tabComponents[role]?.[tab.value] || <Text>No content available.</Text>}
+
+          <Tabs.Panel key={tab.value} value={tab.value} >
+
+            {tab.component || <Text>No content available.</Text>}
+
           </Tabs.Panel>
         ))}
+
+
       </Tabs>
+
     </div>
+
   );
 }
 
