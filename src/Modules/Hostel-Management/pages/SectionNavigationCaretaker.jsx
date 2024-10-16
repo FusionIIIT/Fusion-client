@@ -3,8 +3,10 @@ import { Group, Text, Box, Container } from "@mantine/core";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import ManageLeaveRequest from "./caretaker/ManageLeaverequest";
 import ManageGuestRoomRequest from "./caretaker/MangeGuestRoom";
+import NoticeBoardWardenCaretaker from "./all-actors/NoticeBoardWardenCaretaker";
 
 const sections = [
+  "Notice Board",
   "Manage Leave Request",
   "Impose Fine",
   "Manage Imposed Fine",
@@ -18,6 +20,7 @@ const subSections = {
 
 // Create a map of components for each section
 const sectionComponents = {
+  "Notice Board": NoticeBoardWardenCaretaker,
   "Manage Leave Request": ManageLeaveRequest,
   "Mange Guest Room Request": ManageGuestRoomRequest,
 
@@ -28,7 +31,7 @@ const sectionComponents = {
 };
 
 export default function SectionNavigationCaretaker() {
-  const [activeSection, setActiveSection] = useState("Manage Leave Request");
+  const [activeSection, setActiveSection] = useState("Notice Board");
 
   // Get the component for the active section
   const ActiveComponent = sectionComponents[activeSection];

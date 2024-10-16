@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Paper, Group, Text, Stack, Select, ScrollArea } from "@mantine/core";
-import LeaveApplicationCard from "./LeaveApplicationCard"; // Assuming LeaveApplicationCard is in the same directory
+import LeaveApplicationCard from "../../components/students/LeaveApplicationCard"; // Assuming LeaveApplicationCard is in the same directory
 
 export default function LeaveStatus() {
   return (

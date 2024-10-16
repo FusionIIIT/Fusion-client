@@ -1,9 +1,10 @@
 import React from "react";
 import { useMantineTheme } from "@mantine/core";
 import SideNotifications from "./components/all-actors/SideNotifications";
-// import SectionNavigationStudent from "./components/SectionNavigationStudent";
-// import SectionNavigationAdmin from "./components/SectionNavigationAdmin";
-import SectionNavigationWarden from "./components/SectionNavigationWarden";
+import SectionNavigationStudent from "./pages/SectionNavigationStudent";
+import SectionNavigationAdmin from "./pages/SectionNavigationAdmin";
+import SectionNavigationWarden from "./pages/SectionNavigationWarden";
+import SectionNavigationCaretaker from "./pages/SectionNavigationCaretaker";
 
 function HostelPage() {
   const theme = useMantineTheme();
@@ -25,10 +26,10 @@ function HostelPage() {
           overflow: "hidden",
         }}
       >
-        <SectionNavigationCaretaker />
-        {/* <SectionNavigationWarden/> */}
-        {/* <SectionNavigationStudent/> */}
-        {/* <SectionNavigationAdmin/> */}
+        {/*<SectionNavigationCaretaker />*/}
+         {/*<SectionNavigationWarden/> */}
+         {/*<SectionNavigationStudent/> */}
+         <SectionNavigationAdmin/> 
       </div>
       <div style={{ flex: 2.5, height: "100%", overflow: "hidden" }}>
         <SideNotifications />

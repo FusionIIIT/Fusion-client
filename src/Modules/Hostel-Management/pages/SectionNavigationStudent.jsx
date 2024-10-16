@@ -7,6 +7,7 @@ import GuestRoomBooking from "./students/GuestRoomBooking";
 import LeaveForm from "./students/LeaveForm";
 import LeaveStatus from "./students/LeaveStatus";
 import Fine from "./students/Fine";
+import AllotedRooms from "./students/AllotedRooms"
 
 const sections = [
   "Notice Board",
@@ -14,7 +15,7 @@ const sections = [
   "Leave",
   "Guest Room",
   "Complaint",
-  "Students Alloted rooms",
+  "Alloted rooms",
 ];
 
 const subSections = {
@@ -29,6 +30,7 @@ const components = {
   "Leave_Leave Form": LeaveForm,
   "Leave_Leave Status": LeaveStatus,
   "My Fine": Fine,
+  "Alloted rooms": AllotedRooms,
   // Add other components here
   // "Guest Room_Booking Status": BookingStatusComponent,
   // "Leave_Leave Form": LeaveFormComponent,

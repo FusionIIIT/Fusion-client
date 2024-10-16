@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Group, Text, Box, Container } from "@mantine/core";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import NoticeBoardWardenCaretaker from "./all-actors/NoticeBoardWardenCaretaker";
-// import CreateNotice from "./warden/CreateNotice";
-import StudentInfo from "./warden/StudentInfo";
+import StudentInfo from "./all-actors/StudentInfo";
 
 const sections = [
   "Notice Board",

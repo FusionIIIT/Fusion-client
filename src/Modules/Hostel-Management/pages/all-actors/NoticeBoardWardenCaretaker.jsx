@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Paper, Text, Badge, Stack, ScrollArea, Button, Modal, Group } from '@mantine/core';
-import CreateNotice from '../warden/CreateNotice'; // Ensure this path is correct
+import CreateNotice from '../../components/warden/CreateNotice'; // Ensure this path is correct
 
 // Sample data for the notice entries
 const noticeEntries = [
