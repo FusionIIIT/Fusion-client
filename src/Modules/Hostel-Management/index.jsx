@@ -1,7 +1,9 @@
 import React from "react";
 import { useMantineTheme } from "@mantine/core";
 import SideNotifications from "./components/all-actors/SideNotifications";
-import SectionNavigationCaretaker from "./components/SectionNavigationCaretaker";
+// import SectionNavigationStudent from "./components/SectionNavigationStudent";
+// import SectionNavigationAdmin from "./components/SectionNavigationAdmin";
+import SectionNavigationWarden from "./components/SectionNavigationWarden";
 
 function HostelPage() {
   const theme = useMantineTheme();
