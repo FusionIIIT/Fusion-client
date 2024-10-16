@@ -1,10 +1,11 @@
 import React from "react";
-import Role from "./Components/Role";
+import Landingpage from "./Components/Landingpage";
+// import Dash from "./Components/dash";
 
 function DepartmentDashboard() {
   return (
     <div>
-      <Role />
+      <Landingpage />
     </div>
   );
 }

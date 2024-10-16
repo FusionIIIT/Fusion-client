@@ -7,8 +7,8 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import studentData from "./data";
 import SpecialTable from "./SpecialTable";
+import studentData from "./data";
 
 const columns = [
   {
@@ -29,7 +29,7 @@ const columns = [
   },
 ];
 
-function Studentcat() {
+function Alumnicat() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const renderStudentTable = (category) => {
     const data = studentData[category];
@@ -118,4 +118,4 @@ function Studentcat() {
   );
 }
 
-export default Studentcat;
+export default Alumnicat;

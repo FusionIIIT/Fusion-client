@@ -50,3 +50,16 @@
   .selectoptions:hover {
     background-color: #15abff10; /* Transparent blue hover background */
   }
+
+  .bbx {
+    border: 1px solid red;
+  }
+
+  .flex {
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  .w_full {
+    max-width: 1500px;
+  }

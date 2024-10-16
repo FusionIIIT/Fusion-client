@@ -30,7 +30,7 @@ const columns = [
   },
 ];
 
-function StudentCategory() {
+function Studentcat() {
   const [selectedCategory, setSelectedCategory] = useState(null);
 
   // Function to render the student table
@@ -140,4 +140,4 @@ function StudentCategory() {
   );
 }
 
-export default StudentCategory;
+export default Studentcat;

@@ -5,15 +5,11 @@ import studentData from "./data";
 const columns = [
   {
     accessorKey: "id",
-    header: "ID",
+    header: "Faculty ID",
   },
   {
     accessorKey: "name",
     header: "Name",
-  },
-  {
-    accessorKey: "department",
-    header: "Department",
   },
   {
     accessorKey: "gender",
