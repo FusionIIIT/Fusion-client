@@ -5,11 +5,13 @@ import PlacementRecordsTable from "./components/PlacementRecordsTable";
 import { useSelector } from "react-redux";
 import PlacementCalendar from "./components/PlacementCalendar";
 import PlacementSchedule from "./components/PlacementSchedule";
+import SendNotificationForm from "./components/SendNotificationForm";
+import DownloadCV from "./components/DownloadCV";
 
 const studentTabs = [
   { value: "schedule", label: "Placement Schedule", component: <PlacementSchedule /> },
   { value: "stats", label: "Placement Stats", component: <PlacementRecordsTable /> },
-  { value: "download-cv", label: "Download CV", component: <Text>Download your CV here.</Text> },
+  { value: "download-cv", label: "Download CV", component: <DownloadCV /> },
   { value: "placement-calendar", label: "Placement Calendar", component: <PlacementCalendar /> },
 ];
 
@@ -21,7 +23,7 @@ const chairmanTabs = [
 
 const tpoTabs = [
   { value: "schedule", label: "Placement Schedule", component: <PlacementSchedule /> },
-  { value: "send-notifications", label: "Send Notifications", component: <Text>Send Notifications Here.</Text> },
+  { value: "send-notifications", label: "Send Notifications", component: <SendNotificationForm /> },
   { value: "stats", label: "Placement Stats", component: <PlacementRecordsTable /> },
   { value: "add-record", label: "Add Placement Record", component: <AddPlacementRecordForm /> },
   { value: "placement-calendar", label: "Placement Calendar", component: <PlacementCalendar /> },
