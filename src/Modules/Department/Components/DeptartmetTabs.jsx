@@ -17,6 +17,7 @@ import Studentcat from "./Studentcat.jsx";
 import Dept from "./Dept.jsx";
 import Announcement from "./Announcement.jsx";
 import MakeAnnouncement from "./MakeAnnouncement.jsx";
+import Facilties from "./Facilities.jsx";
 
 function DepartmentTabs() {
   const role = useSelector((state) => state.user.role); // Get user role from Redux
@@ -58,7 +59,7 @@ function DepartmentTabs() {
       case "0":
         return <Dept />;
       case "1":
-        return <p>Facilities</p>;
+        return <Facilties />;
       case "2":
         return <Faculty />;
       case "3":

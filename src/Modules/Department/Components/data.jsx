@@ -79,7 +79,58 @@ const data = {
       year: "B.Tech First Year",
     },
   ],
-  // ... add more data for B.Tech and other categories
+
+  // Labs data (added as per the new requirement)
+  labs: [
+    {
+      id: "lab1",
+      name: "Tinkering Lab",
+      department: "CSE",
+      location: "Second Floor, CC",
+      capacity: 200,
+      images: [], // You can add image URLs here
+    },
+    {
+      id: "lab2",
+      name: "Third Floor Lab",
+      department: "CSE",
+      location: "Third Floor, CC",
+      capacity: 200,
+      images: [], // You can add image URLs here
+    },
+    {
+      id: "lab3",
+      name: "Ground Floor Lab",
+      department: "CSE",
+      location: "Ground Floor, CC",
+      capacity: 150,
+      images: [], // You can add image URLs here
+    },
+    {
+      id: "lab4",
+      name: "First Floor Lab",
+      department: "CSE",
+      location: "First Floor, CC",
+      capacity: 178,
+      images: [], // You can add image URLs here
+    },
+    {
+      id: "lab5",
+      name: "Physics Lab",
+      department: "Physics",
+      location: "Building 5, Room 505",
+      capacity: 30,
+      images: [], // You can add image URLs here
+    },
+    {
+      id: "lab6",
+      name: "Chemistry Lab",
+      department: "Chemistry",
+      location: "Building 6, Room 606",
+      capacity: 35,
+      images: [], // You can add image URLs here
+    },
+  ],
 };
 
 export default data;
