@@ -55,7 +55,7 @@ function Navigation() {
         <Divider orientation="vertical" />
 
         <NavLink
-          to="/patent/announcements"
+          to="/patient/announcements"
           style={({ isActive }) => ({
             textDecoration: "none",
             fontSize: "1.25rem",

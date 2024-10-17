@@ -1,7 +1,6 @@
 import { Radio, Table } from "@mantine/core";
 import { NavLink, useNavigate } from "react-router-dom";
-import SystemUpdateAltIcon from "@mui/icons-material/SystemUpdateAlt";
-import FaceIcon from "@mui/icons-material/Face";
+import { Download, Smiley } from "@phosphor-icons/react";
 import NavCom from "../NavCom";
 
 function Inbox() {
@@ -40,12 +39,12 @@ function Inbox() {
   const rows = elements.map((element) => (
     <Table.Tr key={element.id}>
       <Table.Td>
-        <FaceIcon /> {element.id}
+        <Smiley size={20} /> {element.id}
       </Table.Td>
       <Table.Td>{element.date}</Table.Td>
       <Table.Td>{element.description}</Table.Td>
       <Table.Td>
-        <SystemUpdateAltIcon /> {element.file}
+        <Download size={20} /> {element.file}
       </Table.Td>
       <Table.Td
         onClick={() => handleStatusClick(element.status)}

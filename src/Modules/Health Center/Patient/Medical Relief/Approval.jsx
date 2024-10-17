@@ -1,7 +1,6 @@
 import { Radio, Table } from "@mantine/core";
 import { NavLink } from "react-router-dom";
-import SystemUpdateAltIcon from "@mui/icons-material/SystemUpdateAlt";
-import FaceIcon from "@mui/icons-material/Face";
+import { Download, Smiley } from "@phosphor-icons/react";
 import Navigation from "../Navigation";
 
 function Approval() {
@@ -25,12 +24,12 @@ function Approval() {
   const rows = elements.map((element) => (
     <Table.Tr key={element.uploaded}>
       <Table.Td>
-        <FaceIcon /> {element.uploaded}
+        <Smiley size={20} /> {element.uploaded}
       </Table.Td>
       <Table.Td>{element.approval}</Table.Td>
       <Table.Td>{element.description}</Table.Td>
       <Table.Td>
-        <SystemUpdateAltIcon /> {element.file}
+        <Download size={20} /> {element.file}
       </Table.Td>
       <Table.Td>{element.status}</Table.Td>
     </Table.Tr>

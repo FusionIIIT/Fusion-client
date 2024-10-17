@@ -1,7 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { Radio, Table } from "@mantine/core";
-import FaceIcon from "@mui/icons-material/Face";
-import SystemUpdateAltIcon from "@mui/icons-material/SystemUpdateAlt";
+import { Download, Smiley } from "@phosphor-icons/react";
 import Navigation from "../Navigation";
 
 function History() {
@@ -25,13 +24,13 @@ function History() {
   const rows = elements.map((element) => (
     <Table.Tr key={element.treated}>
       <Table.Td>
-        <FaceIcon />
+        <Smiley size={20} />
         {element.treated}
       </Table.Td>
       <Table.Td>{element.date}</Table.Td>
       <Table.Td>{element.details}</Table.Td>
       <Table.Td>
-        {element.report ? <SystemUpdateAltIcon /> : <SystemUpdateAltIcon />}
+        {element.report ? <Download size={20} /> : <Download size={20} />}
       </Table.Td>
       <Table.Td>
         <NavLink

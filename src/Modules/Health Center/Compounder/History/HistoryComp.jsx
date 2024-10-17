@@ -1,7 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { Radio, Table } from "@mantine/core";
-import FaceIcon from "@mui/icons-material/Face";
-import SystemUpdateAltIcon from "@mui/icons-material/SystemUpdateAlt";
+import { Smiley, Download } from "@phosphor-icons/react";
 import NavCom from "../NavCom";
 
 function HistoryCompounder() {
@@ -25,29 +24,29 @@ function HistoryCompounder() {
   ];
 
   const rows = elements.map((element) => (
-    <Table.Tr key={element.treated}>
-      <Table.Td>
-        <FaceIcon />
+    <tr key={element.treated}>
+      <td>
+        <Smiley size={24} />
         {element.id}
-      </Table.Td>
-      <Table.Td>
-        <FaceIcon />
+      </td>
+      <td>
+        <Smiley size={24} />
         {element.treated}
-      </Table.Td>
-      <Table.Td>{element.date}</Table.Td>
-      <Table.Td>{element.details}</Table.Td>
-      <Table.Td>
-        {element.report ? <SystemUpdateAltIcon /> : <SystemUpdateAltIcon />}
-      </Table.Td>
-      <Table.Td>
+      </td>
+      <td>{element.date}</td>
+      <td>{element.details}</td>
+      <td>
+        {element.report ? <Download size={20} /> : <Download size={20} />}
+      </td>
+      <td>
         <NavLink
           to="/patient/history/view"
           style={{ textDecoration: "none", color: "#4C1D95" }}
         >
           {element.prescription}
         </NavLink>
-      </Table.Td>
-    </Table.Tr>
+      </td>
+    </tr>
   ));
 
   return (
@@ -95,21 +94,19 @@ function HistoryCompounder() {
         <br />
         <div>
           <Table withTableBorder withColumnBorders highlightOnHover>
-            <Table.Thead>
-              <Table.Tr style={{ backgroundColor: "#6D28D9", color: "white" }}>
-                <Table.Th>Patient Id</Table.Th>
-                <Table.Th>Treated By</Table.Th>
-                <Table.Th>Date</Table.Th>
-                <Table.Th>Details</Table.Th>
-                <Table.Th>Report</Table.Th>
-                <Table.Th>View Prescription</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody
-              style={{ backgroundColor: "#EDE9FE", color: "#4C1D95" }}
-            >
+            <thead>
+              <tr style={{ backgroundColor: "#6D28D9", color: "white" }}>
+                <th>Patient Id</th>
+                <th>Treated By</th>
+                <th>Date</th>
+                <th>Details</th>
+                <th>Report</th>
+                <th>View Prescription</th>
+              </tr>
+            </thead>
+            <tbody style={{ backgroundColor: "#EDE9FE", color: "#4C1D95" }}>
               {rows}
-            </Table.Tbody>
+            </tbody>
           </Table>
         </div>
       </div>

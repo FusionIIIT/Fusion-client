@@ -77,7 +77,7 @@ export default function App() {
         />
 
         <Route
-          path="/patent/announcements"
+          path="/patient/announcements"
           element={
             <Layout>
               <Announcement />
