@@ -17,6 +17,7 @@ import Studentcat from "./Studentcat.jsx";
 import Dept from "./Dept.jsx";
 import Announcement from "./Announcement.jsx";
 import MakeAnnouncement from "./MakeAnnouncement.jsx";
+import Stock from "./Stock.jsx";
 import Facilties from "./Facilities.jsx";
 
 function DepartmentTabs() {
@@ -69,9 +70,9 @@ function DepartmentTabs() {
       case `5`:
         return facultyOffset === 1 ? <Announcement /> : <Alumnicat />;
       case `6`:
-        return facultyOffset === 1 ? <Alumnicat /> : <p>Stock</p>;
+        return facultyOffset === 1 ? <Alumnicat /> : <Stock />;
       case `7`:
-        return facultyOffset === 1 ? <p>Stock</p> : <Loader />;
+        return facultyOffset === 1 ? <Stock /> : <Loader />;
       default:
         return <Loader />;
     }
