@@ -5,6 +5,7 @@ import classes from "../styles/Departmentmodule.module.css";
 import MakeAnnouncement from "./MakeAnnouncement.jsx";
 import Announcement from "./Announcement.jsx";
 import DepartmentTabs from "./DeptartmetTabs.jsx";
+import FeedbackForm from "./FeedbackForm";
 
 export default function Exp() {
   const role = useSelector((state) => state.user.role); // Get user role from Redux
@@ -25,6 +26,7 @@ export default function Exp() {
       ? [
           { title: "Make Announcement", id: "0" },
           { title: "Browse Announcements", id: "1" },
+          { title: "Provide Feedback", id: "6" },
         ]
       : []),
     { title: "CSE Department", id: "2" },
@@ -47,6 +49,9 @@ export default function Exp() {
         return <p>ME Department</p>;
       case "5":
         return <p>SM Department</p>;
+      case "6":
+        return <FeedbackForm department="CSE" />;
+
       default:
         return <Loader />;
     }
