@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PlacementScheduleCard from './PlacementScheduleCard';
-import { Container, Pagination, Grid} from '@mantine/core';
+import { Container, Pagination, Grid } from '@mantine/core';
 
 
 const placementData = [
@@ -280,16 +280,16 @@ const PlacementScheduleGrid = ({ data, itemsPerPage, cardsPerRow }) => {
         {paddedItems.map((item, index) => (
           <Grid.Col key={index} span={12 / cardsPerRow}>
             <PlacementScheduleCard
-                companyLogo={item.companyLogo}
-                companyName={item.companyName}
-                location={item.location}
-                position={item.position}
-                jobType={item.jobType}
-                postedTime={item.postedTime}
-                deadline={item.deadline}
-                description={item.description}
-                salary={item.salary}
-              />
+              companyLogo={item.companyLogo}
+              companyName={item.companyName}
+              location={item.location}
+              position={item.position}
+              jobType={item.jobType}
+              postedTime={item.postedTime}
+              deadline={item.deadline}
+              description={item.description}
+              salary={item.salary}
+            />
           </Grid.Col>
         ))}
       </Grid>

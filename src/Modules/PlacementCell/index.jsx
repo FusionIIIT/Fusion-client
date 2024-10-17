@@ -1,6 +1,7 @@
 import React from "react";
 import { Text, Tabs, Container } from "@mantine/core";
 import AddPlacementRecordForm from "./components/AddPlacementRecordForm";
+import AddPlacementEventForm from "./components/AddPlacementEventForm";
 import PlacementRecordsTable from "./components/PlacementRecordsTable";
 import { useSelector } from "react-redux";
 import PlacementCalendar from "./components/PlacementCalendar";
@@ -27,6 +28,7 @@ const tpoTabs = [
   { value: "stats", label: "Placement Stats", component: <PlacementRecordsTable /> },
   { value: "add-record", label: "Add Placement Record", component: <AddPlacementRecordForm /> },
   { value: "placement-calendar", label: "Placement Calendar", component: <PlacementCalendar /> },
+  { value: "add-event", label: "Add Placement Event", component: <AddPlacementEventForm /> },
 ];
 
 function PlacementCellPage() {
@@ -39,8 +41,8 @@ function PlacementCellPage() {
 
   return (
     <div style={{ padding: "20px" }}>
-      <Tabs defaultValue="tab1" variant="outline">
-             <Tabs.List>
+      <Tabs defaultValue="schedule" variant="outline">
+        <Tabs.List>
           {tabs.map((tab) => (
             <Tabs.Tab key={tab.value} value={tab.value}>
               {tab.label}
@@ -50,7 +52,7 @@ function PlacementCellPage() {
 
         {tabs.map((tab) => (
 
-          <Tabs.Panel key={tab.value} value={tab.value} >
+          <Tabs.Panel key={tab.value} value={tab.value}>
 
             {tab.component || <Text>No content available.</Text>}
 

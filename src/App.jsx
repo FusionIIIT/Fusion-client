@@ -10,6 +10,7 @@ import ForgotPassword from "./pages/forgotPassword";
 import AcademicPage from "./Modules/Academic/index";
 import ValidateAuth from "./helper/validateauth";
 import PlacementCellPage from "./Modules/PlacementCell";
+import JobApplicationForm from "./Modules/PlacementCell/ApplyForPlacementForm";
 
 export default function App() {
   const location = useLocation();
@@ -46,6 +47,14 @@ export default function App() {
           element={
             <Layout>
               <PlacementCellPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/placement-cell/apply"
+          element={
+            <Layout>
+              <JobApplicationForm />
             </Layout>
           }
         />

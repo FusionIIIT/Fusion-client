@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, Text, Badge, Group, Button, Image } from '@mantine/core';
 import { Clock, MapPin } from '@phosphor-icons/react';
+import { useNavigate } from 'react-router-dom';
 
 function PlacementScheduleCard({
   companyLogo,
@@ -13,6 +14,13 @@ function PlacementScheduleCard({
   description,
   salary,
 }) {
+
+  const navigate = useNavigate();
+
+  const handleApplyClick = () => {
+    navigate('/placement-cell/apply');
+  };
+
   return (
     <Card shadow="sm" padding="lg" radius="lg" withBorder style={{ maxWidth: 400, position: 'relative' }}>
       {/* Deadline on top right */}
@@ -55,7 +63,7 @@ function PlacementScheduleCard({
         <Text size="xl" weight={700} color="blue">
           {salary}
         </Text>
-        <Button variant="light" color="blue" size="xs">Apply Now</Button>
+        <Button variant="light" color="blue" size="xs" onClick={()=>{handleApplyClick()}}>Apply Now</Button>
       </Group>
     </Card>
   );
