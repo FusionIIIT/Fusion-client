@@ -1,6 +1,6 @@
 import React from "react";
 import SpecialTable from "./SpecialTable";
-import studentData from "./data";
+import studentData from "./Data/Data";
 import FacilitiesDescriptive from "./FacilitiesDescriptive";
 
 const columns = [

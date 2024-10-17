@@ -1,6 +1,6 @@
 import React from "react";
 
-const FacilitiesDescriptive = () => {
+export default function FacilitiesDescriptive() {
   return (
     <div
       style={{
@@ -19,7 +19,7 @@ const FacilitiesDescriptive = () => {
             backgroundColor: "#000",
             width: "100%",
           }}
-        ></div>
+        />
       </div>
       <div style={{ marginBottom: "20px" }}>
         <p style={{ fontSize: "14px", color: "#000" }}>Email:</p>
@@ -29,7 +29,7 @@ const FacilitiesDescriptive = () => {
             backgroundColor: "#000",
             width: "100%",
           }}
-        ></div>
+        />
       </div>
       <div>
         <p style={{ fontSize: "14px", color: "#000" }}>
@@ -41,10 +41,8 @@ const FacilitiesDescriptive = () => {
             backgroundColor: "#000",
             width: "100%",
           }}
-        ></div>
+        />
       </div>
     </div>
   );
-};
-
-export default FacilitiesDescriptive;
+}

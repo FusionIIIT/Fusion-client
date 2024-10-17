@@ -1,6 +1,6 @@
 import React from "react";
 import SpecialTable from "./SpecialTable";
-import stockdata from "./StockData";
+import stockdata from "./Data/StockData";
 
 const columns = [
   {
