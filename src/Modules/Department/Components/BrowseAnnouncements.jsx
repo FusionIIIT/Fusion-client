@@ -9,35 +9,20 @@ import {
 } from "@mantine/core";
 import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
 import { useRef, useState } from "react";
-import { useSelector } from "react-redux";
 import classes from "../styles/Departmentmodule.module.css";
-import Faculty from "./Faculty.jsx";
-import Alumnicat from "./Alumnicat.jsx";
-import Studentcat from "./Studentcat.jsx";
-import AboutUs from "./AboutUs.jsx";
-import Announcement from "./Announcement.jsx";
-import MakeAnnouncement from "./MakeAnnouncement.jsx";
-import Stock from "./Stock.jsx";
-import Facilties from "./Facilities.jsx";
+import BrowAnnoStaticDisplay from "./BrowAnnoStaticDisplay";
 
-function DepartmentTabs() {
-  const role = useSelector((state) => state.user.role); // Get user role from Redux
-  // console.log(role);
+function BrowseAnnouncements() {
   const [activeTab, setActiveTab] = useState("0");
   const tabsListRef = useRef(null);
 
   // Conditionally add 'Make Announcements' tab based on user role
   const tabItems = [
-    { title: "About Us" },
-    { title: "Facilities" },
-    { title: "Faculties" },
-    { title: "Students" },
-    ...(role === "Professor" || role === "HOD (CSE)"
-      ? [{ title: "Make Announcements" }]
-      : []), // Only for faculty
-    { title: "Announcements" },
-    { title: "Alumni" },
-    { title: "Stock" },
+    { title: "All" },
+    { title: "CSE" },
+    { title: "ECE" },
+    { title: "ME" },
+    { title: "SM" },
   ];
 
   const handleTabChange = (direction) => {
@@ -54,25 +39,17 @@ function DepartmentTabs() {
 
   // Function to render content based on active tab
   const renderTabContent = () => {
-    const facultyOffset = role === "Professor" || role === "HOD (CSE)" ? 1 : 0;
-
     switch (activeTab) {
       case "0":
-        return <AboutUs />;
+        return <BrowAnnoStaticDisplay department="All" />;
       case "1":
-        return <Facilties />;
+        return <BrowAnnoStaticDisplay department="CSE" />;
       case "2":
-        return <Faculty />;
+        return <BrowAnnoStaticDisplay department="ECE" />;
       case "3":
-        return <Studentcat />;
-      case `4`:
-        return facultyOffset === 1 ? <MakeAnnouncement /> : <Announcement />;
-      case `5`:
-        return facultyOffset === 1 ? <Announcement /> : <Alumnicat />;
-      case `6`:
-        return facultyOffset === 1 ? <Alumnicat /> : <Stock />;
-      case `7`:
-        return facultyOffset === 1 ? <Stock /> : <Loader />;
+        return <BrowAnnoStaticDisplay department="ME" />;
+      case "4":
+        return <BrowAnnoStaticDisplay department="SM" />;
       default:
         return <Loader />;
     }
@@ -88,7 +65,7 @@ function DepartmentTabs() {
           height: "auto", // Adjust height based on content
         }}
       >
-        <h1>Welcome to CSE Department</h1>
+        <h1>View Department-wise Announcemets</h1>
       </div>
 
       <Flex justify="space-between" align="center">
@@ -149,4 +126,4 @@ function DepartmentTabs() {
   );
 }
 
-export default DepartmentTabs;
+export default BrowseAnnouncements;

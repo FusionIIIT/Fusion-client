@@ -1,4 +1,3 @@
-// StudentCategory.js
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
   Accordion,
@@ -9,7 +8,7 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import SpecialTable from "./SpecialTable";
-import studentData from "./data";
+import studentData from "./Data/Data";
 
 const columns = [
   {

@@ -9,20 +9,16 @@ import {
 } from "@mantine/core";
 import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
 import { useRef, useState } from "react";
-import { useSelector } from "react-redux";
 import classes from "../styles/Departmentmodule.module.css";
 import Faculty from "./Faculty.jsx";
 import Alumnicat from "./Alumnicat.jsx";
 import Studentcat from "./Studentcat.jsx";
 import AboutUs from "./AboutUs.jsx";
 import Announcement from "./Announcement.jsx";
-import MakeAnnouncement from "./MakeAnnouncement.jsx";
+import Facilities from "./Facilities";
 import Stock from "./Stock.jsx";
-import Facilties from "./Facilities.jsx";
 
-function DepartmentTabs() {
-  const role = useSelector((state) => state.user.role); // Get user role from Redux
-  // console.log(role);
+function ECEDepartmentTabs() {
   const [activeTab, setActiveTab] = useState("0");
   const tabsListRef = useRef(null);
 
@@ -32,9 +28,6 @@ function DepartmentTabs() {
     { title: "Facilities" },
     { title: "Faculties" },
     { title: "Students" },
-    ...(role === "Professor" || role === "HOD (CSE)"
-      ? [{ title: "Make Announcements" }]
-      : []), // Only for faculty
     { title: "Announcements" },
     { title: "Alumni" },
     { title: "Stock" },
@@ -54,25 +47,21 @@ function DepartmentTabs() {
 
   // Function to render content based on active tab
   const renderTabContent = () => {
-    const facultyOffset = role === "Professor" || role === "HOD (CSE)" ? 1 : 0;
-
     switch (activeTab) {
       case "0":
-        return <AboutUs />;
+        return <AboutUs branch="ECE" />;
       case "1":
-        return <Facilties />;
+        return <Facilities />;
       case "2":
         return <Faculty />;
       case "3":
         return <Studentcat />;
-      case `4`:
-        return facultyOffset === 1 ? <MakeAnnouncement /> : <Announcement />;
-      case `5`:
-        return facultyOffset === 1 ? <Announcement /> : <Alumnicat />;
-      case `6`:
-        return facultyOffset === 1 ? <Alumnicat /> : <Stock />;
-      case `7`:
-        return facultyOffset === 1 ? <Stock /> : <Loader />;
+      case "4":
+        return <Announcement />;
+      case "5":
+        return <Alumnicat />;
+      case "6":
+        return <Stock />;
       default:
         return <Loader />;
     }
@@ -88,7 +77,7 @@ function DepartmentTabs() {
           height: "auto", // Adjust height based on content
         }}
       >
-        <h1>Welcome to CSE Department</h1>
+        <h1>Welcome to ECE Department</h1>
       </div>
 
       <Flex justify="space-between" align="center">
@@ -149,4 +138,4 @@ function DepartmentTabs() {
   );
 }
 
-export default DepartmentTabs;
+export default ECEDepartmentTabs;

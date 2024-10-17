@@ -3,8 +3,11 @@ import { Container, Grid, Loader } from "@mantine/core";
 import { useSelector } from "react-redux";
 import classes from "../styles/Departmentmodule.module.css";
 import MakeAnnouncement from "./MakeAnnouncement.jsx";
-import Announcement from "./Announcement.jsx";
-import DepartmentTabs from "./DeptartmetTabs.jsx";
+import CSEDepartmentTabs from "./CSEDeptartmetTabs.jsx";
+import BrowseAnnouncements from "./BrowseAnnouncements.jsx";
+import ECEDepartmentTabs from "./ECEDepartmentTabs.jsx";
+import MEDepartmentTabs from "./MEDepartmentTabs.jsx";
+import SMDepartmentTabs from "./SMDepartmentTabs.jsx";
 import FeedbackForm from "./FeedbackForm";
 
 export default function Exp() {
@@ -16,7 +19,7 @@ export default function Exp() {
   // Update the active tab once the role is available
   useEffect(() => {
     if (role === "student") {
-      setActiveTab("2"); // Set to "CSE Department" tab for students
+      setActiveTab("3"); // Set to "CSE Department" tab for students
     }
   }, [role]); // Dependency on role
 
@@ -26,13 +29,13 @@ export default function Exp() {
       ? [
           { title: "Make Announcement", id: "0" },
           { title: "Browse Announcements", id: "1" },
-          { title: "Provide Feedback", id: "6" },
+          { title: "Provide Feedback", id: "2" },
         ]
       : []),
-    { title: "CSE Department", id: "2" },
-    { title: "ECE Department", id: "3" },
-    { title: "ME Department", id: "4" },
-    { title: "SM Department", id: "5" },
+    { title: "CSE Department", id: "3" },
+    { title: "ECE Department", id: "4" },
+    { title: "ME Department", id: "5" },
+    { title: "SM Department", id: "6" },
   ];
 
   const renderTabContent = () => {
@@ -40,18 +43,17 @@ export default function Exp() {
       case "0":
         return <MakeAnnouncement />;
       case "1":
-        return <Announcement />;
+        return <BrowseAnnouncements />;
       case "2":
-        return <DepartmentTabs />;
-      case "3":
-        return <p>ECE Department</p>;
-      case "4":
-        return <p>ME Department</p>;
-      case "5":
-        return <p>SM Department</p>;
-      case "6":
         return <FeedbackForm department="CSE" />;
-
+      case "3":
+        return <CSEDepartmentTabs />;
+      case "4":
+        return <ECEDepartmentTabs />;
+      case "5":
+        return <MEDepartmentTabs />;
+      case "6":
+        return <SMDepartmentTabs />;
       default:
         return <Loader />;
     }
@@ -66,10 +68,15 @@ export default function Exp() {
         </Grid.Col>
 
         {/* Left Column for Tabs */}
-        <Grid.Col span={3}>
+        <Grid.Col span={2.5}>
           <div
             ref={tabsListRef}
-            style={{ display: "flex", flexDirection: "column" }}
+            style={{
+              whiteSpace: "nowrap",
+              display: "flex",
+              flexDirection: "column",
+              width: "200px", // Fixed width for left column to prevent movement
+            }}
           >
             {tabItems.map((tab, index) => (
               <button
@@ -82,7 +89,8 @@ export default function Exp() {
                   cursor: "pointer",
                   border: "1px solid #ccc",
                   borderRadius: "5px",
-                  textAlign: "left",
+                  textAlign: "center",
+                  width: "100%", // Full width to prevent content shift
                 }}
               >
                 {tab.title}
@@ -92,12 +100,14 @@ export default function Exp() {
         </Grid.Col>
 
         {/* Right Column for Content */}
-        <Grid.Col span={9}>
+        <Grid.Col span={9.5}>
           <div
             style={{
               padding: "20px",
               border: "1px solid #ccc",
+              backgroundColor: "white",
               borderRadius: "5px",
+              minHeight: "300px", // Set a consistent height for content to avoid shifting
             }}
           >
             {renderTabContent()}

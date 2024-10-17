@@ -1,4 +1,4 @@
-const data = {
+const Data = {
   Faculty: [
     {
       id: "vkjain",
@@ -133,4 +133,4 @@ const data = {
   ],
 };
 
-export default data;
+export default Data;
