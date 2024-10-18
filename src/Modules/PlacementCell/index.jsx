@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, Tabs, Container } from "@mantine/core";
-import AddPlacementRecordForm from "./components/AddPlacementRecordForm";
-import AddPlacementEventForm from "./components/AddPlacementEventForm";
+// import AddPlacementRecordForm from "./components/AddPlacementRecordForm";
+// import AddPlacementEventForm from "./components/AddPlacementEventForm";
 import PlacementRecordsTable from "./components/PlacementRecordsTable";
 import { useSelector } from "react-redux";
 import PlacementCalendar from "./components/PlacementCalendar";
@@ -26,9 +26,9 @@ const tpoTabs = [
   { value: "schedule", label: "Placement Schedule", component: <PlacementSchedule /> },
   { value: "send-notifications", label: "Send Notifications", component: <SendNotificationForm /> },
   { value: "stats", label: "Placement Stats", component: <PlacementRecordsTable /> },
-  { value: "add-record", label: "Add Placement Record", component: <AddPlacementRecordForm /> },
+  // { value: "add-record", label: "Add Placement Record", component: <AddPlacementRecordForm /> },
   { value: "placement-calendar", label: "Placement Calendar", component: <PlacementCalendar /> },
-  { value: "add-event", label: "Add Placement Event", component: <AddPlacementEventForm /> },
+  // { value: "add-event", label: "Add Placement Event", component: <AddPlacementEventForm /> },
 ];
 
 function PlacementCellPage() {
