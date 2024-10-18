@@ -4,18 +4,12 @@ import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import NoticeBoardWardenCaretaker from "./all-actors/NoticeBoardWardenCaretaker";
 import StudentInfo from "./all-actors/StudentInfo";
 
-const sections = [
-  "Notice Board",
-  "Student Info",
-  "Rooms",
-  "Reports",
-  "Guard Shift",
-];
+const sections = ["Notice Board", "Students and Rooms Info"];
 const subSections = {};
 
 const components = {
   "Notice Board": NoticeBoardWardenCaretaker,
-  "Student Info": StudentInfo,
+  "Students and Rooms Info": StudentInfo,
   // Add other components here
   // "Guest Room_Booking Status": BookingStatusComponent,
   // "Leave_Leave Form": LeaveFormComponent,

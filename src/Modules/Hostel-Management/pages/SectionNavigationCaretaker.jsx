@@ -1,28 +1,30 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Group, Text, Box, Container } from "@mantine/core";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import ManageLeaveRequest from "./caretaker/ManageLeaverequest";
-import ManageGuestRoomRequest from "./caretaker/MangeGuestRoom";
+import ManageGuestRoomRequest from "./caretaker/ManageGuestRoom";
 import NoticeBoardWardenCaretaker from "./all-actors/NoticeBoardWardenCaretaker";
+import ImposeFine from "./caretaker/ImposeFine";
+import ManageFine from "./caretaker/ManageFine";
 
 const sections = [
   "Notice Board",
   "Manage Leave Request",
-  "Impose Fine",
-  "Manage Imposed Fine",
+  "Fine",
   "Mange Guest Room Request",
-  "Mange Staff Schedule",
   "Student Allotment",
 ];
 const subSections = {
-  Leave: ["Leave Form", "Leave Status"],
+  Fine: ["Impose Fines", "Manage Imposed Fines"],
 };
 
 // Create a map of components for each section
-const sectionComponents = {
+const components = {
   "Notice Board": NoticeBoardWardenCaretaker,
   "Manage Leave Request": ManageLeaveRequest,
   "Mange Guest Room Request": ManageGuestRoomRequest,
+  "Fine_Impose Fines": ImposeFine,
+  "Fine_Manage Imposed Fines": ManageFine,
 
   // Add other components here for different sections if needed
   // 'My Fine': MyFineComponent,
@@ -30,11 +32,36 @@ const sectionComponents = {
   // etc.
 };
 
-export default function SectionNavigationCaretaker() {
+export default function SectionNavigation() {
   const [activeSection, setActiveSection] = useState("Notice Board");
+  const [activeSubSection, setActiveSubSection] = useState(null);
 
-  // Get the component for the active section
-  const ActiveComponent = sectionComponents[activeSection];
+  useEffect(() => {
+    // Auto-select the first subsection when a main section is selected
+    if (subSections[activeSection]) {
+      setActiveSubSection(subSections[activeSection][0]);
+    } else {
+      setActiveSubSection(null);
+    }
+  }, [activeSection]);
+
+  const getComponentKey = () => {
+    if (activeSubSection) {
+      return `${activeSection}_${activeSubSection}`;
+    }
+    return activeSection;
+  };
+
+  const ActiveComponent = components[getComponentKey()];
+
+  const handleSectionClick = (section) => {
+    setActiveSection(section);
+    if (subSections[section]) {
+      setActiveSubSection(subSections[section][0]);
+    } else {
+      setActiveSubSection(null);
+    }
+  };
 
   return (
     <Container size="xl" p="xs">
@@ -46,7 +73,7 @@ export default function SectionNavigationCaretaker() {
               size="sm"
               color={activeSection === section ? "#4299E1" : "#718096"}
               style={{ cursor: "pointer", whiteSpace: "nowrap" }}
-              onClick={() => setActiveSection(section)}
+              onClick={() => handleSectionClick(section)}
             >
               {section}
             </Text>
@@ -59,15 +86,15 @@ export default function SectionNavigationCaretaker() {
         ))}
         <CaretRight size={20} weight="bold" color="#718096" />
       </Group>
-
       {subSections[activeSection] && (
         <Group spacing="xs" mt="xs">
           {subSections[activeSection].map((subSection, index) => (
             <React.Fragment key={subSection}>
               <Text
                 size="sm"
-                color="#4299E1"
+                color={activeSubSection === subSection ? "#4299E1" : "#718096"}
                 style={{ cursor: "pointer", whiteSpace: "nowrap" }}
+                onClick={() => setActiveSubSection(subSection)}
               >
                 {subSection}
               </Text>
@@ -80,7 +107,6 @@ export default function SectionNavigationCaretaker() {
           ))}
         </Group>
       )}
-
       <br />
       {ActiveComponent ? (
         <Box
@@ -93,7 +119,7 @@ export default function SectionNavigationCaretaker() {
           <ActiveComponent />
         </Box>
       ) : (
-        <Text>Content for {activeSection}</Text>
+        <Text>Content for {activeSubSection || activeSection}</Text>
       )}
     </Container>
   );

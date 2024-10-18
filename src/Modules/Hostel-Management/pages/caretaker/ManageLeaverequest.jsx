@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  Box,
   Text,
   Paper,
   Group,
@@ -8,7 +7,11 @@ import {
   Button,
   Stack,
   Flex,
+  ScrollArea,
+  Badge,
+  Box,
 } from "@mantine/core";
+import { CalendarBlank } from "@phosphor-icons/react";
 
 const leaveRequests = [
   {
@@ -17,6 +20,7 @@ const leaveRequests = [
     leaveType: "Sick Leave",
     startDate: "2023-06-15",
     endDate: "2023-06-17",
+    reason: "Caught a flu, need rest for recovery.",
   },
   {
     id: "2",
@@ -24,6 +28,7 @@ const leaveRequests = [
     leaveType: "Casual Leave",
     startDate: "2023-06-18",
     endDate: "2023-06-20",
+    reason: "Family function to attend.",
   },
   {
     id: "3",
@@ -31,6 +36,7 @@ const leaveRequests = [
     leaveType: "Annual Leave",
     startDate: "2023-06-21",
     endDate: "2023-06-23",
+    reason: "Planned vacation with family.",
   },
   {
     id: "4",
@@ -38,6 +44,7 @@ const leaveRequests = [
     leaveType: "Sick Leave",
     startDate: "2023-06-24",
     endDate: "2023-06-26",
+    reason: "Recovering from a minor surgery.",
   },
 ];
 
@@ -51,97 +58,147 @@ export default function ManageLeaveRequest() {
   };
 
   return (
-    <Box
+    <Paper
+      shadow="md"
+      p="md"
+      withBorder
       sx={(theme) => ({
-        backgroundColor: theme.colors.gray[0],
-        padding: theme.spacing.md,
+        position: "fixed",
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        backgroundColor: theme.white,
+        border: `1px solid ${theme.colors.gray[3]}`,
         borderRadius: theme.radius.md,
       })}
     >
-      <Text size="xl" weight={500} mb="md">
+      <Text
+        align="left"
+        mb="xl"
+        size="24px"
+        style={{ color: "#757575", fontWeight: "bold" }}
+      >
         Manage Leave Request
       </Text>
-      <Paper p="md" radius="md">
-        <Stack spacing="md">
+
+      <ScrollArea style={{ flex: 1, height: "calc(66vh)" }}>
+        <Stack spacing="md" pb="md">
           {leaveRequests.map((request) => (
-            <Paper key={request.id} p="md" withBorder>
-              <Flex wrap="wrap" align="center" justify="space-between">
+            <Paper
+              key={request.id}
+              p="md"
+              withBorder
+              shadow="xs"
+              sx={(theme) => ({
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                backgroundColor: theme.white,
+                borderColor: theme.colors.gray[3],
+              })}
+            >
+              <Flex
+                align="stretch"
+                justify="space-between"
+                style={{ width: "100%", minHeight: "100px" }}
+              >
                 <Group
                   spacing="md"
-                  noWrap
-                  style={{
-                    minWidth: "200px",
-                    flex: "1 1 25%",
-                    marginBottom: "8px",
-                  }}
+                  style={{ flex: "0 0 auto", marginRight: "1rem" }}
                 >
-                  <Avatar color="cyan" radius="xl">
+                  <Avatar color="cyan" radius="xl" size="lg">
                     {request.name[0]}
                   </Avatar>
-                  <Text weight={500} size="sm" lineClamp={1}>
-                    {request.name}
-                  </Text>
+                  <div>
+                    <Text weight={500} size="sm" lineClamp={1}>
+                      {request.name}
+                    </Text>
+                    <Badge size="sm" variant="outline" color="blue">
+                      {request.leaveType}
+                    </Badge>
+                  </div>
                 </Group>
-                <Text
-                  color="dimmed"
-                  size="sm"
-                  style={{
-                    flex: "1 1 15%",
-                    textAlign: "center",
-                    marginBottom: "8px",
-                  }}
+
+                <Box
+                  sx={(theme) => ({
+                    flex: "1 1 auto",
+                    borderLeft: `1px solid ${theme.colors.gray[3]}`,
+                    borderRight: `1px solid ${theme.colors.gray[3]}`,
+                    padding: theme.spacing.xs,
+                    marginRight: theme.spacing.md,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                  })}
                 >
-                  {request.leaveType}
-                </Text>
+                  <Box
+                    sx={(theme) => ({
+                      padding: theme.spacing.sm,
+                      backgroundColor: theme.colors.gray[0],
+                      borderRadius: theme.radius.sm,
+                      border: `1px solid ${theme.colors.gray[2]}`,
+                    })}
+                  >
+                    <Text
+                      size="sm"
+                      style={(theme) => ({
+                        overflowWrap: "break-word",
+                        lineHeight: 1.5,
+                        fontWeight: 500,
+                        color: theme.colors.gray[7],
+                      })}
+                    >
+                      {request.reason}
+                    </Text>
+                  </Box>
+                </Box>
+
                 <Flex
                   direction="column"
-                  align="flex-start"
-                  style={{ flex: "1 1 30%", marginBottom: "8px" }}
+                  justify="space-between"
+                  style={{ flex: "0 0 auto", minWidth: "200px" }}
                 >
-                  <Group spacing="xs" noWrap>
-                    <Text size="xs" color="dimmed">
-                      From:
-                    </Text>
-                    <Text size="sm">{request.startDate}</Text>
-                  </Group>
-                  <Group spacing="xs" noWrap>
-                    <Text size="xs" color="dimmed">
-                      To:
-                    </Text>
-                    <Text size="sm">{request.endDate}</Text>
+                  <div>
+                    <Group spacing="xs" mb="xs">
+                      <CalendarBlank size={16} />
+                      <Text size="xs" color="dimmed">
+                        From:
+                      </Text>
+                      <Text size="sm">{request.startDate}</Text>
+                    </Group>
+                    <Group spacing="xs">
+                      <CalendarBlank size={16} />
+                      <Text size="xs" color="dimmed">
+                        To:
+                      </Text>
+                      <Text size="sm">{request.endDate}</Text>
+                    </Group>
+                  </div>
+                  <Group spacing="xs" mt="auto">
+                    <Button
+                      color="green"
+                      variant="outline"
+                      size="xs"
+                      onClick={() => handleAccept(request.id)}
+                    >
+                      Accept
+                    </Button>
+                    <Button
+                      color="red"
+                      variant="outline"
+                      size="xs"
+                      onClick={() => handleReject(request.id)}
+                    >
+                      Reject
+                    </Button>
                   </Group>
                 </Flex>
-                <Group
-                  spacing="xs"
-                  noWrap
-                  style={{
-                    flex: "1 1 25%",
-                    justifyContent: "flex-end",
-                    marginBottom: "8px",
-                  }}
-                >
-                  <Button
-                    color="green"
-                    variant="filled"
-                    size="xs"
-                    onClick={() => handleAccept(request.id)}
-                  >
-                    Accept
-                  </Button>
-                  <Button
-                    color="red"
-                    variant="filled"
-                    size="xs"
-                    onClick={() => handleReject(request.id)}
-                  >
-                    Reject
-                  </Button>
-                </Group>
               </Flex>
             </Paper>
           ))}
         </Stack>
-      </Paper>
-    </Box>
+      </ScrollArea>
+    </Paper>
   );
 }

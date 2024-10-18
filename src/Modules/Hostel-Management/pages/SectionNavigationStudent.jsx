@@ -4,10 +4,11 @@ import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import NoticeBoard from "./all-actors/NoticeBoard";
 import Complaints from "./students/Complaints";
 import GuestRoomBooking from "./students/GuestRoomBooking";
+import GuestRoomStatus from "./students/GuestRoomStatus";
 import LeaveForm from "./students/LeaveForm";
 import LeaveStatus from "./students/LeaveStatus";
 import Fine from "./students/Fine";
-import AllotedRooms from "./students/AllotedRooms"
+import AllotedRooms from "./students/AllotedRooms";
 
 const sections = [
   "Notice Board",
@@ -19,14 +20,15 @@ const sections = [
 ];
 
 const subSections = {
-  "Leave": ["Leave Form", "Leave Status"],
-  "Guest Room": ["Book Guest Room", "Booking Status"]
+  Leave: ["Leave Form", "Leave Status"],
+  "Guest Room": ["Book Guest Room", "Booking Status"],
 };
 
 const components = {
   "Notice Board": NoticeBoard,
-  "Complaint": Complaints,
+  Complaint: Complaints,
   "Guest Room_Book Guest Room": GuestRoomBooking,
+  "Guest Room_Booking Status": GuestRoomStatus,
   "Leave_Leave Form": LeaveForm,
   "Leave_Leave Status": LeaveStatus,
   "My Fine": Fine,
@@ -70,10 +72,7 @@ export default function SectionNavigation() {
 
   return (
     <Container size="xl" p="xs">
-      <Group
-        spacing="xs"
-        style={{ overflowX: "auto", padding: "8px 0" }}
-      >
+      <Group spacing="xs" style={{ overflowX: "auto", padding: "8px 0" }}>
         <CaretLeft size={20} weight="bold" color="#718096" />
         {sections.map((section, index) => (
           <React.Fragment key={section}>
@@ -117,7 +116,13 @@ export default function SectionNavigation() {
       )}
       <br />
       {ActiveComponent ? (
-        <Box style={{ width: "100%", height: "calc(85vh - 56px)", overflowY: "auto" }}>
+        <Box
+          style={{
+            width: "100%",
+            height: "calc(85vh - 56px)",
+            overflowY: "auto",
+          }}
+        >
           <ActiveComponent />
         </Box>
       ) : (

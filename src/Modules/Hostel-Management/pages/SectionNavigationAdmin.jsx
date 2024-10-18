@@ -15,7 +15,6 @@ const sections = [
   "Manage Warden",
   "Manage Hostel",
   "Add Hostel",
-  "View Transactions",
 ];
 const subSections = {
   Leave: ["Leave Form", "Leave Status"],
@@ -29,7 +28,7 @@ const sectionComponents = {
   "Manage Warden": AssignWarden,
   "Manage Caretakers": AssignCaretaker,
   "Add Hostel": AddHostel,
-  
+
   // Add other components here for different sections if needed
   // 'My Fine': MyFineComponent,
   // 'Leave': LeaveComponent,
@@ -44,10 +43,7 @@ export default function SectionNavigation() {
 
   return (
     <Container size="xl" p="xs">
-      <Group
-        spacing="xs"
-        style={{ overflowX: "auto", padding: "8px 0" }}
-      >
+      <Group spacing="xs" style={{ overflowX: "auto", padding: "8px 0" }}>
         <CaretLeft size={20} weight="bold" color="#718096" />
         {sections.map((section, index) => (
           <React.Fragment key={section}>
@@ -90,15 +86,20 @@ export default function SectionNavigation() {
         </Group>
       )}
 
-        <br />
-        {ActiveComponent ? (
-          <Box style={{ width: "100%", height: "calc(85vh - 56px)", overflowY: "auto" }}>
-            <ActiveComponent />
-          </Box>
-        ) : (
-          <Text>Content for {activeSection}</Text>
-        )}
-
+      <br />
+      {ActiveComponent ? (
+        <Box
+          style={{
+            width: "100%",
+            height: "calc(85vh - 56px)",
+            overflowY: "auto",
+          }}
+        >
+          <ActiveComponent />
+        </Box>
+      ) : (
+        <Text>Content for {activeSection}</Text>
+      )}
     </Container>
   );
 }
