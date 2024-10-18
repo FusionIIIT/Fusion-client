@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Table, Pagination, TextInput, Select, Card, Title, Container, Button } from "@mantine/core";
-
 import { statisticsRoute } from "../../../routes/placementCellRoutes";
-import { useNavigate } from "react-router-dom";
 import AddPlacementRecordForm from "./AddPlacementRecordForm";
+import { useSelector } from "react-redux";
+
 
 function PlacementRecordsTable() {
 
-  const navigate = useNavigate();
-
+  const role = useSelector((state) => state.user.role);
   // fetch data 
 
   const [placementStats, setPlacementStats] = useState([]);
@@ -136,7 +135,11 @@ function PlacementRecordsTable() {
         </div>
       </Card>
 
-      <Button onClick={() => setModalOpened(true)}>Add Placement Event</Button>
+
+      {role === 'placement officer' && ( // Check if the user is a placement officer
+        <Button onClick={() => setModalOpened(true)}>Add Placement Record</Button>
+      )}
+
       <AddPlacementRecordForm opened={modalOpened} onClose={() => setModalOpened(false)} />
 
     </Container>
