@@ -1,85 +1,175 @@
-import { Paper, Text, Badge, Stack, Title, ScrollArea } from '@mantine/core';
+import {
+  Paper,
+  Text,
+  Badge,
+  Stack,
+  ScrollArea,
+  Loader,
+  Container,
+} from "@mantine/core";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { getNotices } from "../../../../routes/hostelManagementRoutes";
+import { Empty } from "../../../../components/empty";
 
-// Sample data for the notice entries
-const noticeEntries = [
-  { id: 1, title: "Important announcement for all residents.Important announcement for all residents.", hall: "Global", isGlobal: true, time: "2024-10-08" },
-  { id: 2, title: "Maintenance work scheduled for Hall 4", hall: "Hall 4", isGlobal: false, time: "2024-10-08" },
-  { id: 3, title: "New study group forming in Hall 3", hall: "Hall 4", isGlobal: false, time: "2024-10-08" },
-  { id: 4, title: "Reminder: Quiet hours start at 10 PM", hall: "Global", isGlobal: true, time: "2024-10-08" },
-  { id: 5, title: "Hall 4 movie night this Friday", hall: "Hall 4", isGlobal: false, time: "2024-10-08" },
-  { id: 6, title: "Important announcement for all residents.Important announcement for all residents.", hall: "Global", isGlobal: true, time: "2024-10-08" },
-  { id: 7, title: "Maintenance work scheduled for Hall 4", hall: "Hall 4", isGlobal: false, time: "2024-10-08" },
-  { id: 8, title: "New study group forming in Hall 3", hall: "Hall 4", isGlobal: false, time: "2024-10-08" },
-  { id: 9, title: "Reminder: Quiet hours start at 10 PM", hall: "Global", isGlobal: true, time: "2024-10-08" },
-  { id: 10, title: "Hall 4 movie night this Friday", hall: "Hall 4", isGlobal: false, time: "2024-10-08" },
-];
+// Helper function to get hall name from hall number
+const getHallName = (hallNumber) => {
+  return `Hall ${hallNumber}`;
+};
+
+// Helper function to transform scope number to string
+const getScopeType = (scope) => {
+  return scope === "1" ? "global" : "hall";
+};
 
 export default function NoticeBoard() {
+  const [notices, setNotices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchNotices = async () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      setError("Authentication token not found. Please login again.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await axios.get(getNotices, {
+        headers: { Authorization: `Token ${token}` },
+      });
+
+      // Transform and sort the notices by id in descending order
+      const transformedNotices = response.data
+        .map((notice) => ({
+          ...notice,
+          hall: getHallName(notice.hall),
+          scope: getScopeType(notice.scope),
+          posted_date: new Date().toLocaleDateString(),
+        }))
+        .sort((a, b) => b.id - a.id); // Sorting by id in descending order
+
+      setNotices(transformedNotices);
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching notices:", err);
+      setError(
+        err.response?.data?.message ||
+          "Failed to fetch notices. Please try again later.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchNotices();
+  }, []);
+
   return (
     <Paper
       shadow="md"
       p="md"
       withBorder
       sx={(theme) => ({
-        position: 'fixed',
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
+        position: "fixed",
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
         backgroundColor: theme.white,
         border: `1px solid ${theme.colors.gray[3]}`,
         borderRadius: theme.radius.md,
       })}
     >
-      <Text 
-          align="left" 
-          mb="xl" 
-          size="24px" 
-          style={{ color: '#757575', fontWeight: 'bold' }}
+      <Text
+        align="left"
+        mb="xl"
+        size="24px"
+        style={{ color: "#757575", fontWeight: "bold" }}
       >
         Hostel Notice Board
       </Text>
-      <ScrollArea style={{ flex: 1, height: 'calc(66vh)'}}>
-        <Stack spacing="md" pb="md">
-          {noticeEntries.length > 0 ? (
-            noticeEntries.map((entry) => (
+
+      <ScrollArea style={{ flex: 1, height: "calc(66vh)" }}>
+        {loading ? (
+          <Container
+            py="xl"
+            style={{ display: "flex", justifyContent: "center" }}
+          >
+            <Loader size="lg" />
+          </Container>
+        ) : error ? (
+          <Text align="center" color="red" size="lg">
+            {error}
+          </Text>
+        ) : notices.length === 0 ? (
+          <Empty />
+        ) : (
+          <Stack spacing="md" pb="md">
+            {notices.map((notice) => (
               <Paper
-                key={entry.id}
+                key={notice.id}
                 p="md"
                 withBorder
                 shadow="xs"
                 sx={(theme) => ({
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  backgroundColor: entry.isGlobal ? theme.colors.yellow[0] : theme.white,
-                  borderColor: entry.isGlobal ? theme.colors.yellow[5] : theme.colors.gray[3],
+                  display: "flex",
+                  flexDirection: "column",
+                  backgroundColor:
+                    notice.scope === "global"
+                      ? theme.colors.yellow[0]
+                      : theme.white,
+                  borderColor:
+                    notice.scope === "global"
+                      ? theme.colors.yellow[5]
+                      : theme.colors.gray[3],
                 })}
               >
-                <Text size="md" weight={entry.isGlobal ? 'bold' : 'normal'}>
-                  {entry.title}
+                <Text
+                  size="lg"
+                  weight={notice.scope === "global" ? "bold" : "normal"}
+                >
+                  {notice.head_line}
                 </Text>
 
-                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
-                  <Badge 
-                    size="lg" 
-                    variant={entry.isGlobal ? 'filled' : 'outline'}
-                    color={entry.isGlobal ? 'yellow' : 'blue'}
+                <Text size="md" color="gray" mt="xs">
+                  {notice.content}
+                </Text>
+
+                <Text size="sm" color="dimmed" mt="xs">
+                  {notice.description}
+                </Text>
+
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginTop: "10px",
+                  }}
+                >
+                  <Badge
+                    size="lg"
+                    variant={notice.scope === "global" ? "filled" : "outline"}
+                    color={notice.scope === "global" ? "yellow" : "blue"}
                     style={{ flex: 1 }}
                   >
-                    {entry.hall}
+                    {notice.hall}
                   </Badge>
-                  
-                  <div style={{ flex: 7.5, textAlign: 'right', color: '#757575' }}>
-                    {entry.time}
+
+                  <div
+                    style={{ flex: 7.5, textAlign: "right", color: "#757575" }}
+                  >
+                    Posted by: {notice.posted_by}
                   </div>
                 </div>
               </Paper>
-            ))
-          ) : (
-            <Text align="center" color="dimmed" size="lg">No notices at the moment.</Text>
-          )}
-        </Stack>
+            ))}
+          </Stack>
+        )}
       </ScrollArea>
     </Paper>
   );

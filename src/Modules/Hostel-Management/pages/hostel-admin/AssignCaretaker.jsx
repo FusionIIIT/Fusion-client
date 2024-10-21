@@ -1,111 +1,184 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from "react";
+import axios from "axios";
 import {
-    Box,
-    Select,
-    Text,
-    Button,
-    Paper,
-    Group,
-    Stack
-} from '@mantine/core';
+  Box,
+  Select,
+  Text,
+  Button,
+  Paper,
+  Group,
+  Stack,
+  Notification,
+} from "@mantine/core";
+
+import { getCaretakers } from "../../../../routes/hostelManagementRoutes"; // API route for fetching halls and caretakers
+
+axios.defaults.withXSRFToken = true;
 
 export default function AssignCaretaker() {
-    const [document, setDocument] = useState(null);
-    const fileInputRef = useRef(null);
+  const [document, setDocument] = useState(null);
+  const [halls, setHalls] = useState([]);
+  const [caretakers, setCaretakers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [notification, setNotification] = useState({
+    opened: false,
+    message: "",
+    color: "",
+  });
+  const fileInputRef = useRef(null);
+  console.log(document);
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
 
-    const handleFileChange = (e) => {
-        if (e.target.files && e.target.files[0]) {
-            setDocument(e.target.files[0]);
-            console.log('File attached:', e.target.files[0].name);
-        }
-    };
+    if (!token) {
+      setNotification({
+        opened: true,
+        message: "Authentication token not found. Please login again.",
+        color: "red",
+      });
+      return;
+    }
 
-    const handleAttachClick = () => {
-        if (fileInputRef.current) {
-            fileInputRef.current.click();
-        }
-    };
+    axios
+      .get(getCaretakers, {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      })
+      .then((response) => {
+        const { hallsIDs, caretaker_usernames } = response.data;
+        setHalls(
+          hallsIDs.map((hallData) => ({
+            value: hallData.hall_id,
+            label: hallData.hall_name,
+          })),
+        );
+        setCaretakers(
+          caretaker_usernames.map((user) => ({
+            value: user.id_id,
+            label: user.id_id,
+          })),
+        );
+      })
+      .catch((error) => {
+        console.error("Error fetching data", error);
+        setNotification({
+          opened: true,
+          message: "Failed to fetch data. Please try again.",
+          color: "red",
+        });
+      });
+  }, []);
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log('Caretaker assigned with document:', document);
-    };
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setDocument(e.target.files[0]);
+    }
+  };
 
-    return (
-        <Paper
-          shadow="md"
-          p="md"
-          withBorder
-          sx={(theme) => ({
-            position: 'fixed',
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            backgroundColor: theme.white,
-            border: `1px solid ${theme.colors.gray[3]}`,
-            borderRadius: theme.radius.md,
-          })}
+  const handleAttachClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem("authToken");
+
+    if (!token) {
+      setNotification({
+        opened: true,
+        message: "Authentication token not found. Please login again.",
+        color: "red",
+      });
+      return;
+    }
+
+    setLoading(true);
+    // Handle form submission logic
+    // Add your API call logic here with the attached document and selected values
+
+    setLoading(false);
+  };
+
+  return (
+    <Paper
+      shadow="md"
+      p="md"
+      withBorder
+      sx={(theme) => ({
+        position: "fixed",
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        backgroundColor: theme.white,
+        border: `1px solid ${theme.colors.gray[3]}`,
+        borderRadius: theme.radius.md,
+      })}
+    >
+      <Stack spacing="lg">
+        <Text
+          align="left"
+          mb="xl"
+          size="24px"
+          style={{ color: "#757575", fontWeight: "bold" }}
         >
-            <Stack spacing="lg">
-                <Text 
-                    align="left" 
-                    mb="xl" 
-                    size="24px" 
-                    style={{ color: '#757575', fontWeight: 'bold' }}
-                >
-                    Assign Caretaker
-                </Text>
+          Assign Caretaker
+        </Text>
 
-                <Box>
-                    <Text component="label" size="lg" fw={500}>
-                        Hall Id:
-                    </Text>
-                    <Select
-                        placeholder="Hall1"
-                        data={['Hall1', 'Hall2', 'Hall3']}
-                        w="100%"
-                        styles={{ root: { marginTop: 5 } }}
-                    />
-                </Box>
+        <Box>
+          <Text component="label" size="lg" fw={500}>
+            Hall Id:
+          </Text>
+          <Select
+            placeholder="Select Hall"
+            data={halls}
+            w="100%"
+            styles={{ root: { marginTop: 5 } }}
+          />
+        </Box>
 
-                <Box>
-                    <Text component="label" size="lg" fw={500}>
-                        Caretaker Username:
-                    </Text>
-                    <Select
-                        placeholder="Caretaker1"
-                        data={['Caretaker1', 'Caretaker2', 'Caretaker3']}
-                        w="100%"
-                        styles={{ root: { marginTop: 5 } }}
-                    />
-                </Box>
+        <Box>
+          <Text component="label" size="lg" fw={500}>
+            Caretaker Username:
+          </Text>
+          <Select
+            placeholder="Select Caretaker"
+            data={caretakers}
+            w="100%"
+            styles={{ root: { marginTop: 5 } }}
+          />
+        </Box>
 
-                <Group spacing="xs" align="flex-start">
-                    <Text size="md" c="dimmed">
-                        Note:
-                    </Text>
-                    <Text size="md" c="dimmed">
-                        To assign a new caretaker to a hostel, you need to have a permission document attached.
-                    </Text>
-                </Group>
+        <input
+          type="file"
+          ref={fileInputRef}
+          style={{ display: "none" }}
+          onChange={handleFileChange}
+        />
 
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    style={{ display: 'none' }}
-                    onChange={handleFileChange}
-                />
+        <Group position="right" spacing="sm">
+          <Button variant="filled" onClick={handleAttachClick}>
+            Attach Document
+          </Button>
+          <Button variant="filled" onClick={handleSubmit} loading={loading}>
+            Assign
+          </Button>
+        </Group>
 
-                <Group position="right" spacing="sm">
-                    <Button variant="filled" onClick={handleAttachClick}>
-                        Attach Document
-                    </Button>
-                    <Button variant="filled" onClick={handleSubmit}>
-                        Assign
-                    </Button>
-                </Group>
-            </Stack>
-        </Paper>
-    );
+        {notification.opened && (
+          <Notification
+            title="Notification"
+            color={notification.color}
+            onClose={() => setNotification({ ...notification, opened: false })}
+            style={{ marginTop: "10px" }}
+          >
+            {notification.message}
+          </Notification>
+        )}
+      </Stack>
+    </Paper>
+  );
 }

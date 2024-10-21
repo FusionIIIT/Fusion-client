@@ -1,59 +1,51 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, Select, Grid, Text, Paper, Box } from "@mantine/core";
-
-// Define data for all hostels
-const hostelsData = {
-  "Hall 1": {
-    name: "Tagore Hostel",
-    code: "Hall 1",
-    category: "Boys",
-    capacity: "600",
-    roomType: "2 Seater",
-    batchAssigned: "2022",
-    numberOfRooms: "300",
-    caretakerName: "Arvind Kumar",
-    wardenName: "Ravi Shankar",
-  },
-  "Hall 2": {
-    name: "Nehru Hostel",
-    code: "Hall 2",
-    category: "Boys",
-    capacity: "500",
-    roomType: "3 Seater",
-    batchAssigned: "2021",
-    numberOfRooms: "200",
-    caretakerName: "Suresh Gupta",
-    wardenName: "Anil Singh",
-  },
-  "Hall 3": {
-    name: "Indira Gandhi Hostel",
-    code: "Hall 3",
-    category: "Girls",
-    capacity: "450",
-    roomType: "Single Seater",
-    batchAssigned: "2023",
-    numberOfRooms: "150",
-    caretakerName: "Shalini Mehta",
-    wardenName: "Priya Rao",
-  },
-  "Hall 4": {
-    name: "Vivekanand Hostel",
-    code: "Hall 4",
-    category: "Boys",
-    capacity: "554",
-    roomType: "3 Seater",
-    batchAssigned: "2023",
-    numberOfRooms: "221",
-    caretakerName: "Mandeep Sharma",
-    wardenName: "Rohit Khanna",
-  },
-};
+import { viewHostel } from "../../../../routes/hostelManagementRoutes"; // Import your endpoint
 
 export default function ViewHostel() {
-  const [selectedHall, setSelectedHall] = useState("Hall 1");
+  const [selectedHall, setSelectedHall] = useState("");
+  const [hostelsData, setHostelsData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchHostels = async () => {
+      try {
+        const response = await fetch(viewHostel, {
+          headers: {
+            Authorization: `Token ${localStorage.getItem("authToken")}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+
+        const data = await response.json();
+        setHostelsData(data.hostel_details);
+        if (data.hostel_details.length > 0) {
+          setSelectedHall(data.hostel_details[0].hall_id);
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching hostel data:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchHostels();
+  }, []);
 
   // Get data of the selected hall
-  const hostel = hostelsData[selectedHall];
+  const hostel = hostelsData.find((h) => h.hall_id === selectedHall);
+
+  if (loading) {
+    return (
+      <Text align="center" mt="xl">
+        Loading...
+      </Text>
+    );
+  }
 
   return (
     <Paper
@@ -67,86 +59,112 @@ export default function ViewHostel() {
         display: "flex",
         flexDirection: "column",
         backgroundColor: theme.white,
-        border: `1px solid ${theme.colors.gray[3]}`,
         borderRadius: theme.radius.md,
       })}
     >
-    <Text 
-        align="left" 
-        mb="xl" 
-        size="24px" 
-        style={{ color: '#757575', fontWeight: 'bold' }}
-    >            View Hostel
-          </Text>
+      <Text
+        align="left"
+        mb="xl"
+        size="24px"
+        style={{
+          color: "#2C3E50",
+          fontWeight: "bold",
+          fontFamily: "'Segoe UI', system-ui, sans-serif",
+        }}
+      >
+        View Hostel
+      </Text>
+
       <Card
         shadow="sm"
-        padding="sm"
+        padding="lg"
         radius="md"
         withBorder
-        style={(theme) => ({
+        style={{
           height: "100%",
           width: "100%",
           margin: "auto",
-          backgroundColor: theme.white,
-        })}
+          backgroundColor: "#FFFFFF",
+        }}
       >
-        <Box
-          style={{
-            padding: "5px",
-            borderTopLeftRadius: "6px",
-            borderTopRightRadius: "6px",
-          }}
-        >
-          {/* Optional heading space */}
-        </Box>
-
         <Select
-          data={Object.keys(hostelsData)}
+          data={hostelsData.map((hostelData) => ({
+            value: hostelData.hall_id,
+            label: hostelData.hall_name,
+          }))}
           placeholder="Select Hall"
           value={selectedHall}
           onChange={setSelectedHall}
           mb="md"
           mt="lg"
+          styles={{
+            input: {
+              fontFamily: "'Segoe UI', system-ui, sans-serif",
+              fontSize: "1rem",
+            },
+          }}
         />
 
-        {/* Display Data of Selected Hostel */}
-        <Box
-          style={{
-            height: "420px", // Set a fixed height for the scrollable area
-            overflowY: "auto", // Enable vertical scrolling when content exceeds the height
-            paddingRight: "8px", // Some padding to prevent the text from touching the scrollbar
-          }}
-        >
-          <Grid>
-            {[
-              { label: "Name:", value: hostel.name },
-              { label: "Code:", value: hostel.code },
-              { label: "Category:", value: hostel.category },
-              { label: "Capacity:", value: hostel.capacity },
-              { label: "Room Type:", value: hostel.roomType },
-              { label: "Batch Assigned:", value: hostel.batchAssigned },
-              { label: "Number Of Rooms:", value: hostel.numberOfRooms },
-              { label: "Caretaker Name:", value: hostel.caretakerName },
-              { label: "Warden Name:", value: hostel.wardenName },
-            ].map((item, index) => (
-              <Grid.Col span={12} key={index}>
-                <Grid
-                  style={{
-                    backgroundColor: index % 2 === 0 ? "#e3f2fd" : "white",
-                    padding: "8px 16px",
-                  }}
-                >
-                  <Grid.Col span={6}>
-                    <Text weight={500}>{item.label}</Text>
-                  </Grid.Col>
-                  <Grid.Col span={6}>
-                    <Text align="right">{item.value}</Text>
-                  </Grid.Col>
-                </Grid>
-              </Grid.Col>
-            ))}
-          </Grid>
-        </Box>
+        {hostel && (
+          <Box
+            style={{
+              height: "420px",
+              overflowY: "auto",
+              paddingRight: "12px",
+            }}
+          >
+            <Grid>
+              {[
+                { label: "Name:", value: hostel.hall_name },
+                { label: "Code:", value: hostel.hall_id },
+                {
+                  label: "Maximum Accommodation:",
+                  value: hostel.max_accomodation,
+                },
+                { label: "Current Students:", value: hostel.number_students },
+                {
+                  label: "Batch Assigned:",
+                  value: hostel.assigned_batch || "Not Assigned",
+                },
+                { label: "Caretaker Name:", value: hostel.assigned_caretaker },
+                { label: "Warden Name:", value: hostel.assigned_warden },
+              ].map((item, index) => (
+                <Grid.Col span={12} key={index}>
+                  <Grid
+                    style={{
+                      backgroundColor: index % 2 === 0 ? "#F8FAFC" : "#FFFFFF",
+                      padding: "12px 20px",
+                      borderRadius: "4px",
+                    }}
+                  >
+                    <Grid.Col span={6}>
+                      <Text
+                        weight={500}
+                        style={{
+                          fontFamily: "'Segoe UI', system-ui, sans-serif",
+                          color: "#334155",
+                        }}
+                      >
+                        {item.label}
+                      </Text>
+                    </Grid.Col>
+                    <Grid.Col span={6}>
+                      <Text
+                        align="right"
+                        style={{
+                          fontFamily: "'Segoe UI', system-ui, sans-serif",
+                          color: "#475569",
+                        }}
+                      >
+                        {item.value}
+                      </Text>
+                    </Grid.Col>
+                  </Grid>
+                </Grid.Col>
+              ))}
+            </Grid>
+          </Box>
+        )}
       </Card>
     </Paper>
   );

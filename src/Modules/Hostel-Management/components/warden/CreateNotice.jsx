@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types"; // Add this import for prop validation
 import {
   TextInput,
   Textarea,
@@ -9,21 +10,40 @@ import {
   Paper,
   Notification,
   Select,
-} from '@mantine/core';
+} from "@mantine/core";
+import axios from "axios";
+import { createNotice } from "../../../../routes/hostelManagementRoutes";
 
-const CreateNotice = ({ onSubmit, existingAnnouncement }) => {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [date, setDate] = useState('');
-  const [scope, setScope] = useState('');
+axios.defaults.withXSRFToken = true;
+
+function CreateNotice({ existingAnnouncement }) {
+  const [hall, setHall] = useState("1");
+  const [headline, setHeadline] = useState("");
+  const [content, setContent] = useState("");
+  const [description, setDescription] = useState("");
+  const [scope, setScope] = useState("");
   const [loading, setLoading] = useState(false);
-  const [notification, setNotification] = useState({ opened: false, message: '', color: '' });
+  const [notification, setNotification] = useState({
+    opened: false,
+    message: "",
+    color: "",
+  });
+
+  const resetForm = () => {
+    // Move resetForm above its first usage
+    setHall("1");
+    setHeadline("");
+    setContent("");
+    setDescription("");
+    setScope("");
+  };
 
   useEffect(() => {
     if (existingAnnouncement) {
-      setTitle(existingAnnouncement.title);
+      setHall(existingAnnouncement.hall);
+      setHeadline(existingAnnouncement.headline);
+      setContent(existingAnnouncement.content);
       setDescription(existingAnnouncement.description);
-      setDate(existingAnnouncement.date);
       setScope(existingAnnouncement.scope);
     } else {
       resetForm();
@@ -32,24 +52,54 @@ const CreateNotice = ({ onSubmit, existingAnnouncement }) => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    const token = localStorage.getItem("authToken");
+
+    if (!token) {
+      setNotification({
+        opened: true,
+        message: "Authentication token not found. Please login again.",
+        color: "red",
+      });
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
-      const announcement = { title, description, date, scope };
-      await onSubmit(announcement);
-      setNotification({ opened: true, message: 'Announcement submitted successfully!', color: 'green' });
-      resetForm();
+      const announcement = { hall, headline, content, description, scope };
+      const response = await axios.post(createNotice, announcement, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
+        },
+      });
+
+      if (response.status === 201) {
+        setNotification({
+          opened: true,
+          message: "Announcement submitted successfully!",
+          color: "green",
+        });
+        resetForm();
+        window.location.reload();
+      } else {
+        setNotification({
+          opened: true,
+          message: "Submission failed. Please try again.",
+          color: "red",
+        });
+      }
     } catch (error) {
-      setNotification({ opened: true, message: 'Submission failed. Please try again.', color: 'red' });
+      setNotification({
+        opened: true,
+        message:
+          error.response?.data?.message ||
+          "Submission failed. Please try again.",
+        color: "red",
+      });
     } finally {
       setLoading(false);
     }
-  };
-
-  const resetForm = () => {
-    setTitle('');
-    setDescription('');
-    setDate('');
-    setScope('');
   };
 
   return (
@@ -58,61 +108,76 @@ const CreateNotice = ({ onSubmit, existingAnnouncement }) => {
       p="md"
       withBorder
       sx={(theme) => ({
-        position: 'fixed',
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
+        position: "fixed",
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
         backgroundColor: theme.white,
         border: `1px solid ${theme.colors.gray[3]}`,
         borderRadius: theme.radius.md,
       })}
     >
       <Stack spacing="lg">
-        <Text 
-          align="left" 
-          mb="xl" 
-          size="24px" 
-          style={{ color: '#757575', fontWeight: 'bold' }}
+        <Text
+          align="left"
+          mb="xl"
+          size="24px"
+          style={{ color: "#757575", fontWeight: "bold" }}
         >
-          {existingAnnouncement ? 'Edit Announcement' : 'Create Announcement'}
+          {existingAnnouncement ? "Edit Announcement" : "Create Announcement"}
         </Text>
 
         <form onSubmit={handleSubmit}>
           <Stack spacing="md">
             <TextInput
-              label={<Text component="label" size="lg" fw={500}>Title:</Text>}
-              value={title}
-              onChange={(e) => setTitle(e.currentTarget.value)}
+              label={
+                <Text component="label" size="lg" fw={500}>
+                  Headline:
+                </Text>
+              }
+              value={headline}
+              onChange={(e) => setHeadline(e.currentTarget.value)}
               required
               styles={{ root: { marginTop: 5 } }}
             />
 
             <Textarea
-              label={<Text component="label" size="lg" fw={500}>Description:</Text>}
+              label={
+                <Text component="label" size="lg" fw={500}>
+                  Content:
+                </Text>
+              }
+              value={content}
+              onChange={(e) => setContent(e.currentTarget.value)}
+              required
+              styles={{ root: { marginTop: 5 } }}
+            />
+
+            <Textarea
+              label={
+                <Text component="label" size="lg" fw={500}>
+                  Description:
+                </Text>
+              }
               value={description}
               onChange={(e) => setDescription(e.currentTarget.value)}
               required
               styles={{ root: { marginTop: 5 } }}
             />
 
-            <TextInput
-              label={<Text component="label" size="lg" fw={500}>Date:</Text>}
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.currentTarget.value)}
-              required
-              styles={{ root: { marginTop: 5 } }}
-            />
-
             <Select
-              label={<Text component="label" size="lg" fw={500}>Announcement Scope:</Text>}
+              label={
+                <Text component="label" size="lg" fw={500}>
+                  Announcement Scope:
+                </Text>
+              }
               placeholder="Select scope"
               value={scope}
               onChange={setScope}
               data={[
-                { value: 'global', label: 'Global' },
-                { value: 'local', label: 'Local' },
+                { value: "global", label: "Global" },
+                { value: "local", label: "Local" },
               ]}
               required
               styles={{ root: { marginTop: 5 } }}
@@ -123,7 +188,7 @@ const CreateNotice = ({ onSubmit, existingAnnouncement }) => {
                 Clear
               </Button>
               <Button type="submit" variant="filled" loading={loading}>
-                {existingAnnouncement ? 'Update' : 'Submit'}
+                {existingAnnouncement ? "Update" : "Submit"}
               </Button>
             </Group>
           </Stack>
@@ -134,7 +199,7 @@ const CreateNotice = ({ onSubmit, existingAnnouncement }) => {
             title="Notification"
             color={notification.color}
             onClose={() => setNotification({ ...notification, opened: false })}
-            style={{ marginTop: '10px' }}
+            style={{ marginTop: "10px" }}
           >
             {notification.message}
           </Notification>
@@ -142,6 +207,16 @@ const CreateNotice = ({ onSubmit, existingAnnouncement }) => {
       </Stack>
     </Paper>
   );
+}
+
+CreateNotice.propTypes = {
+  existingAnnouncement: PropTypes.shape({
+    hall: PropTypes.string,
+    headline: PropTypes.string,
+    content: PropTypes.string,
+    description: PropTypes.string,
+    scope: PropTypes.string,
+  }), // Define prop types for existingAnnouncement
 };
 
 export default CreateNotice;
