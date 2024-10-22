@@ -40,7 +40,7 @@ function NavCom() {
             <Divider orientation="vertical" />
 
             <NavLink
-              to="/feedback"
+              to="/compounder/managestock"
               style={({ isActive }) => ({
                 textDecoration: "none",
                 fontSize: "1.25rem",

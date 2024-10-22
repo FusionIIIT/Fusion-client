@@ -21,6 +21,7 @@ import HistoryCompounder from "./Modules/Health Center/Compounder/History/Histor
 import UpdatePatient from "./Modules/Health Center/Compounder/History/UpdatePatient";
 import Inbox from "./Modules/Health Center/Compounder/Medical Relief/Inbox";
 import Application from "./Modules/Health Center/Compounder/Medical Relief/Application";
+import ManageStock from "./Modules/Health Center/Compounder/Stocks/ManageStocksNav";
 
 export default function App() {
   const location = useLocation();
@@ -73,6 +74,14 @@ export default function App() {
           element={
             <Layout>
               <Record />
+            </Layout>
+          }
+        />
+        <Route
+          path="/compounder/managestock"
+          element={
+            <Layout>
+              <ManageStock />
             </Layout>
           }
         />
