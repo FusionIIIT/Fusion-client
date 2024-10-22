@@ -1,20 +1,26 @@
-import { Button, Container, Flex, Loader, Tabs, Text } from "@mantine/core";
-import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
+import {
+  Button,
+  Container,
+  Flex,
+  Grid,
+  Loader,
+  Tabs,
+  Text,
+} from "@mantine/core";
+import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import { useRef, useState } from "react";
 import classes from "../styles/messModule.module.css";
 
-import UpdateBill from "./UpdateBills.jsx";
-import BillBase from "./BillBaseAndExcelUpload.jsx";
-import ViewStudentBill from "./ViewStudentBill.jsx";
+import ViewRegistrations from "./ViewRegistration.jsx";
+import ManageMess from "./addorrem.jsx";
 
 function MessActivities() {
   const [activeTab, setActiveTab] = useState("0");
   const tabsListRef = useRef(null);
 
   const tabItems = [
-    { title: "Bill base and Excel upload" },
-    { title: "Update Bill" },
-    { title: "View Bill" },
+    { title: "View Registrations" },
+    { title: "Add or Remove from mess" },
   ];
 
   const handleTabChange = (direction) => {
@@ -33,11 +39,9 @@ function MessActivities() {
   const renderTabContent = () => {
     switch (activeTab) {
       case "0":
-        return <BillBase />;
+        return <ViewRegistrations />;
       case "1":
-        return <UpdateBill />;
-      case "2":
-        return <ViewStudentBill />;
+        return <ManageMess />;
       default:
         return <Loader />;
     }
@@ -47,16 +51,15 @@ function MessActivities() {
     <>
       {/* Tab navigation */}
       <Flex justify="center" align="center" mt="5">
-        {" "}
         <Flex justify="space-between" align="center" gap="1rem" mt="1.5rem">
           <Button
             onClick={() => handleTabChange("prev")}
             variant="default"
             p={0}
-            bd={0}
-            bg="transparent"
+            style={{ border: "none" }}
+            disabled={activeTab === "0"} // Disable button if on the first tab
           >
-            <CaretCircleLeft
+            <CaretLeft
               className={classes.fusionCaretCircleIcon}
               weight="light"
             />
@@ -88,10 +91,10 @@ function MessActivities() {
             onClick={() => handleTabChange("next")}
             variant="default"
             p={0}
-            bd={0}
-            bg="transparent"
+            style={{ border: "none" }}
+            disabled={activeTab === `${tabItems.length - 1}`} // Disable button if on the last tab
           >
-            <CaretCircleRight
+            <CaretRight
               className={classes.fusionCaretCircleIcon}
               weight="light"
             />
@@ -100,9 +103,11 @@ function MessActivities() {
       </Flex>
 
       {/* Main content */}
-      <Container fluid style={{ maxWidth: "600px", margin: "0 auto" }}>
-        {renderTabContent()}
-      </Container>
+      <Grid>
+        <Container fluid style={{ maxWidth: "600px", margin: "0 auto" }}>
+          {renderTabContent()}
+        </Container>
+      </Grid>
     </>
   );
 }
