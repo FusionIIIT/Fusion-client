@@ -1,8 +1,14 @@
 import React, { useState } from "react";
-import { Table, Container, Paper, Title, Button, Group } from "@mantine/core";
-import * as PhosphorIcons from "@phosphor-icons/react";
+import {
+  Table,
+  Container,
+  Paper,
+  Title,
+  Button,
+  Flex,
+  Divider,
+} from "@mantine/core";
 
-// Full Mess1 menu
 const mess1Rows = [
   {
     day: "Monday",
@@ -26,7 +32,7 @@ const mess1Rows = [
     day: "Thursday",
     breakfast: "Aloo Paratha, Curd, Pickle, Sprouts.",
     lunch: "Mix Veg, Rice, Chapati, Yellow Dal, Papad, Curd.",
-    dinner: "Kadhi Pakoda, Plain Rice, Chapati, Boondi Raita, Gulab Jamun.",
+    dinner: "Kadhi Pakoda, Plain Rice, Chapati, Boondi Raita.",
   },
   {
     day: "Friday",
@@ -48,7 +54,6 @@ const mess1Rows = [
   },
 ];
 
-// Placeholder for Mess2, add your own items here
 const mess2Rows = [
   {
     day: "Monday",
@@ -62,91 +67,125 @@ const mess2Rows = [
     lunch: "Rajma, Plain Rice, Roti, Papad, Aloo Methi, Curd.",
     dinner: "Paneer Butter Masala, Jeera Rice, Chapati, Gulab Jamun.",
   },
-  // Add more days for Mess2 in a similar format
+  {
+    day: "Wednesday",
+    breakfast: "Poha, Jalebi, Sev, Sprouts.",
+    lunch: "Aloo Gobi, Chapati, Plain Rice, Yellow Dal, Curd.",
+    dinner: "Veg Kofta, Jeera Rice, Roti, Dal Tadka, Custard.",
+  },
+  {
+    day: "Thursday",
+    breakfast: "Idli, Coconut Chutney, Sambhar, Sprouts.",
+    lunch: "Mix Veg, Roti, Plain Rice, Chana Dal, Curd.",
+    dinner: "Kadhi Pakoda, Plain Rice, Roti, Boondi Raita, Rasgulla.",
+  },
+  {
+    day: "Friday",
+    breakfast: "Paratha, Pickle, Curd, Sprouts.",
+    lunch: "Chole, Roti, Plain Rice, Rajma, Curd.",
+    dinner: "Paneer Tikka, Jeera Rice, Chapati, Dal Makhani, Kheer.",
+  },
+  {
+    day: "Saturday",
+    breakfast: "Pav Bhaji, Sprouts.",
+    lunch: "Aloo Matar, Chapati, Plain Rice, Dal Tadka, Curd.",
+    dinner: "Kofta Curry, Plain Rice, Chapati, Masoor Dal, Gulab Jamun.",
+  },
+  {
+    day: "Sunday",
+    breakfast: "Chole Bhature, Pickle, Sprouts.",
+    lunch: "Aloo Capsicum, Roti, Plain Rice, Moong Dal, Curd.",
+    dinner: "Paneer Butter Masala, Jeera Rice, Chapati, Ice Cream.",
+  },
 ];
+
+// Table headers for Mess menu
+const tableHeaders = ["Day", "Breakfast", "Lunch", "Dinner"];
 
 // Main component
 function ViewMenu() {
-  const [currentMess, setCurrentMess] = useState("mess1"); // State to toggle between Mess1 and Mess2
+  const [currentMess, setCurrentMess] = useState("mess1");
+  const rows = currentMess === "mess1" ? mess1Rows : mess2Rows;
 
-  const rows = currentMess === "mess1" ? mess1Rows : mess2Rows; // Toggle data based on currentMess state
+  const renderHeader = (titles) => {
+    return titles.map((title, index) => (
+      <Table.Th key={index}>
+        <Flex align="center" justify="center" h="100%">
+          {title}
+        </Flex>
+      </Table.Th>
+    ));
+  };
 
-  // Render rows dynamically
+  // Function to render table rows
   const renderRows = () =>
     rows.map((item, index) => (
-      <tr key={index} style={{ height: "50px" }}>
-        <td style={{ textAlign: "center", padding: "12px" }}>{item.day}</td>
-        <td style={{ textAlign: "center", padding: "12px" }}>
+      <Table.Tr key={index} h={60}>
+        <Table.Td align="center" p={12}>
+          {item.day}
+        </Table.Td>
+        <Table.Td align="center" p={12}>
           {item.breakfast}
-        </td>
-        <td style={{ textAlign: "center", padding: "12px" }}>{item.lunch}</td>
-        <td style={{ textAlign: "center", padding: "12px" }}>{item.dinner}</td>
-      </tr>
+        </Table.Td>
+        <Table.Td align="center" p={12}>
+          {item.lunch}
+        </Table.Td>
+        <Table.Td align="center" p={12}>
+          {item.dinner}
+        </Table.Td>
+      </Table.Tr>
     ));
 
   return (
-    <Container size="lg" mt={30}>
-      <Paper shadow="md" radius="md" p="lg" withBorder>
-        <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
-          Mess Menu
+    <Container
+      size="lg"
+      mt={30}
+      miw="70rem"
+      style={{
+        maxWidth: "950px",
+        width: "950px",
+        marginTop: "25px",
+      }}
+    >
+      <Paper shadow="lg" radius="lg" p="xl" withBorder>
+        <Title order={2} align="center" mb="lg" c="#1c7ed6">
+          Weekly Mess Menu
         </Title>
+        <Divider my="lg" />
+        <Flex justify="center" mb="lg" gap="md">
+          <Button
+            variant={currentMess === "mess1" ? "filled" : "outline"}
+            size="md"
+            radius="md"
+            onClick={() => setCurrentMess("mess1")}
+            color={currentMess === "mess1" ? "blue" : "gray"}
+            fullWidth
+          >
+            Mess 1
+          </Button>
+          <Button
+            variant={currentMess === "mess2" ? "filled" : "outline"}
+            size="md"
+            radius="md"
+            onClick={() => setCurrentMess("mess2")}
+            color={currentMess === "mess2" ? "blue" : "gray"}
+            fullWidth
+          >
+            Mess 2
+          </Button>
+        </Flex>
 
-        {/* Buttons to switch between Mess1 and Mess2 */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginBottom: "30px",
-          }}
+        {/* Table */}
+        <Table
+          striped
+          highlightOnHover
+          withColumnBorders
+          horizontalSpacing="xl"
         >
-          <Group>
-            <Button
-              leftIcon={<PhosphorIcons.ForkKnife size={20} />}
-              variant={currentMess === "mess1" ? "filled" : "outline"}
-              size="xs"
-              onClick={() => setCurrentMess("mess1")}
-            >
-              Mess 1
-            </Button>
-            <Button
-              leftIcon={<PhosphorIcons.ForkKnife size={20} />}
-              variant={currentMess === "mess2" ? "filled" : "outline"}
-              size="xs"
-              onClick={() => setCurrentMess("mess2")}
-            >
-              Mess 2
-            </Button>
-          </Group>
-        </div>
-
-        {/* Table for displaying the menu */}
-        <Table striped highlightOnHover withBorder withColumnBorders>
-          <thead>
-            <tr>
-              <th
-                style={{ textAlign: "center", padding: "12px", width: "150px" }}
-              >
-                Day
-              </th>
-              <th
-                style={{ textAlign: "center", padding: "12px", width: "250px" }}
-              >
-                Breakfast
-              </th>
-              <th
-                style={{ textAlign: "center", padding: "12px", width: "250px" }}
-              >
-                Lunch
-              </th>
-              <th
-                style={{ textAlign: "center", padding: "12px", width: "250px" }}
-              >
-                Dinner
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>{renderRows()}</tbody>
+          <Table.Thead>
+            <Table.Tr>{renderHeader(tableHeaders)}</Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>{renderRows()}</Table.Tbody>
         </Table>
       </Paper>
     </Container>

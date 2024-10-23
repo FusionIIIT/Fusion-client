@@ -15,7 +15,7 @@ import {
   MagnifyingGlass,
   PlusCircle,
   TrashSimple,
-} from "phosphor-react"; // Latest Phosphor icons
+} from "@phosphor-icons/react";
 
 function ManageMess() {
   const [mess, setMess] = useState("");

@@ -4,6 +4,10 @@ import { useRef, useState } from "react";
 import CustomBreadcrumbs from "../../../components/Breadcrumbs.jsx";
 import classes from "../styles/messModule.module.css";
 import UpdatePayments from "./UpdatePayments.jsx";
+import Registration from "./registration.jsx";
+import Deregistration from "./deregistration.jsx";
+import ViewMenu from "./ViewMenu.jsx";
+import StudentFeedback from "./StudentFeedback.jsx";
 
 //   import ComplaintForm from "./components/ComplaintForm.jsx";
 
@@ -37,19 +41,19 @@ function Student() {
   const renderTabContent = () => {
     switch (activeTab) {
       case "0":
-        return <p>View Menu</p>;
+        return <ViewMenu />;
       case "1":
         return <p>View Bill and Payments</p>;
       case "2":
-        return <p>Registration</p>;
+        return <Registration />;
       case "3":
-        return <p>Feedback</p>;
+        return <StudentFeedback />;
       case "4":
         return <p>Applications</p>;
       case "5":
         return <UpdatePayments />;
       case "6":
-        return <p>Deregistration</p>;
+        return <Deregistration />;
       default:
         return <Loader />;
     }

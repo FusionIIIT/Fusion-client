@@ -1,74 +1,151 @@
-import React from "react";
+import React, { useState } from "react";
 import {
-  Box,
   TextInput,
-  FileInput,
+  NumberInput,
   Button,
+  Container,
   Title,
-  Stack,
-  Text,
-} from "@mantine/core";
-import { DatePickerInput } from "@mantine/dates";
+  Paper,
+  Space,
+  FileInput,
+} from "@mantine/core"; // Import Mantine components
+import { DateInput } from "@mantine/dates";
+import { User } from "@phosphor-icons/react"; // Import Phosphor Icons
+import "@mantine/dates/styles.css"; // Import Mantine DateInput styles
+import "dayjs/locale/en"; // Day.js for locale support
 
-export default function Registration() {
+function Registration() {
+  const [file, setFile] = useState(null); // State for image upload
+  const [paymentDate, setPaymentDate] = useState(null); // State for payment date
+
   return (
-    <Box bg="gray.1" p="xl" maw={600} mx="auto">
-      <Title order={2} mb="lg">
-        Registration Form
-      </Title>
-      <Stack spacing="md">
-        <Text component="label" htmlFor="transactionId" weight={500}>
-          Transaction Id
-        </Text>
-        <TextInput
-          id="transactionId"
-          placeholder="Enter transaction id"
-          aria-labelledby="transactionId"
-        />
+    <Container
+      size="lg"
+      style={{
+        maxWidth: "800px",
+        width: "570px",
+        marginTop: "25px",
+      }}
+    >
+      <Paper
+        shadow="md"
+        radius="md"
+        p="xl"
+        withBorder
+        style={{ width: "100%", padding: "30px" }}
+      >
+        <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
+          Registration Form
+        </Title>
 
-        <Text component="label" htmlFor="amount" weight={500}>
-          Amount
-        </Text>
-        <TextInput
-          id="amount"
-          placeholder="Enter amount"
-          type="number"
-          aria-labelledby="amount"
-        />
+        <form method="post" action="/path/to/your/registration/endpoint">
+          {/* Transaction Number input */}
+          <TextInput
+            label="Transaction No."
+            placeholder="Transaction No."
+            id="TxnNo"
+            required
+            radius="md"
+            size="md"
+            icon={<User size={20} />}
+            labelProps={{ style: { marginBottom: "10px" } }}
+            mt="xl"
+            mb="md"
+          />
 
-        <Text component="label" htmlFor="paymentFile" weight={500}>
-          Payment
-        </Text>
-        <FileInput
-          id="paymentFile"
-          placeholder="Choose file"
-          aria-labelledby="paymentFile"
-        />
+          {/* Amount input */}
+          <NumberInput
+            label="Amount"
+            placeholder="Balance Amount"
+            id="amount"
+            required
+            radius="md"
+            size="md"
+            labelProps={{ style: { marginBottom: "10px" } }}
+            min={0}
+            step={100}
+            mb="lg"
+          />
 
-        <Text component="label" htmlFor="startDate" weight={500}>
-          Start Date
-        </Text>
-        <DatePickerInput
-          id="startDate"
-          placeholder="Pick start date"
-          valueFormat="DD-MM-YYYY"
-          aria-labelledby="startDate"
-        />
+          {/* Image input */}
+          <FileInput
+            label="Image"
+            placeholder="Choose file"
+            value={file}
+            onChange={setFile}
+            accept="image/*"
+            required
+            size="md"
+            labelProps={{ style: { marginBottom: "10px" } }}
+            mb="lg"
+          />
 
-        <Text component="label" htmlFor="paymentDate" weight={500}>
-          Payment Date
-        </Text>
-        <DatePickerInput
-          id="paymentDate"
-          placeholder="Pick payment date"
-          valueFormat="DD-MM-YYYY"
-          aria-labelledby="paymentDate"
-        />
+          {/* Payment Date select */}
+          <DateInput
+            label="Payment Date"
+            placeholder="MM/DD/YYYY"
+            value={paymentDate}
+            onChange={setPaymentDate}
+            required
+            radius="md"
+            size="md"
+            mb="lg"
+            labelProps={{ style: { marginBottom: "10px" } }}
+            styles={(theme) => ({
+              dropdown: {
+                backgroundColor: theme.colors.gray[0],
+                boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
+              },
+              day: {
+                "&[data-selected]": {
+                  backgroundColor: theme.colors.blue[6],
+                },
+                "&[data-today]": {
+                  backgroundColor: theme.colors.gray[2],
+                  fontWeight: "bold",
+                },
+              },
+            })}
+          />
 
-        <Button color="blue" fullWidth>
-          Submit
-        </Button>
-      </Stack>
-    </Box>
+          <DateInput
+            label="Start Date"
+            placeholder="MM/DD/YYYY"
+            value={paymentDate}
+            onChange={setPaymentDate}
+            required
+            radius="md"
+            size="md"
+            mb="lg"
+            labelProps={{ style: { marginBottom: "10px" } }}
+            styles={(theme) => ({
+              dropdown: {
+                backgroundColor: theme.colors.gray[0],
+                boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
+              },
+              day: {
+                "&[data-selected]": {
+                  backgroundColor: theme.colors.blue[6],
+                },
+                "&[data-today]": {
+                  backgroundColor: theme.colors.gray[2],
+                  fontWeight: "bold",
+                },
+              },
+            })}
+          />
+
+          <Space h="xl" />
+
+          {/* Submit button */}
+          <Button fullWidth size="md" radius="md" color="blue">
+            Submit
+          </Button>
+        </form>
+      </Paper>
+      <Space h="xl" />
+    </Container>
   );
 }
+
+export default Registration;

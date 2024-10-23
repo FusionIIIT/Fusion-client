@@ -92,9 +92,9 @@ function ViewRegistrations() {
     <Container
       size="lg"
       style={{
-        maxWidth: "800px", // Limit maximum width
-        width: "650px", // Set fixed width
-        marginTop: "25px", // Top margin
+        maxWidth: "800px",
+        width: "800px",
+        marginTop: "25px",
       }}
     >
       <Paper

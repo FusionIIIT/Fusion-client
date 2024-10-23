@@ -1,105 +1,124 @@
-import React from "react";
+import React, { useState } from "react";
 import {
-  Box,
   TextInput,
-  Select,
-  Textarea,
+  NumberInput,
   Button,
+  Container,
   Title,
-  Stack,
-  Group,
-  Text,
-} from "@mantine/core";
+  Paper,
+  Space,
+  Textarea,
+} from "@mantine/core"; // Import Mantine components
+import { User } from "@phosphor-icons/react"; // Import Phosphor Icons
 
-export default function Deregistration() {
+function Deregistration() {
+  const [name, setName] = useState(""); // State for name
+  const [rollNo, setRollNo] = useState(""); // State for roll number
+  const [batch, setBatch] = useState(""); // State for batch
+  const [semester, setSemester] = useState(null); // State for semester
+  const [reason, setReason] = useState(""); // State for reason
+
   return (
-    <Box maw={600} mx="auto" p="md" bg="gray.0">
-      <Title order={2} mb="md">
-        Deregistration Form
-      </Title>
-      <form>
-        <Stack spacing="md">
-          <Group align="flex-start">
-            <Box w={100}>
-              <Text component="label" htmlFor="name" weight={500}>
-                Name
-              </Text>
-            </Box>
-            <TextInput
-              id="name"
-              placeholder="Enter your name"
-              w="100%"
-              aria-labelledby="name"
-            />
-          </Group>
+    <Container
+      size="lg"
+      style={{
+        maxWidth: "800px",
+        width: "570px",
+        marginTop: "25px",
+      }}
+    >
+      <Paper
+        shadow="md"
+        radius="md"
+        p="xl"
+        withBorder
+        style={{ width: "100%", padding: "30px" }}
+      >
+        <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
+          Deregistration Form
+        </Title>
 
-          <Group align="flex-start">
-            <Box w={100}>
-              <Text component="label" htmlFor="rollNo" weight={500}>
-                Roll No
-              </Text>
-            </Box>
-            <TextInput
-              id="rollNo"
-              placeholder="Enter your roll number"
-              w="100%"
-              aria-labelledby="rollNo"
-            />
-          </Group>
+        <form method="post" action="/path/to/your/deregistration/endpoint">
+          {/* Name input */}
+          <TextInput
+            label="Name"
+            placeholder="Enter your name"
+            value={name}
+            onChange={(event) => setName(event.currentTarget.value)}
+            required
+            radius="md"
+            size="md"
+            icon={<User size={20} />}
+            labelProps={{ style: { marginBottom: "10px" } }}
+            mt="xl"
+            mb="md"
+          />
 
-          <Group align="flex-start">
-            <Box w={100}>
-              <Text component="label" htmlFor="batch" weight={500}>
-                Batch
-              </Text>
-            </Box>
-            <Select
-              id="batch"
-              placeholder="Select batch"
-              data={["2020", "2021", "2022", "2023"]}
-              defaultValue="2022"
-              w="100%"
-              aria-labelledby="batch"
-            />
-          </Group>
+          {/* Roll Number input */}
+          <TextInput
+            label="Roll No."
+            placeholder="Enter your roll number"
+            value={rollNo}
+            onChange={(event) => setRollNo(event.currentTarget.value)}
+            required
+            radius="md"
+            size="md"
+            labelProps={{ style: { marginBottom: "10px" } }}
+            mb="md"
+          />
 
-          <Group align="flex-start">
-            <Box w={100}>
-              <Text component="label" htmlFor="semester" weight={500}>
-                Semester
-              </Text>
-            </Box>
-            <Select
-              id="semester"
-              placeholder="Select semester"
-              data={["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"]}
-              w="100%"
-              aria-labelledby="semester"
-            />
-          </Group>
+          {/* Batch input */}
+          <TextInput
+            label="Batch"
+            placeholder="Enter your batch"
+            value={batch}
+            onChange={(event) => setBatch(event.currentTarget.value)}
+            required
+            radius="md"
+            size="md"
+            labelProps={{ style: { marginBottom: "10px" } }}
+            mb="md"
+          />
 
-          <Group align="flex-start">
-            <Box w={100}>
-              <Text component="label" htmlFor="reason" weight={500}>
-                Reason
-              </Text>
-            </Box>
-            <Textarea
-              id="reason"
-              placeholder="Enter your reason for deregistration"
-              minRows={4}
-              w="100%"
-              aria-labelledby="reason"
-            />
-          </Group>
+          {/* Semester input */}
+          <NumberInput
+            label="Semester"
+            placeholder="Enter your semester"
+            value={semester}
+            onChange={setSemester}
+            required
+            radius="md"
+            size="md"
+            labelProps={{ style: { marginBottom: "10px" } }}
+            min={1}
+            max={10} // Adjust max value as necessary
+            mb="lg"
+          />
 
-          <Group justify="center" mt="xl">
-            <Button type="submit" color="blue">
-              Submit
-            </Button>
-          </Group>
-        </Stack>
-      </form>
-    </Box>
+          {/* Reason for Deregistration input */}
+          <Textarea
+            label="Reason for Deregistration"
+            placeholder="Provide your reason"
+            value={reason}
+            onChange={(event) => setReason(event.currentTarget.value)}
+            required
+            radius="md"
+            size="md"
+            labelProps={{ style: { marginBottom: "10px" } }}
+            mb="lg"
+          />
+
+          <Space h="xl" />
+
+          {/* Submit button */}
+          <Button fullWidth size="md" radius="md" color="blue">
+            Submit
+          </Button>
+        </form>
+      </Paper>
+      <Space h="xl" />
+    </Container>
   );
 }
+
+export default Deregistration;

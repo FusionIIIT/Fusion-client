@@ -1,188 +1,156 @@
 import React, { useState } from "react";
-import { Table, Container, Paper, Title, Button, Group } from "@mantine/core";
-import * as PhosphorIcons from "@phosphor-icons/react";
+import { Table, Container, Paper, Title, Button, Flex } from "@mantine/core";
+import * as PhosphorIcons from "@phosphor-icons/react"; // Default import for icons
 
 const initialFoodRequestData = [
   {
-    date: "2024-10-05",
+    rdate: "2024-10-05",
     student_id: "22bcs123",
-    meal: "Vegetarian Meal",
-    reason: "Medical requirement",
-    from: "2024-10-06",
-    to: "2024-10-10",
+    food: "Gluten-free",
+    reason: "Medical condition",
+    from: "2024-10-05",
+    to: "2024-10-07",
     approve: false,
   },
   {
-    date: "2024-10-07",
+    rdate: "2024-10-07",
     student_id: "21bec083",
-    meal: "Vegan Meal",
-    reason: "Dietary preference",
+    food: "Vegan",
+    reason: "Personal preference",
     from: "2024-10-08",
-    to: "2024-10-12",
+    to: "2024-10-10",
     approve: true,
   },
   {
-    date: "2024-10-09",
+    rdate: "2024-10-09",
     student_id: "22bcs198",
-    meal: "Gluten-Free Meal",
-    reason: "Health issue",
+    food: "Navratri Food",
+    reason: "Fasting",
     from: "2024-10-10",
-    to: "2024-10-14",
+    to: "2024-10-12",
     approve: false,
   },
+];
+
+const tableHeader = [
+  "Date",
+  "Student ID",
+  "Food",
+  "Reason",
+  "From",
+  "To",
+  "Approval",
 ];
 
 // Main component
 function ViewSpecialFoodRequest() {
   const [foodRequestData, setFoodRequestData] = useState(
     initialFoodRequestData,
-  ); // Use state for food requests
-  const [filterStatus, setFilterStatus] = useState("all");
+  );
+  const [activeTab, setActiveTab] = useState("all");
 
   // Function to toggle approval status
   const toggleApproval = (index) => {
-    setFoodRequestData((prevData) => {
-      const newData = prevData.map((request, i) => {
-        if (i === index) {
-          return { ...request, approve: !request.approve }; // Toggle the approval status
-        }
-        return request;
-      });
-      return newData; // Return the updated data
-    });
+    setFoodRequestData((prevData) =>
+      prevData.map((request, i) =>
+        i === index ? { ...request, approve: !request.approve } : request,
+      ),
+    );
   };
 
-  // Filter requests based on the filterStatus value
+  // Filter requests based on active tab
   const filteredFoodRequestData = foodRequestData.filter((request) => {
-    if (filterStatus === "approved") return request.approve === true;
-    if (filterStatus === "unapproved") return request.approve === false;
-    return true; // Default is "all", so show all requests
+    if (activeTab === "approved") return request.approve;
+    if (activeTab === "unapproved") return !request.approve;
+    return true;
   });
 
-  // Render food request rows with added padding for spacing
+  // Render food request table rows
   const renderRows = () =>
     filteredFoodRequestData.map((item, index) => (
-      <tr key={index} style={{ height: "50px" }}>
-        <td style={{ textAlign: "center", padding: "12px" }}>{item.date}</td>
-        <td style={{ textAlign: "center", padding: "12px" }}>
+      <Table.Tr key={index} h={50}>
+        <Table.Td align="center" p={12}>
+          {item.rdate}
+        </Table.Td>
+        <Table.Td align="center" p={12}>
           {item.student_id}
-        </td>
-        <td style={{ textAlign: "center", padding: "12px" }}>{item.meal}</td>
-        <td style={{ textAlign: "center", padding: "12px" }}>{item.reason}</td>
-        <td style={{ textAlign: "center", padding: "12px" }}>{item.from}</td>
-        <td style={{ textAlign: "center", padding: "12px" }}>{item.to}</td>
-        {filterStatus === "all" && ( // Only render the "Approve" column in "View All Requests"
-          <td style={{ textAlign: "center", padding: "12px" }}>
-            <Button
-              onClick={() => toggleApproval(index)}
-              variant={item.approve ? "filled" : "outline"}
-              color={item.approve ? "green" : "red"}
-              size="xs"
-            >
-              {item.approve ? "Approved" : "Not Approved"}
-            </Button>
-          </td>
-        )}
-      </tr>
+        </Table.Td>
+        <Table.Td align="center" p={12}>
+          {item.food}
+        </Table.Td>
+        <Table.Td align="center" p={12}>
+          {item.reason}
+        </Table.Td>
+        <Table.Td align="center" p={12}>
+          {item.from}
+        </Table.Td>
+        <Table.Td align="center" p={12}>
+          {item.to}
+        </Table.Td>
+        <Table.Td align="center" p={12}>
+          <Button
+            onClick={() => toggleApproval(index)}
+            variant={item.approve ? "filled" : "outline"}
+            color={item.approve ? "green" : "red"}
+            size="xs"
+          >
+            {item.approve ? "Approved" : "Not Approved"}
+          </Button>
+        </Table.Td>
+      </Table.Tr>
     ));
 
-  // Render an empty state if there are no filtered entries
-  const renderEmptyState = () => (
-    <tr>
-      <td colSpan={7} style={{ textAlign: "center", padding: "20px" }}>
-        No entries available.
-      </td>
-    </tr>
-  );
+  const renderHeader = (titles) => {
+    return titles.map((title, index) => (
+      <Table.Th key={index}>
+        <Flex align="center" justify="center" h="100%">
+          {title}
+        </Flex>
+      </Table.Th>
+    ));
+  };
 
   return (
-    <Container
-      size="lg"
-      style={{
-        maxWidth: "1200px",
-        width: "900px",
-        marginTop: "25px",
-        marginLeft: "-10px",
-      }}
-    >
+    <Container size="lg" mt={30} miw="80rem">
       <Paper shadow="md" radius="md" p="lg" withBorder>
-        <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
+        <Title order={2} align="center" mb="lg" c="#1c7ed6">
           View Special Food Requests
         </Title>
 
-        {/* Filter buttons */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginBottom: "30px",
-          }}
-        >
-          <Group>
-            <Button
-              leftIcon={<PhosphorIcons.Eye size={20} />}
-              variant={filterStatus === "all" ? "filled" : "outline"}
-              size="xs"
-              onClick={() => setFilterStatus("all")} // Show all requests
-            >
-              View All Requests
-            </Button>
-            <Button
-              leftIcon={<PhosphorIcons.Check size={20} />}
-              variant={filterStatus === "approved" ? "filled" : "outline"}
-              size="xs"
-              onClick={() => setFilterStatus("approved")} // Show only approved requests
-            >
-              Approved
-            </Button>
-            <Button
-              leftIcon={<PhosphorIcons.XCircle size={20} />}
-              variant={filterStatus === "unapproved" ? "filled" : "outline"}
-              size="xs"
-              onClick={() => setFilterStatus("unapproved")} // Show only unapproved requests
-            >
-              Unapproved
-            </Button>
-          </Group>
-        </div>
+        {/* Tabs for filtering food requests */}
+        <Flex justify="center" align="center" mb={30} gap={20}>
+          <Button
+            onClick={() => setActiveTab("all")}
+            leftSection={<PhosphorIcons.Eye size={20} />}
+            variant={activeTab === "all" ? "filled" : "outline"}
+            size="xs"
+          >
+            All Requests
+          </Button>
+          <Button
+            onClick={() => setActiveTab("approved")}
+            leftSection={<PhosphorIcons.Check size={20} />}
+            variant={activeTab === "approved" ? "filled" : "outline"}
+            size="xs"
+          >
+            Approved
+          </Button>
+          <Button
+            onClick={() => setActiveTab("unapproved")}
+            leftSection={<PhosphorIcons.XCircle size={20} />}
+            variant={activeTab === "unapproved" ? "filled" : "outline"}
+            size="xs"
+          >
+            Unapproved
+          </Button>
+        </Flex>
 
         {/* Table */}
         <Table striped highlightOnHover withBorder withColumnBorders>
-          <thead>
-            <tr>
-              <th
-                style={{ textAlign: "center", padding: "12px", width: "120px" }}
-              >
-                Date
-              </th>
-              <th style={{ textAlign: "center", padding: "12px" }}>
-                Student ID
-              </th>
-              <th style={{ textAlign: "center", padding: "12px" }}>Food</th>
-              <th style={{ textAlign: "center", padding: "12px" }}>Purpose</th>
-              <th
-                style={{ textAlign: "center", padding: "12px", width: "120px" }}
-              >
-                From
-              </th>
-              <th
-                style={{ textAlign: "center", padding: "12px", width: "120px" }}
-              >
-                To
-              </th>
-              {filterStatus === "all" && (
-                <th style={{ textAlign: "center", padding: "12px" }}>
-                  Approve
-                </th>
-              )}
-            </tr>
-          </thead>
-
-          <tbody>
-            {filteredFoodRequestData.length > 0
-              ? renderRows()
-              : renderEmptyState()}
-          </tbody>
+          <Table.Thead>
+            <Table.Tr>{renderHeader(tableHeader)}</Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>{renderRows()}</Table.Tbody>
         </Table>
       </Paper>
     </Container>

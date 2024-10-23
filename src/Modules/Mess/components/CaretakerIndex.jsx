@@ -19,6 +19,7 @@ import ViewSpecialFoodRequest from "./ViewSpecialFoodRequest.jsx";
 import RegDeregUpdatePayment from "./RegisterDeregisterUpdateRequest.jsx";
 import UpdateMenu from "./UpdateMenu.jsx";
 import MessRegistrations from "./MessRegistrations.jsx";
+import ViewMenu from "./ViewMenu.jsx";
 
 function Caretaker() {
   const [activeTab, setActiveTab] = useState("0");
@@ -60,7 +61,7 @@ function Caretaker() {
       case "3":
         return <ViewSpecialFoodRequest />;
       case "4":
-        return <p>View Menu</p>;
+        return <ViewMenu />;
       case "5":
         return <MessActivities />;
       case "6":
