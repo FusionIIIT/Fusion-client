@@ -1,10 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
 import PlacementScheduleCard from './PlacementScheduleCard';
-import { Container, Pagination, Grid, Button, Modal } from '@mantine/core';
+import { Container, Pagination, Grid} from '@mantine/core';
 import axios from 'axios';
+import { Modal } from '@mantine/core';
+import AddPlacementEventForm from './AddPlacementEventForm'; 
 import { useSelector } from 'react-redux';
-import AddPlacementEventForm from './AddPlacementEventForm';
+import { Button } from '@mantine/core';
 
 const getCookie = (name) => {
   const value = `; ${document.cookie}`;
@@ -43,7 +45,7 @@ const PlacementScheduleGrid = ({ data, itemsPerPage, cardsPerRow, onAddEvent }) 
         {paddedItems.map((item, index) => (
           <Grid.Col key={index} span={12 / cardsPerRow}>
             {item ? (
-              <PlacementScheduleCard
+            <PlacementScheduleCard
                 companyLogo="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg"
                 companyName={item.company_name}
                 location={item.location}
@@ -54,7 +56,7 @@ const PlacementScheduleGrid = ({ data, itemsPerPage, cardsPerRow, onAddEvent }) 
                 description={item.description}
                 salary={item.ctc}
               />
-            ) : (
+              ) : (
               <div style={{ height: '100%', border: '1px dashed gray' }}>
                 Placeholder
               </div>

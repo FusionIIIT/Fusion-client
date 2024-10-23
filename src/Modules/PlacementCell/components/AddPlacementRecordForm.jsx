@@ -1,52 +1,53 @@
-
 import React, { useState } from "react";
 import {
   TextInput,
   Button,
   Select,
   Group,
-  
   Container,
-  Textarea,
-  FileInput,
   Modal,
 } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
 
 function AddPlacementRecordForm({ opened, onClose }) {
-  const [company, setCompany] = useState("");
-  const [student, setStudent] = useState("");
-  const [ctc, setCtc] = useState("");
-  const [placementType, setPlacementType] = useState("");
+  const [companyName, setCompanyName] = useState("");
   const [rollNo, setRollNo] = useState("");
-  const [location, setLocation] = useState("");
-  const [role, setRole] = useState("");
-  const [description, setDescription] = useState("");
-  const [resumeFile, setResumeFile] = useState(null);
+  const [ctc, setCtc] = useState("");
+  const [year, setYear] = useState("");
+  const [placementType, setPlacementType] = useState("");
+  const [testType, setTestType] = useState("");
+  const [testScore, setTestScore] = useState("");
 
   const navigate = useNavigate();
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const formData = new FormData();
-    formData.append("company", company);
-    formData.append("student", student);
+    formData.append("placement_type", placementType);
+    formData.append("company_name", companyName);
+    formData.append("roll_no", rollNo);
     formData.append("ctc", ctc);
-    formData.append("placementType", placementType);
-    formData.append("rollNo", rollNo);
-    formData.append("location", location);
-    formData.append("role", role);
-    formData.append("description", description);
-    if (resumeFile) {
-      formData.append("resumeFile", resumeFile);
+    formData.append("year", year);
+    formData.append("test_type", testType);
+    formData.append("test_score", testScore);
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/placement/api/statistics/", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "An error occurred");
+      }
+
+      const data = await response.json();
+      console.log("Success:", data);
+      onClose(); // Close the modal after successful submission
+    } catch (error) {
+      console.error("Error:", error.message);
+      alert("Error: " + error.message); // Display error message to the user
     }
-
-    console.log("Form Submitted", formData);
-    // Make API call or further processing
-    onClose(); // Close the modal after form submission
-  };
-
-  const handleBack = () => {
-    navigate(-1);
   };
 
   return (
@@ -58,30 +59,13 @@ function AddPlacementRecordForm({ opened, onClose }) {
         size="lg"
         centered
       >
+        {/* Grouping input fields */}
         <Group grow spacing="md" direction="column" breakpoints={{ sm: { direction: "row" } }}>
-          
           <TextInput
             label="Company Name"
             placeholder="Enter company name"
-            value={company}
-            onChange={(e) => setCompany(e.target.value)}
-            required
-          />
-          <TextInput
-            label="Student Name"
-            placeholder="Enter student name"
-            value={student}
-            onChange={(e) => setStudent(e.target.value)}
-            required
-          />
-        </Group>
-
-        <Group grow spacing="md" direction="column" breakpoints={{ sm: { direction: "row" } }} style={{ marginTop: "20px" }}>
-          <TextInput
-            label="CTC in LPA"
-            placeholder="Enter CTC"
-            value={ctc}
-            onChange={(e) => setCtc(e.target.value)}
+            value={companyName}
+            onChange={(e) => setCompanyName(e.target.value)}
             required
           />
           <TextInput
@@ -95,44 +79,47 @@ function AddPlacementRecordForm({ opened, onClose }) {
 
         <Group grow spacing="md" direction="column" breakpoints={{ sm: { direction: "row" } }} style={{ marginTop: "20px" }}>
           <TextInput
-            label="Location"
-            placeholder="Enter location"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
+            label="CTC in LPA"
+            placeholder="Enter CTC"
+            value={ctc}
+            onChange={(e) => setCtc(e.target.value)}
+            required
           />
           <TextInput
-            label="Role Offered"
-            placeholder="Enter the role offered"
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
+            label="Year"
+            placeholder="Enter year"
+            value={year}
+            onChange={(e) => setYear(e.target.value)}
+            required
           />
         </Group>
 
         <Select
           label="Placement Type"
           placeholder="Select placement type"
-          data={["Full-Time", "Internship"]}
+          data={["PBI", "Placement"]}
           value={placementType}
           onChange={setPlacementType}
           style={{ marginTop: "20px" }}
           required
         />
 
-        <Textarea
-          label="Description"
-          placeholder="Enter a description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          minRows={3}
+        <TextInput
+          label="Test Type"
+          placeholder="Enter test type"
+          value={testType}
+          onChange={(e) => setTestType(e.target.value)}
           style={{ marginTop: "20px" }}
+          required
         />
 
-        <FileInput
-          label="Resume File"
-          placeholder="Upload resume"
-          value={resumeFile}
-          onChange={setResumeFile}
+        <TextInput
+          label="Test Score"
+          placeholder="Enter test score"
+          value={testScore}
+          onChange={(e) => setTestScore(e.target.value)}
           style={{ marginTop: "20px" }}
+          required
         />
 
         <Group position="right" style={{ marginTop: "20px" }}>
