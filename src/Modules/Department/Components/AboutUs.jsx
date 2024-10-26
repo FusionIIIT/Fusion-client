@@ -1,6 +1,5 @@
-/* eslint-disable react/prop-types */
-
 import React from "react";
+import PropTypes from "prop-types";
 
 export default function AboutUs({ branch }) {
   // A dictionary object to store content for each branch
@@ -70,3 +69,7 @@ export default function AboutUs({ branch }) {
     </div>
   );
 }
+
+AboutUs.propTypes = {
+  branch: PropTypes.string.isRequired,
+};

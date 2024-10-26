@@ -70,7 +70,7 @@ export default function MakeAnnouncement() {
   return (
     <div className={`${classes.flex} ${classes.w_full}`}>
       <form onSubmit={handleSubmit} style={styles.formContainer}>
-        <h2 style={styles.header}>CREATE:</h2>
+        <h2 style={styles.header}>CREATE ANNOUNCEMENT:</h2>
 
         <div style={styles.formGroup}>
           <label htmlFor="programmeType">

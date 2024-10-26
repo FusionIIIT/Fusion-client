@@ -1,11 +1,7 @@
+import { Button, Typography, Card, CardContent, Collapse } from "@mui/material";
+import { Grid } from "@mantine/core"; // Assuming you're using Mantine Grid
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  Button,
-  Typography,
-} from "@mui/material";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import React, { useState } from "react";
 import SpecialTable from "./SpecialTable";
 import studentData from "./Data/Data";
@@ -30,7 +26,13 @@ const columns = [
 ];
 
 function Studentcat() {
+  const [openCategory, setOpenCategory] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
+
+  // Toggle category dropdown
+  const toggleCategory = (category) => {
+    setOpenCategory(openCategory === category ? null : category);
+  };
 
   // Function to render the student table
   const renderStudentTable = (category) => {
@@ -51,85 +53,160 @@ function Studentcat() {
         Student Categories
       </Typography>
 
-      {/* PhD Students */}
-      <Accordion>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="phd-content"
-          id="phd-header"
-        >
-          <Typography>PhD Students</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={() => setSelectedCategory("phd")}
-            style={{ margin: "5px" }}
+      {/* Adjust spacing between grid items */}
+      <Grid container spacing={8}>
+        {" "}
+        {/* Increased spacing to 8 */}
+        {/* PhD Students */}
+        <Grid item xs={12} sm={4}>
+          <Card
+            onClick={() => toggleCategory("phd")}
+            style={{ margin: "10px" }} // Added margin around each card
           >
-            PhD CSE Students
-          </Button>
-        </AccordionDetails>
-      </Accordion>
-
-      {/* MTech Students */}
-      <Accordion>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="mtech-content"
-          id="mtech-header"
-        >
-          <Typography>MTech Students</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={() => setSelectedCategory("mtech1")}
-            style={{ margin: "5px" }}
+            <CardContent
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Typography variant="h6">PhD Students</Typography>
+              {/* Toggle between expand and collapse icons */}
+              {openCategory === "phd" ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            </CardContent>
+            <Collapse in={openCategory === "phd"}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  marginTop: "10px",
+                  padding: "0 16px",
+                }}
+              >
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  onClick={() => setSelectedCategory("phd")}
+                  style={{ marginBottom: "5px" }}
+                >
+                  PhD CSE Students
+                </Button>
+              </div>
+            </Collapse>
+          </Card>
+        </Grid>
+        {/* MTech Students */}
+        <Grid item xs={12} sm={4}>
+          <Card
+            onClick={() => toggleCategory("mtech")}
+            style={{ margin: "10px" }} // Added margin around each card
           >
-            M.Tech First Year
-          </Button>
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={() => setSelectedCategory("mtech2")}
-            style={{ margin: "5px" }}
+            <CardContent
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Typography variant="h6">MTech Students</Typography>
+              {openCategory === "mtech" ? (
+                <ExpandLessIcon />
+              ) : (
+                <ExpandMoreIcon />
+              )}
+            </CardContent>
+            <Collapse in={openCategory === "mtech"}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  marginTop: "10px",
+                  padding: "0 16px",
+                }}
+              >
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  onClick={() => setSelectedCategory("mtech1")}
+                  style={{ marginBottom: "5px" }}
+                >
+                  M.Tech First Year
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  onClick={() => setSelectedCategory("mtech2")}
+                  style={{ marginBottom: "5px" }}
+                >
+                  M.Tech Second Year
+                </Button>
+              </div>
+            </Collapse>
+          </Card>
+        </Grid>
+        {/* BTech Students */}
+        <Grid item xs={12} sm={4}>
+          <Card
+            onClick={() => toggleCategory("btech")}
+            style={{ margin: "10px" }} // Added margin around each card
           >
-            M.Tech Second Year
-          </Button>
-        </AccordionDetails>
-      </Accordion>
-
-      {/* BTech Students */}
-      <Accordion>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="btech-content"
-          id="btech-header"
-        >
-          <Typography>BTech Students</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={() => setSelectedCategory("btech1")}
-            style={{ margin: "5px" }}
-          >
-            B.Tech First Year
-          </Button>
-          <Button variant="outlined" color="primary" style={{ margin: "5px" }}>
-            B.Tech Second Year
-          </Button>
-          <Button variant="outlined" color="primary" style={{ margin: "5px" }}>
-            B.Tech Third Year
-          </Button>
-          <Button variant="outlined" color="primary" style={{ margin: "5px" }}>
-            B.Tech Final Year
-          </Button>
-        </AccordionDetails>
-      </Accordion>
+            <CardContent
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Typography variant="h6">BTech Students</Typography>
+              {openCategory === "btech" ? (
+                <ExpandLessIcon />
+              ) : (
+                <ExpandMoreIcon />
+              )}
+            </CardContent>
+            <Collapse in={openCategory === "btech"}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  marginTop: "10px",
+                  padding: "0 16px",
+                }}
+              >
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  onClick={() => setSelectedCategory("btech1")}
+                  style={{ marginBottom: "5px" }}
+                >
+                  B.Tech First Year
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  style={{ marginBottom: "5px" }}
+                >
+                  B.Tech Second Year
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  style={{ marginBottom: "5px" }}
+                >
+                  B.Tech Third Year
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  style={{ marginBottom: "5px" }}
+                >
+                  B.Tech Final Year
+                </Button>
+              </div>
+            </Collapse>
+          </Card>
+        </Grid>
+      </Grid>
 
       {/* Render Student Table Based on Selected Category */}
       <div style={{ marginTop: "20px" }}>

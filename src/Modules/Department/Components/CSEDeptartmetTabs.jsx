@@ -14,9 +14,9 @@ import Faculty from "./Faculty.jsx";
 import Alumnicat from "./Alumnicat.jsx";
 import Studentcat from "./Studentcat.jsx";
 import AboutUs from "./AboutUs.jsx";
-import Announcement from "./Announcement.jsx";
 import Facilities from "./Facilities";
 import Stock from "./Stock.jsx";
+import CSEAnnouncements from "./CSEAnnouncements";
 
 function CSEDepartmentTabs() {
   const [activeTab, setActiveTab] = useState("0");
@@ -53,11 +53,11 @@ function CSEDepartmentTabs() {
       case "1":
         return <Facilities />;
       case "2":
-        return <Faculty />;
+        return <Faculty department="cse_f" />;
       case "3":
         return <Studentcat />;
       case "4":
-        return <Announcement />;
+        return <CSEAnnouncements department="cse" />;
       case "5":
         return <Alumnicat />;
       case "6":
