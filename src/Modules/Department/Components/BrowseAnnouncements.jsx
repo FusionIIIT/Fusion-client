@@ -10,7 +10,11 @@ import {
 import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
 import { useRef, useState } from "react";
 import classes from "../styles/Departmentmodule.module.css";
-import BrowAnnoStaticDisplay from "./BrowAnnoStaticDisplay";
+import CSEAnnouncements from "./CSEAnnouncements";
+import ECEAnnouncements from "./ECEAnnouncements";
+import MEAnnouncements from "./MEAnnouncements";
+import SMAnnouncements from "./SMAnnouncements";
+import ALLAnnouncements from "./ALLAnnouncements";
 
 function BrowseAnnouncements() {
   const [activeTab, setActiveTab] = useState("0");
@@ -41,15 +45,15 @@ function BrowseAnnouncements() {
   const renderTabContent = () => {
     switch (activeTab) {
       case "0":
-        return <BrowAnnoStaticDisplay department="All" />;
+        return <ALLAnnouncements department="all" />;
       case "1":
-        return <BrowAnnoStaticDisplay department="CSE" />;
+        return <CSEAnnouncements department="cse" />;
       case "2":
-        return <BrowAnnoStaticDisplay department="ECE" />;
+        return <ECEAnnouncements department="ece" />;
       case "3":
-        return <BrowAnnoStaticDisplay department="ME" />;
+        return <MEAnnouncements department="me" />;
       case "4":
-        return <BrowAnnoStaticDisplay department="SM" />;
+        return <SMAnnouncements department="sm" />;
       default:
         return <Loader />;
     }

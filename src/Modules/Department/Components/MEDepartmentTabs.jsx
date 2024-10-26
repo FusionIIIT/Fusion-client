@@ -14,9 +14,9 @@ import Faculty from "./Faculty.jsx";
 import Alumnicat from "./Alumnicat.jsx";
 import Studentcat from "./Studentcat.jsx";
 import AboutUs from "./AboutUs.jsx";
-import Announcement from "./Announcement.jsx";
 import Facilities from "./Facilities";
 import Stock from "./Stock.jsx";
+import MEAnnouncements from "./MEAnnouncements";
 
 function MEDepartmentTabs() {
   const [activeTab, setActiveTab] = useState("0");
@@ -53,11 +53,11 @@ function MEDepartmentTabs() {
       case "1":
         return <Facilities />;
       case "2":
-        return <Faculty />;
+        return <Faculty department="me_f" />;
       case "3":
         return <Studentcat />;
       case "4":
-        return <Announcement />;
+        return <MEAnnouncements department="me" />;
       case "5":
         return <Alumnicat />;
       case "6":

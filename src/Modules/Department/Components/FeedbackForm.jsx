@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
 import React, { useState } from "react";
+import PropTypes from "prop-types";
 import classes from "../styles/Departmentmodule.module.css";
 
 const styles = {
@@ -113,3 +114,7 @@ export default function MakeAnnouncement({ department }) {
     </div>
   );
 }
+
+MakeAnnouncement.propTypes = {
+  department: PropTypes.string.isRequired,
+};

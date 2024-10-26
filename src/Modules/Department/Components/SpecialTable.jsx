@@ -1,6 +1,7 @@
-/* eslint-disable */
+/* eslint-disable react/jsx-pascal-case, radix */
 
 import { Divider, Flex, Stack, Table, Title } from "@mantine/core";
+import PropTypes from "prop-types";
 import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css";
 import {
@@ -87,5 +88,12 @@ function SpecialTable({ title, columns, data, rowOptions }) {
     </Stack>
   );
 }
+
+SpecialTable.propTypes = {
+  title: PropTypes.string.isRequired,
+  columns: PropTypes.arrayOf.isRequired,
+  data: PropTypes.arrayOf.isRequired,
+  rowOptions: PropTypes.arrayOf.isRequired,
+};
 
 export default SpecialTable;

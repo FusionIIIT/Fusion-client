@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { Container, Grid, Loader } from "@mantine/core";
 import { useSelector } from "react-redux";
 import classes from "../styles/Departmentmodule.module.css";
-import MakeAnnouncement from "./MakeAnnouncement.jsx";
+import MakeAnnouncement from "./new.jsx";
 import CSEDepartmentTabs from "./CSEDeptartmetTabs.jsx";
 import BrowseAnnouncements from "./BrowseAnnouncements.jsx";
 import ECEDepartmentTabs from "./ECEDepartmentTabs.jsx";
@@ -10,7 +10,7 @@ import MEDepartmentTabs from "./MEDepartmentTabs.jsx";
 import SMDepartmentTabs from "./SMDepartmentTabs.jsx";
 import FeedbackForm from "./FeedbackForm";
 
-export default function Exp() {
+export default function LandingPage() {
   const role = useSelector((state) => state.user.role); // Get user role from Redux
   const department = useSelector((state) => state.user.department); // Assuming department is stored in Redux
   const [activeTab, setActiveTab] = useState("0");
