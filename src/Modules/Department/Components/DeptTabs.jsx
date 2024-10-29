@@ -1,35 +1,35 @@
-import {
-  Button,
-  Container,
-  Flex,
-  Grid,
-  Loader,
-  Tabs,
-  Text,
-} from "@mantine/core";
+import { Button, Container, Flex, Grid, Tabs, Text } from "@mantine/core";
 import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
-import { useRef, useState } from "react";
+import { useRef, useState, Suspense, lazy } from "react";
+import PropTypes from "prop-types";
 import classes from "../styles/Departmentmodule.module.css";
-import Faculty from "./Faculty.jsx";
-import Alumnicat from "./Alumnicat.jsx";
-import Studentcat from "./Studentcat.jsx";
-import AboutUs from "./AboutUs.jsx";
-import Facilities from "./Facilities";
-import Stock from "./Stock.jsx";
-import ECEAnnouncements from "./ECEAnnouncements";
 
-function ECEDepartmentTabs() {
+// Lazy load components
+const AboutUs = lazy(() => import("./AboutUs.jsx"));
+const Facilities = lazy(() => import("./Facilities.jsx"));
+const Faculty = lazy(() => import("./Faculty.jsx"));
+const Studentcat = lazy(() => import("./Studentcat.jsx"));
+const Announcements = lazy(() => import("./Announcements.jsx"));
+const Alumnicat = lazy(() => import("./Alumnicat.jsx"));
+const Stock = lazy(() => import("./Stock.jsx"));
+
+function DeptTabs({ branch }) {
   const [activeTab, setActiveTab] = useState("0");
   const tabsListRef = useRef(null);
 
-  // Conditionally add 'Make Announcements' tab based on user role
+  let faculty = "";
+  if (branch === "CSE") faculty = "cse_f";
+  if (branch === "ECE") faculty = "ece_f";
+  if (branch === "ME") faculty = "me_f";
+  if (branch === "SM") faculty = "sm_f";
+
   const tabItems = [
     { title: "About Us" },
-    { title: "Facilities" },
-    { title: "Faculties" },
-    { title: "Students" },
-    { title: "Announcements" },
+    { title: "Faculties", id: "2", department: faculty },
+    { title: "Students", id: "3", department: branch },
+    { title: "Announcements", id: "4", department: branch },
     { title: "Alumni" },
+    { title: "Facilities" },
     { title: "Stock" },
   ];
 
@@ -45,39 +45,38 @@ function ECEDepartmentTabs() {
     });
   };
 
-  // Function to render content based on active tab
   const renderTabContent = () => {
     switch (activeTab) {
       case "0":
-        return <AboutUs branch="ECE" />;
+        return <AboutUs branch={`${branch}`} />;
       case "1":
-        return <Facilities />;
+        return <Faculty branch={branch} faculty={faculty} />;
       case "2":
-        return <Faculty department="ece_f" />;
+        return <Studentcat branch={branch} />;
       case "3":
-        return <Studentcat />;
+        return <Announcements branch={branch} />;
       case "4":
-        return <ECEAnnouncements department="ece" />;
-      case "5":
         return <Alumnicat />;
+      case "5":
+        return <Facilities />;
       case "6":
         return <Stock />;
       default:
-        return <Loader />;
+        return null;
     }
   };
 
   return (
-    <>
+    <div>
       {/* Navbar contents */}
       <div
         style={{
           display: "flex",
-          justifyContent: "center", // Centers horizontally
-          height: "auto", // Adjust height based on content
+          justifyContent: "center",
+          height: "auto",
         }}
       >
-        <h1>Welcome to ECE Department</h1>
+        <h1>Welcome to {branch} Department</h1>
       </div>
 
       <Flex justify="space-between" align="center">
@@ -130,12 +129,18 @@ function ECEDepartmentTabs() {
         </Flex>
       </Flex>
 
-      {/* Main content */}
+      {/* Main content with Suspense fallback for lazy-loaded component */}
       <Grid mt="xl">
-        <Container py="xl">{renderTabContent()}</Container>
+        <Container py="xl">
+          <Suspense>{renderTabContent()}</Suspense>
+        </Container>
       </Grid>
-    </>
+    </div>
   );
 }
 
-export default ECEDepartmentTabs;
+export default DeptTabs;
+
+DeptTabs.propTypes = {
+  branch: PropTypes.string.isRequired,
+};

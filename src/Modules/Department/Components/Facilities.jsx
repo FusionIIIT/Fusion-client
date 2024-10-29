@@ -1,7 +1,8 @@
-import React from "react";
+import React, { lazy } from "react";
 import SpecialTable from "./SpecialTable";
 import studentData from "./Data/Data";
-import FacilitiesDescriptive from "./FacilitiesDescriptive";
+
+const FacilitiesDescriptive = lazy(() => import("./FacilitiesDescriptive.jsx"));
 
 const columns = [
   {
@@ -19,10 +20,8 @@ const columns = [
 ];
 
 function Facilities() {
-  // Filter only Chemistry labs
-  const chemistryLabs = studentData.labs.filter(
-    (lab) => lab.department === "CSE",
-  );
+  // Filter only CSE department labs
+  const cseLabs = studentData.labs.filter((lab) => lab.department === "CSE");
 
   return (
     <div>
@@ -30,7 +29,7 @@ function Facilities() {
       <SpecialTable
         title="Labs"
         columns={columns}
-        data={chemistryLabs}
+        data={cseLabs}
         rowOptions={["3", "4", "6"]}
       />
     </div>

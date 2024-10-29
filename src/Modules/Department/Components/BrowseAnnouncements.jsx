@@ -8,21 +8,18 @@ import {
   Text,
 } from "@mantine/core";
 import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
-import { useRef, useState } from "react";
+import { useRef, useState, Suspense, lazy } from "react";
 import classes from "../styles/Departmentmodule.module.css";
-import CSEAnnouncements from "./CSEAnnouncements";
-import ECEAnnouncements from "./ECEAnnouncements";
-import MEAnnouncements from "./MEAnnouncements";
-import SMAnnouncements from "./SMAnnouncements";
-import ALLAnnouncements from "./ALLAnnouncements";
+
+// Lazy load Announcements
+const Announcements = lazy(() => import("./Announcements"));
 
 function BrowseAnnouncements() {
   const [activeTab, setActiveTab] = useState("0");
   const tabsListRef = useRef(null);
 
-  // Conditionally add 'Make Announcements' tab based on user role
   const tabItems = [
-    { title: "All" },
+    { title: "ALL" },
     { title: "CSE" },
     { title: "ECE" },
     { title: "ME" },
@@ -41,35 +38,36 @@ function BrowseAnnouncements() {
     });
   };
 
-  // Function to render content based on active tab
+  // Render content based on active tab with lazy-loaded Announcements
   const renderTabContent = () => {
     switch (activeTab) {
       case "0":
-        return <ALLAnnouncements department="all" />;
+        return <Announcements branch="ALL" />;
       case "1":
-        return <CSEAnnouncements department="cse" />;
+        return <Announcements branch="CSE" />;
       case "2":
-        return <ECEAnnouncements department="ece" />;
+        return <Announcements branch="ECE" />;
       case "3":
-        return <MEAnnouncements department="me" />;
+        return <Announcements branch="ME" />;
       case "4":
-        return <SMAnnouncements department="sm" />;
+        return <Announcements branch="SM" />;
       default:
-        return <Loader />;
+        return null;
     }
   };
 
+  const content = renderTabContent();
+
   return (
-    <>
-      {/* Navbar contents */}
+    <div>
       <div
         style={{
           display: "flex",
-          justifyContent: "center", // Centers horizontally
-          height: "auto", // Adjust height based on content
+          justifyContent: "center",
+          height: "auto",
         }}
       >
-        <h1>View Department-wise Announcemets</h1>
+        <h1>View Department-wise Announcements</h1>
       </div>
 
       <Flex justify="space-between" align="center">
@@ -122,11 +120,30 @@ function BrowseAnnouncements() {
         </Flex>
       </Flex>
 
-      {/* Main content */}
+      {/* Main content with Suspense fallback for lazy-loaded component */}
       <Grid mt="xl">
-        <Container py="xl">{renderTabContent()}</Container>
+        <Container py="xl" style={{ position: "relative", minHeight: "400px" }}>
+          <Suspense
+            fallback={
+              <Loader
+                style={{
+                  position: "absolute",
+                  top: "90%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                }}
+              />
+            }
+          >
+            {content || (
+              <Text align="center" color="gray">
+                No Announcements Available
+              </Text>
+            )}
+          </Suspense>
+        </Container>
       </Grid>
-    </>
+    </div>
   );
 }
 

@@ -1,49 +1,39 @@
 import { Button, Typography, Card, CardContent, Collapse } from "@mui/material";
-import { Grid } from "@mantine/core"; // Assuming you're using Mantine Grid
+import { Grid } from "@mantine/core";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import React, { useState } from "react";
-import SpecialTable from "./SpecialTable";
+import React, { useState, Suspense, lazy } from "react";
 import studentData from "./Data/Data";
 
+// Lazy load the SpecialTable component
+const SpecialTable = lazy(() => import("./SpecialTable"));
+
 const columns = [
-  {
-    accessorKey: "id",
-    header: "ID",
-  },
-  {
-    accessorKey: "name",
-    header: "Name",
-  },
-  {
-    accessorKey: "department",
-    header: "Department",
-  },
-  {
-    accessorKey: "year",
-    header: "Year",
-  },
+  { accessorKey: "id", header: "ID" },
+  { accessorKey: "name", header: "Name" },
+  { accessorKey: "department", header: "Department" },
+  { accessorKey: "year", header: "Year" },
 ];
 
 function Alumnicat() {
   const [openCategory, setOpenCategory] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
 
-  // Toggle category dropdown
   const toggleCategory = (category) => {
     setOpenCategory(openCategory === category ? null : category);
   };
 
-  // Function to render the student table
   const renderStudentTable = (category) => {
     const data = studentData[category];
     return (
-      <SpecialTable
-        title="Student"
-        columns={columns}
-        data={data}
-        rowOptions={["3", "4", "6"]}
-      />
+      <Suspense fallback={<Typography>Loading table...</Typography>}>
+        <SpecialTable
+          title="Student"
+          columns={columns}
+          data={data}
+          rowOptions={["3", "4", "6"]}
+        />
+      </Suspense>
     );
   };
 
@@ -52,16 +42,11 @@ function Alumnicat() {
       <Typography variant="h4" gutterBottom>
         Student Categories
       </Typography>
-
-      {/* Adjust spacing between grid items */}
       <Grid container spacing={8}>
-        {" "}
-        {/* Increased spacing to 8 */}
-        {/* PhD Students */}
         <Grid item xs={12} sm={4}>
           <Card
             onClick={() => toggleCategory("phd")}
-            style={{ margin: "10px" }} // Added margin around each card
+            style={{ margin: "10px" }}
           >
             <CardContent
               style={{
@@ -71,7 +56,6 @@ function Alumnicat() {
               }}
             >
               <Typography variant="h6">PhD Students</Typography>
-              {/* Toggle between expand and collapse icons */}
               {openCategory === "phd" ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             </CardContent>
             <Collapse in={openCategory === "phd"}>
@@ -95,11 +79,11 @@ function Alumnicat() {
             </Collapse>
           </Card>
         </Grid>
-        {/* MTech Students */}
+
         <Grid item xs={12} sm={4}>
           <Card
             onClick={() => toggleCategory("mtech")}
-            style={{ margin: "10px" }} // Added margin around each card
+            style={{ margin: "10px" }}
           >
             <CardContent
               style={{
@@ -136,11 +120,11 @@ function Alumnicat() {
             </Collapse>
           </Card>
         </Grid>
-        {/* BTech Students */}
+
         <Grid item xs={12} sm={4}>
           <Card
             onClick={() => toggleCategory("btech")}
-            style={{ margin: "10px" }} // Added margin around each card
+            style={{ margin: "10px" }}
           >
             <CardContent
               style={{
@@ -179,7 +163,6 @@ function Alumnicat() {
         </Grid>
       </Grid>
 
-      {/* Render Student Table Based on Selected Category */}
       <div style={{ marginTop: "20px" }}>
         {selectedCategory && renderStudentTable(selectedCategory)}
       </div>

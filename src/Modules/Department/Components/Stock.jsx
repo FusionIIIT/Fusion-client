@@ -1,6 +1,7 @@
-import React from "react";
-import SpecialTable from "./SpecialTable";
+import React, { lazy } from "react";
 import stockdata from "./Data/StockData";
+
+const SpecialTable = lazy(() => import("./SpecialTable.jsx"));
 
 const columns = [
   {
