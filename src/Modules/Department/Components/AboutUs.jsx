@@ -12,6 +12,8 @@ export default function AboutUs({ branch }) {
         "State-of-the-art computer labs, advanced research centers, and high-speed internet access.",
       vision:
         "To be a center of excellence in the field of Computer Science and Engineering, empowering students with the skills and knowledge to innovate and lead in technology.",
+      timetable:
+        "https://drive.google.com/file/d/1PTF1d6gE2RmSqp6sUWGgoLCp1NlvLGVM/view",
     },
     ECE: {
       title: "Electronics and Communication Engineering",
@@ -21,6 +23,8 @@ export default function AboutUs({ branch }) {
         "Modern electronics labs, communication system simulators, and well-equipped research labs.",
       vision:
         "To produce top-notch engineers who will drive innovation in the field of electronics and communication.",
+      timetable:
+        "https://drive.google.com/file/d/1PTF1d6gE2RmSqp6sUWGgoLCp1NlvLGVM/view",
     },
     ME: {
       title: "Mechanical Engineering",
@@ -30,6 +34,8 @@ export default function AboutUs({ branch }) {
         "High-tech workshops, CAD labs, and advanced mechanical testing facilities.",
       vision:
         "To nurture creative and analytical engineers who will excel in mechanical innovations and industrial design.",
+      timetable:
+        "https://drive.google.com/file/d/1PTF1d6gE2RmSqp6sUWGgoLCp1NlvLGVM/view",
     },
     SM: {
       title: "Smart Manufacturing",
@@ -39,6 +45,8 @@ export default function AboutUs({ branch }) {
         "Industry 4.0 labs, IoT-enabled workshops, AI-powered simulation systems, and collaborative robots (cobots).",
       vision:
         "To lead the transformation of traditional manufacturing into intelligent, data-driven systems that enhance productivity, efficiency, and sustainability.",
+      timetable:
+        "https://drive.google.com/file/d/1PTF1d6gE2RmSqp6sUWGgoLCp1NlvLGVM/view",
     },
     // You can add more branches here
   };
@@ -64,6 +72,26 @@ export default function AboutUs({ branch }) {
       {deptInfo.vision && (
         <p>
           <strong>Vision:</strong> {deptInfo.vision}
+        </p>
+      )}
+      {deptInfo.timetable && (
+        <p>
+          <strong>Timetable:</strong>{" "}
+          <a
+            href={deptInfo.timetable}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              padding: "4px 8px",
+              backgroundColor: "indigo",
+              color: "#fff",
+              textDecoration: "none",
+              borderRadius: "4px",
+              fontWeight: "bold",
+            }}
+          >
+            View
+          </a>
         </p>
       )}
     </div>
