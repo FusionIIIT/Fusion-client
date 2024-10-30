@@ -8,6 +8,7 @@ import classes from "../styles/Departmentmodule.module.css";
 const AboutUs = lazy(() => import("./AboutUs.jsx"));
 const Facilities = lazy(() => import("./Facilities.jsx"));
 const Faculty = lazy(() => import("./Faculty.jsx"));
+const EditFacilities = lazy(() => import("./EditFacilities.jsx"));
 const Studentcat = lazy(() => import("./Studentcat.jsx"));
 const Announcements = lazy(() => import("./Announcements.jsx"));
 const Alumnicat = lazy(() => import("./Alumnicat.jsx"));
