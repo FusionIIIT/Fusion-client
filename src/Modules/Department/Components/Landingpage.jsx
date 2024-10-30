@@ -1,29 +1,26 @@
-import React, { useRef, useState, useEffect } from "react";
-import { Container, Grid, Loader } from "@mantine/core";
+import React, { useRef, useState, useEffect, lazy, Suspense } from "react";
+import { Container, Grid } from "@mantine/core";
 import { useSelector } from "react-redux";
 import classes from "../styles/Departmentmodule.module.css";
-import MakeAnnouncement from "./new.jsx";
-import CSEDepartmentTabs from "./CSEDeptartmetTabs.jsx";
-import BrowseAnnouncements from "./BrowseAnnouncements.jsx";
-import ECEDepartmentTabs from "./ECEDepartmentTabs.jsx";
-import MEDepartmentTabs from "./MEDepartmentTabs.jsx";
-import SMDepartmentTabs from "./SMDepartmentTabs.jsx";
-import FeedbackForm from "./FeedbackForm";
+
+// Lazy load components
+const MakeAnnouncement = lazy(() => import("./MakeAnnouncement"));
+const BrowseAnnouncements = lazy(() => import("./BrowseAnnouncements"));
+const FeedbackForm = lazy(() => import("./FeedbackForm"));
+const DeptTabs = lazy(() => import("./DeptTabs"));
 
 export default function LandingPage() {
-  const role = useSelector((state) => state.user.role); // Get user role from Redux
-  const department = useSelector((state) => state.user.department); // Assuming department is stored in Redux
+  const role = useSelector((state) => state.user.role);
+  const branch = useSelector((state) => state.user.department);
   const [activeTab, setActiveTab] = useState("0");
   const tabsListRef = useRef(null);
 
-  // Update the active tab once the role is available
   useEffect(() => {
     if (role === "student") {
-      setActiveTab("3"); // Set to "CSE Department" tab for students
+      setActiveTab("3");
     }
-  }, [role]); // Dependency on role
+  }, [role]);
 
-  // Tab items, "Make Announcement" and "Browse Announcements" are removed for students
   const tabItems = [
     ...(role !== "student"
       ? [
@@ -39,32 +36,24 @@ export default function LandingPage() {
   ];
 
   const renderTabContent = () => {
-    switch (activeTab) {
-      case "0":
-        return <MakeAnnouncement />;
-      case "1":
-        return <BrowseAnnouncements />;
-      case "2":
-        return <FeedbackForm department="CSE" />;
-      case "3":
-        return <CSEDepartmentTabs />;
-      case "4":
-        return <ECEDepartmentTabs />;
-      case "5":
-        return <MEDepartmentTabs />;
-      case "6":
-        return <SMDepartmentTabs />;
-      default:
-        return <Loader />;
-    }
+    return (
+      <Suspense>
+        {activeTab === "0" && <MakeAnnouncement />}
+        {activeTab === "1" && <BrowseAnnouncements />}
+        {activeTab === "2" && <FeedbackForm branch="CSE" />}
+        {activeTab === "3" && <DeptTabs branch="CSE" />}
+        {activeTab === "4" && <DeptTabs branch="ECE" />}
+        {activeTab === "5" && <DeptTabs branch="ME" />}
+        {activeTab === "6" && <DeptTabs branch="SM" />}
+      </Suspense>
+    );
   };
 
   return (
     <Container className={`${classes.flex} ${classes.w_full}`}>
       <Grid>
-        {/* Top section showing the department of the user */}
         <Grid.Col span={12}>
-          <h1>Department Portal: {department}</h1>
+          <h1>Department Portal: {branch}</h1>
         </Grid.Col>
 
         {/* Left Column for Tabs */}
@@ -75,7 +64,7 @@ export default function LandingPage() {
               whiteSpace: "nowrap",
               display: "flex",
               flexDirection: "column",
-              width: "200px", // Fixed width for left column to prevent movement
+              width: "200px",
             }}
           >
             {tabItems.map((tab, index) => (
@@ -90,7 +79,7 @@ export default function LandingPage() {
                   border: "1px solid #ccc",
                   borderRadius: "5px",
                   textAlign: "center",
-                  width: "100%", // Full width to prevent content shift
+                  width: "100%",
                 }}
               >
                 {tab.title}
@@ -101,17 +90,7 @@ export default function LandingPage() {
 
         {/* Right Column for Content */}
         <Grid.Col span={9.5}>
-          <div
-            style={{
-              padding: "20px",
-              border: "1px solid #ccc",
-              backgroundColor: "white",
-              borderRadius: "5px",
-              minHeight: "300px", // Set a consistent height for content to avoid shifting
-            }}
-          >
-            {renderTabContent()}
-          </div>
+          <div className={`${classes.flex}`}>{renderTabContent()}</div>
         </Grid.Col>
       </Grid>
     </Container>

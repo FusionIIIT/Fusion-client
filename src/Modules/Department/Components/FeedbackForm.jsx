@@ -47,7 +47,7 @@ const styles = {
   },
 };
 
-export default function MakeAnnouncement({ department }) {
+export default function Feedbackform({ branch }) {
   const [feedback, setFeedback] = useState("");
   const [rating, setRating] = useState("5");
   const handleFeedbackChange = (e) => {
@@ -58,7 +58,7 @@ export default function MakeAnnouncement({ department }) {
   };
   const handleSubmit = (e) => {
     e.preventDefault();
-    alert(`Feedback for ${department}: ${feedback} \nRating: ${rating}`);
+    alert(`Feedback for ${branch}: ${feedback} \nRating: ${rating}`);
     // Handle form submission (API call etc.)
   };
 
@@ -72,7 +72,7 @@ export default function MakeAnnouncement({ department }) {
             height: "auto", // Adjust height based on content
           }}
         >
-          <h2>{department} Department Feedback</h2>
+          <h2>{branch} Department Feedback</h2>
         </div>
 
         <div style={styles.formGroup}>
@@ -115,6 +115,6 @@ export default function MakeAnnouncement({ department }) {
   );
 }
 
-MakeAnnouncement.propTypes = {
-  department: PropTypes.string.isRequired,
+Feedbackform.propTypes = {
+  branch: PropTypes.string.isRequired,
 };

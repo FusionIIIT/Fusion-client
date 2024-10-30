@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, lazy } from "react";
 import PropTypes from "prop-types";
-import SpecialTable from "./SpecialTable";
+
+const SpecialTable = lazy(() => import("./SpecialTable.jsx"));
 
 const columns = [
   {
@@ -25,39 +26,37 @@ const columns = [
   },
 ];
 
-function Faculty({ department }) {
+function Faculty({ branch, faculty }) {
   const [facultyData, setFacultyData] = useState([]);
-  const authToken = ""; // Replace this with your actual auth token
 
   // Fetch faculty data from API with Auth Token
   useEffect(() => {
+    // Ensure the token is correctly fetched from local storage
+    const authToken = localStorage.getItem("authToken");
+
     fetch("http://127.0.0.1:8000/dep/api/dep-main/", {
       method: "GET",
       headers: {
-        Authorization: `Token ${localStorage.getItem("authToken")}`,
+        Authorization: `Token ${authToken}`,
         "Content-Type": "application/json",
       },
     })
       .then((response) => response.json())
       .then((data) => {
         // Combine all faculty lists from different departments into one array
-        const combinedFacultyList = [...data.fac_list[department]];
+        const combinedFacultyList = [...data.fac_list[faculty]];
 
-        combinedFacultyList.map((facultyMember) => ({
-          ...facultyMember,
-        }));
+        // Update the state with the fetched faculty data
         setFacultyData(combinedFacultyList);
       })
       .catch((error) => {
         console.error("Error fetching faculty data:", error);
       });
-  }, [authToken]);
-
-  // Helper function to get department name based on ID (you can adjust based on your department schema)
+  }, [faculty]); // Added department as a dependency
 
   return (
     <SpecialTable
-      title="Faculties"
+      title={`Faculties in ${branch} Department`} // Updated title to show current department
       columns={columns}
       data={facultyData} // Use dynamic faculty data from API
       rowOptions={["10", "20", "30"]}
@@ -66,7 +65,8 @@ function Faculty({ department }) {
 }
 
 Faculty.propTypes = {
-  department: PropTypes.string.isRequired,
+  faculty: PropTypes.string.isRequired,
+  branch: PropTypes.string.isRequired,
 };
 
 export default Faculty;

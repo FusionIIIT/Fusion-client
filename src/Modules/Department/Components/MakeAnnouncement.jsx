@@ -1,165 +1,183 @@
 import React, { useState } from "react";
-import classes from "../styles/Departmentmodule.module.css";
+import axios from "axios";
+import {
+  Paper,
+  Textarea,
+  FileInput,
+  Select,
+  Button,
+  Grid,
+  Title,
+  Text,
+  Group,
+} from "@mantine/core";
 
-const styles = {
-  formContainer: {
-    width: "600px", // Increased width to 600px for a more spacious layout
-    margin: "auto",
-    padding: "20px",
-    border: "1px solid #ccc",
-    borderRadius: "10px",
-    backgroundColor: "#f9f9f9",
-  },
-  formGroup: {
-    marginBottom: "15px",
-  },
-  input: {
-    width: "100%", // Full width for input elements
-    padding: "14px", // More padding for better spacing and ease of use
-    margin: "5px 0",
-    borderRadius: "4px",
-    border: "1px solid #ccc",
-  },
-  textarea: {
-    width: "100%", // Full width for the textarea
-    padding: "14px", // More padding for the textarea
-    height: "150px", // Increased height for the textarea to allow more content
-    borderRadius: "4px",
-    border: "1px solid #ccc",
-  },
-  button: {
-    width: "100%",
-    padding: "16px", // Increased padding for a larger, more prominent button
-    backgroundColor: "#7b4bff",
-    color: "white",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-    fontSize: "20px", // Larger font size for the button
-  },
-  header: {
-    textAlign: "left",
-    fontSize: "24px", // Increased the font size of the header for better visibility
-    fontWeight: "bold",
-    marginBottom: "15px",
-  },
-};
-
-export default function MakeAnnouncement() {
+function MakeAnnouncement() {
   const [programme, setProgramme] = useState("");
   const [batch, setBatch] = useState("");
   const [department, setDepartment] = useState("");
   const [announcement, setAnnouncement] = useState("");
   const [file, setFile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [key, setKey] = useState(0); // State to force re-render
 
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
+  const resetFormFields = () => {
+    setProgramme("");
+    setBatch("");
+    setDepartment("");
+    setAnnouncement("");
+    setFile(null);
+    setIsSuccess(false);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log({
-      programme,
-      batch,
-      department,
-      announcement,
-      file,
-    });
+    setLoading(true);
+    setErrorMessage("");
+    setIsSuccess(false);
+
+    const token = localStorage.getItem("authToken");
+
+    const url = "http://127.0.0.1:8000/dep/api/announcements/";
+
+    const formData = new FormData();
+    formData.append("programme", programme);
+    formData.append("batch", batch);
+    formData.append("department", department);
+    formData.append("message", announcement);
+    if (file) {
+      formData.append("upload_announcement", file);
+    }
+
+    try {
+      const response = await axios.post(url, formData, {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      });
+
+      setIsSuccess(true);
+      console.log("Announcement registered:", response.data);
+
+      setTimeout(() => {
+        resetFormFields();
+        setKey((prevKey) => prevKey + 1); // Change the key to force re-render
+      }, 2000);
+    } catch (error) {
+      const errorResponse = error.response?.data || error.message;
+      setErrorMessage(
+        errorResponse.detail ||
+          "Error creating Announcement. Please try again.",
+      );
+      console.error("Error creating Announcement:", errorResponse);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className={`${classes.flex} ${classes.w_full}`}>
-      <form onSubmit={handleSubmit} style={styles.formContainer}>
-        <h2 style={styles.header}>CREATE ANNOUNCEMENT:</h2>
+    <Grid mt="xl" style={{ paddingLeft: "49px" }}>
+      <Paper
+        key={key}
+        radius="md"
+        px="lg"
+        pt="sm"
+        pb="xl"
+        style={{
+          borderLeft: "0.6rem solid #15ABFF",
+          width: "60vw",
+          backgroundColor: "white",
+          minHeight: "45vh",
+          maxHeight: "70vh",
+        }}
+        withBorder
+        maw="1240px"
+      >
+        <Title order={3} mb="md">
+          Create Announcement
+        </Title>
 
-        <div style={styles.formGroup}>
-          <label htmlFor="programmeType">
-            Programme Type*
-            <select
-              value={programme}
-              onChange={(e) => setProgramme(e.target.value)}
-              style={styles.input}
-              id="programmeType"
+        {errorMessage && (
+          <Text color="red" mb="md">
+            {errorMessage}
+          </Text>
+        )}
+
+        <form onSubmit={handleSubmit}>
+          <Grid>
+            <Grid.Col span={6}>
+              <Select
+                label="Programme"
+                placeholder="Select Programme Type"
+                value={programme}
+                onChange={setProgramme}
+                data={["M.tech", "B.Tech", "Phd", "other"]}
+                required
+                mb="md"
+              />
+            </Grid.Col>
+            <Grid.Col span={6}>
+              <Select
+                label="batch"
+                placeholder="Select Batch"
+                value={batch}
+                onChange={setBatch}
+                data={["All", "Year-1", "Year-2", "Year-3", "Year-4"]}
+                required
+                mb="md"
+              />
+            </Grid.Col>
+          </Grid>
+          <Grid>
+            <Grid.Col span={6}>
+              <Select
+                label="deaprtment"
+                placeholder="Select Deaprtment Type"
+                value={department}
+                onChange={setDepartment}
+                data={["ALL", "CSE", "ECE", "ME", "SM"]}
+                required
+                mb="md"
+              />
+            </Grid.Col>
+          </Grid>
+          <Textarea
+            label="Announcement Details"
+            placeholder="What is the Announcement?"
+            value={announcement}
+            onChange={(e) => setAnnouncement(e.target.value)}
+            required
+            mb="md"
+          />
+          <FileInput
+            label="Attach Files (PDF, JPEG, PNG, JPG)"
+            placeholder="Choose File"
+            accept=".pdf,.jpeg,.png,.jpg"
+            onChange={setFile}
+            mb="md"
+          />
+          <br />
+          <Group position="right" mt="xs">
+            <Button
+              type="submit"
+              style={{
+                width: "150px",
+                backgroundColor: isSuccess ? "#2BB673" : undefined,
+                color: isSuccess ? "black" : "white",
+              }}
+              variant="filled"
+              color="blue"
+              loading={loading}
             >
-              <option value="">Select Programme</option>
-              <option value="Programme 1">M.Tech</option>
-              <option value="Programme 2">B.Tech</option>
-              <option value="Programme 3">Phd</option>
-              <option value="Programme 4">Other</option>
-              {/* Add more options as needed */}
-            </select>
-          </label>
-        </div>
-
-        <div style={styles.formGroup}>
-          <label htmlFor="batch">
-            Batch
-            <select
-              value={batch}
-              onChange={(e) => setBatch(e.target.value)}
-              style={styles.input}
-              id="batch"
-            >
-              <option value="">Select Batch</option>
-              <option value="Batch 1">All</option>
-              <option value="Batch 2">Year-1</option>
-              <option value="Batch 3">Year-2</option>
-              <option value="Batch 4">Year-3</option>
-              <option value="Batch 5">Year-4</option>
-              {/* Add more options as needed */}
-            </select>
-          </label>
-        </div>
-
-        <div style={styles.formGroup}>
-          <label htmlFor="department">
-            Department*
-            <select
-              value={department}
-              onChange={(e) => setDepartment(e.target.value)}
-              style={styles.input}
-              id="department"
-            >
-              <option value="">Select Department</option>
-              <option value="Department 1">All</option>
-              <option value="Department 2">CSE</option>
-              <option value="Department 3">ECE</option>
-              <option value="Department 4">ME</option>
-              <option value="Department 5">SM</option>
-              {/* Add more options as needed */}
-            </select>
-          </label>
-        </div>
-
-        <div style={styles.formGroup}>
-          <label htmlFor="announcement">
-            Announcement Details
-            <textarea
-              value={announcement}
-              onChange={(e) => setAnnouncement(e.target.value)}
-              placeholder="What is the Announcement?"
-              style={styles.textarea}
-              id="announcement"
-            />
-          </label>
-        </div>
-
-        <div style={styles.formGroup}>
-          <label htmlFor="attachfiles">
-            Attach Files (PDF, JPEG, PNG, JPG)
-            <input
-              type="file"
-              onChange={handleFileChange}
-              style={styles.input}
-              id="attachfiles"
-            />
-          </label>
-        </div>
-
-        <button type="submit" style={styles.button}>
-          Publish
-        </button>
-      </form>
-    </div>
+              {loading ? "Loading..." : isSuccess ? "Submitted" : "Submit"}
+            </Button>
+          </Group>
+        </form>
+      </Paper>
+    </Grid>
   );
 }
+
+export default MakeAnnouncement;
