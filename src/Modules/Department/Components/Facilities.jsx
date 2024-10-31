@@ -21,7 +21,7 @@ const columns = [
   },
 ];
 
-function Facilities() {
+function Facilities({ branch }) {
   const [isEditing, setIsEditing] = useState(false); // State to manage editing
   const role = useSelector((state) => state.user.role);
   const cseLabs = studentData.labs.filter((lab) => lab.department === "CSE");
@@ -33,10 +33,10 @@ function Facilities() {
   return (
     <div>
       {isEditing ? ( // Conditionally render the EditFacilities component
-        <EditFacilities setIsEditing={setIsEditing} />
+        <EditFacilities branch={branch} setIsEditing={setIsEditing} />
       ) : (
         <>
-          <FacilitiesDescriptive />
+          <FacilitiesDescriptive branch={branch} />
           <div
             style={{
               display: "flex",

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-export default function FacilitiesDescriptive() {
+export default function FacilitiesDescriptive({ branch }) {
   const [data, setData] = useState({
     phone_number: "",
     email: "",
@@ -15,11 +15,28 @@ export default function FacilitiesDescriptive() {
         );
         const result = await response.json();
 
-        // Assuming result is structured as an object with phone_number, email, and facilites fields
+        // Filter the data based on the branch
+        const branchData = result.find((item) => {
+          // Match branch name to ID: CSE: 1, ECE: 2, ME: 3, SM: 4
+          switch (branch) {
+            case "CSE":
+              return item.id === 1;
+            case "ECE":
+              return item.id === 2;
+            case "ME":
+              return item.id === 3;
+            case "SM":
+              return item.id === 4;
+            default:
+              return null; // No matching branch found
+          }
+        });
+
+        // Set the data to state, fallback to "NA" if not found
         setData({
-          phone_number: result.phone_number || "NA",
-          email: result.email || "NA",
-          facilites: result.facilites || "NA",
+          phone_number: branchData?.phone_number || "NA",
+          email: branchData?.email || "NA",
+          facilites: branchData?.facilites || "NA",
         });
       } catch (error) {
         console.error("Error fetching information data:", error);
@@ -27,7 +44,7 @@ export default function FacilitiesDescriptive() {
     };
 
     fetchData();
-  }, []);
+  }, [branch]); // Adding branch as a dependency
 
   return (
     <div

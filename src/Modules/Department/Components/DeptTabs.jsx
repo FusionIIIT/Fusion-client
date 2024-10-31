@@ -59,7 +59,7 @@ function DeptTabs({ branch }) {
       case "4":
         return <Alumnicat />;
       case "5":
-        return <Facilities />;
+        return <Facilities branch={branch} />;
       case "6":
         return <Stock />;
       default:
