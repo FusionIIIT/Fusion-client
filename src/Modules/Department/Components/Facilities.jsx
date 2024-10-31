@@ -1,3 +1,5 @@
+// Facilities.jsx
+
 import React, { useState, lazy } from "react";
 import { useSelector } from "react-redux";
 import SpecialTable from "./SpecialTable";
@@ -22,21 +24,28 @@ const columns = [
 ];
 
 function Facilities() {
-  const [isEditing, setIsEditing] = useState(false); // State to manage editing
+  const [isEditing, setIsEditing] = useState(false);
   const role = useSelector((state) => state.user.role);
   const cseLabs = studentData.labs.filter((lab) => lab.department === "CSE");
 
   const handleEditClick = () => {
-    setIsEditing(true); // Set editing mode to true when edit button is clicked
+    setIsEditing(true);
   };
+
+  // Extract contact info from studentData
+  const { phoneNumber, email, facilities } = studentData.contactInfo || {};
 
   return (
     <div>
-      {isEditing ? ( // Conditionally render the EditFacilities component
+      {isEditing ? (
         <EditFacilities setIsEditing={setIsEditing} />
       ) : (
         <>
-          <FacilitiesDescriptive />
+          <FacilitiesDescriptive
+            phoneNumber={phoneNumber}
+            email={email}
+            facilities={facilities}
+          />
           <div
             style={{
               display: "flex",
@@ -48,7 +57,7 @@ function Facilities() {
           >
             {(role === "dept_admin" || role === "HOD (CSE)") && (
               <button
-                onClick={handleEditClick} // Call handleEditClick on button click
+                onClick={handleEditClick}
                 style={{
                   padding: "5px 20px",
                   backgroundColor: "indigo",
