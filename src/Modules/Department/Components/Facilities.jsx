@@ -1,10 +1,9 @@
-import React, { useState, lazy } from "react";
+import React, { useState, lazy, useEffect } from "react";
 import { useSelector } from "react-redux";
+import axios from "axios"; // Import axios
 import SpecialTable from "./SpecialTable";
-import studentData from "./Data/Data";
-
-const FacilitiesDescriptive = lazy(() => import("./FacilitiesDescriptive.jsx"));
-const EditFacilities = lazy(() => import("./EditFacilities.jsx"));
+import FacilitiesDescriptive from "./FacilitiesDescriptive.jsx";
+import EditFacilities from "./EditFacilities.jsx";
 
 const columns = [
   {
@@ -24,7 +23,33 @@ const columns = [
 function Facilities({ branch }) {
   const [isEditing, setIsEditing] = useState(false); // State to manage editing
   const role = useSelector((state) => state.user.role);
-  const cseLabs = studentData.labs.filter((lab) => lab.department === "CSE");
+  const [labs, setLabs] = useState([]); // State to store labs data
+
+  useEffect(() => {
+    // Fetch the lab data from the API
+    const fetchLabs = async () => {
+      const token = localStorage.getItem("authToken"); // Get the token from local storage
+
+      try {
+        const response = await axios.get(
+          "http://127.0.0.1:8000/dep/api/labs/",
+          {
+            headers: {
+              Authorization: `Token ${token}`, // Include the token in the headers
+            },
+          },
+        );
+        setLabs(response.data); // Set labs data from the response
+      } catch (error) {
+        console.error("Error fetching labs:", error);
+      }
+    };
+
+    fetchLabs(); // Call the function to fetch labs
+  }, []); // Empty dependency array to run once on mount
+
+  // Filter labs based on branch
+  const filteredLabs = labs.filter((lab) => lab.department === branch);
 
   const handleEditClick = () => {
     setIsEditing(true); // Set editing mode to true when edit button is clicked
@@ -85,7 +110,7 @@ function Facilities({ branch }) {
           <SpecialTable
             title="Labs"
             columns={columns}
-            data={cseLabs}
+            data={filteredLabs} // Feed the filtered labs based on the branch
             rowOptions={["3", "4", "6"]}
           />
         </>

@@ -31,6 +31,9 @@ const EditFacilities = ({ setIsEditing, branch }) => {
   const [labName, setLabName] = useState("");
   const [labCapacity, setLabCapacity] = useState("");
   const [labLocation, setLabLocation] = useState("");
+  const [labLoading, setLabLoading] = useState(false); // To manage loading state for labs
+  const [labErrorMessage, setLabErrorMessage] = useState(""); // To handle errors for labs
+  const [labIsSuccess, setLabIsSuccess] = useState(false); // To handle success message for labs
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -76,14 +79,48 @@ const EditFacilities = ({ setIsEditing, branch }) => {
     }
   };
 
-  const handleLabSubmit = (e) => {
+  const handleLabSubmit = async (e) => {
     e.preventDefault();
-    // This form doesn't connect to any backend, so just reset the fields
-    setLabName("");
-    setLabCapacity("");
-    setLabLocation("");
-    console.log("Lab Data Submitted:", { labName, labCapacity, labLocation });
-    // You can handle lab data here, e.g., log it or show a success message
+    setLabLoading(true); // Start loading for lab submission
+
+    const token = localStorage.getItem("authToken"); // Get token from local storage
+
+    // Construct the data to be sent for lab
+    const labData = {
+      name: labName,
+      capacity: labCapacity,
+      location: labLocation,
+      department: branch, // Include the branch in the request
+    };
+
+    try {
+      // Make the API request using POST method
+      const response = await axios.post(
+        "http://127.0.0.1:8000/dep/api/labsadd/",
+        labData,
+        {
+          headers: {
+            Authorization: `Token ${token}`, // Include the token in the headers
+          },
+        },
+      );
+
+      console.log("Lab Data Submitted:", response.data); // Log the response
+      setLabIsSuccess(true); // Set success state for lab submission
+
+      // Reset the form fields
+      setLabName("");
+      setLabCapacity("");
+      setLabLocation("");
+    } catch (error) {
+      const errorResponse = error.response?.data || error.message;
+      setLabErrorMessage(
+        errorResponse.detail || "Error adding lab. Please try again.",
+      );
+      console.error("Error adding lab:", errorResponse);
+    } finally {
+      setLabLoading(false); // Stop loading for lab submission
+    }
   };
 
   return (
@@ -179,9 +216,16 @@ const EditFacilities = ({ setIsEditing, branch }) => {
             <Button
               type="submit"
               style={{ backgroundColor: "indigo", marginTop: "20px" }}
+              loading={labLoading} // Manage loading state for labs
             >
-              Add
+              {labLoading ? "Adding..." : "Add"}
             </Button>
+            {labIsSuccess && (
+              <p style={{ color: "green" }}>Lab added successfully!</p>
+            )}
+            {labErrorMessage && (
+              <p style={{ color: "red" }}>{labErrorMessage}</p>
+            )}
           </form>
         </div>
       </Container>
