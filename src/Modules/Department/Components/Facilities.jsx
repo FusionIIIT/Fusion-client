@@ -30,6 +30,26 @@ function Facilities({ branch }) {
     setIsEditing(true); // Set editing mode to true when edit button is clicked
   };
 
+  // Determine if the edit button should be shown based on branch and role
+  const isEditButtonVisible = () => {
+    const allowedRoles = ["HOD", "admin"];
+    const rolePrefix = role.split(" ")[0]; // Get the prefix of the role, e.g., "HOD" or "admin"
+
+    // Check if the role is allowed for the specific branch
+    switch (branch) {
+      case "CSE":
+        return allowedRoles.includes(rolePrefix) && role.includes("(CSE)");
+      case "ECE":
+        return allowedRoles.includes(rolePrefix) && role.includes("(ECE)");
+      case "SM":
+        return allowedRoles.includes(rolePrefix) && role.includes("(SM)");
+      case "ME":
+        return allowedRoles.includes(rolePrefix) && role.includes("(ME)");
+      default:
+        return false;
+    }
+  };
+
   return (
     <div>
       {isEditing ? ( // Conditionally render the EditFacilities component
@@ -46,7 +66,7 @@ function Facilities({ branch }) {
               marginTop: "10px",
             }}
           >
-            {(role === "dept_admin" || role === "HOD (CSE)") && (
+            {isEditButtonVisible() && ( // Check if the edit button should be visible
               <button
                 onClick={handleEditClick} // Call handleEditClick on button click
                 style={{
