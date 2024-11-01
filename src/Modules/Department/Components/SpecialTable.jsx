@@ -18,7 +18,7 @@ function SpecialTable({ title, columns, data, rowOptions }) {
   const table = useMantineReactTable({
     columns,
     data,
-    enableRowSelection: true,
+    enableRowSelection: false, // Disable row selection checkboxes
     initialState: {
       pagination: {
         pageSize: rowOptions ? parseInt(rowOptions[0]) : 5,
@@ -96,9 +96,9 @@ function SpecialTable({ title, columns, data, rowOptions }) {
 
 SpecialTable.propTypes = {
   title: PropTypes.string.isRequired,
-  columns: PropTypes.arrayOf.isRequired,
-  data: PropTypes.arrayOf.isRequired,
-  rowOptions: PropTypes.arrayOf.isRequired,
+  columns: PropTypes.arrayOf(PropTypes.object).isRequired,
+  data: PropTypes.arrayOf(PropTypes.object).isRequired,
+  rowOptions: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 
 export default SpecialTable;

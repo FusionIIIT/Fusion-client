@@ -83,6 +83,13 @@ function Facilities({ branch }) {
       ) : (
         <>
           <FacilitiesDescriptive branch={branch} />
+          <SpecialTable
+            title="Labs"
+            columns={columns}
+            data={filteredLabs} // Feed the filtered labs based on the branch
+            rowOptions={["3", "4", "6"]}
+            onRowSelectionChange={setSelectedLabs} // Assuming the SpecialTable accepts this prop
+          />
           <div
             style={{
               display: "flex",
@@ -108,30 +115,6 @@ function Facilities({ branch }) {
               </button>
             )}
           </div>
-          <SpecialTable
-            title="Labs"
-            columns={columns}
-            data={filteredLabs} // Feed the filtered labs based on the branch
-            rowOptions={["3", "4", "6"]}
-            onRowSelectionChange={setSelectedLabs} // Assuming the SpecialTable accepts this prop
-          />
-          {isEditButtonVisible() && ( // Keep the delete button visible
-            <div style={{ marginTop: "10px", textAlign: "right" }}>
-              <button
-                onClick={() => {}} // No action for delete button
-                style={{
-                  padding: "5px 20px",
-                  backgroundColor: "red",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "5px",
-                  cursor: "pointer",
-                }}
-              >
-                Delete Selected
-              </button>
-            </div>
-          )}
         </>
       )}
     </div>

@@ -1,6 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios"; // Import axios
-import { TextInput, Textarea, Button, Container, Title } from "@mantine/core";
+import {
+  TextInput,
+  Textarea,
+  Button,
+  Container,
+  Title,
+  Table,
+  Flex,
+  Divider,
+  Stack,
+} from "@mantine/core";
 
 const GoBackButton = ({ setIsEditing }) => (
   <button
@@ -34,6 +44,34 @@ const EditFacilities = ({ setIsEditing, branch }) => {
   const [labLoading, setLabLoading] = useState(false); // To manage loading state for labs
   const [labErrorMessage, setLabErrorMessage] = useState(""); // To handle errors for labs
   const [labIsSuccess, setLabIsSuccess] = useState(false); // To handle success message for labs
+
+  // State for labs data
+  const [labs, setLabs] = useState([]);
+  const [selectedLabs, setSelectedLabs] = useState([]); // State to store selected labs for potential deletion
+
+  // Fetch the labs data when the component mounts
+  useEffect(() => {
+    const fetchLabs = async () => {
+      const token = localStorage.getItem("authToken"); // Get token from local storage
+
+      try {
+        const response = await axios.get(
+          "http://127.0.0.1:8000/dep/api/labs/",
+          {
+            headers: {
+              Authorization: `Token ${token}`, // Include the token in the headers
+            },
+          },
+        );
+        // Filter labs by the current branch
+        setLabs(response.data.filter((lab) => lab.department === branch));
+      } catch (error) {
+        console.error("Error fetching labs:", error);
+      }
+    };
+
+    fetchLabs(); // Call the function to fetch labs
+  }, [branch]); // Run when branch changes
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -112,6 +150,16 @@ const EditFacilities = ({ setIsEditing, branch }) => {
       setLabName("");
       setLabCapacity("");
       setLabLocation("");
+      // Re-fetch labs to update the table after adding a new lab
+      const responseLabs = await axios.get(
+        "http://127.0.0.1:8000/dep/api/labs/",
+        {
+          headers: {
+            Authorization: `Token ${token}`, // Include the token in the headers
+          },
+        },
+      );
+      setLabs(responseLabs.data.filter((lab) => lab.department === branch));
     } catch (error) {
       const errorResponse = error.response?.data || error.message;
       setLabErrorMessage(
@@ -123,6 +171,60 @@ const EditFacilities = ({ setIsEditing, branch }) => {
     }
   };
 
+  const handleLabSelection = (labId) => {
+    setSelectedLabs((prev) =>
+      prev.includes(labId)
+        ? prev.filter((id) => id !== labId)
+        : [...prev, labId],
+    );
+  };
+
+  const handleDeleteLabs = async () => {
+    console.log("Selected Labs for Deletion:", selectedLabs); // Check selected labs
+
+    if (selectedLabs.length === 0) {
+      alert("No labs selected for deletion.");
+      return; // Exit if no labs are selected
+    }
+
+    const token = localStorage.getItem("authToken"); // Get token from local storage
+
+    try {
+      const response = await axios.delete(
+        "http://127.0.0.1:8000/dep/api/labs/delete/",
+        {
+          headers: {
+            Authorization: `Token ${token}`, // Include the token in the headers
+          },
+          data: {
+            lab_ids: selectedLabs, // Send the selected lab IDs as an array
+          },
+        },
+      );
+
+      console.log("Labs Deleted:", response.data); // Log the response
+      // Re-fetch labs to update the table after deletion
+      const responseLabs = await axios.get(
+        "http://127.0.0.1:8000/dep/api/labs/",
+        {
+          headers: {
+            Authorization: `Token ${token}`, // Include the token in the headers
+          },
+        },
+      );
+      setLabs(responseLabs.data.filter((lab) => lab.department === branch));
+
+      // Reset selected labs
+      setSelectedLabs([]);
+    } catch (error) {
+      const errorResponse = error.response?.data || error.message;
+      setErrorMessage(
+        errorResponse.detail || "Error deleting labs. Please try again.",
+      );
+      console.error("Error deleting labs:", errorResponse);
+    }
+  };
+
   return (
     <div>
       <GoBackButton setIsEditing={setIsEditing} />
@@ -130,7 +232,6 @@ const EditFacilities = ({ setIsEditing, branch }) => {
         style={{
           padding: "20px",
           borderRadius: "8px",
-          // Removed border from Container
           display: "flex",
           flexDirection: "column", // Set to column for the GoBackButton and Title
         }}
@@ -168,21 +269,21 @@ const EditFacilities = ({ setIsEditing, branch }) => {
               label="Facilities Description"
               value={facilitiesDescription}
               onChange={(e) => setFacilitiesDescription(e.target.value)}
-              style={{ marginBottom: "20px" }}
+              style={{ marginBottom: "15px" }}
             />
             <Button
               type="submit"
-              style={{ backgroundColor: "indigo" }}
               loading={loading}
+              style={{ marginTop: "15px", backgroundColor: "indigo" }}
             >
-              {loading ? "Updating..." : "Update"}
+              Submit
             </Button>
             {isSuccess && (
-              <p style={{ color: "green" }}>Data updated successfully!</p>
+              <p style={{ color: "green" }}>Facilities updated successfully!</p>
             )}
           </form>
 
-          {/* Edit Labs Form */}
+          {/* Labs Form */}
           <form
             onSubmit={handleLabSubmit}
             style={{
@@ -193,41 +294,77 @@ const EditFacilities = ({ setIsEditing, branch }) => {
             }}
           >
             <Title order={6} style={{ marginBottom: "20px" }}>
-              Labs
+              Add Lab
             </Title>
             <TextInput
-              label="Name"
+              label="Lab Name"
               value={labName}
               onChange={(e) => setLabName(e.target.value)}
               style={{ marginBottom: "15px" }}
             />
             <TextInput
-              label="Capacity"
+              label="Lab Capacity"
               value={labCapacity}
               onChange={(e) => setLabCapacity(e.target.value)}
               style={{ marginBottom: "15px" }}
             />
             <TextInput
-              label="Location"
+              label="Lab Location"
               value={labLocation}
               onChange={(e) => setLabLocation(e.target.value)}
-              style={{ marginBottom: "20px" }}
+              style={{ marginBottom: "15px" }}
             />
             <Button
               type="submit"
-              style={{ backgroundColor: "indigo", marginTop: "20px" }}
-              loading={labLoading} // Manage loading state for labs
+              loading={labLoading}
+              style={{ marginTop: "35px", backgroundColor: "indigo" }}
             >
-              {labLoading ? "Adding..." : "Add"}
+              Add Lab
             </Button>
             {labIsSuccess && (
               <p style={{ color: "green" }}>Lab added successfully!</p>
             )}
-            {labErrorMessage && (
-              <p style={{ color: "red" }}>{labErrorMessage}</p>
-            )}
           </form>
         </div>
+
+        <Divider style={{ margin: "20px 0" }} />
+
+        <Title order={6} style={{ marginBottom: "20px" }}>
+          Labs
+        </Title>
+        <Table>
+          <thead>
+            <tr>
+              <th></th>
+              <th>Lab Name</th>
+              <th>Capacity</th>
+              <th>Location</th>
+            </tr>
+          </thead>
+          <tbody>
+            {labs.map((lab) => (
+              <tr key={lab.id}>
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={selectedLabs.includes(lab.id)}
+                    onChange={() => handleLabSelection(lab.id)}
+                  />
+                </td>
+                <td>{lab.name}</td>
+                <td>{lab.capacity}</td>
+                <td>{lab.location}</td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+        <Button
+          onClick={handleDeleteLabs}
+          disabled={selectedLabs.length === 0} // Disable if no labs are selected
+          style={{ marginTop: "20px", backgroundColor: "indigo" }}
+        >
+          Delete Selected Labs
+        </Button>
       </Container>
     </div>
   );
