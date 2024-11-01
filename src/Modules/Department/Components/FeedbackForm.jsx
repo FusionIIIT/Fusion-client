@@ -50,15 +50,25 @@ const styles = {
 export default function Feedbackform({ branch }) {
   const [feedback, setFeedback] = useState("");
   const [rating, setRating] = useState("5");
+  const [selectedDepartment, setSelectedDepartment] = useState(""); // New state for selected department
+
   const handleFeedbackChange = (e) => {
     setFeedback(e.target.value);
   };
+
   const handleRatingChange = (e) => {
     setRating(e.target.value);
   };
+
+  const handleDepartmentChange = (e) => {
+    setSelectedDepartment(e.target.value); // Update selected department state
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    alert(`Feedback for ${branch}: ${feedback} \nRating: ${rating}`);
+    alert(
+      `Feedback for ${branch}: ${feedback} \nRating: ${rating} \nSelected Department: ${selectedDepartment}`,
+    );
     // Handle form submission (API call etc.)
   };
 
@@ -72,12 +82,12 @@ export default function Feedbackform({ branch }) {
             height: "auto", // Adjust height based on content
           }}
         >
-          <h2>{branch} Department Feedback</h2>
+          <h2> Department Feedback</h2>
         </div>
 
         <div style={styles.formGroup}>
           <label htmlFor="feedback">
-            Your Feedback:
+            Remark:
             <textarea
               value={feedback}
               onChange={handleFeedbackChange}
@@ -90,19 +100,37 @@ export default function Feedbackform({ branch }) {
 
         <div style={styles.formGroup}>
           <label htmlFor="rating">
-            Programme Type*
+            Rating
             <select
               value={rating}
               onChange={handleRatingChange}
               style={styles.input}
               id="rating"
             >
-              <option value="1">1 - Poor</option>
-              <option value="2">2 - Fair</option>
-              <option value="3">3 - Good</option>
-              <option value="4">4 - Very Good</option>
-              <option value="5">5 - Excellent</option>
+              <option value="1">Poor</option>
+              <option value="2">Good</option>
+              <option value="3">Excellent</option>
               {/* Add more options as needed */}
+            </select>
+          </label>
+        </div>
+
+        <div style={styles.formGroup}>
+          <label htmlFor="department">
+            Select Department
+            <select
+              value={selectedDepartment}
+              onChange={handleDepartmentChange}
+              style={styles.input}
+              id="department"
+            >
+              <option value="">Select a department</option>
+              <option value="CSE">CSE</option>
+              <option value="ECE">ECE</option>
+              <option value="ME">ME</option>
+              <option value="SM">SM</option>
+              <option value="BDES">BDES</option>
+              <option value="Liberal Arts">Liberal Arts</option>
             </select>
           </label>
         </div>
