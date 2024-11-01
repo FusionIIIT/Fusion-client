@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios"; // Import axios
-import SpecialTable from "./SpecialTable";
 import FacilitiesDescriptive from "./FacilitiesDescriptive.jsx";
 import EditFacilities from "./EditFacilities.jsx";
+import SpecialTable from "./SpecialTable"; // Make sure to keep this import
 
 const columns = [
   {
@@ -19,25 +19,6 @@ const columns = [
     header: "Location",
   },
 ];
-
-const deleteLabs = async (labIds) => {
-  const token = localStorage.getItem("authToken"); // Get the token from local storage
-  try {
-    const response = await axios.delete(
-      "http://127.0.0.1:8000/dep/api/labs/delete/",
-      {
-        headers: {
-          Authorization: `Token ${token}`, // Include the token in the headers
-        },
-        data: { lab_ids: labIds }, // Pass lab IDs in the request body
-      },
-    );
-    console.log(response.data);
-    // Optionally, refresh the lab list or update state after deletion
-  } catch (error) {
-    console.error("There was an error deleting the labs:", error.response.data);
-  }
-};
 
 function Facilities({ branch }) {
   const [isEditing, setIsEditing] = useState(false); // State to manage editing
@@ -95,29 +76,6 @@ function Facilities({ branch }) {
     }
   };
 
-  // Handle deletion of selected labs
-  const handleDeleteSelected = async () => {
-    if (window.confirm(`Are you sure you want to delete these labs?`)) {
-      await deleteLabs(selectedLabs);
-      // Fetch labs again after deletion
-      const token = localStorage.getItem("authToken"); // Get the token from local storage
-      try {
-        const response = await axios.get(
-          "http://127.0.0.1:8000/dep/api/labs/",
-          {
-            headers: {
-              Authorization: `Token ${token}`, // Include the token in the headers
-            },
-          },
-        );
-        setLabs(response.data); // Update labs data after deletion
-        setSelectedLabs([]); // Clear selected labs
-      } catch (error) {
-        console.error("Error fetching labs after deletion:", error);
-      }
-    }
-  };
-
   return (
     <div>
       {isEditing ? ( // Conditionally render the EditFacilities component
@@ -157,10 +115,10 @@ function Facilities({ branch }) {
             rowOptions={["3", "4", "6"]}
             onRowSelectionChange={setSelectedLabs} // Assuming the SpecialTable accepts this prop
           />
-          {isEditButtonVisible() && ( // Check if the delete button should be visible
+          {isEditButtonVisible() && ( // Keep the delete button visible
             <div style={{ marginTop: "10px", textAlign: "right" }}>
               <button
-                onClick={handleDeleteSelected} // Call handleDeleteSelected on button click
+                onClick={() => {}} // No action for delete button
                 style={{
                   padding: "5px 20px",
                   backgroundColor: "red",
