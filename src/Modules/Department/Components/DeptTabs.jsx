@@ -15,6 +15,7 @@ const Announcements = lazy(() => import("./Announcements.jsx"));
 const Alumnicat = lazy(() => import("./Alumnicat.jsx"));
 const Stock = lazy(() => import("./Stock.jsx"));
 // const Feedback = lazy(() => import("./Feedback.jsx"));
+const ViewFeedback = lazy(() => import("./ViewFeedback.jsx"));
 
 function DeptTabs({ branch }) {
   const [activeTab, setActiveTab] = useState("0");
@@ -34,7 +35,8 @@ function DeptTabs({ branch }) {
     (branch === "ECE" && (role === "HOD (ECE)" || role === "admin (ECE)")) ||
     (branch === "ME" && (role === "HOD (ME)" || role === "admin (ME)")) ||
     (branch === "BDES" && (role === "HOD (BDES)" || role === "admin (BDES)")) ||
-    (branch === "LA" && (role === "HOD (LA)" || role === "admin (LA)"));
+    (branch === "LA" &&
+      (role === "HOD (Liberal Arts)" || role === "admin (LA)"));
 
   const tabItems = [
     { title: "About Us" },
@@ -80,7 +82,7 @@ function DeptTabs({ branch }) {
         return <Stock />;
       case "7":
         // Render Facilities as a placeholder if Feedback is not available
-        return isFeedbackAvailable ? <Facilities branch={branch} /> : null;
+        return isFeedbackAvailable ? <ViewFeedback branch={branch} /> : null;
       default:
         return null;
     }
