@@ -1,6 +1,7 @@
 import { Button, Container, Flex, Grid, Tabs, Text } from "@mantine/core";
 import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
 import { useRef, useState, Suspense, lazy } from "react";
+import { useSelector } from "react-redux";
 import PropTypes from "prop-types";
 import classes from "../styles/Departmentmodule.module.css";
 
@@ -13,16 +14,27 @@ const Studentcat = lazy(() => import("./Studentcat.jsx"));
 const Announcements = lazy(() => import("./Announcements.jsx"));
 const Alumnicat = lazy(() => import("./Alumnicat.jsx"));
 const Stock = lazy(() => import("./Stock.jsx"));
+// const Feedback = lazy(() => import("./Feedback.jsx"));
 
 function DeptTabs({ branch }) {
   const [activeTab, setActiveTab] = useState("0");
   const tabsListRef = useRef(null);
+
+  const role = useSelector((state) => state.user.role); // Use useSelector to access role
 
   let faculty = "";
   if (branch === "CSE") faculty = "cse_f";
   if (branch === "ECE") faculty = "ece_f";
   if (branch === "ME") faculty = "me_f";
   if (branch === "SM") faculty = "sm_f";
+
+  const isFeedbackAvailable =
+    (branch === "CSE" && (role === "HOD (CSE)" || role === "admin (CSE)")) ||
+    (branch === "SM" && (role === "HOD (SM)" || role === "admin (SM)")) ||
+    (branch === "ECE" && (role === "HOD (ECE)" || role === "admin (ECE)")) ||
+    (branch === "ME" && (role === "HOD (ME)" || role === "admin (ME)")) ||
+    (branch === "BDES" && (role === "HOD (BDES)" || role === "admin (BDES)")) ||
+    (branch === "LA" && (role === "HOD (LA)" || role === "admin (LA)"));
 
   const tabItems = [
     { title: "About Us" },
@@ -33,6 +45,10 @@ function DeptTabs({ branch }) {
     { title: "Facilities" },
     { title: "Stock" },
   ];
+
+  if (isFeedbackAvailable) {
+    tabItems.push({ title: "Feedback" });
+  }
 
   const handleTabChange = (direction) => {
     const newIndex =
@@ -62,6 +78,9 @@ function DeptTabs({ branch }) {
         return <Facilities branch={branch} />;
       case "6":
         return <Stock />;
+      case "7":
+        // Render Facilities as a placeholder if Feedback is not available
+        return isFeedbackAvailable ? <Facilities branch={branch} /> : null;
       default:
         return null;
     }

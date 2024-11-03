@@ -276,7 +276,7 @@ const EditFacilities = ({ setIsEditing, branch }) => {
               loading={loading}
               style={{ marginTop: "15px", backgroundColor: "indigo" }}
             >
-              Submit
+              Update
             </Button>
             {isSuccess && (
               <p style={{ color: "green" }}>Facilities updated successfully!</p>
