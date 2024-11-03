@@ -34,7 +34,8 @@ function DeptTabs({ branch }) {
     (branch === "SM" && (role === "HOD (SM)" || role === "admin (SM)")) ||
     (branch === "ECE" && (role === "HOD (ECE)" || role === "admin (ECE)")) ||
     (branch === "ME" && (role === "HOD (ME)" || role === "admin (ME)")) ||
-    (branch === "BDES" && (role === "HOD (BDES)" || role === "admin (BDES)")) ||
+    (branch === "BDES" &&
+      (role === "HOD (Design)" || role === "admin (Design)")) ||
     (branch === "LA" &&
       (role === "HOD (Liberal Arts)" || role === "admin (LA)"));
 

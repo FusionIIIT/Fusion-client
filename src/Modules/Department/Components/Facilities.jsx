@@ -71,6 +71,8 @@ function Facilities({ branch }) {
         return allowedRoles.includes(rolePrefix) && role.includes("(SM)");
       case "ME":
         return allowedRoles.includes(rolePrefix) && role.includes("(ME)");
+      case "BDES":
+        return allowedRoles.includes(rolePrefix) && role.includes("(Design)");
       default:
         return false;
     }
