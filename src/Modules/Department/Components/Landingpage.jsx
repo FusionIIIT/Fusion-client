@@ -26,13 +26,15 @@ export default function LandingPage() {
       ? [
           { title: "Make Announcement", id: "0" },
           { title: "Browse Announcements", id: "1" },
-          { title: "Provide Feedback", id: "2" },
         ]
       : []),
+    { title: "Provide Feedback", id: "2" },
     { title: "CSE Department", id: "3" },
     { title: "ECE Department", id: "4" },
     { title: "ME Department", id: "5" },
     { title: "SM Department", id: "6" },
+    { title: "Design Department", id: "7" },
+    { title: "Liberal Arts Department", id: "8" },
   ];
 
   const renderTabContent = () => {
@@ -45,6 +47,8 @@ export default function LandingPage() {
         {activeTab === "4" && <DeptTabs branch="ECE" />}
         {activeTab === "5" && <DeptTabs branch="ME" />}
         {activeTab === "6" && <DeptTabs branch="SM" />}
+        {activeTab === "7" && <DeptTabs branch="BDES" />}
+        {activeTab === "8" && <DeptTabs branch="LA" />}
       </Suspense>
     );
   };

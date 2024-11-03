@@ -1,11 +1,11 @@
-/* eslint-disable react/prop-types */
 import React, { useState } from "react";
 import PropTypes from "prop-types";
+import axios from "axios";
 import classes from "../styles/Departmentmodule.module.css";
 
 const styles = {
   formContainer: {
-    width: "600px", // Increased width to 600px for a more spacious layout
+    width: "600px",
     margin: "auto",
     padding: "20px",
     border: "1px solid #ccc",
@@ -16,32 +16,32 @@ const styles = {
     marginBottom: "15px",
   },
   input: {
-    width: "100%", // Full width for input elements
-    padding: "14px", // More padding for better spacing and ease of use
+    width: "100%",
+    padding: "14px",
     margin: "5px 0",
     borderRadius: "4px",
     border: "1px solid #ccc",
   },
   textarea: {
-    width: "100%", // Full width for the textarea
-    padding: "14px", // More padding for the textarea
-    height: "150px", // Increased height for the textarea to allow more content
+    width: "100%",
+    padding: "14px",
+    height: "150px",
     borderRadius: "4px",
     border: "1px solid #ccc",
   },
   button: {
     width: "100%",
-    padding: "16px", // Increased padding for a larger, more prominent button
+    padding: "16px",
     backgroundColor: "#7b4bff",
     color: "white",
     border: "none",
     borderRadius: "4px",
     cursor: "pointer",
-    fontSize: "20px", // Larger font size for the button
+    fontSize: "20px",
   },
   header: {
     textAlign: "left",
-    fontSize: "24px", // Increased the font size of the header for better visibility
+    fontSize: "24px",
     fontWeight: "bold",
     marginBottom: "15px",
   },
@@ -50,16 +50,61 @@ const styles = {
 export default function Feedbackform({ branch }) {
   const [feedback, setFeedback] = useState("");
   const [rating, setRating] = useState("5");
+  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
+
   const handleFeedbackChange = (e) => {
     setFeedback(e.target.value);
   };
+
   const handleRatingChange = (e) => {
     setRating(e.target.value);
   };
-  const handleSubmit = (e) => {
+
+  const handleDepartmentChange = (e) => {
+    setSelectedDepartment(e.target.value);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert(`Feedback for ${branch}: ${feedback} \nRating: ${rating}`);
-    // Handle form submission (API call etc.)
+    setLoading(true);
+    setErrorMessage("");
+    setIsSuccess(false);
+
+    const token = localStorage.getItem("authToken");
+    const url = "http://127.0.0.1:8000/dep/api/feedback/create/";
+
+    const feedbackData = {
+      department: selectedDepartment,
+      rating: rating,
+      remark: feedback,
+    };
+
+    try {
+      const response = await axios.post(url, feedbackData, {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      setIsSuccess(true);
+      console.log("Feedback submitted:", response.data);
+      // Reset form fields after submission if needed
+      setFeedback("");
+      setRating("5");
+      setSelectedDepartment("");
+    } catch (error) {
+      const errorResponse = error.response?.data || error.message;
+      setErrorMessage(
+        errorResponse.detail || "Error submitting feedback. Please try again.",
+      );
+      console.error("Error submitting feedback:", errorResponse);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -68,47 +113,73 @@ export default function Feedbackform({ branch }) {
         <div
           style={{
             display: "flex",
-            justifyContent: "center", // Centers horizontally
-            height: "auto", // Adjust height based on content
+            justifyContent: "center",
+            height: "auto",
           }}
         >
-          <h2>{branch} Department Feedback</h2>
+          <h2>Department Feedback</h2>
         </div>
+
+        {errorMessage && (
+          <div style={{ color: "red", marginBottom: "15px" }}>
+            {errorMessage}
+          </div>
+        )}
 
         <div style={styles.formGroup}>
           <label htmlFor="feedback">
-            Your Feedback:
+            Remark:
             <textarea
               value={feedback}
               onChange={handleFeedbackChange}
               placeholder="Enter your feedback here..."
               style={styles.textarea}
               id="feedback"
+              required
             />
           </label>
         </div>
 
         <div style={styles.formGroup}>
           <label htmlFor="rating">
-            Programme Type*
+            Rating
             <select
               value={rating}
               onChange={handleRatingChange}
               style={styles.input}
               id="rating"
+              required
             >
-              <option value="1">1 - Poor</option>
-              <option value="2">2 - Fair</option>
-              <option value="3">3 - Good</option>
-              <option value="4">4 - Very Good</option>
-              <option value="5">5 - Excellent</option>
-              {/* Add more options as needed */}
+              <option value="Poor">Poor</option>
+              <option value="Good">Good</option>
+              <option value="Excellent">Excellent</option>
             </select>
           </label>
         </div>
 
-        <button type="submit" style={styles.button}>
-          Submit Feedback
+        <div style={styles.formGroup}>
+          <label htmlFor="department">
+            Select Department
+            <select
+              value={selectedDepartment}
+              onChange={handleDepartmentChange}
+              style={styles.input}
+              id="department"
+              required
+            >
+              <option value="">Select a department</option>
+              <option value="CSE">CSE</option>
+              <option value="ECE">ECE</option>
+              <option value="ME">ME</option>
+              <option value="SM">SM</option>
+              <option value="BDES">BDES</option>
+              <option value="LA">Liberal Arts</option>
+            </select>
+          </label>
+        </div>
+
+        <button type="submit" style={styles.button} disabled={loading}>
+          {loading ? "Submitting..." : "Submit Feedback"}
         </button>
       </form>
     </div>
