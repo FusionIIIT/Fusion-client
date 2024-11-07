@@ -1,7 +1,10 @@
-import React from "react";
-import { Card, Text, Badge, Group, Button, Image } from "@mantine/core";
-import { Clock, MapPin } from "@phosphor-icons/react";
+
+import React, { useState } from "react";
+import { Card, Text, Badge, Group, Button, Image, ActionIcon } from "@mantine/core";
+import { Clock, MapPin, Trash, Pencil } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from 'react-redux';
+
 
 function PlacementScheduleCard({
   companyLogo,
@@ -14,6 +17,9 @@ function PlacementScheduleCard({
   description,
   salary,
 }) {
+  const role = useSelector((state) => state.user.role);
+
+  const [visible, setVisible] = useState(true);
   const navigate = useNavigate();
 
   const handleApplyClick = () => {
@@ -21,6 +27,17 @@ function PlacementScheduleCard({
       `/placement-cell/apply?companyName=${encodeURIComponent(companyName)}&companyLogo=${encodeURIComponent(companyLogo)}`,
     );
   };
+
+  const handleDeleteClick = () => {
+    setVisible(false);
+  };
+
+  const handleEditClick = () => {
+    // Logic for editing the event can be added here
+    alert("Edit button clicked!");
+  };
+
+  if (!visible) return null;
 
   return (
     <Card
@@ -30,15 +47,8 @@ function PlacementScheduleCard({
       withBorder
       style={{ maxWidth: 400, position: "relative" }}
     >
-      {/* Deadline on top right */}
-      <Text
-        size="xs"
-        color="dimmed"
-        align="right"
-        style={{ position: "absolute", top: "10px", right: "10px" }}
-      >
-        Deadline: <br /> {deadline}
-      </Text>
+
+
       {/* Logo and Company Information */}
       <Group align="flex-start">
         <Image
@@ -83,18 +93,39 @@ function PlacementScheduleCard({
       >
         {description}
       </Text>
-      <Group position="apart" mt="md">
+      <Group position="apart" mt="md" style={{ display: 'flex', justifyContent: 'space-between' }}>
         <Text size="xl" weight={700} color="blue">
           {salary}
         </Text>
-        <Button
-          variant="light"
-          color="blue"
-          size="xs"
-          onClick={handleApplyClick}
-        >
-          Apply Now
-        </Button>
+
+        {/* Apply now button for students only */}
+
+        {role == 'student' && (
+          <Button
+            variant="light"
+            color="blue"
+            size="xs"
+            onClick={handleApplyClick}
+          >
+            Apply Now
+          </Button>
+        )
+        }
+
+
+        {/* Delete and Edit icons */}
+        {role == 'placement officer' && (
+
+          <Group position="right" spacing="xs" style={{}}>
+            <ActionIcon onClick={handleEditClick} color="blue" size="md" variant="light">
+              <Pencil size={22} />
+            </ActionIcon>
+            <ActionIcon onClick={handleDeleteClick} color="red" size="md" variant="light">
+              <Trash size={22} />
+            </ActionIcon>
+          </Group>
+        )}
+
       </Group>
     </Card>
   );

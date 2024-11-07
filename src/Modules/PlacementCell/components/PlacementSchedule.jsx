@@ -29,6 +29,7 @@ const PlacementScheduleGrid = ({ data, itemsPerPage, cardsPerRow, onAddEvent }) 
   const paddedItems = [...currentItems];
 
   const remainingCards = totalRows * cardsPerRow - currentItems.length;
+  
   for (let i = 0; i < remainingCards; i++) {
     paddedItems.push(null);
   }

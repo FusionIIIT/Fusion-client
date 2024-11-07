@@ -3,8 +3,13 @@ import { TextInput, Button, Group, Select, Textarea, Card, Title, Grid, ActionIc
 import { DatePicker, TimeInput } from "@mantine/dates";
 import { Calendar } from "@phosphor-icons/react";
 import axios from "axios"; // Make sure axios is imported
+import { useSelector } from "react-redux";
+
+import { notifications } from "@mantine/notifications";
+
 
 function AddPlacementEventForm() {
+  const role = useSelector((state) => state.user.role);
   const [company, setCompany] = useState("");
   const [date, setDate] = useState(null);
   const [location, setLocation] = useState("");
@@ -12,7 +17,8 @@ function AddPlacementEventForm() {
   const [time, setTime] = useState(""); // Time as string
   const [placementType, setPlacementType] = useState("");
   const [description, setDescription] = useState("");
-  const [role, setRole] = useState("");
+  const [jobrole, setRole] = useState("");
+  // const [role, setRole] = useState("");
   const [resumeFile, setResumeFile] = useState(null);
   const [datePickerOpened, setDatePickerOpened] = useState(false);
 
@@ -58,11 +64,25 @@ function AddPlacementEventForm() {
         },
       });
       console.log(response.data.message);
+      // notification that the schedule has been added
+      alert("Placement Event has been added successfully");
+      notifications.show({
+        title: "Event Added",
+        message: "Placement Event has been added successfully",
+        color: "green",
+        position: "top-center",
+      });
     } catch (error) {
+      notifications.show({
+        title: "Error",
+        message: "Failed to add Placement Event",
+        color: "red",
+        position: "top-center",
+      });
       console.error("Error adding schedule:", error.response?.data?.error || error.message);
     }
   };
-  
+
 
   return (
     <Card shadow="md" padding="lg" radius="md" withBorder style={{ maxWidth: '800px', margin: '0 auto' }}>
@@ -159,19 +179,22 @@ function AddPlacementEventForm() {
           <TextInput
             label="Role Offered"
             placeholder="Enter the role offered"
-            value={role}
+            value={jobrole}
             onChange={(e) => setRole(e.target.value)}
           />
         </Grid.Col>
 
         {/* Fifth row: Resume */}
-        <Grid.Col span={12}>
-          <TextInput
-            label="Resume"
-            type="file"
-            onChange={(e) => setResumeFile(e.target.files[0])}
-          />
-        </Grid.Col>
+        {role === "student" && (
+          <Grid.Col span={12}>
+            <TextInput
+              label="Resume"
+              type="file"
+              onChange={(e) => setResumeFile(e.target.files[0])}
+            />
+          </Grid.Col>
+        )}
+
       </Grid>
 
       {/* Submit button */}
