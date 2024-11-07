@@ -53,9 +53,7 @@ function PlacementCellPage() {
         {tabs.map((tab) => (
 
           <Tabs.Panel key={tab.value} value={tab.value}>
-
             {tab.component || <Text>No content available.</Text>}
-
           </Tabs.Panel>
         ))}
 

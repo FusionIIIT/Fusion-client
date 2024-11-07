@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Card, Text, Badge, Group, Button, Image, ActionIcon } from "@mantine/core";
-import { Clock, MapPin, Trash, Pencil } from "@phosphor-icons/react";
+import { Clock, MapPin, Trash, Pencil, Eye } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from 'react-redux';
 
@@ -25,6 +25,12 @@ function PlacementScheduleCard({
   const handleApplyClick = () => {
     navigate(
       `/placement-cell/apply?companyName=${encodeURIComponent(companyName)}&companyLogo=${encodeURIComponent(companyLogo)}`,
+    );
+  };
+
+  const handelViewClick = () => {
+    navigate(
+      `/placement-cell/view?companyName=${encodeURIComponent(companyName)}&companyLogo=${encodeURIComponent(companyLogo)}`,
     );
   };
 
@@ -120,6 +126,11 @@ function PlacementScheduleCard({
             <ActionIcon onClick={handleEditClick} color="blue" size="md" variant="light">
               <Pencil size={22} />
             </ActionIcon>
+ 
+            <ActionIcon onClick={handelViewClick} color="blue" size="md" variant="light">
+              <Eye size={22} />
+            </ActionIcon>
+
             <ActionIcon onClick={handleDeleteClick} color="red" size="md" variant="light">
               <Trash size={22} />
             </ActionIcon>
