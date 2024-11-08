@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios"; // Import axios
+import PropTypes from "prop-types";
 import FacilitiesDescriptive from "./FacilitiesDescriptive.jsx";
 import EditFacilities from "./EditFacilities.jsx";
 import SpecialTable from "./SpecialTable"; // Make sure to keep this import
@@ -24,7 +25,7 @@ function Facilities({ branch }) {
   const [isEditing, setIsEditing] = useState(false); // State to manage editing
   const role = useSelector((state) => state.user.role);
   const [labs, setLabs] = useState([]); // State to store labs data
-  const [selectedLabs, setSelectedLabs] = useState([]); // State to store selected labs
+  const [setSelectedLabs] = useState([]); // State to store selected labs
 
   useEffect(() => {
     // Fetch the lab data from the API
@@ -124,3 +125,7 @@ function Facilities({ branch }) {
 }
 
 export default Facilities;
+
+Facilities.propTypes = {
+  branch: PropTypes.string.isRequired,
+};
