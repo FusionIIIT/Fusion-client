@@ -64,11 +64,11 @@ export default function AboutUs({ branch }) {
       <p>
         <strong>About the Department:</strong> {deptInfo.about}
       </p>
-      {deptInfo.facilities && (
+      {/* {deptInfo.facilities && (
         <p>
           <strong>Facilities:</strong> {deptInfo.facilities}
         </p>
-      )}
+      )} */}
       {deptInfo.vision && (
         <p>
           <strong>Vision:</strong> {deptInfo.vision}

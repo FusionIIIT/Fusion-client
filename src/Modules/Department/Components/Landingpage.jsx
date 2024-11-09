@@ -47,7 +47,7 @@ export default function LandingPage() {
         {activeTab === "4" && <DeptTabs branch="ECE" />}
         {activeTab === "5" && <DeptTabs branch="ME" />}
         {activeTab === "6" && <DeptTabs branch="SM" />}
-        {activeTab === "7" && <DeptTabs branch="BDES" />}
+        {activeTab === "7" && <DeptTabs branch="DS" />}
         {activeTab === "8" && <DeptTabs branch="LA" />}
       </Suspense>
     );

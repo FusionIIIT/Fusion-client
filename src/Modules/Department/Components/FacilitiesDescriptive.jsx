@@ -20,13 +20,15 @@ export default function FacilitiesDescriptive({ branch }) {
           // Match branch name to ID: CSE: 1, ECE: 2, ME: 3, SM: 4
           switch (branch) {
             case "CSE":
-              return item.id === 1;
+              return item.department === 51;
             case "ECE":
-              return item.id === 2;
+              return item.department === 30;
             case "ME":
-              return item.id === 3;
+              return item.department === 37;
             case "SM":
-              return item.id === 4;
+              return item.department === 53;
+            case "DS":
+              return item.department === 44;
             default:
               return null; // No matching branch found
           }

@@ -84,7 +84,7 @@ const EditFacilities = ({ setIsEditing, branch }) => {
       phone_number: phoneNumber,
       email: email,
       facilites: facilitiesDescription, // Ensure the spelling matches your API's expectations
-      department: branch, // Include the branch in the request
+      department: branch === "DS" ? "Design" : branch, // Include the branch in the request
     };
 
     try {
@@ -335,7 +335,7 @@ const EditFacilities = ({ setIsEditing, branch }) => {
         <Table>
           <thead>
             <tr>
-              <th></th>
+              <br />
               <th>Lab Name</th>
               <th>Capacity</th>
               <th>Location</th>
