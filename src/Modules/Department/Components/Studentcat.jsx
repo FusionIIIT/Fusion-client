@@ -33,6 +33,19 @@ const columns = [
     header: "Category",
   },
 ];
+let year = 2022;
+function checkYear() {
+  const now = new Date(); // Get the current date and time
+  const currentMonth = now.getMonth(); // Get the current month (0 = January, 7 = August)
+
+  // If the month is September (8) or later, increment the year
+  if (currentMonth >= 8) {
+    // August is month index 7
+    year = now.getFullYear(); // Update to the current year if it's past August
+  } else {
+    year = now.getFullYear() - 1;
+  }
+}
 
 function Studentcat({ branch }) {
   const [openCategory, setOpenCategory] = useState(null);
@@ -40,6 +53,7 @@ function Studentcat({ branch }) {
   const [studentData, setStudentData] = useState([]);
   const [loading, setLoading] = useState(false);
   const specialization = branch;
+  const isDS = branch === "DS";
   let programme = "";
   if (
     selectedCategory === "btech1" ||
@@ -48,11 +62,18 @@ function Studentcat({ branch }) {
     selectedCategory === "btech4"
   )
     programme = "B.Tech";
+  else if (
+    selectedCategory === "bdes1" ||
+    selectedCategory === "bdes2" ||
+    selectedCategory === "bdes3"
+  )
+    programme = "B.Des";
   else if (selectedCategory === "mtech1" || selectedCategory === "mtech2")
     programme = "M.Tech";
   else if (selectedCategory === "phd1") programme = "Phd";
 
-  let year = 2022;
+  checkYear();
+  console.log(year);
   if (selectedCategory)
     year =
       year - parseInt(selectedCategory[selectedCategory.length - 1], 10) + 1;
@@ -60,6 +81,7 @@ function Studentcat({ branch }) {
   const toggleCategory = (category) => {
     setOpenCategory(openCategory === category ? null : category);
   };
+  console.log(programme, branch, year, selectedCategory);
 
   // Fetch data from the Django API when selectedCategory changes
   useEffect(() => {
@@ -232,34 +254,34 @@ function Studentcat({ branch }) {
                 <Button
                   variant="outlined"
                   color="primary"
-                  onClick={() => setSelectedCategory("btech1")}
+                  onClick={() => setSelectedCategory(isDS ? "bdes1" : "btech1")}
                   style={{ marginBottom: "5px" }}
                 >
-                  B.Tech First Year
+                  {isDS ? "B.Des First Year" : "B.Tech First Year"}
                 </Button>
                 <Button
                   variant="outlined"
                   color="primary"
-                  onClick={() => setSelectedCategory("btech2")}
+                  onClick={() => setSelectedCategory(isDS ? "bdes2" : "btech2")}
                   style={{ marginBottom: "5px" }}
                 >
-                  B.Tech Second Year
+                  {isDS ? "B.Des Second Year" : "B.Tech Second Year"}
                 </Button>
                 <Button
                   variant="outlined"
                   color="primary"
-                  onClick={() => setSelectedCategory("btech3")}
+                  onClick={() => setSelectedCategory(isDS ? "bdes3" : "btech3")}
                   style={{ marginBottom: "5px" }}
                 >
-                  B.Tech Third Year
+                  {isDS ? "B.Des Third Year" : "B.Tech Third Year"}
                 </Button>
                 <Button
                   variant="outlined"
                   color="primary"
-                  onClick={() => setSelectedCategory("btech4")}
+                  onClick={() => setSelectedCategory(isDS ? "bdes4" : "btech4")}
                   style={{ marginBottom: "5px" }}
                 >
-                  B.Tech Final Year
+                  {isDS ? "B.Des Final Year" : "B.Tech Final Year"}
                 </Button>
               </div>
             </Collapse>

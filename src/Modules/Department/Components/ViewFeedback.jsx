@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import PropTypes from "prop-types";
 import SpecialTable from "./SpecialTable.jsx"; // Import your SpecialTable component
 
 const columns = [
@@ -14,7 +15,7 @@ const columns = [
   // Removed the department column
 ];
 
-const ViewFeedback = ({ branch }) => {
+export default function ViewFeedback({ branch }) {
   // Accept branch as a prop
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -58,6 +59,8 @@ const ViewFeedback = ({ branch }) => {
       rowOptions={["3", "4", "6"]}
     />
   );
-};
+}
 
-export default ViewFeedback;
+ViewFeedback.propTypes = {
+  branch: PropTypes.string.isRequired,
+};

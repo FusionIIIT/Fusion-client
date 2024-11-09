@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios"; // Import axios
+import PropTypes from "prop-types";
 import {
   TextInput,
   Textarea,
@@ -7,29 +8,36 @@ import {
   Container,
   Title,
   Table,
-  Flex,
   Divider,
-  Stack,
 } from "@mantine/core";
 
-const GoBackButton = ({ setIsEditing }) => (
-  <button
-    onClick={() => setIsEditing(false)} // Set editing to false to go back
-    style={{
-      padding: "5px 10px",
-      backgroundColor: "indigo",
-      color: "#fff",
-      border: "none",
-      borderRadius: "5px",
-      cursor: "pointer",
-      marginBottom: "20px",
-    }}
-  >
-    Go Back
-  </button>
-);
+function GoBackButton({ setIsEditing }) {
+  return (
+    <div>
+      <button
+        onClick={() => setIsEditing(false)}
+        style={{
+          padding: "5px 10px",
+          backgroundColor: "indigo",
+          color: "#fff",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer",
+          marginBottom: "20px",
+        }}
+      >
+        Go Back
+      </button>
+    </div>
+  );
+}
 
-const EditFacilities = ({ setIsEditing, branch }) => {
+// Prop validation for GoBackButton
+GoBackButton.propTypes = {
+  setIsEditing: PropTypes.func.isRequired,
+};
+
+export default function EditFacilities({ setIsEditing, branch }) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
   const [facilitiesDescription, setFacilitiesDescription] = useState("");
@@ -42,7 +50,7 @@ const EditFacilities = ({ setIsEditing, branch }) => {
   const [labCapacity, setLabCapacity] = useState("");
   const [labLocation, setLabLocation] = useState("");
   const [labLoading, setLabLoading] = useState(false); // To manage loading state for labs
-  const [labErrorMessage, setLabErrorMessage] = useState(""); // To handle errors for labs
+  const [setLabErrorMessage] = useState(""); // To handle errors for labs
   const [labIsSuccess, setLabIsSuccess] = useState(false); // To handle success message for labs
 
   // State for labs data
@@ -82,7 +90,7 @@ const EditFacilities = ({ setIsEditing, branch }) => {
     // Construct the data to be sent for facilities
     const data = {
       phone_number: phoneNumber,
-      email: email,
+      email,
       facilites: facilitiesDescription, // Ensure the spelling matches your API's expectations
       department: branch, // Include the branch in the request
     };
@@ -335,7 +343,7 @@ const EditFacilities = ({ setIsEditing, branch }) => {
         <Table>
           <thead>
             <tr>
-              <th></th>
+              <br />
               <th>Lab Name</th>
               <th>Capacity</th>
               <th>Location</th>
@@ -368,6 +376,9 @@ const EditFacilities = ({ setIsEditing, branch }) => {
       </Container>
     </div>
   );
-};
+}
 
-export default EditFacilities;
+EditFacilities.propTypes = {
+  setIsEditing: PropTypes.bool.isRequired,
+  branch: PropTypes.string.isRequired,
+};

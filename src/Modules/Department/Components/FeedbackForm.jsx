@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import PropTypes from "prop-types";
 import axios from "axios";
 import classes from "../styles/Departmentmodule.module.css";
 
@@ -47,13 +46,13 @@ const styles = {
   },
 };
 
-export default function Feedbackform({ branch }) {
+export default function Feedbackform() {
   const [feedback, setFeedback] = useState("");
   const [rating, setRating] = useState("5");
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [setIsSuccess] = useState(false);
 
   const handleFeedbackChange = (e) => {
     setFeedback(e.target.value);
@@ -78,7 +77,7 @@ export default function Feedbackform({ branch }) {
 
     const feedbackData = {
       department: selectedDepartment,
-      rating: rating,
+      rating,
       remark: feedback,
     };
 
@@ -185,7 +184,3 @@ export default function Feedbackform({ branch }) {
     </div>
   );
 }
-
-Feedbackform.propTypes = {
-  branch: PropTypes.string.isRequired,
-};
