@@ -42,6 +42,8 @@ function checkYear() {
   if (currentMonth >= 8) {
     // August is month index 7
     year = now.getFullYear(); // Update to the current year if it's past August
+  } else {
+    year = now.getFullYear() - 1;
   }
 }
 

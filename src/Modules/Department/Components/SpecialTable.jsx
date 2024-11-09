@@ -96,8 +96,8 @@ function SpecialTable({ title, columns, data, rowOptions }) {
 
 SpecialTable.propTypes = {
   title: PropTypes.string.isRequired,
-  columns: PropTypes.arrayOf(PropTypes.object).isRequired,
-  data: PropTypes.arrayOf(PropTypes.object).isRequired,
+  columns: PropTypes.arrayOf.isRequired,
+  data: PropTypes.arrayOf.isRequired,
   rowOptions: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 

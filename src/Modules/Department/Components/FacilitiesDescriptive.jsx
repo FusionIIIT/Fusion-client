@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import PropTypes from "prop-types";
 
 export default function FacilitiesDescriptive({ branch }) {
   const [data, setData] = useState({
@@ -95,3 +96,7 @@ export default function FacilitiesDescriptive({ branch }) {
     </div>
   );
 }
+
+FacilitiesDescriptive.propTypes = {
+  branch: PropTypes.string.isRequired,
+};
