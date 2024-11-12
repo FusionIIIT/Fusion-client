@@ -8,26 +8,84 @@ import {
   Card,
   ScrollArea,
   Modal,
-  Button,
   Container,
   Stack,
-  Divider,
   SimpleGrid,
 } from "@mantine/core";
 import { MagnifyingGlass } from "@phosphor-icons/react";
 
 // Mock data for demonstration (expanded for scrolling effect)
 const studentData = [
-  { name: "Student 1", id: "22BEC009", room: "443", age: 20, major: "Computer Science" },
-  { name: "Student 2", id: "22BEC010", room: "444", age: 21, major: "Mechanical Engineering" },
-  { name: "Student 3", id: "22BEC011", room: "445", age: 22, major: "Electrical Engineering" },
-  { name: "Student 4", id: "22BEC012", room: "446", age: 23, major: "Civil Engineering" },
-  { name: "Student 5", id: "22BEC013", room: "447", age: 24, major: "Information Technology" },
-  { name: "Student 6", id: "22BEC014", room: "448", age: 25, major: "Data Science" },
-  { name: "Student 7", id: "22BEC015", room: "449", age: 22, major: "Chemical Engineering" },
-  { name: "Student 8", id: "22BEC016", room: "450", age: 23, major: "Biomedical Engineering" },
-  { name: "Student 9", id: "22BEC017", room: "451", age: 24, major: "Aerospace Engineering" },
-  { name: "Student 10", id: "22BEC018", room: "452", age: 21, major: "Environmental Engineering" },
+  {
+    name: "Student 1",
+    id: "22BEC009",
+    room: "443",
+    age: 20,
+    major: "Computer Science",
+  },
+  {
+    name: "Student 2",
+    id: "22BEC010",
+    room: "444",
+    age: 21,
+    major: "Mechanical Engineering",
+  },
+  {
+    name: "Student 3",
+    id: "22BEC011",
+    room: "445",
+    age: 22,
+    major: "Electrical Engineering",
+  },
+  {
+    name: "Student 4",
+    id: "22BEC012",
+    room: "446",
+    age: 23,
+    major: "Civil Engineering",
+  },
+  {
+    name: "Student 5",
+    id: "22BEC013",
+    room: "447",
+    age: 24,
+    major: "Information Technology",
+  },
+  {
+    name: "Student 6",
+    id: "22BEC014",
+    room: "448",
+    age: 25,
+    major: "Data Science",
+  },
+  {
+    name: "Student 7",
+    id: "22BEC015",
+    room: "449",
+    age: 22,
+    major: "Chemical Engineering",
+  },
+  {
+    name: "Student 8",
+    id: "22BEC016",
+    room: "450",
+    age: 23,
+    major: "Biomedical Engineering",
+  },
+  {
+    name: "Student 9",
+    id: "22BEC017",
+    room: "451",
+    age: 24,
+    major: "Aerospace Engineering",
+  },
+  {
+    name: "Student 10",
+    id: "22BEC018",
+    room: "452",
+    age: 21,
+    major: "Environmental Engineering",
+  },
   // Add more students as needed for scrolling effect
 ];
 
@@ -46,8 +104,7 @@ export default function StudentInfo() {
     (student) =>
       student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       student.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.room.toLowerCase().includes(searchTerm.toLowerCase())
-      
+      student.room.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
@@ -84,14 +141,20 @@ export default function StudentInfo() {
           onChange={(event) => setSearchTerm(event.currentTarget.value)}
         />
         <Select
-          data={["Block - A", "Block - B", "Block - C", "Block - D", "Block - E"]}
+          data={[
+            "Block - A",
+            "Block - B",
+            "Block - C",
+            "Block - D",
+            "Block - E",
+          ]}
           value={selectedBlock}
           onChange={setSelectedBlock}
           style={{ width: 120 }}
         />
       </Group>
 
-      <ScrollArea style={{ flex: 1, height: 'calc(62vh)'}}>
+      <ScrollArea style={{ flex: 1, height: "calc(62vh)" }}>
         <Stack spacing="sm">
           {filteredStudents.map((student, index) => (
             <Card
@@ -130,8 +193,8 @@ export default function StudentInfo() {
         onClose={() => setOpened(false)}
         size="md"
         styles={(theme) => ({
-          body: { 
-            backgroundColor: theme.colors.gray[0] 
+          body: {
+            backgroundColor: theme.colors.gray[0],
           },
         })}
       >
@@ -140,38 +203,40 @@ export default function StudentInfo() {
             <Stack spacing="md">
               <Paper p="md" radius="md" withBorder>
                 <Group position="apart">
-                  <Text size="lg" weight={500} color="blue">Name:</Text>
-                  <Text size="lg" italic>{selectedStudent.name}</Text>
+                  <Text size="lg" weight={500} color="blue">
+                    Name:
+                  </Text>
+                  <Text size="lg" italic>
+                    {selectedStudent.name}
+                  </Text>
                 </Group>
               </Paper>
               <SimpleGrid cols={2} spacing="md">
                 <Paper p="md" radius="md" withBorder>
-                  <Text weight={500} color="dimmed">Roll No:</Text>
+                  <Text weight={500} color="dimmed">
+                    Roll No:
+                  </Text>
                   <Text size="lg">{selectedStudent.id}</Text>
                 </Paper>
                 <Paper p="md" radius="md" withBorder>
-                  <Text weight={500} color="dimmed">Room:</Text>
+                  <Text weight={500} color="dimmed">
+                    Room:
+                  </Text>
                   <Text size="lg">{selectedStudent.room}</Text>
                 </Paper>
                 <Paper p="md" radius="md" withBorder>
-                  <Text weight={500} color="dimmed">Age:</Text>
+                  <Text weight={500} color="dimmed">
+                    Age:
+                  </Text>
                   <Text size="lg">{selectedStudent.age}</Text>
                 </Paper>
                 <Paper p="md" radius="md" withBorder>
-                  <Text weight={500} color="dimmed">Major:</Text>
+                  <Text weight={500} color="dimmed">
+                    Major:
+                  </Text>
                   <Text size="lg">{selectedStudent.major}</Text>
                 </Paper>
               </SimpleGrid>
-              <Button 
-                onClick={() => setOpened(false)} 
-                mt="md" 
-                color="blue" 
-                fullWidth
-                size="lg"
-                variant="light"
-              >
-                Close
-              </Button>
             </Stack>
           </Container>
         )}

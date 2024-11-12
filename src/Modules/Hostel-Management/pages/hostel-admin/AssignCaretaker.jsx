@@ -46,9 +46,9 @@ export default function AssignCaretaker() {
         },
       })
       .then((response) => {
-        const { hallsIDs, caretaker_usernames } = response.data;
+        const { hallsData, caretaker_usernames } = response.data;
         setHalls(
-          hallsIDs.map((hallData) => ({
+          hallsData.map((hallData) => ({
             value: hallData.hall_id,
             label: hallData.hall_name,
           })),

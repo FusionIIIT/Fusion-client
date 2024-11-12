@@ -17,7 +17,6 @@ import { createNotice } from "../../../../routes/hostelManagementRoutes";
 axios.defaults.withXSRFToken = true;
 
 function CreateNotice({ existingAnnouncement }) {
-  const [hall, setHall] = useState("1");
   const [headline, setHeadline] = useState("");
   const [content, setContent] = useState("");
   const [description, setDescription] = useState("");
@@ -31,7 +30,6 @@ function CreateNotice({ existingAnnouncement }) {
 
   const resetForm = () => {
     // Move resetForm above its first usage
-    setHall("1");
     setHeadline("");
     setContent("");
     setDescription("");
@@ -40,7 +38,6 @@ function CreateNotice({ existingAnnouncement }) {
 
   useEffect(() => {
     if (existingAnnouncement) {
-      setHall(existingAnnouncement.hall);
       setHeadline(existingAnnouncement.headline);
       setContent(existingAnnouncement.content);
       setDescription(existingAnnouncement.description);
@@ -66,7 +63,7 @@ function CreateNotice({ existingAnnouncement }) {
 
     setLoading(true);
     try {
-      const announcement = { hall, headline, content, description, scope };
+      const announcement = { headline, content, description, scope };
       const response = await axios.post(createNotice, announcement, {
         headers: {
           "Content-Type": "application/json",

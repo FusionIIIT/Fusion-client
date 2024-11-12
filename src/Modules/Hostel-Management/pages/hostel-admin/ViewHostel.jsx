@@ -66,11 +66,7 @@ export default function ViewHostel() {
         align="left"
         mb="xl"
         size="24px"
-        style={{
-          color: "#2C3E50",
-          fontWeight: "bold",
-          fontFamily: "'Segoe UI', system-ui, sans-serif",
-        }}
+        style={{ color: "#757575", fontWeight: "bold" }}
       >
         View Hostel
       </Text>

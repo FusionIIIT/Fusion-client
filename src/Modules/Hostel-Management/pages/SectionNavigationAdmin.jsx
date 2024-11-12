@@ -1,6 +1,8 @@
-import React, { useState } from "react";
-import { Group, Text, Box, Container } from "@mantine/core";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Group, Text, Box, Container, ScrollArea } from "@mantine/core";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
+import { setActiveTab_, setCurrentModule } from "../../../redux/moduleslice";
 import NoticeBoard from "./all-actors/NoticeBoard";
 import ViewHostel from "./hostel-admin/ViewHostel";
 import AddHostel from "./hostel-admin/AddHostel";
@@ -16,90 +18,74 @@ const sections = [
   "Manage Hostel",
   "Add Hostel",
 ];
-const subSections = {
-  Leave: ["Leave Form", "Leave Status"],
-};
 
-// Create a map of components for each section
-const sectionComponents = {
+const components = {
   "Notice Board": NoticeBoard,
   "View Hostel": ViewHostel,
   "Manage Hostel": AssignBatch,
   "Manage Warden": AssignWarden,
   "Manage Caretakers": AssignCaretaker,
   "Add Hostel": AddHostel,
-
-  // Add other components here for different sections if needed
-  // 'My Fine': MyFineComponent,
-  // 'Leave': LeaveComponent,
-  // etc.
 };
 
-export default function SectionNavigation() {
-  const [activeSection, setActiveSection] = useState("Notice Board");
+export default function SectionNavigationAdmin() {
+  const dispatch = useDispatch();
+  const activeTab = useSelector((state) => state.module.active_tab);
 
-  // Get the component for the active section
-  const ActiveComponent = sectionComponents[activeSection];
+  useEffect(() => {
+    dispatch(setCurrentModule("Hostel"));
+    dispatch(setActiveTab_("Notice Board"));
+  }, [dispatch]);
+
+  const handleSectionClick = (section) => {
+    dispatch(setActiveTab_(section));
+  };
+
+  const ActiveComponent = components[activeTab] || NoticeBoard;
 
   return (
-    <Container size="xl" p="xs">
-      <Group spacing="xs" style={{ overflowX: "auto", padding: "8px 0" }}>
-        <CaretLeft size={20} weight="bold" color="#718096" />
-        {sections.map((section, index) => (
-          <React.Fragment key={section}>
-            <Text
-              size="sm"
-              color={activeSection === section ? "#4299E1" : "#718096"}
-              style={{ cursor: "pointer", whiteSpace: "nowrap" }}
-              onClick={() => setActiveSection(section)}
-            >
-              {section}
-            </Text>
-            {index < sections.length - 1 && (
-              <Text color="#CBD5E0" size="sm">
-                |
-              </Text>
-            )}
-          </React.Fragment>
-        ))}
-        <CaretRight size={20} weight="bold" color="#718096" />
-      </Group>
-
-      {subSections[activeSection] && (
-        <Group spacing="xs" mt="xs">
-          {subSections[activeSection].map((subSection, index) => (
-            <React.Fragment key={subSection}>
+    <Container size="xl" p="xs" className="mx-0" style={{ maxWidth: "100%" }}>
+      <ScrollArea>
+        <Group spacing="xs" noWrap style={{ padding: "8px 0" }}>
+          <CaretLeft size={20} weight="bold" color="#718096" />
+          {sections.map((section, index) => (
+            <React.Fragment key={section}>
               <Text
-                size="sm"
-                color="#4299E1"
-                style={{ cursor: "pointer", whiteSpace: "nowrap" }}
+                size="lg"
+                color={activeTab === section ? "#4299E1" : "#718096"}
+                style={{
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                  textDecoration: activeTab === section ? "underline" : "none",
+                  textDecorationColor:
+                    activeTab === section ? "#4299E1" : "transparent",
+                  textDecorationThickness: "4px",
+                  textUnderlineOffset: "10px",
+                }}
+                onClick={() => handleSectionClick(section)}
               >
-                {subSection}
+                {section}
               </Text>
-              {index < subSections[activeSection].length - 1 && (
+              {index < sections.length - 1 && (
                 <Text color="#CBD5E0" size="sm">
                   |
                 </Text>
               )}
             </React.Fragment>
           ))}
+          <CaretRight size={20} weight="bold" color="#718096" />
         </Group>
-      )}
-
-      <br />
-      {ActiveComponent ? (
-        <Box
-          style={{
-            width: "100%",
-            height: "calc(85vh - 56px)",
-            overflowY: "auto",
-          }}
-        >
-          <ActiveComponent />
-        </Box>
-      ) : (
-        <Text>Content for {activeSection}</Text>
-      )}
+      </ScrollArea>
+      <Box
+        mt="md"
+        style={{
+          width: "100%",
+          height: "calc(85vh - 56px)",
+          overflowY: "auto",
+        }}
+      >
+        <ActiveComponent />
+      </Box>
     </Container>
   );
 }

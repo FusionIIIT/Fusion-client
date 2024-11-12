@@ -1,39 +1,32 @@
 import React from "react";
-import { useMantineTheme } from "@mantine/core";
-import SideNotifications from "./components/all-actors/SideNotifications";
-// import SectionNavigationStudent from "./pages/SectionNavigationStudent";
-// import SectionNavigationAdmin from "./pages/SectionNavigationAdmin";
+import { useSelector } from "react-redux";
+import CustomBreadcrumbs from "../../components/Breadcrumbs";
+import SectionNavigationStudent from "./pages/SectionNavigationStudent";
+import SectionNavigationAdmin from "./pages/SectionNavigationAdmin";
 import SectionNavigationWarden from "./pages/SectionNavigationWarden";
-// import SectionNavigationCaretaker from "./pages/SectionNavigationCaretaker";
+import SectionNavigationCaretaker from "./pages/SectionNavigationCaretaker";
 
 function HostelPage() {
-  const theme = useMantineTheme();
+  const userRole = useSelector((state) => state.user.role);
+  const renderSectionNavigation = () => {
+    switch (userRole) {
+      case "student":
+        return <SectionNavigationStudent />;
+      case "admin":
+        return <SectionNavigationAdmin />;
+      case "warden":
+        return <SectionNavigationWarden />;
+      case "caretaker":
+        return <SectionNavigationCaretaker />;
+      default:
+        return <div>No access</div>;
+    }
+  };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "row",
-        height: "90vh",
-        overflow: "hidden",
-      }}
-    >
-      <div
-        style={{
-          flex: 7.5,
-          marginRight: theme.spacing.md,
-          height: "100%",
-          overflow: "hidden",
-        }}
-      >
-        {/* <SectionNavigationCaretaker /> */}
-        <SectionNavigationWarden />
-        {/* <SectionNavigationStudent /> */}
-        {/* <SectionNavigationAdmin/> */}
-      </div>
-      <div style={{ flex: 2.5, height: "100%", overflow: "hidden" }}>
-        <SideNotifications />
-      </div>
+    <div>
+      <CustomBreadcrumbs />
+      {renderSectionNavigation()}
     </div>
   );
 }
