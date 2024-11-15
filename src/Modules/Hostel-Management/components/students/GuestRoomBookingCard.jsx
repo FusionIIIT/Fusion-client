@@ -65,7 +65,7 @@ export default function GuestRoomBookingCard(props = defaultProps) {
       })}
     >
       <Stack spacing="md">
-        <Group position="apart" align="center" noWrap>
+        <Group position="apart" align="center">
           <Text weight={600} size="lg">
             {roomType}
           </Text>
@@ -79,7 +79,7 @@ export default function GuestRoomBookingCard(props = defaultProps) {
           </Badge>
         </Group>
 
-        <Group grow align="flex-start" noWrap spacing="md">
+        <Group grow align="flex-start" spacing="md">
           <TextInput label="Guest Name" value={guestName} size="sm" />
           <TextInput label="Room Size" value={roomSize} size="sm" />
           <TextInput
@@ -98,7 +98,7 @@ export default function GuestRoomBookingCard(props = defaultProps) {
           />
         </Group>
 
-        <Group grow align="flex-start" noWrap spacing="md">
+        <Group grow align="flex-start" spacing="md">
           <TextInput
             label="Check-in Date"
             value={formatDate(checkInDate)}

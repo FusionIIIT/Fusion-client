@@ -49,7 +49,7 @@ export default function SectionNavigationWarden() {
   return (
     <Container size="xl" p="xs" className="mx-0" style={{ maxWidth: "100%" }}>
       <ScrollArea>
-        <Group spacing="xs" noWrap style={{ padding: "8px 0" }}>
+        <Group spacing="xs" style={{ padding: "8px 0" }}>
           <CaretLeft size={20} weight="bold" color="#718096" />
           {sections.map((section, index) => (
             <React.Fragment key={section}>

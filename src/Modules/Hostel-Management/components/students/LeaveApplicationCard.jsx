@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  Box,
-  Text,
-  TextInput,
-  Group,
-  Stack,
-  Badge,
-} from "@mantine/core";
+import { Box, Text, TextInput, Group, Stack, Badge } from "@mantine/core";
 
 const defaultProps = {
   type: "Type",
@@ -22,14 +15,14 @@ export default function LeaveApplicationCard(props = defaultProps) {
     ...props,
   };
 
-  const getStatusColor = (status) => {
-    switch (status.toLowerCase()) {
-      case 'approved':
-        return 'green';
-      case 'rejected':
-        return 'red';
+  const getStatusColor = (currStatus) => {
+    switch (currStatus.toLowerCase()) {
+      case "approved":
+        return "green";
+      case "rejected":
+        return "red";
       default:
-        return 'yellow';
+        return "yellow";
     }
   };
 
@@ -45,19 +38,21 @@ export default function LeaveApplicationCard(props = defaultProps) {
       })}
     >
       <Stack spacing="md">
-        <Group position="apart" align="center" noWrap>
-          <Text weight={600} size="lg">{type}</Text>
-          <Badge 
-            color={getStatusColor(status)} 
-            variant="filled" 
+        <Group position="apart" align="center">
+          <Text weight={600} size="lg">
+            {type}
+          </Text>
+          <Badge
+            color={getStatusColor(status)}
+            variant="filled"
             size="lg"
-            style={{ minWidth: '100px', textAlign: 'center' }}
+            style={{ minWidth: "100px", textAlign: "center" }}
           >
-           {status.toUpperCase()}
+            {status.toUpperCase()}
           </Badge>
         </Group>
-        
-        <Group grow align="flex-start" noWrap spacing="md">
+
+        <Group grow align="flex-start" spacing="md">
           <TextInput
             label="Applied on"
             placeholder="Date"

@@ -138,7 +138,7 @@ export default function ManageFines() {
                   justify="space-between"
                   style={{ width: "100%" }}
                 >
-                  <Group spacing="md" noWrap>
+                  <Group spacing="md">
                     <Avatar color="cyan" radius="xl">
                       {fine.name[0]}
                     </Avatar>
@@ -151,8 +151,8 @@ export default function ManageFines() {
                       </Text>
                     </div>
                   </Group>
-                  <Group spacing="md" noWrap>
-                    <Group spacing="xs" noWrap>
+                  <Group spacing="md">
+                    <Group spacing="xs">
                       <CalendarBlank size={16} />
                       <Text size="sm">{fine.finedDate}</Text>
                     </Group>

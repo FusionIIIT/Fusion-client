@@ -36,31 +36,28 @@ export default function FineCard(props = defaultProps) {
       })}
     >
       <Stack spacing="sm">
-        <Group position="apart" align="center" noWrap>
-          <Text weight={700} size="xl" color="red" style={{ minWidth: '100px' }}>
+        <Group position="apart" align="center">
+          <Text
+            weight={700}
+            size="xl"
+            color="red"
+            style={{ minWidth: "100px" }}
+          >
             ₹{amount.toLocaleString()}
           </Text>
           <Group grow style={{ flex: 1 }}>
-            <TextInput
-              placeholder="Hall"
-              value={hall}
-              size="md"
-            />
-            <TextInput
-              placeholder="Reason"
-              value={details}
-              size="md"
-            />
+            <TextInput placeholder="Hall" value={hall} size="md" />
+            <TextInput placeholder="Reason" value={details} size="md" />
           </Group>
           <Textarea
             placeholder="Details"
             value={reason}
             size="md"
-            style={{ flex: 1, minWidth: '200px' }}
+            style={{ flex: 1, minWidth: "200px" }}
           />
-          <Button 
-            variant="filled" 
-            color={isPastFine ? "green" : "dark"} 
+          <Button
+            variant="filled"
+            color={isPastFine ? "green" : "dark"}
             size="md"
           >
             {isPastFine ? "Paid" : "Upload Document"}

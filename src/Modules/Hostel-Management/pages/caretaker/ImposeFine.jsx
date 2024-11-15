@@ -127,7 +127,7 @@ export default function ImposeFine() {
                   justify="space-between"
                   style={{ width: "100%" }}
                 >
-                  <Group spacing="md" noWrap>
+                  <Group spacing="md">
                     <Avatar color="cyan" radius="xl">
                       {student.name[0]}
                     </Avatar>

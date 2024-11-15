@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
   Box,
@@ -6,27 +6,29 @@ import {
   Text,
   Button,
   Paper,
-  Group,
   Stack,
   Notification,
 } from "@mantine/core";
 
-import { getCaretakers } from "../../../../routes/hostelManagementRoutes"; // API route for fetching halls and caretakers
+import {
+  getCaretakers,
+  assignCaretakers,
+} from "../../../../routes/hostelManagementRoutes"; // API routes for fetching halls and caretakers, and assigning caretakers
 
 axios.defaults.withXSRFToken = true;
 
 export default function AssignCaretaker() {
-  const [document, setDocument] = useState(null);
-  const [halls, setHalls] = useState([]);
+  const [allHalls, setHalls] = useState([]);
   const [caretakers, setCaretakers] = useState([]);
+  const [selectedHall, setSelectedHall] = useState(null);
+  const [selectedCaretaker, setSelectedCaretaker] = useState(null);
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState({
     opened: false,
     message: "",
     color: "",
   });
-  const fileInputRef = useRef(null);
-  console.log(document);
+
   useEffect(() => {
     const token = localStorage.getItem("authToken");
 
@@ -46,9 +48,9 @@ export default function AssignCaretaker() {
         },
       })
       .then((response) => {
-        const { hallsData, caretaker_usernames } = response.data;
+        const { halls, caretaker_usernames } = response.data;
         setHalls(
-          hallsData.map((hallData) => ({
+          halls.map((hallData) => ({
             value: hallData.hall_id,
             label: hallData.hall_name,
           })),
@@ -70,18 +72,6 @@ export default function AssignCaretaker() {
       });
   }, []);
 
-  const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setDocument(e.target.files[0]);
-    }
-  };
-
-  const handleAttachClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     const token = localStorage.getItem("authToken");
@@ -95,11 +85,49 @@ export default function AssignCaretaker() {
       return;
     }
 
-    setLoading(true);
-    // Handle form submission logic
-    // Add your API call logic here with the attached document and selected values
+    if (!selectedHall || !selectedCaretaker) {
+      setNotification({
+        opened: true,
+        message: "Please select both a hall and a caretaker.",
+        color: "red",
+      });
+      return;
+    }
 
-    setLoading(false);
+    setLoading(true);
+
+    axios
+      .post(
+        assignCaretakers,
+        {
+          hall_id: selectedHall,
+          caretaker_username: selectedCaretaker,
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      )
+      .then((response) => {
+        console.log(response);
+        setNotification({
+          opened: true,
+          message: "Caretaker assigned successfully!",
+          color: "green",
+        });
+      })
+      .catch((error) => {
+        console.error("Error assigning caretaker", error);
+        setNotification({
+          opened: true,
+          message: "Failed to assign caretaker. Please try again.",
+          color: "red",
+        });
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   return (
@@ -134,7 +162,9 @@ export default function AssignCaretaker() {
           </Text>
           <Select
             placeholder="Select Hall"
-            data={halls}
+            data={allHalls}
+            value={selectedHall}
+            onChange={setSelectedHall}
             w="100%"
             styles={{ root: { marginTop: 5 } }}
           />
@@ -147,27 +177,15 @@ export default function AssignCaretaker() {
           <Select
             placeholder="Select Caretaker"
             data={caretakers}
+            value={selectedCaretaker}
+            onChange={setSelectedCaretaker}
             w="100%"
             styles={{ root: { marginTop: 5 } }}
           />
         </Box>
-
-        <input
-          type="file"
-          ref={fileInputRef}
-          style={{ display: "none" }}
-          onChange={handleFileChange}
-        />
-
-        <Group position="right" spacing="sm">
-          <Button variant="filled" onClick={handleAttachClick}>
-            Attach Document
-          </Button>
-          <Button variant="filled" onClick={handleSubmit} loading={loading}>
-            Assign
-          </Button>
-        </Group>
-
+        <Button variant="filled" onClick={handleSubmit} loading={loading}>
+          Assign
+        </Button>
         {notification.opened && (
           <Notification
             title="Notification"

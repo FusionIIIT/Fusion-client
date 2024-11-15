@@ -103,7 +103,7 @@ export default function ManageGuestRoomRequest() {
                 justify="space-between"
                 style={{ width: "100%" }}
               >
-                <Group spacing="md" noWrap>
+                <Group spacing="md">
                   <Avatar color="blue" radius="xl">
                     {request.name[0]}
                   </Avatar>
@@ -121,16 +121,16 @@ export default function ManageGuestRoomRequest() {
                     </Badge>
                   </div>
                 </Group>
-                <Group spacing="md" noWrap>
+                <Group spacing="md">
                   <Flex direction="column" align="flex-start">
-                    <Group spacing="xs" noWrap>
+                    <Group spacing="xs">
                       <CalendarBlank size={16} />
                       <Text size="xs" color="dimmed">
                         Check-in:
                       </Text>
                       <Text size="sm">{request.checkIn}</Text>
                     </Group>
-                    <Group spacing="xs" noWrap>
+                    <Group spacing="xs">
                       <CalendarBlank size={16} />
                       <Text size="xs" color="dimmed">
                         Check-out:
@@ -138,7 +138,7 @@ export default function ManageGuestRoomRequest() {
                       <Text size="sm">{request.checkOut}</Text>
                     </Group>
                   </Flex>
-                  <Group spacing="xs" noWrap>
+                  <Group spacing="xs">
                     <Button
                       leftIcon={<CheckCircle size={16} />}
                       color="green"

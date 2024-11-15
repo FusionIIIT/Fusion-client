@@ -84,7 +84,7 @@ export default function SectionNavigationStudent() {
   return (
     <Container size="xl" p="xs" className="mx-0" style={{ maxWidth: "100%" }}>
       <ScrollArea viewportRef={scrollRef}>
-        <Group spacing="xs" noWrap style={{ padding: "8px 0" }}>
+        <Group spacing="xs" style={{ padding: "8px 0" }}>
           <CaretLeft
             size={20}
             weight="bold"
@@ -128,7 +128,7 @@ export default function SectionNavigationStudent() {
       </ScrollArea>
       {subSections[activeTab] && (
         <ScrollArea>
-          <Group spacing="xs" mt="xs" noWrap>
+          <Group spacing="xs" mt="xs">
             {subSections[activeTab].map((subSection, index) => (
               <React.Fragment key={subSection}>
                 <Text
