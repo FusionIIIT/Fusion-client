@@ -1,60 +1,112 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
-  Text,
   Paper,
+  Text,
+  Input,
   Group,
-  Avatar,
-  Button,
-  Stack,
-  Flex,
-  Select,
   Card,
-  TextInput,
-  NumberInput,
-  Textarea,
   ScrollArea,
+  Modal,
+  Container,
+  Stack,
+  Button,
+  Textarea,
+  Loader,
 } from "@mantine/core";
+import { MagnifyingGlass } from "@phosphor-icons/react";
 import {
-  MagnifyingGlass,
-  Student,
-  CurrencyCircleDollar,
-} from "@phosphor-icons/react";
-
-// Sample student data
-const students = [
-  { id: "1", name: "Vishal Keshari", hall: "Hall-2" },
-  { id: "2", name: "Tushar Sharma", hall: "Hall-1" },
-  { id: "3", name: "Akshay Behl", hall: "Hall-3" },
-  { id: "4", name: "Ayodhya", hall: "Hall-2" },
-  { id: "5", name: "Rohit Singh", hall: "Maa Saraswati Hostel" },
-];
+  getStudentsInfo2,
+  imposeFineRoute,
+} from "../../../../routes/hostelManagementRoutes"; // Adjust the path as needed
 
 export default function ImposeFine() {
-  const [selectedHall, setSelectedHall] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [opened, setOpened] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
-  const [fineAmount, setFineAmount] = useState(0);
-  const [fineDetails, setFineDetails] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [fineAmount, setFineAmount] = useState("");
+  const [fineReason, setFineReason] = useState("");
 
-  const handleHallChange = (value) => setSelectedHall(value);
-  const handleSearchChange = (event) =>
-    setSearchTerm(event.currentTarget.value);
-  const handleStudentSelect = (student) => setSelectedStudent(student);
+  // Fetch students data
+  const fetchStudents = async () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      setError("Authentication token not found. Please login again.");
+      setLoading(false);
+      return;
+    }
 
-  const handleImposeFine = () => {
-    console.log(`Fine imposed on ${selectedStudent.name}`);
-    console.log(`Amount: ${fineAmount}`);
-    console.log(`Details: ${fineDetails}`);
-    setFineAmount(0);
-    setFineDetails("");
-    setSelectedStudent(null);
+    try {
+      setLoading(true);
+      const response = await axios.get(getStudentsInfo2, {
+        headers: { Authorization: `Token ${token}` },
+      });
+      setStudents(response.data);
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching students:", err);
+      setError(
+        err.response?.data?.message ||
+          "Failed to fetch student information. Please try again later.",
+      );
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    fetchStudents();
+  }, []);
 
   const filteredStudents = students.filter(
     (student) =>
-      (!selectedHall || student.hall === selectedHall) &&
-      student.name.toLowerCase().includes(searchTerm.toLowerCase()),
+      student.id__user__username
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      student.room_no.toLowerCase().includes(searchTerm.toLowerCase()),
   );
+
+  const handleImposeFine = async () => {
+    if (!fineAmount || !fineReason || !selectedStudent) {
+      alert("Please fill in all fields before imposing a fine.");
+      return;
+    }
+
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      setError("Authentication token not found. Please login again.");
+      return;
+    }
+
+    try {
+      // Make the API call to impose the fine
+      const response = await axios.post(
+        imposeFineRoute, // Use the predefined route
+        {
+          studentId: selectedStudent.id__user__username, // Use selected student's ID
+          fineAmount,
+          fineReason,
+        },
+        {
+          headers: { Authorization: `Token ${token}` },
+        },
+      );
+      alert("Fine imposed successfully!");
+      console.log(response);
+      setOpened(false);
+      setFineAmount(""); // Reset fine amount input
+      setFineReason(""); // Reset fine reason input
+    } catch (err) {
+      console.error("Error imposing fine:", err);
+      alert(
+        err.response?.data?.message ||
+          "Failed to impose fine. Please try again later.",
+      );
+    }
+  };
 
   return (
     <Paper
@@ -81,115 +133,101 @@ export default function ImposeFine() {
         Impose Fine
       </Text>
 
-      <ScrollArea style={{ flex: 1, height: "calc(66vh)" }}>
-        <Stack spacing="md" pb="md">
-          <Select
-            label="Filter by Hostel"
-            placeholder="Select a hostel"
-            icon={<Student size={16} />}
-            data={[
-              { value: "Hall-1", label: "Hall-1" },
-              { value: "Hall-2", label: "Hall-2" },
-              { value: "Hall-3", label: "Hall-3" },
-              { value: "Hall-4", label: "Hall-4" },
-              { value: "Hall-5", label: "Hall-5" },
-              { value: "Maa Saraswati Hostel", label: "Maa Saraswati Hostel" },
-            ]}
-            value={selectedHall}
-            onChange={handleHallChange}
-          />
+      <Group mb="md">
+        <Input
+          placeholder="Search"
+          icon={<MagnifyingGlass size={16} />}
+          style={{ flex: 1 }}
+          value={searchTerm}
+          onChange={(event) => setSearchTerm(event.currentTarget.value)}
+        />
+      </Group>
 
-          <TextInput
-            label="Search Student"
-            placeholder="Enter student name"
-            icon={<MagnifyingGlass size={16} />}
-            value={searchTerm}
-            onChange={handleSearchChange}
-          />
-
-          {filteredStudents.length > 0 ? (
-            filteredStudents.map((student) => (
-              <Paper
-                key={student.id}
-                p="md"
+      <ScrollArea style={{ flex: 1, height: "calc(60vh)" }}>
+        {loading ? (
+          <Container
+            py="xl"
+            style={{ display: "flex", justifyContent: "center" }}
+          >
+            <Loader size="lg" />
+          </Container>
+        ) : error ? (
+          <Text align="center" color="red" size="lg">
+            {error}
+          </Text>
+        ) : (
+          <Stack spacing="sm">
+            {filteredStudents.map((student, index) => (
+              <Card
+                key={index}
+                padding="sm"
                 withBorder
-                shadow="xs"
+                onClick={() => {
+                  setSelectedStudent(student);
+                  setOpened(true);
+                }}
                 sx={(theme) => ({
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  backgroundColor: theme.white,
-                  borderColor: theme.colors.gray[3],
+                  cursor: "pointer",
+                  "&:hover": {
+                    backgroundColor: theme.colors.gray[0],
+                  },
                 })}
               >
-                <Flex
-                  align="center"
-                  justify="space-between"
-                  style={{ width: "100%" }}
-                >
-                  <Group spacing="md">
-                    <Avatar color="cyan" radius="xl">
-                      {student.name[0]}
-                    </Avatar>
-                    <div>
-                      <Text weight={500} size="sm" lineClamp={1}>
-                        {student.name}
-                      </Text>
-                      <Text color="dimmed" size="xs">
-                        {student.hall}
-                      </Text>
-                    </div>
-                  </Group>
-                  <Button
-                    variant="outline"
-                    size="xs"
-                    onClick={() => handleStudentSelect(student)}
+                <Group align="center" spacing="xs">
+                  <Text style={{ flex: 1 }}>{student.id__user__username}</Text>
+                  <Text style={{ flex: 1 }}>{student.programme}</Text>
+                  <Text
+                    size="sm"
+                    style={{
+                      textAlign: "right",
+                      backgroundColor: "#f1f3f5",
+                      padding: "2px 6px",
+                      borderRadius: "4px",
+                    }}
                   >
-                    Select
-                  </Button>
-                </Flex>
+                    Room {student.room_no}
+                  </Text>
+                </Group>
+              </Card>
+            ))}
+          </Stack>
+        )}
+      </ScrollArea>
+
+      <Modal opened={opened} onClose={() => setOpened(false)} size="md">
+        {selectedStudent && (
+          <Container>
+            <Stack spacing="md">
+              <Paper p="md" radius="md" withBorder>
+                <Group position="apart">
+                  <Text size="lg" weight={500} color="blue">
+                    Name:
+                  </Text>
+                  <Text size="lg">{selectedStudent.id__user__username}</Text>
+                </Group>
               </Paper>
-            ))
-          ) : (
-            <Text align="center" color="dimmed" size="lg">
-              No students found.
-            </Text>
-          )}
-
-          {selectedStudent && (
-            <Card shadow="sm" p="lg" mt="md" withBorder>
-              <Text weight={500} size="lg" mb="md">
-                Impose Fine on {selectedStudent.name}
-              </Text>
-              <Text size="sm" color="dimmed" mb="md">
-                Hall: {selectedStudent.hall}
-              </Text>
-
-              <NumberInput
-                label="Fine Amount"
-                placeholder="Enter fine amount"
-                icon={<CurrencyCircleDollar size={16} />}
-                value={fineAmount}
-                onChange={setFineAmount}
-                min={0}
-                mb="md"
-              />
 
               <Textarea
-                label="Fine Details"
-                placeholder="Enter fine details"
-                value={fineDetails}
-                onChange={(event) => setFineDetails(event.currentTarget.value)}
-                mb="md"
+                placeholder="Reason for fine"
+                value={fineReason}
+                onChange={(e) => setFineReason(e.currentTarget.value)}
+                label="Fine Reason"
               />
-
-              <Button color="yellow" fullWidth onClick={handleImposeFine}>
-                Impose Fine
-              </Button>
-            </Card>
-          )}
-        </Stack>
-      </ScrollArea>
+              <Input
+                placeholder="Fine Amount"
+                value={fineAmount}
+                onChange={(e) => setFineAmount(e.currentTarget.value)}
+                label="Fine Amount"
+              />
+              <Group position="right" mt="xl">
+                <Button variant="filled" onClick={handleImposeFine}>
+                  Impose Fine
+                </Button>
+              </Group>
+            </Stack>
+          </Container>
+        )}
+      </Modal>
     </Paper>
   );
 }

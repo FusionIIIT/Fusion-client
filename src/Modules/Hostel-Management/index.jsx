@@ -9,15 +9,22 @@ import SectionNavigationCaretaker from "./pages/SectionNavigationCaretaker";
 function HostelPage() {
   const userRole = useSelector((state) => state.user.role);
   const renderSectionNavigation = () => {
-    switch (userRole) {
+    // Check if the user is a caretaker
+    if (userRole.toLowerCase().includes("caretaker")) {
+      return <SectionNavigationCaretaker />;
+    }
+
+    // Check if the user is a warden
+    if (userRole.toLowerCase().includes("warden")) {
+      return <SectionNavigationWarden />;
+    }
+
+    // Role-based navigation
+    switch (userRole.toLowerCase()) {
       case "student":
         return <SectionNavigationStudent />;
-      case "admin":
+      case "hostel_admin":
         return <SectionNavigationAdmin />;
-      case "warden":
-        return <SectionNavigationWarden />;
-      case "caretaker":
-        return <SectionNavigationCaretaker />;
       default:
         return <div>No access</div>;
     }
