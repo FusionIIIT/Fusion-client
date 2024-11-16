@@ -2,22 +2,22 @@ import React, { useRef, useState, useEffect } from "react";
 import { Flex, Button, Tabs, Text } from "@mantine/core";
 import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
 import { useNavigate, useLocation } from "react-router-dom";
-import classes from "../../Dashboard/Dashboard.module.css";
+import classes from "../../../Dashboard/Dashboard.module.css";
 
-function NavCom() {
+function ScheduleNavBar() {
   const [activeTab, setActiveTab] = useState(0);
   const tabsListRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
   const tabItems = [
-    { title: "Patient Log", path: "/compounder/patient-log/update" },
-    { title: "Manage Stock", path: "/compounder/manage-stock" },
-    { title: "Schedule", path: "/compounder/viewdoctor" },
-    { title: "Doctor/Pathologists", path: "/compounder/viewpath" },
-    { title: "Feedback/Response", path: "/compounder/feedback" },
-    { title: "Make Announcements", path: "/compounder/announcement" },
-    { title: "Medical Relief", path: "/compounder/medical-relief/inbox" },
+    { title: "View doctor Schedule", path: "/compounder/viewdoctor" },
+    { title: "Edit doctor Schedule", path: "/compounder/editdoctor" },
+    { title: "View Pathologist Schedule", path: "/compounder/viewpath" },
+    {
+      title: "Edit Pathologist Schedule",
+      path: "/compounder/editpath",
+    },
   ];
 
   useEffect(() => {
@@ -131,8 +131,9 @@ function NavCom() {
           <CaretCircleRight weight="light" size={32} />
         </Button>
       </Flex>
+      <br />
     </Flex>
   );
 }
 
-export default NavCom;
+export default ScheduleNavBar;

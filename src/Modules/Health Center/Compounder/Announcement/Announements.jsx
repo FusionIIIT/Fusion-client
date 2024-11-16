@@ -1,90 +1,70 @@
-import { Radio, Textarea } from "@mantine/core";
-import { NavLink } from "react-router-dom";
+import { Button, Paper, Textarea, Title } from "@mantine/core";
+import axios from "axios";
+import { useState } from "react";
 import NavCom from "../NavCom";
+import { compounderRoute } from "../../../../routes/health_center";
+import AnnounceNavBar from "./announPath";
 
 function CompAnnounements() {
+  const [announce, setAnnounce] = useState("");
+
+  const make_announcement = async () => {
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.post(
+        compounderRoute,
+        { announcement: announce, comp_announce: 1 },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      console.log(response);
+      if (response.data.status === 1) {
+        alert("announcement done");
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const handletextAnnounc = (event) => {
+    setAnnounce(event.target.value);
+  };
+
   return (
-    <div>
+    <>
       <NavCom />
-      <div style={{ margin: "2rem" }}>
-        <div
-          style={{
-            display: "flex",
-            padding: "0.5rem",
-            border: "1px solid",
-            backgroundColor: "white",
-            borderRadius: "9999px",
-            width: "22rem",
-            gap: "1rem",
-          }}
-        >
-          <NavLink
-            to="/compounder/announcement"
-            style={{
-              textDecoration: "none",
-              color: "black",
-            }}
-          >
-            <Radio
-              label="Announcements"
-              color="grape"
-              variant="outline"
-              defaultChecked
-            />
-          </NavLink>
+      <AnnounceNavBar style={{ display: "flex" }} />
+      <br />
 
-          <NavLink
-            to="/compounder/announcement/record"
-            style={{
-              textDecoration: "none",
-              color: "black",
-            }}
-          >
-            <Radio
-              label="Announcements Record"
-              color="grape"
-              variant="outline"
-            />
-          </NavLink>
-        </div>
-
-        <h3>Make a new Announcement</h3>
+      <Paper shadow="xl" p="xl" withBorder>
+        <Title order={3}>Make a new Announcement</Title>
 
         <div>
-          <p>Announcement Details</p>
           <Textarea
+            value={announce}
+            onChange={handletextAnnounc}
             label="Announcement Details"
             placeholder="What is the Announcement?"
           />
         </div>
 
         <br />
-        <div>
-          <p style={{ marginBlock: "1px" }}>Attach Files</p>
-          <input
-            type="file"
-            id="fileUpload"
-            style={{
-              border: "1px solid black",
-              padding: "0.5rem 1rem",
-              width: "100%",
-            }}
-          />
-        </div>
-
-        <br />
-        <button
+        <Button
           style={{
-            backgroundColor: "#6D28D9",
+            backgroundColor: "#15abff",
             color: "white",
             padding: "10px 30px",
             border: "none",
           }}
+          onClick={make_announcement}
         >
           Publish
-        </button>
-      </div>
-    </div>
+        </Button>
+      </Paper>
+    </>
   );
 }
 

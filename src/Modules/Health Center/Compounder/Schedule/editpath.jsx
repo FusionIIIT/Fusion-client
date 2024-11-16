@@ -1,8 +1,9 @@
 /* eslint-disable react/prop-types */
 import React, { useState } from "react";
-import { Radio } from "@mantine/core";
-import { NavLink } from "react-router-dom";
+import { Paper } from "@mantine/core";
+
 import NavCom from "../NavCom";
+import ScheduleNavBar from "./schedulePath";
 
 function Editpath() {
   const [doctorName, setDoctorName] = useState("");
@@ -53,8 +54,8 @@ function Editpath() {
   };
 
   const buttonStyle = {
-    padding: "10px 20px",
-    backgroundColor: "#6D28D9",
+    padding: "5px 10px",
+    backgroundColor: "#15abff",
     color: "white",
     border: "none",
     borderRadius: "5px",
@@ -63,7 +64,7 @@ function Editpath() {
 
   const selectStyle = {
     padding: "10px",
-    width: "100%",
+    width: "30%",
     marginBottom: "10px",
     borderRadius: "5px",
     border: "1px solid #ccc",
@@ -79,178 +80,116 @@ function Editpath() {
   return (
     <div>
       <NavCom />
-      <br />
-      <div
-        style={{
-          display: "flex",
-          padding: "0.5rem",
-          border: "1px solid",
-          backgroundColor: "white",
-          borderRadius: "9999px",
-          width: "50rem",
-          gap: "1rem",
-        }}
-      >
-        <NavLink
-          to="/compounder/viewdoctor"
-          style={{
-            textDecoration: "none",
-            color: "black",
-          }}
-        >
-          <Radio label="View doctor Schedule" color="grape" variant="outline" />
-        </NavLink>
-
-        <NavLink
-          to="/compounder/editdoctor"
-          style={{
-            textDecoration: "none",
-            color: "black",
-          }}
-        >
-          <Radio label="Edit doctor schedule" color="grape" variant="outline" />
-        </NavLink>
-        <NavLink
-          to="/compounder/viewpath"
-          style={{
-            textDecoration: "none",
-            color: "black",
-          }}
-        >
-          <Radio
-            label="View pathologist schedule"
-            color="grape"
-            variant="outline"
-          />
-        </NavLink>
-        <NavLink
-          to="/compounder/editpath"
-          style={{
-            textDecoration: "none",
-            color: "black",
-          }}
-        >
-          <Radio
-            label="Edit pathologist schedule"
-            color="grape"
-            variant="outline"
-            defaultChecked
-          />
-        </NavLink>
-      </div>
-      <br />
-
-      <div style={responsiveContainerStyle}>
-        <div style={boxStyle}>
-          <h3 style={titleStyle}>Add Pathologist Schedule</h3>
-          <div style={formGroupStyle}>
-            <select
-              value={doctorName}
-              onChange={(e) => setDoctorName(e.target.value)}
-              style={selectStyle}
-            >
-              <option value="" disabled>
-                Select Doctor
-              </option>
-              {doctors.map((doctor) => (
-                <option key={doctor} value={doctor}>
-                  {doctor}
+      <ScheduleNavBar />
+      <Paper shadow="xl" p="xl" withBorder>
+        <div style={responsiveContainerStyle}>
+          <div style={boxStyle}>
+            <h3 style={titleStyle}>Add Pathologist Schedule</h3>
+            <div style={formGroupStyle}>
+              <select
+                value={doctorName}
+                onChange={(e) => setDoctorName(e.target.value)}
+                style={selectStyle}
+              >
+                <option value="" disabled>
+                  Select Doctor
                 </option>
-              ))}
-            </select>
-          </div>
-          <div style={formGroupStyle}>
-            <input
-              type="time"
-              value={timeIn}
-              onChange={(e) => setTimeIn(e.target.value)}
-              placeholder="Time In"
-              style={{ marginRight: "10px", marginBottom: "10px" }}
-            />
-            <input
-              type="time"
-              value={timeOut}
-              onChange={(e) => setTimeOut(e.target.value)}
-              placeholder="Time Out"
-              style={{ marginRight: "10px", marginBottom: "10px" }}
-            />
-          </div>
-          <div style={formGroupStyle}>
-            <select
-              value={dayToAdd}
-              onChange={(e) => setDayToAdd(e.target.value)}
-              style={selectStyle}
-            >
-              <option value="" disabled>
-                Select Day
-              </option>
-              {[
-                "Monday",
-                "Tuesday",
-                "Wednesday",
-                "Thursday",
-                "Friday",
-                "Saturday",
-                "Sunday",
-              ].map((day) => (
-                <option key={day} value={day}>
-                  {day}
+                {doctors.map((doctor) => (
+                  <option key={doctor} value={doctor}>
+                    {doctor}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={dayToAdd}
+                onChange={(e) => setDayToAdd(e.target.value)}
+                style={selectStyle}
+              >
+                <option value="" disabled>
+                  Select Day
                 </option>
-              ))}
-            </select>
+                {[
+                  "Monday",
+                  "Tuesday",
+                  "Wednesday",
+                  "Thursday",
+                  "Friday",
+                  "Saturday",
+                  "Sunday",
+                ].map((day) => (
+                  <option key={day} value={day}>
+                    {day}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div style={formGroupStyle}>
+              <input
+                type="time"
+                value={timeIn}
+                onChange={(e) => setTimeIn(e.target.value)}
+                placeholder="Time In"
+                style={{ marginRight: "10px", marginBottom: "10px" }}
+              />
+              <input
+                type="time"
+                value={timeOut}
+                onChange={(e) => setTimeOut(e.target.value)}
+                placeholder="Time Out"
+                style={{ marginRight: "10px", marginBottom: "10px" }}
+              />
+              <button style={buttonStyle} onClick={handleAddSchedule}>
+                Add Schedule
+              </button>
+            </div>
           </div>
-          <button style={buttonStyle} onClick={handleAddSchedule}>
-            Add Schedule
-          </button>
+
+          <div style={boxStyle}>
+            <h3 style={titleStyle}>Remove Pathologist Schedule</h3>
+            <div style={formGroupStyle}>
+              <select
+                value={doctorToRemove}
+                onChange={(e) => setDoctorToRemove(e.target.value)}
+                style={selectStyle}
+              >
+                <option value="" disabled>
+                  Select Doctor
+                </option>
+                {doctors.map((doctor) => (
+                  <option key={doctor} value={doctor}>
+                    {doctor}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={dayToRemove}
+                onChange={(e) => setDayToRemove(e.target.value)}
+                style={selectStyle}
+              >
+                <option value="" disabled>
+                  Select Day
+                </option>
+                {[
+                  "Monday",
+                  "Tuesday",
+                  "Wednesday",
+                  "Thursday",
+                  "Friday",
+                  "Saturday",
+                  "Sunday",
+                ].map((day) => (
+                  <option key={day} value={day}>
+                    {day}
+                  </option>
+                ))}
+              </select>
+              <button style={buttonStyle} onClick={handleRemoveSchedule}>
+                Remove Schedule
+              </button>
+            </div>
+          </div>
         </div>
-
-        <div style={boxStyle}>
-          <h3 style={titleStyle}>Remove Pathologist Schedule</h3>
-          <div style={formGroupStyle}>
-            <select
-              value={doctorToRemove}
-              onChange={(e) => setDoctorToRemove(e.target.value)}
-              style={selectStyle}
-            >
-              <option value="" disabled>
-                Select Doctor
-              </option>
-              {doctors.map((doctor) => (
-                <option key={doctor} value={doctor}>
-                  {doctor}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div style={formGroupStyle}>
-            <select
-              value={dayToRemove}
-              onChange={(e) => setDayToRemove(e.target.value)}
-              style={selectStyle}
-            >
-              <option value="" disabled>
-                Select Day
-              </option>
-              {[
-                "Monday",
-                "Tuesday",
-                "Wednesday",
-                "Thursday",
-                "Friday",
-                "Saturday",
-                "Sunday",
-              ].map((day) => (
-                <option key={day} value={day}>
-                  {day}
-                </option>
-              ))}
-            </select>
-          </div>
-          <button style={buttonStyle} onClick={handleRemoveSchedule}>
-            Remove Schedule
-          </button>
-        </div>
-      </div>
+      </Paper>
     </div>
   );
 }

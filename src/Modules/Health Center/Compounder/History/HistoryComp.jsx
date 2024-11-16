@@ -1,47 +1,60 @@
+import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
-import { Radio, Table } from "@mantine/core";
-import { Smiley, Download } from "@phosphor-icons/react";
+import { Paper, Table, Title } from "@mantine/core";
+import { Download } from "@phosphor-icons/react";
 import NavCom from "../NavCom";
+import HistoryNavBar from "./historyPath";
 
 function HistoryCompounder() {
-  const elements = [
-    {
-      id: "22bcs219",
-      treated: "GS Sandhu",
-      date: "11/09/2024",
-      details: "Fever",
-      report: "",
-      prescription: "View",
-    },
-    {
-      id: "22bcs204",
-      treated: "A Shivi",
-      date: "12/09/2024",
-      details: "Tooth Pain",
-      report: "",
-      prescription: "View",
-    },
-  ];
+  const [history, setHistory] = useState([]);
 
-  const rows = elements.map((element) => (
+  const fetchHistory = () => {
+    const elements = [
+      {
+        id: "22bcs219",
+        treated: "GS Sandhu",
+        date: "11/09/2024",
+        details: "Fever",
+        report: "",
+        prescription: "View",
+      },
+      {
+        id: "22bcs204",
+        treated: "A Shivi",
+        date: "12/09/2024",
+        details: "Tooth Pain",
+        report: "",
+        prescription: "View",
+      },
+    ];
+    setHistory(elements);
+  };
+
+  useEffect(() => {
+    fetchHistory();
+  }, []);
+
+  const rows = history.map((element) => (
     <tr key={element.treated}>
-      <td>
-        <Smiley size={24} />
-        {element.id}
+      <td style={{ textAlign: "center" }}>{element.id}</td>
+      <td style={{ textAlign: "center" }}>{element.treated}</td>
+      <td style={{ textAlign: "center" }}>{element.date}</td>
+      <td style={{ textAlign: "center" }}>{element.details}</td>
+      <td style={{ textAlign: "center" }}>
+        {element.report ? (
+          <Download size={20} color="#4C1D95" />
+        ) : (
+          <Download size={20} color="#4C1D95" />
+        )}
       </td>
-      <td>
-        <Smiley size={24} />
-        {element.treated}
-      </td>
-      <td>{element.date}</td>
-      <td>{element.details}</td>
-      <td>
-        {element.report ? <Download size={20} /> : <Download size={20} />}
-      </td>
-      <td>
+      <td style={{ textAlign: "center" }}>
         <NavLink
           to="/patient/history/view"
-          style={{ textDecoration: "none", color: "#4C1D95" }}
+          style={{
+            textDecoration: "none",
+            color: "#15abff",
+            fontWeight: "bold",
+          }}
         >
           {element.prescription}
         </NavLink>
@@ -52,64 +65,42 @@ function HistoryCompounder() {
   return (
     <>
       <NavCom />
-
-      <div style={{ margin: "2rem" }}>
-        <div
+      <HistoryNavBar />
+      <br />
+      <Paper shadow="xl" p="xl" withBorder>
+        <Title
+          order={5}
           style={{
-            display: "flex",
-            padding: "0.5rem",
-            border: "1px solid",
-            backgroundColor: "white",
-            borderRadius: "9999px",
-            width: "18rem",
+            textAlign: "center",
+            margin: "0 auto",
+            color: "#15abff",
           }}
         >
-          <NavLink
-            to="/compounder/patient-log/update"
-            style={{
-              textDecoration: "none",
-              color: "black",
-            }}
-          >
-            <Radio label="Update Patient Log" color="grape" variant="outline" />
-          </NavLink>
-
-          <NavLink
-            to="/compounder/patient-log/history"
-            style={{
-              textDecoration: "none",
-              color: "black",
-              marginLeft: "20px",
-            }}
-          >
-            <Radio
-              label="History"
-              color="grape"
-              variant="outline"
-              defaultChecked
-            />
-          </NavLink>
-        </div>
-
+          History
+        </Title>
         <br />
-        <div>
-          <Table withTableBorder withColumnBorders highlightOnHover>
-            <thead>
-              <tr style={{ backgroundColor: "#6D28D9", color: "white" }}>
-                <th>Patient Id</th>
-                <th>Treated By</th>
-                <th>Date</th>
-                <th>Details</th>
-                <th>Report</th>
-                <th>View Prescription</th>
-              </tr>
-            </thead>
-            <tbody style={{ backgroundColor: "#EDE9FE", color: "#4C1D95" }}>
-              {rows}
-            </tbody>
-          </Table>
-        </div>
-      </div>
+        <Table
+          withTableBorder
+          withColumnBorders
+          highlightOnHover
+          striped
+          horizontalSpacing="md"
+          verticalSpacing="sm"
+          style={{ overflowX: "auto" }}
+        >
+          <thead>
+            <tr style={{ backgroundColor: "#E0F2FE", textAlign: "center" }}>
+              <th>Patient Id</th>
+              <th>Treated By</th>
+              <th>Date</th>
+              <th>Details</th>
+              <th>Report</th>
+              <th>View Prescription</th>
+            </tr>
+          </thead>
+          <tbody>{rows}</tbody>
+        </Table>
+      </Paper>
     </>
   );
 }

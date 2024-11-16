@@ -1,99 +1,93 @@
-import { Radio, Table } from "@mantine/core";
-import { NavLink } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Paper, Table, Title } from "@mantine/core";
+import axios from "axios";
+import { compounderRoute } from "../../../../routes/health_center";
 import NavCom from "../NavCom";
+import AnnounceNavBar from "./announPath";
 
 function Record() {
-  const elements = [
-    {
-      annDetails: "New PHC Doctor",
-    },
-    {
-      annDetails: "New PHC Doctor",
-    },
-  ];
+  const [test, StateTest] = useState({ announcements: [] });
 
-  const rows = elements.map((element) => (
-    <Table.Tr key={element.annDetails}>
-      <Table.Td>{element.annDetails}</Table.Td>
+  useEffect(() => {
+    const get_announcement = async () => {
+      const token = localStorage.getItem("authToken");
+      try {
+        const response = await axios.post(
+          compounderRoute,
+          { get_annoucements: 1 },
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+          },
+        );
+        StateTest(response.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    get_announcement();
+  }, []);
+  console.log(test);
+  const rows = test.announcements.map((element, index) => (
+    <Table.Tr key={index}>
+      <Table.Td>{element.message}</Table.Td>
     </Table.Tr>
   ));
+
   return (
-    <div>
+    <>
       <NavCom />
-      <div style={{ margin: "2rem" }}>
-        <div
-          style={{
-            display: "flex",
-            padding: "0.5rem",
-            border: "1px solid",
-            backgroundColor: "white",
-            borderRadius: "9999px",
-            width: "22rem",
-            gap: "1rem",
-          }}
-        >
-          <NavLink
-            to="/compounder/announcement"
+
+      <AnnounceNavBar />
+      <br />
+      <Paper p="xl" shadow="xl" withBorder>
+        <div style={{ margin: "2rem" }}>
+          <div
             style={{
-              textDecoration: "none",
-              color: "black",
+              width: "80%",
+              margin: "0 auto",
             }}
           >
-            <Radio label="Announcements" color="grape" variant="outline" />
-          </NavLink>
-
-          <NavLink
-            to="/compounder/announcement/record"
-            style={{
-              textDecoration: "none",
-              color: "black",
-            }}
-          >
-            <Radio
-              label="Announcements Record"
-              color="grape"
-              variant="outline"
-              defaultChecked
-            />
-          </NavLink>
-        </div>
-
-        <br />
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            width: "50%",
-            margin: "0 auto",
-          }}
-        >
-          <Table
-            withTableBorder
-            withColumnBorders
-            highlightOnHover
-            style={{ width: "100%" }}
-          >
-            <Table.Thead>
-              <Table.Tr style={{ backgroundColor: "#6D28D9", color: "white" }}>
-                <Table.Th style={{ textAlign: "center" }}>
-                  Announcements Details
-                </Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody
+            <Title
+              order={5}
               style={{
-                backgroundColor: "#EDE9FE",
-                color: "#4C1D95",
                 textAlign: "center",
+                margin: "0 auto",
+                color: "#15abff",
               }}
             >
-              {rows}
-            </Table.Tbody>
-          </Table>
+              Announcements Record
+            </Title>
+            <br />
+            <Table
+              striped
+              withTableBorder
+              withColumnBorders
+              highlightOnHover
+              horizontalSpacing="sm"
+              verticalSpacing="sm"
+              style={{ width: "100%" }}
+            >
+              <Table.Thead>
+                <Table.Tr style={{}}>
+                  <Table.Th style={{ textAlign: "center" }}>
+                    Announcements Details
+                  </Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody
+                style={{
+                  textAlign: "center",
+                }}
+              >
+                {rows}
+              </Table.Tbody>
+            </Table>
+          </div>
         </div>
-      </div>
-    </div>
+      </Paper>
+    </>
   );
 }
 

@@ -94,7 +94,7 @@ export default function App() {
           }
         />
         <Route
-          path="/compounder/managestock"
+          path="/compounder/manage-stock"
           element={
             <Layout>
               <ManageStock />
@@ -173,7 +173,7 @@ export default function App() {
         />
 
         <Route
-          path="/compounder/medical-relief/application"
+          path="/compounder/medical-relief/application/:id"
           element={
             <Layout>
               <Application />

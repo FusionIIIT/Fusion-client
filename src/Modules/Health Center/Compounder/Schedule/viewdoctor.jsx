@@ -1,8 +1,8 @@
 /* eslint-disable react/prop-types */
 import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
-import { Radio } from "@mantine/core";
+import { Paper, Title } from "@mantine/core";
 import NavCom from "../NavCom";
+import ScheduleNavBar from "./schedulePath";
 
 function Dropdown({ doctorName, selectedDay, onDayChange }) {
   const days = [
@@ -74,127 +74,73 @@ function Viewdoctor() {
   ];
 
   return (
-    <div>
+    <>
       <NavCom />
+      <ScheduleNavBar />
       <br />
-      <div
-        style={{
-          display: "flex",
-          padding: "0.5rem",
-          border: "1px solid",
-          backgroundColor: "white",
-          borderRadius: "9999px",
-          width: "50rem",
-          gap: "1rem",
-        }}
-      >
-        <NavLink
-          to="/compounder/viewdoctor"
+      <Paper shadow="xl" p="xl" withBorder>
+        <Title
+          order={5}
           style={{
-            textDecoration: "none",
-            color: "black",
+            textAlign: "center",
+            margin: "0 auto",
+            color: "#15abff",
           }}
         >
-          <Radio
-            label="View doctor Schedule"
-            color="grape"
-            variant="outline"
-            defaultChecked
-          />
-        </NavLink>
-
-        <NavLink
-          to="/compounder/editdoctor"
+          View Doctor Schedule
+        </Title>
+        <br />
+        <table
           style={{
-            textDecoration: "none",
-            color: "black",
-          }}
-        >
-          <Radio label="Edit doctor schedule" color="grape" variant="outline" />
-        </NavLink>
-        <NavLink
-          to="/compounder/viewpath"
-          style={{
-            textDecoration: "none",
-            color: "black",
-          }}
-        >
-          <Radio
-            label="View pathologist schedule"
-            color="grape"
-            variant="outline"
-          />
-        </NavLink>
-        <NavLink
-          to="/compounder/editpath"
-          style={{
-            textDecoration: "none",
-            color: "black",
-          }}
-        >
-          <Radio
-            label="Edit pathologist schedule"
-            color="grape"
-            variant="outline"
-          />
-        </NavLink>
-      </div>
-      <br />
-      <table
-        style={{
-          backgroundColor: "#e9d8fd",
-          borderRadius: "10px",
-          overflow: "hidden",
-          width: "100%",
-          minWidth: "320px",
-        }}
-      >
-        <thead
-          style={{
-            backgroundColor: "#6D28D9",
-            color: "#fff",
+            width: "100%",
+            borderCollapse: "collapse",
+            border: "1px solid #ccc",
             textAlign: "left",
           }}
         >
-          <tr>
-            <th style={{ padding: "15px", fontSize: "18px" }}>Doctor Name</th>
-            <th style={{ padding: "15px", fontSize: "18px" }}>
-              Specialization
-            </th>
-            <th style={{ padding: "15px", fontSize: "18px" }}>Day</th>
-            <th style={{ padding: "15px", fontSize: "18px" }}>Time</th>
-          </tr>
-        </thead>
-        <tbody>
-          {doctorSchedule.map((item, index) => (
-            <tr
-              key={index}
-              style={{
-                backgroundColor: index % 2 === 0 ? "#ede9fe" : "#faf5ff",
-                minHeight: "60px",
-              }}
-            >
-              <td style={{ padding: "15px" }}>{item.name}</td>
-              <td style={{ padding: "15px" }}>{item.specialization}</td>
-              <td style={{ padding: "15px" }}>
-                <Dropdown
-                  doctorName={item.name}
-                  selectedDay={selectedDays[item.name] || ""}
-                  onDayChange={handleDayChange}
-                />
-              </td>
-              <td style={{ padding: "15px" }}>
-                <Time
-                  doctorName={item.name}
-                  selectedDay={selectedDays[item.name] || ""}
-                  schedule={item.availability}
-                />
-              </td>
+          <thead>
+            <tr>
+              <th style={{ padding: "10px", border: "1px solid #ccc" }}>
+                Doctor Name
+              </th>
+              <th style={{ padding: "10px", border: "1px solid #ccc" }}>
+                Specialization
+              </th>
+              <th style={{ padding: "10px", border: "1px solid #ccc" }}>Day</th>
+              <th style={{ padding: "10px", border: "1px solid #ccc" }}>
+                Time
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {doctorSchedule.map((item) => (
+              <tr key={item.name}>
+                <td style={{ padding: "10px", border: "1px solid #ccc" }}>
+                  {item.name}
+                </td>
+                <td style={{ padding: "10px", border: "1px solid #ccc" }}>
+                  {item.specialization}
+                </td>
+                <td style={{ padding: "10px", border: "1px solid #ccc" }}>
+                  <Dropdown
+                    doctorName={item.name}
+                    selectedDay={selectedDays[item.name] || ""}
+                    onDayChange={handleDayChange}
+                  />
+                </td>
+                <td style={{ padding: "10px", border: "1px solid #ccc" }}>
+                  <Time
+                    doctorName={item.name}
+                    selectedDay={selectedDays[item.name] || ""}
+                    schedule={item.availability}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Paper>
+    </>
   );
 }
 

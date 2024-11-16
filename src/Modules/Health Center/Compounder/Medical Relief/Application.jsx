@@ -1,93 +1,126 @@
+import React, { useEffect, useState } from "react";
+import { Button, Paper, Textarea, Title } from "@mantine/core";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { compounderRoute } from "../../../../routes/health_center";
 import NavCom from "../NavCom";
 
 function Application() {
-  const dummyTitle = "Atul's Medical Relief Application";
-  const dummyDescription = "Atul's medical relief application for fever.";
-  const dummyComments = "Please review the attached document for details.";
+  const [application, setApplication] = useState({});
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  const get_application = async () => {
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.post(
+        compounderRoute,
+        { aid: id, get_application: 1 },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      console.log(response.data);
+      setApplication(response.data.inbox);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
+    get_application();
+  }, []);
+
+  const handel_forward = async () => {
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.post(
+        compounderRoute,
+        { file_id: id, compounder_forward: 1 },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      console.log(response.data);
+      alert("Application forwarded");
+      navigate("/compounder/medical-relief/inbox");
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const handel_reject = async () => {
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.post(
+        compounderRoute,
+        {
+          file_id: id,
+          rejected_user: application.uploader,
+          compounder_reject: 1,
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      console.log(response.data);
+      alert("Application rejected");
+      navigate("/compounder/medical-relief/inbox");
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  if (!application) {
+    return <p>No Application Available!</p>;
+  }
 
   return (
     <>
       <NavCom />
+      <br />
+      <Paper shadow="xl" p="xl" withBorder>
+        <div style={{ margin: "2rem" }}>
+          <Title order={2} style={{ marginBottom: "1rem" }}>
+            {application.uploader}'s Medical relief application
+          </Title>
 
-      <div style={{ margin: "2rem" }}>
-        <h2>{dummyTitle}</h2>
-
-        <div style={{ marginBottom: "1rem" }}>
-          <p style={{ marginBottom: "2px" }}>Description</p>
-          <textarea
-            style={{
-              width: "100%",
-              height: "100px",
-              border: "1px solid #ccc",
-              borderRadius: "8px",
-              padding: "10px",
-              resize: "none",
-            }}
-            readOnly
-            value={dummyDescription}
-          />
+          <div style={{ marginBottom: "1.5rem" }}>
+            <div style={{ display: "flex", gap: "1rem" }}>
+              <Textarea
+                style={{ flex: 1, maxWidth: "40%" }}
+                readOnly
+                label="Date"
+                value={application.upload_date}
+                minRows={1}
+              />
+              <Textarea
+                style={{ flex: 1 }}
+                readOnly
+                label="Description"
+                value={application.desc}
+                minRows={6}
+              />
+            </div>
+            <br />
+            <div style={{ display: "flex", gap: "1rem" }}>
+              <Button color="green">View File</Button>
+              <Button color="teal" onClick={handel_forward}>
+                Forward
+              </Button>
+              <Button color="red" onClick={handel_reject}>
+                Reject
+              </Button>
+            </div>
+          </div>
         </div>
-
-        <div style={{ marginBottom: "1rem" }}>
-          <p style={{ marginBottom: "2px" }}>File</p>
-          <button
-            style={{
-              padding: "10px 40px",
-              backgroundColor: "#4CAF50",
-              color: "white",
-              border: "none",
-              borderRadius: "5px",
-              cursor: "pointer",
-            }}
-          >
-            View File
-          </button>
-        </div>
-
-        <div style={{ marginBottom: "1rem" }}>
-          <p style={{ marginBottom: "2px" }}>Comment</p>
-          <textarea
-            style={{
-              width: "100%",
-              height: "80px",
-              border: "1px solid #ccc",
-              borderRadius: "8px",
-              padding: "10px",
-              resize: "none",
-            }}
-            readOnly
-            value={dummyComments}
-          />
-        </div>
-
-        <div style={{ display: "flex", gap: "1rem" }}>
-          <button
-            style={{
-              padding: "10px 40px",
-              backgroundColor: "#10B981",
-              color: "white",
-              border: "none",
-              borderRadius: "5px",
-              cursor: "pointer",
-            }}
-          >
-            Forward
-          </button>
-
-          <button
-            style={{
-              padding: "10px 40px",
-              backgroundColor: "#EF4444",
-              color: "white",
-              border: "none",
-              borderRadius: "5px",
-              cursor: "pointer",
-            }}
-          >
-            Reject
-          </button>
-        </div>
-      </div>
+      </Paper>
     </>
   );
 }
