@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
 import PlacementScheduleCard from './PlacementScheduleCard';
-import { Container, Pagination, Grid} from '@mantine/core';
+import { Container, Pagination, Grid, Title } from '@mantine/core';
 import axios from 'axios';
 import { Modal } from '@mantine/core';
-import AddPlacementEventForm from './AddPlacementEventForm'; 
+import AddPlacementEventForm from './AddPlacementEventForm';
 import { useSelector } from 'react-redux';
 import { Button } from '@mantine/core';
 
@@ -29,24 +29,28 @@ const PlacementScheduleGrid = ({ data, itemsPerPage, cardsPerRow, onAddEvent }) 
   const paddedItems = [...currentItems];
 
   const remainingCards = totalRows * cardsPerRow - currentItems.length;
-  
+
   for (let i = 0; i < remainingCards; i++) {
     paddedItems.push(null);
   }
 
   return (
     <Container fluid py={32}>
-      {/* Add button for placement officers */}
-      {role === 'placement officer' && (
-        <Button onClick={onAddEvent} variant="outline" mb="md">
-          Add Placement Event
-        </Button>
-      )}
-      <Grid gutter="md">
+      <Container fluid style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems:'center' }} my={16} >
+        <Title >
+          Placement Events
+        </Title>
+        {role === 'placement officer' && (
+          <Button onClick={onAddEvent} variant="outline" >
+            Add Placement Event
+          </Button>
+        )}
+      </Container>
+      <Grid gutter="xl" >
         {paddedItems.map((item, index) => (
           <Grid.Col key={index} span={12 / cardsPerRow}>
             {item ? (
-            <PlacementScheduleCard
+              <PlacementScheduleCard
                 companyLogo="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg"
                 companyName={item.company_name}
                 location={item.location}
@@ -57,7 +61,7 @@ const PlacementScheduleGrid = ({ data, itemsPerPage, cardsPerRow, onAddEvent }) 
                 description={item.description}
                 salary={item.ctc}
               />
-              ) : (
+            ) : (
               <div style={{ height: '100%', border: '1px dashed gray' }}>
                 Placeholder
               </div>

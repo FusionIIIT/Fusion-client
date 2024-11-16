@@ -21,7 +21,7 @@ function PlacementRecordsTable() {
       setLoading(true);
       try {
         const response = await fetch('http://127.0.0.1:8000/placement/api/statistics/');
-        
+
         if (response.ok) {
           const data = await response.json();
           setPlacementStats(data);  // Store the fetched data
@@ -42,24 +42,33 @@ function PlacementRecordsTable() {
     (activePage - 1) * recordsPerPage,
     activePage * recordsPerPage
   );
-  
-const rows = paginatedRecords.map((record, index) => (
-  <tr key={index}>
-    <td style={{ padding: '4px', whiteSpace: 'nowrap' }}>{record.first_name}</td>
-    <td style={{ padding: '4px', whiteSpace: 'nowrap' }}>{record.placement_name}</td>
-    <td style={{ padding: '4px', whiteSpace: 'nowrap' }}>{record.batch}</td>
-    <td style={{ padding: '4px', whiteSpace: 'nowrap' }}>{record.branch}</td>
-    <td style={{ padding: '4px', whiteSpace: 'nowrap' }}>{record.ctc}</td>
-  </tr>
-));
+
+  const rows = paginatedRecords.map((record, index) => (
+    <tr key={index}>
+      <td style={{ padding: '4px', whiteSpace: 'nowrap' }}>{record.first_name}</td>
+      <td style={{ padding: '4px', whiteSpace: 'nowrap' }}>{record.placement_name}</td>
+      <td style={{ padding: '4px', whiteSpace: 'nowrap' }}>{record.batch}</td>
+      <td style={{ padding: '4px', whiteSpace: 'nowrap' }}>{record.branch}</td>
+      <td style={{ padding: '4px', whiteSpace: 'nowrap' }}>{record.ctc}</td>
+    </tr>
+  ));
 
 
-  // Handle loading and error states
   if (loading) return <Loader />;
   if (error) return <Alert color="red">{error}</Alert>;
 
   return (
-    <Container style={{ display: 'flex' }}>
+    <Container fluid>
+
+      <Container fluid style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }} my={16} >
+        <Title>Placement Statisticts</Title>
+
+        {role === 'placement officer' && ( 
+          <Button onClick={() => setModalOpened(true)}>Add Placement Record</Button>
+        )}
+
+      </Container>
+
       <Card shadow="sm" padding="md" radius="md" withBorder style={{ width: '900px' }}>
         {/* Title */}
         <Title order={3} style={{ marginBottom: '12px', fontSize: '18px' }}>All Students</Title>
@@ -113,9 +122,6 @@ const rows = paginatedRecords.map((record, index) => (
         </div>
       </Card>
 
-      {role === 'placement officer' && ( // Check if the user is a placement officer
-        <Button onClick={() => setModalOpened(true)}>Add Placement Record</Button>
-      )}
 
       <AddPlacementRecordForm opened={modalOpened} onClose={() => setModalOpened(false)} />
     </Container>

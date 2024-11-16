@@ -6,6 +6,7 @@ import startOfWeek from "date-fns/startOfWeek";
 import getDay from "date-fns/getDay";
 import enUS from "date-fns/locale/en-US";
 import "react-big-calendar/lib/css/react-big-calendar.css";
+import { Container, Title } from "@mantine/core";
 
 // Setup localization for date-fns (can use moment if preferred)
 const locales = {
@@ -47,8 +48,10 @@ function PlacementCalendar() {
 
   return (
     <div style={{ height: "50vh", width: "80%", margin: "20px auto" }}>
+      <Container fluid style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }} my={16} >
+        <Title>Placement Calendar</Title>
+      </Container>
       {" "}
-      {/* Reduce height and width */}
       <Calendar
         localizer={localizer}
         events={events}

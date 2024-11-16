@@ -51,11 +51,8 @@ function PlacementScheduleCard({
       padding="lg"
       radius="lg"
       withBorder
-      style={{ maxWidth: 400, position: "relative" }}
+      style={{ width: 320, position: "relative" }}
     >
-
-
-      {/* Logo and Company Information */}
       <Group align="flex-start">
         <Image
           src={companyLogo}
