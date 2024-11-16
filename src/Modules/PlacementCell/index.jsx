@@ -2,7 +2,6 @@ import React from "react";
 import { Text, Tabs } from "@mantine/core";
 // import AddPlacementRecordForm from "./components/AddPlacementRecordForm";
 import { useSelector } from "react-redux";
-import AddPlacementEventForm from "./components/AddPlacementEventForm";
 import PlacementRecordsTable from "./components/PlacementRecordsTable";
 import PlacementCalendar from "./components/PlacementCalendar";
 import PlacementSchedule from "./components/PlacementSchedule";
@@ -62,16 +61,10 @@ const tpoTabs = [
     label: "Placement Stats",
     component: <PlacementRecordsTable />,
   },
-  // { value: "add-record", label: "Add Placement Record", component: <AddPlacementRecordForm /> },
   {
     value: "placement-calendar",
     label: "Placement Calendar",
     component: <PlacementCalendar />,
-  },
-  {
-    value: "add-event",
-    label: "Add Placement Event",
-    component: <AddPlacementEventForm />,
   },
 ];
 
@@ -86,7 +79,6 @@ function PlacementCellPage() {
         : role === "placement officer"
           ? tpoTabs
           : [];
-  // const tabs = role ==="placement officer" ? tpoTabs:[];
 
   return (
     <div style={{ padding: "20px" }}>

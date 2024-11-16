@@ -41,6 +41,18 @@ function PlacementScheduleCard({
   const role = useSelector((state) => state.user.role);
   const [visible, setVisible] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [company, setCompany] = useState(companyName);
+  const [date, setDate] = useState(null);
+  const [datePickerOpened, setDatePickerOpened] = useState(false);
+  const [locationInput, setLocation] = useState(location);
+  const [ctc, setCtc] = useState("");
+  const [time, setTime] = useState("");
+  const [placementType, setPlacementType] = useState("");
+  const [jobRole, setRole] = useState(position);
+  const [descriptionInput, setDescription] = useState(description);
+
+
   const navigate = useNavigate();
 
   const handleApplyClick = async () => {
@@ -64,16 +76,6 @@ function PlacementScheduleCard({
     } catch (error) {
       console.error('Error:', error);
     }
-  const [company, setCompany] = useState(companyName);
-  const [date, setDate] = useState(null);
-  const [datePickerOpened, setDatePickerOpened] = useState(false);
-  const [locationInput, setLocation] = useState(location);
-  const [ctc, setCtc] = useState("");
-  const [time, setTime] = useState("");
-  const [placementType, setPlacementType] = useState("");
-  const [jobRole, setRole] = useState(position);
-  const [descriptionInput, setDescription] = useState(description);
-
 
   };
 
@@ -100,6 +102,7 @@ function PlacementScheduleCard({
   if (!visible) return null;
 
   return (
+    <>
     <Card
       shadow="sm"
       padding="lg"
@@ -199,7 +202,6 @@ function PlacementScheduleCard({
         </Group>
       </Card>
 
-      {/* Modal for editing form */}
       <Modal
         opened={isModalOpen}
         onClose={() => setIsModalOpen(false)}
