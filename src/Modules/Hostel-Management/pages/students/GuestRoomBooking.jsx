@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -11,26 +11,27 @@ import {
   Text,
   TextInput,
   Textarea,
-  Title,
-} from '@mantine/core';
-import { DatePickerInput, TimeInput } from '@mantine/dates';
+} from "@mantine/core";
+import { DatePickerInput } from "@mantine/dates";
+import axios from "axios";
+import { request_guest_room } from "../../../../routes/hostelManagementRoutes";
 
 export default function GuestRoomBooking() {
   const [formData, setFormData] = useState({
-    hall: '',
+    hall: "",
     arrivalDate: null,
-    arrivalTime: '',
+    arrivalTime: "",
     departureDate: null,
-    departureTime: '',
+    departureTime: "",
     numberOfGuests: 1,
-    nationality: '',
+    nationality: "",
     numberOfRooms: 1,
-    roomType: '',
-    guestName: '',
-    guestAddress: '',
-    guestEmail: '',
-    guestPhone: '',
-    purpose: '',
+    roomType: "",
+    guestName: "",
+    guestAddress: "",
+    guestEmail: "",
+    guestPhone: "",
+    purpose: "",
   });
 
   const handleChange = (name, value) => {
@@ -40,10 +41,51 @@ export default function GuestRoomBooking() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    // Add your form submission logic here
+
+    const data = {
+      hall: formData.hall,
+      guest_name: formData.guestName,
+      guest_phone: formData.guestPhone,
+      guest_email: formData.guestEmail,
+      guest_address: formData.guestAddress,
+      rooms_required: formData.numberOfRooms,
+      total_guest: formData.numberOfGuests,
+      purpose: formData.purpose,
+      arrival_date: formData.arrivalDate,
+      arrival_time: formData.arrivalTime,
+      departure_date: formData.departureDate,
+      departure_time: formData.departureTime,
+      nationality: formData.nationality,
+      room_type: formData.roomType,
+    };
+
+    try {
+      const response = await axios.post(request_guest_room, data, {
+        headers: {
+          Authorization: `Token ${localStorage.getItem("authToken")}`,
+        },
+      });
+
+      if (response.status === 201) {
+        alert("Room request submitted successfully!");
+      } else {
+        alert(response.data.error || "An error occurred.");
+      }
+    } catch (error) {
+      console.error("Error submitting room request:", error); // Log error for debugging
+      if (error.response) {
+        // If the error comes from the backend
+        alert(
+          error.response.data.error ||
+            "An error occurred while processing your request.",
+        );
+      } else {
+        // If no response from server
+        alert("Failed to submit room request. Please try again later.");
+      }
+    }
   };
 
   return (
@@ -51,22 +93,22 @@ export default function GuestRoomBooking() {
       p="md"
       withBorder
       sx={(theme) => ({
-        position: 'fixed',
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
+        position: "fixed",
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
         backgroundColor: theme.white,
         border: `1px solid ${theme.colors.gray[3]}`,
         borderRadius: theme.radius.md,
       })}
     >
       <Stack spacing="lg">
-        <Text 
-          align="left" 
-          mb="xl" 
-          size="24px" 
-          style={{ color: '#757575', fontWeight: 'bold' }}
+        <Text
+          align="left"
+          mb="xl"
+          size="24px"
+          style={{ color: "#757575", fontWeight: "bold" }}
         >
           Book a Guest Room
         </Text>
@@ -80,12 +122,12 @@ export default function GuestRoomBooking() {
               <Select
                 placeholder="Choose a Hall"
                 data={[
-                  { value: 'hall1', label: 'Grand Ballroom' },
-                  { value: 'hall2', label: 'Royal Suite' },
-                  { value: 'hall3', label: 'Executive Lounge' },
+                  { value: "1", label: "Hall1" },
+                  { value: "4", label: "Hall4" },
+                  { value: "3", label: "Hall3" },
                 ]}
                 value={formData.hall}
-                onChange={(value) => handleChange('hall', value)}
+                onChange={(value) => handleChange("hall", value)}
                 styles={{ root: { marginTop: 5 } }}
               />
             </Box>
@@ -98,7 +140,7 @@ export default function GuestRoomBooking() {
                 <DatePickerInput
                   placeholder="Pick date"
                   value={formData.arrivalDate}
-                  onChange={(value) => handleChange('arrivalDate', value)}
+                  onChange={(value) => handleChange("arrivalDate", value)}
                   styles={{ root: { marginTop: 5 } }}
                 />
               </Grid.Col>
@@ -109,7 +151,7 @@ export default function GuestRoomBooking() {
                 <DatePickerInput
                   placeholder="Pick date"
                   value={formData.departureDate}
-                  onChange={(value) => handleChange('departureDate', value)}
+                  onChange={(value) => handleChange("departureDate", value)}
                   styles={{ root: { marginTop: 5 } }}
                 />
               </Grid.Col>
@@ -120,9 +162,12 @@ export default function GuestRoomBooking() {
                 <Text component="label" size="lg" fw={500}>
                   Arrival Time:
                 </Text>
-                <TimeInput
+                <TextInput
                   value={formData.arrivalTime}
-                  onChange={(value) => handleChange('arrivalTime', value)}
+                  onChange={(event) =>
+                    handleChange("arrivalTime", event.currentTarget.value)
+                  }
+                  placeholder="Enter time (HH:mm)"
                   styles={{ root: { marginTop: 5 } }}
                 />
               </Grid.Col>
@@ -130,9 +175,12 @@ export default function GuestRoomBooking() {
                 <Text component="label" size="lg" fw={500}>
                   Departure Time:
                 </Text>
-                <TimeInput
+                <TextInput
                   value={formData.departureTime}
-                  onChange={(value) => handleChange('departureTime', value)}
+                  onChange={(event) =>
+                    handleChange("departureTime", event.currentTarget.value)
+                  }
+                  placeholder="Enter time (HH:mm)"
                   styles={{ root: { marginTop: 5 } }}
                 />
               </Grid.Col>
@@ -145,7 +193,7 @@ export default function GuestRoomBooking() {
                 </Text>
                 <NumberInput
                   value={formData.numberOfGuests}
-                  onChange={(value) => handleChange('numberOfGuests', value)}
+                  onChange={(value) => handleChange("numberOfGuests", value)}
                   min={1}
                   styles={{ root: { marginTop: 5 } }}
                 />
@@ -156,7 +204,9 @@ export default function GuestRoomBooking() {
                 </Text>
                 <TextInput
                   value={formData.nationality}
-                  onChange={(event) => handleChange('nationality', event.currentTarget.value)}
+                  onChange={(event) =>
+                    handleChange("nationality", event.currentTarget.value)
+                  }
                   styles={{ root: { marginTop: 5 } }}
                 />
               </Grid.Col>
@@ -169,7 +219,7 @@ export default function GuestRoomBooking() {
                 </Text>
                 <NumberInput
                   value={formData.numberOfRooms}
-                  onChange={(value) => handleChange('numberOfRooms', value)}
+                  onChange={(value) => handleChange("numberOfRooms", value)}
                   min={1}
                   styles={{ root: { marginTop: 5 } }}
                 />
@@ -181,12 +231,12 @@ export default function GuestRoomBooking() {
                 <Select
                   placeholder="Select Room Type"
                   data={[
-                    { value: 'single', label: 'Deluxe Single' },
-                    { value: 'double', label: 'Luxury Double' },
-                    { value: 'suite', label: 'Executive Suite' },
+                    { value: "single", label: "Single" },
+                    { value: "double", label: "Double" },
+                    { value: "triple", label: "Triple" },
                   ]}
                   value={formData.roomType}
-                  onChange={(value) => handleChange('roomType', value)}
+                  onChange={(value) => handleChange("roomType", value)}
                   styles={{ root: { marginTop: 5 } }}
                 />
               </Grid.Col>
@@ -211,7 +261,9 @@ export default function GuestRoomBooking() {
                 <TextInput
                   placeholder="Full Name"
                   value={formData.guestName}
-                  onChange={(event) => handleChange('guestName', event.currentTarget.value)}
+                  onChange={(event) =>
+                    handleChange("guestName", event.currentTarget.value)
+                  }
                   styles={{ root: { marginTop: 5 } }}
                 />
               </Grid.Col>
@@ -222,7 +274,9 @@ export default function GuestRoomBooking() {
                 <TextInput
                   placeholder="Street Address"
                   value={formData.guestAddress}
-                  onChange={(event) => handleChange('guestAddress', event.currentTarget.value)}
+                  onChange={(event) =>
+                    handleChange("guestAddress", event.currentTarget.value)
+                  }
                   styles={{ root: { marginTop: 5 } }}
                 />
               </Grid.Col>
@@ -236,7 +290,9 @@ export default function GuestRoomBooking() {
                 <TextInput
                   placeholder="email@example.com"
                   value={formData.guestEmail}
-                  onChange={(event) => handleChange('guestEmail', event.currentTarget.value)}
+                  onChange={(event) =>
+                    handleChange("guestEmail", event.currentTarget.value)
+                  }
                   styles={{ root: { marginTop: 5 } }}
                 />
               </Grid.Col>
@@ -247,7 +303,9 @@ export default function GuestRoomBooking() {
                 <TextInput
                   placeholder="Phone Number"
                   value={formData.guestPhone}
-                  onChange={(event) => handleChange('guestPhone', event.currentTarget.value)}
+                  onChange={(event) =>
+                    handleChange("guestPhone", event.currentTarget.value)
+                  }
                   styles={{ root: { marginTop: 5 } }}
                 />
               </Grid.Col>
@@ -260,7 +318,9 @@ export default function GuestRoomBooking() {
               <Textarea
                 placeholder="Purpose of stay"
                 value={formData.purpose}
-                onChange={(event) => handleChange('purpose', event.currentTarget.value)}
+                onChange={(event) =>
+                  handleChange("purpose", event.currentTarget.value)
+                }
                 minRows={4}
                 styles={{ root: { marginTop: 5 } }}
               />
