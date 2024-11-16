@@ -14,5 +14,9 @@ export const assignCaretakers = `${host}/hostelmanagement/assign_caretakers/`;
 export const assignWarden = `${host}/hostelmanagement/assign_warden/`;
 export const assignBatch = `${host}/hostelmanagement/assign_batch/`;
 export const getStudentsInfo = `${host}/hostelmanagement/students_get_students_info/`;
+
+export const request_guest_room = `${host}/hostelmanagement/book_guest_room/`;
+
 export const getStudentsInfo2 = `${host}/hostelmanagement/caretaker_get_students_info/`;
 export const imposeFineRoute = `${host}/hostelmanagement/impose-fine/`;
+
