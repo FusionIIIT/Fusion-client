@@ -27,7 +27,7 @@ function Navigation() {
         <Divider orientation="vertical" />
 
         <NavLink
-          to="/feedback"
+          to="/patient/feedback"
           style={({ isActive }) => ({
             textDecoration: "none",
             fontSize: "1.25rem",
@@ -41,7 +41,7 @@ function Navigation() {
         <Divider orientation="vertical" />
 
         <NavLink
-          to="/schedule"
+          to="/patient/viewschedule"
           style={({ isActive }) => ({
             textDecoration: "none",
             fontSize: "1.25rem",

@@ -2,22 +2,17 @@ import React, { useRef, useState, useEffect } from "react";
 import { Flex, Button, Tabs, Text } from "@mantine/core";
 import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
 import { useNavigate, useLocation } from "react-router-dom";
-import classes from "../../Dashboard/Dashboard.module.css";
+import classes from "../../../Dashboard/Dashboard.module.css";
 
-function NavCom() {
+function AnnounceNavBar() {
   const [activeTab, setActiveTab] = useState(0);
   const tabsListRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
   const tabItems = [
-    { title: "Patient Log", path: "/compounder/patient-log/update" },
-    { title: "Manage Stock", path: "/compounder/manage-stock" },
-    { title: "Schedule", path: "/compounder/viewdoctor" },
-    { title: "Doctor/Pathologists", path: "/compounder/viewpath" },
-    { title: "Feedback/Response", path: "/compounder/feedback" },
-    { title: "Make Announcements", path: "/compounder/announcement" },
-    { title: "Medical Relief", path: "/compounder/medical-relief/inbox" },
+    { title: "Announcements", path: "/compounder/announcement" },
+    { title: "Announcements Record", path: "/compounder/announcement/record" },
   ];
 
   useEffect(() => {
@@ -135,4 +130,4 @@ function NavCom() {
   );
 }
 
-export default NavCom;
+export default AnnounceNavBar;

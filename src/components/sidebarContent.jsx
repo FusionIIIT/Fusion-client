@@ -75,7 +75,7 @@ const Modules = [
     label: "HealthCare Center",
     id: "phc",
     icon: <HealthIcon size={18} />,
-    url: "/",
+    url: "/compounder/patient-log/history",
   },
   {
     label: "File Tracking",
@@ -171,6 +171,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
   useEffect(() => {
     const filterModules = Modules.filter(
       (module) => accessibleModules[module.id] || module.id === "home",
+      (module) => accessibleModules[module.id] || module.id === "phc",
     );
     setFilteredModules(filterModules);
   }, [accessibleModules]);

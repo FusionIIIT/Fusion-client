@@ -1,59 +1,90 @@
-import { Radio, Table } from "@mantine/core";
-import { NavLink, useNavigate } from "react-router-dom";
-import { Download, Smiley } from "@phosphor-icons/react";
+import { Paper, Table, Title } from "@mantine/core";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Download } from "@phosphor-icons/react";
+import axios from "axios";
 import NavCom from "../NavCom";
+import { compounderRoute } from "../../../../routes/health_center";
 
 function Inbox() {
   const navigate = useNavigate();
+  const [elements, setMedical] = useState([]);
 
-  const elements = [
-    {
-      id: "Atul",
-      date: "11/09/2024",
-      description: "Application",
-      file: "",
-      status: "View",
-    },
-    {
-      id: "Prateek",
-      date: "11/09/2024",
-      description: "Testing PHC",
-      file: "",
-      status: "Approved",
-    },
-    {
-      id: "Sahil",
-      date: "12/09/2024",
-      description: "Fever",
-      file: "",
-      status: "Approved",
-    },
-  ];
-
-  const handleStatusClick = (status) => {
-    if (status === "View") {
-      navigate("/compounder/medical-relief/application");
+  const get_relief = async () => {
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.post(
+        compounderRoute,
+        { get_relief: 1 },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      console.log(response.data);
+      setMedical(response.data.relief);
+    } catch (err) {
+      console.log(err);
     }
   };
 
+  // const elements = [
+  //   {
+  //     id: "Atul",
+  //     date: "11/09/2024",
+  //     description: "Application",
+  //     file: "",
+  //     status: "View",
+  //   },
+  //   {
+  //     id: "22bcs219",
+  //     date: "11/09/2024",
+  //     description: "Testing PHC",
+  //     file: "",
+  //     status: "Approved",
+  //   },
+  //   {
+  //     id: "Sahil",
+  //     date: "12/09/2024",
+  //     description: "Fever",
+  //     file: "",
+  //     status: "Approved",
+  //   },
+  // ];
+
+  const handleStatusClick = (id, status) => {
+    if (status === "Pending") {
+      navigate(`/compounder/medical-relief/application/${id}`);
+    }
+  };
+
+  const get_status = (element) => {
+    if (element.status1 === true) return "Approved";
+    if (element.status === true) return "Forwarded";
+    if (element.status2 === true) return "Rejected";
+    return "Pending";
+  };
+  useEffect(() => {
+    get_relief();
+  }, []);
+
   const rows = elements.map((element) => (
     <Table.Tr key={element.id}>
-      <Table.Td>
-        <Smiley size={20} /> {element.id}
-      </Table.Td>
-      <Table.Td>{element.date}</Table.Td>
-      <Table.Td>{element.description}</Table.Td>
+      <Table.Td>{element.uploader}</Table.Td>
+      <Table.Td>{element.upload_date}</Table.Td>
+      <Table.Td>{element.desc}</Table.Td>
       <Table.Td>
         <Download size={20} /> {element.file}
       </Table.Td>
       <Table.Td
-        onClick={() => handleStatusClick(element.status)}
+        onClick={() => handleStatusClick(element.id, get_status(element))}
         style={{
-          cursor: element.status === "View" ? "pointer" : "default",
-          color: element.status === "View" ? "blue" : "inherit",
+          cursor: get_status(element) === "Pending" ? "pointer" : "default",
+          color: get_status(element) === "Pending" ? "#15abff" : "gray",
         }}
       >
-        {element.status}
+        {get_status(element)}
       </Table.Td>
     </Table.Tr>
   ));
@@ -61,55 +92,43 @@ function Inbox() {
   return (
     <>
       <NavCom />
-
-      <div style={{ margin: "2rem" }}>
-        <div
-          style={{
-            display: "flex",
-            padding: "0.5rem",
-            border: "1px solid",
-            backgroundColor: "white",
-            borderRadius: "9999px",
-            width: "6rem",
-          }}
-        >
-          <NavLink
-            to="/compounder/medical-relief/inbox"
-            style={{
-              textDecoration: "none",
-              color: "black",
-            }}
-          >
-            <Radio
-              label="Inbox"
-              color="grape"
-              variant="outline"
-              defaultChecked
-            />
-          </NavLink>
-        </div>
-
-        <br />
-
+      <br />
+      <Paper shadow="xl" p="xl" withBorder>
         <div>
-          <Table withTableBorder withColumnBorders highlightOnHover>
-            <Table.Thead>
-              <Table.Tr style={{ backgroundColor: "#6D28D9", color: "white" }}>
-                <Table.Th>Uploaded ID</Table.Th>
-                <Table.Th>Uploaded Date</Table.Th>
-                <Table.Th>Description</Table.Th>
-                <Table.Th>File</Table.Th>
-                <Table.Th>Status</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody
-              style={{ backgroundColor: "#EDE9FE", color: "#4C1D95" }}
+          <div>
+            <Title
+              order={5}
+              style={{
+                textAlign: "center",
+                margin: "0 auto",
+                color: "#15abff",
+              }}
             >
-              {rows}
-            </Table.Tbody>
-          </Table>
+              Inbox
+            </Title>
+            <br />
+            <Table
+              withTableBorder
+              withColumnBorders
+              highlightOnHover
+              striped
+              horizontalSpacing="sm"
+              verticalSpacing="sm"
+            >
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>Uploaded ID</Table.Th>
+                  <Table.Th>Uploaded Date</Table.Th>
+                  <Table.Th>Description</Table.Th>
+                  <Table.Th>File</Table.Th>
+                  <Table.Th>Status</Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>{rows}</Table.Tbody>
+            </Table>
+          </div>
         </div>
-      </div>
+      </Paper>
     </>
   );
 }
