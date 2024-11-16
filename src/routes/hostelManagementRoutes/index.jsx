@@ -13,3 +13,4 @@ export const addHostelRoute = `${host}/hostelmanagement/add-hostel/`;
 export const assignCaretakers = `${host}/hostelmanagement/assign_caretakers/`;
 export const assignWarden = `${host}/hostelmanagement/assign_warden/`;
 export const assignBatch = `${host}/hostelmanagement/assign_batch/`;
+export const getStudentsInfo = `${host}/hostelmanagement/students_get_students_info/`;

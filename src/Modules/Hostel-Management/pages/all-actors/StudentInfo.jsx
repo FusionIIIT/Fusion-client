@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Paper,
   Text,
@@ -11,100 +12,62 @@ import {
   Container,
   Stack,
   SimpleGrid,
+  Loader,
 } from "@mantine/core";
 import { MagnifyingGlass } from "@phosphor-icons/react";
-
-// Mock data for demonstration (expanded for scrolling effect)
-const studentData = [
-  {
-    name: "Student 1",
-    id: "22BEC009",
-    room: "443",
-    age: 20,
-    major: "Computer Science",
-  },
-  {
-    name: "Student 2",
-    id: "22BEC010",
-    room: "444",
-    age: 21,
-    major: "Mechanical Engineering",
-  },
-  {
-    name: "Student 3",
-    id: "22BEC011",
-    room: "445",
-    age: 22,
-    major: "Electrical Engineering",
-  },
-  {
-    name: "Student 4",
-    id: "22BEC012",
-    room: "446",
-    age: 23,
-    major: "Civil Engineering",
-  },
-  {
-    name: "Student 5",
-    id: "22BEC013",
-    room: "447",
-    age: 24,
-    major: "Information Technology",
-  },
-  {
-    name: "Student 6",
-    id: "22BEC014",
-    room: "448",
-    age: 25,
-    major: "Data Science",
-  },
-  {
-    name: "Student 7",
-    id: "22BEC015",
-    room: "449",
-    age: 22,
-    major: "Chemical Engineering",
-  },
-  {
-    name: "Student 8",
-    id: "22BEC016",
-    room: "450",
-    age: 23,
-    major: "Biomedical Engineering",
-  },
-  {
-    name: "Student 9",
-    id: "22BEC017",
-    room: "451",
-    age: 24,
-    major: "Aerospace Engineering",
-  },
-  {
-    name: "Student 10",
-    id: "22BEC018",
-    room: "452",
-    age: 21,
-    major: "Environmental Engineering",
-  },
-  // Add more students as needed for scrolling effect
-];
+import { getStudentsInfo } from "../../../../routes/hostelManagementRoutes"; // Adjust this import path as needed
 
 export default function StudentInfo() {
   const [opened, setOpened] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedBlock, setSelectedBlock] = useState("Block - E");
+  const [selectedBlock, setSelectedBlock] = useState("All");
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchStudents = async () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      setError("Authentication token not found. Please login again.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await axios.get(getStudentsInfo, {
+        headers: { Authorization: `Token ${token}` },
+      });
+      setStudents(response.data);
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching students:", err);
+      setError(
+        err.response?.data?.message ||
+          "Failed to fetch student information. Please try again later.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStudents();
+  }, []);
 
   const handleOpenModal = (student) => {
     setSelectedStudent(student);
     setOpened(true);
   };
 
-  const filteredStudents = studentData.filter(
+  const filteredStudents = students.filter(
     (student) =>
-      student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.room.toLowerCase().includes(searchTerm.toLowerCase()),
+      (student.id__user__username
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+        student.room_no.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      (selectedBlock === "All" || student.hall_no === selectedBlock),
   );
 
   return (
@@ -142,6 +105,7 @@ export default function StudentInfo() {
         />
         <Select
           data={[
+            "All",
             "Block - A",
             "Block - B",
             "Block - C",
@@ -155,38 +119,51 @@ export default function StudentInfo() {
       </Group>
 
       <ScrollArea style={{ flex: 1, height: "calc(62vh)" }}>
-        <Stack spacing="sm">
-          {filteredStudents.map((student, index) => (
-            <Card
-              key={index}
-              padding="sm"
-              withBorder
-              onClick={() => handleOpenModal(student)}
-              sx={(theme) => ({
-                cursor: "pointer",
-                "&:hover": {
-                  backgroundColor: theme.colors.gray[0],
-                },
-              })}
-            >
-              <Group align="center" spacing="xs">
-                <Text style={{ flex: 1 }}>{student.name}</Text>
-                <Text style={{ flex: 1 }}>{student.id}</Text>
-                <Text
-                  size="sm"
-                  style={{
-                    textAlign: "right",
-                    backgroundColor: "#f1f3f5",
-                    padding: "2px 6px",
-                    borderRadius: "4px",
-                  }}
-                >
-                  Room {student.room}
-                </Text>
-              </Group>
-            </Card>
-          ))}
-        </Stack>
+        {loading ? (
+          <Container
+            py="xl"
+            style={{ display: "flex", justifyContent: "center" }}
+          >
+            <Loader size="lg" />
+          </Container>
+        ) : error ? (
+          <Text align="center" color="red" size="lg">
+            {error}
+          </Text>
+        ) : (
+          <Stack spacing="sm">
+            {filteredStudents.map((student, index) => (
+              <Card
+                key={index}
+                padding="sm"
+                withBorder
+                onClick={() => handleOpenModal(student)}
+                sx={(theme) => ({
+                  cursor: "pointer",
+                  "&:hover": {
+                    backgroundColor: theme.colors.gray[0],
+                  },
+                })}
+              >
+                <Group align="center" spacing="xs">
+                  <Text style={{ flex: 1 }}>{student.id__user__username}</Text>
+                  <Text style={{ flex: 1 }}>{student.programme}</Text>
+                  <Text
+                    size="sm"
+                    style={{
+                      textAlign: "right",
+                      backgroundColor: "#f1f3f5",
+                      padding: "2px 6px",
+                      borderRadius: "4px",
+                    }}
+                  >
+                    Room {student.room_no}
+                  </Text>
+                </Group>
+              </Card>
+            ))}
+          </Stack>
+        )}
       </ScrollArea>
       <Modal
         opened={opened}
@@ -207,34 +184,58 @@ export default function StudentInfo() {
                     Name:
                   </Text>
                   <Text size="lg" italic>
-                    {selectedStudent.name}
+                    {selectedStudent.id__user__username}
                   </Text>
                 </Group>
               </Paper>
               <SimpleGrid cols={2} spacing="md">
                 <Paper p="md" radius="md" withBorder>
                   <Text weight={500} color="dimmed">
-                    Roll No:
+                    Programme:
                   </Text>
-                  <Text size="lg">{selectedStudent.id}</Text>
+                  <Text size="lg">{selectedStudent.programme}</Text>
                 </Paper>
                 <Paper p="md" radius="md" withBorder>
                   <Text weight={500} color="dimmed">
                     Room:
                   </Text>
-                  <Text size="lg">{selectedStudent.room}</Text>
+                  <Text size="lg">{selectedStudent.room_no}</Text>
                 </Paper>
                 <Paper p="md" radius="md" withBorder>
                   <Text weight={500} color="dimmed">
-                    Age:
+                    Batch:
                   </Text>
-                  <Text size="lg">{selectedStudent.age}</Text>
+                  <Text size="lg">{selectedStudent.batch}</Text>
                 </Paper>
                 <Paper p="md" radius="md" withBorder>
                   <Text weight={500} color="dimmed">
-                    Major:
+                    CPI:
                   </Text>
-                  <Text size="lg">{selectedStudent.major}</Text>
+                  <Text size="lg">{selectedStudent.cpi}</Text>
+                </Paper>
+                <Paper p="md" radius="md" withBorder>
+                  <Text weight={500} color="dimmed">
+                    Category:
+                  </Text>
+                  <Text size="lg">{selectedStudent.category}</Text>
+                </Paper>
+                <Paper p="md" radius="md" withBorder>
+                  <Text weight={500} color="dimmed">
+                    Hall:
+                  </Text>
+                  <Text size="lg">{selectedStudent.hall_no}</Text>
+                </Paper>
+                <Paper p="md" radius="md" withBorder>
+                  <Text weight={500} color="dimmed">
+                    Specialization:
+                  </Text>
+                  <Text size="lg">{selectedStudent.specialization}</Text>
+                </Paper>
+                <Paper p="md" radius="md" withBorder>
+                  <Text weight={500} color="dimmed">
+                    Current Semester:
+                  </Text>
+                  <Text size="lg">{selectedStudent.curr_semester_no}</Text>
                 </Paper>
               </SimpleGrid>
             </Stack>
