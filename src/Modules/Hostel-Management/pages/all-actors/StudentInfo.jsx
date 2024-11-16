@@ -183,9 +183,7 @@ export default function StudentInfo() {
                   <Text size="lg" weight={500} color="blue">
                     Name:
                   </Text>
-                  <Text size="lg" italic>
-                    {selectedStudent.id__user__username}
-                  </Text>
+                  <Text size="lg">{selectedStudent.id__user__username}</Text>
                 </Group>
               </Paper>
               <SimpleGrid cols={2} spacing="md">
@@ -223,7 +221,7 @@ export default function StudentInfo() {
                   <Text weight={500} color="dimmed">
                     Hall:
                   </Text>
-                  <Text size="lg">{selectedStudent.hall_no}</Text>
+                  <Text size="lg">{selectedStudent.hall_id}</Text>
                 </Paper>
                 <Paper p="md" radius="md" withBorder>
                   <Text weight={500} color="dimmed">

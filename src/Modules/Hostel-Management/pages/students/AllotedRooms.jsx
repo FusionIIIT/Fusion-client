@@ -65,9 +65,12 @@ export default function StudentDashboard() {
           ) : currentStudent ? (
             <StudentInfoCard
               name={currentStudent.id__user__username}
-              roomNo={currentStudent.room_no}
-              hallName={`Hall ${currentStudent.hall_no}`}
-              hallNo={currentStudent.hall_no}
+              programme={currentStudent.programme}
+              batch={currentStudent.batch}
+              cpi={currentStudent.cpi}
+              category={currentStudent.category}
+              hall_id={currentStudent.hall_id}
+              room_no={currentStudent.room_no}
             />
           ) : (
             <Text>No student information available</Text>
