@@ -29,6 +29,7 @@ function PlacementCalendar() {
       const token = localStorage.getItem("authToken");
       console.log("Auth Token:", token);
 
+
       try {
         const response = await axios.get(
           "http://127.0.0.1:8000/placement/api/calender/",
@@ -48,11 +49,15 @@ function PlacementCalendar() {
             title: `${item.company_name} - Round ${item.round}`,
             start: new Date(item.date),
             end: new Date(item.date),
+            start: new Date(item.date),
+            end: new Date(item.date),
             description: item.description,
             type: item.type,
           }));
 
+
           setEvents(calendarEvents);
+          console.log("Mapped Events:", calendarEvents);
           console.log("Mapped Events:", calendarEvents);
         } else {
           console.error("Schedule data is not an array:", scheduleData);
@@ -66,7 +71,7 @@ function PlacementCalendar() {
   }, []);
 
   return (
-    <div style={{ height: "50vh", width: "80%", margin: "20px auto" }}>
+    <div style={{ height: "50vh", width: "90%", margin: "20px auto" }}>
       <Container
         fluid
         style={{
@@ -79,6 +84,7 @@ function PlacementCalendar() {
       >
         <Title order={2}>Placement Calendar</Title>
       </Container>{" "}
+
       <Calendar
         localizer={localizer}
         events={events}
