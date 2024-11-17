@@ -19,3 +19,6 @@ export const getStudentsInfo2 = `${host}/hostelmanagement/caretaker_get_students
 export const imposeFineRoute = `${host}/hostelmanagement/impose-fine/`;
 export const show_leave_request = `${host}/hostelmanagement/all_leave_data/`;
 export const update_leave_status = `${host}/hostelmanagement/update_leave_status/`;
+export const fetch_fines_url = `${host}/hostelmanagement/fetch-fine/`;
+export const update_fine_status_url = (fine_id) =>
+  `${host}/hostelmanagement/update-fine-status/${fine_id}/`;
