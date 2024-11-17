@@ -18,16 +18,18 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import PropTypes from "prop-types";
+import { format } from "date-fns";
 import EditPlacementForm from "./EditPlacementForm";
 
 function PlacementScheduleCard({
+  jobId,
   companyLogo,
   companyName,
   location,
   position,
   jobType,
   postedTime,
-  // deadline,
+  deadline,
   description,
   salary,
 }) {
@@ -40,7 +42,7 @@ function PlacementScheduleCard({
   const handleApplyClick = async () => {
     const token = localStorage.getItem("authToken");
     console.log("Auth Token:", token);
-    console.log("Placement ID:", placementId);
+    console.log("Placement ID:", jobId);
     try {
       const response = await fetch(
         "http://127.0.0.1:8000/placement/api/apply-placement/",
@@ -64,23 +66,82 @@ function PlacementScheduleCard({
   };
 
   const handelViewClick = () => {
-    navigate(
-      `/placement-cell/view?companyName=${encodeURIComponent(companyName)}&companyLogo=${encodeURIComponent(companyLogo)}`,
-    );
+    navigate(`/placement-cell/view?jobId=${encodeURIComponent(jobId)}`);
   };
+  
 
-  const handleDeleteClick = () => {
+  const handleDeleteClick = async () => {
     setVisible(false);
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await fetch(`http://127.0.0.1:8000/placement/api/placement/${jobId}/`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+  
+      if (response.ok) {
+        alert("Placement schedule deleted successfully!");
+        setIsModalOpen(false); 
+      } else {
+        const errorData = await response.json();
+        console.error("Delete failed:", errorData);
+        alert("Failed to Delete placement schedule.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("An error occurred while deleting the placement schedule.");
+    }
   };
 
   const handleEditClick = () => {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (updatedData) => {
-    console.log("Updated Placement Data:", updatedData);
-    setIsModalOpen(false);
+const handleSubmit = async () => {
+  const token = localStorage.getItem("authToken");
+
+  const formattedDate = date ? format(date, "yyyy-MM-dd") : null;
+  const formattedTime = time || "00:00:00";
+
+  const updatedData = {
+    placement_type: placementType,
+    company_name: company,
+    ctc: ctc,
+    description: descriptionInput,
+    schedule_at: formattedTime, 
+    placement_date: formattedDate,
+    location: locationInput,
+    role: jobRole,
   };
+
+  try {
+    const response = await fetch(`http://127.0.0.1:8000/placement/api/placement/${jobId}/`, {
+      method: "PUT",
+      headers: {
+        "Authorization": `Token ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updatedData),
+    });
+
+    if (response.ok) {
+      alert("Placement schedule updated successfully!");
+      setIsModalOpen(false); 
+    } else {
+      const errorData = await response.json();
+      console.error("Update failed:", errorData);
+      alert("Failed to update placement schedule.");
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    alert("An error occurred while updating the placement schedule.");
+  }
+};
+
+  
 
   if (!visible) return null;
 
