@@ -11,7 +11,7 @@ import {
   Textarea,
 } from "@mantine/core";
 import axios from "axios";
-import { requestLeave } from "../../../../routes/hostelManagementRoutes"; // Import your endpoint
+import { requestLeave } from "../../../../routes/hostelManagementRoutes";
 
 export default function LeaveForm() {
   const [formData, setFormData] = useState({
@@ -22,6 +22,9 @@ export default function LeaveForm() {
     startDate: "",
     endDate: "",
   });
+  const [errors, setErrors] = useState({});
+  const [successMessage, setSuccessMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (name, value) => {
     setFormData((prevState) => ({
@@ -32,8 +35,16 @@ export default function LeaveForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Retrieve the token from local storage or a secure store
-    const token = localStorage.getItem("authToken"); // adjust as per your token storage location
+    setIsSubmitting(true);
+
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      setErrors({
+        general: "Authentication token not found. Please log in again.",
+      });
+      setIsSubmitting(false);
+      return;
+    }
 
     const data = {
       student_name: formData.studentName,
@@ -43,7 +54,7 @@ export default function LeaveForm() {
       start_date: formData.startDate,
       end_date: formData.endDate,
     };
-    console.log(data);
+
     try {
       const response = await axios.post(requestLeave, data, {
         headers: {
@@ -51,28 +62,42 @@ export default function LeaveForm() {
           "Content-Type": "application/json",
         },
       });
-      console.log("Form submitted successfully:", response.data);
+
+      // Check if the response contains a message
+      if (response.data.message) {
+        setSuccessMessage(response.data.message);
+        setErrors({}); // Reset errors
+        setFormData({
+          studentName: "",
+          rollNumber: "",
+          phoneNumber: "",
+          reason: "",
+          startDate: "",
+          endDate: "",
+        });
+      } else {
+        // Handle unexpected response format
+        setErrors({ general: "Unexpected server response." });
+      }
     } catch (error) {
-      console.error("Error submitting form:", error);
+      if (error.response) {
+        if (error.response.data.errors) {
+          setErrors(error.response.data.errors);
+        } else if (error.response.data.error) {
+          setErrors({ general: error.response.data.error });
+        } else {
+          setErrors({ general: "Unexpected server error occurred." });
+        }
+      } else {
+        setErrors({ general: "Network error. Please check your connection." });
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Paper
-      shadow="md"
-      p="md"
-      withBorder
-      sx={(theme) => ({
-        position: "fixed",
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        backgroundColor: theme.white,
-        border: `1px solid ${theme.colors.gray[3]}`,
-        borderRadius: theme.radius.md,
-      })}
-    >
+    <Paper shadow="md" p="md" withBorder>
       <Stack spacing="lg">
         <Text
           align="left"
@@ -96,8 +121,10 @@ export default function LeaveForm() {
                   handleChange("studentName", event.currentTarget.value)
                 }
                 required
-                styles={{ root: { marginTop: 5 } }}
               />
+              {errors.student_name && (
+                <Text color="red">{errors.student_name}</Text>
+              )}
             </Box>
 
             <Box>
@@ -111,8 +138,8 @@ export default function LeaveForm() {
                   handleChange("rollNumber", event.currentTarget.value)
                 }
                 required
-                styles={{ root: { marginTop: 5 } }}
               />
+              {errors.roll_num && <Text color="red">{errors.roll_num}</Text>}
             </Box>
 
             <Box>
@@ -126,8 +153,10 @@ export default function LeaveForm() {
                   handleChange("phoneNumber", event.currentTarget.value)
                 }
                 required
-                styles={{ root: { marginTop: 5 } }}
               />
+              {errors.phone_number && (
+                <Text color="red">{errors.phone_number}</Text>
+              )}
             </Box>
 
             <Box>
@@ -142,8 +171,8 @@ export default function LeaveForm() {
                 }
                 minRows={5}
                 required
-                styles={{ root: { marginTop: 5 } }}
               />
+              {errors.reason && <Text color="red">{errors.reason}</Text>}
             </Box>
 
             <Grid>
@@ -158,8 +187,10 @@ export default function LeaveForm() {
                     handleChange("startDate", e.currentTarget.value)
                   }
                   required
-                  styles={{ root: { marginTop: 5 } }}
                 />
+                {errors.start_date && (
+                  <Text color="red">{errors.start_date}</Text>
+                )}
               </Grid.Col>
               <Grid.Col span={6}>
                 <Text component="label" size="lg" fw={500}>
@@ -172,18 +203,29 @@ export default function LeaveForm() {
                     handleChange("endDate", e.currentTarget.value)
                   }
                   required
-                  styles={{ root: { marginTop: 5 } }}
                 />
+                {errors.end_date && <Text color="red">{errors.end_date}</Text>}
               </Grid.Col>
             </Grid>
 
             <Group position="right" spacing="sm" mt="xl">
-              <Button type="submit" variant="filled">
-                Submit
+              <Button type="submit" variant="filled" disabled={isSubmitting}>
+                {isSubmitting ? "Submitting..." : "Submit"}
               </Button>
             </Group>
           </Stack>
         </form>
+
+        {successMessage && (
+          <Text color="green" size="lg" fw="bold">
+            {successMessage}
+          </Text>
+        )}
+        {errors.general && (
+          <Text color="red" size="lg" fw="bold">
+            {errors.general}
+          </Text>
+        )}
       </Stack>
     </Paper>
   );
