@@ -19,12 +19,11 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 function JobApplicationForm() {
   const [submitted, setSubmitted] = useState(false);
-  const [hasApplied, setHasApplied] = useState(false); // Assume this is fetched from backend
+  const [hasApplied, setHasApplied] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Retrieve the company name and logo from query parameters
   const queryParams = new URLSearchParams(location.search);
   const companyName = queryParams.get("companyName");
   const companyLogo = queryParams.get("companyLogo");
@@ -65,7 +64,7 @@ function JobApplicationForm() {
         }}
       >
         {/* Align company logo and name vertically to the left */}
-        {/* {companyLogo && (
+        {companyLogo && (
           <Image
             style={{ width: "20%", height: "20%" }}
             src={companyLogo}
@@ -75,8 +74,8 @@ function JobApplicationForm() {
             fit="contain"
             withPlaceholder
           />
-        )} */}
-        <Title order={1} style={{ color: "#000000", marginTop: "10px" }}>
+        )}
+        <Title order={2} style={{ color: "#000000", marginTop: "10px" }}>
           {companyName || "Company"}
         </Title>
         <Text>Job description goes here...</Text>

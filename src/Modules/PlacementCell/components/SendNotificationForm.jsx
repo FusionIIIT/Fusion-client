@@ -6,7 +6,7 @@ import {
   Textarea,
   Group,
   Title,
-  Container
+  Container,
 } from "@mantine/core";
 import { DatePickerInput, TimeInput } from "@mantine/dates";
 
@@ -30,9 +30,18 @@ function SendNotificationForm() {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <Container fluid style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }} my={16} >
-        <Title>Send Notification</Title>
+    <Container fluid py={16}>
+      <Container
+        fluid
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+        my={16}
+      >
+        <Title order={2}>Send Notification</Title>
       </Container>
 
       <Group mt="md">
@@ -89,7 +98,7 @@ function SendNotificationForm() {
       <Button mt="md" onClick={handleSubmit}>
         Send Notification
       </Button>
-    </div>
+    </Container>
   );
 }
 

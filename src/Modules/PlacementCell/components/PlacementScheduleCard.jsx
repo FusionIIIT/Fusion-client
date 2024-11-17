@@ -26,6 +26,7 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { DatePicker, TimeInput } from "@mantine/dates";
 import PropTypes from "prop-types";
+import { Notification } from "@mantine/core";
 
 function PlacementScheduleCard({
   companyLogo,
@@ -52,31 +53,32 @@ function PlacementScheduleCard({
   const [jobRole, setRole] = useState(position);
   const [descriptionInput, setDescription] = useState(description);
 
-
   const navigate = useNavigate();
 
   const handleApplyClick = async () => {
-    const token = localStorage.getItem("authToken"); 
+    const token = localStorage.getItem("authToken");
     console.log("Auth Token:", token);
     console.log("Placement ID:", placementId);
     try {
-      const response = await fetch('http://127.0.0.1:8000/placement/api/apply-placement/', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Token ${token}`,
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        "http://127.0.0.1:8000/placement/api/apply-placement/",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ placementId }),
         },
-        body: JSON.stringify({ placementId }),
-      });
+      );
       if (response.ok) {
-        console.log('Application successful');
+        console.log("Application successful");
       } else {
-        console.error('Failed to apply');
+        console.error("Failed to apply");
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
     }
-
   };
 
   const handelViewClick = () => {
@@ -94,69 +96,71 @@ function PlacementScheduleCard({
   };
 
   const handleSubmit = () => {
-    // Logic to handle form submission
-    alert("Form submitted!");
-    setIsModalOpen(false); // Close modal after submission
+    setIsModalOpen(false);
   };
 
   if (!visible) return null;
 
   return (
     <>
-    <Card
-      shadow="sm"
-      padding="lg"
-      radius="lg"
-      withBorder
-      style={{ width: 320, position: "relative" }}
-    >
-      <Group align="flex-start">
-        <Image
-          src={companyLogo}
-          alt={`${companyName} logo`}
-          width={40}
-          height={40}
-          fit="contain"
-          withPlaceholder
-        />
-      </Group>
-      <Text weight={700} size="lg" mt={10}>
-        {companyName}
-      </Text>
-      <Group spacing={5} mt={5}>
-        <MapPin size={16} />
-        <Text size="sm" color="dimmed">
-          {location}
+      <Card
+        shadow="sm"
+        padding="lg"
+        radius="lg"
+        withBorder
+        style={{ width: 320, position: "relative" }}
+      >
+        <Group align="flex-start">
+          <Image
+            src={companyLogo}
+            alt={`${companyName} logo`}
+            width={40}
+            height={40}
+            fit="contain"
+            withPlaceholder
+          />
+        </Group>
+        <Text weight={700} size="lg" mt={10}>
+          {companyName}
         </Text>
-      </Group>
-      <Text weight={500} size="md" mt="sm">
-        {position}
-      </Text>
-      <Group mt="xs" spacing="xs">
-        <Badge color="green">{jobType}</Badge>
-        <Group spacing={5}>
-          <Clock size={16} />
-          <Text size="xs" color="dimmed">
-            {postedTime}
+        <Group spacing={5} mt={5}>
+          <MapPin size={16} />
+          <Text size="sm" color="dimmed">
+            {location}
           </Text>
         </Group>
-      </Group>
-      <Text
-        size="sm"
-        mt="sm"
-        color="dimmed"
-        style={{
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-        }}
-      >
-        {description}
-      </Text>
-      <Group position="apart" mt="md" style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Text size="xl" weight={700} color="blue">
-          {salary}
+        <Text weight={500} size="md" mt="sm">
+          {position}
         </Text>
+        <Group mt="xs" spacing="xs">
+          <Badge color="green">{jobType}</Badge>
+          <Group spacing={5}>
+            <Clock size={16} />
+            <Text size="xs" color="dimmed">
+              {postedTime}
+            </Text>
+          </Group>
+        </Group>
+        <Text
+          size="sm"
+          mt="sm"
+          color="dimmed"
+          style={{
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {description}
+        </Text>
+        <Group
+          position="apart"
+          mt="md"
+          style={{ display: "flex", justifyContent: "space-between" }}
+        >
+          <Text size="xl" weight={700} color="blue">
+            {salary}
+          </Text>
 
           {role === "student" && (
             <Button
