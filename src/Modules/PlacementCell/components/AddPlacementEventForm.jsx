@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { TextInput, Button, Group, Select, Textarea, Card, Title, Grid, ActionIcon } from "@mantine/core";
+import {
+  TextInput,
+  Button,
+  Group,
+  Select,
+  Textarea,
+  Card,
+  Title,
+  Grid,
+  ActionIcon,
+} from "@mantine/core";
 import { DatePicker, TimeInput } from "@mantine/dates";
 import { Calendar } from "@phosphor-icons/react";
 import axios from "axios"; // Make sure axios is imported
 import { useSelector } from "react-redux";
 
 import { notifications } from "@mantine/notifications";
-
 
 function AddPlacementEventForm() {
   const role = useSelector((state) => state.user.role);
@@ -25,7 +34,7 @@ function AddPlacementEventForm() {
   // Function to get the current time in HH:mm:ss format
   const getCurrentTime = () => {
     const now = new Date();
-    return now.toLocaleTimeString('en-GB', { hour12: false });
+    return now.toLocaleTimeString("en-GB", { hour12: false });
   };
 
   // Set the default time to the current time
@@ -58,11 +67,15 @@ function AddPlacementEventForm() {
     }
 
     try {
-      const response = await axios.post("http://127.0.0.1:8000/placement/api/placement/", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
+      const response = await axios.post(
+        "http://127.0.0.1:8000/placement/api/placement/",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         },
-      });
+      );
       console.log(response.data.message);
       // notification that the schedule has been added
       alert("Placement Event has been added successfully");
@@ -79,14 +92,15 @@ function AddPlacementEventForm() {
         color: "red",
         position: "top-center",
       });
-      console.error("Error adding schedule:", error.response?.data?.error || error.message);
+      console.error(
+        "Error adding schedule:",
+        error.response?.data?.error || error.message,
+      );
     }
   };
-  
-
 
   return (
-    <Card shadow="md" padding="lg" radius="md" withBorder style={{ maxWidth: '800px', margin: '0 auto' }}>
+    <Card style={{ maxWidth: "800px", margin: "0 auto" }}>
       <Title order={3} align="center" style={{ marginBottom: "20px" }}>
         Add Placement Event
       </Title>
@@ -108,9 +122,7 @@ function AddPlacementEventForm() {
             value={date ? date.toLocaleDateString() : ""}
             readOnly
             rightSection={
-              <ActionIcon
-                onClick={() => setDatePickerOpened((prev) => !prev)}
-              >
+              <ActionIcon onClick={() => setDatePickerOpened((prev) => !prev)}>
                 <Calendar size={16} />
               </ActionIcon>
             }
@@ -150,7 +162,9 @@ function AddPlacementEventForm() {
             label="Time"
             placeholder="Select time"
             value={time}
-            onChange={(value) => setTime(value.toLocaleTimeString('en-GB', { hour12: false }))}
+            onChange={(value) =>
+              setTime(value.toLocaleTimeString("en-GB", { hour12: false }))
+            }
             format="24"
           />
         </Grid.Col>
@@ -195,7 +209,6 @@ function AddPlacementEventForm() {
             />
           </Grid.Col>
         )}
-
       </Grid>
 
       {/* Submit button */}

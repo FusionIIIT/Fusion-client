@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
-import PlacementScheduleCard from "./PlacementScheduleCard";
-import { Container, Pagination, Grid, Title } from "@mantine/core";
+import PropTypes from "prop-types";
+import { Container, Pagination, Grid, Modal, Button } from "@mantine/core";
 import axios from "axios";
-import { Modal } from "@mantine/core";
-import AddPlacementEventForm from "./AddPlacementEventForm";
 import { useSelector } from "react-redux";
-import { Button } from "@mantine/core";
+import AddPlacementEventForm from "./AddPlacementEventForm";
+import PlacementScheduleCard from "./PlacementScheduleCard";
 
 const getCookie = (name) => {
   const value = `; ${document.cookie}`;
@@ -15,12 +14,13 @@ const getCookie = (name) => {
 
 const csrfToken = getCookie("csrftoken");
 
-const PlacementScheduleGrid = ({
+// PlacementScheduleGrid component
+function PlacementScheduleGrid({
   data,
   itemsPerPage,
   cardsPerRow,
   onAddEvent,
-}) => {
+}) {
   const role = useSelector((state) => state.user.role);
   const [activePage, setActivePage] = useState(1);
 
@@ -33,9 +33,8 @@ const PlacementScheduleGrid = ({
 
   const remainingCards = totalRows * cardsPerRow - currentItems.length;
 
-  for (let i = 0; i < remainingCards; i++) {
-    paddedItems.push(null);
-  }
+  // Replaced the ++ operator with a more explicit loop
+  Array.from({ length: remainingCards }).forEach(() => paddedItems.push(null));
 
   return (
     <Container fluid py={16}>
@@ -64,7 +63,7 @@ const PlacementScheduleGrid = ({
                 companyLogo="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg"
                 companyName={item.company_name}
                 location={item.location}
-                position={item.role}
+                position={String(item.role)}
                 jobType={item.placement_type}
                 postedTime={item.schedule_at}
                 deadline={item.placement_date}
@@ -88,9 +87,29 @@ const PlacementScheduleGrid = ({
       />
     </Container>
   );
+}
+
+// Prop Types for PlacementScheduleGrid
+PlacementScheduleGrid.propTypes = {
+  data: PropTypes.arrayOf(
+    PropTypes.shape({
+      company_name: PropTypes.string.isRequired,
+      location: PropTypes.string.isRequired,
+      role: PropTypes.string.isRequired,
+      placement_type: PropTypes.string.isRequired,
+      schedule_at: PropTypes.string.isRequired,
+      placement_date: PropTypes.string.isRequired,
+      description: PropTypes.string,
+      ctc: PropTypes.number,
+    }),
+  ).isRequired,
+  itemsPerPage: PropTypes.number.isRequired,
+  cardsPerRow: PropTypes.number.isRequired,
+  onAddEvent: PropTypes.func.isRequired,
 };
 
-const PlacementSchedule = () => {
+// PlacementSchedule component
+function PlacementSchedule() {
   const [placementData, setPlacementData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -140,7 +159,6 @@ const PlacementSchedule = () => {
       <Modal
         opened={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Add Placement Event"
         size="lg"
         centered
       >
