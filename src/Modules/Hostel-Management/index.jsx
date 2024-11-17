@@ -22,13 +22,9 @@ function HostelPage() {
     // Role-based navigation
     switch (userRole.toLowerCase()) {
       case "student":
-        return <SectionNavigationCaretaker />;
-      case "hostel_admin":
-        return <SectionNavigationAdmin />;
-      case "warden":
-        return <SectionNavigationWarden />;
-      case "hall1caretaker":
         return <SectionNavigationStudent />;
+      case "admin":
+        return <SectionNavigationAdmin />;
       default:
         return <div>No access</div>;
     }
