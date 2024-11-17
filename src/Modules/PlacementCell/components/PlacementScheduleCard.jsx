@@ -7,12 +7,6 @@ import {
   Button,
   Image,
   ActionIcon,
-  Modal,
-  TextInput,
-  Select,
-  Textarea,
-  Grid,
-  Title,
 } from "@mantine/core";
 import {
   Clock,
@@ -20,13 +14,11 @@ import {
   Trash,
   Pencil,
   Eye,
-  Calendar,
 } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { DatePicker, TimeInput } from "@mantine/dates";
 import PropTypes from "prop-types";
-import { Notification } from "@mantine/core";
+import EditPlacementForm from "./EditPlacementForm";
 
 function PlacementScheduleCard({
   companyLogo,
@@ -42,16 +34,6 @@ function PlacementScheduleCard({
   const role = useSelector((state) => state.user.role);
   const [visible, setVisible] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const [company, setCompany] = useState(companyName);
-  const [date, setDate] = useState(null);
-  const [datePickerOpened, setDatePickerOpened] = useState(false);
-  const [locationInput, setLocation] = useState(location);
-  const [ctc, setCtc] = useState("");
-  const [time, setTime] = useState("");
-  const [placementType, setPlacementType] = useState("");
-  const [jobRole, setRole] = useState(position);
-  const [descriptionInput, setDescription] = useState(description);
 
   const navigate = useNavigate();
 
@@ -95,7 +77,8 @@ function PlacementScheduleCard({
     setIsModalOpen(true);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (updatedData) => {
+    console.log("Updated Placement Data:", updatedData);
     setIsModalOpen(false);
   };
 
@@ -206,109 +189,14 @@ function PlacementScheduleCard({
         </Group>
       </Card>
 
-      <Modal
-        opened={isModalOpen}
+      {/* Modal for editing placement */}
+      <EditPlacementForm
+        isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Edit Placement Event"
-      >
-        <Card shadow="md" padding="lg" radius="md" withBorder>
-          <Title order={3} align="center" style={{ marginBottom: "20px" }}>
-            Edit Placement Event
-          </Title>
-          <Grid gutter="lg">
-            <Grid.Col span={4}>
-              <TextInput
-                label="Company Name"
-                placeholder="Enter company name"
-                value={company}
-                onChange={(e) => setCompany(e.target.value)}
-              />
-            </Grid.Col>
-            <Grid.Col span={4} style={{ position: "relative" }}>
-              <TextInput
-                label="Date (yyyy-mm-dd)"
-                placeholder="Pick date"
-                value={date ? date.toLocaleDateString() : ""}
-                readOnly
-                rightSection={
-                  <ActionIcon
-                    onClick={() => setDatePickerOpened((prev) => !prev)}
-                  >
-                    <Calendar size={16} />
-                  </ActionIcon>
-                }
-              />
-              {datePickerOpened && (
-                <DatePicker
-                  value={date}
-                  onChange={(selectedDate) => {
-                    setDate(selectedDate);
-                    setDatePickerOpened(false);
-                  }}
-                  onBlur={() => setDatePickerOpened(false)}
-                  style={{ zIndex: 1 }}
-                />
-              )}
-            </Grid.Col>
-            <Grid.Col span={4}>
-              <TextInput
-                label="Location"
-                placeholder="Enter location"
-                value={locationInput}
-                onChange={(e) => setLocation(e.target.value)}
-              />
-            </Grid.Col>
-            <Grid.Col span={4}>
-              <TextInput
-                label="CTC In Lpa"
-                placeholder="Enter CTC"
-                value={ctc}
-                onChange={(e) => setCtc(e.target.value)}
-              />
-            </Grid.Col>
-            <Grid.Col span={4}>
-              <TimeInput
-                label="Time"
-                placeholder="Select time"
-                value={time}
-                onChange={(value) =>
-                  setTime(value.toLocaleTimeString("en-GB", { hour12: false }))
-                }
-                format="24"
-              />
-            </Grid.Col>
-            <Grid.Col span={4}>
-              <Select
-                label="Placement Type"
-                placeholder="Select placement type"
-                data={["Placement", "Internship"]}
-                value={placementType}
-                onChange={setPlacementType}
-              />
-            </Grid.Col>
-            <Grid.Col span={12}>
-              <Textarea
-                label="Description"
-                placeholder="Enter a description"
-                value={descriptionInput}
-                onChange={(e) => setDescription(e.target.value)}
-                minRows={3}
-              />
-            </Grid.Col>
-            <Grid.Col span={12}>
-              <TextInput
-                label="Role Offered"
-                placeholder="Enter the role offered"
-                value={jobRole}
-                onChange={(e) => setRole(e.target.value)}
-              />
-            </Grid.Col>
-          </Grid>
-          <Group position="right" style={{ marginTop: "20px" }}>
-            <Button onClick={handleSubmit}>Save Changes</Button>
-          </Group>
-        </Card>
-      </Modal>
+        placementData={{ companyLogo, companyName, location, position, jobType, postedTime, description, salary }}
+        onSubmit={handleSubmit}
+      />
+
     </>
   );
 }

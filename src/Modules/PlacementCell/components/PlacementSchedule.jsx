@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { Container, Pagination, Grid, Modal, Button } from "@mantine/core";
+import { Container, Pagination, Grid, Modal, Button, Title } from "@mantine/core";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import AddPlacementEventForm from "./AddPlacementEventForm";
@@ -33,7 +33,6 @@ function PlacementScheduleGrid({
 
   const remainingCards = totalRows * cardsPerRow - currentItems.length;
 
-  // Replaced the ++ operator with a more explicit loop
   Array.from({ length: remainingCards }).forEach(() => paddedItems.push(null));
 
   return (
