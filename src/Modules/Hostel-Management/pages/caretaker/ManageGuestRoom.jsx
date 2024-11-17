@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Text,
   Paper,
@@ -9,52 +9,97 @@ import {
   Flex,
   ScrollArea,
   Badge,
+  Box,
+  Container,
+  Loader,
 } from "@mantine/core";
+import { CalendarBlank, Bed } from "@phosphor-icons/react";
+import axios from "axios";
 import {
-  CalendarBlank,
-  CheckCircle,
-  XCircle,
-  Bed,
-} from "@phosphor-icons/react";
-
-const guestRoomRequests = [
-  {
-    id: "1",
-    name: "Rahul Sharma",
-    roomType: "Single",
-    checkIn: "2023-06-20",
-    checkOut: "2023-06-22",
-  },
-  {
-    id: "2",
-    name: "Priya Patel",
-    roomType: "Double",
-    checkIn: "2023-06-23",
-    checkOut: "2023-06-25",
-  },
-  {
-    id: "3",
-    name: "Amit Kumar",
-    roomType: "Single",
-    checkIn: "2023-06-26",
-    checkOut: "2023-06-28",
-  },
-  {
-    id: "4",
-    name: "Sneha Gupta",
-    roomType: "Double",
-    checkIn: "2023-06-29",
-    checkOut: "2023-07-01",
-  },
-];
+  show_guestroom_booking_request,
+  update_guest_room,
+} from "../../../../routes/hostelManagementRoutes";
 
 export default function ManageGuestRoomRequest() {
-  const handleApprove = (id) => {
-    console.log(`Approved guest room request for id: ${id}`);
+  const [guestRoomRequests, setGuestRoomRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchGuestRoomRequests = async () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      setError("Authentication token not found. Please login again.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await axios.get(show_guestroom_booking_request, {
+        headers: { Authorization: `Token ${token}` },
+      });
+      console.log(response.data);
+      setGuestRoomRequests(Array.isArray(response.data) ? response.data : []);
+      setError(null);
+    } catch (e) {
+      console.error("Error fetching guest room requests:", e);
+      setError(
+        e.response?.data?.message ||
+          "Failed to fetch guest room requests. Please try again later.",
+      );
+      setGuestRoomRequests([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchGuestRoomRequests();
+  }, []);
+
+  const handleStatusUpdate = async (id, status, guestRoomId = "") => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      setError("Authentication token not found. Please login again.");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        update_guest_room,
+        {
+          booking_id: id,
+          status,
+          guest_room_id: guestRoomId,
+        },
+        {
+          headers: { Authorization: `Token ${token}` },
+        },
+      );
+      if (response.data.status === "notVacant") {
+        alert("Guest Room not vacant.");
+      }
+      if (response.data.status === "success") {
+        setGuestRoomRequests(
+          guestRoomRequests.map((request) =>
+            request.id === id ? { ...request, status } : request,
+          ),
+        );
+      }
+    } catch (e) {
+      console.error("Error updating guest room status:", e);
+      setError(
+        e.response?.data?.message ||
+          "Failed to update guest room status. Please try again later.",
+      );
+    }
+  };
+
+  const handleApprove = (id, guestRoomId) => {
+    handleStatusUpdate(id, "accepted", guestRoomId);
   };
 
   const handleDecline = (id) => {
-    console.log(`Declined guest room request for id: ${id}`);
+    handleStatusUpdate(id, "rejected");
   };
 
   return (
@@ -83,86 +128,159 @@ export default function ManageGuestRoomRequest() {
       </Text>
 
       <ScrollArea style={{ flex: 1, height: "calc(66vh)" }}>
-        <Stack spacing="md" pb="md">
-          {guestRoomRequests.map((request) => (
-            <Paper
-              key={request.id}
-              p="md"
-              withBorder
-              shadow="xs"
-              sx={(theme) => ({
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                backgroundColor: theme.white,
-                borderColor: theme.colors.gray[3],
-              })}
-            >
-              <Flex
-                align="center"
-                justify="space-between"
-                style={{ width: "100%" }}
+        {loading ? (
+          <Container
+            py="xl"
+            style={{ display: "flex", justifyContent: "center" }}
+          >
+            <Loader size="lg" />
+          </Container>
+        ) : error ? (
+          <Text align="center" color="red" size="lg">
+            {error}
+          </Text>
+        ) : guestRoomRequests.length > 0 ? (
+          <Stack spacing="md" pb="md">
+            {guestRoomRequests.map((request) => (
+              <Paper
+                key={request.id}
+                p="md"
+                withBorder
+                shadow="xs"
+                sx={(theme) => ({
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  backgroundColor: theme.white,
+                  borderColor: theme.colors.gray[3],
+                })}
               >
-                <Group spacing="md">
-                  <Avatar color="blue" radius="xl">
-                    {request.name[0]}
-                  </Avatar>
-                  <div>
-                    <Text weight={500} size="sm" lineClamp={1}>
-                      {request.name}
-                    </Text>
-                    <Badge
-                      size="sm"
-                      variant="outline"
-                      color="blue"
-                      leftSection={<Bed size={12} />}
+                <Flex
+                  align="stretch"
+                  justify="space-between"
+                  style={{ width: "100%", minHeight: "100px" }}
+                >
+                  <Group
+                    spacing="md"
+                    style={{ flex: "0 0 auto", marginRight: "1rem" }}
+                  >
+                    <Avatar color="blue" radius="xl" size="lg">
+                      {request.guest_name[0]}
+                    </Avatar>
+                    <div>
+                      <Text weight={500} size="sm" lineClamp={1}>
+                        {request.guest_name}
+                      </Text>
+                      <Badge
+                        size="sm"
+                        variant="outline"
+                        color="blue"
+                        leftSection={<Bed size={12} />}
+                      >
+                        {request.room_type}
+                      </Badge>
+                    </div>
+                  </Group>
+
+                  <Box
+                    sx={(theme) => ({
+                      flex: "1 1 auto",
+                      borderLeft: `1px solid ${theme.colors.gray[3]}`,
+                      borderRight: `1px solid ${theme.colors.gray[3]}`,
+                      padding: theme.spacing.xs,
+                      marginRight: theme.spacing.md,
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                    })}
+                  >
+                    <Box
+                      sx={(theme) => ({
+                        padding: theme.spacing.sm,
+                        backgroundColor: theme.colors.gray[0],
+                        borderRadius: theme.radius.sm,
+                        border: `1px solid ${theme.colors.gray[2]}`,
+                      })}
                     >
-                      {request.roomType}
-                    </Badge>
-                  </div>
-                </Group>
-                <Group spacing="md">
-                  <Flex direction="column" align="flex-start">
-                    <Group spacing="xs">
-                      <CalendarBlank size={16} />
-                      <Text size="xs" color="dimmed">
-                        Check-in:
+                      <Text
+                        size="sm"
+                        style={(theme) => ({
+                          overflowWrap: "break-word",
+                          lineHeight: 1.5,
+                          fontWeight: 500,
+                          color: theme.colors.gray[7],
+                        })}
+                      >
+                        {request.purpose}
                       </Text>
-                      <Text size="sm">{request.checkIn}</Text>
-                    </Group>
-                    <Group spacing="xs">
-                      <CalendarBlank size={16} />
-                      <Text size="xs" color="dimmed">
-                        Check-out:
-                      </Text>
-                      <Text size="sm">{request.checkOut}</Text>
+                    </Box>
+                  </Box>
+
+                  <Flex
+                    direction="column"
+                    justify="space-between"
+                    style={{ flex: "0 0 auto", minWidth: "200px" }}
+                  >
+                    <div>
+                      <Group spacing="xs" mb="xs">
+                        <CalendarBlank size={16} />
+                        <Text size="xs" color="dimmed">
+                          Check-in:
+                        </Text>
+                        <Text size="sm">{request.arrival_date}</Text>
+                      </Group>
+                      <Group spacing="xs">
+                        <CalendarBlank size={16} />
+                        <Text size="xs" color="dimmed">
+                          Check-out:
+                        </Text>
+                        <Text size="sm">{request.departure_date}</Text>
+                      </Group>
+                    </div>
+                    <Group spacing="xs" mt="auto">
+                      {request.status === "pending" && (
+                        <>
+                          <Button
+                            color="green"
+                            variant="outline"
+                            size="xs"
+                            onClick={() =>
+                              handleApprove(request.id, request.guest_room_id)
+                            }
+                          >
+                            Approve
+                          </Button>
+                          <Button
+                            color="red"
+                            variant="outline"
+                            size="xs"
+                            onClick={() => handleDecline(request.id)}
+                          >
+                            Decline
+                          </Button>
+                        </>
+                      )}
+                      {request.status !== "pending" && (
+                        <Badge
+                          color={
+                            request.status === "accepted" ? "green" : "red"
+                          }
+                        >
+                          {request.status.charAt(0).toUpperCase() +
+                            request.status.slice(1)}
+                        </Badge>
+                      )}
                     </Group>
                   </Flex>
-                  <Group spacing="xs">
-                    <Button
-                      leftIcon={<CheckCircle size={16} />}
-                      color="green"
-                      variant="outline"
-                      size="xs"
-                      onClick={() => handleApprove(request.id)}
-                    >
-                      Approve
-                    </Button>
-                    <Button
-                      leftIcon={<XCircle size={16} />}
-                      color="red"
-                      variant="outline"
-                      size="xs"
-                      onClick={() => handleDecline(request.id)}
-                    >
-                      Decline
-                    </Button>
-                  </Group>
-                </Group>
-              </Flex>
-            </Paper>
-          ))}
-        </Stack>
+                </Flex>
+              </Paper>
+            ))}
+          </Stack>
+        ) : (
+          <Text align="center" size="lg">
+            No guest room requests found.
+          </Text>
+        )}
       </ScrollArea>
     </Paper>
   );
