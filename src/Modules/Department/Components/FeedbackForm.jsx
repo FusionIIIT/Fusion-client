@@ -52,8 +52,7 @@ export default function Feedbackform() {
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [setIsSuccess] = useState(false);
-
+  const [isSuccess, setIsSuccess] = useState(false);
   const handleFeedbackChange = (e) => {
     setFeedback(e.target.value);
   };
