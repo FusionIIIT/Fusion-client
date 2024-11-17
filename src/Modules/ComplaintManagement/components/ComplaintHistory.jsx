@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+
 import {
   Paper,
   Group,
@@ -12,11 +13,17 @@ import {
   Flex,
   Divider,
 } from "@mantine/core";
+
 import { useSelector } from "react-redux";
+
 import ComplaintDetails from "./ComplaintDetails";
+
 import { getComplaintsByRole } from "../routes/api"; // Import the utility function
+
 import detailIcon from "../../../assets/detail.png";
+
 import declinedIcon from "../../../assets/declined.png";
+
 import resolvedIcon from "../../../assets/resolved.png";
 
 function ComplaintHistory() {
@@ -115,6 +122,24 @@ function ComplaintHistory() {
                 width: "100%",
               }}
             >
+              {/* Custom scrollbar styles */}
+              <style>
+                {`
+                  .inner-card-content::-webkit-scrollbar {
+                    width: 8px;
+                  }
+                  .inner-card-content::-webkit-scrollbar-thumb {
+                    background-color: rgb(21, 171, 255);
+                    border-radius: 4px;
+                  }
+                  .inner-card-content::-webkit-scrollbar-thumb:hover {
+                    background-color: #228be6;
+                  }
+                  .inner-card-content::-webkit-scrollbar-track {
+                    background-color: lightblue;
+                  }
+                `}
+              </style>
               {isLoading ? (
                 <Center style={{ minHeight: "45vh" }}>
                   <Loader size="xl" variant="bars" />
