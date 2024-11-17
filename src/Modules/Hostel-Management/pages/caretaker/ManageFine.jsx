@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Text,
   Paper,
@@ -7,73 +7,102 @@ import {
   Button,
   Stack,
   Flex,
-  Select,
   ScrollArea,
   Badge,
+  Container,
+  Loader,
 } from "@mantine/core";
+import { CheckCircle, XCircle } from "@phosphor-icons/react";
+import axios from "axios";
 import {
-  Student,
-  CalendarBlank,
-  CheckCircle,
-  XCircle,
-} from "@phosphor-icons/react";
-
-const manageFines = [
-  {
-    id: "1",
-    name: "Vishal Keshari",
-    hall: "Hall-2",
-    finedDate: "2023-06-15",
-    status: "unpaid",
-  },
-  {
-    id: "2",
-    name: "Tushar Sharma",
-    hall: "Hall-1",
-    finedDate: "2023-06-18",
-    status: "paid",
-  },
-  {
-    id: "3",
-    name: "Akshay Behl",
-    hall: "Hall-3",
-    finedDate: "2023-06-21",
-    status: "unpaid",
-  },
-  {
-    id: "4",
-    name: "Ayodhya",
-    hall: "Hall-2",
-    finedDate: "2023-06-24",
-    status: "unpaid",
-  },
-  {
-    id: "5",
-    name: "Devanshi Gupta",
-    hall: "Maa Saraswati Hostel",
-    finedDate: "2023-07-01",
-    status: "paid",
-  },
-];
+  fetch_fines_url,
+  update_fine_status_url,
+} from "../../../../routes/hostelManagementRoutes";
 
 export default function ManageFines() {
-  const [selectedHall, setSelectedHall] = useState("");
+  const [fines, setFines] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchFines = async () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      setError("Authentication token not found. Please login again.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await axios.get(fetch_fines_url, {
+        headers: { Authorization: `Token ${token}` },
+      });
+      console.log(response);
+      console.log(response.data.fines);
+      setFines(Array.isArray(response.data?.fines) ? response.data.fines : []);
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching fines:", err);
+      setError(
+        err.response?.data?.message ||
+          "Failed to fetch fines. Please try again later.",
+      );
+      setFines([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchFines();
+  }, []);
+  const handleStatusUpdate = async (id, status) => {
+    if (!id) {
+      console.error("Invalid fine ID:", id); // Debug log for undefined IDs
+      setError("Invalid fine ID. Unable to update fine status.");
+      return;
+    }
+
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      setError("Authentication token not found. Please login again.");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        update_fine_status_url(id), // Build dynamic URL
+        { status },
+        { headers: { Authorization: `Token ${token}` } },
+      );
+
+      if (response.status === 200) {
+        setFines((prevFines) =>
+          prevFines.map((fine) =>
+            fine.fine_id === id ? { ...fine, status } : fine,
+          ),
+        );
+        setError(null); // Clear errors
+      }
+    } catch (err) {
+      console.error("Error updating fine status:", err);
+      setError(
+        err.response?.data?.error ||
+          "Failed to update fine status. Please try again later.",
+      );
+    }
+  };
 
   const handleMarkPaid = (id) => {
-    console.log(`Marked fine as paid for id: ${id}`);
+    console.log("Marking fine as paid with ID:", id); // Debug log
+    handleStatusUpdate(id, "Paid");
   };
 
-  const handleMarkUnpaid = (id) => {
-    console.log(`Marked fine as unpaid for id: ${id}`);
+  const handleMarkPending = (id) => {
+    // Fixed to mark as Pending
+    console.log("Marking fine as pending with ID:", id); // Debug log
+    handleStatusUpdate(id, "Pending");
   };
 
-  const handleHallChange = (value) => {
-    setSelectedHall(value);
-  };
-
-  const filteredFines = selectedHall
-    ? manageFines.filter((fine) => fine.hall === selectedHall)
-    : manageFines;
+  console.log(fines); // Add this before the return statement
 
   return (
     <Paper
@@ -101,99 +130,89 @@ export default function ManageFines() {
       </Text>
 
       <ScrollArea style={{ flex: 1, height: "calc(66vh)" }}>
-        <Stack spacing="md" pb="md">
-          <Select
-            label="Filter by Hostel"
-            placeholder="Select a hostel"
-            icon={<Student size={16} />}
-            data={[
-              { value: "Hall-1", label: "Hall-1" },
-              { value: "Hall-2", label: "Hall-2" },
-              { value: "Hall-3", label: "Hall-3" },
-              { value: "Hall-4", label: "Hall-4" },
-              { value: "Hall-5", label: "Hall-5" },
-              { value: "Maa Saraswati Hostel", label: "Maa Saraswati Hostel" },
-            ]}
-            value={selectedHall}
-            onChange={handleHallChange}
-          />
-
-          {filteredFines.length > 0 ? (
-            filteredFines.map((fine) => (
-              <Paper
-                key={fine.id}
-                p="md"
-                withBorder
-                shadow="xs"
-                sx={(theme) => ({
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  backgroundColor: theme.white,
-                  borderColor: theme.colors.gray[3],
-                })}
-              >
-                <Flex
-                  align="center"
-                  justify="space-between"
-                  style={{ width: "100%" }}
+        {loading ? (
+          <Container
+            py="xl"
+            style={{ display: "flex", justifyContent: "center" }}
+          >
+            <Loader size="lg" />
+          </Container>
+        ) : error ? (
+          <Text align="center" color="red" size="lg">
+            {error}
+          </Text>
+        ) : (
+          <Stack spacing="md" pb="md">
+            {fines.length > 0 ? (
+              fines.map((fine) => (
+                <Paper
+                  key={fine.fine_id}
+                  p="md"
+                  withBorder
+                  shadow="xs"
+                  sx={(theme) => ({
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    backgroundColor: theme.white,
+                    borderColor: theme.colors.gray[3],
+                  })}
                 >
-                  <Group spacing="md">
-                    <Avatar color="cyan" radius="xl">
-                      {fine.name[0]}
-                    </Avatar>
-                    <div>
-                      <Text weight={500} size="sm" lineClamp={1}>
-                        {fine.name}
-                      </Text>
-                      <Text color="dimmed" size="xs">
-                        {fine.hall}
-                      </Text>
-                    </div>
-                  </Group>
-                  <Group spacing="md">
-                    <Group spacing="xs">
-                      <CalendarBlank size={16} />
-                      <Text size="sm">{fine.finedDate}</Text>
+                  <Flex
+                    align="center"
+                    justify="space-between"
+                    style={{ width: "100%" }}
+                  >
+                    <Group spacing="md">
+                      <Avatar color="cyan" radius="xl">
+                        {fine.student_id[0]}
+                      </Avatar>
+                      <div>
+                        <Text weight={500} size="sm" lineClamp={1}>
+                          {fine.student_id}
+                        </Text>
+                      </div>
                     </Group>
-                    <Badge
-                      size="sm"
-                      variant="filled"
-                      color={fine.status === "paid" ? "green" : "red"}
-                    >
-                      {fine.status}
-                    </Badge>
-                    {fine.status === "unpaid" ? (
-                      <Button
-                        leftIcon={<CheckCircle size={16} />}
-                        color="green"
-                        variant="outline"
-                        size="xs"
-                        onClick={() => handleMarkPaid(fine.id)}
+                    <Group spacing="md">
+                      <Badge
+                        size="sm"
+                        variant="filled"
+                        color={fine.status === "Paid" ? "green" : "red"}
                       >
-                        Mark as Paid
-                      </Button>
-                    ) : (
-                      <Button
-                        leftIcon={<XCircle size={16} />}
-                        color="red"
-                        variant="outline"
-                        size="xs"
-                        onClick={() => handleMarkUnpaid(fine.id)}
-                      >
-                        Mark as Unpaid
-                      </Button>
-                    )}
-                  </Group>
-                </Flex>
-              </Paper>
-            ))
-          ) : (
-            <Text align="center" color="dimmed" size="lg">
-              No fines for the selected hostel.
-            </Text>
-          )}
-        </Stack>
+                        {fine.status}
+                      </Badge>
+                      {fine.status === "Pending" ? (
+                        <Button
+                          leftIcon={<CheckCircle size={16} />}
+                          color="green"
+                          variant="outline"
+                          size="xs"
+                          onClick={() => handleMarkPaid(fine.fine_id)}
+                        >
+                          Mark as Paid
+                        </Button>
+                      ) : (
+                        <Button
+                          leftIcon={<XCircle size={16} />}
+                          color="red"
+                          variant="outline"
+                          size="xs"
+                          onClick={() => handleMarkPending(fine.fine_id)} // Fixed action
+                        >
+                          Mark as Pending
+                        </Button>
+                      )}
+                    </Group>
+                  </Flex>
+                </Paper>
+              ))
+            ) : (
+              <Text align="center" color="dimmed" size="lg">
+                No fines available.
+              </Text>
+            )}
+          </Stack>
+        )}
       </ScrollArea>
     </Paper>
   );
