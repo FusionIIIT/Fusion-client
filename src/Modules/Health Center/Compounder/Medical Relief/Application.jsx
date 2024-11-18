@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { compounderRoute } from "../../../../routes/health_center";
 import NavCom from "../NavCom";
+import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
 
 function Application() {
   const [application, setApplication] = useState({});
@@ -83,6 +84,7 @@ function Application() {
 
   return (
     <>
+      <CustomBreadcrumbs />
       <NavCom />
       <br />
       <Paper shadow="xl" p="xl" withBorder>

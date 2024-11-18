@@ -1,107 +1,114 @@
-import { Radio, Table } from "@mantine/core";
-import { NavLink } from "react-router-dom";
-import { Download, Smiley } from "@phosphor-icons/react";
-import Navigation from "../Navigation";
+import { Paper, Table, Title } from "@mantine/core";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Download } from "@phosphor-icons/react";
+import axios from "axios";
+import { compounderRoute } from "../../../../routes/health_center";
+import NavPatient from "../Navigation";
+import MedicalNavBar from "./medicalPath";
+import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
 
 function Approval() {
-  const elements = [
-    {
-      uploaded: "09/09/2024",
-      approval: "11/09/2024",
-      description: "Testing PHC",
-      file: "",
-      status: "Approved",
-    },
-    {
-      uploaded: "12/09/2024",
-      approval: "12/09/2024",
-      description: "Fever",
-      file: "",
-      status: "Approved",
-    },
-  ];
+  const navigate = useNavigate();
+  const [elements, setMedical] = useState([]);
+
+  const get_relief = async () => {
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.post(
+        compounderRoute,
+        { get_relief: 1 },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      console.log(response.data);
+      setMedical(response.data.relief);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const handleStatusClick = (id, status) => {
+    if (status === "Pending") {
+      navigate(`/compounder/medical-relief/application/${id}`);
+    }
+  };
+
+  const get_status = (element) => {
+    if (element.status1 === true) return "Approved";
+    if (element.status === true) return "Forwarded";
+    if (element.status2 === true) return "Rejected";
+    return "Pending";
+  };
+  useEffect(() => {
+    get_relief();
+  }, []);
 
   const rows = elements.map((element) => (
-    <Table.Tr key={element.uploaded}>
-      <Table.Td>
-        <Smiley size={20} /> {element.uploaded}
-      </Table.Td>
-      <Table.Td>{element.approval}</Table.Td>
-      <Table.Td>{element.description}</Table.Td>
+    <Table.Tr key={element.id}>
+      <Table.Td>{element.uploader}</Table.Td>
+      <Table.Td>{element.upload_date}</Table.Td>
+      <Table.Td>{element.desc}</Table.Td>
       <Table.Td>
         <Download size={20} /> {element.file}
       </Table.Td>
-      <Table.Td>{element.status}</Table.Td>
+      <Table.Td
+        onClick={() => handleStatusClick(element.id, get_status(element))}
+        style={{
+          cursor: get_status(element) === "Pending" ? "pointer" : "default",
+          color: get_status(element) === "Pending" ? "#15abff" : "gray",
+        }}
+      >
+        {get_status(element)}
+      </Table.Td>
     </Table.Tr>
   ));
 
   return (
     <>
-      <Navigation />
-
-      <div style={{ margin: "2rem" }}>
-        <div
-          style={{
-            display: "flex",
-            padding: "0.5rem",
-            border: "1px solid",
-            backgroundColor: "white",
-            borderRadius: "9999px",
-            width: "22rem",
-          }}
-        >
-          <NavLink
-            to="/patient/medical-relief/apply"
-            style={{
-              textDecoration: "none",
-              color: "black",
-            }}
-          >
-            <Radio
-              label="Apply for Medical Relief"
-              color="grape"
-              variant="outline"
-            />
-          </NavLink>
-
-          <NavLink
-            to="/patient/medical-relief/approval"
-            style={{
-              textDecoration: "none",
-              color: "black",
-              marginLeft: "20px",
-            }}
-          >
-            <Radio
-              label="Approval Status"
-              color="grape"
-              variant="outline"
-              defaultChecked
-            />
-          </NavLink>
-        </div>
-
-        <br />
-
+      <CustomBreadcrumbs />
+      <NavPatient />
+      <MedicalNavBar />
+      <br />
+      <Paper shadow="xl" p="xl" withBorder>
         <div>
-          <Table withTableBorder withColumnBorders highlightOnHover>
-            <Table.Thead>
-              <Table.Tr style={{ backgroundColor: "#6D28D9", color: "white" }}>
-                <Table.Th>Uploaded Date</Table.Th>
-                <Table.Th>Approval Date</Table.Th>
-                <Table.Th>Description</Table.Th>
-                <Table.Th>File</Table.Th>
-                <Table.Th>Status</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody
-              style={{ backgroundColor: "#EDE9FE", color: "#4C1D95" }}
+          <div>
+            <Title
+              order={5}
+              style={{
+                textAlign: "center",
+                margin: "0 auto",
+                color: "#15abff",
+              }}
             >
-              {rows}
-            </Table.Tbody>
-          </Table>
+              Approval Status
+            </Title>
+            <br />
+            <Table
+              withTableBorder
+              withColumnBorders
+              highlightOnHover
+              striped
+              horizontalSpacing="sm"
+              verticalSpacing="sm"
+            >
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>Uploaded Date</Table.Th>
+                  <Table.Th>Approval Date</Table.Th>
+                  <Table.Th>Description</Table.Th>
+                  <Table.Th>File</Table.Th>
+                  <Table.Th>Status</Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>{rows}</Table.Tbody>
+            </Table>
+          </div>
         </div>
-      </div>
+      </Paper>
     </>
   );
 }

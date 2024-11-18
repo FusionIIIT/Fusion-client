@@ -38,7 +38,7 @@ function Time({ selectedDay, schedule }) {
   return <div>{availableTime}</div>;
 }
 
-function Doctor() {
+function Pathologist() {
   const [selectedDays, setSelectedDays] = useState({});
   const [schedule, setSchedule] = useState([]);
   const handleDayChange = (doctorName, day) => {
@@ -48,12 +48,12 @@ function Doctor() {
     }));
   };
 
-  const fetchSchedule = async () => {
+  const fetchPathalogistSchedule = async () => {
     const token = localStorage.getItem("authToken");
     try {
       const response = await axios.post(
         studentRoute,
-        { get_doctor_schedule: 1 },
+        { get_pathologist_schedule: 1 },
         {
           headers: {
             Authorization: `Token ${token}`,
@@ -68,7 +68,7 @@ function Doctor() {
   };
 
   useEffect(() => {
-    fetchSchedule();
+    fetchPathalogistSchedule();
   }, []);
 
   return (
@@ -86,7 +86,7 @@ function Doctor() {
             color: "#15abff",
           }}
         >
-          View Doctor Schedule
+          View Pathologist Schedule
         </Title>
         <br />
         <table
@@ -120,20 +120,20 @@ function Doctor() {
                   minHeight: "60px",
                 }}
               >
-                <td style={{ padding: "10px", border: "1px solid #ccc" }}>
+                <td style={{ padding: "15px", border: "1px solid #ccc" }}>
                   {item.name}
                 </td>
-                <td style={{ padding: "10px", border: "1px solid #ccc" }}>
+                <td style={{ padding: "15px", border: "1px solid #ccc" }}>
                   {item.specialization}
                 </td>
-                <td style={{ padding: "10px", border: "1px solid #ccc" }}>
+                <td style={{ padding: "15px", border: "1px solid #ccc" }}>
                   <Dropdown
                     doctorName={item.name}
                     selectedDay={selectedDays[item.name] || ""}
                     onDayChange={handleDayChange}
                   />
                 </td>
-                <td style={{ padding: "10px", border: "1px solid #ccc" }}>
+                <td style={{ padding: "15px", border: "1px solid #ccc" }}>
                   <Time
                     doctorName={item.name}
                     selectedDay={selectedDays[item.name] || ""}
@@ -149,4 +149,4 @@ function Doctor() {
   );
 }
 
-export default Doctor;
+export default Pathologist;

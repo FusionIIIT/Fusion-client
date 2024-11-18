@@ -1,52 +1,90 @@
-import React from "react";
-import { Button, Textarea, Title, Center, Box } from "@mantine/core";
+import React, { useState } from "react";
+import { Button, Textarea, Title, Center, Box, Paper } from "@mantine/core";
+import axios from "axios";
 import Navigation from "../Navigation";
+import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import { studentRoute } from "../../../../routes/health_center";
 
 function Feedback() {
-  return (
-    <div>
-      <Navigation />
-      <Center>
-        <Box
-          style={{ width: "75%", height: "100vh", marginTop: "20px" }}
-          alignItems="center"
-        >
-          <Title
-            order={2}
-            style={{ alignSelf: "flex-start", marginBottom: "16px" }}
-          >
-            The Feedback Form
-          </Title>
-          <br />
-          <Title
-            order={4}
-            style={{ alignSelf: "flex-start", marginBottom: "8px" }}
-          >
-            Feedback:
-          </Title>
-          <Textarea
-            variant="filled"
-            placeholder="Enter your feedback"
-            autosize
-            minRows={6}
-            style={{
-              width: "100%",
-              marginBottom: "16px",
-              border: "2px solid black",
-            }}
-          />
+  const [feed, setFeedback] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-          <Button
-            color="violet"
-            radius="md"
-            size="md"
-            style={{ alignSelf: "flex-end" }}
-          >
-            Submit
-          </Button>
-        </Box>
-      </Center>
-    </div>
+  const handleFeedbackChange = (event) => {
+    setFeedback(event.target.value);
+    setError("");
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!feed.trim()) {
+      setError("Feedback cannot be empty");
+      return;
+    }
+
+    setIsSubmitting(true);
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.post(
+        studentRoute,
+        { feedback: feed, feed_submit: 1 },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      console.log(response.data);
+      setIsSubmitting(false);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  return (
+    <>
+      <CustomBreadcrumbs />
+      <Navigation />
+      <br />
+      <Paper shadow="xl" p="xl" withBorder>
+        <Center>
+          <Box style={{ width: "75%", marginTop: "20px" }} alignItems="center">
+            <Title
+              order={3}
+              style={{
+                color: "#15abff",
+              }}
+            >
+              The Feedback Form
+            </Title>
+            <br />
+            <form onSubmit={handleSubmit}>
+              <Textarea
+                placeholder="Enter your feedback"
+                autosize
+                minRows={6}
+                label="Feedback"
+                style={{ width: "100%" }}
+                value={feed}
+                onChange={handleFeedbackChange}
+                error={error}
+              />
+
+              <Button
+                type="submit"
+                color="#15abff"
+                size="md"
+                mt="xl"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Submitting..." : "Submit"}
+              </Button>
+            </form>
+          </Box>
+        </Center>
+      </Paper>
+    </>
   );
 }
 

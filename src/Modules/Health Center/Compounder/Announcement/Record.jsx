@@ -4,6 +4,7 @@ import axios from "axios";
 import { compounderRoute } from "../../../../routes/health_center";
 import NavCom from "../NavCom";
 import AnnounceNavBar from "./announPath";
+import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
 
 function Record() {
   const [test, StateTest] = useState({ announcements: [] });
@@ -37,8 +38,8 @@ function Record() {
 
   return (
     <>
+      <CustomBreadcrumbs />
       <NavCom />
-
       <AnnounceNavBar />
       <br />
       <Paper p="xl" shadow="xl" withBorder>

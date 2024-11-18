@@ -2,31 +2,25 @@ import React, { useRef, useState, useEffect } from "react";
 import { Flex, Button, Tabs, Text } from "@mantine/core";
 import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
 import { useNavigate, useLocation } from "react-router-dom";
-import classes from "../../Dashboard/Dashboard.module.css";
+import classes from "../../../Dashboard/Dashboard.module.css";
 
-function NavCom() {
+function ScheduleNavBar() {
   const [activeTab, setActiveTab] = useState(0);
   const tabsListRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
   const tabItems = [
-    { title: "Patient Log", path: "/compounder/patient-log" },
-    { title: "Manage Stock", path: "/compounder/manage-stock" },
-    { title: "Schedule", path: "/compounder/schedule" },
-    { title: "Doctor/Pathologists", path: "/compounder/docpath" },
-    { title: "Feedback", path: "/compounder/feedback" },
-    { title: "Make Announcements", path: "/compounder/announcement" },
-    { title: "Medical Relief", path: "/compounder/medical-relief/inbox" },
+    { title: "View doctor Schedule", path: "/patient/schedule" },
+    {
+      title: "View Pathologist Schedule",
+      path: "/patient/schedule/viewpath",
+    },
   ];
 
   useEffect(() => {
     const currentPath = location.pathname;
-
-    const activeIndex = tabItems.findIndex((item) =>
-      currentPath.startsWith(item.path),
-    );
-
+    const activeIndex = tabItems.findIndex((item) => item.path === currentPath);
     if (activeIndex !== -1) {
       setActiveTab(activeIndex);
     }
@@ -34,7 +28,7 @@ function NavCom() {
 
   const handleNavigation = (index) => {
     const path = tabItems[index]?.path;
-    if (path && !location.pathname.startsWith(path)) {
+    if (path && window.location.pathname !== path) {
       navigate(path);
     }
   };
@@ -135,8 +129,9 @@ function NavCom() {
           <CaretCircleRight weight="light" size={32} />
         </Button>
       </Flex>
+      <br />
     </Flex>
   );
 }
 
-export default NavCom;
+export default ScheduleNavBar;

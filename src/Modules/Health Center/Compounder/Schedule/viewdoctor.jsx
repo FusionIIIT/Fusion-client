@@ -1,8 +1,11 @@
 /* eslint-disable react/prop-types */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Paper, Title } from "@mantine/core";
+import axios from "axios";
 import NavCom from "../NavCom";
 import ScheduleNavBar from "./schedulePath";
+import { compounderRoute } from "../../../../routes/health_center";
+import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
 
 function Dropdown({ doctorName, selectedDay, onDayChange }) {
   const days = [
@@ -37,44 +40,39 @@ function Time({ selectedDay, schedule }) {
 
 function Viewdoctor() {
   const [selectedDays, setSelectedDays] = useState({});
-
+  const [schedule, setSchedule] = useState([]);
   const handleDayChange = (doctorName, day) => {
     setSelectedDays((prevSelectedDays) => ({
       ...prevSelectedDays,
       [doctorName]: day,
     }));
   };
+  const fetchSchedule = async () => {
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.post(
+        compounderRoute,
+        { get_doctor_schedule: 1 },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      console.log(response);
+      setSchedule(response.data.schedule);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
-  const doctorSchedule = [
-    {
-      name: "Dr GS Sandhu",
-      specialization: "Teeth Specialist",
-      availability: [
-        { day: "Monday", time: "3:00 pm - 5:00 pm" },
-        { day: "Tuesday", time: "3:00 pm - 5:00 pm" },
-        { day: "Thursday", time: "3:00 pm - 5:00 pm" },
-      ],
-    },
-    {
-      name: "Dr Aditya Shivi",
-      specialization: "Oral Surgeon",
-      availability: [
-        { day: "Wednesday", time: "10:00 am - 2:00 pm" },
-        { day: "Friday", time: "10:00 am - 2:00 pm" },
-      ],
-    },
-    {
-      name: "Dr Sonali Verma",
-      specialization: "Ortho Specialist",
-      availability: [
-        { day: "Saturday", time: "1:00 pm - 5:00 pm" },
-        { day: "Sunday", time: "1:00 pm - 5:00 pm" },
-      ],
-    },
-  ];
+  useEffect(() => {
+    fetchSchedule();
+  }, []);
 
   return (
     <>
+      <CustomBreadcrumbs />
       <NavCom />
       <ScheduleNavBar />
       <br />
@@ -113,8 +111,14 @@ function Viewdoctor() {
             </tr>
           </thead>
           <tbody>
-            {doctorSchedule.map((item) => (
-              <tr key={item.name}>
+            {schedule.map((item, index) => (
+              <tr
+                key={index}
+                style={{
+                  backgroundColor: index % 2 === 0 ? "#fff" : "#FAFAFA",
+                  minHeight: "60px",
+                }}
+              >
                 <td style={{ padding: "10px", border: "1px solid #ccc" }}>
                   {item.name}
                 </td>

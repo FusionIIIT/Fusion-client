@@ -1,92 +1,140 @@
-import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
-import { Container, Group, Divider } from "@mantine/core";
+import React, { useRef, useState, useEffect } from "react";
+import { Flex, Button, Tabs, Text } from "@mantine/core";
+import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
+import { useNavigate, useLocation } from "react-router-dom";
+import classes from "../../Dashboard/Dashboard.module.css";
 
-function Navigation() {
-  const [isApplying, setIsApplying] = useState(true);
+function NavPatient() {
+  const [activeTab, setActiveTab] = useState(0);
+  const tabsListRef = useRef(null);
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleToggle = () => {
-    setIsApplying((prev) => !prev);
+  const tabItems = [
+    { title: "History", path: "/patient/history" },
+    { title: "Feedback", path: "/patient/feedback" },
+    { title: "Schedule", path: "/patient/schedule" },
+    { title: "Announcements", path: "/patient/announcements" },
+    { title: "Medical Relief", path: "/patient/medical-relief/" },
+  ];
+
+  useEffect(() => {
+    const currentPath = location.pathname;
+
+    const activeIndex = tabItems.findIndex((item) =>
+      currentPath.startsWith(item.path),
+    );
+
+    if (activeIndex !== -1) {
+      setActiveTab(activeIndex);
+    }
+  }, [location.pathname]);
+
+  const handleNavigation = (index) => {
+    const path = tabItems[index]?.path;
+    if (path && !location.pathname.startsWith(path)) {
+      navigate(path);
+    }
+  };
+
+  const handleTabChange = (direction) => {
+    const newIndex =
+      direction === "next"
+        ? Math.min(activeTab + 1, tabItems.length - 1)
+        : Math.max(activeTab - 1, 0);
+
+    if (newIndex !== activeTab) {
+      setActiveTab(newIndex);
+      handleNavigation(newIndex);
+
+      if (tabsListRef.current) {
+        tabsListRef.current.scrollBy({
+          left: direction === "next" ? 50 : -50,
+          behavior: "smooth",
+        });
+      }
+    }
+  };
+
+  const navbarStyle = {
+    tabsContainer: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginTop: "16px",
+      flexWrap: "wrap",
+    },
+    button: {
+      padding: 0,
+      border: "none",
+    },
+    tabsWrapper: {
+      flexGrow: 1,
+      overflowX: "auto",
+    },
+    tabsList: {
+      display: "flex",
+      flexWrap: "nowrap",
+      overflowX: "auto",
+    },
+    tab: {
+      flexShrink: 0,
+    },
   };
 
   return (
-    <Container>
-      <Group position="center" spacing="xl" p="md">
-        <NavLink
-          to="/patient/history"
-          style={({ isActive }) => ({
-            textDecoration: "none",
-            fontSize: "1.25rem",
-            fontWeight: isActive ? "bold" : "normal",
-            color: isActive ? "##6D28D9" : "black",
-          })}
+    <Flex style={navbarStyle.tabsContainer}>
+      <Flex justify="flex-start" align="center" gap="1rem" mt="1.5rem" ml="lg">
+        <Button
+          onClick={() => handleTabChange("prev")}
+          variant="default"
+          style={navbarStyle.button}
         >
-          History
-        </NavLink>
+          <CaretCircleLeft weight="light" size={32} />
+        </Button>
 
-        <Divider orientation="vertical" />
-
-        <NavLink
-          to="/patient/feedback"
-          style={({ isActive }) => ({
-            textDecoration: "none",
-            fontSize: "1.25rem",
-            fontWeight: isActive ? "bold" : "normal",
-            color: isActive ? "##6D28D9" : "black",
-          })}
+        <div
+          className={classes.fusionTabsContainer}
+          ref={tabsListRef}
+          style={navbarStyle.tabsWrapper}
         >
-          Feedback
-        </NavLink>
+          <Tabs
+            value={`${activeTab}`}
+            onChange={(value) => {
+              const newIndex = parseInt(value, 10);
+              setActiveTab(newIndex);
+              handleNavigation(newIndex);
+            }}
+          >
+            <Tabs.List style={navbarStyle.tabsList}>
+              {tabItems.map((item, index) => (
+                <Tabs.Tab
+                  value={`${index}`}
+                  key={index}
+                  style={navbarStyle.tab}
+                  className={
+                    activeTab === index ? classes.fusionActiveRecentTab : ""
+                  }
+                >
+                  <Flex gap="4px">
+                    <Text>{item.title || "Untitled"}</Text>
+                  </Flex>
+                </Tabs.Tab>
+              ))}
+            </Tabs.List>
+          </Tabs>
+        </div>
 
-        <Divider orientation="vertical" />
-
-        <NavLink
-          to="/patient/viewschedule"
-          style={({ isActive }) => ({
-            textDecoration: "none",
-            fontSize: "1.25rem",
-            fontWeight: isActive ? "bold" : "normal",
-            color: isActive ? "##6D28D9" : "black",
-          })}
+        <Button
+          onClick={() => handleTabChange("next")}
+          variant="default"
+          style={navbarStyle.button}
         >
-          Schedule
-        </NavLink>
-
-        <Divider orientation="vertical" />
-
-        <NavLink
-          to="/patient/announcements"
-          style={({ isActive }) => ({
-            textDecoration: "none",
-            fontSize: "1.25rem",
-            fontWeight: isActive ? "bold" : "normal",
-            color: isActive ? "##6D28D9" : "black",
-          })}
-        >
-          Announcements
-        </NavLink>
-
-        <Divider orientation="vertical" />
-
-        <NavLink
-          to={
-            isApplying
-              ? "/patient/medical-relief/apply"
-              : "/patient/medical-relief/approval"
-          }
-          style={({ isActive }) => ({
-            textDecoration: "none",
-            fontSize: "1.25rem",
-            fontWeight: isActive ? "bold" : "normal",
-            color: isActive ? "##6D28D9" : "black",
-          })}
-          onClick={handleToggle}
-        >
-          Medical Relief
-        </NavLink>
-      </Group>
-    </Container>
+          <CaretCircleRight weight="light" size={32} />
+        </Button>
+      </Flex>
+    </Flex>
   );
 }
 
-export default Navigation;
+export default NavPatient;
