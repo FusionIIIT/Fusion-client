@@ -8,13 +8,7 @@ import {
   Image,
   ActionIcon,
 } from "@mantine/core";
-import {
-  Clock,
-  MapPin,
-  Trash,
-  Pencil,
-  Eye,
-} from "@phosphor-icons/react";
+import { Clock, MapPin, Trash, Pencil, Eye } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import PropTypes from "prop-types";
@@ -69,20 +63,22 @@ function PlacementScheduleCard({
   const handelViewClick = () => {
     navigate(`/placement-cell/view?jobId=${encodeURIComponent(jobId)}`);
   };
-  
 
   const handleDeleteClick = async () => {
     setVisible(false);
     const token = localStorage.getItem("authToken");
     try {
-      const response = await fetch(`http://127.0.0.1:8000/placement/api/placement/${jobId}/`, {
-        method: "DELETE",
-        headers: {
-          "Authorization": `Token ${token}`,
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `http://127.0.0.1:8000/placement/api/placement/${jobId}/`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
+          },
         },
-      });
-  
+      );
+
       if (response.ok) {
         notifications.show({
           title: "Success",
@@ -90,8 +86,8 @@ function PlacementScheduleCard({
           color: "green",
           position: "top-center",
           autoClose: 3000,
-        })
-        setIsModalOpen(false); 
+        });
+        setIsModalOpen(false);
       } else {
         const errorData = await response.json();
         console.error("Delete failed:", errorData);
@@ -102,7 +98,6 @@ function PlacementScheduleCard({
           position: "top-center",
           autoClose: 3000,
         });
-
       }
     } catch (error) {
       console.error("Error:", error);
@@ -120,64 +115,70 @@ function PlacementScheduleCard({
     setIsModalOpen(true);
   };
 
-const handleSubmit = async () => {
-  const token = localStorage.getItem("authToken");
+  const handleSubmit = async () => {
+    const token = localStorage.getItem("authToken");
 
-  const formattedDate = date ? format(date, "yyyy-MM-dd") : null;
-  const formattedTime = time || "00:00:00";
+    const formattedDate = date ? format(date, "yyyy-MM-dd") : null;
+    const formattedTime = time || "00:00:00";
 
-  const updatedData = {
-    placement_type: placementType,
-    company_name: company,
-    ctc: ctc,
-    description: descriptionInput,
-    schedule_at: formattedTime, 
-    placement_date: formattedDate,
-    location: locationInput,
-    role: jobRole,
-  };
+    const updatedData = {
+      placement_type: placementType,
+      company_name: company,
+      ctc: ctc,
+      description: descriptionInput,
+      schedule_at: formattedTime,
+      placement_date: formattedDate,
+      location: locationInput,
+      role: jobRole,
+    };
 
-  try {
-    const response = await fetch(`http://127.0.0.1:8000/placement/api/placement/${jobId}/`, {
-      method: "PUT",
-      headers: {
-        "Authorization": `Token ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(updatedData),
-    });
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/placement/api/placement/${jobId}/`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedData),
+        },
+      );
 
-    if (response.ok) {
+      if (response.ok) {
+        notifications.show({
+          title: "Success",
+          message: "Placement schedule updated successfully!",
+          color: "green",
+          position: "top-center",
+          autoClose: 3000,
+        });
+
+        setIsModalOpen(false);
+      } else {
+        const errorData = await response.json();
+        console.error("Update failed:", errorData);
+
+        notifications.show({
+          title: "Error Updating Schedule",
+          message: "Failed to update placement schedule.",
+          color: "red",
+          position: "top-center",
+          autoClose: 3000,
+        });
+      }
+    } catch (error) {
+      console.error("Error:", error);
 
       notifications.show({
-        title: "Success",
-        message: "Placement schedule updated successfully!",
-        color: "green",
-        position: "top-center",
-        autoClose: 3000,
-      });
-
-      setIsModalOpen(false); 
-    } else {
-      const errorData = await response.json();
-      console.error("Update failed:", errorData);
-
-      notifications.show({
-        title: "Error Updating Schedule",
-        message: "Failed to update placement schedule.",
+        title: "Error",
+        message: "An error occurred while updating the placement schedule.",
         color: "red",
         position: "top-center",
         autoClose: 3000,
       });
-
     }
-  } catch (error) {
-    console.error("Error:", error);
-    alert("An error occurred while updating the placement schedule.");
-  }
-};
-
-  
+  };
 
   if (!visible) return null;
 
@@ -290,10 +291,18 @@ const handleSubmit = async () => {
       <EditPlacementForm
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        placementData={{ companyLogo, companyName, location, position, jobType, postedTime, description, salary }}
+        placementData={{
+          companyLogo,
+          companyName,
+          location,
+          position,
+          jobType,
+          postedTime,
+          description,
+          salary,
+        }}
         onSubmit={handleSubmit}
       />
-
     </>
   );
 }

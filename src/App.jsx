@@ -61,7 +61,7 @@ export default function App() {
             </Layout>
           }
         />
-         <Route
+        <Route
           path="/placement-cell/view"
           element={
             <Layout>

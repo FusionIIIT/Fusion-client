@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { Modal, Button, TextInput, Select, Textarea, Card, Container } from "@mantine/core";
+import {
+  Modal,
+  Button,
+  TextInput,
+  Select,
+  Textarea,
+  Card,
+  Container,
+} from "@mantine/core";
 
 function CreateNextRoundForm() {
   const [modalOpened, setModalOpened] = useState(false);
@@ -40,7 +48,12 @@ function CreateNextRoundForm() {
         title="Add Next Round Details"
       >
         <Card shadow="sm" padding="md" radius="md">
-          <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmit();
+            }}
+          >
             <TextInput
               label="Round Name"
               placeholder="Enter round name"
@@ -79,16 +92,16 @@ function CreateNextRoundForm() {
               label="Round Type"
               placeholder="Select round type"
               data={[
-                { value: 'technical', label: 'Technical' },
-                { value: 'hr', label: 'HR' },
-                { value: 'group_discussion', label: 'Group Discussion' },
-                { value: 'coding', label: 'Coding' },
+                { value: "technical", label: "Technical" },
+                { value: "hr", label: "HR" },
+                { value: "group_discussion", label: "Group Discussion" },
+                { value: "coding", label: "Coding" },
               ]}
               value={roundType}
               onChange={setRoundType}
               required
             />
-            <Button type="submit" style={{ marginTop: '12px' }} fullWidth>
+            <Button type="submit" style={{ marginTop: "12px" }} fullWidth>
               Save Round Details
             </Button>
           </form>

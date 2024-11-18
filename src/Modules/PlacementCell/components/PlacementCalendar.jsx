@@ -29,7 +29,6 @@ function PlacementCalendar() {
       const token = localStorage.getItem("authToken");
       console.log("Auth Token:", token);
 
-
       try {
         const response = await axios.get(
           "http://127.0.0.1:8000/placement/api/calender/",
@@ -54,7 +53,6 @@ function PlacementCalendar() {
             description: item.description,
             type: item.type,
           }));
-
 
           setEvents(calendarEvents);
           console.log("Mapped Events:", calendarEvents);
@@ -84,7 +82,6 @@ function PlacementCalendar() {
       >
         <Title order={2}>Placement Calendar</Title>
       </Container>{" "}
-
       <Calendar
         localizer={localizer}
         events={events}

@@ -59,10 +59,10 @@ const EditPlacementForm = ({ isOpen, onClose, placementData, onSubmit }) => {
               label="Date"
               placeholder="Pick a date"
               value={date}
-              onChange={setDate} 
-              opened={datePickerOpened} 
-              onFocus={() => setDatePickerOpened(true)} 
-              onBlur={() => setDatePickerOpened(false)} 
+              onChange={setDate}
+              opened={datePickerOpened}
+              onFocus={() => setDatePickerOpened(true)}
+              onBlur={() => setDatePickerOpened(false)}
             />
           </Grid.Col>
 

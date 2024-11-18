@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { Container, Pagination, Grid, Modal, Button, Title } from "@mantine/core";
+import {
+  Container,
+  Pagination,
+  Grid,
+  Modal,
+  Button,
+  Title,
+} from "@mantine/core";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import AddPlacementEventForm from "./AddPlacementEventForm";
@@ -58,7 +65,7 @@ function PlacementScheduleGrid({
         {paddedItems.map((item, index) => (
           <Grid.Col key={index} span={12 / cardsPerRow}>
             {item ? (
-            <PlacementScheduleCard
+              <PlacementScheduleCard
                 jobId={item.id}
                 companyLogo="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg"
                 companyName={item.company_name}
@@ -169,6 +176,6 @@ function PlacementSchedule() {
       </Modal>
     </>
   );
-};
+}
 
 export default PlacementSchedule;
