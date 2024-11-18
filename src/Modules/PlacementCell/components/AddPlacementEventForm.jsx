@@ -74,19 +74,23 @@ function AddPlacementEventForm() {
     }
 
     try {
-      const response = await axios.post("http://127.0.0.1:8000/placement/api/placement/", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Token ${token}`, 
+      const response = await axios.post(
+        "http://127.0.0.1:8000/placement/api/placement/",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Token ${token}`,
+          },
         },
-      });
-      alert(response.data.message);
+      );
       // Notification for success
       notifications.show({
         title: "Event Added",
         message: "Placement Event has been added successfully.",
         color: "green",
         position: "top-center",
+        autoClose: 3000,
       });
     } catch (error) {
       const errorMessage = error.response?.data?.error || error.message;
@@ -95,6 +99,7 @@ function AddPlacementEventForm() {
         message: `Failed to add Placement Event: ${errorMessage}`,
         color: "red",
         position: "top-center",
+        autoClose: 3000,
       });
       console.error(
         "Error adding schedule:",

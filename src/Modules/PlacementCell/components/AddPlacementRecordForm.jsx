@@ -8,6 +8,7 @@ import {
   Modal,
 } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
+import { notifications } from "@mantine/notifications";
 
 function AddPlacementRecordForm({ opened, onClose }) {
   const [companyName, setCompanyName] = useState("");
@@ -31,22 +32,45 @@ function AddPlacementRecordForm({ opened, onClose }) {
     formData.append("test_score", testScore);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/placement/api/statistics/", {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        "http://127.0.0.1:8000/placement/api/statistics/",
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.error("Error:", errorData.error || "An error occurred");
+        notifications.show({
+          title: "Error Adding Record",
+          message: errorData.error || "An error occurred",
+          color: "red",
+          position: "top-center",
+          autoClose: 3000,
+        });
         throw new Error(errorData.error || "An error occurred");
       }
 
       const data = await response.json();
-      console.log("Success:", data);
-      onClose(); // Close the modal after successful submission
+      notifications.show({
+        title: "Record Added",
+        message: "Placement record has been added successfully.",
+        color: "green",
+        position: "top-center",
+        autoClose: 3000,
+      });
+      onClose();
     } catch (error) {
       console.error("Error:", error.message);
-      alert("Error: " + error.message); // Display error message to the user
+      notifications.show({
+        title: "Error Adding Record",
+        message: error.message,
+        color: "red",
+        position: "top-center",
+        autoClose: 3000,
+      });
     }
   };
 
@@ -60,7 +84,12 @@ function AddPlacementRecordForm({ opened, onClose }) {
         centered
       >
         {/* Grouping input fields */}
-        <Group grow spacing="md" direction="column" breakpoints={{ sm: { direction: "row" } }}>
+        <Group
+          grow
+          spacing="md"
+          direction="column"
+          breakpoints={{ sm: { direction: "row" } }}
+        >
           <TextInput
             label="Company Name"
             placeholder="Enter company name"
@@ -77,7 +106,13 @@ function AddPlacementRecordForm({ opened, onClose }) {
           />
         </Group>
 
-        <Group grow spacing="md" direction="column" breakpoints={{ sm: { direction: "row" } }} style={{ marginTop: "20px" }}>
+        <Group
+          grow
+          spacing="md"
+          direction="column"
+          breakpoints={{ sm: { direction: "row" } }}
+          style={{ marginTop: "20px" }}
+        >
           <TextInput
             label="CTC in LPA"
             placeholder="Enter CTC"

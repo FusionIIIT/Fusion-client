@@ -83,7 +83,15 @@ function JobApplicationsTable() {
   };
 
   if (loading) return <Loader />;
-  if (error) return <Alert color="red">{error}</Alert>;
+  if (error) {
+    notifications.show({
+      title: "Error",
+      message: error,
+      color: "red",
+      position: "top-center",
+    });
+    return <Alert color="red">{error}</Alert>;
+  }
 
   return (
     <Container fluid>
