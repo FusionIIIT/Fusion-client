@@ -20,7 +20,6 @@ import {
 } from "../../../../routes/hostelManagementRoutes";
 import { Empty } from "../../../../components/empty";
 
-const getHallName = (hallNumber) => `Hall ${hallNumber}`;
 const getScopeType = (scope) => (scope === "1" ? "global" : "hall");
 
 export default function NoticeBoard() {
@@ -47,7 +46,7 @@ export default function NoticeBoard() {
       const transformedNotices = response.data
         .map((notice) => ({
           ...notice,
-          hall: getHallName(notice.hall),
+          hall: notice.hall_id,
           scope: getScopeType(notice.scope),
           posted_date: new Date().toLocaleDateString(),
         }))

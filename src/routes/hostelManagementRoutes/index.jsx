@@ -24,3 +24,6 @@ export const update_fine_status_url = (fine_id) =>
   `${host}/hostelmanagement/update-fine-status/${fine_id}/`;
 export const fetch_complaint = `${host}/hostelmanagement/hostel_complaints/`;
 export const fine_show = `${host}/hostelmanagement/fine-show/`;
+export const my_leaves = `${host}/hostelmanagement/my_leaves/`;
+export const show_guestroom_booking_request = `${host}/hostelmanagement/fetching_guest_room_request/`;
+export const update_guest_room = `${host}/hostelmanagement/update_guest_room/`;

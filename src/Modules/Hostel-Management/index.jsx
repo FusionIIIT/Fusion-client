@@ -25,7 +25,7 @@ function HostelPage() {
     switch (userRole.toLowerCase()) {
       case "student":
         return <SectionNavigationStudent />;
-      case "admin":
+      case "hostel_admin":
         return <SectionNavigationAdmin />;
       default:
         return <div>No access</div>;

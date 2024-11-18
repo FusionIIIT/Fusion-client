@@ -12,11 +12,6 @@ import axios from "axios";
 import { getNotices } from "../../../../routes/hostelManagementRoutes";
 import { Empty } from "../../../../components/empty";
 
-// Helper function to get hall name from hall number
-const getHallName = (hallNumber) => {
-  return `Hall ${hallNumber}`;
-};
-
 // Helper function to transform scope number to string
 const getScopeType = (scope) => {
   return scope === "1" ? "global" : "hall";
@@ -45,7 +40,7 @@ export default function NoticeBoard() {
       const transformedNotices = response.data
         .map((notice) => ({
           ...notice,
-          hall: getHallName(notice.hall),
+          hall: notice.hall_id,
           scope: getScopeType(notice.scope),
           posted_date: new Date().toLocaleDateString(),
         }))

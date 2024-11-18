@@ -8,6 +8,7 @@ import ManageGuestRoomRequest from "./caretaker/ManageGuestRoom";
 import NoticeBoardWardenCaretaker from "./all-actors/NoticeBoardWardenCaretaker";
 import ImposeFine from "./caretaker/ImposeFine";
 import ManageFine from "./caretaker/ManageFine";
+import StudentInfo from "./caretaker/StudentInfo";
 
 const sections = [
   "Notice Board",
@@ -26,6 +27,7 @@ const components = {
   "Manage Guest Room Request": ManageGuestRoomRequest,
   "Fine_Impose Fines": ImposeFine,
   "Fine_Manage Imposed Fines": ManageFine,
+  "Student Allotment": StudentInfo,
 };
 
 export default function SectionNavigationCaretaker() {
