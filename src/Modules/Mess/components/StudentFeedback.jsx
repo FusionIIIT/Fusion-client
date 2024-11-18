@@ -9,23 +9,48 @@ import {
   Group,
 } from "@mantine/core"; // Mantine UI components
 import { PencilSimple, FunnelSimple } from "@phosphor-icons/react"; // Phosphor Icons
+import axios from "axios";
 
 function StudentFeedback() {
   const [messOption, setMessOption] = useState("Mess 1");
   const [feedbackType, setFeedbackType] = useState("Cleanliness");
   const [description, setDescription] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Function to handle form submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Handle form submission logic here
-    console.log({
-      messOption,
-      feedbackType,
-      description,
-    });
-    // Clear form fields after submission
-    setDescription("");
+  const handleSubmit = async () => {
+    if (description.trim() === "") {
+      alert("Feedback cannot be empty!");
+      return;
+    }
+    try {
+      setIsSubmitting(true);
+      const token = localStorage.getItem("authToken"); // Get the token from local storage
+      const response = await axios.post(
+        "http://127.0.0.1:8000/mess/api/feedbackApi/",
+        {
+          mess: messOption, // Need to change the mess option based on the registration
+          feedback_type: feedbackType,
+          description,
+        },
+        {
+          headers: {
+            authorization: `Token ${token}`, // Pass the token in the Authorization header
+          },
+        },
+      );
+      console.log(response);
+      if (response.status === 200) {
+        alert("Feedback submitted successfully!");
+        setDescription(""); // Clear the textarea after submission
+      } else {
+        alert("Failed to submit description");
+      }
+    } catch (error) {
+      console.error("Error submitting description:", error);
+      alert("An error occurred. Please try again.");
+    } finally {
+      setIsSubmitting(false); // Reset submission state
+    }
   };
 
   return (
@@ -63,7 +88,7 @@ function StudentFeedback() {
             />
           </Group>
 
-          {/* Dropdown for feedback type */}
+          {/* Dropdown for description type */}
           <Group grow mb="lg">
             <Select
               label="Feedback Type"
@@ -77,10 +102,10 @@ function StudentFeedback() {
             />
           </Group>
 
-          {/* Textarea for feedback description */}
+          {/* Textarea for description description */}
           <Textarea
             label="Description"
-            placeholder="Enter your feedback"
+            placeholder="Enter your description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             radius="md"
@@ -98,6 +123,8 @@ function StudentFeedback() {
             radius="md"
             color="blue"
             type="submit"
+            onClick={handleSubmit}
+            disabled={isSubmitting}
             leftIcon={<PencilSimple size={18} />} // Phosphor icon
           >
             Submit Feedback

@@ -1,107 +1,96 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Table, Container, Paper, Title, Button, Flex } from "@mantine/core";
-import * as PhosphorIcons from "@phosphor-icons/react"; // Default import for icons
+import * as PhosphorIcons from "@phosphor-icons/react";
 
-const initialFeedbackData = [
-  {
-    fdate: "2024-10-10",
-    student_id: "22bcs123",
-    feedback_type: "Food",
-    description: "Food quality is good",
-    mess: "Mess1",
-  },
-  {
-    fdate: "2024-10-13",
-    student_id: "22bcs198",
-    feedback_type: "Food",
-    description: "Food portion size could be bigger",
-    mess: "Mess2",
-  },
-  {
-    fdate: "2024-10-12",
-    student_id: "21bec083",
-    feedback_type: "Cleanliness",
-    description: "Cleanliness needs improvement",
-    mess: "Mess2",
-  },
-  {
-    fdate: "2024-10-14",
-    student_id: "22bcs099",
-    feedback_type: "Cleanliness",
-    description: "Floors need better cleaning",
-    mess: "Mess1",
-  },
-  {
-    fdate: "2024-10-14",
-    student_id: "22bcs111",
-    feedback_type: "Maintenance",
-    description: "Lights need repair",
-    mess: "Mess1",
-  },
-  {
-    fdate: "2024-10-15",
-    student_id: "21bec076",
-    feedback_type: "Maintenance",
-    description: "Fan not working properly",
-    mess: "Mess2",
-  },
-  {
-    fdate: "2024-10-16",
-    student_id: "22bcs105",
-    feedback_type: "Others",
-    description: "More variety in food, please!",
-    mess: "Mess2",
-  },
-  {
-    fdate: "2024-10-17",
-    student_id: "21bec099",
-    feedback_type: "Others",
-    description: "Please improve seating arrangements",
-    mess: "Mess1",
-  },
+const tableHeader = [
+  "Date",
+  "Student ID",
+  "Description",
+  "Mess",
+  "Status",
+  "Actions",
 ];
 
-const tableHeader = ["Date", "Student ID", "Description", "Mess", "Actions"];
-
-// Main component
 function ViewFeedback() {
   const [activeTab, setActiveTab] = useState("Food");
-  const [feedbackData, setFeedbackData] = useState(initialFeedbackData);
+  const [feedbackData, setFeedbackData] = useState([]);
+  const authToken = localStorage.getItem("authToken");
 
-  // Filter feedback based on active tab
+  useEffect(() => {
+    fetch("http://127.0.0.1:8000/mess/api/feedbackApi/", {
+      method: "GET",
+      headers: {
+        Authorization: `Token ${authToken}`,
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setFeedbackData(
+          data.payload.map((feedback) => ({
+            ...feedback,
+            status: "Unread", // Initialize status
+          })),
+        );
+      })
+      .catch((error) => {
+        console.error("Error fetching feedback data:", error);
+      });
+  }, [authToken]);
+
+  const markAsRead = (index, feedback) => {
+    fetch("http://127.0.0.1:8000/mess/api/feedbackApi/", {
+      method: "DELETE",
+      headers: {
+        Authorization: `Token ${authToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        student_id: feedback.student_id,
+        mess: feedback.mess,
+        feedback_type: feedback.feedback_type,
+        description: feedback.description,
+        fdate: feedback.fdate,
+      }),
+    })
+      .then((response) => {
+        if (response.ok) {
+          // Update the status in the state instead of removing the item
+          setFeedbackData((prevData) =>
+            prevData.map((item, i) =>
+              i === index ? { ...item, status: "Read" } : item,
+            ),
+          );
+        } else {
+          console.error("Failed to delete feedback:", response.statusText);
+        }
+      })
+      .catch((error) => {
+        console.error("Error deleting feedback:", error);
+      });
+  };
+
   const filteredFeedback = feedbackData.filter(
     (feedback) => feedback.feedback_type === activeTab,
   );
 
-  // Function to mark feedback as read
-  const markAsRead = (index) => {
-    setFeedbackData((prevData) => prevData.filter((_, i) => i !== index));
-  };
-
-  // Render feedback table rows with added padding for spacing
   const renderRows = () =>
     filteredFeedback.map((item, index) => (
-      <Table.Tr key={index} h={50}>
-        <Table.Td align="center" p={12}>
-          {item.fdate}
-        </Table.Td>
-        <Table.Td align="center" p={12}>
-          {item.student_id}
-        </Table.Td>
-        <Table.Td align="center" p={12}>
-          {item.description}
-        </Table.Td>
-        <Table.Td align="center" p={12}>
-          {item.mess}
-        </Table.Td>
-        <Table.Td align="center" p={12}>
+      <Table.Tr key={index}>
+        <Table.Td align="center">{item.fdate}</Table.Td>
+        <Table.Td align="center">{item.student_id}</Table.Td>
+        <Table.Td align="center">{item.description}</Table.Td>
+        <Table.Td align="center">{item.mess}</Table.Td>
+        <Table.Td align="center">{item.status}</Table.Td>
+        <Table.Td align="center">
           <Button
-            onClick={() => markAsRead(index)}
+            onClick={() => markAsRead(index, item)}
             variant="outline"
-            color="red"
+            color={item.status === "Unread" ? "red" : "gray"}
             size="xs"
+            disabled={item.status === "Read"} // Disable button for "Read" feedback
           >
-            Mark as Read
+            {item.status === "Unread" ? "Mark as Read" : "Read"}
           </Button>
         </Table.Td>
       </Table.Tr>
@@ -124,7 +113,7 @@ function ViewFeedback() {
           View Feedback
         </Title>
 
-        {/* Manually position the Group */}
+        {/* Tabs for filtering feedback */}
         <Flex justify="center" align="center" mb={30} gap={20}>
           <Button
             onClick={() => setActiveTab("Food")}
@@ -160,7 +149,7 @@ function ViewFeedback() {
           </Button>
         </Flex>
 
-        {/* Table */}
+        {/* Feedback Table */}
         <Table striped highlightOnHover withColumnBorders>
           <Table.Thead>
             <Table.Tr>{renderHeader(tableHeader)}</Table.Tr>

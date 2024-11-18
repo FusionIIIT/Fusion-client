@@ -1,129 +1,103 @@
-import React from "react";
-import { Table, Container, Paper, Title, Flex, Box } from "@mantine/core";
-
-// Sample data for the rebate requests
-const SpecialfoodData = [
-  {
-    ApplicationDate: "01-11-2024",
-    Purpose: "Dussehra",
-    from: "01-11-2024",
-    to: "05-11-2024",
-    status: "approved",
-  },
-  {
-    ApplicationDate: "01-11-2024",
-    Purpose: "Diwali",
-    from: "01-11-2024",
-    to: "05-11-2024",
-    status: "pending",
-  },
-  {
-    ApplicationDate: "01-11-2024",
-    Purpose: "Holi",
-    from: "01-11-2024",
-    to: "05-11-2024",
-    status: "declined",
-  },
-];
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { Table, Container, Paper, Title, Box } from "@mantine/core";
 
 function SpecialFoodStatus() {
-  // Render header for the table
+  const roleno = useSelector((state) => state.user.roll_no); // Use Redux state for roll number
+  const [specialFoodData, setSpecialFoodData] = useState([]); // Store special food data
+  const authToken = localStorage.getItem("authToken"); // Get auth token from localStorage
+
+  // Fetch special food data
+  useEffect(() => {
+    fetch("http://127.0.0.1:8000/mess/api/specialRequestApi/", {
+      method: "GET",
+      headers: {
+        Authorization: `Token ${authToken}`, // Corrected syntax for the Authorization header
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const filteredData = data.payload.filter(
+          (request) => request.student_id === roleno,
+        );
+
+        // Sort the data by app_date in descending order
+        const sortedData = filteredData.sort((a, b) => {
+          const dateA = new Date(a.app_date);
+          const dateB = new Date(b.app_date);
+          return dateB - dateA; // Sort in descending order
+        });
+
+        setSpecialFoodData(sortedData);
+      })
+      .catch((error) => {
+        console.error("Error fetching special food data:", error);
+      });
+  }, [authToken, roleno]);
+
   const renderHeader = () => (
     <Table.Tr>
-      <Table.Th>
-        <Flex align="center" justify="center" h="100%">
-          Application Date
-        </Flex>
-      </Table.Th>
-      <Table.Th>
-        <Flex align="center" justify="center" h="100%">
-          Purpose
-        </Flex>
-      </Table.Th>
-      <Table.Th>
-        <Flex align="center" justify="center" h="100%">
-          From
-        </Flex>
-      </Table.Th>
-      <Table.Th>
-        <Flex align="center" justify="center" h="100%">
-          To
-        </Flex>
-      </Table.Th>
-      <Table.Th>
-        <Flex align="center" justify="center" h="100%">
-          Status
-        </Flex>
-      </Table.Th>
+      <Table.Th>Application Date</Table.Th>
+      <Table.Th>Purpose</Table.Th>
+      <Table.Th>From</Table.Th>
+      <Table.Th>To</Table.Th>
+      <Table.Th>Status</Table.Th>
     </Table.Tr>
   );
 
-  // Render rows for the table based on the special food status data
   const renderRows = () =>
-    SpecialfoodData.map((item, index) => (
-      <Table.Tr key={index} style={{ height: "60px" }}>
-        <Table.Td align="center" p={12}>
-          {item.ApplicationDate}
-        </Table.Td>
-        <Table.Td align="center" p={12}>
-          {item.Purpose}
-        </Table.Td>
-        <Table.Td align="center" p={12}>
-          {item.from}
-        </Table.Td>
-        <Table.Td align="center" p={12}>
-          {item.to}
-        </Table.Td>
-        <Table.Td align="center" p={12}>
+    specialFoodData.map((item, index) => (
+      <Table.Tr key={index}>
+        <Table.Td>{item.app_date}</Table.Td>
+        <Table.Td>{item.request}</Table.Td>
+        <Table.Td>{item.start_date}</Table.Td>
+        <Table.Td>{item.end_date}</Table.Td>
+        <Table.Td>
           <Box
-            display="inline-block"
-            p={8}
-            fz={14}
-            fw={600}
-            bg={
-              item.status === "approved"
-                ? "#40C057"
-                : item.status === "declined"
-                  ? "transparent"
-                  : "transparent"
-            }
-            bd={
-              item.status === "approved"
-                ? "1.5px solid #40C057"
-                : item.status === "pending"
-                  ? "1.5px solid grey"
-                  : "1.5px solid red"
-            }
-            c={
-              item.status === "approved"
-                ? "white"
-                : item.status === "pending"
-                  ? "grey"
-                  : "red"
-            }
-            style={{ borderRadius: "4px" }}
+            style={{
+              padding: "8px",
+              fontWeight: "600",
+              color:
+                item.status === "2" // Approved
+                  ? "white"
+                  : item.status === "1" // Pending
+                    ? "black"
+                    : "white", // Declined (Red background, White text)
+              backgroundColor:
+                item.status === "2" // Approved
+                  ? "#40C057"
+                  : item.status === "1" // Pending
+                    ? "#FFC107"
+                    : "#DC3545", // Declined (Red)
+              border: `1.5px solid ${
+                item.status === "2"
+                  ? "#40C057"
+                  : item.status === "1"
+                    ? "#FFC107"
+                    : "#DC3545" // Declined (Red border)
+              }`,
+              borderRadius: "4px",
+            }}
           >
-            {item.status === "approved"
-              ? "Approved"
-              : item.status === "pending"
-                ? "Pending"
-                : "Declined"}
+            {
+              item.status === "2" // Approved
+                ? "Approved"
+                : item.status === "1" // Pending
+                  ? "Pending"
+                  : "Declined" // Declined
+            }
           </Box>
         </Table.Td>
       </Table.Tr>
     ));
 
   return (
-    <Container
-      size="lg"
-      style={{ maxWidth: "800px", width: "570px", marginTop: "25px" }}
-    >
+    <Container size="lg" style={{ maxWidth: "800px", marginTop: "25px" }}>
       <Paper shadow="md" radius="md" p="lg" withBorder>
         <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
           Special Food Status
         </Title>
-
-        {/* Table */}
         <Table striped highlightOnHover withBorder withColumnBorders>
           <Table.Thead>{renderHeader()}</Table.Thead>
           <Table.Tbody>{renderRows()}</Table.Tbody>

@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import {
   Table,
   Text,
@@ -12,29 +13,52 @@ import {
 import { DownloadSimple } from "@phosphor-icons/react";
 
 function MessBilling() {
-  const billData = [
-    {
-      month: "2024-01",
-      baseAmount: 15000,
-      rebateCount: 1,
-      rebateAmount: 1000,
-      monthlyBill: 14000,
-    },
-    {
-      month: "2024-02",
-      baseAmount: 15000,
-      rebateCount: 2,
-      rebateAmount: 2000,
-      monthlyBill: 13000,
-    },
-    {
-      month: "2024-03",
-      baseAmount: 15000,
-      rebateCount: 3,
-      rebateAmount: 3000,
-      monthlyBill: 12000,
-    },
-  ];
+  const rollNo = useSelector((state) => state.user.roll_no); // Use Redux state to get roll number
+  const [billData, setBillData] = useState([]); // Store fetched bill data
+  const [totalBalance, setTotalBalance] = useState(0); // Track total remaining balance
+  const [messStatus, setMessStatus] = useState("Active"); // Track current mess status
+  const authToken = localStorage.getItem("authToken"); // Authorization token
+
+  // Fetch payment data from API
+  useEffect(() => {
+    fetch("http://127.0.0.1:8000/mess/api/get_student_bill/", {
+      method: "POST",
+      headers: {
+        Authorization: `Token ${authToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        student_id: rollNo, // Send roll number as student_id
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.payload) {
+          // Map API response to the required format
+          const mappedData = data.payload.map((bill) => ({
+            month: `${bill.month}-${bill.year}`,
+            baseAmount: bill.amount,
+            rebateCount: bill.rebate_count,
+            rebateAmount: bill.rebate_amount,
+            monthlyBill: bill.total_bill,
+          }));
+          setBillData(mappedData);
+
+          // Calculate total remaining balance
+          const total = mappedData.reduce(
+            (acc, curr) => acc + curr.monthlyBill,
+            0,
+          );
+          setTotalBalance(total);
+
+          // Update mess status based on balance
+          setMessStatus(total > 0 ? "Registered" : "Deregistered");
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching payment data:", error);
+      });
+  }, [authToken, rollNo]);
 
   const renderHeader = () => (
     <Table.Tr>
@@ -102,10 +126,10 @@ function MessBilling() {
 
         <Flex direction="column" mt="lg">
           <Text size="lg" weight={700} mb="xs">
-            Total Remaining Balance: ₹0
+            Total Remaining Balance: ₹{totalBalance}
           </Text>
           <Text size="lg" weight={600}>
-            Current Mess Status: Deregistered
+            Current Mess Status: {messStatus}
           </Text>
         </Flex>
 

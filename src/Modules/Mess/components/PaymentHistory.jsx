@@ -1,28 +1,38 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+// import { useSelector } from "react-redux";
 import { Table, Text, Container, Paper, Title, Flex } from "@mantine/core";
 
 function PaymentHistory() {
-  const paymentHistoryData = [
-    {
-      paymentDate: "2024-01-15",
-      amount: 1800,
-      month: "January",
-      year: 2024,
-    },
-    {
-      paymentDate: "2024-02-10",
-      amount: 2100,
-      month: "February",
-      year: 2024,
-    },
-    {
-      paymentDate: "2024-03-05",
-      amount: 1600,
-      month: "March",
-      year: 2024,
-    },
-  ];
+  // const roleno = useSelector((state) => state.user.roll_no); // Use Redux state to get roll number
+  const [paymentData, setPaymentData] = useState([]); // Store payment data
+  const authToken = localStorage.getItem("authToken"); // Authorization token
 
+  // Fetch payment data from API
+  useEffect(() => {
+    fetch("http://127.0.0.1:8000/mess/api/paymentsApi/", {
+      method: "GET",
+      headers: {
+        Authorization: `Token ${authToken}`,
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        // Map API response to the required format
+        const mappedData = data.payload.map((payment) => ({
+          paymentDate: payment.payment_date,
+          amount: payment.amount_paid,
+          month: payment.payment_month,
+          year: payment.payment_year,
+        }));
+        setPaymentData(mappedData);
+      })
+      .catch((error) => {
+        console.error("Error fetching payment data:", error);
+      });
+  }, [authToken]);
+
+  // Render table header
   const renderHeader = () => (
     <Table.Tr>
       <Table.Th>
@@ -48,8 +58,9 @@ function PaymentHistory() {
     </Table.Tr>
   );
 
+  // Render table rows dynamically from API data
   const renderRows = () =>
-    paymentHistoryData.map((row, index) => (
+    paymentData.map((row, index) => (
       <Table.Tr key={index}>
         <Table.Td align="center" p={12}>
           {row.paymentDate}
@@ -65,6 +76,12 @@ function PaymentHistory() {
         </Table.Td>
       </Table.Tr>
     ));
+
+  // Calculate total payments
+  const totalPayments = paymentData.reduce(
+    (total, item) => total + item.amount,
+    0,
+  );
 
   return (
     <Container
@@ -84,7 +101,7 @@ function PaymentHistory() {
 
         <Flex direction="column" mt="lg">
           <Text size="lg" weight={700} align="center" mt="md">
-            Total Payments: ₹5500
+            Total Payments: ₹{totalPayments}
           </Text>
         </Flex>
       </Paper>

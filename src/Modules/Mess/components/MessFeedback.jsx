@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Paper, Button, Textarea, Title, Group, Box } from "@mantine/core";
-import * as PhosphorIcons from "@phosphor-icons/react";
+// import * as PhosphorIcons from "@phosphor-icons/react";
+import axios from "axios"; // Assuming you are using axios for making HTTP requests
 
 // Styles
 const feedbackContainerStyle = {
@@ -8,7 +9,6 @@ const feedbackContainerStyle = {
   backgroundColor: "#e6f7ff",
   borderRadius: "10px",
   boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-  //   margin: "20px auto",
   width: "90%",
   marginTop: "55px",
 };
@@ -51,6 +51,44 @@ const submitButtonStyle = {
 
 function FeedbackPage() {
   const [selectedCategory, setSelectedCategory] = useState("Food"); // Default category
+  const [feedback, setFeedback] = useState(""); // State to store the feedback input
+  const [isSubmitting, setIsSubmitting] = useState(false); // State to manage submission state
+
+  const handleSubmit = async () => {
+    if (feedback.trim() === "") {
+      alert("Feedback cannot be empty!");
+      return;
+    }
+    try {
+      setIsSubmitting(true);
+      const token = localStorage.getItem("authToken"); // Get the token from local storage
+      const response = await axios.post(
+        "http://127.0.0.1:8000/mess/api/feedbackApi/",
+        {
+          mess: "mess1", // Need to change the mess option based on the registration
+          feedback_type: selectedCategory,
+          description: feedback,
+        },
+        {
+          headers: {
+            authorization: `Token ${token}`, // Pass the token in the Authorization header
+          },
+        },
+      );
+      console.log(response);
+      if (response.status === 200) {
+        alert("Feedback submitted successfully!");
+        setFeedback(""); // Clear the textarea after submission
+      } else {
+        alert("Failed to submit feedback");
+      }
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+      alert("An error occurred. Please try again.");
+    } finally {
+      setIsSubmitting(false); // Reset submission state
+    }
+  };
 
   return (
     <Box style={feedbackContainerStyle}>
@@ -62,7 +100,7 @@ function FeedbackPage() {
         {/* Feedback category buttons */}
         <Group position="center" style={categoryButtonContainer}>
           <Button
-            leftIcon={<PhosphorIcons.ForkKnife size={20} />}
+            // leftIcon={<PhosphorIcons.ForkKnife size={20} />}
             variant={selectedCategory === "Food" ? "filled" : "outline"}
             onClick={() => setSelectedCategory("Food")}
             size="md"
@@ -70,7 +108,7 @@ function FeedbackPage() {
             Food
           </Button>
           <Button
-            leftIcon={<PhosphorIcons.Broom size={20} />}
+            // leftIcon={<PhosphorIcons.Broom size={20} />}
             variant={selectedCategory === "Cleanliness" ? "filled" : "outline"}
             onClick={() => setSelectedCategory("Cleanliness")}
             size="md"
@@ -78,7 +116,7 @@ function FeedbackPage() {
             Cleanliness
           </Button>
           <Button
-            leftIcon={<PhosphorIcons.Wrench size={20} />}
+            // leftIcon={<PhosphorIcons.Wrench size={20} />}
             variant={selectedCategory === "Maintenance" ? "filled" : "outline"}
             onClick={() => setSelectedCategory("Maintenance")}
             size="md"
@@ -86,7 +124,7 @@ function FeedbackPage() {
             Maintenance
           </Button>
           <Button
-            leftIcon={<PhosphorIcons.Note size={20} />}
+            // leftIcon={<PhosphorIcons.Note size={20} />}
             variant={selectedCategory === "Others" ? "filled" : "outline"}
             onClick={() => setSelectedCategory("Others")}
             size="md"
@@ -103,14 +141,18 @@ function FeedbackPage() {
           <Textarea
             placeholder={`Enter your feedback about ${selectedCategory}`}
             style={textareaStyle}
+            value={feedback} // Bind feedback state
+            onChange={(event) => setFeedback(event.currentTarget.value)} // Update feedback state
             minRows={5}
           />
           <Button
-            leftIcon={<PhosphorIcons.PaperPlaneTilt size={20} />}
+            // leftIcon={<PhosphorIcons.PaperPlaneTilt size={20} />}
             fullWidth
             style={submitButtonStyle}
+            onClick={handleSubmit}
+            disabled={isSubmitting} // Disable button while submitting
           >
-            Submit
+            {isSubmitting ? "Submitting..." : "Submit"}
           </Button>
         </Box>
       </Paper>
