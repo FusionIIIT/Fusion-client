@@ -52,46 +52,56 @@ export default function FacilitiesDescriptive({ branch }) {
   return (
     <div
       style={{
-        backgroundColor: "white",
-        width: "800px",
-        padding: "20px",
-        border: "1px solid #e0e0e0",
-        borderRadius: "8px",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        width: "100%",
       }}
     >
-      <div style={{ marginBottom: "20px" }}>
-        <p style={{ fontSize: "14px", color: "#000" }}>
-          Phone Number: {data.phone_number}
-        </p>
-        <div
-          style={{
-            height: "1px",
-            backgroundColor: "#000",
-            width: "100%",
-          }}
-        />
-      </div>
-      <div style={{ marginBottom: "20px" }}>
-        <p style={{ fontSize: "14px", color: "#000" }}>Email: {data.email}</p>
-        <div
-          style={{
-            height: "1px",
-            backgroundColor: "#000",
-            width: "100%",
-          }}
-        />
-      </div>
-      <div>
-        <p style={{ fontSize: "14px", color: "#000" }}>
-          Facilities Description: {data.facilites}
-        </p>
-        <div
-          style={{
-            height: "1px",
-            backgroundColor: "#000",
-            width: "100%",
-          }}
-        />
+      <div
+        style={{
+          width: "80%",
+          backgroundColor: "#fff",
+          padding: "20px",
+          boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+        }}
+      >
+        <div style={{ marginBottom: "20px" }}>
+          <p style={{ fontSize: "14px", color: "#000", fontWeight: "bold" }}>
+            Phone Number: {data.phone_number}
+          </p>
+          <div
+            style={{
+              height: "1px",
+              backgroundColor: "#000",
+              width: "100%",
+            }}
+          />
+        </div>
+        <div style={{ marginBottom: "20px" }}>
+          <p style={{ fontSize: "14px", color: "#000", fontWeight: "bold" }}>
+            Email: {data.email}
+          </p>
+          <div
+            style={{
+              height: "1px",
+              backgroundColor: "#000",
+              width: "100%",
+            }}
+          />
+        </div>
+        <div>
+          <p style={{ fontSize: "14px", color: "#000", fontWeight: "bold" }}>
+            Facilities Description: {data.facilites}
+          </p>
+          <div
+            style={{
+              height: "1px",
+              backgroundColor: "#000",
+              width: "100%",
+            }}
+          />
+        </div>
       </div>
     </div>
   );
