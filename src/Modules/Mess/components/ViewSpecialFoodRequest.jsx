@@ -1,36 +1,16 @@
-import React, { useState } from "react";
-import { Table, Container, Paper, Title, Button, Flex } from "@mantine/core";
-import * as PhosphorIcons from "@phosphor-icons/react"; // Default import for icons
-
-const initialFoodRequestData = [
-  {
-    rdate: "2024-10-05",
-    student_id: "22bcs123",
-    food: "Gluten-free",
-    reason: "Medical condition",
-    from: "2024-10-05",
-    to: "2024-10-07",
-    approve: false,
-  },
-  {
-    rdate: "2024-10-07",
-    student_id: "21bec083",
-    food: "Vegan",
-    reason: "Personal preference",
-    from: "2024-10-08",
-    to: "2024-10-10",
-    approve: true,
-  },
-  {
-    rdate: "2024-10-09",
-    student_id: "22bcs198",
-    food: "Navratri Food",
-    reason: "Fasting",
-    from: "2024-10-10",
-    to: "2024-10-12",
-    approve: false,
-  },
-];
+import React, { useState, useEffect } from "react";
+import {
+  Table,
+  Container,
+  Paper,
+  Title,
+  Button,
+  Flex,
+  Loader,
+  Alert,
+} from "@mantine/core";
+import axios from "axios";
+import * as PhosphorIcons from "@phosphor-icons/react"; // Icons for tabs
 
 const tableHeader = [
   "Date",
@@ -42,15 +22,49 @@ const tableHeader = [
   "Approval",
 ];
 
-// Main component
 function ViewSpecialFoodRequest() {
-  const [foodRequestData, setFoodRequestData] = useState(
-    initialFoodRequestData,
-  );
+  const [foodRequestData, setFoodRequestData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("all");
 
-  // Function to toggle approval status
-  const toggleApproval = (index) => {
+  // Fetch special food requests from API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+          setError("Authentication token not found.");
+          return;
+        }
+
+        const response = await axios.get(
+          "http://127.0.0.1:8000/mess/api/specialRequestApi",
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+          },
+        );
+
+        if (response.data && response.data.payload) {
+          setFoodRequestData(response.data.payload);
+        } else {
+          setError("No special food request data found.");
+        }
+      } catch (err) {
+        setError("Error fetching special food requests.");
+        console.error("Error fetching special food requests:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const toggleApproval = (id, index) => {
+    // Update state locally without backend interaction
     setFoodRequestData((prevData) =>
       prevData.map((request, i) =>
         i === index ? { ...request, approve: !request.approve } : request,
@@ -70,26 +84,26 @@ function ViewSpecialFoodRequest() {
     filteredFoodRequestData.map((item, index) => (
       <Table.Tr key={index} h={50}>
         <Table.Td align="center" p={12}>
-          {item.rdate}
+          {item.app_date}
         </Table.Td>
         <Table.Td align="center" p={12}>
           {item.student_id}
         </Table.Td>
         <Table.Td align="center" p={12}>
-          {item.food}
+          {item.item1}
         </Table.Td>
         <Table.Td align="center" p={12}>
-          {item.reason}
+          {item.request}
         </Table.Td>
         <Table.Td align="center" p={12}>
-          {item.from}
+          {item.start_date}
         </Table.Td>
         <Table.Td align="center" p={12}>
-          {item.to}
+          {item.end_date}
         </Table.Td>
         <Table.Td align="center" p={12}>
           <Button
-            onClick={() => toggleApproval(index)}
+            onClick={() => toggleApproval(item.id, index)}
             variant={item.approve ? "filled" : "outline"}
             color={item.approve ? "green" : "red"}
             size="xs"
@@ -111,47 +125,60 @@ function ViewSpecialFoodRequest() {
   };
 
   return (
-    <Container size="lg" mt={30} miw="80rem">
+    <Container size="lg" mt={30} miw="75rem">
       <Paper shadow="md" radius="md" p="lg" withBorder>
         <Title order={2} align="center" mb="lg" c="#1c7ed6">
           View Special Food Requests
         </Title>
 
-        {/* Tabs for filtering food requests */}
-        <Flex justify="center" align="center" mb={30} gap={20}>
-          <Button
-            onClick={() => setActiveTab("all")}
-            leftSection={<PhosphorIcons.Eye size={20} />}
-            variant={activeTab === "all" ? "filled" : "outline"}
-            size="xs"
-          >
-            All Requests
-          </Button>
-          <Button
-            onClick={() => setActiveTab("approved")}
-            leftSection={<PhosphorIcons.Check size={20} />}
-            variant={activeTab === "approved" ? "filled" : "outline"}
-            size="xs"
-          >
-            Approved
-          </Button>
-          <Button
-            onClick={() => setActiveTab("unapproved")}
-            leftSection={<PhosphorIcons.XCircle size={20} />}
-            variant={activeTab === "unapproved" ? "filled" : "outline"}
-            size="xs"
-          >
-            Unapproved
-          </Button>
-        </Flex>
+        {/* Error and Loading State */}
+        {loading ? (
+          <Flex justify="center" align="center" style={{ minHeight: "200px" }}>
+            <Loader size="xl" />
+          </Flex>
+        ) : error ? (
+          <Alert color="red" title="Error" mb="lg">
+            {error}
+          </Alert>
+        ) : (
+          <>
+            {/* Tabs for filtering food requests */}
+            <Flex justify="center" align="center" mb={30} gap={20}>
+              <Button
+                onClick={() => setActiveTab("all")}
+                leftSection={<PhosphorIcons.Eye size={20} />}
+                variant={activeTab === "all" ? "filled" : "outline"}
+                size="xs"
+              >
+                All Requests
+              </Button>
+              <Button
+                onClick={() => setActiveTab("approved")}
+                leftSection={<PhosphorIcons.Check size={20} />}
+                variant={activeTab === "approved" ? "filled" : "outline"}
+                size="xs"
+              >
+                Approved
+              </Button>
+              <Button
+                onClick={() => setActiveTab("unapproved")}
+                leftSection={<PhosphorIcons.XCircle size={20} />}
+                variant={activeTab === "unapproved" ? "filled" : "outline"}
+                size="xs"
+              >
+                Unapproved
+              </Button>
+            </Flex>
 
-        {/* Table */}
-        <Table striped highlightOnHover withBorder withColumnBorders>
-          <Table.Thead>
-            <Table.Tr>{renderHeader(tableHeader)}</Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>{renderRows()}</Table.Tbody>
-        </Table>
+            {/* Table */}
+            <Table striped highlightOnHover withBorder withColumnBorders>
+              <Table.Thead>
+                <Table.Tr>{renderHeader(tableHeader)}</Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>{renderRows()}</Table.Tbody>
+            </Table>
+          </>
+        )}
       </Paper>
     </Container>
   );

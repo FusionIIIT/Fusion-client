@@ -31,7 +31,7 @@ export const fetchUpdateBalanceRequestsStatus = async () => {
   }
 };
 
-function UpdateBalanceRequestStatus() {
+function UpdateBalanceRequest() {
   const [balanceRequests, setBalanceRequests] = useState([]);
 
   useEffect(() => {
@@ -132,10 +132,19 @@ function UpdateBalanceRequestStatus() {
     ));
 
   return (
-    <Container size="lg" style={{ marginTop: "25px" }}>
-      <Paper shadow="md" radius="md" p="lg" withBorder>
+    <Container
+      size="lg"
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "100vh",
+      }}
+      miw="75rem"
+    >
+      <Paper shadow="md" radius="md" p="xl" withBorder miw="75rem">
         <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
-          Request Status
+          Update Balance Request
         </Title>
 
         {/* FusionTable */}
@@ -149,4 +158,4 @@ function UpdateBalanceRequestStatus() {
   );
 }
 
-export default UpdateBalanceRequestStatus;
+export default UpdateBalanceRequest;

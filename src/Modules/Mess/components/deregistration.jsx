@@ -7,16 +7,62 @@ import {
   Title,
   Paper,
   Space,
-  Textarea,
 } from "@mantine/core"; // Import Mantine components
 import { User } from "@phosphor-icons/react"; // Import Phosphor Icons
+import axios from "axios"; // Import axios
 
 function Deregistration() {
   const [name, setName] = useState(""); // State for name
   const [rollNo, setRollNo] = useState(""); // State for roll number
   const [batch, setBatch] = useState(""); // State for batch
   const [semester, setSemester] = useState(null); // State for semester
-  const [reason, setReason] = useState(""); // State for reason
+  const [txnNo, setTxnNo] = useState(""); // State for transaction number
+  const [deregistrationRemark, setDeregistrationRemark] = useState(""); // State for deregistration remark
+
+  // Generate a random transaction number (Txn_no)
+  const generateTxnNo = () => {
+    const randomTxn = Math.floor(Math.random() * 1000000000); // Generate a random 9-digit number
+    setTxnNo(randomTxn);
+  };
+
+  // Call this function when form is submitted
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    // Make sure we have required fields
+    if (!rollNo || !deregistrationRemark) {
+      alert("Please fill out all required fields.");
+      return;
+    }
+
+    // Prepare data to send to backend
+    const data = {
+      txn_no: txnNo || generateTxnNo(), // Ensure txnNo is generated
+      student_id: rollNo, // rollNo as student_id
+      batch,
+      semester,
+      deregistration_remark: deregistrationRemark, // Include the remark
+    };
+
+    try {
+      // Send POST request to backend API
+      const response = await axios.post(
+        "http://127.0.0.1:8000/mess/api/deRegistrationRequestApi",
+        data,
+        {
+          headers: {
+            Authorization: `Token ${localStorage.getItem("authToken")}`, // Include auth token
+          },
+        },
+      );
+
+      if (response.status === 200) {
+        alert("Deregistration request submitted successfully!");
+      }
+    } catch (error) {
+      alert("Error submitting deregistration request");
+    }
+  };
 
   return (
     <Container
@@ -38,7 +84,7 @@ function Deregistration() {
           Deregistration Form
         </Title>
 
-        <form method="post" action="/path/to/your/deregistration/endpoint">
+        <form onSubmit={handleSubmit}>
           {/* Name input */}
           <TextInput
             label="Name"
@@ -95,12 +141,14 @@ function Deregistration() {
             mb="lg"
           />
 
-          {/* Reason for Deregistration input */}
-          <Textarea
-            label="Reason for Deregistration"
-            placeholder="Provide your reason"
-            value={reason}
-            onChange={(event) => setReason(event.currentTarget.value)}
+          {/* Deregistration Remark input */}
+          <TextInput
+            label="Deregistration Remark"
+            placeholder="Enter a remark for deregistration"
+            value={deregistrationRemark}
+            onChange={(event) =>
+              setDeregistrationRemark(event.currentTarget.value)
+            }
             required
             radius="md"
             size="md"
@@ -111,7 +159,7 @@ function Deregistration() {
           <Space h="xl" />
 
           {/* Submit button */}
-          <Button fullWidth size="md" radius="md" color="blue">
+          <Button fullWidth size="md" radius="md" color="blue" type="submit">
             Submit
           </Button>
         </form>

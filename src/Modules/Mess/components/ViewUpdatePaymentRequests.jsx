@@ -1,132 +1,175 @@
-import React, { useState } from "react";
-import { Table, Container, Paper, Title, Button, Flex } from "@mantine/core";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import {
+  Table,
+  Container,
+  Paper,
+  Title,
+  Button,
+  Flex,
+  Loader,
+  Alert,
+  TextInput,
+} from "@mantine/core";
 
-const initialUpdatePaymentRequests = [
-  {
-    student_id: "22bcs123",
-    transaction_no: "TXN123456",
-    image_url:
-      "https://img.freepik.com/free-vector/realistic-receipt-template_23-2147938550.jpg?size=338&ext=jpg&ga=GA1.1.2113030492.1728950400&semt=ais_hybrid",
-    amount: 15000,
-    payment_date: "2024-10-10",
-    remark: "Updated amount after correction",
-    accepted: false,
-  },
-  {
-    student_id: "21bec083",
-    transaction_no: "TXN654321",
-    image_url:
-      "https://img.freepik.com/free-vector/realistic-receipt-template_23-2147938550.jpg?size=338&ext=jpg&ga=GA1.1.2113030492.1728950400&semt=ais_hybrid",
-    amount: 5000,
-    payment_date: "2024-10-12",
-    remark: "Payment corrected",
-    accepted: true,
-  },
+const tableHeaders = [
+  "Student ID",
+  "Transaction No",
+  "Image",
+  "Amount",
+  "Payment Date",
+  "Remark",
+  "Accept/Reject",
 ];
 
-// Main component
 function ViewUpdatePaymentRequests() {
-  const [updatePaymentData, setUpdatePaymentData] = useState(
-    initialUpdatePaymentRequests,
-  );
+  const [updatePaymentData, setUpdatePaymentData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Function to toggle acceptance status
-  const toggleAcceptance = (index) => {
+  // Fetch update payment requests data from API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+          setError("Authentication token not found.");
+          return;
+        }
+
+        const response = await axios.get(
+          "http://127.0.0.1:8000/mess/api/updatePaymentRequestApi", // Replace with your correct API endpoint
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+          },
+        );
+
+        console.log("API Response Data:", response.data); // Debugging log to check data
+
+        if (response.data && response.data.payload) {
+          setUpdatePaymentData(response.data.payload); // Store update payment data
+        } else {
+          setError("No payment request data found.");
+        }
+      } catch (errors) {
+        setError("Error fetching payment request data.");
+        console.error("Error fetching payment request data:", errors);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Handle Accept Action
+  const handleAccept = (id) => {
+    console.log("Accepting payment request:", id);
+    // Implement API call for accepting payment request here
+  };
+
+  // Handle Reject Action
+  const handleReject = (id) => {
+    console.log("Rejecting payment request:", id);
+    // Implement API call for rejecting payment request here
+  };
+
+  // Handle Change in Remark Field
+  const handleRemarkChange = (id, value) => {
     setUpdatePaymentData((prevData) =>
-      prevData.map((request, i) =>
-        i === index ? { ...request, accepted: !request.accepted } : request,
+      prevData.map((item) =>
+        item.id === id ? { ...item, remark: value } : item,
       ),
     );
   };
 
-  // Render update payment request rows
-  const renderRows = () =>
-    updatePaymentData.map((item, index) => (
-      <Table.Tr key={index}>
-        <Table.Td align="center" p={12}>
-          {item.student_id}
-        </Table.Td>
-        <Table.Td align="center" p={12}>
-          {item.transaction_no}
-        </Table.Td>
-        <Table.Td align="center" p={12}>
-          <a href={item.image_url} target="_blank" rel="noopener noreferrer">
-            View Image
-          </a>
-        </Table.Td>
-        <Table.Td align="center" p={12}>
-          {item.amount}
-        </Table.Td>
-        <Table.Td align="center" p={12}>
-          {item.payment_date}
-        </Table.Td>
-        <Table.Td align="center" p={12}>
-          {item.remark}
-        </Table.Td>
-        <Table.Td align="center" p={12}>
-          <Button
-            onClick={() => toggleAcceptance(index)}
-            variant={item.accepted ? "filled" : "outline"}
-            color={item.accepted ? "green" : "red"}
-            size="xs"
-          >
-            {item.accepted ? "Accepted" : "Rejected"}
-          </Button>
-        </Table.Td>
-      </Table.Tr>
-    ));
-
   return (
-    <Container size="lg" mt={30} miw="60rem">
-      <Paper shadow="md" radius="md" p="lg" withBorder>
+    <Container size="lg" mt={30} miw="75rem">
+      <Paper shadow="lg" radius="lg" p="xl" withBorder>
         <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
           Update Payment Requests
         </Title>
 
-        {/* Table */}
-        <Table striped highlightOnHover withColumnBorders>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>
-                <Flex align="center" justify="center" h="100%">
-                  Student ID
-                </Flex>
-              </Table.Th>
-              <Table.Th>
-                <Flex align="center" justify="center" h="100%">
-                  Transaction No
-                </Flex>
-              </Table.Th>
-              <Table.Th>
-                <Flex align="center" justify="center" h="100%">
-                  Image
-                </Flex>
-              </Table.Th>
-              <Table.Th>
-                <Flex align="center" justify="center" h="100%">
-                  Amount
-                </Flex>
-              </Table.Th>
-              <Table.Th>
-                <Flex align="center" justify="center" h="100%">
-                  Payment Date
-                </Flex>
-              </Table.Th>
-              <Table.Th>
-                <Flex align="center" justify="center" h="100%">
-                  Remark
-                </Flex>
-              </Table.Th>
-              <Table.Th>
-                <Flex align="center" justify="center" h="100%">
-                  Accept/Reject
-                </Flex>
-              </Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-
-          <Table.Tbody>{renderRows()}</Table.Tbody>
-        </Table>
+        {/* Error and Loading State */}
+        {loading ? (
+          <Flex justify="center" align="center" style={{ minHeight: "200px" }}>
+            <Loader size="xl" />
+          </Flex>
+        ) : error ? (
+          <Alert color="red" title="Error" mb="lg">
+            {error}
+          </Alert>
+        ) : (
+          <Table striped highlightOnHover withColumnBorders>
+            <Table.Thead>
+              <Table.Tr>
+                {tableHeaders.map((header, index) => (
+                  <Table.Th key={index}>{header}</Table.Th>
+                ))}
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {updatePaymentData.length > 0 ? (
+                updatePaymentData.map((item) => (
+                  <Table.Tr key={item.id}>
+                    <Table.Td>{item.student_id}</Table.Td>
+                    <Table.Td>{item.Txn_no}</Table.Td>
+                    <Table.Td>
+                      <a
+                        href={item.img}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <img
+                          src={item.img}
+                          alt="Payment"
+                          style={{ width: "50px", cursor: "pointer" }}
+                        />
+                      </a>
+                    </Table.Td>
+                    <Table.Td>{item.amount}</Table.Td>
+                    <Table.Td>{item.payment_date}</Table.Td>
+                    <Table.Td>
+                      <TextInput
+                        value={item.remark || ""}
+                        onChange={(e) =>
+                          handleRemarkChange(item.id, e.target.value)
+                        }
+                        placeholder="Enter remark"
+                        size="xs"
+                      />
+                    </Table.Td>
+                    <Table.Td>
+                      <Button
+                        color="green"
+                        size="xs"
+                        onClick={() => handleAccept(item.id)}
+                        style={{ marginRight: "8px" }}
+                      >
+                        Accept
+                      </Button>
+                      <Button
+                        color="red"
+                        size="xs"
+                        onClick={() => handleReject(item.id)}
+                      >
+                        Reject
+                      </Button>
+                    </Table.Td>
+                  </Table.Tr>
+                ))
+              ) : (
+                <Table.Tr>
+                  <Table.Td colSpan={7} style={{ textAlign: "center" }}>
+                    No payment requests available.
+                  </Table.Td>
+                </Table.Tr>
+              )}
+            </Table.Tbody>
+          </Table>
+        )}
       </Paper>
     </Container>
   );

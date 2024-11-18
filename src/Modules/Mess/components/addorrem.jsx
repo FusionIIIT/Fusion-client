@@ -23,10 +23,29 @@ function ManageMess() {
   const [excelFile, setExcelFile] = useState(null);
 
   return (
-    <Container size="md" style={{ marginTop: "30px" }}>
-      <Paper shadow="md" radius="md" p="xl" withBorder>
-        <Title order={3} align="center" mb="xl">
-          Manage Mess Registrations
+    <Container
+      size="lg"
+      style={{
+        width: "100%", // Ensure it takes full width but respects min width
+        display: "flex", // Use flexbox to center the content
+        justifyContent: "center", // Horizontally centers the content
+        marginTop: "25px",
+      }}
+    >
+      <Paper
+        shadow="md"
+        radius="md"
+        p="xl"
+        withBorder
+        style={{
+          minWidth: "75rem", // Set the minimum width to 75rem
+          width: "100%", // Ensure it is responsive
+          padding: "30px",
+          margin: "auto", // Center the Paper component
+        }}
+      >
+        <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
+          View Mess Registrations
         </Title>
 
         <Space h="md" />
@@ -49,7 +68,11 @@ function ManageMess() {
           </Group>
 
           {/* Buttons for Search, Add, Remove */}
-          <Group spacing="sm" mb="md">
+          <Group
+            spacing="sm"
+            mb="md"
+            position="center" // Center the buttons horizontally
+          >
             <Button
               leftIcon={<MagnifyingGlass size={18} />} // Search icon
               onClick={() => {
@@ -79,7 +102,11 @@ function ManageMess() {
           </Group>
 
           {/* Remove All Buttons */}
-          <Group spacing="sm" mb="md">
+          <Group
+            spacing="sm"
+            mb="md"
+            position="center" // Center the buttons horizontally
+          >
             <Button
               variant="outline"
               color="red"

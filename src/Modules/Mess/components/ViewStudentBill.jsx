@@ -149,216 +149,222 @@ function UpdateStudentBill() {
   };
 
   return (
-    <Container
-      size="lg"
+    <div
       style={{
-        maxWidth: "800px", // Limit maximum width
-        width: "750px", // Set fixed width
-        marginTop: "25px", // Top margin
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "100vh",
+        marginTop: "0px",
       }}
     >
-      <Paper
-        shadow="md"
-        radius="md"
-        p="xl"
-        withBorder
-        style={{ padding: "30px" }}
-      >
-        <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
-          Student Bill Management
-        </Title>
-
-        <form>
-          {/* Search section */}
-          <TextInput
-            label="Search by Roll Number"
-            placeholder="Enter Roll Number"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            radius="md"
-            size="md"
-            mb="lg"
-            icon={<MagnifyingGlass size={18} />}
-          />
-
-          <Space h="md" />
-
-          {/* Filter section */}
-          <Group grow mb="lg">
-            <Select
-              label="Filter by Status"
-              placeholder="Select Status"
-              value={statusFilter}
-              onChange={(value) => setStatusFilter(value)}
-              data={["Registered", "Deregistered", "All"]}
-              radius="md"
-              size="md"
-            />
-            <Select
-              label="Filter by Program"
-              placeholder="Select Program"
-              value={programFilter}
-              onChange={(value) => setProgramFilter(value)}
-              data={["B.Tech", "M.Tech", "All"]}
-              radius="md"
-              size="md"
-            />
-            <Select
-              label="Filter by Mess"
-              placeholder="Select Mess"
-              value={messFilter}
-              onChange={(value) => setMessFilter(value)}
-              data={["Mess 1", "Mess 2", "All"]}
-              radius="md"
-              size="md"
-            />
-          </Group>
-
-          <Button
-            fullWidth
-            size="md"
-            radius="md"
-            color="blue"
-            onClick={handleFilter}
-          >
-            Apply Filters
-          </Button>
-
-          <Space h="lg" />
-
-          {/* Students Table */}
-          <Table
-            striped
-            highlightOnHover
-            withBorder
-            style={{
-              border: "1px solid #e0e0e0", // Border for the table
-              borderRadius: "8px", // Rounded corners
-            }}
-          >
-            <thead style={{ backgroundColor: "#f7f7f7" }}>
-              <tr>
-                <th style={centeredCellStyle}>Name</th>
-                <th style={centeredCellStyle}>Roll No</th>
-                <th style={centeredCellStyle}>Program</th>
-                <th style={centeredCellStyle}>Status</th>
-                <th style={centeredCellStyle}>Balance</th>
-                <th style={centeredCellStyle}>Mess</th>
-                <th style={centeredCellStyle}>View Bill</th>
-                <th style={centeredCellStyle}>View Payments</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredStudents.map((student, index) => (
-                <tr
-                  key={student.id}
-                  style={{
-                    backgroundColor: index % 2 === 0 ? "#fafafa" : "white", // Alternate row shading
-                  }}
-                >
-                  <td style={centeredCellStyle}>
-                    {student.first_name} {student.last_name}
-                  </td>
-                  <td style={centeredCellStyle}>{student.student_id}</td>
-                  <td style={centeredCellStyle}>{student.programme}</td>
-                  <td style={centeredCellStyle}>{student.status}</td>
-                  <td style={centeredCellStyle}>{student.balance}</td>
-                  <td style={centeredCellStyle}>{student.mess_option}</td>
-                  <td style={centeredCellStyle}>
-                    <Button
-                      variant="outline"
-                      size="xs"
-                      radius="md"
-                      onClick={() => handleViewBill(student)}
-                      leftIcon={<Receipt size={16} />}
-                    >
-                      View Bills
-                    </Button>
-                  </td>
-                  <td style={centeredCellStyle}>
-                    <Button
-                      variant="outline"
-                      size="xs"
-                      radius="md"
-                      onClick={() => handleViewPayments(student)}
-                      leftIcon={<Money size={16} />}
-                    >
-                      View Payments
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        </form>
-      </Paper>
-
-      {/* Bill Modal */}
-      <Modal
-        opened={openedBillModal}
-        onClose={() => setOpenedBillModal(false)}
-        title={`Bills for ${selectedStudent?.first_name} ${selectedStudent?.last_name}`}
-        centered
+      <Container
         size="lg"
+        miw="75rem"
+        style={{
+          maxWidth: "1250px",
+          marginTop: "-180px", // Reduce the margin top of the container
+        }}
       >
-        <Paper shadow="sm" radius="md" withBorder p="md">
-          <Table striped highlightOnHover withBorder>
+        <Paper
+          shadow="md"
+          radius="md"
+          p="xl"
+          withBorder
+          style={{ padding: "30px" }}
+        >
+          <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
+            Student Bill Management
+          </Title>
+
+          <form>
+            {/* Search section */}
+            <TextInput
+              label="Search by Roll Number"
+              placeholder="Enter Roll Number"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              radius="md"
+              size="md"
+              mb="lg"
+              icon={<MagnifyingGlass size={18} />}
+            />
+
+            <Space h="md" />
+
+            {/* Filter section */}
+            <Group grow mb="lg">
+              <Select
+                label="Filter by Status"
+                placeholder="Select Status"
+                value={statusFilter}
+                onChange={(value) => setStatusFilter(value)}
+                data={["Registered", "Deregistered", "All"]}
+                radius="md"
+                size="md"
+              />
+              <Select
+                label="Filter by Program"
+                placeholder="Select Program"
+                value={programFilter}
+                onChange={(value) => setProgramFilter(value)}
+                data={["B.Tech", "M.Tech", "All"]}
+                radius="md"
+                size="md"
+              />
+              <Select
+                label="Filter by Mess"
+                placeholder="Select Mess"
+                value={messFilter}
+                onChange={(value) => setMessFilter(value)}
+                data={["Mess 1", "Mess 2", "All"]}
+                radius="md"
+                size="md"
+              />
+            </Group>
+
+            <Button
+              fullWidth
+              size="md"
+              radius="md"
+              color="blue"
+              onClick={handleFilter}
+            >
+              Apply Filters
+            </Button>
+
+            <Space h="lg" />
+
+            {/* Students Table */}
+            <Table
+              striped
+              highlightOnHover
+              withBorder
+              style={{
+                border: "1px solid #e0e0e0", // Border for the table
+                borderRadius: "8px", // Rounded corners
+              }}
+            >
+              <thead style={{ backgroundColor: "#f7f7f7" }}>
+                <tr>
+                  <th style={centeredCellStyle}>Name</th>
+                  <th style={centeredCellStyle}>Roll No</th>
+                  <th style={centeredCellStyle}>Program</th>
+                  <th style={centeredCellStyle}>Status</th>
+                  <th style={centeredCellStyle}>Balance</th>
+                  <th style={centeredCellStyle}>Mess</th>
+                  <th style={centeredCellStyle}>View Bill</th>
+                  <th style={centeredCellStyle}>View Payments</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredStudents.map((student, index) => (
+                  <tr
+                    key={student.id}
+                    style={{
+                      backgroundColor: index % 2 === 0 ? "#fafafa" : "white",
+                    }}
+                  >
+                    <td style={centeredCellStyle}>
+                      {student.first_name} {student.last_name}
+                    </td>
+                    <td style={centeredCellStyle}>{student.student_id}</td>
+                    <td style={centeredCellStyle}>{student.programme}</td>
+                    <td style={centeredCellStyle}>{student.status}</td>
+                    <td style={centeredCellStyle}>{student.balance}</td>
+                    <td style={centeredCellStyle}>{student.mess_option}</td>
+                    <td style={centeredCellStyle}>
+                      <Button
+                        variant="outline"
+                        size="xs"
+                        radius="md"
+                        onClick={() => handleViewBill(student)}
+                        leftIcon={<Receipt size={16} />}
+                      >
+                        View Bills
+                      </Button>
+                    </td>
+                    <td style={centeredCellStyle}>
+                      <Button
+                        variant="outline"
+                        size="xs"
+                        radius="md"
+                        onClick={() => handleViewPayments(student)}
+                        leftIcon={<Money size={16} />}
+                      >
+                        View Payments
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </form>
+        </Paper>
+
+        {/* Bill Modal */}
+        <Modal
+          opened={openedBillModal}
+          onClose={() => setOpenedBillModal(false)}
+          title={`Bills for ${selectedStudent?.first_name} ${selectedStudent?.last_name}`}
+          centered
+          size="lg"
+        >
+          <Table striped highlightOnHover>
             <thead>
               <tr>
-                <th style={centeredCellStyle}>Month</th>
-                <th style={centeredCellStyle}>Year</th>
-                <th style={centeredCellStyle}>Monthly Base Amount</th>
-                <th style={centeredCellStyle}>Rebate Count</th>
-                <th style={centeredCellStyle}>Rebate Amount</th>
-                <th style={centeredCellStyle}>Your Amount</th>
+                <th>Month</th>
+                <th>Year</th>
+                <th>Base Amount</th>
+                <th>Rebate Count</th>
+                <th>Rebate Amount</th>
+                <th>Your Amount</th>
               </tr>
             </thead>
             <tbody>
-              {billsData.map((bill) => (
-                <tr key={bill.month}>
-                  <td style={centeredCellStyle}>{bill.month}</td>
-                  <td style={centeredCellStyle}>{bill.year}</td>
-                  <td style={centeredCellStyle}>{bill.baseAmount}</td>
-                  <td style={centeredCellStyle}>{bill.rebateCount}</td>
-                  <td style={centeredCellStyle}>{bill.rebateAmount}</td>
-                  <td style={centeredCellStyle}>{bill.yourAmount}</td>
+              {billsData.map((bill, index) => (
+                <tr key={index}>
+                  <td>{bill.month}</td>
+                  <td>{bill.year}</td>
+                  <td>{bill.baseAmount}</td>
+                  <td>{bill.rebateCount}</td>
+                  <td>{bill.rebateAmount}</td>
+                  <td>{bill.yourAmount}</td>
                 </tr>
               ))}
             </tbody>
           </Table>
-        </Paper>
-      </Modal>
+        </Modal>
 
-      {/* Payment Modal */}
-      <Modal
-        opened={openedPaymentModal}
-        onClose={() => setOpenedPaymentModal(false)}
-        title={`Payments for ${selectedStudent?.first_name} ${selectedStudent?.last_name}`}
-        centered
-        size="lg"
-      >
-        <Paper shadow="sm" radius="md" withBorder p="md">
-          <Table striped highlightOnHover withBorder>
+        {/* Payment Modal */}
+        <Modal
+          opened={openedPaymentModal}
+          onClose={() => setOpenedPaymentModal(false)}
+          title={`Payments for ${selectedStudent?.first_name} ${selectedStudent?.last_name}`}
+          centered
+          size="lg"
+        >
+          <Table striped highlightOnHover>
             <thead>
               <tr>
-                <th style={centeredCellStyle}>Month</th>
-                <th style={centeredCellStyle}>Year</th>
-                <th style={centeredCellStyle}>Amount Paid</th>
+                <th>Month</th>
+                <th>Year</th>
+                <th>Amount Paid</th>
               </tr>
             </thead>
             <tbody>
-              {paymentData.map((payment) => (
-                <tr key={payment.month}>
-                  <td style={centeredCellStyle}>{payment.month}</td>
-                  <td style={centeredCellStyle}>{payment.year}</td>
-                  <td style={centeredCellStyle}>{payment.amountPaid}</td>
+              {paymentData.map((payment, index) => (
+                <tr key={index}>
+                  <td>{payment.month}</td>
+                  <td>{payment.year}</td>
+                  <td>{payment.amountPaid}</td>
                 </tr>
               ))}
             </tbody>
           </Table>
-        </Paper>
-      </Modal>
-    </Container>
+        </Modal>
+      </Container>
+    </div>
   );
 }
 

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Divider, TextInput, Table, Group, Text } from "@mantine/core";
+import { Divider, TextInput, Table, Title } from "@mantine/core";
 import classes from "../styles/messModule.module.css";
 
 function UpdateMenu() {
@@ -41,10 +41,7 @@ function UpdateMenu() {
     },
   };
 
-  const [menu1, setMenu1] = useState({
-    ...initialMenu,
-    Monday: { breakfast: "", lunch: "", dinner: "" },
-  });
+  const [menu1, setMenu1] = useState(initialMenu);
   const [menu2, setMenu2] = useState(initialMenu);
   const [activeMess, setActiveMess] = useState("Mess 1");
 
@@ -67,59 +64,49 @@ function UpdateMenu() {
     console.log("Updated Menu:", activeMess === "Mess 1" ? menu1 : menu2);
   };
 
-  // Common styles for table cells
-  const commonCellStyles = {
-    padding: "8px",
-    textAlign: "center",
-    border: "1px solid #ddd",
-  };
-
-  // Styles for header cells
-  const headerCellStyles = {
-    ...commonCellStyles,
-    backgroundColor: "#f9f9f9",
-  };
+  const buttonStyle = (isActive) => ({
+    backgroundColor: isActive ? "#6c757d" : "#007bff", // Gray if active, blue otherwise
+    color: "#fff",
+    padding: "10px 20px",
+    fontSize: "1rem",
+    border: "none",
+    borderRadius: "4px",
+    cursor: "pointer",
+    margin: "10px",
+  });
 
   return (
     <div
       className={classes.fusionText}
-      style={{ padding: "20px", textAlign: "center" }}
+      style={{ padding: "40px 20px", textAlign: "center" }}
     >
-      {/* Mess 1 and Mess 2 Heading */}
-      <Group position="center" mb="xl">
-        <Text
+      {/* Title */}
+      <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
+        Update Mess Menu
+      </Title>
+
+      {/* Mess Selection */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          gap: "20px",
+          marginBottom: "20px",
+        }}
+      >
+        <button
           onClick={() => setActiveMess("Mess 1")}
-          style={{
-            fontWeight: activeMess === "Mess 1" ? "bold" : "normal",
-            color: activeMess === "Mess 1" ? "#15abff" : "#aaa",
-            cursor: "pointer",
-            backgroundColor:
-              activeMess === "Mess 1" ? "#15abff13" : "transparent",
-            borderRadius: "2px",
-            borderBottom:
-              activeMess === "Mess 1" ? "2px solid #15abff" : "none",
-            padding: "5px",
-          }}
+          style={buttonStyle(activeMess === "Mess 1")}
         >
           Mess-1
-        </Text>
-        <Text
+        </button>
+        <button
           onClick={() => setActiveMess("Mess 2")}
-          style={{
-            fontWeight: activeMess === "Mess 2" ? "bold" : "normal",
-            color: activeMess === "Mess 2" ? "#15abff" : "#aaa",
-            cursor: "pointer",
-            backgroundColor:
-              activeMess === "Mess 2" ? "#15abff13" : "transparent",
-            borderRadius: "2px",
-            borderBottom:
-              activeMess === "Mess 2" ? "2px solid #15abff" : "none",
-            padding: "5px",
-          }}
+          style={buttonStyle(activeMess === "Mess 2")}
         >
           Mess-2
-        </Text>
-      </Group>
+        </button>
+      </div>
 
       <Divider my="sm" />
 
@@ -127,21 +114,21 @@ function UpdateMenu() {
         <Table
           striped
           highlightOnHover
-          style={{ width: "100%", margin: "20px auto" }}
+          style={{ width: "80%", margin: "20px auto" }}
         >
           <thead>
             <tr>
-              <th style={headerCellStyles}>Day</th>
-              <th style={headerCellStyles}>Breakfast</th>
-              <th style={headerCellStyles}>Lunch</th>
-              <th style={headerCellStyles}>Dinner</th>
+              <th>Day</th>
+              <th>Breakfast</th>
+              <th>Lunch</th>
+              <th>Dinner</th>
             </tr>
           </thead>
           <tbody>
             {Object.keys(activeMess === "Mess 1" ? menu1 : menu2).map((day) => (
               <tr key={day}>
-                <td style={commonCellStyles}>{day}</td>
-                <td style={commonCellStyles}>
+                <td>{day}</td>
+                <td>
                   <TextInput
                     value={
                       activeMess === "Mess 1"
@@ -151,16 +138,9 @@ function UpdateMenu() {
                     onChange={(e) =>
                       handleChange(day, "breakfast", e.target.value)
                     }
-                    placeholder="Breakfast"
-                    style={{
-                      width: "100%",
-                      padding: "5px",
-                      backgroundColor: "#f0f4ff",
-                      fontSize: "0.9rem",
-                    }}
                   />
                 </td>
-                <td style={commonCellStyles}>
+                <td>
                   <TextInput
                     value={
                       activeMess === "Mess 1"
@@ -168,16 +148,9 @@ function UpdateMenu() {
                         : menu2[day].lunch
                     }
                     onChange={(e) => handleChange(day, "lunch", e.target.value)}
-                    placeholder="Lunch"
-                    style={{
-                      width: "100%",
-                      padding: "5px",
-                      backgroundColor: "#f0f4ff",
-                      fontSize: "0.9rem",
-                    }}
                   />
                 </td>
-                <td style={commonCellStyles}>
+                <td>
                   <TextInput
                     value={
                       activeMess === "Mess 1"
@@ -187,33 +160,19 @@ function UpdateMenu() {
                     onChange={(e) =>
                       handleChange(day, "dinner", e.target.value)
                     }
-                    placeholder="Dinner"
-                    style={{
-                      width: "100%",
-                      padding: "5px",
-                      backgroundColor: "#f0f4ff",
-                      fontSize: "0.9rem",
-                    }}
                   />
                 </td>
               </tr>
             ))}
           </tbody>
         </Table>
-        <Button
-          type="submit"
-          style={{
-            marginTop: "20px",
-            backgroundColor: "#15abff",
-            color: "white",
-            padding: "10px 20px",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          Save
-        </Button>
+
+        {/* Submit Button */}
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <button type="submit" style={buttonStyle(false)}>
+            Save Menu
+          </button>
+        </div>
       </form>
     </div>
   );

@@ -92,8 +92,9 @@ function ViewRegistrations() {
     <Container
       size="lg"
       style={{
-        maxWidth: "800px",
-        width: "800px",
+        width: "100%",
+        display: "flex",
+        justifyContent: "center",
         marginTop: "25px",
       }}
     >
@@ -102,7 +103,12 @@ function ViewRegistrations() {
         radius="md"
         p="xl"
         withBorder
-        style={{ padding: "30px" }}
+        style={{
+          minWidth: "75rem", // Set the minimum width to 75rem
+          width: "100%", // Ensure it is responsive
+          padding: "30px",
+          margin: "auto", // Center the Paper component
+        }}
       >
         <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
           View Mess Registrations

@@ -6,17 +6,65 @@ import {
   Container,
   Title,
   Paper,
-  Space,
   FileInput,
-} from "@mantine/core"; // Import Mantine components
+} from "@mantine/core";
 import { DateInput } from "@mantine/dates";
-import { User } from "@phosphor-icons/react"; // Import Phosphor Icons
-import "@mantine/dates/styles.css"; // Import Mantine DateInput styles
-import "dayjs/locale/en"; // Day.js for locale support
+import axios from "axios";
 
 function Registration() {
-  const [file, setFile] = useState(null); // State for image upload
-  const [paymentDate, setPaymentDate] = useState(null); // State for payment date
+  const [txnNo, setTxnNo] = useState("");
+  const [amount, setAmount] = useState(0);
+  const [file, setFile] = useState(null);
+  const [paymentDate, setPaymentDate] = useState(null);
+  const [startDate, setStartDate] = useState(null);
+  const [studentId, setStudentId] = useState("");
+  const [error, setError] = useState(null);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      setError("Authentication token not found.");
+      return;
+    }
+
+    // Format the dates to YYYY-MM-DD format for submission
+    const formattedPaymentDate = paymentDate
+      ? paymentDate.toISOString().split("T")[0]
+      : "";
+    const formattedStartDate = startDate
+      ? startDate.toISOString().split("T")[0]
+      : "";
+
+    const formData = new FormData();
+    formData.append("Txn_no", txnNo);
+    formData.append("amount", amount);
+    formData.append("img", file);
+    formData.append("payment_date", formattedPaymentDate);
+    formData.append("start_date", formattedStartDate);
+    formData.append("student_id", studentId);
+
+    try {
+      const response = await axios.post(
+        "http://127.0.0.1:8000/mess/api/registrationRequestApi",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+
+      if (response.status === 200) {
+        console.log("Form submitted successfully", response.data);
+      }
+    } catch (errors) {
+      setError("Error submitting the form. Please try again.");
+      console.error("Error:", errors.response?.data || errors.message);
+    }
+  };
 
   return (
     <Container
@@ -38,36 +86,34 @@ function Registration() {
           Registration Form
         </Title>
 
-        <form method="post" action="/path/to/your/registration/endpoint">
-          {/* Transaction Number input */}
+        {error && <p style={{ color: "red" }}>{error}</p>}
+
+        <form onSubmit={handleSubmit}>
           <TextInput
             label="Transaction No."
             placeholder="Transaction No."
-            id="TxnNo"
+            value={txnNo}
+            onChange={(e) => setTxnNo(e.target.value)}
             required
             radius="md"
             size="md"
-            icon={<User size={20} />}
-            labelProps={{ style: { marginBottom: "10px" } }}
             mt="xl"
             mb="md"
           />
 
-          {/* Amount input */}
           <NumberInput
             label="Amount"
             placeholder="Balance Amount"
-            id="amount"
+            value={amount}
+            onChange={setAmount}
             required
             radius="md"
             size="md"
-            labelProps={{ style: { marginBottom: "10px" } }}
             min={0}
             step={100}
             mb="lg"
           />
 
-          {/* Image input */}
           <FileInput
             label="Image"
             placeholder="Choose file"
@@ -76,74 +122,49 @@ function Registration() {
             accept="image/*"
             required
             size="md"
-            labelProps={{ style: { marginBottom: "10px" } }}
             mb="lg"
           />
 
-          {/* Payment Date select */}
           <DateInput
             label="Payment Date"
-            placeholder="MM/DD/YYYY"
+            placeholder="Select date"
             value={paymentDate}
             onChange={setPaymentDate}
             required
             radius="md"
             size="md"
             mb="lg"
-            labelProps={{ style: { marginBottom: "10px" } }}
-            styles={(theme) => ({
-              dropdown: {
-                backgroundColor: theme.colors.gray[0],
-                boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
-              },
-              day: {
-                "&[data-selected]": {
-                  backgroundColor: theme.colors.blue[6],
-                },
-                "&[data-today]": {
-                  backgroundColor: theme.colors.gray[2],
-                  fontWeight: "bold",
-                },
-              },
-            })}
+            valueFormat="MMMM D, YYYY" // Display format
           />
 
           <DateInput
             label="Start Date"
-            placeholder="MM/DD/YYYY"
-            value={paymentDate}
-            onChange={setPaymentDate}
+            placeholder="Select date"
+            value={startDate}
+            onChange={setStartDate}
             required
             radius="md"
             size="md"
             mb="lg"
-            labelProps={{ style: { marginBottom: "10px" } }}
-            styles={(theme) => ({
-              dropdown: {
-                backgroundColor: theme.colors.gray[0],
-                boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
-              },
-              day: {
-                "&[data-selected]": {
-                  backgroundColor: theme.colors.blue[6],
-                },
-                "&[data-today]": {
-                  backgroundColor: theme.colors.gray[2],
-                  fontWeight: "bold",
-                },
-              },
-            })}
+            valueFormat="MMMM D, YYYY" // Display format
           />
 
-          <Space h="xl" />
+          <TextInput
+            label="Student ID"
+            placeholder="Student ID"
+            value={studentId}
+            onChange={(e) => setStudentId(e.target.value)}
+            required
+            radius="md"
+            size="md"
+            mb="lg"
+          />
 
-          {/* Submit button */}
-          <Button fullWidth size="md" radius="md" color="blue">
+          <Button fullWidth size="md" radius="md" color="blue" type="submit">
             Submit
           </Button>
         </form>
       </Paper>
-      <Space h="xl" />
     </Container>
   );
 }

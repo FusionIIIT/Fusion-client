@@ -1,33 +1,15 @@
-import React, { useState } from "react";
-import { Table, Container, Paper, Title, Button, Flex } from "@mantine/core";
-
-// Initial registration request data
-const initialRegistrationRequests = [
-  {
-    student_id: "22bcs145",
-    transaction_no: "TXN0012345",
-    image_url:
-      "https://img.freepik.com/free-vector/realistic-receipt-template_23-2147938550.jpg?size=338&ext=jpg&ga=GA1.1.2113030492.1728950400&semt=ais_hybrid",
-    amount: 15000,
-    start_date: "2024-10-01",
-    payment_date: "2024-10-03",
-    remark: "Paid in full",
-    mess: "Mess 1",
-    accepted: false,
-  },
-  {
-    student_id: "21bec013",
-    transaction_no: "TXN0016789",
-    image_url:
-      "https://img.freepik.com/free-vector/realistic-receipt-template_23-2147938550.jpg?size=338&ext=jpg&ga=GA1.1.2113030492.1728950400&semt=ais_hybrid",
-    amount: 3500,
-    start_date: "2024-10-05",
-    payment_date: "2024-10-07",
-    remark: "Pending approval",
-    mess: "Mess 2",
-    accepted: true,
-  },
-];
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import {
+  Table,
+  Container,
+  Paper,
+  Title,
+  Button,
+  Flex,
+  Loader,
+  Alert,
+} from "@mantine/core";
 
 const tableHeaders = [
   "Student ID",
@@ -37,95 +19,145 @@ const tableHeaders = [
   "Start Date",
   "Payment Date",
   "Remark",
-  "Mess",
+  "Status",
   "Accept/Reject",
 ];
 
-// Main component
-function ViewRegistrationRequests() {
-  const [registrationData, setRegistrationData] = useState(
-    initialRegistrationRequests,
-  );
+function ViewRegistration() {
+  const [registrationData, setRegistrationData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Function to toggle acceptance status
-  const toggleAcceptance = (index) => {
-    setRegistrationData((prevData) =>
-      prevData.map((request, i) =>
-        i === index ? { ...request, accepted: !request.accepted } : request,
-      ),
-    );
+  // Fetch registration data from API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+          setError("Authentication token not found.");
+          return;
+        }
+
+        const response = await axios.get(
+          "http://127.0.0.1:8000/mess/api/registrationRequestApi", // Replace with the correct API endpoint
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+          },
+        );
+
+        console.log("API Response Data:", response.data); // Debugging log to check data
+
+        if (response.data && response.data.payload) {
+          setRegistrationData(response.data.payload); // Store registration data
+        } else {
+          setError("No registration data found.");
+        }
+      } catch (errors) {
+        setError("Error fetching registration data.");
+        console.error("Error fetching registration data:", errors);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Handle Accept Action
+  const handleAccept = (id) => {
+    console.log("Accepting registration:", id);
+    // Implement API call for accepting registration here
   };
 
-  const renderHeader = (titles) => {
-    return titles.map((title, index) => (
-      <Table.Th key={index}>
-        <Flex align="center" justify="center" h="100%">
-          {title}
-        </Flex>
-      </Table.Th>
-    ));
+  // Handle Reject Action
+  const handleReject = (id) => {
+    console.log("Rejecting registration:", id);
+    // Implement API call for rejecting registration here
   };
-
-  // Render registration request rows
-  const renderRows = () =>
-    registrationData.map((item, index) => (
-      <Table.Tr key={index} h={50}>
-        <Table.Td align="center" p={12}>
-          {item.student_id}
-        </Table.Td>
-        <Table.Td align="center" p={12}>
-          {item.transaction_no}
-        </Table.Td>
-        <Table.Td align="center" p={12}>
-          <a href={item.image_url} target="_blank" rel="noopener noreferrer">
-            View Image
-          </a>
-        </Table.Td>
-        <Table.Td align="center" p={12}>
-          {item.amount}
-        </Table.Td>
-        <Table.Td align="center" p={12}>
-          {item.start_date}
-        </Table.Td>
-        <Table.Td align="center" p={12}>
-          {item.payment_date}
-        </Table.Td>
-        <Table.Td align="center" p={12}>
-          {item.remark}
-        </Table.Td>
-        <Table.Td align="center" p={12}>
-          {item.mess}
-        </Table.Td>
-        <Table.Td align="center" p={12}>
-          <Button
-            onClick={() => toggleAcceptance(index)}
-            variant={item.accepted ? "filled" : "outline"}
-            color={item.accepted ? "green" : "red"}
-            size="xs"
-          >
-            {item.accepted ? "Accepted" : "Rejected"}
-          </Button>
-        </Table.Td>
-      </Table.Tr>
-    ));
 
   return (
-    <Container size="lg" mt={30} miw="70rem">
-      <Paper shadow="md" radius="md" p="lg" withBorder>
-        <Title order={2} align="center" mb="lg" c="#1c7ed6">
+    <Container size="lg" mt={30} miw="75rem">
+      <Paper shadow="lg" radius="lg" p="xl" withBorder>
+        <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
           Registration Requests
         </Title>
 
-        {/* Table */}
-        <Table striped highlightOnHover withColumnBorders>
-          <Table.Thead>
-            <Table.Tr>{renderHeader(tableHeaders)}</Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>{renderRows()}</Table.Tbody>
-        </Table>
+        {/* Error and Loading State */}
+        {loading ? (
+          <Flex justify="center" align="center" style={{ minHeight: "200px" }}>
+            <Loader size="xl" />
+          </Flex>
+        ) : error ? (
+          <Alert color="red" title="Error" mb="lg">
+            {error}
+          </Alert>
+        ) : (
+          <Table striped highlightOnHover withColumnBorders>
+            <Table.Thead>
+              <Table.Tr>
+                {tableHeaders.map((header, index) => (
+                  <Table.Th key={index}>{header}</Table.Th>
+                ))}
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {registrationData.length > 0 ? (
+                registrationData.map((item) => (
+                  <Table.Tr key={item.id}>
+                    <Table.Td>{item.student_id}</Table.Td>
+                    <Table.Td>{item.Txn_no}</Table.Td>
+                    <Table.Td>
+                      <a
+                        href={item.img}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <img
+                          src={item.img}
+                          alt="Student"
+                          style={{ width: "50px", cursor: "pointer" }}
+                        />
+                      </a>
+                    </Table.Td>
+                    <Table.Td>{item.amount}</Table.Td>
+                    <Table.Td>{item.start_date}</Table.Td>
+                    <Table.Td>{item.payment_date}</Table.Td>
+                    <Table.Td>{item.registration_remark}</Table.Td>
+                    <Table.Td>{item.status || "N/A"}</Table.Td>
+                    <Table.Td>
+                      <Button
+                        color="green"
+                        size="xs"
+                        onClick={() => handleAccept(item.id)}
+                        style={{ marginRight: "8px" }} // Add right margin to the Accept button
+                      >
+                        Accept
+                      </Button>
+                      <Button
+                        color="red"
+                        size="xs"
+                        onClick={() => handleReject(item.id)}
+                      >
+                        Reject
+                      </Button>
+                    </Table.Td>
+                  </Table.Tr>
+                ))
+              ) : (
+                <Table.Tr>
+                  <Table.Td colSpan={9} style={{ textAlign: "center" }}>
+                    No registration data available.
+                  </Table.Td>
+                </Table.Tr>
+              )}
+            </Table.Tbody>
+          </Table>
+        )}
       </Paper>
     </Container>
   );
 }
 
-export default ViewRegistrationRequests;
+export default ViewRegistration;

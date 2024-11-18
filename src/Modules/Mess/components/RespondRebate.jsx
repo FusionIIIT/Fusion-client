@@ -174,7 +174,7 @@ function RespondToRebateRequest() {
     ));
 
   return (
-    <Container size="lg" mt={30} miw="70rem">
+    <Container size="lg" mt={30} miw="75rem">
       <Paper shadow="md" radius="md" p="lg" withBorder>
         <Title order={2} align="center" mb="lg" c="#1c7ed6">
           Respond to Rebate Request

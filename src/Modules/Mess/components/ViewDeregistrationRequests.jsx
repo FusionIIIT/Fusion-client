@@ -1,37 +1,51 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Table, Container, Paper, Title, Button, Flex } from "@mantine/core";
+import axios from "axios";
 
-const initialDeregistrationRequests = [
-  {
-    student_id: "22bcs123",
-    end_date: "2024-12-01",
-    remark: "Graduating",
-    accepted: false,
-  },
-  {
-    student_id: "21bec083",
-    end_date: "2024-11-15",
-    remark: "Personal reasons",
-    accepted: true,
-  },
-];
-
-// Main component
 function ViewDeregistrationRequests() {
-  const [deregistrationData, setDeregistrationData] = useState(
-    initialDeregistrationRequests,
-  );
+  const [deregistrationData, setDeregistrationData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Function to toggle acceptance status
-  const toggleAcceptance = (index) => {
+  const fetchDeregistrationRequests = async () => {
+    try {
+      const response = await axios.get(
+        "http://127.0.0.1:8000/mess/api/deRegistrationRequestApi",
+        {
+          headers: {
+            Authorization: `Token ${localStorage.getItem("authToken")}`,
+          },
+        },
+      );
+      console.log(response.data.payload); // Log to check the structure
+      setDeregistrationData(response.data.payload); // Accessing the payload
+    } catch (err) {
+      setError("Error fetching data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDeregistrationRequests();
+  }, []);
+
+  const handleAccept = (index) => {
     setDeregistrationData((prevData) =>
       prevData.map((request, i) =>
-        i === index ? { ...request, accepted: !request.accepted } : request,
+        i === index ? { ...request, accepted: true } : request,
       ),
     );
   };
 
-  // Render deregistration request rows
+  const handleReject = (index) => {
+    setDeregistrationData((prevData) =>
+      prevData.map((request, i) =>
+        i === index ? { ...request, accepted: false } : request,
+      ),
+    );
+  };
+
   const renderRows = () =>
     deregistrationData.map((item, index) => (
       <Table.Tr key={index}>
@@ -39,43 +53,53 @@ function ViewDeregistrationRequests() {
           {item.student_id}
         </Table.Td>
         <Table.Td align="center" p={12}>
-          {item.end_date}
-        </Table.Td>
-        <Table.Td align="center" p={12}>
-          {item.remark}
+          {item.deregistration_remark} {/* Fixed typo here */}
         </Table.Td>
         <Table.Td align="center" p={12}>
           <Button
-            onClick={() => toggleAcceptance(index)}
-            variant={item.accepted ? "filled" : "outline"}
-            color={item.accepted ? "green" : "red"}
+            onClick={() => handleAccept(index)}
+            variant="filled"
+            color="green"
             size="xs"
+            disabled={item.accepted === false} // Disable if already rejected
+            style={{ marginRight: "8px" }}
           >
-            {item.accepted ? "Accepted" : "Rejected"}
+            Accept
+          </Button>
+          <Button
+            onClick={() => handleReject(index)}
+            variant="filled"
+            color="red"
+            size="xs"
+            disabled={item.accepted === true} // Disable if already accepted
+          >
+            Reject
           </Button>
         </Table.Td>
       </Table.Tr>
     ));
 
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>{error}</div>;
+  }
+
   return (
-    <Container size="lg" mt={30} miw="40rem">
+    <Container size="lg" mt={30} miw="75rem">
       <Paper shadow="md" radius="md" p="lg" withBorder>
         <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
           Deregistration Requests
         </Title>
 
-        {/* Table */}
         <Table striped highlightOnHover withColumnBorders>
           <Table.Thead>
             <Table.Tr>
               <Table.Th>
                 <Flex align="center" justify="center" h="100%">
                   Student ID
-                </Flex>
-              </Table.Th>
-              <Table.Th>
-                <Flex align="center" justify="center" h="100%">
-                  End Date
                 </Flex>
               </Table.Th>
               <Table.Th>
