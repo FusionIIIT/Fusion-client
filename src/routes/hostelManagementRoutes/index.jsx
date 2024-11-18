@@ -25,3 +25,5 @@ export const update_fine_status_url = (fine_id) =>
 
 export const show_guestroom_booking_request = `${host}/hostelmanagement/fetching_guest_room_request/`;
 export const update_guest_room = `${host}/hostelmanagement/update_guest_room/`;
+export const get_intender_id = `${host}/hostelmanagement/get_intender_id/`;
+export const get_guestroom_bookings_for_students = `${host}/hostelmanagement/get_guest_room_request_students/`;

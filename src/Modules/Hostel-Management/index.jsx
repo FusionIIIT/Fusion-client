@@ -1,7 +1,7 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import CustomBreadcrumbs from "../../components/Breadcrumbs";
-// import SectionNavigationStudent from "./pages/SectionNavigationStudent";
+import SectionNavigationStudent from "./pages/SectionNavigationStudent";
 import SectionNavigationAdmin from "./pages/SectionNavigationAdmin";
 import SectionNavigationWarden from "./pages/SectionNavigationWarden";
 import SectionNavigationCaretaker from "./pages/SectionNavigationCaretaker";
@@ -22,7 +22,7 @@ function HostelPage() {
     // Role-based navigation
     switch (userRole.toLowerCase()) {
       case "student":
-        return <SectionNavigationCaretaker />;
+        return <SectionNavigationStudent />;
       case "hostel_admin":
         return <SectionNavigationAdmin />;
       default:
