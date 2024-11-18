@@ -1,31 +1,23 @@
-import { Button, Container, Flex, Loader, Tabs, Text } from "@mantine/core";
+import {
+  Button,
+  Container,
+  Flex,
+  Grid,
+  Loader,
+  Tabs,
+  Text,
+} from "@mantine/core";
 import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
 import { useRef, useState } from "react";
-import CustomBreadcrumbs from "../../../components/Breadcrumbs.jsx";
 import classes from "../styles/messModule.module.css";
-import UpdatePayments from "./UpdatePayments.jsx";
-import Registration from "./registration.jsx";
-import Deregistration from "./deregistration.jsx";
-import ViewMenu from "./ViewMenu.jsx";
-import StudentFeedback from "./StudentFeedback.jsx";
-import Applications from "./Applications.jsx";
-import ViewBillandPayments from "./ViewBillAndPayments.jsx";
+import ViewBill from "./ViewBill";
+import PaymentHistory from "./PaymentHistory";
 
-//   import ComplaintForm from "./components/ComplaintForm.jsx";
-
-function Student() {
+function ViewBillAndPayments() {
   const [activeTab, setActiveTab] = useState("0");
   const tabsListRef = useRef(null);
 
-  const tabItems = [
-    { title: "View Menu" },
-    { title: "View Bill and Payments" },
-    { title: "Registration" },
-    { title: "Feedback" },
-    { title: "Applications" },
-    { title: "Update Payment" },
-    { title: "Deregistration" },
-  ];
+  const tabItems = [{ title: "View Bill" }, { title: "Payment History" }];
 
   const handleTabChange = (direction) => {
     const newIndex =
@@ -34,7 +26,7 @@ function Student() {
         : Math.max(+activeTab - 1, 0);
     setActiveTab(String(newIndex));
     tabsListRef.current.scrollBy({
-      left: direction === "next" ? 50 : -50,
+      left: direction === "next" ? 100 : -100,
       behavior: "smooth",
     });
   };
@@ -43,19 +35,9 @@ function Student() {
   const renderTabContent = () => {
     switch (activeTab) {
       case "0":
-        return <ViewMenu />;
+        return <ViewBill />;
       case "1":
-        return <ViewBillandPayments />;
-      case "2":
-        return <Registration />;
-      case "3":
-        return <StudentFeedback />;
-      case "4":
-        return <Applications />;
-      case "5":
-        return <UpdatePayments />;
-      case "6":
-        return <Deregistration />;
+        return <PaymentHistory />;
       default:
         return <Loader />;
     }
@@ -63,16 +45,14 @@ function Student() {
 
   return (
     <>
-      {/* Navbar contents */}
-      <CustomBreadcrumbs />
-      <Flex justify="space-between" align="center" mt="lg">
-        <Flex justify="flex-start" align="center" gap="1rem" mt="1.5rem">
+      {/* Tab navigation */}
+      <Flex justify="center" align="center" mt="5">
+        <Flex justify="space-between" align="center" gap="1rem" mt="1.5rem">
           <Button
             onClick={() => handleTabChange("prev")}
             variant="default"
             p={0}
-            bd={0}
-            bg="transparent"
+            style={{ border: "none" }}
           >
             <CaretCircleLeft
               className={classes.fusionCaretCircleIcon}
@@ -80,9 +60,18 @@ function Student() {
             />
           </Button>
 
-          <div className={classes.fusionTabsContainer} ref={tabsListRef}>
+          {/* Tabs container with scrolling */}
+          <div
+            style={{
+              display: "flex",
+              overflowX: "auto",
+              whiteSpace: "nowrap",
+              maxWidth: "1000px",
+            }}
+            ref={tabsListRef}
+          >
             <Tabs value={activeTab} onChange={setActiveTab}>
-              <Tabs.List style={{ display: "flex", flexWrap: "nowrap" }}>
+              <Tabs.List>
                 {tabItems.map((item, index) => (
                   <Tabs.Tab
                     value={`${index}`}
@@ -106,8 +95,7 @@ function Student() {
             onClick={() => handleTabChange("next")}
             variant="default"
             p={0}
-            bd={0}
-            bg="transparent"
+            style={{ border: "none" }}
           >
             <CaretCircleRight
               className={classes.fusionCaretCircleIcon}
@@ -118,9 +106,13 @@ function Student() {
       </Flex>
 
       {/* Main content */}
-      <Container fluid>{renderTabContent()}</Container>
+      <Grid>
+        <Container fluid style={{ maxWidth: "1000px", margin: "0 auto" }}>
+          {renderTabContent()}
+        </Container>
+      </Grid>
     </>
   );
 }
 
-export default Student;
+export default ViewBillAndPayments;
