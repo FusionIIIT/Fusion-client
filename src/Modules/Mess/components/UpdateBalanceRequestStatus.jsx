@@ -1,35 +1,52 @@
-import React from "react";
-import { Table, Container, Paper, Title, Flex, Box } from "@mantine/core";
+import React, { useState, useEffect } from "react";
+import {
+  Container,
+  Paper,
+  Title,
+  Space,
+  Box,
+  Table,
+  Flex,
+} from "@mantine/core";
+import axios from "axios";
+import { host } from "../../../routes/globalRoutes";
+import { fetchUpdateBalanceRequestStatusRoute } from "../routes";
 
-const balanceRequests = [
-  {
-    transaction_no: "TXN0012345",
-    image_url:
-      "https://img.freepik.com/free-vector/realistic-receipt-template_23-2147938550.jpg?size=338&ext=jpg&ga=GA1.1.2113030492.1728950400&semt=ais_hybrid",
-    amount: 2000,
-    remark: "NA",
-    status: "Pending",
+const token = localStorage.getItem("authToken");
+
+const axiosInstance = axios.create({
+  baseURL: fetchUpdateBalanceRequestStatusRoute,
+  headers: {
+    Authorization: `Token ${token}`,
   },
-  {
-    transaction_no: "TXN0016789",
-    image_url:
-      "https://img.freepik.com/free-vector/realistic-receipt-template_23-2147938550.jpg?size=338&ext=jpg&ga=GA1.1.2113030492.1728950400&semt=ais_hybrid",
-    amount: 1500,
-    remark: "Transaction id not visible",
-    status: "Rejected",
-  },
-  {
-    transaction_no: "TXN0093139",
-    image_url:
-      "https://img.freepik.com/free-vector/realistic-receipt-template_23-2147938550.jpg?size=338&ext=jpg&ga=GA1.1.2113030492.1728950400&semt=ais_hybrid",
-    amount: 3200,
-    remark: "Approved",
-    status: "Accepted",
-  },
-];
+});
+
+export const fetchUpdateBalanceRequestsStatus = async () => {
+  try {
+    const response = await axiosInstance.get("/");
+    return response.data.payload;
+  } catch (error) {
+    console.error("Error fetching update payment request status:", error);
+    throw error;
+  }
+};
 
 function UpdateBalanceRequestStatus() {
-  // Render request status
+  const [balanceRequests, setBalanceRequests] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await fetchUpdateBalanceRequestsStatus();
+        setBalanceRequests(data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const renderHeader = () => (
     <Table.Tr>
       <Table.Th>
@@ -68,10 +85,14 @@ function UpdateBalanceRequestStatus() {
         <Table.Td align="center" p={12}>
           {" "}
           {/* Increase cell padding */}
-          {item.transaction_no}
+          {item.Txn_no}
         </Table.Td>
         <Table.Td align="center" p={12}>
-          <a href={item.image_url} target="_blank" rel="noopener noreferrer">
+          <a
+            href={`${host}${item.img}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             View Image
           </a>
         </Table.Td>
@@ -79,7 +100,7 @@ function UpdateBalanceRequestStatus() {
           {item.amount}
         </Table.Td>
         <Table.Td align="center" p={12}>
-          {item.remark}
+          {item.update_remark}
         </Table.Td>
         <Table.Td align="center" p={12}>
           <Box
@@ -117,12 +138,13 @@ function UpdateBalanceRequestStatus() {
           Request Status
         </Title>
 
-        {/* Table */}
+        {/* FusionTable */}
         <Table striped highlightOnHover withBorder withColumnBorders>
           <Table.Thead>{renderHeader()}</Table.Thead>
           <Table.Tbody>{renderRows()}</Table.Tbody>
         </Table>
       </Paper>
+      <Space h="xl" />
     </Container>
   );
 }

@@ -12,11 +12,52 @@ import {
 import { DateInput } from "@mantine/dates";
 import { User } from "@phosphor-icons/react"; // Import Phosphor Icons
 import "@mantine/dates/styles.css"; // Import Mantine DateInput styles
-import "dayjs/locale/en"; // Day.js for locale support
+import dayjs from "dayjs";
+import axios from "axios";
+import { postUpdateBalanceRequestRoute } from "../routes";
 
 function UpdateBalanceRequest() {
-  const [file, setFile] = useState(null);
+  const [image, setImage] = useState(null);
   const [paymentDate, setPaymentDate] = useState(null);
+  const [transactionNo, setTransactionNo] = useState("");
+  const [amount, setAmount] = useState(null);
+  const [rollNumber, setRollNumber] = useState(null);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    const token = localStorage.getItem("authToken");
+
+    const formData = new FormData();
+    formData.append("Txn_no", transactionNo);
+    formData.append("amount", amount);
+    formData.append("payment_date", dayjs(paymentDate).format("YYYY-MM-DD"));
+    formData.append("img", image);
+    formData.append("student_id", rollNumber);
+
+    try {
+      const response = await axios.post(
+        postUpdateBalanceRequestRoute,
+        formData,
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        },
+      );
+      console.log("Response:", response.data);
+
+      setTransactionNo("");
+      setAmount(null);
+      setPaymentDate(null);
+      setImage(null);
+      setImage(null);
+      setRollNumber(null);
+    } catch (error) {
+      console.error("Error posting data:", error);
+    }
+  };
 
   return (
     <Container
@@ -38,7 +79,7 @@ function UpdateBalanceRequest() {
           Update Balance Request
         </Title>
 
-        <form method="post" action="/mess/updateBill">
+        <form onSubmit={handleSubmit}>
           {/* Transaction Number input */}
           <TextInput
             label="Transaction No."
@@ -51,6 +92,8 @@ function UpdateBalanceRequest() {
             labelProps={{ style: { marginBottom: "10px" } }}
             mt="xl"
             mb="md"
+            value={transactionNo}
+            onChange={(event) => setTransactionNo(event.currentTarget.value)}
           />
 
           {/* Amount input */}
@@ -65,14 +108,16 @@ function UpdateBalanceRequest() {
             min={0}
             step={100}
             mb="lg"
+            value={amount}
+            onChange={(value) => setAmount(value)}
           />
 
           {/* Image input */}
           <FileInput
             label="Image"
             placeholder="Choose file"
-            value={file}
-            onChange={setFile}
+            value={image}
+            onChange={setImage}
             accept="image/*"
             required
             size="md"
@@ -108,10 +153,25 @@ function UpdateBalanceRequest() {
             })}
           />
 
+          <TextInput
+            label="Roll No."
+            placeholder="Roll Number"
+            id="RollNo"
+            required
+            radius="md"
+            size="md"
+            icon={<User size={20} />}
+            labelProps={{ style: { marginBottom: "10px" } }}
+            mt="xl"
+            mb="md"
+            value={rollNumber}
+            onChange={(event) => setRollNumber(event.currentTarget.value)}
+          />
+
           <Space h="xl" />
 
           {/* Submit button */}
-          <Button fullWidth size="md" radius="md" color="blue">
+          <Button type="submit" fullWidth size="md" radius="md" color="blue">
             Update
           </Button>
         </form>
