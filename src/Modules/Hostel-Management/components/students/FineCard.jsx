@@ -9,12 +9,7 @@ import {
   Flex,
   Divider,
 } from "@mantine/core";
-import {
-  IconCurrencyRupee,
-  IconUser,
-  IconBuilding,
-  IconFileDescription,
-} from "@tabler/icons-react";
+import { CurrencyInr, User, Buildings, FileText } from "@phosphor-icons/react";
 
 const defaultProps = {
   fine_id: "",
@@ -37,10 +32,12 @@ export default function FineCard(props = defaultProps) {
         return "gray";
     }
   };
+
   const { student_name, hall, amount, status, reason, isPastFine } = {
     ...defaultProps,
     ...props,
   };
+
   return (
     <Paper
       radius="md"
@@ -60,7 +57,7 @@ export default function FineCard(props = defaultProps) {
         <Flex justify="space-between" align="center">
           <Group spacing="xs">
             <ThemeIcon color="red" size={40} radius="md">
-              <IconCurrencyRupee size={24} />
+              <CurrencyInr size={24} weight="bold" />
             </ThemeIcon>
             <Text weight={700} size="xl" color="red">
               ₹{amount.toLocaleString()}
@@ -85,7 +82,7 @@ export default function FineCard(props = defaultProps) {
         <Group grow>
           <Flex align="center">
             <ThemeIcon color="blue" size={30} radius="md" mr="xs">
-              <IconUser size={18} />
+              <User size={18} weight="bold" />
             </ThemeIcon>
             <Text size="sm" weight={500}>
               {student_name}
@@ -93,7 +90,7 @@ export default function FineCard(props = defaultProps) {
           </Flex>
           <Flex align="center">
             <ThemeIcon color="grape" size={30} radius="md" mr="xs">
-              <IconBuilding size={18} />
+              <Buildings size={18} weight="bold" />
             </ThemeIcon>
             <Text size="sm" weight={500}>
               {hall}
@@ -104,7 +101,7 @@ export default function FineCard(props = defaultProps) {
         <Paper withBorder p="sm" radius="md" bg="gray.0">
           <Flex align="center" mb="xs">
             <ThemeIcon color="orange" size={30} radius="md" mr="xs">
-              <IconFileDescription size={18} />
+              <FileText size={18} weight="bold" />
             </ThemeIcon>
             <Text weight={500} size="sm">
               Reason
