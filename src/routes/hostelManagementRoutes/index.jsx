@@ -22,6 +22,6 @@ export const update_leave_status = `${host}/hostelmanagement/update_leave_status
 export const fetch_fines_url = `${host}/hostelmanagement/fetch-fine/`;
 export const update_fine_status_url = (fine_id) =>
   `${host}/hostelmanagement/update-fine-status/${fine_id}/`;
-
 export const show_guestroom_booking_request = `${host}/hostelmanagement/fetching_guest_room_request/`;
 export const update_guest_room = `${host}/hostelmanagement/update_guest_room/`;
+export const my_leaves = `${host}/hostelmanagement/my_leaves/`;
