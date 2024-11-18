@@ -52,7 +52,7 @@ function PlacementScheduleCard({
             Authorization: `Token ${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ placementId }),
+          body: JSON.stringify({ jobId }),
         },
       );
       if (response.ok) {
