@@ -105,7 +105,7 @@ function Facilities({ branch }) {
                 onClick={handleEditClick} // Call handleEditClick on button click
                 style={{
                   padding: "5px 20px",
-                  backgroundColor: "indigo",
+                  backgroundColor: "rgb(21, 171, 255)",
                   color: "#fff",
                   border: "none",
                   borderRadius: "5px",
