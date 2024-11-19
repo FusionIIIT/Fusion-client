@@ -1,6 +1,16 @@
 /* eslint-disable no-restricted-globals */
 import React, { useEffect, useState, Suspense, lazy } from "react";
 import PropTypes from "prop-types";
+import {
+  Grid,
+  Paper,
+  Flex,
+  Text,
+  Badge,
+  Divider,
+  CloseButton,
+  Button,
+} from "@mantine/core";
 
 // Lazy load the SpecialTable component
 const SpecialTable = lazy(() => import("./SpecialTable"));
@@ -58,12 +68,45 @@ export default function Announcements({ branch }) {
 
   return (
     <Suspense fallback={<p>Loading announcements...</p>}>
-      <SpecialTable
-        title={`${branch} Announcements`}
-        columns={columns}
-        data={announcementsData}
-        rowOptions={["10", "15", "20"]}
-      />
+      <Grid>
+        {announcementsData.map((announcement) => (
+          <Grid.Col span={{ base: 12, md: 6 }} key={announcement.id}>
+            <Paper
+              radius="md"
+              px="lg"
+              pt="sm"
+              pb="xl"
+              style={{ borderLeft: "0.6rem solid #15ABFF" }}
+              withBorder
+              maw="1240px"
+            >
+              <Flex justify="space-between">
+                <Flex direction="column">
+                  <Flex gap="md">
+                    <Text fw={600} size="1.2rem" mb="0.4rem">
+                      {`${branch} Announcements`}
+                    </Text>
+                  </Flex>
+                  <Text color="dimmed" size="0.7rem">
+                    {announcement.ann_date}
+                  </Text>
+                  <Divider my="sm" w="10rem" />
+                </Flex>
+              </Flex>
+              <Flex justify="space-between">
+                <Text>{announcement.message || "No details available."}</Text>
+                <Text>
+                  <b>{`by ${announcement.maker_id || "Unknown"}`}</b>
+                </Text>
+              </Flex>
+              {/* <br/>
+            <Text>
+            <b>File : </b>{`${announcement.upload_announcement || "Unknown"}`}
+            </Text> */}
+            </Paper>
+          </Grid.Col>
+        ))}
+      </Grid>
     </Suspense>
   );
 }

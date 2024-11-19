@@ -228,7 +228,7 @@ function DeptTabs({ branch }) {
     { title: "Announcements", id: "4", department: branch },
     { title: "Alumni" },
     { title: "Facilities" },
-    { title: "Stock" },
+    // { title: "Stock" },
   ];
 
   if (isFeedbackAvailable) {
@@ -255,7 +255,7 @@ function DeptTabs({ branch }) {
       3: <Announcements branch={branch} />,
       4: <Alumnicat />,
       5: <Facilities branch={branch} />,
-      6: <Stock />,
+      // 6: <Stock />,
       7: isFeedbackAvailable ? <ViewFeedback branch={branch} /> : null,
     };
     return components[activeTab] || null;
