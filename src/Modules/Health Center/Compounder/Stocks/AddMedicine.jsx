@@ -11,10 +11,12 @@ import {
 import { DownloadSimple } from "@phosphor-icons/react";
 import NavCom from "../NavCom";
 import ManageStock from "./ManageStocksNav";
+import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
 
 function AddMedicine() {
   return (
     <>
+      <CustomBreadcrumbs />
       <NavCom />
       <ManageStock />
       <Paper

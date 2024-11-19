@@ -11,8 +11,14 @@ function MedicalNavBar() {
   const location = useLocation();
 
   const tabItems = [
-    { title: "Apply for Medical Relief", path: "/patient/medical-relief/" },
-    { title: "Approval Status", path: "/patient/medical-relief/approval" },
+    {
+      title: "Apply for Medical Relief",
+      path: "/healthcenter/student/medical-relief/",
+    },
+    {
+      title: "Approval Status",
+      path: "/healthcenter/student/medical-relief/approval",
+    },
   ];
 
   useEffect(() => {

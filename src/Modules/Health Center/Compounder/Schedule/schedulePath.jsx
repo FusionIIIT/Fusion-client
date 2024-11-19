@@ -11,15 +11,21 @@ function ScheduleNavBar() {
   const location = useLocation();
 
   const tabItems = [
-    { title: "View doctor Schedule", path: "/compounder/schedule" },
-    { title: "Edit doctor Schedule", path: "/compounder/schedule/editdoctor" },
+    {
+      title: "View doctor Schedule",
+      path: "/healthcenter/compounder/schedule",
+    },
+    {
+      title: "Edit doctor Schedule",
+      path: "/healthcenter/compounder/schedule/editdoctor",
+    },
     {
       title: "View Pathologist Schedule",
-      path: "/compounder/schedule/viewpath",
+      path: "/healthcenter/compounder/schedule/viewpath",
     },
     {
       title: "Edit Pathologist Schedule",
-      path: "/compounder/schedule/editpath",
+      path: "/healthcenter/compounder/schedule/editpath",
     },
   ];
 

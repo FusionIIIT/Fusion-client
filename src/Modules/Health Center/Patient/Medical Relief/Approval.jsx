@@ -1,23 +1,22 @@
 import { Paper, Table, Title } from "@mantine/core";
-import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Download } from "@phosphor-icons/react";
+import { useSelector } from "react-redux";
 import axios from "axios";
-import { compounderRoute } from "../../../../routes/health_center";
+import { studentRoute } from "../../../../routes/health_center";
 import NavPatient from "../Navigation";
 import MedicalNavBar from "./medicalPath";
 import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
 
 function Approval() {
-  const navigate = useNavigate();
   const [elements, setMedical] = useState([]);
-
+  const role = useSelector((state) => state.user.role);
   const get_relief = async () => {
     const token = localStorage.getItem("authToken");
     try {
       const response = await axios.post(
-        compounderRoute,
-        { get_relief: 1 },
+        studentRoute,
+        { get_relief: 1, selected_role: role },
         {
           headers: {
             Authorization: `Token ${token}`,
@@ -28,12 +27,6 @@ function Approval() {
       setMedical(response.data.relief);
     } catch (err) {
       console.log(err);
-    }
-  };
-
-  const handleStatusClick = (id, status) => {
-    if (status === "Pending") {
-      navigate(`/compounder/medical-relief/application/${id}`);
     }
   };
 
@@ -56,7 +49,6 @@ function Approval() {
         <Download size={20} /> {element.file}
       </Table.Td>
       <Table.Td
-        onClick={() => handleStatusClick(element.id, get_status(element))}
         style={{
           cursor: get_status(element) === "Pending" ? "pointer" : "default",
           color: get_status(element) === "Pending" ? "#15abff" : "gray",

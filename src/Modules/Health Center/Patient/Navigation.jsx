@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { Flex, Button, Tabs, Text } from "@mantine/core";
 import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 import classes from "../../Dashboard/Dashboard.module.css";
 
 function NavPatient() {
@@ -10,30 +11,39 @@ function NavPatient() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const tabItems = [
-    { title: "History", path: "/patient/history" },
-    { title: "Feedback", path: "/patient/feedback" },
-    { title: "Schedule", path: "/patient/schedule" },
-    { title: "Announcements", path: "/patient/announcements" },
-    { title: "Medical Relief", path: "/patient/medical-relief/" },
+  const role = useSelector((state) => state.user.role);
+
+  const baseTabItems = [
+    { title: "History", path: "/history" },
+    { title: "Feedback", path: "/feedback" },
+    { title: "Schedule", path: "/schedule" },
+    { title: "Announcements", path: "/announcements" },
+    { title: "Medical Relief", path: "/medical-relief" },
   ];
+
+  const tabItems =
+    role === "student"
+      ? baseTabItems.filter((tab) => tab.title !== "Medical Relief")
+      : baseTabItems;
 
   useEffect(() => {
     const currentPath = location.pathname;
 
     const activeIndex = tabItems.findIndex((item) =>
-      currentPath.startsWith(item.path),
+      currentPath.startsWith(`/healthcenter/student${item.path}`),
     );
 
     if (activeIndex !== -1) {
       setActiveTab(activeIndex);
     }
-  }, [location.pathname]);
+  }, [location.pathname, tabItems]);
 
   const handleNavigation = (index) => {
+    const basePath = "/healthcenter/student";
     const path = tabItems[index]?.path;
-    if (path && !location.pathname.startsWith(path)) {
-      navigate(path);
+
+    if (path && !location.pathname.startsWith(`${basePath}${path}`)) {
+      navigate(`${basePath}${path}`);
     }
   };
 

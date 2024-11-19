@@ -11,10 +11,15 @@ function ScheduleNavBar() {
   const location = useLocation();
 
   const tabItems = [
-    { title: "View doctor Schedule", path: "/patient/schedule" },
+    { title: "View doctor Schedule", path: "/healthcenter/student/schedule" },
+    { title: "Doctors Info", path: "/healthcenter/student/schedule/doctors" },
     {
       title: "View Pathologist Schedule",
-      path: "/patient/schedule/viewpath",
+      path: "/healthcenter/student/schedule/viewpath",
+    },
+    {
+      title: "Pathologists Info",
+      path: "/healthcenter/student/schedule/pathologists",
     },
   ];
 

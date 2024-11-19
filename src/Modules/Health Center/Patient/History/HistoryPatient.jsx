@@ -46,7 +46,7 @@ function HistoryPatient() {
       </td>
       <td style={{ textAlign: "center" }}>
         <NavLink
-          to="/patient/prescription/:id"
+          to="/healthcenter/student/prescription/:id"
           style={{
             textDecoration: "none",
             color: "#15abff",

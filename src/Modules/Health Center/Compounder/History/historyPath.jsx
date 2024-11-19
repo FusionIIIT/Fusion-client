@@ -11,8 +11,8 @@ function HistoryNavBar() {
   const location = useLocation();
 
   const tabItems = [
-    { title: "Patient Log", path: "/compounder/patient-log" },
-    { title: "History", path: "/compounder/patient-log/history" },
+    { title: "Patient Log", path: "/healthcenter/compounder/patient-log" },
+    { title: "History", path: "/healthcenter/compounder/patient-log/history" },
   ];
 
   useEffect(() => {

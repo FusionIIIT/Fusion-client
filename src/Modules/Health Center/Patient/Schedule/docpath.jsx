@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Button, Flex, Paper, Table, Text, Title } from "@mantine/core";
 import axios from "axios";
-import NavCom from "../NavCom";
-import Changenav from "./changenav";
+import NavCom from "../Navigation";
+import Changenav from "./schedulePath";
 import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
 import { compounderRoute } from "../../../../routes/health_center";
 

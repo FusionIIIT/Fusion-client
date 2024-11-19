@@ -11,24 +11,16 @@ import {
 import { MagnifyingGlass, DownloadSimple } from "@phosphor-icons/react";
 import NavCom from "../NavCom";
 import ManageStock from "./ManageStocksNav";
+import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
 
 function AddStock() {
   return (
     <>
+      <CustomBreadcrumbs />
       <NavCom />
       <ManageStock />
-      <Paper
-        shadow="md"
-        radius="md"
-        p="lg"
-        style={{
-          maxWidth: "2000px",
-          margin: "20px auto",
-          marginTop: "20px",
-          width: "100%",
-          minHeight: "500px",
-        }}
-      >
+      <br />
+      <Paper shadow="xl" p="xl" withBorder>
         <div
           style={{
             textAlign: "center",

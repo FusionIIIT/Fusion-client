@@ -3,25 +3,16 @@ import { TextInput, Button, Group, Paper } from "@mantine/core";
 import { MagnifyingGlass } from "@phosphor-icons/react";
 import NavCom from "../NavCom";
 import ManageStock from "./ManageStocksNav";
+import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
 
 function EditThreshold() {
   return (
     <>
+      <CustomBreadcrumbs />
       <NavCom />
       <ManageStock />
-      <Paper
-        withBorder
-        shadow="md"
-        radius="md"
-        p="lg"
-        style={{
-          maxWidth: "2000px",
-          margin: "0 auto",
-          width: "100%",
-          marginTop: "20px",
-          minHeight: "400px",
-        }} // Added minHeight for stability
-      >
+      <br />
+      <Paper shadow="xl" p="xl" withBorder>
         <form>
           <TextInput
             label="Brand Name"

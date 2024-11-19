@@ -11,20 +11,23 @@ function Changenav() {
   const location = useLocation();
 
   const tabItems = [
-    { title: "Doctor", path: "/compounder/docpath" },
-    { title: "Add doctor", path: "/compounder/docpath/adddoctor" },
-    { title: "Remove Doctor", path: "/compounder/docpath/removedoctor" },
+    { title: "Doctor", path: "/healthcenter/compounder/docpath" },
+    { title: "Add doctor", path: "/healthcenter/compounder/docpath/adddoctor" },
+    {
+      title: "Remove Doctor",
+      path: "/healthcenter/compounder/docpath/removedoctor",
+    },
     {
       title: "Pathologist",
-      path: "/compounder/docpath/pathologists",
+      path: "/healthcenter/compounder/docpath/pathologists",
     },
     {
       title: "Add Pathologist",
-      path: "/compounder/docpath/addpath",
+      path: "/healthcenter/compounder/docpath/addpath",
     },
     {
       title: "Remove Pathologist",
-      path: "/compounder/docpath/removepath",
+      path: "/healthcenter/compounder/docpath/removepath",
     },
   ];
 

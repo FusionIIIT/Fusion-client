@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Paper, Table, Title } from "@mantine/core";
 import NavCom from "../NavCom";
 import ManageStock from "./ManageStocksNav";
+import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
 
 function ExpiredMedicine() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -74,10 +75,11 @@ function ExpiredMedicine() {
 
   return (
     <>
+      <CustomBreadcrumbs />
       <NavCom />
       <ManageStock />
-      <div style={{ margin: "20px auto", maxWidth: "2000px" }}>
-        {/* Top section with search input and download button */}
+      <br />
+      <Paper shadow="xl" p="xl" withBorder>
         <div
           style={{
             display: "flex",
@@ -148,7 +150,7 @@ function ExpiredMedicine() {
         </Paper>
 
         {/* Pagination */}
-      </div>
+      </Paper>
     </>
   );
 }

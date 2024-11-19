@@ -11,17 +11,26 @@ function ManageStock() {
   const location = useLocation();
 
   const tabItems = [
-    { title: "Add Stock", path: "/compounder/manage-stock" },
-    { title: "Add Medicine", path: "/compounder/manage-stock/addmedicine" },
-    { title: "Edit Threshold", path: "/compounder/manage-stock/editthreshold" },
+    { title: "Add Stock", path: "/healthcenter/compounder/manage-stock" },
+    {
+      title: "Add Medicine",
+      path: "/healthcenter/compounder/manage-stock/addmedicine",
+    },
+    {
+      title: "Edit Threshold",
+      path: "/healthcenter/compounder/manage-stock/editthreshold",
+    },
     {
       title: "Expired Medicine",
-      path: "/compounder/manage-stock/expiredmedicine",
+      path: "/healthcenter/compounder/manage-stock/expiredmedicine",
     },
-    { title: "ViewStock", path: "/compounder/manage-stock/viewstock" },
+    {
+      title: "ViewStock",
+      path: "/healthcenter/compounder/manage-stock/viewstock",
+    },
     {
       title: "Required Medicine",
-      path: "/compounder/manage-stock/requiredMedicine",
+      path: "/healthcenter/compounder/manage-stock/requiredmedicine",
     },
   ];
 

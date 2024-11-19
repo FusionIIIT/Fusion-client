@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import axios from "axios";
+import { useSelector } from "react-redux";
 import {
   Button,
   FileInput,
@@ -10,16 +12,17 @@ import {
 import Navigation from "../Navigation";
 import MedicalNavBar from "./medicalPath";
 import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import { studentRoute } from "../../../../routes/health_center";
 
 function Apply() {
-  const [file, setFile] = useState(null);
-  const [recipient, setRecipient] = useState("Compounder");
-  const [description, setDescription] = useState("");
+  const [send_file, setFile] = useState(null);
+  const [recipient, setRecipient] = useState("Compounder(Pkumar)");
+  const [desc, setDescription] = useState("");
   const [errors, setErrors] = useState({});
-
+  const role = useSelector((state) => state.user.role);
   const validate = () => {
     const newErrors = {};
-    if (!description.trim()) newErrors.description = "Description is required";
+    if (!desc.trim()) newErrors.description = "Description is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -30,9 +33,33 @@ function Apply() {
     if (!validate()) return;
 
     const formData = new FormData();
-    if (file) formData.append("file", file);
+    if (send_file) formData.append("file", send_file);
     formData.append("recipient", recipient);
-    formData.append("description", description);
+    formData.append("description", desc);
+    formData.append("medical_relief_submit", 1);
+
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.post(
+        studentRoute,
+        {
+          description: desc,
+          designation: "pkumar",
+          selected_role: role,
+          // file: send_file,
+          medical_relief_submit: 1,
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      console.log(response.data);
+      alert("File forwarded successfully");
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
@@ -47,29 +74,37 @@ function Apply() {
             <FileInput
               label="Upload file"
               placeholder="Choose file"
-              value={file}
-              onChange={setFile}
+              value={send_file}
+              onChange={(e) => {
+                setFile(e.target.files[0]);
+              }}
               error={errors.file}
             />
 
             <Select
               label="Send to"
-              data={[{ value: "Compounder", label: "Compounder" }]}
+              data={[{ value: "Compounder", label: "Compounder(Pkumar)" }]}
               value={recipient}
               onChange={setRecipient}
               error={errors.recipient}
             />
-
+          </Flex>
+          <Flex display="flex" justify="space-between">
             <Textarea
               label="Description"
-              value={description}
+              value={desc}
               onChange={(e) => setDescription(e.target.value)}
               error={errors.description}
-              rows={4}
+              style={{ width: "80%" }}
               autosize
             />
 
-            <Button type="submit" variant="filled" color="#15abff" mt="lg">
+            <Button
+              type="submit"
+              variant="filled"
+              color="#15abff"
+              style={{ padding: "0.5rem 2rem", marginTop: "24px" }}
+            >
               Submit
             </Button>
           </Flex>
