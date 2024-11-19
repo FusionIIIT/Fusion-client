@@ -221,6 +221,7 @@ import {
 import axios from "axios";
 import { MantineReactTable } from "mantine-react-table";
 import { useSelector } from "react-redux";
+import AddPlacementRecordForm from "./AddPlacementRecordForm";
 
 function PlacementRecordsTable() {
   const role = useSelector((state) => state.user.role);
@@ -229,7 +230,8 @@ function PlacementRecordsTable() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activePage, setActivePage] = useState(1);
-  const recordsPerPage = 10;
+ const [modalOpened, setModalOpened] = useState(false);
+const recordsPerPage = 10;
 
   useEffect(() => {
     const fetchPlacementStats = async () => {
@@ -338,9 +340,18 @@ function PlacementRecordsTable() {
         {role === "placement officer" && (
           <>
             <Button onClick={downloadExcel}>Download Excel</Button>
-            {/* Add placement record button can be added here */}
+
+            <Button onClick={() => setModalOpened(true)}>
+              Add Placement Record
+            </Button>
+
           </>
         )}
+
+<AddPlacementRecordForm
+        opened={modalOpened}
+        onClose={() => setModalOpened(false)}
+      />
       </Container>
 
       <Card shadow="sm" padding="md" radius="md" withBorder>
