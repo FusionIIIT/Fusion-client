@@ -1,9 +1,11 @@
 /* eslint-disable react/prop-types */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Paper } from "@mantine/core";
-
+import axios from "axios";
 import NavCom from "../NavCom";
 import ScheduleNavBar from "./schedulePath";
+import { compounderRoute } from "../../../../routes/health_center";
+import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
 
 function Editpath() {
   const [doctorName, setDoctorName] = useState("");
@@ -12,16 +14,8 @@ function Editpath() {
   const [dayToAdd, setDayToAdd] = useState("");
   const [doctorToRemove, setDoctorToRemove] = useState("");
   const [dayToRemove, setDayToRemove] = useState("");
-
-  const doctors = ["Dr Rajiv Kapoor", "Dr Shreya sen", "Dr Anjali Deshmukh"];
-
-  const handleAddSchedule = () => {
-    console.log("Added Schedule:", { doctorName, timeIn, timeOut, dayToAdd });
-  };
-
-  const handleRemoveSchedule = () => {
-    console.log("Removed Schedule:", { doctorToRemove, dayToRemove });
-  };
+  const [roomToAdd, setRoom] = useState("");
+  const [pathologists, setPathologists] = useState([]);
 
   const containerStyle = {
     display: "flex",
@@ -77,10 +71,92 @@ function Editpath() {
     },
   };
 
+  const fetchPathologists = async () => {
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.post(
+        compounderRoute,
+        { get_pathologists: 1 },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      console.log(response);
+      setPathologists(response.data.pathologists);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchPathologists();
+  }, []);
+
+  const editSchedule = async () => {
+    if (timeIn > timeOut) {
+      alert("Enter Valid Time");
+      return false;
+    }
+    if (roomToAdd === "") {
+      alert("Enter Room Number");
+      return false;
+    }
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.post(
+        compounderRoute,
+        {
+          pathologist: doctorName,
+          day: dayToAdd,
+          room: roomToAdd,
+          time_in: timeIn,
+          time_out: timeOut,
+          edit12: 1,
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      console.log(response);
+      alert("schedule added successfully");
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const removeSchedule = async () => {
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.post(
+        compounderRoute,
+        {
+          pathologist: doctorToRemove,
+          day: dayToRemove,
+          rmv1: 1,
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      console.log(response);
+      alert("schedule removed successfully");
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   return (
     <div>
+      <CustomBreadcrumbs />
       <NavCom />
       <ScheduleNavBar />
+      <br />
       <Paper shadow="xl" p="xl" withBorder>
         <div style={responsiveContainerStyle}>
           <div style={boxStyle}>
@@ -94,9 +170,9 @@ function Editpath() {
                 <option value="" disabled>
                   Select Doctor
                 </option>
-                {doctors.map((doctor) => (
-                  <option key={doctor} value={doctor}>
-                    {doctor}
+                {pathologists.map((doctor) => (
+                  <option key={doctor.id} value={doctor.id}>
+                    {doctor.pathologist_name}
                   </option>
                 ))}
               </select>
@@ -138,7 +214,14 @@ function Editpath() {
                 placeholder="Time Out"
                 style={{ marginRight: "10px", marginBottom: "10px" }}
               />
-              <button style={buttonStyle} onClick={handleAddSchedule}>
+              <input
+                type="number"
+                placeholder="Room No"
+                style={{ marginRight: "10px", marginBottom: "10px" }}
+                value={roomToAdd}
+                onChange={(e) => setRoom(e.target.value)}
+              />
+              <button style={buttonStyle} onClick={editSchedule}>
                 Add Schedule
               </button>
             </div>
@@ -155,9 +238,9 @@ function Editpath() {
                 <option value="" disabled>
                   Select Doctor
                 </option>
-                {doctors.map((doctor) => (
-                  <option key={doctor} value={doctor}>
-                    {doctor}
+                {pathologists.map((doctor) => (
+                  <option key={doctor.id} value={doctor.id}>
+                    {doctor.pathologist_name}
                   </option>
                 ))}
               </select>
@@ -183,7 +266,7 @@ function Editpath() {
                   </option>
                 ))}
               </select>
-              <button style={buttonStyle} onClick={handleRemoveSchedule}>
+              <button style={buttonStyle} onClick={removeSchedule}>
                 Remove Schedule
               </button>
             </div>

@@ -1,8 +1,11 @@
 /* eslint-disable react/prop-types */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Paper, Title } from "@mantine/core";
+import axios from "axios";
 import NavCom from "../NavCom";
 import ScheduleNavBar from "./schedulePath";
+import { compounderRoute } from "../../../../routes/health_center";
+import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
 
 function Dropdown({ doctorName, selectedDay, onDayChange }) {
   const days = [
@@ -37,7 +40,7 @@ function Time({ selectedDay, schedule }) {
 
 function Viewpath() {
   const [selectedDays, setSelectedDays] = useState({});
-
+  const [schedule, setSchedule] = useState([]);
   const handleDayChange = (doctorName, day) => {
     setSelectedDays((prevSelectedDays) => ({
       ...prevSelectedDays,
@@ -45,34 +48,35 @@ function Viewpath() {
     }));
   };
 
-  const pathologistSchedule = [
-    {
-      name: "Dr Rajiv Kapoor",
-      specialization: "Hematology",
-      availability: [{ day: "Monday", time: "9:00 am - 12:00 pm" }],
-    },
-    {
-      name: "Dr Shreya Sen",
-      specialization: "Cytology",
-      availability: [{ day: "Wednesday", time: "11:00 am - 3:00 pm" }],
-    },
-    {
-      name: "Dr Anjali Deshmukh",
-      specialization: "Histology",
-      availability: [{ day: "Saturday", time: "10:00 am - 1:00 pm" }],
-    },
-    {
-      name: "Dr Shefali Verma",
-      specialization: "Histology",
-      availability: [{ day: "Sunday", time: "1:00 pm - 5:00 pm" }],
-    },
-  ];
+  const fetchPathalogistSchedule = async () => {
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.post(
+        compounderRoute,
+        { get_pathologist_schedule: 1 },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      console.log(response);
+      setSchedule(response.data.schedule);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchPathalogistSchedule();
+  }, []);
 
   return (
     <>
+      <CustomBreadcrumbs />
       <NavCom />
       <ScheduleNavBar />
-
+      <br />
       <Paper shadow="xl" p="xl" withBorder>
         <Title
           order={5}
@@ -108,7 +112,7 @@ function Viewpath() {
             </tr>
           </thead>
           <tbody>
-            {pathologistSchedule.map((item, index) => (
+            {schedule.map((item, index) => (
               <tr
                 key={index}
                 style={{

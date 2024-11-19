@@ -11,8 +11,11 @@ function AnnounceNavBar() {
   const location = useLocation();
 
   const tabItems = [
-    { title: "Announcements", path: "/compounder/announcement" },
-    { title: "Announcements Record", path: "/compounder/announcement/record" },
+    { title: "Announcements", path: "/healthcenter/compounder/announcement" },
+    {
+      title: "Announcements Record",
+      path: "/healthcenter/compounder/announcement/record",
+    },
   ];
 
   useEffect(() => {

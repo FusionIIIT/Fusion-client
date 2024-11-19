@@ -11,27 +11,32 @@ function NavCom() {
   const location = useLocation();
 
   const tabItems = [
-    { title: "Patient Log", path: "/compounder/patient-log/update" },
-    { title: "Manage Stock", path: "/compounder/manage-stock" },
-    { title: "Schedule", path: "/compounder/viewdoctor" },
-    { title: "Doctor/Pathologists", path: "/compounder/viewpath" },
-    { title: "Feedback/Response", path: "/compounder/feedback" },
-    { title: "Make Announcements", path: "/compounder/announcement" },
-    { title: "Medical Relief", path: "/compounder/medical-relief/inbox" },
+    { title: "Patient Log", path: "/patient-log" },
+    { title: "Manage Stock", path: "/manage-stock" },
+    { title: "Schedule", path: "/schedule" },
+    { title: "Doctor/Pathologists", path: "/docpath" },
+    { title: "Feedback", path: "/feedback" },
+    { title: "Make Announcements", path: "/announcement" },
+    { title: "Medical Relief", path: "/medical-relief/inbox" },
   ];
 
   useEffect(() => {
     const currentPath = location.pathname;
-    const activeIndex = tabItems.findIndex((item) => item.path === currentPath);
+    const activeIndex = tabItems.findIndex((item) =>
+      currentPath.startsWith(`/healthcenter/compounder${item.path}`),
+    );
+
     if (activeIndex !== -1) {
       setActiveTab(activeIndex);
     }
   }, [location.pathname]);
 
   const handleNavigation = (index) => {
+    const basePath = "/healthcenter/compounder";
     const path = tabItems[index]?.path;
-    if (path && window.location.pathname !== path) {
-      navigate(path);
+
+    if (path && !location.pathname.startsWith(`${basePath}${path}`)) {
+      navigate(`${basePath}${path}`);
     }
   };
 
@@ -53,7 +58,6 @@ function NavCom() {
       }
     }
   };
-
   const navbarStyle = {
     tabsContainer: {
       display: "flex",

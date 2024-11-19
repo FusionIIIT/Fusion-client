@@ -1,131 +1,115 @@
-import { Radio, Button, FileInput, Textarea, Select } from "@mantine/core";
-import { NavLink } from "react-router-dom";
-
+import React, { useState } from "react";
+import axios from "axios";
+import { useSelector } from "react-redux";
+import {
+  Button,
+  FileInput,
+  Textarea,
+  Select,
+  Paper,
+  Flex,
+} from "@mantine/core";
 import Navigation from "../Navigation";
+import MedicalNavBar from "./medicalPath";
+import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import { studentRoute } from "../../../../routes/health_center";
 
 function Apply() {
+  const [send_file, setFile] = useState(null);
+  const [recipient, setRecipient] = useState("Compounder(Pkumar)");
+  const [desc, setDescription] = useState("");
+  const [errors, setErrors] = useState({});
+  const role = useSelector((state) => state.user.role);
+  const validate = () => {
+    const newErrors = {};
+    if (!desc.trim()) newErrors.description = "Description is required";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!validate()) return;
+
+    const formData = new FormData();
+    if (send_file) formData.append("file", send_file);
+    formData.append("recipient", recipient);
+    formData.append("description", desc);
+    formData.append("medical_relief_submit", 1);
+
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.post(
+        studentRoute,
+        {
+          description: desc,
+          designation: "pkumar",
+          selected_role: role,
+          // file: send_file,
+          medical_relief_submit: 1,
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      console.log(response.data);
+      alert("File forwarded successfully");
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   return (
     <>
+      <CustomBreadcrumbs />
       <Navigation />
-
-      <div style={{ margin: "2rem" }}>
-        <div
-          style={{
-            display: "flex",
-            padding: "0.5rem",
-            border: "1px solid",
-            backgroundColor: "white",
-            borderRadius: "9999px",
-            width: "22rem",
-          }}
-        >
-          <NavLink
-            to="/patient/medical-relief/apply"
-            style={{
-              textDecoration: "none",
-              color: "black",
-            }}
-          >
-            <Radio
-              label="Apply for Medical Relief"
-              color="grape"
-              variant="outline"
-              defaultChecked
+      <MedicalNavBar />
+      <br />
+      <Paper shadow="xl" p="xl" withBorder>
+        <form onSubmit={handleSubmit}>
+          <Flex gap="xl" wrap="wrap">
+            <FileInput
+              label="Upload file"
+              placeholder="Choose file"
+              value={send_file}
+              onChange={(e) => {
+                setFile(e.target.files[0]);
+              }}
+              error={errors.file}
             />
-          </NavLink>
 
-          <NavLink
-            to="/patient/medical-relief/approval"
-            style={{
-              textDecoration: "none",
-              color: "black",
-              marginLeft: "20px",
-            }}
-          >
-            <Radio label="Approval Status" color="grape" variant="outline" />
-          </NavLink>
-        </div>
+            <Select
+              label="Send to"
+              data={[{ value: "Compounder", label: "Compounder(Pkumar)" }]}
+              value={recipient}
+              onChange={setRecipient}
+              error={errors.recipient}
+            />
+          </Flex>
+          <Flex display="flex" justify="space-between">
+            <Textarea
+              label="Description"
+              value={desc}
+              onChange={(e) => setDescription(e.target.value)}
+              error={errors.description}
+              style={{ width: "80%" }}
+              autosize
+            />
 
-        <br />
-
-        <div>
-          <FileInput
-            label="Upload file"
-            placeholder="Choose file"
-            styles={{
-              input: {
-                padding: "0.5rem",
-                width: "100%",
-                fontSize: "0.875rem",
-                color: "#6b46c1",
-                border: "1px solid #d1d5db",
-                borderRadius: "0.375rem",
-                backgroundColor: "#f9fafb",
-              },
-            }}
-          />
-        </div>
-
-        <br />
-
-        <div>
-          <Textarea
-            label="Description"
-            styles={{
-              input: {
-                padding: "0.625rem",
-                width: "100%",
-                fontSize: "0.875rem",
-                color: "#1f2937",
-                backgroundColor: "#f9fafb",
-                borderRadius: "0.375rem",
-                border: "1px solid #d1d5db",
-              },
-            }}
-            rows={4}
-          />
-        </div>
-
-        <br />
-
-        <div>
-          <Select
-            label="Send to"
-            defaultValue="Compounder"
-            classNames={{
-              input:
-                "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-purple-500 focus:border-blue-500 block w-full p-2.5",
-            }}
-            data={[{ value: "Compounder", label: "Compounder" }]}
-          />
-        </div>
-
-        <br />
-
-        <div>
-          <Button
-            variant="filled"
-            color="violet"
-            styles={{
-              root: {
-                outline: "none",
-                color: "white",
-                backgroundColor: "#6D28D9",
-                "&:hover": { backgroundColor: "#553c9a" },
-                padding: "0.625rem 1.25rem",
-                borderRadius: "0.375rem",
-                fontSize: "0.875rem",
-                marginBottom: "0.5rem",
-                "&:focus": {
-                  ring: "4px solid #b794f4",
-                },
-              },
-            }}
-          >
-            Submit
-          </Button>
-        </div>
-      </div>
+            <Button
+              type="submit"
+              variant="filled"
+              color="#15abff"
+              style={{ padding: "0.5rem 2rem", marginTop: "24px" }}
+            >
+              Submit
+            </Button>
+          </Flex>
+        </form>
+      </Paper>
     </>
   );
 }
