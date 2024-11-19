@@ -83,7 +83,7 @@ export default function AboutUs({ branch }) {
             rel="noopener noreferrer"
             style={{
               padding: "4px 8px",
-              backgroundColor: "indigo",
+              backgroundColor: "#15ABFF",
               color: "#fff",
               textDecoration: "none",
               borderRadius: "4px",

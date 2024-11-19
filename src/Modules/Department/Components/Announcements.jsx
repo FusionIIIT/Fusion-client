@@ -1,25 +1,13 @@
-/* eslint-disable no-restricted-globals */
-import React, { useEffect, useState, Suspense, lazy } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import PropTypes from "prop-types";
-import {
-  Grid,
-  Paper,
-  Flex,
-  Text,
-  Badge,
-  Divider,
-  CloseButton,
-  Button,
-} from "@mantine/core";
-
-// Lazy load the SpecialTable component
-const SpecialTable = lazy(() => import("./SpecialTable"));
+import { Grid, Paper, Flex, Text, Divider } from "@mantine/core";
+import { host } from "../../../routes/globalRoutes";
 
 // Function to format the date with a period after the month
 function formatDateWithPeriod(dateString) {
   if (!dateString) return ""; // Check if dateString exists
   const date = new Date(dateString);
-  if (isNaN(date)) return dateString; // Check if the date is valid
+  if (Number.isNaN(date.getTime())) return dateString; // Check if the date is valid
 
   const options = { year: "numeric", month: "short", day: "numeric" };
   let formattedDate = date.toLocaleDateString("en-US", options);
@@ -30,22 +18,13 @@ function formatDateWithPeriod(dateString) {
   return formattedDate;
 }
 
-const columns = [
-  { accessorKey: "ann_date", header: "Announcement Date" },
-  { accessorKey: "maker_id", header: "Announcement By" },
-  { accessorKey: "programme", header: "Programme" },
-  { accessorKey: "batch", header: "Batch" },
-  { accessorKey: "message", header: "Message" },
-  { accessorKey: "upload_announcement", header: "File" },
-];
-
 export default function Announcements({ branch }) {
   const [announcementsData, setAnnouncementsData] = useState([]);
   const authToken = localStorage.getItem("authToken");
 
   useEffect(() => {
     const lowercaseDepartment = branch.toLowerCase();
-    fetch("http://127.0.0.1:8000/dep/api/dep-main/", {
+    fetch(`${host}/dep/api/dep-main/`, {
       method: "GET",
       headers: {
         Authorization: `Token ${authToken}`,

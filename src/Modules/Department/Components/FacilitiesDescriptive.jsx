@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
+import { host } from "../../../routes/globalRoutes";
 
 export default function FacilitiesDescriptive({ branch }) {
   const [data, setData] = useState({
@@ -11,9 +12,7 @@ export default function FacilitiesDescriptive({ branch }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(
-          "http://127.0.0.1:8000/dep/api/information/",
-        );
+        const response = await fetch(`${host}/dep/api/information/`);
         const result = await response.json();
 
         // Filter the data based on the branch

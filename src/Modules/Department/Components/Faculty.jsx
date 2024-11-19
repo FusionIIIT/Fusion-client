@@ -1,5 +1,6 @@
 import React, { useEffect, useState, lazy } from "react";
 import PropTypes from "prop-types";
+import { host } from "../../../routes/globalRoutes/index.jsx";
 
 const SpecialTable = lazy(() => import("./SpecialTable.jsx"));
 
@@ -34,7 +35,7 @@ function Faculty({ branch, faculty }) {
     // Ensure the token is correctly fetched from local storage
     const authToken = localStorage.getItem("authToken");
 
-    fetch("http://127.0.0.1:8000/dep/api/dep-main/", {
+    fetch(`${host}/dep/api/dep-main/`, {
       method: "GET",
       headers: {
         Authorization: `Token ${authToken}`,
