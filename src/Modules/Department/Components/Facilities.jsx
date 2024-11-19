@@ -5,6 +5,7 @@ import PropTypes from "prop-types";
 import FacilitiesDescriptive from "./FacilitiesDescriptive.jsx";
 import EditFacilities from "./EditFacilities.jsx";
 import SpecialTable from "./SpecialTable"; // Make sure to keep this import
+import { host } from "../../../routes/globalRoutes/index.jsx";
 
 const columns = [
   {
@@ -33,14 +34,11 @@ function Facilities({ branch }) {
       const token = localStorage.getItem("authToken"); // Get the token from local storage
 
       try {
-        const response = await axios.get(
-          "http://127.0.0.1:8000/dep/api/labs/",
-          {
-            headers: {
-              Authorization: `Token ${token}`, // Include the token in the headers
-            },
+        const response = await axios.get(`${host}/dep/api/labs/`, {
+          headers: {
+            Authorization: `Token ${token}`, // Include the token in the headers
           },
-        );
+        });
         setLabs(response.data); // Set labs data from the response
       } catch (error) {
         console.error("Error fetching labs:", error);

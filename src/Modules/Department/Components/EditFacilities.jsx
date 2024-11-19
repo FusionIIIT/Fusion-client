@@ -10,6 +10,7 @@ import {
   Table,
   Divider,
 } from "@mantine/core";
+import { host } from "../../../routes/globalRoutes";
 
 function GoBackButton({ setIsEditing }) {
   return (
@@ -63,14 +64,11 @@ export default function EditFacilities({ setIsEditing, branch }) {
       const token = localStorage.getItem("authToken"); // Get token from local storage
 
       try {
-        const response = await axios.get(
-          "http://127.0.0.1:8000/dep/api/labs/",
-          {
-            headers: {
-              Authorization: `Token ${token}`, // Include the token in the headers
-            },
+        const response = await axios.get(`${host}/dep/api/labs/`, {
+          headers: {
+            Authorization: `Token ${token}`, // Include the token in the headers
           },
-        );
+        });
         // Filter labs by the current branch
         setLabs(response.data.filter((lab) => lab.department === branch));
       } catch (error) {
@@ -98,7 +96,7 @@ export default function EditFacilities({ setIsEditing, branch }) {
     try {
       // Make the API request using PUT method
       const response = await axios.put(
-        "http://127.0.0.1:8000/dep/api/information/update-create/",
+        `${host}/dep/api/information/update-create/`,
         data,
         {
           headers: {
@@ -141,15 +139,11 @@ export default function EditFacilities({ setIsEditing, branch }) {
 
     try {
       // Make the API request using POST method
-      const response = await axios.post(
-        "http://127.0.0.1:8000/dep/api/labsadd/",
-        labData,
-        {
-          headers: {
-            Authorization: `Token ${token}`, // Include the token in the headers
-          },
+      const response = await axios.post(`${host}/dep/api/labsadd/`, labData, {
+        headers: {
+          Authorization: `Token ${token}`, // Include the token in the headers
         },
-      );
+      });
 
       console.log("Lab Data Submitted:", response.data); // Log the response
       setLabIsSuccess(true); // Set success state for lab submission
@@ -159,14 +153,11 @@ export default function EditFacilities({ setIsEditing, branch }) {
       setLabCapacity("");
       setLabLocation("");
       // Re-fetch labs to update the table after adding a new lab
-      const responseLabs = await axios.get(
-        "http://127.0.0.1:8000/dep/api/labs/",
-        {
-          headers: {
-            Authorization: `Token ${token}`, // Include the token in the headers
-          },
+      const responseLabs = await axios.get(`{host}/dep/api/labs/`, {
+        headers: {
+          Authorization: `Token ${token}`, // Include the token in the headers
         },
-      );
+      });
       setLabs(responseLabs.data.filter((lab) => lab.department === branch));
     } catch (error) {
       const errorResponse = error.response?.data || error.message;
@@ -198,28 +189,22 @@ export default function EditFacilities({ setIsEditing, branch }) {
     const token = localStorage.getItem("authToken"); // Get token from local storage
 
     try {
-      const response = await axios.delete(
-        "http://127.0.0.1:8000/dep/api/labs/delete/",
-        {
-          headers: {
-            Authorization: `Token ${token}`, // Include the token in the headers
-          },
-          data: {
-            lab_ids: selectedLabs, // Send the selected lab IDs as an array
-          },
+      const response = await axios.delete(`${host}/dep/api/labs/delete/`, {
+        headers: {
+          Authorization: `Token ${token}`, // Include the token in the headers
         },
-      );
+        data: {
+          lab_ids: selectedLabs, // Send the selected lab IDs as an array
+        },
+      });
 
       console.log("Labs Deleted:", response.data); // Log the response
       // Re-fetch labs to update the table after deletion
-      const responseLabs = await axios.get(
-        "http://127.0.0.1:8000/dep/api/labs/",
-        {
-          headers: {
-            Authorization: `Token ${token}`, // Include the token in the headers
-          },
+      const responseLabs = await axios.get(`${host}/dep/api/labs/`, {
+        headers: {
+          Authorization: `Token ${token}`, // Include the token in the headers
         },
-      );
+      });
       setLabs(responseLabs.data.filter((lab) => lab.department === branch));
 
       // Reset selected labs

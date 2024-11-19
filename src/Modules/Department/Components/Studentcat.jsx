@@ -4,6 +4,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import React, { useState, useEffect, lazy } from "react";
 import PropTypes from "prop-types";
+import { host } from "../../../routes/globalRoutes/index.jsx";
 
 const SpecialTable = lazy(() => import("./SpecialTable.jsx"));
 
@@ -89,7 +90,7 @@ function Studentcat({ branch }) {
       setLoading(true);
       setStudentData([]); // Clear previous data to avoid stale data display
 
-      const fetchUrl = `http://127.0.0.1:8000/dep/api/all-students/${selectedCategory + specialization}/`;
+      const fetchUrl = `${host}/dep/api/all-students/${selectedCategory + specialization}/`;
 
       fetch(fetchUrl, {
         headers: {

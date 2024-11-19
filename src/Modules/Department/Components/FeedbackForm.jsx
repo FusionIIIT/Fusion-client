@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import classes from "../styles/Departmentmodule.module.css";
+import { host } from "../../../routes/globalRoutes";
 
 const styles = {
   formContainer: {
@@ -31,7 +32,7 @@ const styles = {
   button: {
     width: "100%",
     padding: "16px",
-    backgroundColor: "#7b4bff",
+    backgroundColor: "#15ABFF",
     color: "white",
     border: "none",
     borderRadius: "4px",
@@ -52,7 +53,6 @@ export default function Feedbackform() {
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [isSuccess, setIsSuccess] = useState(false);
   const handleFeedbackChange = (e) => {
     setFeedback(e.target.value);
   };
@@ -69,10 +69,9 @@ export default function Feedbackform() {
     e.preventDefault();
     setLoading(true);
     setErrorMessage("");
-    setIsSuccess(false);
 
     const token = localStorage.getItem("authToken");
-    const url = "http://127.0.0.1:8000/dep/api/feedback/create/";
+    const url = `${host}/dep/api/feedback/create/`;
 
     const feedbackData = {
       department: selectedDepartment,
@@ -88,7 +87,6 @@ export default function Feedbackform() {
         },
       });
 
-      setIsSuccess(true);
       console.log("Feedback submitted:", response.data);
       // Reset form fields after submission if needed
       setFeedback("");

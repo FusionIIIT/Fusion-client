@@ -114,10 +114,9 @@ import {
   Text,
 } from "@mantine/core";
 
-import { FaChevronDown, FaChevronUp } from "react-icons/fa"; // Import from react-icons
-
-import { useSelector } from "react-redux";
+import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import axios from "axios";
+import { host } from "../../../routes/globalRoutes";
 
 // Lazy load components
 const MakeAnnouncement = lazy(() => import("./MakeAnnouncement"));
@@ -148,7 +147,7 @@ export default function LandingPage() {
 
       try {
         const response = await axios.get(
-          "http://127.0.0.1:8000/dep/api/dep-main/", // Ensure the endpoint matches your backend route
+          `${host}/dep/api/dep-main/`, // Ensure the endpoint matches your backend route
           {
             headers: {
               Authorization: `Token ${token}`,
@@ -168,8 +167,8 @@ export default function LandingPage() {
         // Set the active tab to the user's department
         const deptTab = departments.find((d) => d.code === department)?.id;
         setActiveTab(deptTab || "3"); // Default to CSE if department not found
-      } catch (error) {
-        console.error("Error fetching user department:", error);
+      } catch (err) {
+        console.error("Error fetching user department:", err);
         setLoading(false); // Stop loading in case of error
         setError("Failed to fetch department data");
       }

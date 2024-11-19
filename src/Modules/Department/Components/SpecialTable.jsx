@@ -1,14 +1,12 @@
-/* eslint-disable react/jsx-pascal-case, radix */
-
 import { Divider, Flex, Stack, Table, Title } from "@mantine/core";
 import PropTypes from "prop-types";
 import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css";
 import {
-  MRT_GlobalFilterTextInput,
-  MRT_TableBodyCellValue,
-  MRT_TablePagination,
-  MRT_ToolbarAlertBanner,
+  MRT_GlobalFilterTextInput as FilterTextInput,
+  MRT_TableBodyCellValue as TableBodyCellValue,
+  MRT_TablePagination as TablePagination,
+  MRT_ToolbarAlertBanner as ToolbarAlertBanner,
   flexRender,
   useMantineReactTable,
 } from "mantine-react-table";
@@ -21,7 +19,7 @@ function SpecialTable({ title, columns, data, rowOptions }) {
     enableRowSelection: false, // Disable row selection checkboxes
     initialState: {
       pagination: {
-        pageSize: rowOptions ? parseInt(rowOptions[0]) : 5,
+        pageSize: rowOptions ? parseInt(rowOptions[0], 10) : 5,
         pageIndex: 0,
       },
       showGlobalFilter: true,
@@ -43,8 +41,8 @@ function SpecialTable({ title, columns, data, rowOptions }) {
            * Use MRT components along side your own markup.
            * They just need the table instance passed as a prop to work!
            */}
-          <MRT_GlobalFilterTextInput table={table} />
-          <MRT_TablePagination table={table} />
+          <FilterTextInput table={table} />
+          <TablePagination table={table} />
         </Flex>
         {/* Using Vanilla Mantine Table component here */}
         <Table
@@ -81,14 +79,14 @@ function SpecialTable({ title, columns, data, rowOptions }) {
               <Table.Tr key={row.id}>
                 {row.getVisibleCells().map((cell) => (
                   <Table.Td key={cell.id}>
-                    <MRT_TableBodyCellValue cell={cell} table={table} />
+                    <TableBodyCellValue cell={cell} table={table} />
                   </Table.Td>
                 ))}
               </Table.Tr>
             ))}
           </Table.Tbody>
         </Table>
-        <MRT_ToolbarAlertBanner stackAlertBanner table={table} />
+        <ToolbarAlertBanner stackAlertBanner table={table} />
       </Stack>
     </div>
   );
