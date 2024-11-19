@@ -115,21 +115,23 @@ function PlacementScheduleCard({
     setIsModalOpen(true);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (newData) => {
+    console.log(newData);
     const token = localStorage.getItem("authToken");
 
-    const formattedDate = date ? format(date, "yyyy-MM-dd") : null;
-    const formattedTime = time || "00:00:00";
+    const formattedDate = newData.date && format(newData.date, "yyyy-MM-dd");
+
+    const formattedTime = newData.time && format(newData.time, "HH:mm:ss");
 
     const updatedData = {
-      placement_type: placementType,
-      company_name: company,
-      ctc: ctc,
-      description: descriptionInput,
+      placement_type: newData.placementType,
+      company_name: newData.company || companyName,
+      ctc: newData.ctc || salary,
+      description: newData.descriptionInput || description,
       schedule_at: formattedTime,
       placement_date: formattedDate,
-      location: locationInput,
-      role: jobRole,
+      location: newData.locationInput || location,
+      role: newData.role || position.toString(),
     };
 
     try {
@@ -301,7 +303,7 @@ function PlacementScheduleCard({
           description,
           salary,
         }}
-        onSubmit={handleSubmit}
+        onSubmit={(newData) => handleSubmit(newData)}
       />
     </>
   );
