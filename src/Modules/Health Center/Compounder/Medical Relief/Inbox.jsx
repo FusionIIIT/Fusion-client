@@ -56,7 +56,7 @@ function Inbox() {
 
   const handleStatusClick = (id, status) => {
     if (status === "Pending") {
-      navigate(`/compounder/medical-relief/application/${id}`);
+      navigate(`/healthcenter/compounder/medical-relief/application/${id}`);
     }
   };
 
