@@ -54,12 +54,12 @@ function PlacementScheduleGrid({
         }}
         my={16}
       >
-        <Title order={2}>Placement Events</Title>
-        {role === "placement officer" && (
+        {/* <Title order={2}>Placement Events</Title> */}
+        {/* {role === "placement officer" && (
           <Button onClick={onAddEvent} variant="outline">
             Add Placement Event
           </Button>
-        )}
+        )} */}
       </Container>
       <Grid gutter="xl">
         {paddedItems.map((item, index) => (
@@ -67,20 +67,19 @@ function PlacementScheduleGrid({
             {item ? (
               <PlacementScheduleCard
                 jobId={item.id}
-                companyLogo="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg"
+                // companyLogo="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg"
                 companyName={item.company_name}
                 location={item.location}
-                position={String(item.role)}
+                position={item.role_st}
                 jobType={item.placement_type}
                 postedTime={item.schedule_at}
                 deadline={item.placement_date}
                 description={item.description}
                 salary={item.ctc}
+                check={item.check}
               />
             ) : (
-              <div style={{ height: "100%", border: "1px dashed gray" }}>
-                Placeholder
-              </div>
+              <div></div>
             )}
           </Grid.Col>
         ))}
@@ -115,31 +114,30 @@ PlacementScheduleGrid.propTypes = {
   onAddEvent: PropTypes.func.isRequired,
 };
 
-// PlacementSchedule component
 function PlacementSchedule() {
   const [placementData, setPlacementData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
+  const role = useSelector((state) => state.user.role);
 
   useEffect(() => {
     const fetchData = async () => {
+      const token = localStorage.getItem("authToken");
       try {
         const response = await axios.get(
           "http://127.0.0.1:8000/placement/api/placement/",
           {
             headers: {
+              Authorization: `Token ${token}`,
               "X-CSRFToken": csrfToken,
               "Content-Type": "application/json",
             },
-          },
+          }
         );
         setPlacementData(response.data);
       } catch (err) {
-        console.error(
-          "Error details:",
-          err.response ? err.response.data : err.message,
-        );
+        console.error("Error details:", err.response ? err.response.data : err.message);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -156,13 +154,68 @@ function PlacementSchedule() {
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
+  const today = new Date();
+
+  const activeEvents = placementData.filter(
+    (item) => new Date(item.placement_date) >= today
+  );
+  const closedEvents = placementData.filter(
+    (item) => new Date(item.placement_date) < today
+  );
+
   return (
     <>
-      <PlacementScheduleGrid
-        data={placementData}
-        itemsPerPage={6}
-        onAddEvent={handleAddEvent}
-      />
+      <Container fluid py={16}>
+        <Container
+          fluid
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+          my={16}
+        >
+          <Title order={2}>Placement Events</Title>
+          {role === "placement officer" && (
+            <Button onClick={handleAddEvent} variant="outline">
+              Add Placement Event
+            </Button>
+          )}
+        </Container>
+        {(role === "placement officer" || role==="placement chairman") && (
+          <>
+            <Title order={3} mt="xl">
+              Active
+            </Title>
+            <PlacementScheduleGrid
+              data={activeEvents}
+              itemsPerPage={6}
+              cardsPerRow={3}
+              onAddEvent={handleAddEvent}
+            />
+            <Title order={3} mt="xl">
+              Closed
+            </Title>
+            <PlacementScheduleGrid
+              data={closedEvents}
+              itemsPerPage={6}
+              cardsPerRow={3}
+              onAddEvent={handleAddEvent}
+            />
+          </>
+        )}
+        {role === "student" && (
+          <>
+            <PlacementScheduleGrid
+              data={activeEvents}
+              itemsPerPage={6}
+              cardsPerRow={3}
+              onAddEvent={handleAddEvent}
+            />
+          </>
+        )}
+      </Container>
       <Modal
         opened={isModalOpen}
         onClose={() => setIsModalOpen(false)}

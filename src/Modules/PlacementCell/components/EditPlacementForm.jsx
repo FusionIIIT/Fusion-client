@@ -6,7 +6,6 @@ import {
   Title,
   Grid,
   TextInput,
-  ActionIcon,
   Select,
   Textarea,
   Group,
@@ -23,20 +22,53 @@ const EditPlacementForm = ({ isOpen, onClose, placementData, onSubmit }) => {
     location,
     position,
     jobType,
+    deadline,
     description,
     salary,
   } = placementData;
 
   // Initialize state
   const [company, setCompany] = useState(companyName);
-  const [date, setDate] = useState(new Date());
+  const [date, setDate] = useState(); // Initially null
   const [locationInput, setLocation] = useState(location);
   const [ctc, setCtc] = useState(salary);
   const [time, setTime] = useState(new Date());
   const [placementType, setPlacementType] = useState(jobType);
   const [descriptionInput, setDescription] = useState(description);
-  const [role, setRole] = useState(position);
-  const [datePickerOpened, setDatePickerOpened] = useState(false);
+  const [role, setRole] = useState();
+
+  const getFormattedDate = (date) => {
+    if (!date) return null;
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  // Handle form submission
+  const handleSubmit = () => {
+    // Ensure ctc is a valid number
+    const parsedCtc = parseFloat(ctc);
+    if (isNaN(parsedCtc) || parsedCtc <= 0) {
+      alert("CTC must be a valid positive decimal number.");
+      return;
+    }
+
+    // Format the CTC to two decimal places
+    const formattedCtc = parsedCtc.toFixed(2);
+
+    // Submit the form with all fields
+    onSubmit({
+      company,
+      date: getFormattedDate(date),
+      location: locationInput,
+      ctc: formattedCtc,  // Use formatted CTC here
+      time,
+      placementType,
+      description: descriptionInput,
+      role,
+    });
+  };
 
   return (
     <Modal size="lg" centered opened={isOpen} onClose={onClose}>
@@ -56,7 +88,7 @@ const EditPlacementForm = ({ isOpen, onClose, placementData, onSubmit }) => {
 
           {/* Date Picker */}
           <Grid.Col span={4}>
-            <DateInput
+           <DateInput
               label="Date"
               placeholder="Pick a date"
               value={date}
@@ -151,20 +183,7 @@ const EditPlacementForm = ({ isOpen, onClose, placementData, onSubmit }) => {
           </Grid.Col>
         </Grid>
         <Group position="right" style={{ marginTop: "20px" }}>
-          <Button
-            onClick={() =>
-              onSubmit({
-                company,
-                date,
-                locationInput,
-                ctc,
-                time,
-                placementType,
-                descriptionInput,
-                role,
-              })
-            }
-          >
+          <Button onClick={handleSubmit}>
             Save Changes
           </Button>
         </Group>

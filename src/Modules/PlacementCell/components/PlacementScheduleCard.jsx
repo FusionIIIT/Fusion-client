@@ -18,7 +18,7 @@ import { notifications } from "@mantine/notifications";
 
 function PlacementScheduleCard({
   jobId,
-  companyLogo,
+  // companyLogo,
   companyName,
   location,
   position,
@@ -27,6 +27,7 @@ function PlacementScheduleCard({
   deadline,
   description,
   salary,
+  check
 }) {
   const role = useSelector((state) => state.user.role);
   const [visible, setVisible] = useState(true);
@@ -35,28 +36,25 @@ function PlacementScheduleCard({
   const navigate = useNavigate();
 
   const handleApplyClick = async () => {
-    const token = localStorage.getItem("authToken");
+    const token = localStorage.getItem("authToken"); 
     console.log("Auth Token:", token);
     console.log("Placement ID:", jobId);
     try {
-      const response = await fetch(
-        "http://127.0.0.1:8000/placement/api/apply-placement/",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Token ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ jobId }),
+      const response = await fetch('http://127.0.0.1:8000/placement/api/apply-placement/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json',
         },
-      );
+        body: JSON.stringify({ jobId }),
+      });
       if (response.ok) {
-        console.log("Application successful");
+        console.log('Application successful');
       } else {
-        console.error("Failed to apply");
+        console.error('Failed to apply');
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error('Error:', error);
     }
   };
 
@@ -182,6 +180,11 @@ function PlacementScheduleCard({
     }
   };
 
+  const handleTimeline = async () => {
+    navigate(`/placement-cell/timeline?jobId=${encodeURIComponent(jobId)}`);
+  };
+    
+
   if (!visible) return null;
 
   return (
@@ -193,7 +196,7 @@ function PlacementScheduleCard({
         withBorder
         style={{ width: 320, position: "relative" }}
       >
-        <Group align="flex-start">
+        {/* <Group align="flex-start">
           <Image
             src={companyLogo}
             alt={`${companyName} logo`}
@@ -202,7 +205,7 @@ function PlacementScheduleCard({
             fit="contain"
             withPlaceholder
           />
-        </Group>
+        </Group> */}
         <Text weight={700} size="lg" mt={10}>
           {companyName}
         </Text>
@@ -220,7 +223,7 @@ function PlacementScheduleCard({
           <Group spacing={5}>
             <Clock size={16} />
             <Text size="xs" color="dimmed">
-              {postedTime}
+              {deadline}
             </Text>
           </Group>
         </Group>
@@ -246,6 +249,17 @@ function PlacementScheduleCard({
           </Text>
 
           {role === "student" && (
+            check ? (
+              <Button
+              variant="light"
+              color="green"
+              size="xs"
+              onClick={handleTimeline} 
+            >
+              View
+            </Button>
+            // <ApplicationStatusTimeline />
+          ) : (
             <Button
               variant="light"
               color="blue"
@@ -254,6 +268,7 @@ function PlacementScheduleCard({
             >
               Apply Now
             </Button>
+            )
           )}
 
           {role === "placement officer" && (
@@ -309,7 +324,7 @@ function PlacementScheduleCard({
   );
 }
 PlacementScheduleCard.propTypes = {
-  companyLogo: PropTypes.string,
+  // companyLogo: PropTypes.string,
   companyName: PropTypes.string.isRequired,
   location: PropTypes.string.isRequired,
   position: PropTypes.string.isRequired,

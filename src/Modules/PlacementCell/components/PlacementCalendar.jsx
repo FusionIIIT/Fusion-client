@@ -8,6 +8,7 @@ import enUS from "date-fns/locale/en-US";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import axios from "axios";
 import { Container, Title } from "@mantine/core";
+import { useNavigate } from "react-router-dom";
 
 const locales = {
   "en-US": enUS,
@@ -23,6 +24,7 @@ const localizer = dateFnsLocalizer({
 
 function PlacementCalendar() {
   const [events, setEvents] = useState([]);
+  const navigate = useNavigate(); 
 
   useEffect(() => {
     async function fetchScheduleData() {
@@ -36,7 +38,7 @@ function PlacementCalendar() {
             headers: {
               Authorization: `Token ${token}`,
             },
-          },
+          }
         );
 
         console.log("API Response:", response.data);
@@ -45,9 +47,8 @@ function PlacementCalendar() {
 
         if (Array.isArray(scheduleData)) {
           const calendarEvents = scheduleData.map((item) => ({
+            id: item.id, 
             title: `${item.company_name} - Round ${item.round}`,
-            start: new Date(item.date),
-            end: new Date(item.date),
             start: new Date(item.date),
             end: new Date(item.date),
             description: item.description,
@@ -67,6 +68,10 @@ function PlacementCalendar() {
 
     fetchScheduleData();
   }, []);
+
+  const handleSelect = (event) => {
+    navigate(`/placement-cell/timeline?jobId=${encodeURIComponent(event.id)}`);
+  };
 
   return (
     <div style={{ height: "50vh", width: "90%", margin: "20px auto" }}>
@@ -91,6 +96,7 @@ function PlacementCalendar() {
         views={["month", "week", "day"]}
         defaultView="month"
         tooltipAccessor="description"
+        onSelectEvent={handleSelect}
       />
     </div>
   );

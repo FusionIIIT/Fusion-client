@@ -14,6 +14,7 @@ import JobApplicationForm from "./Modules/PlacementCell/ApplyForPlacementForm";
 import AddPlacementRecordForm from "./Modules/PlacementCell/components/AddPlacementRecordForm";
 import AddPlacementEventForm from "./Modules/PlacementCell/components/AddPlacementEventForm";
 import PlacementEventHandeling from "./Modules/PlacementCell/components/PlacementEventHandeling";
+import ApplicationStatusTimeline from "./Modules/PlacementCell/components/Timeline";
 
 export default function App() {
   const location = useLocation();
@@ -66,6 +67,14 @@ export default function App() {
           element={
             <Layout>
               <PlacementEventHandeling />
+            </Layout>
+          }
+        />
+        <Route
+          path="/placement-cell/timeline"
+          element={
+            <Layout>
+              <ApplicationStatusTimeline />
             </Layout>
           }
         />
