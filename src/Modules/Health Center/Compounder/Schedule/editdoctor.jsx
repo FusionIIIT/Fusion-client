@@ -1,8 +1,11 @@
 /* eslint-disable react/prop-types */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { Paper } from "@mantine/core";
 import NavCom from "../NavCom";
 import ScheduleNavBar from "./schedulePath";
+import { compounderRoute } from "../../../../routes/health_center";
+import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
 
 function Editdoctor() {
   const [doctorName, setDoctorName] = useState("");
@@ -11,16 +14,8 @@ function Editdoctor() {
   const [dayToAdd, setDayToAdd] = useState("");
   const [doctorToRemove, setDoctorToRemove] = useState("");
   const [dayToRemove, setDayToRemove] = useState("");
-
-  const doctors = ["Dr GS Sandhu", "Dr Aditya Shivi", "Dr Sonali Verma"];
-
-  const handleAddSchedule = () => {
-    console.log("Added Schedule:", { doctorName, timeIn, timeOut, dayToAdd });
-  };
-
-  const handleRemoveSchedule = () => {
-    console.log("Removed Schedule:", { doctorToRemove, dayToRemove });
-  };
+  const [roomToAdd, setRoom] = useState("");
+  const [doctors, setDoctors] = useState([]);
 
   const containerStyle = {
     display: "flex",
@@ -76,10 +71,92 @@ function Editdoctor() {
     },
   };
 
+  const fetchDoctors = async () => {
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.post(
+        compounderRoute,
+        { get_doctors: 1 },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      console.log(response);
+      setDoctors(response.data.doctors);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchDoctors();
+  }, []);
+
+  const editSchedule = async () => {
+    if (timeIn > timeOut) {
+      alert("Enter Valid Time");
+      return false;
+    }
+    if (roomToAdd === "") {
+      alert("Enter Room Number");
+      return false;
+    }
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.post(
+        compounderRoute,
+        {
+          doctor: doctorName,
+          day: dayToAdd,
+          room: roomToAdd,
+          time_in: timeIn,
+          time_out: timeOut,
+          edit_1: 1,
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      console.log(response);
+      alert("schedule added successfully");
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const removeSchedule = async () => {
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.post(
+        compounderRoute,
+        {
+          doctor: doctorToRemove,
+          day: dayToRemove,
+          rmv: 1,
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      console.log(response);
+      alert("schedule removed successfully");
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   return (
-    <div>
+    <>
+      <CustomBreadcrumbs />
       <NavCom />
       <ScheduleNavBar />
+      <br />
       <Paper shadow="xl" p="xl" withBorder>
         <div style={responsiveContainerStyle}>
           <div style={boxStyle}>
@@ -94,8 +171,8 @@ function Editdoctor() {
                   Select Doctor
                 </option>
                 {doctors.map((doctor) => (
-                  <option key={doctor} value={doctor}>
-                    {doctor}
+                  <option key={doctor.id} value={doctor.id}>
+                    {doctor.doctor_name}
                   </option>
                 ))}
               </select>
@@ -138,7 +215,14 @@ function Editdoctor() {
                 placeholder="Time Out"
                 style={{ marginRight: "10px", marginBottom: "10px" }}
               />
-              <button style={buttonStyle} onClick={handleAddSchedule}>
+              <input
+                type="number"
+                placeholder="Room No"
+                style={{ marginRight: "10px", marginBottom: "10px" }}
+                value={roomToAdd}
+                onChange={(e) => setRoom(e.target.value)}
+              />
+              <button style={buttonStyle} onClick={editSchedule}>
                 Add Schedule
               </button>
             </div>
@@ -156,8 +240,8 @@ function Editdoctor() {
                   Select Doctor
                 </option>
                 {doctors.map((doctor) => (
-                  <option key={doctor} value={doctor}>
-                    {doctor}
+                  <option key={doctor.id} value={doctor.id}>
+                    {doctor.doctor_name}
                   </option>
                 ))}
               </select>
@@ -183,14 +267,14 @@ function Editdoctor() {
                   </option>
                 ))}
               </select>
-              <button style={buttonStyle} onClick={handleRemoveSchedule}>
+              <button style={buttonStyle} onClick={removeSchedule}>
                 Remove Schedule
               </button>
             </div>
           </div>
         </div>
       </Paper>
-    </div>
+    </>
   );
 }
 

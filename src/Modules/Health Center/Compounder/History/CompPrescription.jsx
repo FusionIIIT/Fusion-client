@@ -10,10 +10,10 @@ import {
   Title,
 } from "@mantine/core";
 import { useEffect, useState } from "react";
-import NavCom from "../Navigation";
+import NavCom from "../NavCom";
 import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
 
-function Prescription() {
+function CompPrescription() {
   const [prescrip, setPrescrip] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
   const [printMode, setPrintMode] = useState("latest");
@@ -120,6 +120,10 @@ function Prescription() {
     </div>
   );
 
+  const handleFollowup = () => {
+    alert("Follow-up added");
+  };
+
   return (
     <>
       <CustomBreadcrumbs />
@@ -214,6 +218,16 @@ function Prescription() {
               {prescrip?.diseaseDetails}
             </Text>
           </div>
+
+          <Button
+            style={{
+              marginTop: "1.4rem",
+              backgroundColor: "#15abff",
+            }}
+            onClick={handleFollowup}
+          >
+            Add Follow-up
+          </Button>
         </Flex>
         <br />
 
@@ -255,4 +269,4 @@ function Prescription() {
   );
 }
 
-export default Prescription;
+export default CompPrescription;

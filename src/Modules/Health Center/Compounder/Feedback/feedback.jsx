@@ -3,6 +3,7 @@ import axios from "axios";
 import { Paper, Title } from "@mantine/core";
 import NavCom from "../NavCom";
 import { compounderRoute } from "../../../../routes/health_center";
+import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
 
 function FeedbackTable() {
   const [feedbackData, setFeedbackData] = useState({ complaints: [] });
@@ -52,8 +53,8 @@ function FeedbackTable() {
 
   return (
     <div>
+      <CustomBreadcrumbs />
       <NavCom />
-
       <div style={{ margin: "2rem" }}>
         <Paper shadow="xl" p="xl" withBorder>
           <Title

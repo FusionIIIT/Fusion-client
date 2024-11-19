@@ -4,6 +4,7 @@ import { useState } from "react";
 import NavCom from "../NavCom";
 import { compounderRoute } from "../../../../routes/health_center";
 import AnnounceNavBar from "./announPath";
+import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
 
 function CompAnnounements() {
   const [announce, setAnnounce] = useState("");
@@ -35,6 +36,7 @@ function CompAnnounements() {
 
   return (
     <>
+      <CustomBreadcrumbs />
       <NavCom />
       <AnnounceNavBar style={{ display: "flex" }} />
       <br />

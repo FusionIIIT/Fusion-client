@@ -2,48 +2,47 @@ import React, { useRef, useState, useEffect } from "react";
 import { Flex, Button, Tabs, Text } from "@mantine/core";
 import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
-import classes from "../../Dashboard/Dashboard.module.css";
+import classes from "../../../Dashboard/Dashboard.module.css";
 
-function NavPatient() {
+function Changenav() {
   const [activeTab, setActiveTab] = useState(0);
   const tabsListRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
-  const role = useSelector((state) => state.user.role);
-
-  const baseTabItems = [
-    { title: "History", path: "/history" },
-    { title: "Feedback", path: "/feedback" },
-    { title: "Schedule", path: "/schedule" },
-    { title: "Announcements", path: "/announcements" },
-    { title: "Medical Relief", path: "/medical-relief" },
+  const tabItems = [
+    { title: "Doctor", path: "/healthcenter/compounder/docpath" },
+    { title: "Add doctor", path: "/healthcenter/compounder/docpath/adddoctor" },
+    {
+      title: "Remove Doctor",
+      path: "/healthcenter/compounder/docpath/removedoctor",
+    },
+    {
+      title: "Pathologist",
+      path: "/healthcenter/compounder/docpath/pathologists",
+    },
+    {
+      title: "Add Pathologist",
+      path: "/healthcenter/compounder/docpath/addpath",
+    },
+    {
+      title: "Remove Pathologist",
+      path: "/healthcenter/compounder/docpath/removepath",
+    },
   ];
-
-  const tabItems =
-    role === "student"
-      ? baseTabItems.filter((tab) => tab.title !== "Medical Relief")
-      : baseTabItems;
 
   useEffect(() => {
     const currentPath = location.pathname;
-
-    const activeIndex = tabItems.findIndex((item) =>
-      currentPath.startsWith(`/healthcenter/student${item.path}`),
-    );
-
+    const activeIndex = tabItems.findIndex((item) => item.path === currentPath);
     if (activeIndex !== -1) {
       setActiveTab(activeIndex);
     }
-  }, [location.pathname, tabItems]);
+  }, [location.pathname]);
 
   const handleNavigation = (index) => {
-    const basePath = "/healthcenter/student";
     const path = tabItems[index]?.path;
-
-    if (path && !location.pathname.startsWith(`${basePath}${path}`)) {
-      navigate(`${basePath}${path}`);
+    if (path && window.location.pathname !== path) {
+      navigate(path);
     }
   };
 
@@ -143,8 +142,9 @@ function NavPatient() {
           <CaretCircleRight weight="light" size={32} />
         </Button>
       </Flex>
+      <br />
     </Flex>
   );
 }
 
-export default NavPatient;
+export default Changenav;

@@ -1,79 +1,91 @@
-import { Radio, Table } from "@mantine/core";
-import Navigation from "../Navigation";
+import React, { useEffect, useState } from "react";
+import { Paper, Table, Title } from "@mantine/core";
+import axios from "axios";
+import { studentRoute } from "../../../../routes/health_center";
+import NavPatient from "../Navigation";
+import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
 
 function Announcement() {
-  const elements = [
-    {
-      annDetails: "New PHC Doctor",
-    },
-    {
-      annDetails: "New PHC Doctor",
-    },
-  ];
+  const [test, StateTest] = useState({ announcements: [] });
 
-  const rows = elements.map((element) => (
-    <Table.Tr key={element.annDetails}>
-      <Table.Td>{element.annDetails}</Table.Td>
+  useEffect(() => {
+    const get_announcement = async () => {
+      const token = localStorage.getItem("authToken");
+      try {
+        const response = await axios.post(
+          studentRoute,
+          { get_annoucements: 1 },
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+          },
+        );
+        StateTest(response.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    get_announcement();
+  }, []);
+  console.log(test);
+  const rows = test.announcements.map((element, index) => (
+    <Table.Tr key={index}>
+      <Table.Td>{element.message}</Table.Td>
     </Table.Tr>
   ));
 
   return (
     <>
-      <Navigation />
-      <div style={{ margin: "2rem" }}>
-        <div
-          style={{
-            display: "flex",
-            padding: "0.5rem",
-            border: "1px solid",
-            backgroundColor: "white",
-            borderRadius: "9999px",
-            width: "14rem",
-          }}
-        >
-          <Radio
-            label="Announcements Record"
-            color="grape"
-            variant="outline"
-            defaultChecked
-          />
-        </div>
-
-        <br />
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            width: "50%",
-            margin: "0 auto",
-          }}
-        >
-          <Table
-            withTableBorder
-            withColumnBorders
-            highlightOnHover
-            style={{ width: "100%" }}
+      <CustomBreadcrumbs />
+      <NavPatient />
+      <br />
+      <Paper p="xl" shadow="xl" withBorder>
+        <div style={{ margin: "2rem" }}>
+          <div
+            style={{
+              width: "80%",
+              margin: "0 auto",
+            }}
           >
-            <Table.Thead>
-              <Table.Tr style={{ backgroundColor: "#6D28D9", color: "white" }}>
-                <Table.Th style={{ textAlign: "center" }}>
-                  Announcements Details
-                </Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody
+            <Title
+              order={5}
               style={{
-                backgroundColor: "#EDE9FE",
-                color: "#4C1D95",
                 textAlign: "center",
+                margin: "0 auto",
+                color: "#15abff",
               }}
             >
-              {rows}
-            </Table.Tbody>
-          </Table>
+              Announcements Record
+            </Title>
+            <br />
+            <Table
+              striped
+              withTableBorder
+              withColumnBorders
+              highlightOnHover
+              horizontalSpacing="sm"
+              verticalSpacing="sm"
+              style={{ width: "100%" }}
+            >
+              <Table.Thead>
+                <Table.Tr style={{}}>
+                  <Table.Th style={{ textAlign: "center" }}>
+                    Announcements Details
+                  </Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody
+                style={{
+                  textAlign: "center",
+                }}
+              >
+                {rows}
+              </Table.Tbody>
+            </Table>
+          </div>
         </div>
-      </div>
+      </Paper>
     </>
   );
 }
