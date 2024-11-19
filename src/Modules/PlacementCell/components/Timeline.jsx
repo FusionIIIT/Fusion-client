@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { Timeline, Text, Card } from "@mantine/core";
+import { Timeline, Text, Card, Title, Container, Group } from "@mantine/core";
 import { Check, X, Minus } from "@phosphor-icons/react";
 import axios from "axios";
+import { ActionIcon } from "@mantine/core";
+import { ArrowLeft } from "@phosphor-icons/react";
+import { useNavigate } from "react-router-dom";
 
 function ApplicationStatusTimeline() {
   const [statusData, setStatusData] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const navigate = useNavigate();
+  const handleBack = () => {
+    navigate("/placement-cell");
+  };
 
   useEffect(() => {
     async function fetchStatusData() {
@@ -19,7 +27,7 @@ function ApplicationStatusTimeline() {
             headers: {
               Authorization: `Token ${token}`,
             },
-          }
+          },
         );
 
         setStatusData(response.data.next_data);
@@ -39,16 +47,24 @@ function ApplicationStatusTimeline() {
 
   return (
     <div style={{ padding: "20px" }}>
-      <Card
-        shadow="sm"
-        padding="lg"
+      <Container
+        fluid
         radius="md"
         withBorder
-        style={{ width: "500px" }}
+        style={{ display: "flex", flexDirection: "column", gap: "2rem" }}
       >
-        <Text weight={700} size="xl" mb="md">
-          Application Status
-        </Text>
+        {/* Back button */}
+        <Group position="left" mb="xl">
+          <ActionIcon
+            variant="outline"
+            style={{ border: "none" }}
+            onClick={handleBack}
+          >
+            <ArrowLeft size={18} />
+          </ActionIcon>
+        </Group>
+
+        <Title order={2}>Application Status</Title>
 
         {/* Timeline */}
         <Timeline active={statusData.length - 1} bulletSize={24} lineWidth={2}>
@@ -58,11 +74,7 @@ function ApplicationStatusTimeline() {
             const isLast = index === statusData.length - 1;
 
             // Determine circle color
-            const circleColor = isLast
-              ? "gray"
-              : isRejected
-              ? "red"
-              : "green";
+            const circleColor = isLast ? "gray" : isRejected ? "red" : "green";
 
             return (
               <Timeline.Item
@@ -70,7 +82,7 @@ function ApplicationStatusTimeline() {
                 title={
                   isRejected
                     ? "Rejected"
-                    :`${item.test_name} (Round ${item.round_no})`
+                    : `${item.test_name} (Round ${item.round_no})`
                 }
                 bullet={
                   isLast ? (
@@ -85,7 +97,7 @@ function ApplicationStatusTimeline() {
                   bullet: {
                     backgroundColor: circleColor,
                     borderColor: circleColor,
-                  }, 
+                  },
                   title: {
                     color: isLast ? "gray" : isRejected ? "red" : "black",
                   },
@@ -94,22 +106,21 @@ function ApplicationStatusTimeline() {
                   },
                 }}
               >
-                <Text size="sm">
-                  { isRejected
+                <Text size="md">
+                  {isRejected
                     ? "Application rejected"
                     : item.test_date
-                    ? `Scheduled on ${item.test_date}`
-                    : IsUpdated
-                    ?"To be updated"
-                    :"Completed"
-                  }
+                      ? `Scheduled on ${item.test_date}`
+                      : IsUpdated
+                        ? "To be updated"
+                        : "Completed"}
                   {item.description && <div>{item.description}</div>}
                 </Text>
               </Timeline.Item>
             );
           })}
         </Timeline>
-      </Card>
+      </Container>
     </div>
   );
 }

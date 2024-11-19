@@ -1,4 +1,5 @@
 import "@mantine/dates/styles.css";
+
 import React, { useState } from "react";
 import {
   Modal,
@@ -29,13 +30,14 @@ const EditPlacementForm = ({ isOpen, onClose, placementData, onSubmit }) => {
 
   // Initialize state
   const [company, setCompany] = useState(companyName);
-  const [date, setDate] = useState(); // Initially null
+  const [date, setDate] = useState(new Date());
   const [locationInput, setLocation] = useState(location);
   const [ctc, setCtc] = useState(salary);
   const [time, setTime] = useState(new Date());
   const [placementType, setPlacementType] = useState(jobType);
   const [descriptionInput, setDescription] = useState(description);
-  const [role, setRole] = useState();
+  const [datePickerOpened, setDatePickerOpened] = useState(false);
+  const [role, setRole] = useState(position);
 
   const getFormattedDate = (date) => {
     if (!date) return null;
@@ -94,7 +96,6 @@ const EditPlacementForm = ({ isOpen, onClose, placementData, onSubmit }) => {
               value={date}
               onChange={(d) => {
                 setDate(d);
-                console.log(d, date);
               }}
               opened={datePickerOpened}
               onFocus={() => setDatePickerOpened(true)}
@@ -177,7 +178,7 @@ const EditPlacementForm = ({ isOpen, onClose, placementData, onSubmit }) => {
             <TextInput
               label="Role Offered"
               placeholder="Enter the role offered"
-              value={role}
+              value={position}
               onChange={(e) => setRole(e.target.value)}
             />
           </Grid.Col>

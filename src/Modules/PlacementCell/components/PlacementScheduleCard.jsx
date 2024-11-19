@@ -7,6 +7,7 @@ import {
   Button,
   Image,
   ActionIcon,
+  Title,
 } from "@mantine/core";
 import { Clock, MapPin, Trash, Pencil, Eye } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
@@ -18,7 +19,7 @@ import { notifications } from "@mantine/notifications";
 
 function PlacementScheduleCard({
   jobId,
-  // companyLogo,
+  companyLogo,
   companyName,
   location,
   position,
@@ -27,7 +28,7 @@ function PlacementScheduleCard({
   deadline,
   description,
   salary,
-  check
+  check,
 }) {
   const role = useSelector((state) => state.user.role);
   const [visible, setVisible] = useState(true);
@@ -36,25 +37,28 @@ function PlacementScheduleCard({
   const navigate = useNavigate();
 
   const handleApplyClick = async () => {
-    const token = localStorage.getItem("authToken"); 
+    const token = localStorage.getItem("authToken");
     console.log("Auth Token:", token);
     console.log("Placement ID:", jobId);
     try {
-      const response = await fetch('http://127.0.0.1:8000/placement/api/apply-placement/', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Token ${token}`,
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        "http://127.0.0.1:8000/placement/api/apply-placement/",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ jobId }),
         },
-        body: JSON.stringify({ jobId }),
-      });
+      );
       if (response.ok) {
-        console.log('Application successful');
+        console.log("Application successful");
       } else {
-        console.error('Failed to apply');
+        console.error("Failed to apply", response);
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
     }
   };
 
@@ -129,7 +133,7 @@ function PlacementScheduleCard({
       schedule_at: formattedTime,
       placement_date: formattedDate,
       location: newData.locationInput || location,
-      role: newData.role || position.toString(),
+      role: newData.role || (position && position.toString()),
     };
 
     try {
@@ -183,7 +187,6 @@ function PlacementScheduleCard({
   const handleTimeline = async () => {
     navigate(`/placement-cell/timeline?jobId=${encodeURIComponent(jobId)}`);
   };
-    
 
   if (!visible) return null;
 
@@ -206,9 +209,9 @@ function PlacementScheduleCard({
             withPlaceholder
           />
         </Group> */}
-        <Text weight={700} size="lg" mt={10}>
+        <Title order={3} align="left" style={{ marginBottom: "20px" }}>
           {companyName}
-        </Text>
+        </Title>
         <Group spacing={5} mt={5}>
           <MapPin size={16} />
           <Text size="sm" color="dimmed">
@@ -248,28 +251,27 @@ function PlacementScheduleCard({
             {salary}
           </Text>
 
-          {role === "student" && (
-            check ? (
+
+          {role === "student" &&
+            (check ? (
               <Button
-              variant="light"
-              color="green"
-              size="xs"
-              onClick={handleTimeline} 
-            >
-              View
-            </Button>
-            // <ApplicationStatusTimeline />
-          ) : (
-            <Button
-              variant="light"
-              color="blue"
-              size="xs"
-              onClick={handleApplyClick}
-            >
-              Apply Now
-            </Button>
-            )
-          )}
+                variant="light"
+                color="green"
+                size="xs"
+                onClick={handleTimeline}
+              >
+                View
+              </Button>
+            ) : (
+              <Button
+                variant="light"
+                color="blue"
+                size="xs"
+                onClick={handleApplyClick}
+              >
+                Apply Now
+              </Button>
+            ))}
 
           {role === "placement officer" && (
             <Group position="right" spacing="xs">
