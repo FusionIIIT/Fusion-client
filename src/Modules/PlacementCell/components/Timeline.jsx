@@ -5,6 +5,7 @@ import axios from "axios";
 import { ActionIcon } from "@mantine/core";
 import { ArrowLeft } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
+import { fetchTimeLineRoute } from "../../../routes/placementCellRoutes";
 
 function ApplicationStatusTimeline() {
   const [statusData, setStatusData] = useState([]);
@@ -22,7 +23,7 @@ function ApplicationStatusTimeline() {
 
       try {
         const response = await axios.get(
-          `http://127.0.0.1:8000/placement/api/timeline/${jobId}/`,
+          `${fetchTimeLineRoute}${jobId}/`,
           {
             headers: {
               Authorization: `Token ${token}`,

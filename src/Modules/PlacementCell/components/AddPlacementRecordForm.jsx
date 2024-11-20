@@ -167,6 +167,9 @@
 
 // export default AddPlacementRecordForm;
 
+
+import "@mantine/dates/styles.css";
+
 import React, { useState } from "react";
 import {
   TextInput,

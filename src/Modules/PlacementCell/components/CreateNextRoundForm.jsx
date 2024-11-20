@@ -11,6 +11,7 @@ import {
   Container,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
+import { submitNextRoundDetailsRoute } from "../../../routes/placementCellRoutes";
 
 function CreateNextRoundForm() {
   const [modalOpened, setModalOpened] = useState(false);
@@ -50,7 +51,7 @@ function CreateNextRoundForm() {
       console.log(jobId);
       try {
         const response = await axios.post(
-          `http://127.0.0.1:8000/placement/api/nextround/${jobId}/`,
+          `${submitNextRoundDetailsRoute}${jobId}/`,
           nextRoundDetails,
           {
             headers: {

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button, Checkbox, Group, Text, Title } from "@mantine/core";
 import axios from "axios";
+import { downloadCVRoute } from "../../../routes/placementCellRoutes";
 
 const getCookie = (name) => {
   const value = `; ${document.cookie}`;
@@ -32,7 +33,7 @@ function DownloadCV() {
     console.log("Auth Token:", token);
     try {
       const response = await axios.post(
-        "http://127.0.0.1:8000/placement/api/generate-cv/",
+        downloadCVRoute,
         fields,
         {
           headers: {

@@ -179,6 +179,7 @@ import {
 import axios from "axios";
 import { MantineReactTable } from "mantine-react-table";
 import { notifications } from "@mantine/notifications";
+import { downloadExcelRoute, fetchApplicationsRoute, handleStatusChangeRoute } from "../../../routes/placementCellRoutes";
 
 function JobApplicationsTable() {
   const [applications, setApplications] = useState([]);
@@ -194,7 +195,7 @@ function JobApplicationsTable() {
       try {
         setLoading(true);
         const response = await axios.get(
-          `http://127.0.0.1:8000/placement/api/student-applications/${jobId}/`,
+          `${fetchApplicationsRoute}${jobId}/`,
           {
             headers: { Authorization: `Token ${token}` },
           },
@@ -215,7 +216,7 @@ function JobApplicationsTable() {
       const token = localStorage.getItem("authToken");
       try {
         const response = await axios.put(
-          `http://127.0.0.1:8000/placement/api/student-applications/${applicationId}/`,
+          `${handleStatusChangeRoute}${applicationId}/`,
           data,
           {
             headers: {
@@ -265,7 +266,7 @@ function JobApplicationsTable() {
     const token = localStorage.getItem("authToken");
     try {
       const response = await axios.get(
-        `http://127.0.0.1:8000/placement/api/download-applications/${jobId}/`,
+        `${downloadExcelRoute}${jobId}/`,
         {
           headers: { Authorization: `Token ${token}` },
           responseType: "blob",
@@ -364,8 +365,8 @@ function JobApplicationsTable() {
           <MantineReactTable
             columns={columns}
             data={paginatedApplications}
-            enableColumnOrdering
-            enableGlobalFilter
+            // enableColumnOrdering
+            // enableGlobalFilter
           />
         ) : (
           <Alert color="yellow">No applications available</Alert>

@@ -9,6 +9,7 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import axios from "axios";
 import { Container, Title } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
+import { calendarEventsRoute } from "../../../routes/placementCellRoutes";
 
 const locales = {
   "en-US": enUS,
@@ -33,7 +34,7 @@ function PlacementCalendar() {
 
       try {
         const response = await axios.get(
-          "http://127.0.0.1:8000/placement/api/calender/",
+          calendarEventsRoute,
           {
             headers: {
               Authorization: `Token ${token}`,

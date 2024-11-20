@@ -393,6 +393,7 @@ import { MantineReactTable } from "mantine-react-table";
 import { useSelector } from "react-redux";
 import AddPlacementRecordForm from "./AddPlacementRecordForm";
 import { notifications } from "@mantine/notifications";
+import { deletePlacementStatsRoute, fetchPlacementStatsRoute } from "../../../routes/placementCellRoutes";
 
 function PlacementRecordsTable() {
   const role = useSelector((state) => state.user.role);
@@ -410,7 +411,7 @@ function PlacementRecordsTable() {
       try {
         const token = localStorage.getItem("authToken");
         const response = await axios.get(
-          "http://127.0.0.1:8000/placement/api/statistics/",
+          fetchPlacementStatsRoute,
           {
             headers: {
               Authorization: `Token ${token}`,
@@ -453,7 +454,7 @@ function PlacementRecordsTable() {
     try {
       const token = localStorage.getItem("authToken");
       const response = await axios.delete(
-        `http://127.0.0.1:8000/placement/api/delete-statistics/${id}/`,
+        `${deletePlacementStatsRoute}${id}/`,
         {
           headers: {
             Authorization: `Token ${token}`,
@@ -584,8 +585,9 @@ function PlacementRecordsTable() {
           <MantineReactTable
             columns={columns}
             data={paginatedRecords}
-            enableColumnOrdering
-            enableGlobalFilter
+            // enableColumnOrdering
+            // enableGlobalFilter
+            // enableRowOrdering
             // mantineColumnActionsButtonProps={{
             //   variant: "light",
             // }}
