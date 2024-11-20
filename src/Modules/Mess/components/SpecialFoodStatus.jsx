@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Table, Container, Paper, Title, Box } from "@mantine/core";
+import { specialFoodRequestRoute } from "../routes";
 
 function SpecialFoodStatus() {
   const roleno = useSelector((state) => state.user.roll_no); // Use Redux state for roll number
@@ -9,7 +10,7 @@ function SpecialFoodStatus() {
 
   // Fetch special food data
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/mess/api/specialRequestApi/", {
+    fetch(specialFoodRequestRoute, {
       method: "GET",
       headers: {
         Authorization: `Token ${authToken}`, // Corrected syntax for the Authorization header

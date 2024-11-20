@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Paper, Button, Textarea, Title, Group, Box } from "@mantine/core";
 // import * as PhosphorIcons from "@phosphor-icons/react";
 import axios from "axios"; // Assuming you are using axios for making HTTP requests
+import { feedbackRoute } from "../routes";
 
 // Styles
 const feedbackContainerStyle = {
@@ -63,7 +64,7 @@ function FeedbackPage() {
       setIsSubmitting(true);
       const token = localStorage.getItem("authToken"); // Get the token from local storage
       const response = await axios.post(
-        "http://127.0.0.1:8000/mess/api/feedbackApi/",
+        feedbackRoute,
         {
           mess: "mess1", // Need to change the mess option based on the registration
           feedback_type: selectedCategory,

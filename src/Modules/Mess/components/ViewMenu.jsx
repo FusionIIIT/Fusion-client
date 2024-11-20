@@ -11,6 +11,7 @@ import {
   Loader,
   Alert,
 } from "@mantine/core";
+import { viewMenuRoute } from "../routes";
 
 const tableHeaders = ["Day", "Breakfast", "Lunch", "Dinner"];
 
@@ -30,14 +31,11 @@ function ViewMenu() {
           return;
         }
 
-        const response = await axios.get(
-          "http://127.0.0.1:8000/mess/api/menuApi/",
-          {
-            headers: {
-              Authorization: `Token ${token}`, // Pass the token in the Authorization header
-            },
+        const response = await axios.get(viewMenuRoute, {
+          headers: {
+            Authorization: `Token ${token}`, // Pass the token in the Authorization header
           },
-        );
+        });
 
         console.log("API Response Data:", response.data); // Debugging log to check data
         setMenuData(response.data.payload); // Assuming your response data is wrapped in "payload"

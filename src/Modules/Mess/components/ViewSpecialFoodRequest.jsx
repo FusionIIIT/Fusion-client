@@ -11,6 +11,7 @@ import {
 } from "@mantine/core";
 import axios from "axios";
 import * as PhosphorIcons from "@phosphor-icons/react"; // Icons for tabs
+import { specialFoodRequestRoute } from "../routes";
 
 const tableHeader = [
   "Date",
@@ -38,14 +39,11 @@ function ViewSpecialFoodRequest() {
           return;
         }
 
-        const response = await axios.get(
-          "http://127.0.0.1:8000/mess/api/specialRequestApi",
-          {
-            headers: {
-              Authorization: `Token ${token}`,
-            },
+        const response = await axios.get(specialFoodRequestRoute, {
+          headers: {
+            Authorization: `Token ${token}`,
           },
-        );
+        });
 
         if (response.data && response.data.payload) {
           setFoodRequestData(response.data.payload);

@@ -11,6 +11,7 @@ import {
   Alert,
   TextInput,
 } from "@mantine/core";
+import { viewUpdatePaymentRequestsRoute } from "../routes";
 
 const tableHeaders = [
   "Student ID",
@@ -38,7 +39,7 @@ function ViewUpdatePaymentRequests() {
         }
 
         const response = await axios.get(
-          "http://127.0.0.1:8000/mess/api/updatePaymentRequestApi", // Replace with your correct API endpoint
+          viewUpdatePaymentRequestsRoute, // Replace with your correct API endpoint
           {
             headers: {
               Authorization: `Token ${token}`,

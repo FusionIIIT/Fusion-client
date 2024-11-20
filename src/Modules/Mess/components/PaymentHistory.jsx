@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 // import { useSelector } from "react-redux";
 import { Table, Text, Container, Paper, Title, Flex } from "@mantine/core";
+import { paymentRoute } from "../routes";
 
 function PaymentHistory() {
   // const roleno = useSelector((state) => state.user.roll_no); // Use Redux state to get roll number
@@ -9,7 +10,7 @@ function PaymentHistory() {
 
   // Fetch payment data from API
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/mess/api/paymentsApi/", {
+    fetch(paymentRoute, {
       method: "GET",
       headers: {
         Authorization: `Token ${authToken}`,

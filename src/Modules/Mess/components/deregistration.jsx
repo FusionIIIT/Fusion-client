@@ -10,6 +10,7 @@ import {
 } from "@mantine/core"; // Import Mantine components
 import { User } from "@phosphor-icons/react"; // Import Phosphor Icons
 import axios from "axios"; // Import axios
+import { deregistrationRequestRoute } from "../routes";
 
 function Deregistration() {
   const [name, setName] = useState(""); // State for name
@@ -46,15 +47,11 @@ function Deregistration() {
 
     try {
       // Send POST request to backend API
-      const response = await axios.post(
-        "http://127.0.0.1:8000/mess/api/deRegistrationRequestApi",
-        data,
-        {
-          headers: {
-            Authorization: `Token ${localStorage.getItem("authToken")}`, // Include auth token
-          },
+      const response = await axios.post(deregistrationRequestRoute, data, {
+        headers: {
+          Authorization: `Token ${localStorage.getItem("authToken")}`, // Include auth token
         },
-      );
+      });
 
       if (response.status === 200) {
         alert("Deregistration request submitted successfully!");

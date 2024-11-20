@@ -10,6 +10,7 @@ import {
   Loader,
   Alert,
 } from "@mantine/core";
+import { viewRegistrationRequestsRoute } from "../routes";
 
 const tableHeaders = [
   "Student ID",
@@ -39,7 +40,7 @@ function ViewRegistration() {
         }
 
         const response = await axios.get(
-          "http://127.0.0.1:8000/mess/api/registrationRequestApi", // Replace with the correct API endpoint
+          viewRegistrationRequestsRoute, // Replace with the correct API endpoint
           {
             headers: {
               Authorization: `Token ${token}`,

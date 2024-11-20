@@ -11,6 +11,7 @@ import {
   Flex,
 } from "@mantine/core";
 import { DownloadSimple } from "@phosphor-icons/react";
+import { viewBillsRoute } from "../routes";
 
 function MessBilling() {
   const rollNo = useSelector((state) => state.user.roll_no); // Use Redux state to get roll number
@@ -21,7 +22,7 @@ function MessBilling() {
 
   // Fetch payment data from API
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/mess/api/get_student_bill/", {
+    fetch(viewBillsRoute, {
       method: "POST",
       headers: {
         Authorization: `Token ${authToken}`,

@@ -10,6 +10,7 @@ import {
 } from "@mantine/core"; // Mantine UI components
 import { PencilSimple, FunnelSimple } from "@phosphor-icons/react"; // Phosphor Icons
 import axios from "axios";
+import { feedbackRoute } from "../routes";
 
 function StudentFeedback() {
   const [messOption, setMessOption] = useState("Mess 1");
@@ -26,7 +27,7 @@ function StudentFeedback() {
       setIsSubmitting(true);
       const token = localStorage.getItem("authToken"); // Get the token from local storage
       const response = await axios.post(
-        "http://127.0.0.1:8000/mess/api/feedbackApi/",
+        feedbackRoute,
         {
           mess: messOption, // Need to change the mess option based on the registration
           feedback_type: feedbackType,

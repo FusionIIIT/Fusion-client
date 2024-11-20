@@ -9,6 +9,7 @@ import {
   Flex,
 } from "@mantine/core";
 import * as PhosphorIcons from "@phosphor-icons/react";
+import { rebateRoute } from "../routes";
 
 function RespondToRebateRequest() {
   const [rebateData, setRebateData] = useState([]);
@@ -17,7 +18,7 @@ function RespondToRebateRequest() {
 
   // Fetch the rebate data from the API
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/mess/api/rebateApi/", {
+    fetch(rebateRoute, {
       method: "GET",
       headers: {
         Authorization: `Token ${authToken}`,

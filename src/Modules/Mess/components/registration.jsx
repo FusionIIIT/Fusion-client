@@ -10,6 +10,7 @@ import {
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import axios from "axios";
+import { registrationRequestRoute } from "../routes";
 
 function Registration() {
   const [txnNo, setTxnNo] = useState("");
@@ -46,16 +47,12 @@ function Registration() {
     formData.append("student_id", studentId);
 
     try {
-      const response = await axios.post(
-        "http://127.0.0.1:8000/mess/api/registrationRequestApi",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Token ${token}`,
-          },
+      const response = await axios.post(registrationRequestRoute, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Token ${token}`,
         },
-      );
+      });
 
       if (response.status === 200) {
         console.log("Form submitted successfully", response.data);

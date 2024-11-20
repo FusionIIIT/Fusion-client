@@ -10,7 +10,7 @@ import {
 import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
 import { useRef, useState } from "react";
 import classes from "../styles/messModule.module.css";
-import SpacialFoodRequests from "./SpecialFoodRequests.jsx";
+import SpecialFoodRequests from "./SpecialFoodRequests.jsx";
 import RebateRequests from "./RebateRequests.jsx";
 
 function MyComponent() {
@@ -19,7 +19,7 @@ function MyComponent() {
 
   const tabItems = [
     { title: "Rebate Requests" },
-    { title: "Spacial Food Requests" },
+    { title: "Special Food Requests" },
   ];
 
   const handleTabChange = (direction) => {
@@ -40,7 +40,7 @@ function MyComponent() {
       case "0":
         return <RebateRequests />;
       case "1":
-        return <SpacialFoodRequests />;
+        return <SpecialFoodRequests />;
       default:
         return <Loader />;
     }

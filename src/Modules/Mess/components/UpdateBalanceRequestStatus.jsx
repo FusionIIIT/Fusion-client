@@ -10,12 +10,12 @@ import {
 } from "@mantine/core";
 import axios from "axios";
 import { host } from "../../../routes/globalRoutes";
-import { fetchUpdateBalanceRequestStatusRoute } from "../routes";
+import { updateBalanceRequestStatusRoute } from "../routes";
 
 const token = localStorage.getItem("authToken");
 
 const axiosInstance = axios.create({
-  baseURL: fetchUpdateBalanceRequestStatusRoute,
+  baseURL: updateBalanceRequestStatusRoute,
   headers: {
     Authorization: `Token ${token}`,
   },
@@ -108,24 +108,24 @@ function UpdateBalanceRequest() {
             p={8}
             fz={14}
             fw={600}
-            bg={item.status === "Accepted" ? "#40C057" : "transparent"}
+            bg={item.status === "accept" ? "#40C057" : "transparent"}
             bd={
-              item.status === "Accepted"
+              item.status === "accept"
                 ? "1.5px solid #40C057"
-                : item.status === "Pending"
+                : item.status === "pending"
                   ? "1.5px solid grey"
                   : "1.5px solid red"
             }
             c={
-              item.status === "Accepted"
+              item.status === "accept"
                 ? "white"
-                : item.status === "Pending"
+                : item.status === "pending"
                   ? "grey"
                   : "red"
             }
             style={{ borderRadius: "4px" }}
           >
-            {item.status}
+            {item.status.charAt(0).toUpperCase() + item.status.slice(1)}{" "}
           </Box>
         </Table.Td>
       </Table.Tr>
@@ -133,16 +133,26 @@ function UpdateBalanceRequest() {
 
   return (
     <Container
-      size="lg"
+      size="xl"
       style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: "100vh",
+        width: "100%", // Ensure it takes full width but respects min width
+        display: "flex", // Use flexbox to center the content
+        justifyContent: "center", // Horizontally centers the content
+        marginTop: "25px",
       }}
-      miw="75rem"
     >
-      <Paper shadow="md" radius="md" p="xl" withBorder miw="75rem">
+      <Paper
+        shadow="md"
+        radius="md"
+        p="xl"
+        withBorder
+        style={{
+          minWidth: "75rem", // Set the minimum width to 75rem
+          width: "100%", // Ensure it is responsive
+          padding: "30px",
+          margin: "auto", // Center the Paper component
+        }}
+      >
         <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
           Update Balance Request
         </Title>

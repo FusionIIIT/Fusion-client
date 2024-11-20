@@ -14,7 +14,7 @@ import { User } from "@phosphor-icons/react"; // Import Phosphor Icons
 import "@mantine/dates/styles.css"; // Import Mantine DateInput styles
 import dayjs from "dayjs";
 import axios from "axios";
-import { postUpdateBalanceRequestRoute } from "../routes";
+import { updateBalanceRequestRoute } from "../routes";
 
 function UpdateBalanceRequest() {
   const [image, setImage] = useState(null);
@@ -36,16 +36,12 @@ function UpdateBalanceRequest() {
     formData.append("student_id", rollNumber);
 
     try {
-      const response = await axios.post(
-        postUpdateBalanceRequestRoute,
-        formData,
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
+      const response = await axios.post(updateBalanceRequestRoute, formData, {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "multipart/form-data",
         },
-      );
+      });
       console.log("Response:", response.data);
 
       setTransactionNo("");

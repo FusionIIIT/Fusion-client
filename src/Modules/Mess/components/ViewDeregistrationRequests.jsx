@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Table, Container, Paper, Title, Button, Flex } from "@mantine/core";
 import axios from "axios";
+import { deregistrationRequestRoute } from "../routes";
 
 function ViewDeregistrationRequests() {
   const [deregistrationData, setDeregistrationData] = useState([]);
@@ -9,14 +10,11 @@ function ViewDeregistrationRequests() {
 
   const fetchDeregistrationRequests = async () => {
     try {
-      const response = await axios.get(
-        "http://127.0.0.1:8000/mess/api/deRegistrationRequestApi",
-        {
-          headers: {
-            Authorization: `Token ${localStorage.getItem("authToken")}`,
-          },
+      const response = await axios.get(deregistrationRequestRoute, {
+        headers: {
+          Authorization: `Token ${localStorage.getItem("authToken")}`,
         },
-      );
+      });
       console.log(response.data.payload); // Log to check the structure
       setDeregistrationData(response.data.payload); // Accessing the payload
     } catch (err) {
