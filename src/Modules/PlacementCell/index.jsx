@@ -1,6 +1,6 @@
 import "@mantine/notifications/styles.css";
 import React, { useState, useRef } from "react";
-import { Tabs, Button } from "@mantine/core";
+import { Tabs, Button, Container } from "@mantine/core";
 import { useSelector } from "react-redux";
 import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
 import PlacementRecordsTable from "./components/PlacementRecordsTable";
@@ -8,6 +8,7 @@ import PlacementCalendar from "./components/PlacementCalendar";
 import PlacementSchedule from "./components/PlacementSchedule";
 import SendNotificationForm from "./components/SendNotificationForm";
 import DownloadCV from "./components/DownloadCV";
+import CustomBreadcrumbs from "../../components/Breadcrumbs";
 
 const studentTabs = [
   {
@@ -71,7 +72,7 @@ const tpoTabs = [
 
 const styles = {
   container: {
-    padding: "20px",
+    // padding: "20px",
   },
   navContainer: {
     display: "flex",
@@ -142,67 +143,70 @@ function PlacementCellPage() {
 
   return (
     <div style={styles.container}>
-      <div style={styles.navContainer}>
-        {/* Left navigation button */}
-        <Button
-          onClick={() => handleTabChange("prev")}
-          variant="default"
-          p={0}
-          style={{ border: "none" }}
-        >
-          <CaretCircleLeft
-            style={styles.fusionCaretCircleIcon}
-            weight="light"
-          />
-        </Button>
+      <CustomBreadcrumbs />
+      <Container fluid mt={48}>
+        <div style={styles.navContainer}>
+          {/* Left navigation button */}
+          <Button
+            onClick={() => handleTabChange("prev")}
+            variant="default"
+            p={0}
+            style={{ border: "none" }}
+          >
+            <CaretCircleLeft
+              style={styles.fusionCaretCircleIcon}
+              weight="light"
+            />
+          </Button>
 
-        {/* Tabs list */}
-        <div
-          className="fusionTabsContainer"
-          style={styles.tabsContainer}
-          ref={tabsContainerRef}
-        >
-          <Tabs value={activeTab} onTabChange={setActiveTab}>
-            <Tabs.List style={styles.tabsList}>
-              {tabs.map((tab) => (
-                <Tabs.Tab
-                  key={tab.value}
-                  value={tab.value}
-                  style={{
-                    ...styles.tab,
-                    ...(activeTab === tab.value && styles.activeTab),
-                  }}
-                  onClick={() => setActiveTab(tab.value)}
-                >
-                  {tab.label}
-                </Tabs.Tab>
-              ))}
-            </Tabs.List>
-          </Tabs>
+          {/* Tabs list */}
+          <div
+            className="fusionTabsContainer"
+            style={styles.tabsContainer}
+            ref={tabsContainerRef}
+          >
+            <Tabs value={activeTab} onTabChange={setActiveTab}>
+              <Tabs.List style={styles.tabsList}>
+                {tabs.map((tab) => (
+                  <Tabs.Tab
+                    key={tab.value}
+                    value={tab.value}
+                    style={{
+                      ...styles.tab,
+                      ...(activeTab === tab.value && styles.activeTab),
+                    }}
+                    onClick={() => setActiveTab(tab.value)}
+                  >
+                    {tab.label}
+                  </Tabs.Tab>
+                ))}
+              </Tabs.List>
+            </Tabs>
+          </div>
+
+          {/* Right navigation button */}
+          <Button
+            onClick={() => handleTabChange("next")}
+            variant="default"
+            p={0}
+            style={{ border: "none" }}
+          >
+            <CaretCircleRight
+              style={styles.fusionCaretCircleIcon}
+              weight="light"
+            />
+          </Button>
         </div>
 
-        {/* Right navigation button */}
-        <Button
-          onClick={() => handleTabChange("next")}
-          variant="default"
-          p={0}
-          style={{ border: "none" }}
-        >
-          <CaretCircleRight
-            style={styles.fusionCaretCircleIcon}
-            weight="light"
-          />
-        </Button>
-      </div>
-
-      {/* Tab content */}
-      <div style={styles.tabContent}>
-        {tabs.map((tab) =>
-          tab.value === activeTab ? (
-            <div key={tab.value}>{tab.component}</div>
-          ) : null,
-        )}
-      </div>
+        {/* Tab content */}
+        <div style={styles.tabContent}>
+          {tabs.map((tab) =>
+            tab.value === activeTab ? (
+              <div key={tab.value}>{tab.component}</div>
+            ) : null,
+          )}
+        </div>
+      </Container>
     </div>
   );
 }

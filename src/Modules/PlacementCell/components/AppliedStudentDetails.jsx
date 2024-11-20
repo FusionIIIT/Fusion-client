@@ -163,7 +163,6 @@
 
 // export default JobApplicationsTable;
 
-
 import React, { useEffect, useState, useMemo } from "react";
 import {
   Table,
@@ -179,6 +178,7 @@ import {
 } from "@mantine/core";
 import axios from "axios";
 import { MantineReactTable } from "mantine-react-table";
+import { notifications } from "@mantine/notifications";
 
 function JobApplicationsTable() {
   const [applications, setApplications] = useState([]);
@@ -197,7 +197,7 @@ function JobApplicationsTable() {
           `http://127.0.0.1:8000/placement/api/student-applications/${jobId}/`,
           {
             headers: { Authorization: `Token ${token}` },
-          }
+          },
         );
         setApplications(response.data.students);
       } catch (error) {
@@ -222,20 +222,39 @@ function JobApplicationsTable() {
               Authorization: `Token ${token}`,
               "Content-Type": "application/json",
             },
-          }
+          },
         );
         if (response.status === 200) {
           setApplications((prevApplications) =>
             prevApplications.map((application) =>
               application.id === applicationId
                 ? { ...application, status }
-                : application
-            )
+                : application,
+            ),
           );
+
+          notifications.show({
+            title: "Success",
+            message: "Application status updated successfully",
+            color: "green",
+            position: "top-center",
+          });
         } else {
-          console.error("Failed to update");
+          notifications.show({
+            title: "Error",
+            message: "Failed to update application status",
+            color: "red",
+            position: "top-center",
+          });
         }
       } catch (error) {
+        notifications.show({
+          title: "Error",
+          message: "Failed to update application status",
+          color: "red",
+          position: "top-center",
+        });
+
         console.error(error);
       }
     };
@@ -250,7 +269,7 @@ function JobApplicationsTable() {
         {
           headers: { Authorization: `Token ${token}` },
           responseType: "blob",
-        }
+        },
       );
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
@@ -258,7 +277,21 @@ function JobApplicationsTable() {
       link.setAttribute("download", `applications_${jobId}.xlsx`);
       document.body.appendChild(link);
       link.click();
+
+      notifications.show({
+        title: "Success",
+        message: "Excel file downloaded successfully",
+        color: "green",
+        position: "top-center",
+      });
     } catch (error) {
+      notifications.show({
+        title: "Error",
+        message: "Failed to download Excel file",
+        color: "red",
+        position: "top-center",
+      });
+
       console.error("Error downloading Excel:", error);
     }
   };
@@ -297,26 +330,24 @@ function JobApplicationsTable() {
               { value: "reject", label: "Reject" },
             ]}
             value={row.original.status}
-            onChange={(value) =>
-              handleStatusChange(row.original.id, value)
-            }
+            onChange={(value) => handleStatusChange(row.original.id, value)}
           />
         ),
       },
     ],
-    []
+    [],
   );
 
   // Paginate records for the table display
   const paginatedApplications = applications.slice(
     (activePage - 1) * recordsPerPage,
-    activePage * recordsPerPage
+    activePage * recordsPerPage,
   );
 
   if (loading) return <Loader />;
 
   return (
-    <Container>
+    <Container fluid>
       <Card padding="md" radius="md" withBorder>
         <Title order={3}>Student Job Applications</Title>
         <div
@@ -339,7 +370,6 @@ function JobApplicationsTable() {
         ) : (
           <Alert color="yellow">No applications available</Alert>
         )}
-
       </Card>
     </Container>
   );

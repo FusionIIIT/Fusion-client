@@ -337,7 +337,7 @@ function PlacementRecordsTable() {
           justifyContent: "space-between",
           alignItems: "center",
         }}
-        my={16}
+        my={32}
       >
         <Title order={2}>Placement Statistics</Title>
         {role === "placement officer" && (

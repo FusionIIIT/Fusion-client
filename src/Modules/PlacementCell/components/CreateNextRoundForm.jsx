@@ -10,6 +10,7 @@ import {
   Card,
   Container,
 } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 
 function CreateNextRoundForm() {
   const [modalOpened, setModalOpened] = useState(false);
@@ -23,15 +24,15 @@ function CreateNextRoundForm() {
   const loc = useLocation();
   const searchParams = new URLSearchParams(loc.search);
   const jobId = searchParams.get("jobId");
-  
+
   const handleSubmit = () => {
     const nextRoundDetails = {
-      round_no:roundNumber,
-      test_date:date,
+      round_no: roundNumber,
+      test_date: date,
       // time:time,
       // location:location,
-      description:description,
-      test_type:roundType,
+      description: description,
+      test_type: roundType,
     };
 
     console.log("Next Round Details:", nextRoundDetails);
@@ -47,26 +48,45 @@ function CreateNextRoundForm() {
     const submitFunc = async () => {
       const token = localStorage.getItem("authToken");
       console.log(jobId);
-      try{
-          const response = await axios.post(`http://127.0.0.1:8000/placement/api/nextround/${jobId}/`,nextRoundDetails,{
-            headers:{
-                'Authorization': `Token ${token}`,
-                'Content-Type': 'application/json',
-            }
+      try {
+        const response = await axios.post(
+          `http://127.0.0.1:8000/placement/api/nextround/${jobId}/`,
+          nextRoundDetails,
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+              "Content-Type": "application/json",
+            },
+          },
+        );
+        if (response.status === 201) {
+          notifications.show({
+            title: "Round Created",
+            message: "Next round details have been successfully created.",
+            color: "green",
+            position: "top-center",
           });
-          if(response.status===201){
-            window.alert('succesfully posted');
-          }
-          else{
-            console.error('failed to post');
-          }
-      }
-      catch(error){
-        console.error(error)
+        } else {
+          notifications.show({
+            title: "Failed",
+            message: "Failed to create next round details.",
+            color: "red",
+            position: "top-center",
+          });
+          console.error("failed to post");
+        }
+      } catch (error) {
+        notifications.show({
+          title: "Error",
+          message: "Failed to create next round details.",
+          color: "red",
+          position: "top-center",
+        });
+
+        console.error(error);
       }
     };
     submitFunc();
-  
   };
 
   return (
@@ -87,7 +107,7 @@ function CreateNextRoundForm() {
             <TextInput
               label="Round Number"
               placeholder="Enter round number"
-              type="number" 
+              type="number"
               value={roundNumber}
               onChange={(e) => setRoundNumber(e.target.value)}
               required

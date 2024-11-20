@@ -83,7 +83,7 @@ function PlacementCalendar() {
           justifyContent: "space-between",
           alignItems: "center",
         }}
-        my={16}
+        my={32}
       >
         <Title order={2}>Placement Calendar</Title>
       </Container>{" "}

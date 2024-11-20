@@ -272,7 +272,7 @@ function PlacementScheduleGrid({ data, itemsPerPage, cardsPerRow }) {
   Array.from({ length: remainingCards }).forEach(() => paddedItems.push(null));
 
   return (
-    <Container fluid py={16}>
+    <Container fluid >
       <Grid gutter="md">
         {paddedItems.map((item, index) => (
           <Grid.Col key={index} span={12 / cardsPerRow}>
@@ -367,7 +367,7 @@ function PlacementSchedule() {
 
   return (
     <>
-      <Container fluid py={16}>
+      <Container fluid mt={32}>
         <Container
           fluid
           style={{
