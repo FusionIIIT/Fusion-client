@@ -376,8 +376,18 @@
 
 // export default PlacementRecordsTable;
 
+// css for mantine-tables
+
 import React, { useEffect, useState, useMemo } from "react";
-import { Card, Title, Container, Button, Loader, Alert } from "@mantine/core";
+import {
+  Card,
+  Title,
+  Container,
+  Button,
+  Loader,
+  Alert,
+  useStyles,
+} from "@mantine/core";
 import axios from "axios";
 import { MantineReactTable } from "mantine-react-table";
 import { useSelector } from "react-redux";
@@ -549,17 +559,21 @@ function PlacementRecordsTable() {
         <Title order={2}>Placement Statistics</Title>
         {role === "placement officer" && (
           <>
-            <Button onClick={() => setModalOpened(true)}>
+            <Button
+              onClick={() => setModalOpened(true)}
+              variant="outline"
+              style={{ marginLeft: "auto", marginRight: 0 }}
+            >
               Add Placement Record
             </Button>
           </>
         )}
-
-        <AddPlacementRecordForm
-          opened={modalOpened}
-          onClose={() => setModalOpened(false)}
-        />
       </Container>
+
+      <AddPlacementRecordForm
+        opened={modalOpened}
+        onClose={() => setModalOpened(false)}
+      />
 
       <Container fluid>
         <Title order={3} style={{ marginBottom: "12px" }}>
@@ -572,6 +586,10 @@ function PlacementRecordsTable() {
             data={paginatedRecords}
             enableColumnOrdering
             enableGlobalFilter
+            // mantineColumnActionsButtonProps={{
+            //   variant: "light",
+            // }}
+            // positionActionsColumn="last"
           />
         ) : (
           <Alert color="yellow">No records available</Alert>

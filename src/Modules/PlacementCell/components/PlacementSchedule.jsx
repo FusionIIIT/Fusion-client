@@ -272,10 +272,10 @@ function PlacementScheduleGrid({ data, itemsPerPage, cardsPerRow }) {
   Array.from({ length: remainingCards }).forEach(() => paddedItems.push(null));
 
   return (
-    <Container fluid >
+    <Container fluid>
       <Grid gutter="md">
         {paddedItems.map((item, index) => (
-          <Grid.Col key={index} span={12 / cardsPerRow}>
+          <Grid.Col key={index} span={'content'}>
             {item ? (
               <PlacementScheduleCard
                 jobId={item.id}
@@ -388,7 +388,7 @@ function PlacementSchedule() {
         <Tabs defaultValue="active" variant="pills" style={{ marginLeft: 16 }}>
           <Tabs.List>
             <Tabs.Tab value="active">Active</Tabs.Tab>
-            <Tabs.Tab value="closed">Closed</Tabs.Tab>
+            {role != "student" && <Tabs.Tab value="closed">Closed</Tabs.Tab>}
           </Tabs.List>
 
           <Tabs.Panel value="active" pt="md">

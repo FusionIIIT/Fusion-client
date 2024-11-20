@@ -175,6 +175,7 @@ import {
   Group,
   Container,
   Modal,
+  Title,
 } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
 import { notifications } from "@mantine/notifications";
@@ -264,11 +265,12 @@ function AddPlacementRecordForm({ opened, onClose }) {
       <Modal
         opened={opened}
         onClose={onClose}
-        title="Add Placement Record"
         size="lg"
         centered
       >
         {/* Grouping input fields */}
+
+        <Title order={3} mb={32}>Add Placement Record</Title>
         <Group
           grow
           spacing="md"

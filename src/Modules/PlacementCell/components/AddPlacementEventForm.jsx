@@ -79,7 +79,6 @@ function AddPlacementEventForm() {
         },
       });
       alert(response.data.message);
-      // Notification for success
       notifications.show({
         title: "Event Added",
         message: "Placement Event has been added successfully.",
