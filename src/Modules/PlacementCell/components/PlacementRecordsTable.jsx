@@ -1,20 +1,20 @@
-// import React, { useEffect, useState } from "react";
+// import React, { useEffect, useState, useMemo } from "react";
 // import {
 //   Table,
 //   Pagination,
-//   TextInput,
 //   Select,
 //   Card,
 //   Title,
 //   Container,
 //   Button,
+//   TextInput,
 //   Loader,
 //   Alert,
 // } from "@mantine/core";
-// import { statisticsRoute } from "../../../routes/placementCellRoutes";
-// import AddPlacementRecordForm from "./AddPlacementRecordForm";
-// import { useSelector } from "react-redux";
 // import axios from "axios";
+// import { MantineReactTable } from "mantine-react-table";
+// import { useSelector } from "react-redux";
+// import AddPlacementRecordForm from "./AddPlacementRecordForm";
 
 // function PlacementRecordsTable() {
 //   const role = useSelector((state) => state.user.role);
@@ -22,9 +22,9 @@
 //   const [placementStats, setPlacementStats] = useState([]);
 //   const [loading, setLoading] = useState(true);
 //   const [error, setError] = useState(null);
-//   const [modalOpened, setModalOpened] = useState(false);
 //   const [activePage, setActivePage] = useState(1);
-//   const recordsPerPage = 10;
+//  const [modalOpened, setModalOpened] = useState(false);
+// const recordsPerPage = 10;
 
 //   useEffect(() => {
 //     const fetchPlacementStats = async () => {
@@ -41,14 +41,11 @@
 //         );
 
 //         if (response.status === 200) {
-//           console.log("Fetched data:", response.data);
 //           setPlacementStats(response.data);
 //         } else {
-//           console.error("Unexpected response:", response);
 //           setError(`Error fetching data: ${response.status}`);
 //         }
 //       } catch (error) {
-//         console.error("Fetch error:", error);
 //         setError("Failed to fetch placement statistics");
 //       } finally {
 //         setLoading(false);
@@ -70,7 +67,6 @@
 //           responseType: "blob",
 //         },
 //       );
-
 //       const url = window.URL.createObjectURL(new Blob([response.data]));
 //       const link = document.createElement("a");
 //       link.href = url;
@@ -82,20 +78,41 @@
 //     }
 //   };
 
+//   const columns = useMemo(
+//     () => [
+//       {
+//         accessorKey: "first_name",
+//         header: "Student Name",
+//         size: 200,
+//       },
+//       {
+//         accessorKey: "placement_name",
+//         header: "Company",
+//         size: 200,
+//       },
+//       {
+//         accessorKey: "batch",
+//         header: "Batch",
+//         size: 150,
+//       },
+//       {
+//         accessorKey: "branch",
+//         header: "Branch",
+//         size: 150,
+//       },
+//       {
+//         accessorKey: "ctc",
+//         header: "CTC",
+//         size: 120,
+//       },
+//     ],
+//     [],
+//   );
+
 //   const paginatedRecords = placementStats.slice(
 //     (activePage - 1) * recordsPerPage,
 //     activePage * recordsPerPage,
 //   );
-
-//   const rows = paginatedRecords.map((record, index) => (
-//     <tr key={index}>
-//       <td>{record.first_name}</td>
-//       <td>{record.placement_name}</td>
-//       <td>{record.batch}</td>
-//       <td>{record.branch}</td>
-//       <td>{record.ctc}</td>
-//     </tr>
-//   ));
 
 //   if (loading) return <Loader />;
 //   if (error) return <Alert color="red">{error}</Alert>;
@@ -116,89 +133,36 @@
 //         {role === "placement officer" && (
 //           <>
 //             <Button onClick={downloadExcel}>Download Excel</Button>
+
 //             <Button onClick={() => setModalOpened(true)}>
 //               Add Placement Record
 //             </Button>
+
 //           </>
 //         )}
-//       </Container>
 
-//       <Card
-//         shadow="sm"
-//         padding="md"
-//         radius="md"
-//         withBorder
-//         style={{ width: "900px" }}
-//       >
-//         {/* Title */}
-//         <Title order={3} style={{ marginBottom: "12px", fontSize: "18px" }}>
-//           All Students
-//         </Title>
-
-//         {/* Table Search and Sorting Options */}
-//         <div
-//           style={{
-//             display: "flex",
-//             justifyContent: "flex-end",
-//             marginBottom: "12px",
-//             gap: "8px",
-//           }}
-//         >
-//           <TextInput
-//             placeholder="Search"
-//             icon="🔍"
-//             style={{ width: "180px", fontSize: "14px" }}
-//           />
-//           <Select
-//             placeholder="Sort by"
-//             data={[
-//               { value: "newest", label: "Newest" },
-//               { value: "highest_ctc", label: "Highest CTC" },
-//               { value: "lowest_ctc", label: "Lowest CTC" },
-//             ]}
-//             style={{ width: "180px", fontSize: "14px" }}
-//           />
-//         </div>
-
-//         <Table
-//           highlightOnHover
-//           style={{
-//             tableLayout: "fixed",
-//             width: "100%",
-//             borderSpacing: "0px 0px",
-//           }}
-//         >
-//           <thead>
-//             <tr>
-//               <th>Student Name</th>
-//               <th>Company</th>
-//               <th>Batch</th>
-//               <th>Branch</th>
-//               <th>CTC</th>
-//             </tr>
-//           </thead>
-//           <tbody>{rows}</tbody>
-//         </Table>
-
-//         <div
-//           style={{
-//             display: "flex",
-//             justifyContent: "flex-end",
-//             marginTop: "12px",
-//           }}
-//         >
-//           <Pagination
-//             total={Math.ceil(placementStats.length / recordsPerPage)}
-//             page={activePage}
-//             onChange={setActivePage}
-//           />
-//         </div>
-//       </Card>
-
-//       <AddPlacementRecordForm
+// <AddPlacementRecordForm
 //         opened={modalOpened}
 //         onClose={() => setModalOpened(false)}
 //       />
+//       </Container>
+
+//       <Card shadow="sm" padding="md" radius="md" withBorder>
+//         <Title order={3} style={{ marginBottom: "12px" }}>
+//           All Students
+//         </Title>
+
+//         {placementStats.length > 0 ? (
+//           <MantineReactTable
+//             columns={columns}
+//             data={paginatedRecords}
+//             enableColumnOrdering
+//             enableGlobalFilter
+//           />
+//         ) : (
+//           <Alert color="yellow">No records available</Alert>
+//         )}
+//       </Card>
 //     </Container>
 //   );
 // }
@@ -206,22 +170,12 @@
 // export default PlacementRecordsTable;
 
 import React, { useEffect, useState, useMemo } from "react";
-import {
-  Table,
-  Pagination,
-  Select,
-  Card,
-  Title,
-  Container,
-  Button,
-  TextInput,
-  Loader,
-  Alert,
-} from "@mantine/core";
+import { Card, Title, Container, Button, Loader, Alert } from "@mantine/core";
 import axios from "axios";
 import { MantineReactTable } from "mantine-react-table";
 import { useSelector } from "react-redux";
 import AddPlacementRecordForm from "./AddPlacementRecordForm";
+import { notifications } from "@mantine/notifications";
 
 function PlacementRecordsTable() {
   const role = useSelector((state) => state.user.role);
@@ -230,8 +184,8 @@ function PlacementRecordsTable() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activePage, setActivePage] = useState(1);
- const [modalOpened, setModalOpened] = useState(false);
-const recordsPerPage = 10;
+  const [modalOpened, setModalOpened] = useState(false);
+  const recordsPerPage = 10;
 
   useEffect(() => {
     const fetchPlacementStats = async () => {
@@ -251,9 +205,19 @@ const recordsPerPage = 10;
           setPlacementStats(response.data);
         } else {
           setError(`Error fetching data: ${response.status}`);
+          notifications.showNotification({
+            title: "Error fetching data",
+            message: `Error fetching data: ${response.status}`,
+            color: "red",
+          });
         }
       } catch (error) {
         setError("Failed to fetch placement statistics");
+        notifications.showNotification({
+          title: "Failed to fetch data",
+          message: "Failed to fetch placement statistics",
+          color: "red",
+        });
       } finally {
         setLoading(false);
       }
@@ -262,26 +226,47 @@ const recordsPerPage = 10;
     fetchPlacementStats();
   }, []);
 
-  const downloadExcel = async () => {
-    const token = localStorage.getItem("authToken");
+  const handleDelete = async (id) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this record?",
+    );
+
+    if (!confirmDelete) return;
+
     try {
-      const response = await axios.get(
-        "http://127.0.0.1:8000/placement/api/download-statistics/",
+      const token = localStorage.getItem("authToken");
+      const response = await axios.delete(
+        `http://127.0.0.1:8000/placement/api/statistics/${id}/`,
         {
           headers: {
             Authorization: `Token ${token}`,
           },
-          responseType: "blob",
         },
       );
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", "placement_statistics.xlsx");
-      document.body.appendChild(link);
-      link.click();
+
+      if (response.status === 204) {
+        notifications.showNotification({
+          title: "Record deleted",
+          message: "Record successfully deleted!",
+          color: "green",
+        });
+        setPlacementStats((prevStats) =>
+          prevStats.filter((record) => record.id !== id),
+        );
+      } else {
+        notifications.showNotification({
+          title: "Failed to delete record",
+          message: "Unable to delete the record.",
+          color: "red",
+        });
+      }
     } catch (error) {
-      console.error("Error downloading Excel file:", error);
+      console.error("Error deleting record:", error);
+      notifications.showNotification({
+        title: "Failed to delete record",
+        message: "An error occured while deleting the record.",
+        color: "red",
+      });
     }
   };
 
@@ -312,8 +297,26 @@ const recordsPerPage = 10;
         header: "CTC",
         size: 120,
       },
+      ...(role === "placement officer"
+        ? [
+            {
+              accessorKey: "actions",
+              header: "Actions",
+              Cell: ({ row }) => (
+                <Button
+                  color="red"
+                  size="xs"
+                  onClick={() => handleDelete(row.original.id)}
+                >
+                  Delete
+                </Button>
+              ),
+              size: 100,
+            },
+          ]
+        : []),
     ],
-    [],
+    [role],
   );
 
   const paginatedRecords = placementStats.slice(
@@ -325,7 +328,7 @@ const recordsPerPage = 10;
   if (error) return <Alert color="red">{error}</Alert>;
 
   return (
-    <Container>
+    <Container fluid>
       <Container
         fluid
         style={{
@@ -339,22 +342,19 @@ const recordsPerPage = 10;
         <Title order={2}>Placement Statistics</Title>
         {role === "placement officer" && (
           <>
-            <Button onClick={downloadExcel}>Download Excel</Button>
-
             <Button onClick={() => setModalOpened(true)}>
               Add Placement Record
             </Button>
-
           </>
         )}
 
-<AddPlacementRecordForm
-        opened={modalOpened}
-        onClose={() => setModalOpened(false)}
-      />
+        <AddPlacementRecordForm
+          opened={modalOpened}
+          onClose={() => setModalOpened(false)}
+        />
       </Container>
 
-      <Card shadow="sm" padding="md" radius="md" withBorder>
+      <Container fluid>
         <Title order={3} style={{ marginBottom: "12px" }}>
           All Students
         </Title>
@@ -369,7 +369,7 @@ const recordsPerPage = 10;
         ) : (
           <Alert color="yellow">No records available</Alert>
         )}
-      </Card>
+      </Container>
     </Container>
   );
 }
