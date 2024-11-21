@@ -29,6 +29,8 @@ export default function FacilitiesDescriptive({ branch }) {
               return item.department === 53;
             case "DS":
               return item.department === 44;
+            case "Natural Science":
+              return item.department === 31;
             default:
               return null; // No matching branch found
           }

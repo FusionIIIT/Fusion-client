@@ -70,8 +70,10 @@ function Facilities({ branch }) {
         return allowedRoles.includes(rolePrefix) && role.includes("(SM)");
       case "ME":
         return allowedRoles.includes(rolePrefix) && role.includes("(ME)");
-      case "BDES":
+      case "DS":
         return allowedRoles.includes(rolePrefix) && role.includes("(Design)");
+      case "Natural Science":
+        return allowedRoles.includes(rolePrefix) && role.includes("(NS)");
       default:
         return false;
     }

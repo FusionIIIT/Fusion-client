@@ -33,21 +33,23 @@ function DeptTabs({ branch }) {
       ECE: "ece_f",
       ME: "me_f",
       SM: "sm_f",
+      DS: "ds_f",
+      "Natural Science": "ns_f",
     }[branch] || "";
 
   const isFeedbackAvailable = [
     "HOD (CSE)",
-    "admin (CSE)",
+    "deptadmin_cse",
     "HOD (SM)",
-    "admin (SM)",
+    "deptadmin_sm",
     "HOD (ECE)",
-    "admin (ECE)",
+    "deptadmin_ece",
     "HOD (ME)",
-    "admin (ME)",
+    "deptadmin_me",
     "HOD (Design)",
-    "admin (Design)",
+    "deptadmin_design",
     "HOD (Liberal Arts)",
-    "admin (LA)",
+    "deptadmin_liberalarts",
   ].includes(role);
   const tabItems = [
     { title: "About Us" },

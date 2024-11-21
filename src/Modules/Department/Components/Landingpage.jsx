@@ -131,6 +131,7 @@ const departments = [
   { title: "SM Department", id: "6", code: "SM" },
   { title: "Design Department", id: "7", code: "DS" },
   { title: "Liberal Arts Department", id: "8", code: "LA" },
+  { title: "Natural Science", id: "9", code: "NS" },
 ];
 
 export default function LandingPage() {
@@ -188,6 +189,9 @@ export default function LandingPage() {
       {activeTab === "6" && <DeptTabs branch="SM" initialTab="about" />}
       {activeTab === "7" && <DeptTabs branch="DS" initialTab="about" />}
       {activeTab === "8" && <DeptTabs branch="LA" initialTab="about" />}
+      {activeTab === "9" && (
+        <DeptTabs branch="Natural Science" initialTab="about" />
+      )}
     </Suspense>
   );
 

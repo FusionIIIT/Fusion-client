@@ -149,7 +149,15 @@ function MakeAnnouncement() {
                   placeholder="Select Department Type"
                   value={department}
                   onChange={setDepartment}
-                  data={["ALL", "CSE", "ECE", "ME", "SM"]}
+                  data={[
+                    "ALL",
+                    "CSE",
+                    "ECE",
+                    "ME",
+                    "SM",
+                    "Natural Science",
+                    "Design",
+                  ]}
                   required
                   mb="md"
                 />
