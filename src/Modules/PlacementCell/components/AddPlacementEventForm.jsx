@@ -298,7 +298,7 @@ function AddPlacementEventForm() {
           Authorization: `Token ${token}`, 
         },
       });
-      alert(response.data.message);
+      // alert(response.data.message);
       // Notification for success
       notifications.show({
         title: "Event Added",
@@ -306,6 +306,7 @@ function AddPlacementEventForm() {
         color: "green",
         position: "top-center",
       });
+      
     } catch (error) {
       const errorMessage = error.response?.data?.error || error.message;
       notifications.show({
