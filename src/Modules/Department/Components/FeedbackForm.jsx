@@ -49,7 +49,7 @@ const styles = {
 
 export default function Feedbackform() {
   const [feedback, setFeedback] = useState("");
-  const [rating, setRating] = useState("5");
+  const [rating, setRating] = useState("Poor"); // Updated to match the initial option value
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -90,7 +90,7 @@ export default function Feedbackform() {
       console.log("Feedback submitted:", response.data);
       // Reset form fields after submission if needed
       setFeedback("");
-      setRating("5");
+      setRating("Poor"); // Reset to default
       setSelectedDepartment("");
     } catch (error) {
       const errorResponse = error.response?.data || error.message;
@@ -170,6 +170,7 @@ export default function Feedbackform() {
               <option value="SM">SM</option>
               <option value="BDES">BDES</option>
               <option value="LA">Liberal Arts</option>
+              <option value="Natural Science">Natural Science</option>
             </select>
           </label>
         </div>

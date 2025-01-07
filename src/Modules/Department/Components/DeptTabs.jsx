@@ -50,6 +50,8 @@ function DeptTabs({ branch }) {
     "deptadmin_design",
     "HOD (Liberal Arts)",
     "deptadmin_liberalarts",
+    "HOD (NS)",
+    "deptadmin_ns",
   ].includes(role);
   const tabItems = [
     { title: "About Us" },
