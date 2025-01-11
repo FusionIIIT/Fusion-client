@@ -56,7 +56,7 @@ export default function ViewFeedback({ branch }) {
       title={`Feedback for ${branch}`}
       columns={columns}
       data={data.map(({ id, ...rest }) => rest)} // Exclude 'id' from the displayed data
-      rowOptions={["3", "4", "6"]}
+      rowOptions={["10", "15", "20"]}
     />
   );
 }

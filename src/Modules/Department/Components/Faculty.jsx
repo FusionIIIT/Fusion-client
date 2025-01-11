@@ -45,10 +45,12 @@ function Faculty({ branch, faculty }) {
       .then((response) => response.json())
       .then((data) => {
         // Combine all faculty lists from different departments into one array
+        console.log(faculty);
         const combinedFacultyList = [...data.fac_list[faculty]];
 
         // Update the state with the fetched faculty data
         setFacultyData(combinedFacultyList);
+        console.log(faculty);
       })
       .catch((error) => {
         console.error("Error fetching faculty data:", error);
