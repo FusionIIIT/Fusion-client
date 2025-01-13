@@ -7,6 +7,8 @@ import {
   Button,
   Image,
   ActionIcon,
+  Modal,
+  Container,
   Title,
 } from "@mantine/core";
 import { Clock, MapPin, Trash, Pencil, Eye } from "@phosphor-icons/react";
@@ -15,6 +17,7 @@ import { useSelector } from "react-redux";
 import PropTypes from "prop-types";
 import { format } from "date-fns";
 import EditPlacementForm from "./EditPlacementForm";
+import ApplyForPlacementForm from "./ApplyForPlacementForm";
 import { notifications } from "@mantine/notifications";
 
 function PlacementScheduleCard({
@@ -34,10 +37,48 @@ function PlacementScheduleCard({
   const [visible, setVisible] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const [modalOpened, setModalOpened] = useState(false);
+
   const navigate = useNavigate();
 
+  const prefilledFields = {
+    name: "John Doe",
+    email: "john.doe@example.com",
+    roll_no: "123456",
+  };
+  
+  const additionalFields = [
+    {
+      name: "resume",
+      label: "Upload Resume",
+      type: "file",
+      required: true,
+    },
+    {
+      name: "preferred_location",
+      label: "Preferred Location",
+      type: "select",
+      options: ["Bangalore", "Mumbai", "Delhi"],
+      placeholder: "Select your preferred location",
+      required: true,
+    },
+    {
+      name: "additional_info",
+      label: "Additional Information",
+      type: "textarea",
+      placeholder: "Enter any additional information",
+      required: false,
+    },
+  ];
+  
+
   const handleApplyClick = async () => {
-    const token = localStorage.getItem("authToken");
+    setModalOpened(true);
+   
+  };
+
+  const handelApplySubmit = async () => {
+     const token = localStorage.getItem("authToken");
     console.log("Auth Token:", token);
     console.log("Placement ID:", jobId);
     try {
@@ -60,7 +101,7 @@ function PlacementScheduleCard({
     } catch (error) {
       console.error("Error:", error);
     }
-  };
+  }
 
   const handelViewClick = () => {
     navigate(`/placement-cell/view?jobId=${encodeURIComponent(jobId)}`);
@@ -251,7 +292,6 @@ function PlacementScheduleCard({
             {salary}
           </Text>
 
-
           {role === "student" &&
             (check ? (
               <Button
@@ -322,6 +362,21 @@ function PlacementScheduleCard({
         }}
         onSubmit={(newData) => handleSubmit(newData)}
       />
+
+      <Modal
+        opened={modalOpened}
+        onClose={() => setModalOpened(false)}
+        centered
+        size={"lg"}
+      >
+        <Container d>
+        <ApplyForPlacementForm
+        prefilledFields={prefilledFields}
+        additionalFields={additionalFields}
+        onSubmit={handelApplySubmit}
+      />
+        </Container>
+      </Modal>
     </>
   );
 }
