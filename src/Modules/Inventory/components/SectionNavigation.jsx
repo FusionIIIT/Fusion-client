@@ -1,10 +1,7 @@
 import React, { useState, useRef } from "react";
-import { Text, Button, Flex, Select, Tabs } from "@mantine/core";
-import {
-  CaretCircleLeft,
-  CaretCircleRight,
-  SortAscending,
-} from "@phosphor-icons/react";
+import { Text, Button, Flex, Tabs } from "@mantine/core";
+import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
+import { useSelector } from "react-redux";
 
 // Import your section components
 import InventoryDashboard from "./inventoryDashboard";
@@ -13,17 +10,10 @@ import Reports from "./Reports";
 import Department from "./Bdes";
 import InventoryRequests from "./InventoryRequests";
 
-const sections = [
-  "Overall Inventory",
-  "Section",
-  "Department",
-  "Requests",
-];
-
 const sectionComponents = {
   "Overall Inventory": InventoryDashboard,
   Section: HostelInventory,
-  Reports,
+  Reports:Reports,
   Department,
   Requests: InventoryRequests,
 };
@@ -32,6 +22,44 @@ export default function SectionNavigation() {
   const [activeSection, setActiveSection] = useState("Overall Inventory");
   const [activeTab, setActiveTab] = useState("0");
   const tabsListRef = useRef(null); // Reference for scrollable tabs
+  const role = useSelector((state) => state.user.role);
+
+  // Define sections based on role
+  const sections =
+    role === "ps_admin"
+      ? ["Overall Inventory", "Section", "Department", "Requests", "Reports"]
+      : role === "deptadmin_ece" || role === "Junior Technician"
+        ? ["Department"]
+        : role === "deptadmin_cse"
+          ? ["Department"]
+          : role === "deptadmin_me"
+            ? ["Department"]
+            : role === "deptadmin_sm"
+              ? ["Department"]
+              : role === "deptadmin_design"
+                ? ["Department"]
+                : role === "Hostel_admin" ||
+                  role === "hall1caretaker"
+                  ? ["Section"]  // Role "hall1caretaker" shows "h1"
+                  : role === "hall3caretaker"
+                    ? ["Section"]  // Role "hall3caretaker" shows "h3"
+                    : role === "hall4caretaker"
+                      ? ["Section"]  // Role "hall4caretaker" shows "h4"
+                      : role === "phcaretaker"
+                        ? ["Section"]  // Role "phcaretaker" shows "panini"
+                        : role === "nhcaretaker"
+                          ? ["Section"]  // Role "nhcaretaker" shows "nagarjuna"
+                          : role === "mshcaretaker"
+                            ? ["Section"]  // Role "mshcaretaker" shows "maa saraswati"
+                            : role === "rspc_admin"
+                              ? ["Section"]  // Role "rspc_admin" shows "rspc"
+                              : role === "SectionHead_IWD"
+                                ? ["Section"]  // Role "SectionHead_IWD" shows "iwd"
+                                : role === "acadadmin"
+                                  ? ["Section"]  // Role "acadadmin" shows "academic"
+                                  : role === "VhCaretaker"
+                                    ? ["Section"]  // Role "VhCaretaker" shows "vh"
+                                    : [];
 
   const tabItems = sections.map((section) => ({ title: section }));
 
@@ -61,12 +89,27 @@ export default function SectionNavigation() {
     setActiveSection(sec);
   };
 
-  // Placeholder categories for Select component
-  const categories = ["Name", "Date", "Department"];
-  const [sortedBy, setSortedBy] = useState("");
-
-  // Dynamically render the active section component
   const ActiveComponent = sectionComponents[activeSection];
+
+  if (role === "unauthorized") {
+    return (
+      <Flex justify="center" align="center" style={{ height: "100vh" }}>
+        <Text color="red" size="lg">
+          Unauthorized Access
+        </Text>
+      </Flex>
+    );
+  }
+
+  if (sections.length === 0) {
+    return (
+      <Flex justify="center" align="center" style={{ height: "100vh" }}>
+        <Text color="red" size="lg">
+          You do not have permission to access this page.
+        </Text>
+      </Flex>
+    );
+  }
 
   return (
     <>
@@ -116,16 +159,6 @@ export default function SectionNavigation() {
             <CaretCircleRight size={20} />
           </Button>
         </Flex>
-
-        {/* <Flex align="center" mt="md" gap="1rem">
-          <Select
-            placeholder="Sort By"
-            data={categories}
-            value={sortedBy}
-            onChange={setSortedBy}
-            icon={<SortAscending />}
-          />
-        </Flex> */}
       </Flex>
 
       <div style={{ marginTop: "2rem" }}>

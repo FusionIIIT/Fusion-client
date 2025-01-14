@@ -2,14 +2,12 @@ import React, { useState } from "react";
 import {
   Table,
   Checkbox,
-  Tabs,
-  Text,
   Container,
   Group,
   Badge,
   Paper,
-  Divider,
-  Select,
+  Button,
+  Text
 } from "@mantine/core";
 
 const data = [
@@ -27,95 +25,36 @@ const data = [
     department: "CSE",
     lastUpdated: "29-03-2024",
   },
-  {
-    product: "Projectors",
-    quantity: 50,
-    missing: 5,
-    department: "CSE",
-    lastUpdated: "14-03-2024",
-  },
-  {
-    product: "Wires",
-    quantity: 30,
-    missing: 0,
-    department: "ECE",
-    lastUpdated: "26-03-2024",
-  },
-  {
-    product: "Voltmeter",
-    quantity: 30,
-    missing: 0,
-    department: "ECE",
-    lastUpdated: "26-03-2024",
-  },
-  {
-    product: "Chairs",
-    quantity: 80,
-    missing: 0,
-    department: "Mech",
-    lastUpdated: "29-03-2024",
-  },
-  {
-    product: "Lasers",
-    quantity: 140,
-    missing: 0,
-    department: "SM",
-    lastUpdated: "04-03-2024",
-  },
-  {
-    product: "Boards",
-    quantity: 140,
-    missing: 0,
-    department: "SM",
-    lastUpdated: "04-03-2024",
-  },
-  {
-    product: "Drafts",
-    quantity: 5,
-    missing: 3,
-    department: "Design",
-    lastUpdated: "18-03-2024",
-  },
-  {
-    product: "Screens",
-    quantity: 5,
-    missing: 3,
-    department: "Design",
-    lastUpdated: "18-03-2024",
-  },
-  {
-    product: "Cables",
-    quantity: 80,
-    missing: 0,
-    department: "Mech",
-    lastUpdated: "29-03-2024",
-  },
+  // ... rest of your data
 ];
 
 export default function Reports() {
-  const [selectedCategory, setSelectedCategory] = useState("CSE");
-  const [sortOption, setSortOption] = useState("Last Updated");
+  const [selectedDepartment, setSelectedDepartment] = useState("CSE");
   const [checkedItems, setCheckedItems] = useState({});
 
-  const categories = [
+  const departments = [
     { label: "CSE", value: "CSE" },
     { label: "ECE", value: "ECE" },
     { label: "Mech", value: "Mech" },
     { label: "SM", value: "SM" },
     { label: "Design", value: "Design" },
+    { label: "NS", value: "NS" },
+
+    { label: "H1", value: "H1" },
+    { label: "H3", value: "H3" },
+    { label: "H4", value: "H4" },
+    { label: "Panini", value: "Panini" },
+    { label: "Nagarjuna", value: "Nagarjuna" },
+    { label: "Maa Saraswati", value: "Maa Saraswati" },
+    { label: "RSPC", value: "RSPC" },
+    { label: "GymKhana", value: "GymKhana" },
+    { label: "IWD", value: "IWD" },
+    { label: "Mess", value: "Mess" },
+    { label: "Academic", value: "Academic" },
+    { label: "VH", value: "VH" },
   ];
 
-  const sortedData = [...data]
-    .filter((item) => item.department === selectedCategory)
-    .sort((a, b) => {
-      if (sortOption === "Last Updated") {
-        return new Date(b.lastUpdated) - new Date(a.lastUpdated);
-      }
-      if (sortOption === "Missing") {
-        return a.missing - b.missing;
-      }
-      return 0;
-    });
+  const filteredData = data.filter(item => item.department === selectedDepartment);
 
   const handleCheckboxChange = (product) => {
     setCheckedItems((prev) => ({
@@ -124,224 +63,114 @@ export default function Reports() {
     }));
   };
 
-  const filteredRows = sortedData.map((item, index) => (
-    <React.Fragment key={index}>
-      <tr>
-        <td style={{ textAlign: "center" }}>
-          <Checkbox
-            size="sm"
-            style={{ marginLeft: "30px" }}
-            checked={!!checkedItems[item.product]}
-            onChange={() => handleCheckboxChange(item.product)}
-          />
-        </td>
-        <td style={{ fontSize: "16px", textAlign: "center", padding: "10px" }}>
-          {item.product}
-        </td>
-        <td style={{ fontSize: "16px", textAlign: "center", padding: "10px" }}>
-          {item.quantity}
-        </td>
-        <td style={{ fontSize: "16px", textAlign: "center", padding: "10px" }}>
-          {item.missing}
-        </td>
-        <td style={{ fontSize: "16px", textAlign: "center", padding: "10px" }}>
-          {item.department}
-        </td>
-        <td style={{ fontSize: "16px", textAlign: "center", padding: "10px" }}>
-          {item.lastUpdated}
-        </td>
-      </tr>
-      {index < sortedData.length - 1 && (
-        <tr>
-          <td colSpan="6">
-            <Divider />
-          </td>
-        </tr>
-      )}
-    </React.Fragment>
-  ));
-
   return (
-    <Container style={{ marginTop: "20px" }}>
-      <Paper
-        shadow="xs"
-        p="lg"
-        style={{
-          backgroundColor: "rgba(255, 255, 255, 0.5)",
-          borderRadius: "20px",
-          marginBottom: "20px",
-          padding: "30px",
-        }}
-      >
-        <Group position="apart" spacing="xl">
-          <div>
-            <Text
-              style={{
-                fontFamily: "Manrope",
-                fontSize: "20px",
-                color: "#000000",
-              }}
-            >
-              Categories
-            </Text>
-            <Badge size="xl" color="blue">
-              26
-            </Badge>
-          </div>
-          <Divider
-            orientation="vertical"
-            style={{
-              height: "65px",
-              margin: "0 20px",
-              backgroundColor: "black",
-            }}
-          />
-          <div>
-            <Text
-              style={{
-                fontFamily: "Manrope",
-                fontSize: "20px",
-                color: "#000000",
-              }}
-            >
-              Total Products
-            </Text>
-            <Badge size="xl" color="blue">
-              1000
-            </Badge>
-          </div>
-        </Group>
-      </Paper>
+    <>
+      {/* Breadcrumb */}
+      <Text style={{ marginLeft: "70px", fontSize: "16px" }} color="dimmed">
+        <span style={{ cursor: "pointer" }} onClick={() => setSelectedDepartment("")}>
+          Reports
+        </span>
+        {" > "} <span>{selectedDepartment}</span>
+      </Text>
 
-      <Paper
-        shadow="xs"
-        p="lg"
-        style={{
-          borderRadius: "20px",
-          marginBottom: "20px",
-          padding: "30px",
-        }}
-      >
-        <Tabs defaultValue="CSE">
-          <Tabs.List style={{ marginBottom: "15px" }}>
-            {categories.map((category, index) => (
-              <Tabs.Tab
+      <Container style={{ marginTop: "20px", maxWidth: "1000px", padding: "20px" }}>
+        <Text
+          align="center"
+          style={{
+            fontSize: "26px",
+            marginBottom: "20px",
+            fontWeight: 600,
+            color: "#228BE6",
+          }}
+        >
+          {selectedDepartment} Reports
+        </Text>
+
+        {/* Stats Paper */}
+        {/* <Paper
+          shadow="xs"
+          p="lg"
+          style={{
+            borderRadius: "12px",
+            marginBottom: "20px",
+            backgroundColor: "white",
+          }}
+        > */}
+          {/* <Group position="apart" spacing="xl">
+            <div>
+              <Text style={{ fontSize: "20px", marginBottom: "8px" }}>
+                Total Categories
+              </Text>
+              <Badge size="xl" color="blue">26</Badge>
+            </div>
+            <div>
+              <Text style={{ fontSize: "20px", marginBottom: "8px" }}>
+                Total Products
+              </Text>
+              <Badge size="xl" color="blue">1000</Badge>
+            </div>
+          </Group> */}
+        {/* </Paper> */}
+
+        {/* Department Buttons */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: "20px", marginLeft:"70px" }}>
+          <Group spacing="md">
+            {departments.map((dept, index) => (
+              <Button
                 key={index}
-                value={category.value}
                 style={{
-                  fontSize: "15px",
-                  padding: "12px",
-                  border: "1px solid black",
-                  width: "100px",
-                  borderRadius: "5px",
-                  marginBottom: "10px",
+                  fontSize: "14px",
                   backgroundColor:
-                    selectedCategory === category.value
-                      ? "#1366D9"
-                      : "lightblue",
-                  marginRight: "1px",
+                    selectedDepartment === dept.value ? "#228BE6" : "white",
+                  color: selectedDepartment === dept.value ? "white" : "black",
+                  border: "1px solid #1366D9",
                 }}
-                onClick={() => setSelectedCategory(category.label)}
+                onClick={() => setSelectedDepartment(dept.value)}
+                size="md"
               >
-                {category.label}
-              </Tabs.Tab>
+                {dept.label}
+              </Button>
             ))}
+          </Group>
+        </div>
 
-            <Group
-              position="apart"
-              style={{ marginBottom: "10px", marginLeft: "230px" }}
-            >
-              <Select
-                value={sortOption}
-                onChange={setSortOption}
-                data={[
-                  { value: "Last Updated", label: "Last Updated" },
-                  { value: "Missing", label: "Missing" },
-                ]}
-                placeholder="Sort By"
-                style={{ width: "140px" }}
-              />
-            </Group>
-          </Tabs.List>
-
-          <div
-            style={{
-              height: "420px",
-              overflowY: "scroll",
-              scrollbarWidth: "thin",
-            }}
-          >
-            <Table
-              striped
-              highlightOnHover
-              verticalSpacing="lg"
-              horizontalSpacing="xl"
-              fontSize="lg"
-            >
+        {/* Table Paper */}
+        <Paper
+          shadow="xs"
+          p="lg"
+          style={{ borderRadius: "12px", marginLeft: "81px", width: "800px" }}
+        >
+          <div style={{ overflowX: "auto" }}>
+            <Table striped highlightOnHover verticalSpacing="md">
               <thead>
                 <tr>
-                  <th
-                    style={{
-                      fontSize: "18px",
-                      textAlign: "center",
-                      paddingBottom: "10px",
-                    }}
-                  >
-                    Select
-                  </th>
-                  <th
-                    style={{
-                      fontSize: "18px",
-                      textAlign: "center",
-                      paddingBottom: "10px",
-                    }}
-                  >
-                    Products
-                  </th>
-                  <th
-                    style={{
-                      fontSize: "18px",
-                      textAlign: "center",
-                      paddingBottom: "10px",
-                    }}
-                  >
-                    Quantity
-                  </th>
-                  <th
-                    style={{
-                      fontSize: "18px",
-                      textAlign: "center",
-                      paddingBottom: "10px",
-                    }}
-                  >
-                    Missing
-                  </th>
-                  <th
-                    style={{
-                      fontSize: "18px",
-                      textAlign: "center",
-                      paddingBottom: "10px",
-                    }}
-                  >
-                    Department
-                  </th>
-                  <th
-                    style={{
-                      fontSize: "18px",
-                      textAlign: "center",
-                      paddingBottom: "10px",
-                    }}
-                  >
-                    Last Updated
-                  </th>
+                  <th style={{ fontSize: "20px", textAlign: "center" }}>Select</th>
+                  <th style={{ fontSize: "20px", textAlign: "center" }}>Products</th>
+                  <th style={{ fontSize: "20px", textAlign: "center" }}>Quantity</th>
+                  <th style={{ fontSize: "20px", textAlign: "center" }}>Missing</th>
+                  <th style={{ fontSize: "20px", textAlign: "center" }}>Last Updated</th>
                 </tr>
               </thead>
-
-              <tbody>{filteredRows}</tbody>
+              <tbody>
+                {filteredData.map((item, index) => (
+                  <tr key={index}>
+                    <td style={{ textAlign: "center" }}>
+                      <Checkbox
+                        checked={!!checkedItems[item.product]}
+                        onChange={() => handleCheckboxChange(item.product)}
+                      />
+                    </td>
+                    <td style={{ textAlign: "center" }}>{item.product}</td>
+                    <td style={{ textAlign: "center" }}>{item.quantity}</td>
+                    <td style={{ textAlign: "center" }}>{item.missing}</td>
+                    <td style={{ textAlign: "center" }}>{item.lastUpdated}</td>
+                  </tr>
+                ))}
+              </tbody>
             </Table>
           </div>
-        </Tabs>
-      </Paper>
-    </Container>
+        </Paper>
+      </Container>
+    </>
   );
 }

@@ -4,11 +4,13 @@ import { useNavigate } from "react-router-dom";
 import AddProduct from "./AddProduct";
 import TransferProduct from "./TransferProduct";
 import "../styles/popupModal.css";
+import { useSelector } from "react-redux";
 
 export default function Inventory() {
+  const role = useSelector((state) => state.user.role);
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [showTransferProductModal, setShowTransferProductModal] = useState(false);
-  const [selectedDepartment, setSelectedDepartment] = useState("CSE");
+  const [selectedDepartment, setSelectedDepartment] = useState("");
   const [inventoryData, setInventoryData] = useState([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -18,6 +20,7 @@ export default function Inventory() {
     { label: "ECE", value: "ECE" },
     { label: "ME", value: "ME" },
     { label: "SM", value: "SM" },
+    { label: "NS", value: "NS" },
     { label: "Design", value: "Design" },
   ];
 
@@ -60,9 +63,9 @@ export default function Inventory() {
   }, [selectedDepartment]);
 
 
-  // const handleTransferClick = () => {
-  //   navigate("/inventory/transfer");
-  // };
+   const handleTransferClick = () => {
+     navigate("/inventory/transfer");
+  };
 
   const openAddProductModal = () => {
     setShowAddProductModal(true);
@@ -113,7 +116,6 @@ export default function Inventory() {
         >
           {selectedDepartment} Department Inventory
         </Text>
-
         <div
           style={{
             display: "flex",
@@ -123,32 +125,104 @@ export default function Inventory() {
         >
           <Group spacing="md">
             <Button
+              style={{ fontSize: "14px" }}
               variant="filled"
               color="blue"
-              onClick={openTransferProductModal}
+              onClick={handleTransferClick}
               size="md"
             >
-              Transfer Product
+              Transfer Item
             </Button>
-
-            {departments.map((dept, index) => (
+            {role === "deptadmin_cse" ? (
               <Button
-                key={index}
                 style={{
                   fontSize: "14px",
                   backgroundColor:
-                    selectedDepartment === dept.value ? "#228BE6" : "white",
-                  color: selectedDepartment === dept.value ? "white" : "black",
+                    selectedDepartment === "CSE" ? "#228BE6" : "white",
+                  color: selectedDepartment === "CSE" ? "white" : "black",
                   border: "1px solid #1366D9",
                 }}
-                onClick={() => setSelectedDepartment(dept.value)}
+                onClick={() => setSelectedDepartment("CSE")}
                 size="md"
               >
-                {dept.label}
+                CSE
               </Button>
-            ))}
-
+            ) : role === "deptadmin_ece" || role==="Junior Technician" ? (
+              <Button
+                style={{
+                  fontSize: "14px",
+                  backgroundColor:
+                    selectedDepartment === "ECE" ? "#228BE6" : "white",
+                  color: selectedDepartment === "ECE" ? "white" : "black",
+                  border: "1px solid #1366D9",
+                }}
+                onClick={() => setSelectedDepartment("ECE")}
+                size="md"
+              >
+                ECE
+              </Button>
+            ) : role === "deptadmin_me" ? (
+              <Button
+                style={{
+                  fontSize: "14px",
+                  backgroundColor:
+                    selectedDepartment === "Mech" ? "#228BE6" : "white",
+                  color: selectedDepartment === "Mech" ? "white" : "black",
+                  border: "1px solid #1366D9",
+                }}
+                onClick={() => setSelectedDepartment("Mech")}
+                size="md"
+              >
+                Mech
+              </Button>
+            ) : role === "deptadmin_sm" ? (
+              <Button
+                style={{
+                  fontSize: "14px",
+                  backgroundColor:
+                    selectedDepartment === "SM" ? "#228BE6" : "white",
+                  color: selectedDepartment === "SM" ? "white" : "black",
+                  border: "1px solid #1366D9",
+                }}
+                onClick={() => setSelectedDepartment("SM")}
+                size="md"
+              >
+                SM
+              </Button>
+            ) : role === "deptadmin_design" ? (
+              <Button
+                style={{
+                  fontSize: "14px",
+                  backgroundColor:
+                    selectedDepartment === "Design" ? "#228BE6" : "white",
+                  color: selectedDepartment === "Design" ? "white" : "black",
+                  border: "1px solid #1366D9",
+                }}
+                onClick={() => setSelectedDepartment("Design")}
+                size="md"
+              >
+                Design
+              </Button>
+            ) : (
+              departments.map((dept, index) => (
+                <Button
+                  key={index}
+                  style={{
+                    fontSize: "14px",
+                    backgroundColor:
+                      selectedDepartment === dept.value ? "#228BE6" : "white",
+                    color: selectedDepartment === dept.value ? "white" : "black",
+                    border: "1px solid #1366D9",
+                  }}
+                  onClick={() => setSelectedDepartment(dept.value)}
+                  size="md"
+                >
+                  {dept.label}
+                </Button>
+              ))
+            )}
             <Button
+              style={{ fontSize: "14px" }}
               variant="filled"
               color="blue"
               onClick={openAddProductModal}

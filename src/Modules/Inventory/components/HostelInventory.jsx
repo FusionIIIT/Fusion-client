@@ -1,22 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { Table, Container, Group, Paper, Button, Text } from "@mantine/core";
+import { useSelector } from 'react-redux';  // Make sure to import useSelector from redux
 import AddProduct from "./AddProduct";
 import TransferProduct from "./TransferProduct";
 
 export default function HostelInventory() {
-  const [selectedDepartment, setSelectedDepartment] = useState("H1");
+  const role = useSelector((state) => state.user.role);
+
+  const [selectedDepartment, setSelectedDepartment] = useState("");
   const [inventoryData, setInventoryData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [showTransferProductModal, setShowTransferProductModal] = useState(false);
 
-  const departments = [
+  let departments = [
     { label: "H1", value: "H1" },
     { label: "H3", value: "H3" },
     { label: "H4", value: "H4" },
     { label: "Panini", value: "Panini" },
+    { label: "Nagarjuna", value: "Nagarjuna" },
     { label: "Maa Saraswati", value: "Maa Saraswati" },
-    { label: "SAC", value: "SAC" },
+    { label: "RSPC", value: "RSPC" },
     { label: "GymKhana", value: "GymKhana" },
     { label: "IWD", value: "IWD" },
     { label: "Mess", value: "Mess" },
@@ -24,6 +28,7 @@ export default function HostelInventory() {
     { label: "VH", value: "VH" },
   ];
 
+  // Function to fetch department data based on the selected department
   const fetchDepartmentData = async () => {
     const token = localStorage.getItem("authToken");
 
@@ -68,6 +73,61 @@ export default function HostelInventory() {
   const openTransferProductModal = () => setShowTransferProductModal(true);
   const closeTransferProductModal = () => setShowTransferProductModal(false);
 
+  // Render department label based on role
+  const renderDepartmentLabel = () => {
+    switch (role) {
+      case "hall1caretaker":
+        departments = [{ label: "H1", value: "H1" }]
+        return "H1";
+      case "hall3caretaker":
+        departments = [{ label: "H3", value: "H3" }]
+        return "H3";
+      case "hall4caretaker":
+        departments = [{ label: "H4", value: "H4" }]
+        return "H4";
+      case "phcaretaker":
+        departments = [{ label: "Panini", value: "Panini" }]
+        return "Panini";
+      case "nhcaretaker":
+        departments = [{ label: "Nagarjuna", value: "Nagarjuna" }]
+        return "Nagarjuna";
+      case "mshcaretaker":
+        departments = [{ label: "Maa Saraswati", value: "Maa Saraswati" }]
+        return "Maa Saraswati";
+      case "rspc_admin":
+        departments = [{ label: "RSPC", value: "RSPC" }]
+        return "RSPC";
+      case "SectionHead_IWD":
+        departments = [{ label: "IWD", value: "IWD" }]
+        return "IWD";
+        case "mess_manager":
+        departments = [{ label: "Mess", value: "Mess" }]
+        return "Academic";
+      case "acadadmin":
+        departments = [{ label: "Academic", value: "Academic" }]
+        return "Academic";
+      case "VhCaretaker":
+        departments = [{ label: "VH", value: "VH" }]
+        return "VH";
+      default:
+        departments = [
+          { label: "H1", value: "H1" },
+          { label: "H3", value: "H3" },
+          { label: "H4", value: "H4" },
+          { label: "Panini", value: "Panini" },
+          { label: "Nagarjuna", value: "Nagarjuna" },
+          { label: "Maa Saraswati", value: "Maa Saraswati" },
+          { label: "RSPC", value: "RSPC" },
+          { label: "GymKhana", value: "GymKhana" },
+          { label: "IWD", value: "IWD" },
+          { label: "Mess", value: "Mess" },
+          { label: "Academic", value: "Academic" },
+          { label: "VH", value: "VH" },
+        ];
+        return "H1"; // Default fallback
+    }
+  };
+
   return (
     <>
       {/* Breadcrumb */}
@@ -75,19 +135,18 @@ export default function HostelInventory() {
         <span style={{ cursor: "pointer" }} onClick={() => setSelectedDepartment('')}>
           Sections
         </span>
-        {" > "} <span>{selectedDepartment}</span>
+        {" > "} <span>{renderDepartmentLabel()}</span>
       </Text>
       <Container
         style={{
           marginTop: "20px",
-          maxWidth: "1200px",
+          maxWidth: "1400px",
           maxHeight: "1000px",
           backgroundColor: "white",
           padding: "20px",
           borderRadius: "12px",
         }}
       >
-
         <Text
           align="center"
           style={{
@@ -97,7 +156,7 @@ export default function HostelInventory() {
             color: "#228BE6",
           }}
         >
-          {selectedDepartment} Inventory
+          {renderDepartmentLabel()} Inventory
         </Text>
 
         <div
@@ -265,13 +324,12 @@ export default function HostelInventory() {
               </button>
               <div
                 style={{
-                  margin: "-80px 0 -65px 0",
-                  height: "835px",
-                  overflow: "hidden",
+                  margin: "-80px 20px 20px 20px",
+                  backgroundColor: "transparent",
                 }}
               >
                 <AddProduct
-                  onSuccess={closeAddProductModal}
+                  closeModal={closeAddProductModal}
                   selectedDepartment={selectedDepartment}
                   val="sections"
                   name="section_name"
@@ -336,16 +394,13 @@ export default function HostelInventory() {
               </button>
               <div
                 style={{
-                  margin: "-80px 0 -65px 0",
-                  height: "835px",
-                  overflow: "hidden",
+                  margin: "-80px 20px 20px 20px",
+                  backgroundColor: "transparent",
                 }}
               >
                 <TransferProduct
-                  onSuccess={closeTransferProductModal}
+                  closeModal={closeTransferProductModal}
                   selectedDepartment={selectedDepartment}
-                  val="sections"
-                  name="section_name"
                 />
               </div>
             </div>
