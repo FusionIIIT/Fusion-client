@@ -13,6 +13,7 @@ import PlacementSchedule from "./components/PlacementSchedule";
 import SendNotificationForm from "./components/SendNotificationForm";
 import DownloadCV from "./components/DownloadCV";
 import CustomBreadcrumbs from "../../components/Breadcrumbs";
+import DebarredStudents from "./components/DebarredStudents";
 
 const studentTabs = [
   {
@@ -49,6 +50,11 @@ const chairmanTabs = [
     label: "Placement Calendar",
     component: <PlacementCalendar />,
   },
+  {
+    value: "debarred-students",
+    label: "Debarred Students",
+    component: <DebarredStudents />,
+  }
 ];
 
 const tpoTabs = [
@@ -72,6 +78,11 @@ const tpoTabs = [
     label: "Placement Calendar",
     component: <PlacementCalendar />,
   },
+  {
+    value: "debarred-students",
+    label: "Debarred Students",
+    component: <DebarredStudents />,
+  }
 ];
 
 const styles = {
