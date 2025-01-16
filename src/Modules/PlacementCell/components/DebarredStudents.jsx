@@ -14,6 +14,7 @@ import {
 import { MantineReactTable, useMantineReactTable } from 'mantine-react-table';
 import { notifications } from "@mantine/notifications";
 import axios from "axios";
+import { fetchDebaredlistRoute } from "../../../routes/placementCellRoutes";
 
 function DebarredStudents() {
   const [debarredStudents, setDebarredStudents] = useState([]);
@@ -27,11 +28,52 @@ function DebarredStudents() {
     // Fetch debarred students from the backend
     // For now, we will use sample data
     const sampleData = [
-      { rollNo: "12345", name: "John Doe", reason: "Academic misconduct" },
-      { rollNo: "67890", name: "Jane Smith", reason: "Violation of code of conduct" },
+      // { rollNo: "12345", name: "John Doe", reason: "Academic misconduct" },
+      // { rollNo: "67890", name: "Jane Smith", reason: "Violation of code of conduct" },
     ];
-    setDebarredStudents(sampleData);
+    const fetchDebaredlist = async() => {
+      try{
+        const token = localStorage.getItem("authToken");
+        const response = await axios.get(
+          fetchDebaredlistRoute,
+          {
+            headers:{
+              Authorization: `Token ${token}`,
+            },
+          },
+        );
+        
+        if(response.status==200){
+          setDebarredStudents(response.data);
+        }
+        else if(response.status==404){
+          console.log(`error fetching data: ${response.status}`);
+          notifications.show({
+            title: "Error fetching data",
+            message: `Error fetching data: ${response.status}`,
+            color: "red",
+          });
+        }
+        else{
+          console.log(`error fetching data: ${response.status}`);
+          notifications.show({
+            title: "Error fetching data",
+            message: `Error fetching data: ${response.status}`,
+            color: "red",
+          });
+        }
+      }catch (error) {
+        // setError("Failed to fetch debared students list");
+        notifications.show({
+          title: "Failed to fetch data",
+          message: "Failed to fetch debared students list",
+          color: "red",
+        });
+      }
+    };
+    fetchDebaredlist();
   }, []);
+
 
   const handleDebar = async () => {
     setLoading(true);
@@ -43,41 +85,86 @@ function DebarredStudents() {
         name: studentDetails.name,
         reason,
       };
-      setDebarredStudents((prev) => [...prev, newDebarredStudent]);
-      notifications.show({
-        title: "Success",
-        message: "Student debarred successfully!",
-        color: "green",
-        position: "top-center",
-      });
-      setIsModalOpen(false);
-    } catch (error) {
-      console.error("Error debarring student:", error);
-      notifications.show({
-        title: "Error",
-        message: "An error occurred while debarring the student.",
-        color: "red",
-        position: "top-center",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+      const token = localStorage.getItem('authToken');
+      const response = await axios.post(
+        `http://127.0.0.1:8000/placement/api/debared-status/${rollNo}/`,
+        newDebarredStudent,
+        {
+          headers:{
+            Authorization:`Token ${token}`
+          },
+        },
+      );
+        console.log(response);
+        setDebarredStudents((prev) => [...prev, newDebarredStudent]);
+        notifications.show({
+          title: "Success",
+          message: "Student debarred successfully!",
+          color: "green",
+          position: "top-center",
+        });
+        setIsModalOpen(false);
+        
+
+      } catch (error) {
+        console.error("Error debarring student:", error);
+        notifications.show({
+          title: "Error",
+          message: "An error occurred while debarring the student.",
+          color: "red",
+          position: "top-center",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+  
 
   const handleFetchStudentDetails = async () => {
     try {
       // Fetch student details from the backend
       // For now, we will use sample data
-      const sampleStudentDetails = {
-        rollNo,
-        name: "Sample Student",
-        email: "sample@student.com",
-        department: "Computer Science",
-        year: "3rd Year",
-      };
-      setStudentDetails(sampleStudentDetails);
-      setIsModalOpen(true);
-    } catch (error) {
+      // const sampleStudentDetails = {
+      //   rollNo,
+      //   name: "Sample Student",
+      //   email: "sample@student.com",
+      //   department: "Computer Science",
+      //   year: "3rd Year",
+      // };
+
+      const token = localStorage.getItem('authToken');
+      const response = await axios.get(
+          `http://127.0.0.1:8000/placement/api/debared-status/${rollNo}/`,
+          {
+            headers:{
+              Authorization: `Token ${token}`,
+            },
+          },
+        );
+        // console.log(response.data);
+        if(response.status==200){
+          setStudentDetails(response.data);
+          console.log(studentDetails);
+          setIsModalOpen(true);
+        }
+        else if(response.status==404){
+          console.log(`no user found with that roll no: ${rollNo}`);
+          notifications.show({
+            title: "Error fetching data",
+            message: `no user found with that roll no: ${rollNo}`,
+            color: "red",
+          });
+        }
+        else{
+          console.log(`error fetching data: ${response.status}`);
+          notifications.show({
+            title: "Error fetching data",
+            message: `Error fetching data: ${response.status}`,
+            color: "red",
+          });
+        }
+      }
+     catch (error) {
       console.error("Error fetching student details:", error);
       notifications.show({
         title: "Error",
@@ -88,10 +175,50 @@ function DebarredStudents() {
     }
   };
 
+  const handleDebarDelete = async () => {
+    try{
+      const token = localStorage.getItem('authToken');
+      const response = await axios.delete(
+      `http://127.0.0.1:8000/placement/api/debared-status/${rollNo}/`,
+        {
+          headers:{
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+
+      if(response.status==200){
+        notifications.show({
+          title: "Success",
+          message: "Student deleted from debarred successfully!",
+          color: "green",
+          position: "top-center",
+        });
+      }
+      else{
+        notifications.show({
+          title: "Failed",
+          message: `Student not found with roll no : ${rollNo}`,
+          color: "red",
+          position: "top-center",
+        });
+      }
+    }
+     catch (error) {
+      console.error("Error fetching student details:", error);
+      notifications.show({
+        title: "Error",
+        message: "Failed to delete student details.",
+        color: "red",
+        position: "top-center",
+      });
+    }
+  };
+
   const columns = useMemo(
     () => [
       {
-        accessorKey: 'rollNo',
+        accessorKey: 'roll_no',
         header: 'Roll No',
       },
       {
@@ -99,12 +226,13 @@ function DebarredStudents() {
         header: 'Name',
       },
       {
-        accessorKey: 'reason',
+        accessorKey: 'description',
         header: 'Reason',
       },
     ],
     [],
   );
+
 
   const table = useMantineReactTable({
     columns,
@@ -158,11 +286,13 @@ function DebarredStudents() {
             <Title order={4} align="center" style={{ marginBottom: "20px" }}>
               Student Details
             </Title>
-            <Text><strong>Roll No:</strong> {studentDetails.rollNo}</Text>
+            <Text><strong>Roll No:</strong> {studentDetails.roll_no}</Text>
             <Text><strong>Name:</strong> {studentDetails.name}</Text>
             <Text><strong>Email:</strong> {studentDetails.email}</Text>
             <Text><strong>Department:</strong> {studentDetails.department}</Text>
             <Text><strong>Year:</strong> {studentDetails.year}</Text>
+            <Text><strong>Programme:</strong> {studentDetails.programme}</Text>
+
             <Textarea
               label="Reason for Debarring"
               placeholder="Enter reason"

@@ -11,3 +11,4 @@ export const fetchPlacementStatsRoute = `${host}/placement/api/statistics/`;
 export const deletePlacementStatsRoute = `${host}/placement/api/delete-statistics/`;
 export const fetchPlacementScheduleRoute = `${host}/placement/api/placement/`;
 export const fetchTimeLineRoute = `${host}/placement/api/timeline/`;
+export const fetchDebaredlistRoute = `${host}/placement/api/debared-students/`;
