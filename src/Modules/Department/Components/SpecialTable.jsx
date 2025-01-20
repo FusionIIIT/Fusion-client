@@ -4,7 +4,6 @@ import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css";
 import {
   MRT_GlobalFilterTextInput as FilterTextInput,
-  MRT_TableBodyCellValue as TableBodyCellValue,
   MRT_TablePagination as TablePagination,
   MRT_ToolbarAlertBanner as ToolbarAlertBanner,
   flexRender,
@@ -16,7 +15,7 @@ function SpecialTable({ title, columns, data, rowOptions }) {
   const table = useMantineReactTable({
     columns,
     data,
-    enableRowSelection: false, // Disable row selection checkboxes
+    enableRowSelection: false,
     initialState: {
       pagination: {
         pageSize: rowOptions ? parseInt(rowOptions[0], 10) : 5,
@@ -24,7 +23,6 @@ function SpecialTable({ title, columns, data, rowOptions }) {
       },
       showGlobalFilter: true,
     },
-    // customize the MRT components
     mantinePaginationProps: {
       rowsPerPageOptions: rowOptions ?? ["5", "10", "20"],
     },
@@ -37,14 +35,9 @@ function SpecialTable({ title, columns, data, rowOptions }) {
         <Divider />
         <Title order={4}>{title ?? "My Special Table"}</Title>
         <Flex justify="space-between" align="center">
-          {/**
-           * Use MRT components along side your own markup.
-           * They just need the table instance passed as a prop to work!
-           */}
           <FilterTextInput table={table} />
           <TablePagination table={table} />
         </Flex>
-        {/* Using Vanilla Mantine Table component here */}
         <Table
           captionSide="top"
           fz="md"
@@ -56,7 +49,6 @@ function SpecialTable({ title, columns, data, rowOptions }) {
           withColumnBorders
           m="0"
         >
-          {/* Use your own markup or stock Mantine components, customize however you want using the power of TanStack Table */}
           <Table.Thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <Table.Tr key={headerGroup.id}>
@@ -79,7 +71,10 @@ function SpecialTable({ title, columns, data, rowOptions }) {
               <Table.Tr key={row.id}>
                 {row.getVisibleCells().map((cell) => (
                   <Table.Td key={cell.id}>
-                    <TableBodyCellValue cell={cell} table={table} />
+                    {flexRender(
+                      cell.column.columnDef.cell ?? cell.column.columnDef.Cell,
+                      cell.getContext(),
+                    )}
                   </Table.Td>
                 ))}
               </Table.Tr>

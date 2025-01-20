@@ -1,5 +1,6 @@
 import React, { useEffect, useState, lazy } from "react";
 import PropTypes from "prop-types";
+import { Link } from "react-router-dom"; // Import Link for navigation
 import { host } from "../../../routes/globalRoutes/index.jsx";
 
 const SpecialTable = lazy(() => import("./SpecialTable.jsx"));
@@ -8,6 +9,14 @@ const columns = [
   {
     accessorKey: "id",
     header: "Faculty ID",
+    cell: ({ row }) => (
+      <Link
+        to={`/eis/profile/${row.original.id}`} // Navigate to the faculty profile page
+        style={{ textDecoration: "none", color: "blue" }}
+      >
+        {row.original.id}
+      </Link>
+    ),
   },
   {
     accessorKey: "title",
@@ -27,48 +36,47 @@ const columns = [
   },
 ];
 
-function Faculty({ branch, faculty }) {
+function Faculty({ branch }) {
   const [facultyData, setFacultyData] = useState([]);
+
+  if (branch === "DS") branch = "Design";
+  if (branch === "Natural Science") branch = "Natural_Science";
 
   // Fetch faculty data from API with Auth Token
   useEffect(() => {
-    // Ensure the token is correctly fetched from local storage
-    const authToken = localStorage.getItem("authToken");
+    const fetchUrl = `${host}/dep/api/faculty-data/${branch}/`;
 
-    fetch(`${host}/dep/api/dep-main/`, {
-      method: "GET",
+    fetch(fetchUrl, {
       headers: {
-        Authorization: `Token ${authToken}`,
         "Content-Type": "application/json",
+        Authorization: `Token ${localStorage.getItem("authToken")}`,
       },
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
       .then((data) => {
-        // Combine all faculty lists from different departments into one array
-        console.log(faculty);
-        const combinedFacultyList = [...data.fac_list[faculty]];
-
-        // Update the state with the fetched faculty data
-        setFacultyData(combinedFacultyList);
-        console.log(faculty);
+        setFacultyData(data);
       })
       .catch((error) => {
-        console.error("Error fetching faculty data:", error);
+        console.error("There was a problem with your fetch operation:", error);
       });
-  }, [faculty]); // Added department as a dependency
+  }, [branch]);
 
   return (
     <SpecialTable
-      title={`Faculties in ${branch} Department`} // Updated title to show current department
+      title={`Faculties in ${branch} Department`}
       columns={columns}
-      data={facultyData} // Use dynamic faculty data from API
+      data={facultyData}
       rowOptions={["10", "20", "30"]}
     />
   );
 }
 
 Faculty.propTypes = {
-  faculty: PropTypes.string.isRequired,
   branch: PropTypes.string.isRequired,
 };
 

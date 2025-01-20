@@ -4,6 +4,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import React, { useState, useEffect, lazy } from "react";
 import PropTypes from "prop-types";
+import { Link } from "react-router-dom"; // Import Link for navigation
 import { host } from "../../../routes/globalRoutes/index.jsx";
 
 const SpecialTable = lazy(() => import("./SpecialTable.jsx"));
@@ -12,6 +13,14 @@ const columns = [
   {
     accessorKey: "id",
     header: "Roll",
+    cell: ({ row }) => (
+      <Link
+        to={`/profile/${row.original.id}`} // Navigate to the faculty profile page
+        style={{ textDecoration: "none", color: "blue" }}
+      >
+        {row.original.id}
+      </Link>
+    ),
   },
   {
     accessorKey: "specialization",

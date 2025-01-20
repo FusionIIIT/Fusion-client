@@ -27,7 +27,7 @@ const departments = [
   { title: "SM Department", id: "6", code: "SM" },
   { title: "Design Department", id: "7", code: "DS" },
   { title: "Liberal Arts Department", id: "8", code: "LA" },
-  { title: "Natural Science", id: "9", code: "NS" },
+  { title: "NaturalScience", id: "9", code: "NS" },
 ];
 
 export default function LandingPage() {
