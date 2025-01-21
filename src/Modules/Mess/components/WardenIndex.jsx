@@ -7,16 +7,18 @@ import ViewMenu from "./ViewMenu.jsx";
 import ViewFeedback from "./ViewFeedback.jsx";
 import MessAnnouncements from "./MessAnnouncements.jsx";
 import ViewRegistrations from "./ViewRegistration.jsx";
+import ViewBillAndPayments from "./ViewBillAndPayments.jsx"; 
 
 function Warden() {
   const [activeTab, setActiveTab] = useState("0");
   const tabsListRef = useRef(null);
 
   const tabItems = [
-    { title: "View FeedBack | Statistics" },
+    { title: "View Feedback | Statistics" },
     { title: "View Menu" },
     { title: "View Announcements" },
     { title: "View Registrations" },
+    { title: "View Bill And Payments" }, 
   ];
 
   const handleTabChange = (direction) => {
@@ -42,6 +44,8 @@ function Warden() {
         return <MessAnnouncements />;
       case "3":
         return <ViewRegistrations />;
+      case "4": 
+        return <ViewBillAndPayments />;
       default:
         return <Loader />;
     }

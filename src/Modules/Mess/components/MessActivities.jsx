@@ -1,5 +1,5 @@
-import { Button, Container, Flex, Loader, Tabs, Text } from "@mantine/core";
-import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
+import { Button, Container, Flex, Loader, Tabs, Text, Alert } from "@mantine/core";
+import { CaretCircleLeft, CaretCircleRight, Info } from "@phosphor-icons/react";
 import { useRef, useState } from "react";
 import classes from "../styles/messModule.module.css";
 
@@ -47,7 +47,6 @@ function MessActivities() {
     <>
       {/* Tab navigation */}
       <Flex justify="center" align="center" mt="5">
-        {" "}
         <Flex justify="space-between" align="center" gap="1rem" mt="1.5rem">
           <Button
             onClick={() => handleTabChange("prev")}
@@ -98,6 +97,20 @@ function MessActivities() {
           </Button>
         </Flex>
       </Flex>
+
+      {/* Instructional Message */}
+      {activeTab === "0" && (
+        <Container fluid style={{ maxWidth: "600px", margin: "20px auto" }}>
+          <Alert
+            icon={<Info size={16} />}
+            title="Important Instructions"
+            color="blue"
+            radius="md"
+          >
+            Please ensure that the Excel file is named as <b>"MessBillUpload.xlsx"</b> before uploading.
+          </Alert>
+        </Container>
+      )}
 
       {/* Main content */}
       <Container fluid style={{ maxWidth: "600px", margin: "0 auto" }}>
