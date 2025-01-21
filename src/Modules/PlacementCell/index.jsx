@@ -14,6 +14,7 @@ import SendNotificationForm from "./components/SendNotificationForm";
 import DownloadCV from "./components/DownloadCV";
 import CustomBreadcrumbs from "../../components/Breadcrumbs";
 import DebarredStudents from "./components/DebarredStudents";
+import RestrictionsTab from "./components/RestrictionsTab";
 
 const studentTabs = [
   {
@@ -82,7 +83,13 @@ const tpoTabs = [
     value: "debarred-students",
     label: "Debarred Students",
     component: <DebarredStudents />,
+  },
+  {
+    value: "restrictions",
+    label: "Restrictions",
+    component: <RestrictionsTab />,
   }
+
 ];
 
 const styles = {
