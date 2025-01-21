@@ -68,11 +68,22 @@ function ComplaintHistory() {
     const hours = String(date.getHours()).padStart(2, "0");
     const minutes = String(date.getMinutes()).padStart(2, "0");
 
-    return `${day}-${month}-${year}, ${hours}:${minutes}`; // Format: DD-MM-YYYY HH:MM
+    // Format: DD-MM-YYYY HH:MM
+    return `${day}-${month}-${year}, ${hours}:${minutes}`;
   };
 
   return (
-    <Grid mt="xl" style={{ width: "100%", paddingInline: "49px" }}>
+    <Grid
+      mt="xl"
+      style={{ width: "100%", paddingInline: "49px" }}
+      /** Let’s add a small override for extra-small screens,
+       * so it doesn’t overflow horizontally on phones. */
+      sx={(theme) => ({
+        [theme.fn.smallerThan("sm")]: {
+          paddingInline: theme.spacing.md,
+        },
+      })}
+    >
       <Paper
         radius="md"
         px="lg"
@@ -80,12 +91,20 @@ function ComplaintHistory() {
         pb="xl"
         style={{
           borderLeft: "0.6rem solid #15ABFF",
+          // Keep your original logic for width
           width: showDetails ? "70vw" : "100%",
           backgroundColor: "white",
           overflow: "hidden",
           maxHeight: "65vh",
         }}
         withBorder
+        /** Slight tweak on small screens so the detail view
+         * doesn’t overflow horizontally. */
+        sx={(theme) => ({
+          [theme.fn.smallerThan("sm")]: {
+            width: showDetails ? "90vw" : "100%",
+          },
+        })}
       >
         {showDetails ? (
           <ComplaintDetails
@@ -94,24 +113,35 @@ function ComplaintHistory() {
           />
         ) : (
           <>
-            <Title order={3} mb="md" size="24px">
+            <Title
+              order={3}
+              mb="md"
+              sx={(theme) => ({
+                fontSize: 24, // keep your 24px on desktop
+                [theme.fn.smallerThan("sm")]: {
+                  fontSize: theme.fontSizes.md, // ~16px on smaller screens
+                },
+              })}
+            >
               Complaint History
             </Title>
+
             <Group spacing="sm" mb="md">
               {["pending", "resolved", "declined"].map((tab) => (
                 <Button
                   key={tab}
                   variant={activeTab === tab ? "filled" : "outline"}
                   onClick={() => setActiveTab(tab)}
-                  style={{
-                    backgroundColor: activeTab === tab ? "#15ABFF" : "white",
-                    color: activeTab === tab ? "white" : "black",
+                  sx={(theme) => ({
+                    backgroundColor:
+                      activeTab === tab ? "#15ABFF" : theme.white,
+                    color: activeTab === tab ? theme.white : theme.black,
                     padding: "8px 10px",
-                    fontSize: "14px",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
+                    fontSize: theme.fontSizes.md, // ~16px
+                    // Let text wrap instead of cutting to "Pen..." on small screens
+                    whiteSpace: "normal",
+                    textOverflow: "unset",
+                  })}
                 >
                   {`${tab.charAt(0).toUpperCase() + tab.slice(1)} Complaints`}
                 </Button>
@@ -119,7 +149,6 @@ function ComplaintHistory() {
             </Group>
 
             <div
-              className="inner-card-content"
               style={{
                 maxHeight: "50vh",
                 overflowY: "auto",
@@ -132,13 +161,13 @@ function ComplaintHistory() {
                 </Center>
               ) : isError ? (
                 <Center style={{ minHeight: "45vh" }}>
-                  <Text color="red" size="14px">
+                  <Text color="red" fz="md">
                     Failed to fetch complaints. Please try again.
                   </Text>
                 </Center>
               ) : getComplaints().length === 0 ? (
                 <Center style={{ minHeight: "45vh" }}>
-                  <Text size="14px">No {activeTab} complaints available.</Text>
+                  <Text fz="md">No {activeTab} complaints available.</Text>
                 </Center>
               ) : (
                 getComplaints().map((complaint, index) => (
@@ -157,7 +186,7 @@ function ComplaintHistory() {
                     <Flex direction="column" style={{ width: "100%" }}>
                       <Flex direction="row" justify="space-between">
                         <Flex direction="row" gap="xs" align="center">
-                          <Text size="14px" style={{ fontWeight: "Bold" }}>
+                          <Text fz="md" weight="bold">
                             Complaint Id: {complaint.id}
                           </Text>
                           <Badge
@@ -202,34 +231,39 @@ function ComplaintHistory() {
                           />
                         )}
                       </Flex>
-                      <Flex
-                        direction="row"
-                        justify="space-between"
-                        align="center"
-                      >
+
+                      <Flex direction="row" justify="space-between" mt="sm">
                         <Flex direction="column" gap="xs">
-                          <Text size="14px">
+                          <Text fz="md">
                             <b>Date:</b>{" "}
                             {formatDateTime(complaint.complaint_date)}
                           </Text>
-                          <Text size="14px">
+                          <Text fz="md">
                             <b>Location:</b> {complaint.specific_location},{" "}
                             {complaint.location}
                           </Text>
                         </Flex>
                       </Flex>
+
                       <Divider my="md" size="sm" />
+
                       <Flex
                         direction="row"
                         justify="space-between"
                         align="center"
                       >
-                        <Text size="14px">
+                        <Text fz="md">
                           <b>Description:</b> {complaint.details}
                         </Text>
                         <Button
                           variant="outline"
                           size="xs"
+                          sx={(theme) => ({
+                            [theme.fn.smallerThan("sm")]: {
+                              width: "100%", // Full width if desired on mobile
+                              marginTop: theme.spacing.xs,
+                            },
+                          })}
                           onClick={() => {
                             setSelectedComplaintId(complaint.id);
                             setShowDetails(true);

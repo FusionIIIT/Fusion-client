@@ -75,7 +75,16 @@ function ComplaintForm() {
   };
 
   return (
-    <Grid mt="xl" style={{ paddingInline: "49px", width: "100%" }}>
+    <Grid
+      mt="xl"
+      // Original container styling retained
+      style={{ paddingInline: "49px", width: "100%" }}
+      sx={(theme) => ({
+        [theme.fn.smallerThan("sm")]: {
+          paddingInline: theme.spacing.md, // Gentler padding on small devices
+        },
+      })}
+    >
       <Paper
         key={key}
         radius="md"
@@ -90,20 +99,34 @@ function ComplaintForm() {
           width: "70vw",
         }}
         withBorder
+        sx={(theme) => ({
+          [theme.fn.smallerThan("sm")]: {
+            width: "90vw", // Expand slightly for small devices
+          },
+        })}
       >
-        <Title order={3} mb="md" style={{ fontSize: "24px" }}>
+        <Title
+          order={3}
+          mb="md"
+          sx={(theme) => ({
+            fontSize: 24, // Keep your desktop size
+            [theme.fn.smallerThan("sm")]: {
+              fontSize: theme.fontSizes.md, // ~16px on smaller screens
+            },
+          })}
+        >
           Add a new Complaint
         </Title>
 
         {errorMessage && (
-          <Text color="red" mb="md" style={{ fontSize: "14px" }}>
+          <Text color="red" mb="md" fz="md">
             {errorMessage}
           </Text>
         )}
 
         <form onSubmit={handleSubmit}>
           <Grid>
-            <Grid.Col span={6}>
+            <Grid.Col xs={12} md={6}>
               <Select
                 label="Complaint Type"
                 placeholder="Select Complaint Type"
@@ -120,10 +143,15 @@ function ComplaintForm() {
                 ]}
                 required
                 mb="md"
-                style={{ fontSize: "14px" }}
+                labelProps={{ fz: "md" }}
+                styles={(theme) => ({
+                  input: {
+                    fontSize: theme.fontSizes.md,
+                  },
+                })}
               />
             </Grid.Col>
-            <Grid.Col span={6}>
+            <Grid.Col xs={12} md={6}>
               <Select
                 label="Location"
                 placeholder="Select Location"
@@ -147,7 +175,12 @@ function ComplaintForm() {
                 ]}
                 required
                 mb="md"
-                style={{ fontSize: "14px" }}
+                labelProps={{ fz: "md" }}
+                styles={(theme) => ({
+                  input: {
+                    fontSize: theme.fontSizes.md,
+                  },
+                })}
               />
             </Grid.Col>
           </Grid>
@@ -158,7 +191,12 @@ function ComplaintForm() {
             onChange={(e) => setSpecificLocation(e.target.value)}
             required
             mb="md"
-            style={{ fontSize: "14px" }}
+            labelProps={{ fz: "md" }}
+            styles={(theme) => ({
+              input: {
+                fontSize: theme.fontSizes.md,
+              },
+            })}
           />
           <Textarea
             label="Complaint Details"
@@ -167,7 +205,12 @@ function ComplaintForm() {
             onChange={(e) => setComplaintDetails(e.target.value)}
             required
             mb="md"
-            style={{ fontSize: "14px" }}
+            labelProps={{ fz: "md" }}
+            styles={(theme) => ({
+              input: {
+                fontSize: theme.fontSizes.md,
+              },
+            })}
           />
           <FileInput
             label="Attach Files (PDF, JPEG, PNG, JPG)"
@@ -175,29 +218,37 @@ function ComplaintForm() {
             accept=".pdf,.jpeg,.png,.jpg"
             onChange={setFile}
             mb="md"
-            style={{ fontSize: "14px" }}
+            labelProps={{ fz: "md" }}
+            styles={(theme) => ({
+              input: {
+                fontSize: theme.fontSizes.md,
+              },
+            })}
           />
           <Flex direction="row" justify="space-between" align="center">
-            <Text
-              size="sm"
-              color="dimmed"
-              align="right"
-              style={{ fontSize: "14px" }}
-            >
+            <Text size="sm" color="dimmed" fz="md">
               Complaint will be registered with your User ID.
             </Text>
 
+            {/* 
+              Submit button on large screens remains 150px wide, 
+              but on small screens it goes full-width for better responsiveness. 
+            */}
             <Button
               type="submit"
-              style={{
-                width: "150px",
-                backgroundColor: isSuccess ? "#2BB673" : undefined,
-                color: isSuccess ? "black" : "white",
-                fontSize: "14px",
-              }}
               variant="filled"
               color="blue"
               loading={loading}
+              sx={(theme) => ({
+                width: 150,
+                fontSize: theme.fontSizes.md,
+                backgroundColor: isSuccess ? "#2BB673" : theme.colors.blue[6],
+                color: isSuccess ? "black" : "white",
+                [theme.fn.smallerThan("sm")]: {
+                  width: "100%", // full width on small devices
+                  marginTop: theme.spacing.sm,
+                },
+              })}
             >
               {loading ? "Loading..." : isSuccess ? "Submitted" : "Submit"}
             </Button>

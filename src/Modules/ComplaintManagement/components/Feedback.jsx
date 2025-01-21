@@ -44,13 +44,11 @@ function Feedback() {
       return (
         <Center>
           {isError ? (
-            <Text color="Red" style={{ fontSize: "14px" }}>
+            <Text color="red" fz="md">
               Failed to fetch complaints. Please try again.
             </Text>
           ) : (
-            <Text style={{ fontSize: "14px" }}>
-              No resolved complaints available
-            </Text>
+            <Text fz="md">No resolved complaints available</Text>
           )}
         </Center>
       );
@@ -74,7 +72,16 @@ function Feedback() {
   };
 
   return (
-    <Grid mt="xl" style={{ paddingInline: "49px", width: "100%" }}>
+    <Grid
+      mt="xl"
+      style={{ paddingInline: "49px", width: "100%" }}
+      sx={(theme) => ({
+        [theme.fn.smallerThan("sm")]: {
+          // Narrower horizontal padding on small screens
+          paddingInline: theme.spacing.md,
+        },
+      })}
+    >
       <Paper
         radius="md"
         px="lg"
@@ -87,6 +94,12 @@ function Feedback() {
           minHeight: "45vh",
         }}
         withBorder
+        sx={(theme) => ({
+          [theme.fn.smallerThan("sm")]: {
+            // Avoid horizontal overflow on smaller devices
+            width: selectedComplaint ? "90vw" : "100%",
+          },
+        })}
       >
         {renderFormTabContent()}
       </Paper>
