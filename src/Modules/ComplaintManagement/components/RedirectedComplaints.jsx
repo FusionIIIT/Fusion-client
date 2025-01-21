@@ -11,6 +11,7 @@ import {
   Loader,
   Center,
 } from "@mantine/core";
+import { getComplaintsByRole } from "../routes/api";
 import ComplaintDetails from "./ComplaintDetails.jsx";
 import RedirectedComplaintsChangeStatus from "./RedirectedComplaintsChangedStatus.jsx";
 
@@ -21,34 +22,26 @@ function RedirectedComplaints() {
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
 
-  const host = "http://127.0.0.1:8000";
+  const token = localStorage.getItem("authToken");
 
-  const fetchComplaints = () => {
+  // Fetch complaints based on role
+  const fetchComplaints = async () => {
     setIsLoading(true);
     setIsError(false);
-    fetch(`${host}/complaint/supervisor/`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Token ${localStorage.getItem("authToken")}`,
-      },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        setComplaints(data);
-      })
-      .catch((error) => {
-        console.error("Error fetching complaints:", error);
-        setIsError(true);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+
+    try {
+      const response = await getComplaintsByRole("supervisor", token);
+      if (response.success) {
+        setComplaints(response.data);
+      } else {
+        throw new Error(response.error);
+      }
+    } catch (error) {
+      console.error("Error fetching complaints:", error);
+      setIsError(true);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -68,12 +61,7 @@ function RedirectedComplaints() {
 
   const formatDateTime = (datetimeStr) => {
     const date = new Date(datetimeStr);
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    return `${day}-${month}-${year}, ${hours}:${minutes}`;
+    return date.toLocaleString("en-GB"); // Adjusted to 'DD-MM-YYYY, HH:mm'
   };
 
   return (
@@ -88,7 +76,10 @@ function RedirectedComplaints() {
           backgroundColor: "white",
           display: "flex",
           flexDirection: "column",
-          width: "100%",
+          width:
+            activeComponent === "details" || activeComponent === "changeStatus"
+              ? "70vw"
+              : "100%",
           maxHeight: "65vh",
           overflow: "hidden",
         }}

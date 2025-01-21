@@ -12,7 +12,6 @@ import {
 } from "@mantine/core";
 import PropTypes from "prop-types";
 import ComplaintDetails from "./ComplaintDetails";
-
 import { getComplaintsByRole } from "../routes/api"; // Import the API function
 
 function ResolvedComplaints() {
@@ -85,7 +84,7 @@ function ResolvedComplaints() {
           backgroundColor: "white", // Ensure backgroundColor is set here
           minHeight: "45vh",
           maxHeight: "70vh",
-          width: "100%",
+          width: selectedComplaint || viewFeedback ? "70vw" : "100%",
           overflow: "auto",
         }}
         withBorder
@@ -118,7 +117,7 @@ function ResolvedComplaints() {
                     withBorder
                   >
                     <Group position="apart">
-                      <Text size="24px" style={{ fontWeight: "bold" }}>
+                      <Text size="14px" style={{ fontWeight: "bold" }}>
                         Complaint Id: {complaint.id}
                       </Text>
                       <Text
@@ -128,45 +127,42 @@ function ResolvedComplaints() {
                           padding: "10px 20px",
                           backgroundColor: "#14ABFF",
                           color: "white",
-                          border: "1px solid #e8e8e8",
                         }}
                       >
-                        {complaint.complaint_type}
+                        {complaint.complaint_type.toUpperCase()}
                       </Text>
                     </Group>
-                    <Divider my="sm" />
                     <Flex direction="column" gap="xs" mt="md">
-                      <Text size="14px">
-                        <strong>Complainer id:</strong> {complaint.complainer}
-                      </Text>
                       <Text size="14px">
                         <strong>Date:</strong>{" "}
                         {formatDateTime(complaint.complaint_date)}
                       </Text>
                       <Text size="14px">
-                        <strong>Location:</strong> {complaint.location} (
-                        {complaint.specific_location})
-                      </Text>
-                      <Text size="14px">
-                        <strong>Description:</strong> {complaint.details}
+                        <strong>Location:</strong> {complaint.specific_location}
+                        , {complaint.location}
                       </Text>
                     </Flex>
                     <Divider my="sm" />
-                    <Flex direction="row" gap="xs" ml="auto">
-                      <Button
-                        variant="outline"
-                        size="xs"
-                        onClick={() => handleDetailsClick(complaint)}
-                      >
-                        Details
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="xs"
-                        onClick={() => handleFeedbackClick(complaint)}
-                      >
-                        Feedback
-                      </Button>
+                    <Flex direction="row" justify="space-between">
+                      <Text size="14px">
+                        <strong>Description:</strong> {complaint.details}
+                      </Text>
+                      <Flex direction="row" gap="xs" ml="auto">
+                        <Button
+                          variant="outline"
+                          size="xs"
+                          onClick={() => handleDetailsClick(complaint)}
+                        >
+                          Details
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="xs"
+                          onClick={() => handleFeedbackClick(complaint)}
+                        >
+                          Feedback
+                        </Button>
+                      </Flex>
                     </Flex>
                   </Paper>
                 ))}
@@ -202,70 +198,72 @@ function FeedbackDetails({ complaint, onBack }) {
   };
 
   return (
-    <Flex direction="column" gap="lg">
-      <Text weight={700} size="lg">
+    <Flex direction="column" gap="xs">
+      <Text size="24px" style={{ weight: "bold" }}>
         Feedback Details
       </Text>
       <Grid columns="2" style={{ width: "100%" }}>
         <Grid.Col span={1}>
           <Flex direction="column" gap="xs">
-            <Text weight="600" size="14px">
-              Complainer ID:
+            <Text size="14px">
+              <b>Complainer ID:</b>
             </Text>
-            <Text weight="300">{complaint.complainer}</Text>
+            <Text size="14px">{complaint.complainer}</Text>
           </Flex>
         </Grid.Col>
         <Grid.Col span={1}>
           <Flex direction="column" gap="xs">
-            <Text weight="600" size="14px">
-              Complaint ID:
+            <Text size="14px">
+              <b>Complaint ID:</b>
             </Text>
-            <Text weight="300">{complaint.id}</Text>
+            <Text size="14px">{complaint.id}</Text>
           </Flex>
         </Grid.Col>
       </Grid>
       <Grid columns="2" style={{ width: "100%" }}>
         <Grid.Col span={1}>
           <Flex direction="column" gap="xs">
-            <Text weight="600" size="14px">
-              Complaint Date:
+            <Text size="14px">
+              <b>Complaint Date:</b>
             </Text>
-            <Text weight="300">{formatDateTime(complaint.complaint_date)}</Text>
+            <Text size="14px">{formatDateTime(complaint.complaint_date)}</Text>
           </Flex>
         </Grid.Col>
         <Grid.Col span={1}>
           <Flex direction="column" gap="xs">
-            <Text weight="600" size="14px">
-              Finished Date:
+            <Text size="14px">
+              <b>Finished Date:</b>
             </Text>
-            <Text weight="300">
+            <Text size="14px">
               {formatDateTime(complaint.complaint_finish)}
             </Text>
           </Flex>
         </Grid.Col>
       </Grid>
       <Flex direction="column" gap="xs">
-        <Text weight="600" size="14px">
-          Complaint Type:
+        <Text size="14px">
+          <b>Complaint Type:</b>
         </Text>
-        <Text weight="300">{complaint.complaint_type}</Text>
+        <Text size="14px">{complaint.complaint_type.toUpperCase()}</Text>
       </Flex>
       <Flex direction="column" gap="xs">
-        <Text weight="600" size="14px">
-          Location:
+        <Text size="14px">
+          <b>Location:</b>
         </Text>
-        <Text weight="300">{complaint.location}</Text>
+        <Text size="14px">
+          {complaint.specific_location}, {complaint.location}
+        </Text>
       </Flex>
       <Flex direction="column" gap="xs">
-        <Text weight="600" size="14px">
-          Feedback:
+        <Text size="14px">
+          <b>Feedback:</b>
         </Text>
-        <Text weight="300" color="red">
+        <Text color="red" size="14px">
           {complaint.feedback || "No feedback provided"}
         </Text>
       </Flex>
       <Flex direction="row-reverse" gap="xs">
-        <Button variant="filled" color="blue" onClick={onBack}>
+        <Button variant="filled" color="black" onClick={onBack}>
           Back
         </Button>
       </Flex>

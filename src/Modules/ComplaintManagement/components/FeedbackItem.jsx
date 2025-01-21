@@ -65,9 +65,10 @@ function FeedbackItem({ complaint, setSelectedComplaint }) {
                 borderRadius: "50px",
                 padding: "10px 20px",
                 backgroundColor: "#14ABFF",
+                color: "white",
               }}
             >
-              {complaint.complaint_type}
+              {complaint.complaint_type.toUpperCase()}
             </Text>
           </Flex>
           <CheckIcon
@@ -99,13 +100,16 @@ function FeedbackItem({ complaint, setSelectedComplaint }) {
             }}
           >
             <Text size="14px">
-              Date: {formatDateTime(complaint.complaint_date)}
+              <b>Date:</b> {formatDateTime(complaint.complaint_date)}
             </Text>
             <Text size="14px">
-              Location: {complaint.specific_location}, {complaint.location}
+              <b>Location:</b> {complaint.specific_location},{" "}
+              {complaint.location}
             </Text>
             {complaint.feedback !== "" && (
-              <Text size="14px">Feedback: {complaint.feedback}</Text>
+              <Text size="14px">
+                <b>Feedback:</b> {complaint.feedback}
+              </Text>
             )}
           </Flex>
           {complaint.feedback === "" && (
@@ -126,7 +130,9 @@ function FeedbackItem({ complaint, setSelectedComplaint }) {
 
         <Divider my="md" size="sm" />
 
-        <Text size="14px">Description: {complaint.details}</Text>
+        <Text size="14px">
+          <b>Description:</b> {complaint.details}
+        </Text>
       </Flex>
     </Paper>
   );

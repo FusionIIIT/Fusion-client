@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Paper, Badge, Button, Flex } from "@mantine/core";
+import { Paper, Badge, Button, Flex, Divider, Text } from "@mantine/core";
 import { useSelector } from "react-redux";
 import { getComplaintReport } from "../routes/api"; // Ensure correct import path for getComplaintReport
 import "../styles/GenerateReport.css";
@@ -214,6 +214,17 @@ function GenerateReport() {
     link.click();
   };
 
+  const formatDateTime = (datetimeStr) => {
+    const date = new Date(datetimeStr);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+
+    return `${day}-${month}-${year}, ${hours}:${minutes}`; // Format: DD-MM-YYYY HH:MM
+  };
+
   return (
     <div className="full-width-container ">
       <Paper
@@ -237,7 +248,12 @@ function GenerateReport() {
           {filteredData.length > 0 ? (
             filteredData.map((complaint, index) => {
               const displayedStatus =
-                complaint.status in statusMapping ? complaint.status : 0;
+                complaint.status === 2
+                  ? "Resolved"
+                  : complaint.status === 3
+                    ? "Declined"
+                    : "Pending";
+              console.log("Complaint:", displayedStatus);
 
               return (
                 <Paper
@@ -246,84 +262,85 @@ function GenerateReport() {
                   px="lg"
                   pt="sm"
                   pb="xl"
-                  className="complaint-subcard"
+                  style={{
+                    width: "100%",
+                    margin: "10px 0",
+                  }}
                   withBorder
                 >
-                  <div className="complaint-header-container">
-                    <div className="complaint-header">
-                      <span style={{ fontSize: "24px", fontWeight: "bold" }}>
-                        Complaint Id: {complaint.id}
-                      </span>
-                    </div>
-                    {/* <Flex direction="row-reverse" gap="xs"> */}
-                    <Badge
-                      id="complaint-type-badge"
-                      // style={{left: "-50px" }}
-                    >
-                      {complaint.complaint_type}
-                    </Badge>
-                    {/* </Flex> */}
-                    <div className="details-status-container">
-                      <div className="status-section">
-                        {statusMapping[displayedStatus] && (
-                          <img
-                            src={
-                              statusMapping[displayedStatus] === "Resolved"
-                                ? resolvedIcon
-                                : statusMapping[displayedStatus] === "Declined"
-                                  ? declinedIcon
-                                  : detailIcon
-                            }
-                            alt={statusMapping[displayedStatus]}
-                            className="status-icon"
-                          />
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  {/* <Flex direction="column" gap="xs" mt="md">
-                      <Text size="14px">
-                        <strong>Date:</strong>{" "}
-                        {formatDate(complaint.complaint_date)}
-                      </Text>
-                      <Text size="14px">
-                        <strong>Location:</strong> {" "}(
-                        {complaint.location})
-                      </Text>
-                      <Text size="14px">
-                        <strong>Complaint:</strong>{" "} {complaint.details.split(".")[0]}
-                      </Text>
-                    </Flex>  */}
+                  <Flex direction="column" style={{ width: "100%" }}>
+                    <Flex direction="row" justify="space-between">
+                      <Flex direction="row" gap="xs" align="center">
+                        <Text size="14px" style={{ fontWeight: "Bold" }}>
+                          Complaint Id: {complaint.id}
+                        </Text>
+                        <Badge
+                          size="lg"
+                          color={
+                            displayedStatus === "Resolved" ? "green" : "blue"
+                          }
+                        >
+                          {complaint.complaint_type}
+                        </Badge>
+                      </Flex>
+                      {displayedStatus === "Resolved" ? (
+                        <img
+                          src={resolvedIcon}
+                          alt="Resolved"
+                          style={{
+                            width: "35px",
+                            borderRadius: "50%",
+                            backgroundColor: "#2BB673",
+                            padding: "10px",
+                          }}
+                        />
+                      ) : displayedStatus === "Declined" ? (
+                        <img
+                          src={declinedIcon}
+                          alt="Declined"
+                          style={{
+                            width: "35px",
+                            borderRadius: "50%",
+                            backgroundColor: "#FF6B6B",
+                            padding: "10px",
+                          }}
+                        />
+                      ) : (
+                        <img
+                          src={detailIcon}
+                          alt="Pending"
+                          style={{
+                            width: "35px",
+                            borderRadius: "50%",
+                            backgroundColor: "#FF6B6B",
+                            padding: "10px",
+                          }}
+                        />
+                      )}
+                    </Flex>
 
-                  <div
-                    className="complaint-detail "
-                    style={{ display: "flex", flexDirection: "column" }}
-                  >
-                    <div>
-                      <b>Date : </b>
-                      <span id="content-generate" style={{ fontSize: "14px" }}>
-                        {formatDate(complaint.complaint_date)}
-                      </span>
-                    </div>
-                    <div>
-                      <b>Location : </b>
-                      <span id="content-generate" style={{ fontSize: "14px" }}>
+                    <Flex direction="column" gap="xs">
+                      <Text size="14px">
+                        <b>Date:</b> {formatDateTime(complaint.complaint_date)}
+                      </Text>
+                      <Text size="14px">
+                        <b>Location:</b> {complaint.specific_location},{" "}
                         {complaint.location}
-                      </span>
-                    </div>
-                    <div>
-                      <b>Complaint : </b>
-                      <span id="content" style={{ fontSize: "14px" }}>
-                        {complaint.details.split(".")[0]}
-                      </span>
-                    </div>
-                  </div>
+                      </Text>
+                    </Flex>
 
-                  <div id="hr">
-                    <hr />
-                  </div>
+                    <Divider my="md" size="sm" />
 
-                  <div className="complaint-detail">{complaint.details}</div>
+                    <Flex
+                      direction="row"
+                      justify="space-between"
+                      align="center"
+                    >
+                      <Text size="14px">
+                        <b>Description:</b> {complaint.details}
+                      </Text>
+                    </Flex>
+                  </Flex>
                 </Paper>
               );
             })

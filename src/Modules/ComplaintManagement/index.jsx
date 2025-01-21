@@ -37,6 +37,8 @@ const TAB_CONFIGS = {
     { title: "Generate Report" },
   ],
   caretaker: [
+    { title: "Lodge a Complaint" },
+    { title: "Complaint History" },
     { title: "Resolved Complaints" },
     { title: "Unresolved Complaints" },
     { title: "Generate Report" },
@@ -116,9 +118,11 @@ function ComplaintModuleLayout() {
         1: <GenerateReport />,
       },
       caretaker: {
-        0: <ResolvedComplaints />,
-        1: <UnresolvedComplaints />,
-        2: <GenerateReport />,
+        0: <FormPage />,
+        1: <ComplaintHistory />,
+        2: <ResolvedComplaints />,
+        3: <UnresolvedComplaints />,
+        4: <GenerateReport />,
       },
       default: {
         0: <FormPage />,

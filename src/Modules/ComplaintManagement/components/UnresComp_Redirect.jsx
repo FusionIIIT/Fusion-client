@@ -1,41 +1,35 @@
-import { Button, Text, Grid, Flex } from "@mantine/core";
+import { Button, Text, Flex } from "@mantine/core";
 import { useState } from "react";
 import PropTypes from "prop-types";
-import axios from "axios";
+import { forwardComplaint } from "../routes/api"; // Import the forwarding function
 
 function UnresComp_Redirect({ complaint, onBack, onForward }) {
   const [isForwarded, setIsForwarded] = useState(false);
   const [noFiles, setNoFiles] = useState(false); // Track if files are missing
 
-  const host = "http://127.0.0.1:8000";
-  const token = localStorage.getItem("authToken");
-
   if (!complaint) return null;
+
+  const token = localStorage.getItem("authToken");
 
   // Function to handle forwarding the complaint
   const handleForward = async () => {
     try {
-      const response = await axios.post(
-        `${host}/complaint/caretaker/${complaint.id}/`,
-        {},
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
-        },
-      );
+      const response = await forwardComplaint(complaint.id, token);
 
-      if (response.status === 200) {
-        alert("Complaint forwarded successfully.");
+      if (response.success) {
+        const { status } = response.data;
+        alert(
+          status === 200
+            ? "Complaint forwarded successfully."
+            : "Complaint forwarded, but no files are attached.",
+        );
         setIsForwarded(true);
-      } else if (response.status === 206) {
-        alert("Complaint forwarded, but no files are attached.");
-        setIsForwarded(true);
-        setNoFiles(true); // Set the no files state
+        if (status === 206) setNoFiles(true);
+        if (onForward) onForward();
+        onBack();
+      } else {
+        throw new Error(response.error || "Unknown error");
       }
-
-      if (onForward) onForward();
-      onBack();
     } catch (error) {
       console.error("Error forwarding the complaint:", error);
       alert("There was an issue forwarding the complaint.");
@@ -43,33 +37,32 @@ function UnresComp_Redirect({ complaint, onBack, onForward }) {
   };
 
   return (
-    <Grid.Col span={12} md={6}>
-      <Text size="lg" weight="bold">
+    <Flex direction="column" gap="xs">
+      <Text size="24px" weight="bold">
         Redirect
       </Text>
-      <Text size="md" weight={500} mb="1rem">
-        <strong>
-          If you want to redirect this complaint, you can pass this complaint to
-          a specific Incharge.
-        </strong>
+      <Text mb="1rem" size="14px">
+        If you want to redirect this complaint, you can pass this complaint to
+        specific Incharge.
       </Text>
 
-      <Text size="sm" weight={500}>
-        <strong>Complainer:</strong> {complaint.complainer}
+      <Text size="14px" weight={500}>
+        <strong>Complainer ID:</strong> {complaint.complainer}
       </Text>
-      <Text size="sm">
+      <Text size="14px">
         <strong>Complaint ID:</strong> {complaint.id}
       </Text>
-      <Text size="sm">
-        <strong>Complaint Type:</strong> {complaint.complaint_type}
+      <Text size="14px">
+        <strong>Complaint Type:</strong>{" "}
+        {complaint.complaint_type.toUpperCase()}
       </Text>
-      <Text size="sm">
+      <Text size="14px" mb="1rem">
         <strong>Location:</strong>{" "}
         {`${complaint.location}, ${complaint.specific_location}`}
       </Text>
 
-      <Flex justify="space-between" mt="md" my="xl" gap="sm">
-        <Button variant="outline" size="md" onClick={onBack}>
+      <Flex direction="row" justify="flex-end" gap="sm">
+        <Button variant="outline" color="blue" onClick={onBack}>
           BACK
         </Button>
         {isForwarded ? (
@@ -83,12 +76,12 @@ function UnresComp_Redirect({ complaint, onBack, onForward }) {
             </Text>
           )
         ) : (
-          <Button variant="filled" size="md" onClick={handleForward}>
+          <Button variant="outline" onClick={handleForward}>
             FORWARD
           </Button>
         )}
       </Flex>
-    </Grid.Col>
+    </Flex>
   );
 }
 

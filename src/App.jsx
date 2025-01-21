@@ -1,5 +1,6 @@
 import { MantineProvider } from "@mantine/core";
 import "@mantine/core/styles.css";
+import "@mantine/notifications/styles.css";
 import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { Notifications } from "@mantine/notifications";
 import { Layout } from "./components/layout";
@@ -10,19 +11,16 @@ import LoginPage from "./pages/login";
 import ForgotPassword from "./pages/forgotPassword";
 import AcademicPage from "./Modules/Academic/index";
 import ValidateAuth from "./helper/validateauth";
+import InactivityHandler from "./helper/inactivityhandler";
 
 export default function App() {
   const location = useLocation();
   return (
     <MantineProvider>
-      <Notifications
-        position="top-right"
-        zIndex={1000}
-        autoClose={2000}
-        limit={1}
-      />
-      {location.pathname !== "/accounts/login" &&
-        location.pathname !== "/reset-password" && <ValidateAuth />}
+      <Notifications position="top-center" autoClose={2000} limit={1} />
+      {location.pathname !== "/accounts/login" && <ValidateAuth />}
+      {location.pathname !== "/accounts/login" && <InactivityHandler />}
+
       <Routes>
         <Route path="/" element={<Navigate to="/accounts/login" replace />} />
         <Route

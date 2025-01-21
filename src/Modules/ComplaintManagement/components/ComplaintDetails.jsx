@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { Text, Button, Flex, Grid, Loader, Alert } from "@mantine/core";
 import { getComplaintDetails } from "../routes/api"; // Import the utility function
+import { host } from "../../../routes/globalRoutes/index";
 
 function ComplaintDetails({ complaintId, onBack }) {
   const formatDateTime = (datetimeStr) => {
@@ -42,7 +43,7 @@ function ComplaintDetails({ complaintId, onBack }) {
       alert("No attachment found for this complaint.");
       return;
     }
-    const attachmentUrl = complaintDetails.upload_complaint;
+    const attachmentUrl = `${host}${complaintDetails.upload_complaint}`;
     window.open(attachmentUrl, "_blank");
   };
 

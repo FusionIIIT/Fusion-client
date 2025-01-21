@@ -87,7 +87,7 @@ function ComplaintForm() {
           backgroundColor: "white",
           minHeight: "45vh",
           maxHeight: "70vh",
-          width: "100%",
+          width: "70vw",
         }}
         withBorder
       >

@@ -1,7 +1,7 @@
 import { Textarea, Text, Button, Flex, Select } from "@mantine/core";
 import { useState } from "react";
 import PropTypes from "prop-types";
-import axios from "axios";
+import { updateComplaintStatus } from "../routes/api"; // Adjust the relative path as necessary
 
 function RedirectedComplaintsChangeStatus({ complaint, onBack }) {
   const [status, setStatus] = useState("");
@@ -17,7 +17,7 @@ function RedirectedComplaintsChangeStatus({ complaint, onBack }) {
     setComments(event.currentTarget.value);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!status) {
       alert("Please select an option before submitting.");
       return;
@@ -31,25 +31,25 @@ function RedirectedComplaintsChangeStatus({ complaint, onBack }) {
       comment,
     };
 
-    axios
-      .post(
-        `http://127.0.0.1:8000/complaint/supervisor/pending/${complaint.id}/`,
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await updateComplaintStatus(
+        complaint.id,
         requestData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Token ${localStorage.getItem("authToken")}`,
-          },
-        },
-      )
-      .then(() => {
+        token,
+      );
+
+      if (response.success) {
         alert("Thank you for resolving the complaint");
         onBack(); // Call back to refresh the complaints list
-      })
-      .catch((error) => {
-        console.error("Error updating complaint status:", error);
+      } else {
+        console.error("Error updating complaint status:", response.error);
         alert("There was an error updating the complaint status.");
-      });
+      }
+    } catch (error) {
+      console.error("Error in handleSubmit:", error);
+      alert("There was an unexpected error.");
+    }
   };
 
   const formatDateTime = (datetimeStr) => {
@@ -76,8 +76,8 @@ function RedirectedComplaintsChangeStatus({ complaint, onBack }) {
         <strong>Date:</strong> {formatDateTime(complaint.complaint_date)}
       </Text>
       <Text size="14px">
-        <strong>Location:</strong> {complaint.location} (
-        {complaint.specific_location})
+        <strong>Location:</strong> {complaint.specific_location},{" "}
+        {complaint.location}
       </Text>
       <Text size="14px">
         <strong>Issue:</strong> {complaint.details}

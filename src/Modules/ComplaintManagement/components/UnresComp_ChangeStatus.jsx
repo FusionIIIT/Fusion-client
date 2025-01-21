@@ -1,15 +1,15 @@
-import axios from "axios";
 import { Textarea, Text, Button, Flex, Grid, Select } from "@mantine/core";
 import { useState } from "react";
 import PropTypes from "prop-types";
+import { updateComplaintStatus } from "../routes/api"; // Import API function
 
 function UnresComp_ChangeStatus({ complaint, onBack }) {
   const [status, setStatus] = useState("");
   const [comments, setComments] = useState("");
-  const host = "http://127.0.0.1:8000";
-  const token = localStorage.getItem("authToken");
 
   if (!complaint) return null;
+
+  const token = localStorage.getItem("authToken");
 
   const handleStatusChange = (value) => {
     setStatus(value);
@@ -26,22 +26,17 @@ function UnresComp_ChangeStatus({ complaint, onBack }) {
     }
 
     try {
-      const response = await axios.post(
-        `${host}/complaint/caretaker/pending/${complaint.id}/`,
-        {
-          yesorno: status,
-          comment: comments,
-        },
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
-        },
+      const response = await updateComplaintStatus(
+        complaint.id,
+        { yesorno: status, comment: comments },
+        token,
       );
 
-      if (response.data.success) {
+      if (response.success) {
         alert("Thank you for resolving the complaint.");
         onBack();
+      } else {
+        throw new Error(response.error || "Unknown error");
       }
     } catch (error) {
       console.error(
@@ -70,26 +65,25 @@ function UnresComp_ChangeStatus({ complaint, onBack }) {
       </Text>
 
       <Text size="sm" mt="1rem">
-        <strong>Student ID:</strong> {complaint.complainer}
+        <strong>Complainer ID:</strong> {complaint.complainer}
       </Text>
       <Text size="sm">
         <strong>Date:</strong> {formatDateTime(complaint.complaint_date)}
       </Text>
       <Text size="sm">
-        <strong>Location:</strong> {complaint.location}
+        <strong>Location:</strong> {complaint.specific_location},{" "}
+        {complaint.location}
       </Text>
       <Text size="sm">
         <strong>Issue:</strong> {complaint.details}
       </Text>
 
-      <Text mt="1rem">Has the issue been resolved?</Text>
-      <Text>
-        If you say no, the status of the complaint will automatically be set to
-        "Declined".
+      <Text mt="1rem">
+        Has the issue been resolved? (If you say no, the status of the complaint
+        will automatically be set to "Declined".)
       </Text>
 
       <Select
-        label="Please select an option"
         placeholder="Choose an option"
         data={[
           { value: "Yes", label: "Yes" },
@@ -112,11 +106,11 @@ function UnresComp_ChangeStatus({ complaint, onBack }) {
         mt="1rem"
       />
 
-      <Flex justify="space-between" mt="xl">
-        <Button variant="outline" size="md" onClick={onBack}>
+      <Flex justify="flex-end" mt="md" gap="xs">
+        <Button variant="outline" onClick={onBack}>
           BACK
         </Button>
-        <Button variant="filled" size="md" onClick={handleSubmit}>
+        <Button variant="outline" onClick={handleSubmit}>
           Submit
         </Button>
       </Flex>

@@ -93,7 +93,12 @@ function UnresolvedComplaints() {
           backgroundColor: "white",
           minHeight: "45vh",
           maxHeight: "70vh",
-          width: "100%",
+          width:
+            activeComponent === "details" ||
+            activeComponent === "changeStatus" ||
+            activeComponent === "redirect"
+              ? "70vw"
+              : "100%",
           overflow: "auto",
         }}
         withBorder
@@ -146,7 +151,7 @@ function UnresolvedComplaints() {
                 <Flex direction="column" style={{ width: "100%" }}>
                   <Flex direction="row" justify="space-between" align="center">
                     <Flex direction="row" gap="xs" align="center">
-                      <Text size="24px" style={{ fontWeight: "bold" }}>
+                      <Text size="14px" style={{ fontWeight: "bold" }}>
                         Complaint Id: {complaint.id}
                       </Text>
                       <Text
@@ -156,10 +161,9 @@ function UnresolvedComplaints() {
                           padding: "10px 20px",
                           backgroundColor: "#14ABFF",
                           color: "white",
-                          border: "1px solid #e8e8e8",
                         }}
                       >
-                        {complaint.complaint_type}
+                        {complaint.complaint_type.toUpperCase()}
                       </Text>
                     </Flex>
                     <Badge
@@ -180,44 +184,48 @@ function UnresolvedComplaints() {
                       <strong>Location:</strong> {complaint.specific_location},{" "}
                       {complaint.location}
                     </Text>
-                    <Text size="14px">
-                      <strong>Description:</strong> {complaint.details}
-                    </Text>
                   </Flex>
                   <Divider my="sm" />
 
-                  <Flex gap="sm" ml="auto">
-                    <Button
-                      variant="outline"
-                      size="xs"
-                      onClick={() => handleButtonClick("details", complaint)}
-                    >
-                      Details
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="xs"
-                      onClick={() =>
-                        handleButtonClick("changeStatus", complaint)
-                      }
-                    >
-                      Change Status
-                    </Button>
-
-                    {redirectedComplaints.includes(complaint.id) ||
-                    complaint.status === 1 ? (
-                      <Button variant="outline" size="xs" disabled>
-                        Redirected
-                      </Button>
-                    ) : (
+                  <Flex direction="row" justify="space-between">
+                    <Text size="14px">
+                      <strong>Description:</strong> {complaint.details}
+                    </Text>
+                    <Flex gap="sm" ml="auto">
                       <Button
                         variant="outline"
                         size="xs"
-                        onClick={() => handleButtonClick("redirect", complaint)}
+                        onClick={() => handleButtonClick("details", complaint)}
                       >
-                        Redirect
+                        Details
                       </Button>
-                    )}
+                      <Button
+                        variant="outline"
+                        size="xs"
+                        onClick={() =>
+                          handleButtonClick("changeStatus", complaint)
+                        }
+                      >
+                        Change Status
+                      </Button>
+
+                      {redirectedComplaints.includes(complaint.id) ||
+                      complaint.status === 1 ? (
+                        <Button variant="outline" size="xs" disabled>
+                          Redirected
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="xs"
+                          onClick={() =>
+                            handleButtonClick("redirect", complaint)
+                          }
+                        >
+                          Redirect
+                        </Button>
+                      )}
+                    </Flex>
                   </Flex>
                 </Flex>
               </Paper>
