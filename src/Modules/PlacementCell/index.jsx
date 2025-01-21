@@ -13,7 +13,10 @@ import PlacementSchedule from "./components/PlacementSchedule";
 import SendNotificationForm from "./components/SendNotificationForm";
 import DownloadCV from "./components/DownloadCV";
 import CustomBreadcrumbs from "../../components/Breadcrumbs";
+import CompanyRegistrationForm from "./components/CompanyRegistrationForm";
+import FieldsForm from "./components/FieldsForm";
 import DebarredStudents from "./components/DebarredStudents";
+import RestrictionsTab from "./components/RestrictionsTab";
 
 const studentTabs = [
   {
@@ -79,10 +82,25 @@ const tpoTabs = [
     component: <PlacementCalendar />,
   },
   {
+    value: "company-registration",
+    label: "Company Registration",
+    component: <CompanyRegistrationForm />, // Add this tab
+  },
+  {
+    value: "fields",
+    label: "Fields",
+    component: <FieldsForm />, // Add this tab
+  },
     value: "debarred-students",
     label: "Debarred Students",
     component: <DebarredStudents />,
+  },
+  {
+    value: "restrictions",
+    label: "Restrictions",
+    component: <RestrictionsTab />,
   }
+
 ];
 
 const styles = {
