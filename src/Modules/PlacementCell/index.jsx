@@ -91,6 +91,7 @@ const tpoTabs = [
     label: "Fields",
     component: <FieldsForm />, // Add this tab
   },
+  {
     value: "debarred-students",
     label: "Debarred Students",
     component: <DebarredStudents />,
