@@ -4,9 +4,10 @@ import {
   NumberInput,
   Button,
   Container,
-  Title,
   Paper,
   Space,
+  Grid,
+  Title,
 } from "@mantine/core"; // Import Mantine components
 import { User } from "@phosphor-icons/react"; // Import Phosphor Icons
 import axios from "axios"; // Import axios
@@ -65,97 +66,120 @@ function Deregistration() {
     <Container
       size="lg"
       style={{
-        maxWidth: "800px",
-        width: "570px",
-        marginTop: "25px",
+        display: "flex",
+        justifyContent: "center",
+        marginTop: "50px",
+        minWidth: "75rem",
+        width: "100%",
+        padding: "30px",
+        margin: "auto",
       }}
+      radius="md"
+      p="xl"
+      withBorder
     >
       <Paper
-        shadow="md"
         radius="md"
         p="xl"
         withBorder
-        style={{ width: "100%", padding: "30px" }}
+        style={{
+          minWidth: "75rem",
+          width: "100%",
+          padding: "30px",
+          margin: "auto",
+        }}
       >
         <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
-          Deregistration Form
+          Dregistration Form
         </Title>
 
         <form onSubmit={handleSubmit}>
-          {/* Name input */}
-          <TextInput
-            label="Name"
-            placeholder="Enter your name"
-            value={name}
-            onChange={(event) => setName(event.currentTarget.value)}
-            required
-            radius="md"
-            size="md"
-            icon={<User size={20} />}
-            labelProps={{ style: { marginBottom: "10px" } }}
-            mt="xl"
-            mb="md"
-          />
+          <Grid grow>
+            <Grid.Col span={12}>
+              {/* Name Input */}
+              <TextInput
+                label="Name"
+                placeholder="Enter your name"
+                value={name}
+                onChange={(event) => setName(event.currentTarget.value)}
+                required
+                radius="md"
+                size="md"
+                icon={<User size={20} />}
+                labelProps={{ style: { marginBottom: "10px" } }}
+                mt="xl"
+                mb="md"
+              />
+            </Grid.Col>
 
-          {/* Roll Number input */}
-          <TextInput
-            label="Roll No."
-            placeholder="Enter your roll number"
-            value={rollNo}
-            onChange={(event) => setRollNo(event.currentTarget.value)}
-            required
-            radius="md"
-            size="md"
-            labelProps={{ style: { marginBottom: "10px" } }}
-            mb="md"
-          />
+            {/* Roll Number Input */}
+            <Grid.Col span={6}>
+              <TextInput
+                label="Roll No."
+                placeholder="Enter your roll number"
+                value={rollNo}
+                onChange={(event) => setRollNo(event.currentTarget.value)}
+                required
+                radius="md"
+                size="md"
+                labelProps={{ style: { marginBottom: "10px" } }}
+                mb="md"
+              />
+            </Grid.Col>
 
-          {/* Batch input */}
-          <TextInput
-            label="Batch"
-            placeholder="Enter your batch"
-            value={batch}
-            onChange={(event) => setBatch(event.currentTarget.value)}
-            required
-            radius="md"
-            size="md"
-            labelProps={{ style: { marginBottom: "10px" } }}
-            mb="md"
-          />
+            {/* Batch Input */}
+            <Grid.Col span={6}>
+              <TextInput
+                label="Batch"
+                placeholder="Enter your batch"
+                value={batch}
+                onChange={(event) => setBatch(event.currentTarget.value)}
+                required
+                radius="md"
+                size="md"
+                labelProps={{ style: { marginBottom: "10px" } }}
+                mb="md"
+              />
+            </Grid.Col>
 
-          {/* Semester input */}
-          <NumberInput
-            label="Semester"
-            placeholder="Enter your semester"
-            value={semester}
-            onChange={setSemester}
-            required
-            radius="md"
-            size="md"
-            labelProps={{ style: { marginBottom: "10px" } }}
-            min={1}
-            max={10} // Adjust max value as necessary
-            mb="lg"
-          />
+            {/* Semester Input */}
+            <Grid.Col span={6}>
+              <NumberInput
+                label="Semester"
+                placeholder="Enter your semester"
+                value={semester}
+                onChange={setSemester}
+                required
+                radius="md"
+                size="md"
+                labelProps={{ style: { marginBottom: "10px" } }}
+                min={1}
+                max={10} // Adjust max value as necessary
+                mb="lg"
+              />
+            </Grid.Col>
 
-          {/* Deregistration Remark input */}
-          <TextInput
-            label="Deregistration Remark"
-            placeholder="Enter a remark for deregistration"
-            value={deregistrationRemark}
-            onChange={(event) =>
-              setDeregistrationRemark(event.currentTarget.value)
-            }
-            required
-            radius="md"
-            size="md"
-            labelProps={{ style: { marginBottom: "10px" } }}
-            mb="lg"
-          />
+            {/* Deregistration Remark Input */}
+            <Grid.Col span={6}>
+              <TextInput
+                label="Deregistration Remark"
+                placeholder="Enter a remark for deregistration"
+                value={deregistrationRemark}
+                onChange={(event) =>
+                  setDeregistrationRemark(event.currentTarget.value)
+                }
+                required
+                radius="md"
+                size="md"
+                labelProps={{ style: { marginBottom: "10px" } }}
+                mb="lg"
+              />
+            </Grid.Col>
+          </Grid>
 
           <Space h="xl" />
 
-          {/* Submit button */}
+          {/* Submit Button */}
           <Button fullWidth size="md" radius="md" color="blue" type="submit">
             Submit
           </Button>

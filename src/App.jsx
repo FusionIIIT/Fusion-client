@@ -8,8 +8,8 @@ import Profile from "./Modules/Profile/profile";
 import LoginPage from "./pages/login";
 import ForgotPassword from "./pages/forgotPassword";
 import AcademicPage from "./Modules/Academic/index";
-import MessPage from "./Modules/Mess/pages/index";
 import ValidateAuth from "./helper/validateauth";
+import Student from "./Modules/Mess/components/StudentIndex";
 
 export default function App() {
   const location = useLocation();
@@ -45,7 +45,7 @@ export default function App() {
           path="/mess"
           element={
             <Layout>
-              <MessPage />
+              <Student />
             </Layout>
           }
         />

@@ -96,9 +96,25 @@ function RebateStatus() {
     ));
 
   return (
-    <Container size="lg" style={{ maxWidth: "800px", marginTop: "25px" }}>
-      <Paper shadow="md" radius="md" p="lg" withBorder>
-        <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
+    <Container
+      size="lg"
+      style={{
+        display: "flex",
+        justifyContent: "center", // Centers the form horizontally
+        marginTop: "20px",
+      }}
+    >
+      <Paper
+        shadow="md"
+        radius="md"
+        p="xl"
+        withBorder
+        style={{
+          width: "100%",
+          minWidth: "75rem", // Set the min-width to 75rem
+        }}
+      >
+        <Title order={2} align="center" mt="md" mb="md">
           Rebate Status
         </Title>
         <Table striped highlightOnHover withBorder withColumnBorders>

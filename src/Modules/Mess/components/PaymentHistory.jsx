@@ -87,9 +87,23 @@ function PaymentHistory() {
   return (
     <Container
       size="lg"
-      style={{ maxWidth: "800px", width: "870px", marginTop: "25px" }}
+      style={{
+        display: "flex",
+        justifyContent: "center", // Centers the form horizontally
+        marginTop: "40px",
+      }}
     >
-      <Paper shadow="md" radius="md" p="lg" withBorder>
+      <Paper
+        shadow="md"
+        radius="md"
+        p="xl"
+        withBorder
+        style={{
+          width: "100%",
+          minWidth: "75rem", // Set the min-width to 75rem
+          padding: "2rem", // Add padding for better spacing
+        }}
+      >
         <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
           Payment History
         </Title>

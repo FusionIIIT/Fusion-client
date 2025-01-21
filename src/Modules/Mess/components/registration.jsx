@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   TextInput,
   NumberInput,
@@ -7,10 +7,16 @@ import {
   Title,
   Paper,
   FileInput,
+  Group,
+  Select,
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import axios from "axios";
-import { registrationRequestRoute } from "../routes";
+import { FunnelSimple } from "@phosphor-icons/react";
+import {
+  registrationRequestRoute,
+  checkRegistrationStatusRoute,
+} from "../routes";
 
 function Registration() {
   const [txnNo, setTxnNo] = useState("");
@@ -20,6 +26,37 @@ function Registration() {
   const [startDate, setStartDate] = useState(null);
   const [studentId, setStudentId] = useState("");
   const [error, setError] = useState(null);
+  const [messOption, setMessOption] = useState("");
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [registrationStatus, setRegistrationStatus] = useState("");
+
+  useEffect(() => {
+    const fetchRegistrationStatus = async () => {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        setError("Authentication token not found.");
+        return;
+      }
+
+      try {
+        const response = await axios.get(checkRegistrationStatusRoute, {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        });
+
+        if (response.data.isRegistered) {
+          setIsRegistered(true);
+          setRegistrationStatus(response.data.status); // 'Approved', 'Pending', etc.
+        }
+      } catch (err) {
+        setError("Error fetching registration status. Please try again.");
+        console.error("Error:", err.response?.data || err.message);
+      }
+    };
+
+    fetchRegistrationStatus();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,7 +67,6 @@ function Registration() {
       return;
     }
 
-    // Format the dates to YYYY-MM-DD format for submission
     const formattedPaymentDate = paymentDate
       ? paymentDate.toISOString().split("T")[0]
       : "";
@@ -45,6 +81,7 @@ function Registration() {
     formData.append("payment_date", formattedPaymentDate);
     formData.append("start_date", formattedStartDate);
     formData.append("student_id", studentId);
+    formData.append("mess_option", messOption);
 
     try {
       const response = await axios.post(registrationRequestRoute, formData, {
@@ -55,6 +92,7 @@ function Registration() {
       });
 
       if (response.status === 200) {
+        setRegistrationStatus("Pending"); // Update status after submission
         console.log("Form submitted successfully", response.data);
       }
     } catch (errors) {
@@ -62,6 +100,37 @@ function Registration() {
       console.error("Error:", errors.response?.data || errors.message);
     }
   };
+
+  if (isRegistered) {
+    return (
+      <Container
+        size="lg"
+        style={{
+          maxWidth: "800px",
+          width: "570px",
+          marginTop: "25px",
+        }}
+      >
+        <Paper
+          shadow="md"
+          radius="md"
+          p="xl"
+          withBorder
+          style={{ width: "100%", padding: "30px" }}
+        >
+          <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
+            Registration Status
+          </Title>
+          <p style={{ fontSize: "16px", textAlign: "center" }}>
+            You are already registered in the mess.
+          </p>
+          <p style={{ fontSize: "16px", textAlign: "center" }}>
+            Registration Status: <strong>{registrationStatus}</strong>
+          </p>
+        </Paper>
+      </Container>
+    );
+  }
 
   return (
     <Container
@@ -86,6 +155,19 @@ function Registration() {
         {error && <p style={{ color: "red" }}>{error}</p>}
 
         <form onSubmit={handleSubmit}>
+          <Group grow mb="lg">
+            <Select
+              label="Select Mess"
+              placeholder="Choose Mess"
+              value={messOption}
+              onChange={setMessOption}
+              data={["Mess 1", "Mess 2"]}
+              radius="md"
+              size="md"
+              icon={<FunnelSimple size={18} />}
+            />
+          </Group>
+
           <TextInput
             label="Transaction No."
             placeholder="Transaction No."
@@ -131,7 +213,7 @@ function Registration() {
             radius="md"
             size="md"
             mb="lg"
-            valueFormat="MMMM D, YYYY" // Display format
+            valueFormat="MMMM D, YYYY"
           />
 
           <DateInput
@@ -143,7 +225,7 @@ function Registration() {
             radius="md"
             size="md"
             mb="lg"
-            valueFormat="MMMM D, YYYY" // Display format
+            valueFormat="MMMM D, YYYY"
           />
 
           <TextInput

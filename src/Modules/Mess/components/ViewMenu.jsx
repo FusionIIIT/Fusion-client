@@ -154,12 +154,24 @@ function ViewMenu() {
       mt={30}
       miw="75rem"
       style={{
-        maxWidth: "950px",
-        width: "950px",
-        marginTop: "25px",
+        width: "100%",
+        display: "flex",
+        justifyContent: "center",
+        marginTop: "50px",
       }}
     >
-      <Paper shadow="lg" radius="lg" p="xl" withBorder>
+      <Paper
+        shadow="xl"
+        radius="md"
+        p="xl"
+        withBorder
+        style={{
+          minWidth: "75rem",
+          width: "100%",
+          padding: "30px",
+          margin: "auto",
+        }}
+      >
         <Title order={2} align="center" mb="lg" c="#1c7ed6">
           Weekly Mess Menu
         </Title>

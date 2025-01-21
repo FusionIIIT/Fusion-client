@@ -135,24 +135,13 @@ function UpdateBalanceRequest() {
     <Container
       size="xl"
       style={{
-        width: "100%", // Ensure it takes full width but respects min width
-        display: "flex", // Use flexbox to center the content
-        justifyContent: "center", // Horizontally centers the content
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
         marginTop: "25px",
       }}
     >
-      <Paper
-        shadow="md"
-        radius="md"
-        p="xl"
-        withBorder
-        style={{
-          minWidth: "75rem", // Set the minimum width to 75rem
-          width: "100%", // Ensure it is responsive
-          padding: "30px",
-          margin: "auto", // Center the Paper component
-        }}
-      >
+      <Paper shadow="md" radius="md" p="xl" withBorder miw="75rem">
         <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
           Update Balance Request
         </Title>
