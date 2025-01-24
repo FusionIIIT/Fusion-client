@@ -1,38 +1,133 @@
 
-import React, { useState } from "react";
+import React, { useState ,useEffect } from "react";
 import { TextInput, Select, Switch, Button, Group, Notification, Title, List, ActionIcon } from "@mantine/core";
 //import { Trash } from "tabler-icons-react"; // Import trash icon for delete
 import {Trash } from "@phosphor-icons/react";
+import { notifications } from "@mantine/notifications";
+import axios from "axios";
+import { fetchFieldsSubmitformRoute } from "../../../routes/placementCellRoutes";
 
 
 function FieldsForm() {
-  const [fieldName, setFieldName] = useState("");
-  const [fieldType, setFieldType] = useState("");
-  const [isRequired, setIsRequired] = useState(false);
+  const [name, setname] = useState("");
+  const [type, settype] = useState("");
+  const [required, setrequired] = useState(false);
   const [error, setError] = useState("");
   const [fields, setFields] = useState([]); // State to store the list of fields
 
-  const handleSubmit = (event) => {
+  // DOne
+  useEffect(() => {
+    const fetchFieldslist = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        const response = await axios.get(fetchFieldsSubmitformRoute, {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        });
+
+        if (response.status == 200) {
+          // console.log(response.data);
+          // setFields(response.data);
+          // console.log(fields);
+          setFields([]);
+          response.data.forEach(element => {
+            // console.log(element);
+            const newField = [ element.name, element.type, element.required ];
+            setFields((prevFields) => [...prevFields, newField]);
+          });
+          
+        } else if (response.status == 406) {
+          console.log(`error fetching data: ${response.status}`);
+          notifications.show({
+            title: "Error fetching data",
+            message: `Error fetching data: ${response.status}`,
+            color: "red",
+          });
+        } else {
+          console.log(`error fetching data: ${response.status}`);
+          notifications.show({
+            title: "Error fetching data",
+            message: `Error fetching data: ${response.status}`,
+            color: "red",
+          });
+        }
+      } catch (error) {
+        // setError("Failed to fetch debared students list");
+        notifications.show({
+          title: "Failed to fetch data",
+          message: "Failed to fetch feilds list",
+          color: "red",
+        });
+      }
+    };
+    fetchFieldslist();
+  }, []);
+
+  // done
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!fieldName || !fieldType) {
+    if (!name || !type) {
       setError("Please fill all required fields.");
       return;
     }
 
     // Add the new field to the fields list
-    const newField = { fieldName, fieldType, isRequired };
-    setFields((prevFields) => [...prevFields, newField]);
+    const newField = { name, type, required };
+    
+
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await axios.post(
+        fetchFieldsSubmitformRoute,
+        newField,
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+
+      if (response.status == 200) {
+        notifications.show({
+          title: "Success",
+          message: "Field added!",
+          color: "green",
+          position: "top-center",
+        });
+        setFields((prevFields) => [...prevFields, newField]);
+      } else {
+        notifications.show({
+          title: "Failed",
+          message: `Failed to add field`,
+          color: "red",
+          position: "top-center",
+        });
+      }
+    }
+    catch (error) {
+      console.error("Error adding fields:", error);
+      notifications.show({
+        title: "Error",
+        message: "Failed to add field.",
+        color: "red",
+        position: "top-center",
+      });
+    }
+    finally{
+      setname("");
+      settype("");
+      setrequired(false);
+      setError("");
+    }
 
     // Clear the form inputs
-    setFieldName("");
-    setFieldType("");
-    setIsRequired(false);
-    setError(""); // Clear any error
+     // Clear any error
   };
 
   const handleDelete = (index) => {
-    setFields((prevFields) => prevFields.filter((_, i) => i !== index)); // Remove field by index
+    setFields((prevFields) => prevFields.filter((_, i) => i !== index));
   };
 
   return (
@@ -49,15 +144,15 @@ function FieldsForm() {
         <TextInput
           label="Field Name"
           placeholder="Enter field name"
-          value={fieldName}
-          onChange={(e) => setFieldName(e.target.value)}
+          value={name}
+          onChange={(e) => setname(e.target.value)}
           required
         />
         <Select
           label="Field Type"
           placeholder="Select field type"
-          value={fieldType}
-          onChange={(value) => setFieldType(value)}
+          value={type}
+          onChange={(value) => settype(value)}
           data={[
             { value: "text", label: "Text" },
             { value: "number", label: "Number" },
@@ -70,9 +165,12 @@ function FieldsForm() {
         <Group position="left" mt="md">
           <label>Required</label>
           <Switch
-            checked={isRequired}
-            onChange={() => setIsRequired((prev) => !prev)}
-            label={isRequired ? "Yes" : "No"}
+            checked={required}
+            onChange={() => {
+              setrequired((prev) => !prev);
+              console.log(required);
+            }}
+            label={required ? "Yes" : "No"}
           />
         </Group>
         <Group position="right" mt="md">
@@ -89,7 +187,8 @@ function FieldsForm() {
               <List.Item key={index}>
                 <Group position="apart">
                   <div>
-                    <strong>{field.fieldName}</strong> ({field.fieldType}) - Required: {field.isRequired ? "Yes" : "No"}
+                    {/* {console.log(field)} */}
+                    <strong>{field[0]}</strong> ({field[1]}) - Required: {field[2] ? "Yes" : "No"}
                   </div>
                   <ActionIcon color="red" onClick={() => handleDelete(index)}>
                     <Trash />

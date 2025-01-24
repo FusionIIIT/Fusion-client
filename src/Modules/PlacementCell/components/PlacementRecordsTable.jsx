@@ -422,10 +422,11 @@ function PlacementRecordsTable() {
         if (response.status === 200) {
           setPlacementStats(response.data);
         } else {
-          setError(`Error fetching data: ${response.status}`);
+          setPlacementStats(response.data);
+          // setError(`Error fetching data: ${response.status}`);
           notifications.show({
-            title: "Error fetching data",
-            message: `Error fetching data: ${response.status}`,
+            title: "No data available",
+            message: `No data available: ${response.status}`,
             color: "red",
           });
         }

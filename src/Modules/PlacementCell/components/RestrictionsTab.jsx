@@ -260,6 +260,8 @@ import { notifications } from "@mantine/notifications";
 import { Pencil, Trash } from "@phosphor-icons/react";
 import axios from "axios";
 import { MantineReactTable } from "mantine-react-table";
+// import { notifications } from "@mantine/notifications";
+import { fetchRestrictionsRoute } from "../../../routes/placementCellRoutes";
 
 function RestrictionsTab() {
   const [restrictions, setRestrictions] = useState([]);
@@ -295,31 +297,74 @@ function RestrictionsTab() {
 
   // Fetch restrictions data (mockup as no backend is specified)
   useEffect(() => {
-    setLoading(true);
+    // setLoading(true);
     // Simulate API call
-    setTimeout(() => {
-      setRestrictions([
-        {
-          id: 1,
-          criteria: "cgpa",
-          condition: "greater_than",
-          value: "5",
-          description: "Students with CGPA greater than 5",
-        },
-        {
-          id: 2,
-          criteria: "company",
-          condition: "equal",
-          value: "ABC Corp",
-          description: "Students already placed in ABC Corp",
-        },
-      ]);
-      setLoading(false);
-    }, 1000);
+    // setTimeout(() => {
+    //   setRestrictions([
+    //     {
+    //       id: 1,
+    //       criteria: "cgpa",
+    //       condition: "greater_than",
+    //       value: "5",
+    //       description: "Students with CGPA greater than 5",
+    //     },
+    //     {
+    //       id: 2,
+    //       criteria: "company",
+    //       condition: "equal",
+    //       value: "ABC Corp",
+    //       description: "Students already placed in ABC Corp",
+    //     },
+    //   ]);
+    //   setLoading(false);
+    // }, 1000);
+
+    const fetchRestrictionsList = async () => {
+      try {
+        
+        const token = localStorage.getItem("authToken");
+        const response = await axios.get(fetchRestrictionsRoute, {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        });
+
+        if (response.status == 200) {
+          setRestrictions([]);
+          response.data.forEach(element => {
+            const newField = { 'criteria':element.criteria, 'condition':element.condition, 'value':element.value,'description':element.description };
+            setRestrictions((prevFields) => [...prevFields, newField]);
+          });
+          
+        } else if (response.status == 406) {
+          console.log(`error fetching data: ${response.status}`);
+          notifications.show({
+            title: "Error fetching data",
+            message: `Error fetching data: ${response.status}`,
+            color: "red",
+          });
+        } else {
+          console.log(`error fetching data: ${response.status}`);
+          notifications.show({
+            title: "Error fetching data",
+            message: `Error fetching data: ${response.status}`,
+            color: "red",
+          });
+        }
+      } catch (error) {
+        // setError("Failed to fetch debared students list");
+        notifications.show({
+          title: "Failed to fetch data",
+          message: "Failed to fetch feilds list",
+          color: "red",
+        });
+      }
+    };
+    fetchRestrictionsList();
   }, []);
 
   // Handle submit to add or edit restriction
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const restrictionData = {
       criteria,
       condition,
@@ -342,12 +387,49 @@ function RestrictionsTab() {
     } else {
       // Add the restriction (mock API call)
       const newRestriction = { ...restrictionData, id: Math.random() };
-      setRestrictions([...restrictions, newRestriction]);
-      notifications.show({
-        title: "Success",
-        message: "Restriction added successfully!",
-        color: "green",
-      });
+      try {
+        const token = localStorage.getItem("authToken");
+        console.log(newRestriction);
+        const response = await axios.post(
+          fetchRestrictionsRoute,
+          newRestriction,
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+          },
+        );
+  
+        if (response.status == 200) {
+          notifications.show({
+            title: "Success",
+            message: "successfully added!",
+            color: "green",
+            position: "top-center",
+          });
+          setRestrictions([...restrictions, newRestriction]);
+        } else {
+          notifications.show({
+            title: "Failed",
+            message: `Failed to add`,
+            color: "red",
+            position: "top-center",
+          });
+        }
+      }
+      catch (error) {
+        console.error("Error adding restriction:", error);
+        notifications.show({
+          title: "Error",
+          message: "Failed to add restriction.",
+          color: "red",
+          position: "top-center",
+        });
+      }
+  
+      // Clear the form inputs
+       // Clear any error
+      
     }
     setIsModalOpen(false);
     resetForm();

@@ -12,3 +12,5 @@ export const deletePlacementStatsRoute = `${host}/placement/api/delete-statistic
 export const fetchPlacementScheduleRoute = `${host}/placement/api/placement/`;
 export const fetchTimeLineRoute = `${host}/placement/api/timeline/`;
 export const fetchDebaredlistRoute = `${host}/placement/api/debared-students/`;
+export const fetchFieldsSubmitformRoute = `${host}/placement/api/add-field/`;
+export const fetchRestrictionsRoute = `${host}/placement/api/restrictions/`;
