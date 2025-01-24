@@ -27,15 +27,6 @@ function DeptTabs({ branch }) {
   const tabsListRef = useRef(null);
 
   const role = useSelector((state) => state.user.role);
-  const faculty =
-    {
-      CSE: "cse_f",
-      ECE: "ece_f",
-      ME: "me_f",
-      SM: "sm_f",
-      DS: "ds_f",
-      "Natural Science": "ns_f",
-    }[branch] || "";
 
   const isFeedbackAvailable = [
     "HOD (CSE)",
@@ -55,7 +46,7 @@ function DeptTabs({ branch }) {
   ].includes(role);
   const tabItems = [
     { title: "About Us" },
-    { title: "Faculties", id: "2", department: faculty },
+    { title: "Faculties", id: "2" },
     { title: "Students", id: "3", department: branch },
     { title: "Announcements", id: "4", department: branch },
     { title: "Alumni" },
@@ -82,7 +73,7 @@ function DeptTabs({ branch }) {
   const renderTabContent = () => {
     const components = {
       0: <AboutUs branch={branch} />,
-      1: <Faculty branch={branch} faculty={faculty} />,
+      1: <Faculty branch={branch} />,
       2: <Studentcat branch={branch} />,
       3: <Announcements branch={branch} />,
       4: <Alumnicat />,
