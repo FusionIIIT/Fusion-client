@@ -28,12 +28,20 @@ const columns = [
 
 function Stock() {
   return (
-    <SpecialTable
-      title="Stock"
-      columns={columns}
-      data={stockdata}
-      rowOptions={["3", "4", "6"]}
-    />
+    <div
+      style={{
+        overflowX: "auto", // Enable horizontal scrolling
+        width: "100%", // Ensure the container takes the full width
+        marginTop: "10px", // Add some spacing
+      }}
+    >
+      <SpecialTable
+        title="Stock"
+        columns={columns}
+        data={stockdata}
+        rowOptions={["3", "4", "6"]}
+      />
+    </div>
   );
 }
 

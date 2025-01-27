@@ -86,13 +86,21 @@ function Facilities({ branch }) {
       ) : (
         <>
           <FacilitiesDescriptive branch={branch} />
-          <SpecialTable
-            title="Labs"
-            columns={columns}
-            data={filteredLabs} // Feed the filtered labs based on the branch
-            rowOptions={["3", "4", "6"]}
-            onRowSelectionChange={setSelectedLabs} // Assuming the SpecialTable accepts this prop
-          />
+          <div
+            style={{
+              overflowX: "auto", // Enable horizontal scrolling
+              width: "100%", // Ensure the container takes the full width
+              marginTop: "10px", // Add some spacing
+            }}
+          >
+            <SpecialTable
+              title="Labs"
+              columns={columns}
+              data={filteredLabs} // Feed the filtered labs based on the branch
+              rowOptions={["3", "4", "6"]}
+              onRowSelectionChange={setSelectedLabs} // Assuming the SpecialTable accepts this prop
+            />
+          </div>
           <div
             style={{
               display: "flex",
