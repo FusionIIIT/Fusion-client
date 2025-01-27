@@ -79,7 +79,7 @@ function Pathologist() {
       <br />
       <Paper shadow="xl" p="xl" withBorder>
         <Title
-          order={5}
+          order={3}
           style={{
             textAlign: "center",
             margin: "0 auto",
@@ -94,7 +94,7 @@ function Pathologist() {
             width: "100%",
             borderCollapse: "collapse",
             border: "1px solid #ccc",
-            textAlign: "left",
+            textAlign: "center",
           }}
         >
           <thead>

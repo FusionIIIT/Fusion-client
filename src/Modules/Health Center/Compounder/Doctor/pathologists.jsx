@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, Flex, Paper, Table, Text, Title } from "@mantine/core";
+import { Button, Paper, Table, Text, Title } from "@mantine/core";
 import axios from "axios";
 import NavCom from "../NavCom";
 import Changenav from "./changenav";
@@ -43,22 +43,31 @@ export default function PathDoc() {
       <Changenav />
       <br />
       <Paper shadow="xl" p="xl" withBorder>
-        <Flex display="flex" justify="space-between">
-          <Title order={4} style={{ color: "#15abff" }}>
-            Pathologist's List
-          </Title>
-          <Button
-            onClick={handlePrint}
-            style={{ float: "right", backgroundColor: "#15abff" }}
-          >
-            Download
-          </Button>
-        </Flex>
+        <Title order={3} style={{ color: "#15abff", textAlign: "center" }}>
+          Pathologist's List
+        </Title>
+        <Button
+          onClick={handlePrint}
+          style={{
+            float: "right",
+            backgroundColor: "#15abff",
+            marginBottom: "10px",
+          }}
+        >
+          Download
+        </Button>
 
         {pathologists.map((element, index) => (
-          <Table mt="lg" mb="lg" key={index} withBorder withColumnBorders>
+          <Table
+            mt="lg"
+            mb="lg"
+            key={index}
+            withBorder
+            withColumnBorders
+            style={{ textAlign: "center" }}
+          >
             <Table.Tr>
-              <Table.Td style={{ backgroundColor: "#f0f0f0" }}>
+              <Table.Td>
                 <Text fw={700}>Pathologist</Text>
               </Table.Td>
               <Table.Td>
@@ -66,7 +75,7 @@ export default function PathDoc() {
               </Table.Td>
             </Table.Tr>
             <Table.Tr>
-              <Table.Td style={{ backgroundColor: "#f0f0f0" }}>
+              <Table.Td>
                 <Text fw={700}>Specialization</Text>
               </Table.Td>
               <Table.Td>
@@ -74,11 +83,13 @@ export default function PathDoc() {
               </Table.Td>
             </Table.Tr>
             <Table.Tr>
-              <Table.Td style={{ backgroundColor: "#f0f0f0" }}>
+              <Table.Td>
                 <Text fw={700}>Phone Number</Text>
               </Table.Td>
               <Table.Td>
-                <Text>{element.pathologist_phone}</Text>
+                <Text style={{ marginRight: "10px" }}>
+                  {element.pathologist_phone}
+                </Text>
               </Table.Td>
             </Table.Tr>
           </Table>

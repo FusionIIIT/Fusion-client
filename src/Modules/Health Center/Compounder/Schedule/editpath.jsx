@@ -36,7 +36,7 @@ function Editpath() {
   };
 
   const titleStyle = {
-    fontSize: "20px",
+    fontSize: "15px",
     marginBottom: "10px",
     color: "#333",
   };
@@ -158,6 +158,9 @@ function Editpath() {
       <ScheduleNavBar />
       <br />
       <Paper shadow="xl" p="xl" withBorder>
+        <h2 style={{ textAlign: "center", color: "#15abff" }}>
+          Edit Pathologist Schedule
+        </h2>
         <div style={responsiveContainerStyle}>
           <div style={boxStyle}>
             <h3 style={titleStyle}>Add Pathologist Schedule</h3>

@@ -1,4 +1,4 @@
-import { TextInput, Button, Paper, Flex } from "@mantine/core";
+import { TextInput, Button, Paper, Flex, Title } from "@mantine/core";
 import axios from "axios";
 import { useState } from "react";
 import NavCom from "../NavCom";
@@ -54,6 +54,16 @@ export default function Addpath() {
       <Changenav />
       <br />
       <Paper shadow="xl" p="xl" withBorder>
+        <Title
+          order={3}
+          style={{
+            textAlign: "center",
+            color: "#15abff",
+            marginBottom: "20px",
+          }}
+        >
+          Add Pathologist
+        </Title>
         <Flex display="flex" flexDirection="row" wrap="wrap" gap="md">
           <TextInput
             label="Pathologist Name"
@@ -79,7 +89,11 @@ export default function Addpath() {
               setPhone(e.target.value);
             }}
           />
-          <Button mt="lg" onClick={handleAdd}>
+          <Button
+            mt="lg"
+            onClick={handleAdd}
+            style={{ backgroundColor: "#15abff" }}
+          >
             {" "}
             Add Pathologist
           </Button>

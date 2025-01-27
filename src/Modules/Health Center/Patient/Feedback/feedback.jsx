@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+// import { notifications } from "@mantine/notifications";
 import { Button, Textarea, Title, Center, Box, Paper } from "@mantine/core";
 import axios from "axios";
 import Navigation from "../Navigation";
@@ -54,12 +55,20 @@ function Feedback() {
               order={3}
               style={{
                 color: "#15abff",
+                textAlign: "center",
               }}
             >
               The Feedback Form
             </Title>
             <br />
-            <form onSubmit={handleSubmit}>
+            <form
+              onSubmit={handleSubmit}
+              // onClick={() =>
+              //   notifications.show({
+              //     message: "Feedback submitted successfully",
+              //   })
+              // }
+            >
               <Textarea
                 placeholder="Enter your feedback"
                 autosize
@@ -77,6 +86,7 @@ function Feedback() {
                 size="md"
                 mt="xl"
                 disabled={isSubmitting}
+                style={{ display: "block", margin: "15px auto" }}
               >
                 {isSubmitting ? "Submitting..." : "Submit"}
               </Button>

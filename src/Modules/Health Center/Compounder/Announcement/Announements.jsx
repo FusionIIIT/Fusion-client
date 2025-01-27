@@ -42,7 +42,16 @@ function CompAnnounements() {
       <br />
 
       <Paper shadow="xl" p="xl" withBorder>
-        <Title order={3}>Make a new Announcement</Title>
+        <Title
+          order={3}
+          style={{
+            color: "#15abff",
+            textAlign: "center",
+            marginBottom: "10px",
+          }}
+        >
+          Make a new Announcement
+        </Title>
 
         <div>
           <Textarea
@@ -60,6 +69,8 @@ function CompAnnounements() {
             color: "white",
             padding: "10px 30px",
             border: "none",
+            margin: "auto",
+            display: "block",
           }}
           onClick={make_announcement}
         >

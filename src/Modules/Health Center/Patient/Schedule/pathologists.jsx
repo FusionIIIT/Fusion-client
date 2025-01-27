@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, Flex, Paper, Table, Text, Title } from "@mantine/core";
+import { Button, Paper, Table, Text, Title } from "@mantine/core";
 import axios from "axios";
 import NavCom from "../Navigation";
 import Changenav from "./schedulePath";
@@ -43,20 +43,29 @@ export default function PathDoc() {
       <Changenav />
       <br />
       <Paper shadow="xl" p="xl" withBorder>
-        <Flex display="flex" justify="space-between">
-          <Title order={4} style={{ color: "#15abff" }}>
-            Pathologist's List
-          </Title>
-          <Button
-            onClick={handlePrint}
-            style={{ float: "right", backgroundColor: "#15abff" }}
-          >
-            Download
-          </Button>
-        </Flex>
+        <Title order={3} style={{ color: "#15abff", textAlign: "center" }}>
+          Pathologist's List
+        </Title>
+        <Button
+          onClick={handlePrint}
+          style={{
+            float: "right",
+            backgroundColor: "#15abff",
+            margin: "0.5rem 0",
+          }}
+        >
+          Download
+        </Button>
 
         {pathologists.map((element, index) => (
-          <Table mt="lg" mb="lg" key={index} withBorder withColumnBorders>
+          <Table
+            mt="lg"
+            mb="lg"
+            key={index}
+            withBorder
+            withColumnBorders
+            style={{ border: "1px solid #15abff" }}
+          >
             <Table.Tr>
               <Table.Td style={{ backgroundColor: "#f0f0f0" }}>
                 <Text fw={700}>Pathologist</Text>

@@ -1,7 +1,8 @@
 /* eslint-disable react/prop-types */
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Paper } from "@mantine/core";
+import { Alert, Paper, Text, Title } from "@mantine/core";
+import { Check, X } from "@phosphor-icons/react";
 import NavCom from "../NavCom";
 import ScheduleNavBar from "./schedulePath";
 import { compounderRoute } from "../../../../routes/health_center";
@@ -16,6 +17,9 @@ function Editdoctor() {
   const [dayToRemove, setDayToRemove] = useState("");
   const [roomToAdd, setRoom] = useState("");
   const [doctors, setDoctors] = useState([]);
+  const [notification, setNotification] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [submit, setSubmit] = useState(false);
 
   const containerStyle = {
     display: "flex",
@@ -36,7 +40,7 @@ function Editdoctor() {
   };
 
   const titleStyle = {
-    fontSize: "20px",
+    fontSize: "15px",
     marginBottom: "10px",
     color: "#333",
   };
@@ -87,6 +91,8 @@ function Editdoctor() {
       setDoctors(response.data.doctors);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -96,11 +102,17 @@ function Editdoctor() {
 
   const editSchedule = async () => {
     if (timeIn > timeOut) {
-      alert("Enter Valid Time");
+      setNotification({
+        type: "error",
+        message: "Enter Valid Time",
+      });
       return false;
     }
     if (roomToAdd === "") {
-      alert("Enter Room Number");
+      setNotification({
+        type: "error",
+        message: "Enter Room Number",
+      });
       return false;
     }
     const token = localStorage.getItem("authToken");
@@ -122,10 +134,23 @@ function Editdoctor() {
         },
       );
       console.log(response);
-      alert("schedule added successfully");
+      setNotification({
+        type: "success",
+        message: "Schedule Added Successfully",
+      });
     } catch (err) {
       console.log(err);
+      setNotification({
+        type: "error",
+        message: err.message,
+      });
+    } finally {
+      setSubmit(true);
     }
+    setTimeout(() => {
+      setNotification(null);
+      setSubmit(false);
+    }, 5000);
   };
 
   const removeSchedule = async () => {
@@ -145,10 +170,23 @@ function Editdoctor() {
         },
       );
       console.log(response);
-      alert("schedule removed successfully");
+      setNotification({
+        type: "success",
+        message: "Schedule Removed Successfully",
+      });
     } catch (err) {
       console.log(err);
+      setNotification({
+        type: "error",
+        message: err.message,
+      });
+    } finally {
+      setSubmit(true);
     }
+    setTimeout(() => {
+      setNotification(null);
+      setSubmit(false);
+    }, 5000);
   };
 
   return (
@@ -158,6 +196,16 @@ function Editdoctor() {
       <ScheduleNavBar />
       <br />
       <Paper shadow="xl" p="xl" withBorder>
+        <Title
+          order={3}
+          style={{
+            color: "#15ABFF",
+            textAlign: "center",
+            marginBottom: "15px",
+          }}
+        >
+          Edit Doctor Schedule
+        </Title>
         <div style={responsiveContainerStyle}>
           <div style={boxStyle}>
             <h3 style={titleStyle}>Add Doctor Schedule</h3>
@@ -170,11 +218,16 @@ function Editdoctor() {
                 <option value="" disabled>
                   Select Doctor
                 </option>
-                {doctors.map((doctor) => (
-                  <option key={doctor.id} value={doctor.id}>
-                    {doctor.doctor_name}
-                  </option>
-                ))}
+
+                {loading ? (
+                  <option style={{ color: "#15ABFF" }}>Loading...</option>
+                ) : (
+                  doctors.map((doctor) => (
+                    <option key={doctor.id} value={doctor.id}>
+                      {doctor.doctor_name}
+                    </option>
+                  ))
+                )}
               </select>
               <select
                 value={dayToAdd}
@@ -223,7 +276,7 @@ function Editdoctor() {
                 onChange={(e) => setRoom(e.target.value)}
               />
               <button style={buttonStyle} onClick={editSchedule}>
-                Add Schedule
+                {submit ? "Adding..." : "Add Schedule"}
               </button>
             </div>
           </div>
@@ -239,11 +292,15 @@ function Editdoctor() {
                 <option value="" disabled>
                   Select Doctor
                 </option>
-                {doctors.map((doctor) => (
-                  <option key={doctor.id} value={doctor.id}>
-                    {doctor.doctor_name}
-                  </option>
-                ))}
+                {loading ? (
+                  <option style={{ color: "#15ABFF" }}>Loading...</option>
+                ) : (
+                  doctors.map((doctor) => (
+                    <option key={doctor.id} value={doctor.id}>
+                      {doctor.doctor_name}
+                    </option>
+                  ))
+                )}
               </select>
               <select
                 value={dayToRemove}
@@ -268,12 +325,37 @@ function Editdoctor() {
                 ))}
               </select>
               <button style={buttonStyle} onClick={removeSchedule}>
-                Remove Schedule
+                {submit ? "Removing..." : "Remove Schedule"}
               </button>
             </div>
           </div>
         </div>
       </Paper>
+      {notification && (
+        <Alert
+          icon={
+            notification.type === "success" ? (
+              <Check size={16} />
+            ) : (
+              <X size={16} />
+            )
+          }
+          title={notification.type === "success" ? "Success" : "Error"}
+          color={notification.type === "success" ? "green" : "red"}
+          withCloseButton
+          onClose={() => setNotification(null)}
+          style={{
+            position: "fixed",
+            top: "20px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 1000,
+            width: "auto",
+          }}
+        >
+          <Text>{notification.message}</Text>
+        </Alert>
+      )}
     </>
   );
 }

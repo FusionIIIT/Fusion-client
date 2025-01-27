@@ -72,7 +72,7 @@ function Application() {
       );
       console.log(response.data);
       alert("Application rejected");
-      navigate("/compounder/medical-relief/inbox");
+      navigate("/healthcenter/compounder/medical-relief/inbox");
     } catch (err) {
       console.log(err);
     }

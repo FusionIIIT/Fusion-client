@@ -31,7 +31,16 @@ function Announcement() {
   console.log(test);
   const rows = test.announcements.map((element, index) => (
     <Table.Tr key={index}>
-      <Table.Td>{element.message}</Table.Td>
+      <Table.Td
+        style={{
+          borderLeft: "15px solid #15abff",
+          backgroundColor: "white",
+          color: "black",
+          textTransform: "capitalize",
+        }}
+      >
+        {element.message}
+      </Table.Td>
     </Table.Tr>
   ));
 
@@ -44,15 +53,14 @@ function Announcement() {
         <div style={{ margin: "2rem" }}>
           <div
             style={{
-              width: "80%",
+              width: "100%",
               margin: "0 auto",
             }}
           >
             <Title
-              order={5}
+              order={3}
               style={{
                 textAlign: "center",
-                margin: "0 auto",
                 color: "#15abff",
               }}
             >
@@ -60,21 +68,10 @@ function Announcement() {
             </Title>
             <br />
             <Table
-              striped
-              withTableBorder
-              withColumnBorders
-              highlightOnHover
-              horizontalSpacing="sm"
-              verticalSpacing="sm"
+              horizontalSpacing="lg"
+              verticalSpacing="lg"
               style={{ width: "100%" }}
             >
-              <Table.Thead>
-                <Table.Tr style={{}}>
-                  <Table.Th style={{ textAlign: "center" }}>
-                    Announcements Details
-                  </Table.Th>
-                </Table.Tr>
-              </Table.Thead>
               <Table.Tbody
                 style={{
                   textAlign: "center",

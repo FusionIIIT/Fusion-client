@@ -34,14 +34,15 @@ function HistoryPatient() {
 
   const rows = history.map((element) => (
     <tr key={element.id}>
-      <td style={{ textAlign: "center" }}>{element.treated}</td>
-      <td style={{ textAlign: "center" }}>{element.date}</td>
-      <td style={{ textAlign: "center" }}>{element.details}</td>
-      <td style={{ textAlign: "center" }}>
+      <td>{element.treated}</td>
+
+      <td>{element.date}</td>
+      <td>{element.details}</td>
+      <td>
         {element.report ? (
           <Download size={20} color="#15abff" />
         ) : (
-          <Download size={20} color="#15abff" />
+          <Download size={20} color="black" />
         )}
       </td>
       <td style={{ textAlign: "center" }}>
@@ -71,6 +72,8 @@ function HistoryPatient() {
             textAlign: "center",
             margin: "0 auto",
             color: "#15abff",
+            fontWeight: "bold",
+            fontSize: "24px",
           }}
         >
           Prescription
@@ -83,17 +86,27 @@ function HistoryPatient() {
           striped
           horizontalSpacing="sm"
           verticalSpacing="sm"
+          style={{ borderCollapse: "collapse", border: "1px solid #ccc" }}
         >
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Treated By</Table.Th>
-              <Table.Th>Date</Table.Th>
-              <Table.Th>Details</Table.Th>
-              <Table.Th>Report</Table.Th>
-              <Table.Th>View Prescription</Table.Th>
+              <Table.Th style={{ textAlign: "center" }}>Treated By</Table.Th>
+              <Table.Th style={{ textAlign: "center" }}>Date</Table.Th>
+              <Table.Th style={{ textAlign: "center" }}>Details</Table.Th>
+              <Table.Th style={{ textAlign: "center" }}>Report</Table.Th>
+              <Table.Th style={{ textAlign: "center" }}>
+                View Prescription
+              </Table.Th>
             </Table.Tr>
           </Table.Thead>
-          <Table.Tbody>{rows}</Table.Tbody>
+          <Table.Tbody
+            style={{
+              textAlign: "center",
+              fontSize: "16px",
+            }}
+          >
+            {rows}
+          </Table.Tbody>
         </Table>
       </Paper>
     </>

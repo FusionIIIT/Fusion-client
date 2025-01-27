@@ -8,6 +8,7 @@ import {
   Select,
   Paper,
   Flex,
+  Title,
 } from "@mantine/core";
 import Navigation from "../Navigation";
 import MedicalNavBar from "./medicalPath";
@@ -19,6 +20,8 @@ function Apply() {
   const [recipient, setRecipient] = useState("Compounder(Pkumar)");
   const [desc, setDescription] = useState("");
   const [errors, setErrors] = useState({});
+  // eslint-disable-next-line no-unused-vars
+  const [isSubmitting, setSubmitting] = useState(false);
   const role = useSelector((state) => state.user.role);
   const validate = () => {
     const newErrors = {};
@@ -69,6 +72,9 @@ function Apply() {
       <MedicalNavBar />
       <br />
       <Paper shadow="xl" p="xl" withBorder>
+        <Title order={3} style={{ textAlign: "center", color: "#15abff" }}>
+          Apply for Medical Relief
+        </Title>
         <form onSubmit={handleSubmit}>
           <Flex gap="xl" wrap="wrap">
             <FileInput
@@ -87,6 +93,7 @@ function Apply() {
               value={recipient}
               onChange={setRecipient}
               error={errors.recipient}
+              placeholder="Select Recipient"
             />
           </Flex>
           <Flex display="flex" justify="space-between">
@@ -95,8 +102,9 @@ function Apply() {
               value={desc}
               onChange={(e) => setDescription(e.target.value)}
               error={errors.description}
-              style={{ width: "80%" }}
+              style={{ width: "80%", margin: "0 0.5rem 0 0" }}
               autosize
+              placeholder="Enter description"
             />
 
             <Button
@@ -105,7 +113,7 @@ function Apply() {
               color="#15abff"
               style={{ padding: "0.5rem 2rem", marginTop: "24px" }}
             >
-              Submit
+              {isSubmitting ? "Submitting..." : "Submit"}
             </Button>
           </Flex>
         </form>

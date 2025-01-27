@@ -36,12 +36,13 @@ function FeedbackTable() {
     borderCollapse: "collapse",
     marginTop: "20px",
     border: "1px solid black",
+    textAlign: "center",
   };
 
   const thStyle = {
     color: "black",
     padding: "10px",
-    textAlign: "left",
+    textAlign: "center",
     borderCollapse: "collapse",
     border: "1px solid black",
   };
@@ -49,6 +50,7 @@ function FeedbackTable() {
   const tdStyle = {
     border: "1px solid black",
     padding: "10px",
+    textAlign: "center",
   };
 
   return (
@@ -58,7 +60,7 @@ function FeedbackTable() {
       <div style={{ margin: "2rem" }}>
         <Paper shadow="xl" p="xl" withBorder>
           <Title
-            order={5}
+            order={3}
             style={{
               textAlign: "center",
               margin: "0 auto",

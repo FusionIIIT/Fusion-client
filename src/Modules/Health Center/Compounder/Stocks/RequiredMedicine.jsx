@@ -1,77 +1,60 @@
-import React, { useState } from "react";
-import { Paper, Table, Title } from "@mantine/core";
+import React, { useEffect, useState } from "react";
+import { Pagination, Paper, Table, Title } from "@mantine/core";
+import axios from "axios";
 import NavCom from "../NavCom";
 import ManageStock from "./ManageStocksNav";
 import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import { compounderRoute } from "../../../../routes/health_center";
 
 function RequiredMedicine() {
-  const [searchTerm, setSearchTerm] = useState("");
+  // eslint-disable-next-line no-unused-vars
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [totalPages, setTotalPages] = useState(1);
+  const [activePage, setPage] = useState(1);
+  const [requiredMed, setRequired] = useState([]);
 
-  const data = [
-    {
-      medicine: "Dolo 650 Tablet",
-      supplier: "MedPlus",
-      expiryDate: "Oct. 23, 2024",
-      quantity: 30,
-    },
-    {
-      medicine: "Aspirin 300mg Tablet",
-      supplier: "CarePlus",
-      expiryDate: "Oct. 31, 2024",
-      quantity: 500,
-    },
-    {
-      medicine: "Paracetamol",
-      supplier: "HealthPharma",
-      expiryDate: "Nov. 03, 2024",
-      quantity: 50,
-    },
-    {
-      medicine: "Amoxicillin 500mg Capsule",
-      supplier: "MedPlus",
-      expiryDate: "Dec. 15, 2024",
-      quantity: 200,
-    },
-    {
-      medicine: "Ciprofloxacin 250mg Tablet",
-      supplier: "Apollo",
-      expiryDate: "Jan. 20, 2025",
-      quantity: 150,
-    },
-    {
-      medicine: "Ibuprofen 400mg Tablet",
-      supplier: "HealthPharma",
-      expiryDate: "Feb. 5, 2025",
-      quantity: 350,
-    },
-    {
-      medicine: "Metformin 500mg Tablet",
-      supplier: "WellnessStore",
-      expiryDate: "Mar. 30, 2025",
-      quantity: 500,
-    },
-    {
-      medicine: "Omeprazole 20mg Capsule",
-      supplier: "CarePlus",
-      expiryDate: "Apr. 12, 2025",
-      quantity: 300,
-    },
+  const fetchRequired = async (pagenumber) => {
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.post(
+        compounderRoute,
+        {
+          page_stock_required: pagenumber,
+          search_view_required: search,
+          datatype: "manage_stock_required",
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      console.log(response);
+      setRequired(response.data.report_stock_required);
+      setTotalPages(response.data.total_pages_stock_required);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const setCurrentPage = async (e) => {
+    setPage(e);
+    fetchRequired(e);
+  };
 
-    // Add more entries as needed
-  ];
+  useEffect(() => {
+    fetchRequired(1);
+  }, []);
 
-  const rows = data
-    .filter((item) =>
-      item.medicine.toLowerCase().includes(searchTerm.toLowerCase()),
-    )
-    .map((item, index) => (
-      <tr key={index}>
-        <td style={{ textAlign: "center" }}>{item.medicine}</td>
-        <td style={{ textAlign: "center" }}>{item.supplier}</td>
-        <td style={{ textAlign: "center" }}>{item.expiryDate}</td>
-        <td style={{ textAlign: "center" }}>{item.quantity}</td>
-      </tr>
-    ));
+  const rows = requiredMed.map((item, index) => (
+    <tr key={index}>
+      <td style={{ textAlign: "center" }}>{item.medicine_id}</td>
+      <td style={{ textAlign: "center" }}>{item.quantity}</td>
+      <td style={{ textAlign: "center" }}>{item.threshold}</td>
+    </tr>
+  ));
 
   return (
     <>
@@ -87,19 +70,28 @@ function RequiredMedicine() {
             marginBottom: "20px",
           }}
         >
-          <input
-            type="text"
-            placeholder="Search"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              width: "50%",
-              padding: "10px",
-              border: "1px solid #ccc",
-              borderRadius: "5px",
-              fontSize: "16px",
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              fetchRequired(1);
             }}
-          />
+          >
+            <input
+              type="text"
+              placeholder="Search"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+              }}
+              style={{
+                width: "50%",
+                padding: "10px",
+                border: "1px solid #ccc",
+                borderRadius: "5px",
+                fontSize: "16px",
+              }}
+            />
+          </form>
           <button
             style={{
               padding: "10px 20px",
@@ -140,16 +132,20 @@ function RequiredMedicine() {
             <thead>
               <tr style={{ backgroundColor: "#E0F2FE", textAlign: "center" }}>
                 <th>Medicine</th>
-                <th>Supplier</th>
-                <th>Expiry Date</th>
-                <th>Quantity</th>
+                <th>Available</th>
+                <th>Threshold</th>
               </tr>
             </thead>
             <tbody>{rows}</tbody>
           </Table>
         </Paper>
 
-        {/* Pagination */}
+        <Pagination
+          value={activePage}
+          onChange={setCurrentPage}
+          total={totalPages}
+          style={{ marginTop: "20px", margin: "auto", width: "fit-content" }}
+        />
       </Paper>
     </>
   );

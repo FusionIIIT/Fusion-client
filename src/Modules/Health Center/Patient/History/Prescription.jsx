@@ -85,7 +85,7 @@ function Prescription() {
   );
 
   const generatePrescriptionTable = (prescription) => (
-    <div key={prescription.followUpDate}>
+    <div key={prescription.followUpDate} style={{ marginBottom: "20px" }}>
       <Title
         order={5}
         style={{
@@ -95,14 +95,20 @@ function Prescription() {
       >
         Revoked Medicine in Follow-up on {prescription.followUpDate}
       </Title>
-      <Table withTableBorder withColumnBorders highlightOnHover striped>
+      <Table
+        withTableBorder
+        withColumnBorders
+        highlightOnHover
+        striped
+        style={{ textAlign: "center" }}
+      >
         <Table.Thead>
           <Table.Tr>
-            <Table.Th>Medicine</Table.Th>
-            <Table.Th>Quantity</Table.Th>
-            <Table.Th>Days</Table.Th>
-            <Table.Th>Times</Table.Th>
-            <Table.Th>Expiry Date</Table.Th>
+            <Table.Th style={{ textAlign: "center" }}>Medicine</Table.Th>
+            <Table.Th style={{ textAlign: "center" }}>Quantity</Table.Th>
+            <Table.Th style={{ textAlign: "center" }}>Days</Table.Th>
+            <Table.Th style={{ textAlign: "center" }}>Times</Table.Th>
+            <Table.Th style={{ textAlign: "center" }}>Expiry Date</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
@@ -126,7 +132,9 @@ function Prescription() {
       <NavCom />
       <br />
       <Paper shadow="xl" p="xl" withBorder>
-        <h1>{prescrip?.rollNumber}'s Prescription History</h1>
+        <h1 style={{ textAlign: "center", color: "#15abff" }}>
+          {prescrip?.rollNumber}'s Prescription History
+        </h1>
         <div
           style={{
             display: "flex",
@@ -188,14 +196,15 @@ function Prescription() {
           </Button>
         </div>
 
-        <Flex gap="sm" align="center">
+        <br />
+        <Flex gap="lg" align="center">
           <div style={{ paddingRight: "100px" }}>
             <Text>Doctor</Text>
             <Text
               style={{
-                backgroundColor: "#15abff",
-                color: "white",
-                padding: "5px 15px",
+                color: "#15abff",
+                textTransform: "capitalize",
+                fontWeight: "bold",
               }}
             >
               {prescrip?.doctor}
@@ -206,9 +215,9 @@ function Prescription() {
             <Text>Details of Disease</Text>
             <Text
               style={{
-                backgroundColor: "#15abff",
-                color: "white",
-                padding: "5px 15px",
+                color: "#15abff",
+                textTransform: "capitalize",
+                fontWeight: "bold",
               }}
             >
               {prescrip?.diseaseDetails}
@@ -224,32 +233,28 @@ function Prescription() {
                 generatePrescriptionTable(prescription),
               )}
         </div>
-        <div
+
+        <Textarea
+          label="Text Suggested"
+          placeholder="Write Here"
+          style={{ width: "100%" }}
+        >
+          dummy data
+        </Textarea>
+
+        <Button
           style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignContent: "center",
+            backgroundColor: "#15abff",
+            color: "white",
+            padding: "5px 30px",
             marginTop: "1rem",
+            marginLeft: "auto",
+            marginRight: "auto",
+            display: "block",
           }}
         >
-          <Textarea
-            label="Text Suggested"
-            placeholder="Write Here"
-            style={{ width: "30%" }}
-          >
-            dummy data
-          </Textarea>
-          <Button
-            style={{
-              backgroundColor: "#15abff",
-              color: "white",
-              padding: "5px 30px",
-              marginTop: "1rem",
-            }}
-          >
-            View Report
-          </Button>
-        </div>
+          View Report
+        </Button>
       </Paper>
     </>
   );

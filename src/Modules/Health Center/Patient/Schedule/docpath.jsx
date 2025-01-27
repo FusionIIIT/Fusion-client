@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, Flex, Paper, Table, Text, Title } from "@mantine/core";
+import { Button, Paper, Table, Text, Title } from "@mantine/core";
 import axios from "axios";
 import NavCom from "../Navigation";
 import Changenav from "./schedulePath";
@@ -43,18 +43,27 @@ export default function DoctorPath() {
       <Changenav />
       <br />
       <Paper shadow="xl" p="xl" withBorder>
-        <Flex display="flex" justify="space-between">
-          <Title order={4} style={{ color: "#15abff" }}>
-            Doctor's List
-          </Title>
-          <Button
-            onClick={handlePrint}
-            style={{ float: "right", backgroundColor: "#15abff" }}
-          >
-            Download
-          </Button>
-        </Flex>
-
+        <Title
+          order={3}
+          style={{
+            color: "#15abff",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          Doctor's List
+        </Title>
+        <Button
+          onClick={handlePrint}
+          style={{
+            float: "right",
+            backgroundColor: "#15abff",
+            margin: "0.5rem 0",
+          }}
+        >
+          Download
+        </Button>
         {doctors.map((element, index) => (
           <Table
             mt="lg"
@@ -64,6 +73,11 @@ export default function DoctorPath() {
             withColumnBorders
             withRowBorders
             striped
+            style={{
+              border: "1px solid #15abff",
+              borderRadius: "10px",
+              textAlign: "center",
+            }}
           >
             <Table.Tr>
               <Table.Td style={{ backgroundColor: "#f0f0f0" }}>

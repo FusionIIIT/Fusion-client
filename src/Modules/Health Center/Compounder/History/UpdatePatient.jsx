@@ -1,4 +1,5 @@
 import {
+  Alert,
   Button,
   Flex,
   Input,
@@ -6,12 +7,13 @@ import {
   Radio,
   Select,
   Table,
+  Text,
   Textarea,
   TextInput,
   Title,
 } from "@mantine/core";
 import { useState } from "react";
-import { MagnifyingGlass } from "@phosphor-icons/react";
+import { Check, MagnifyingGlass, X } from "@phosphor-icons/react";
 import NavCom from "../NavCom";
 import HistoryNavBar from "./historyPath";
 import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
@@ -45,6 +47,7 @@ function UpdatePatient() {
   const [timesPerDay, setTimesPerDay] = useState("");
   const [selectedOption, setSelectedOption] = useState("self");
   const [dummyData, setDummyData] = useState(null);
+  const [notification, setNotification] = useState(null);
 
   const handleAddEntry = () => {
     if (medicine && quantity && days && timesPerDay) {
@@ -63,14 +66,34 @@ function UpdatePatient() {
       setQuantity("");
       setDays("");
       setTimesPerDay("");
+
+      setNotification({
+        type: "success",
+        message: "Your medicine entry has been successfully added.",
+      });
     } else {
-      alert("Please fill in all fields.");
+      setNotification({
+        type: "error",
+        message: "Please fill in all fields before adding an entry.",
+      });
     }
+
+    setTimeout(() => setNotification(null), 5000);
   };
 
   const handleDeleteEntry = (index) => {
     const newEntries = entries.filter((_, i) => i !== index);
     setEntries(newEntries);
+    setNotification({
+      type: "success",
+      message: "Successfully Deleted",
+    });
+
+    setTimeout(() => setNotification(null), 5000);
+  };
+
+  const handleSubmit = () => {
+    // submit logic
   };
 
   return (
@@ -322,10 +345,37 @@ function UpdatePatient() {
             padding: "5px 20px",
             width: "20%",
           }}
+          onclick={handleSubmit}
         >
           Submit
         </Button>
       </Paper>
+
+      {notification && (
+        <Alert
+          icon={
+            notification.type === "success" ? (
+              <Check size={16} />
+            ) : (
+              <X size={16} />
+            )
+          }
+          title={notification.type === "success" ? "Success" : "Error"}
+          color={notification.type === "success" ? "green" : "red"}
+          withCloseButton
+          onClose={() => setNotification(null)}
+          style={{
+            position: "fixed",
+            top: "20px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 1000,
+            width: "auto",
+          }}
+        >
+          <Text>{notification.message}</Text>
+        </Alert>
+      )}
     </>
   );
 }

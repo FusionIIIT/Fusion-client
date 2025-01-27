@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import React, { useEffect, useState } from "react";
-import { Paper, Title } from "@mantine/core";
+import { Loader, Paper, Title } from "@mantine/core";
 import axios from "axios";
 import NavCom from "../NavCom";
 import ScheduleNavBar from "./schedulePath";
@@ -41,6 +41,7 @@ function Time({ selectedDay, schedule }) {
 function Viewdoctor() {
   const [selectedDays, setSelectedDays] = useState({});
   const [schedule, setSchedule] = useState([]);
+  const [loading, setLoading] = useState(true);
   const handleDayChange = (doctorName, day) => {
     setSelectedDays((prevSelectedDays) => ({
       ...prevSelectedDays,
@@ -63,6 +64,8 @@ function Viewdoctor() {
       setSchedule(response.data.schedule);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -78,7 +81,7 @@ function Viewdoctor() {
       <br />
       <Paper shadow="xl" p="xl" withBorder>
         <Title
-          order={5}
+          order={3}
           style={{
             textAlign: "center",
             margin: "0 auto",
@@ -88,61 +91,69 @@ function Viewdoctor() {
           View Doctor Schedule
         </Title>
         <br />
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            border: "1px solid #ccc",
-            textAlign: "left",
-          }}
-        >
-          <thead>
-            <tr>
-              <th style={{ padding: "10px", border: "1px solid #ccc" }}>
-                Doctor Name
-              </th>
-              <th style={{ padding: "10px", border: "1px solid #ccc" }}>
-                Specialization
-              </th>
-              <th style={{ padding: "10px", border: "1px solid #ccc" }}>Day</th>
-              <th style={{ padding: "10px", border: "1px solid #ccc" }}>
-                Time
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {schedule.map((item, index) => (
-              <tr
-                key={index}
-                style={{
-                  backgroundColor: index % 2 === 0 ? "#fff" : "#FAFAFA",
-                  minHeight: "60px",
-                }}
-              >
-                <td style={{ padding: "10px", border: "1px solid #ccc" }}>
-                  {item.name}
-                </td>
-                <td style={{ padding: "10px", border: "1px solid #ccc" }}>
-                  {item.specialization}
-                </td>
-                <td style={{ padding: "10px", border: "1px solid #ccc" }}>
-                  <Dropdown
-                    doctorName={item.name}
-                    selectedDay={selectedDays[item.name] || ""}
-                    onDayChange={handleDayChange}
-                  />
-                </td>
-                <td style={{ padding: "10px", border: "1px solid #ccc" }}>
-                  <Time
-                    doctorName={item.name}
-                    selectedDay={selectedDays[item.name] || ""}
-                    schedule={item.availability}
-                  />
-                </td>
+        {loading ? (
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <Loader size={50} color="#15abff" />
+          </div>
+        ) : (
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              border: "1px solid #ccc",
+              textAlign: "center",
+            }}
+          >
+            <thead>
+              <tr>
+                <th style={{ padding: "10px", border: "1px solid #ccc" }}>
+                  Doctor Name
+                </th>
+                <th style={{ padding: "10px", border: "1px solid #ccc" }}>
+                  Specialization
+                </th>
+                <th style={{ padding: "10px", border: "1px solid #ccc" }}>
+                  Day
+                </th>
+                <th style={{ padding: "10px", border: "1px solid #ccc" }}>
+                  Time
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {schedule.map((item, index) => (
+                <tr
+                  key={index}
+                  style={{
+                    backgroundColor: index % 2 === 0 ? "#fff" : "#FAFAFA",
+                    minHeight: "60px",
+                  }}
+                >
+                  <td style={{ padding: "10px", border: "1px solid #ccc" }}>
+                    {item.name}
+                  </td>
+                  <td style={{ padding: "10px", border: "1px solid #ccc" }}>
+                    {item.specialization}
+                  </td>
+                  <td style={{ padding: "10px", border: "1px solid #ccc" }}>
+                    <Dropdown
+                      doctorName={item.name}
+                      selectedDay={selectedDays[item.name] || ""}
+                      onDayChange={handleDayChange}
+                    />
+                  </td>
+                  <td style={{ padding: "10px", border: "1px solid #ccc" }}>
+                    <Time
+                      doctorName={item.name}
+                      selectedDay={selectedDays[item.name] || ""}
+                      schedule={item.availability}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </Paper>
     </>
   );

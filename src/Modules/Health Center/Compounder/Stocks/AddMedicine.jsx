@@ -30,41 +30,40 @@ function AddMedicine() {
         <div
           style={{
             textAlign: "center",
-            fontSize: "1.2rem",
-            fontWeight: "400",
+            fontSize: "1.8rem",
+            fontWeight: "bold",
             marginBottom: "1rem",
+            color: "#15abff",
           }}
         >
           Insert Data using Excel File
         </div>
 
-        <form>
+        <Group position="center" mt="lg">
           <FileInput
             label="Report"
             id="report"
             placeholder="Choose File"
-            mb="sm"
+            mb="lg"
+            style={{ width: "30%" }}
           />
-
-          <Group position="center" mt="lg">
-            <Button
-              type="submit"
-              style={{ backgroundColor: "#15ABFF", color: "white" }}
-            >
-              Submit
-            </Button>
-            <Button
-              variant="outline"
-              leftIcon={<DownloadSimple size={20} />}
-              style={{
-                borderColor: "#15ABFF",
-                color: "#15ABFF",
-              }}
-            >
-              Download Example
-            </Button>
-          </Group>
-        </form>
+          <Button
+            type="submit"
+            style={{ backgroundColor: "#15ABFF", color: "white" }}
+          >
+            Submit
+          </Button>
+          <Button
+            variant="outline"
+            leftIcon={<DownloadSimple size={20} />}
+            style={{
+              borderColor: "#15ABFF",
+              color: "#15ABFF",
+            }}
+          >
+            Download Example
+          </Button>
+        </Group>
 
         <Divider my="lg" label="OR" labelPosition="center" />
 
@@ -123,7 +122,12 @@ function AddMedicine() {
           <Group position="right" mt="lg">
             <Button
               type="submit"
-              style={{ backgroundColor: "#15ABFF", color: "white" }}
+              style={{
+                backgroundColor: "#15ABFF",
+                color: "white",
+                margin: "auto",
+                display: "block",
+              }}
             >
               Submit
             </Button>

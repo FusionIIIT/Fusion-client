@@ -1,77 +1,61 @@
-import React, { useState } from "react";
-import { Paper, Table, Title } from "@mantine/core";
+import React, { useEffect, useState } from "react";
+import { Pagination, Paper, Table, Title } from "@mantine/core";
+import axios from "axios";
 import NavCom from "../NavCom";
 import ManageStock from "./ManageStocksNav";
 import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import { compounderRoute } from "../../../../routes/health_center";
 
 function ViewStock() {
-  const [searchTerm, setSearchTerm] = useState("");
+  // eslint-disable-next-line no-unused-vars
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [totalPages, setTotalPages] = useState(1);
+  const [activePage, setPage] = useState(1);
+  const [viewStock, setView] = useState([]);
 
-  const data = [
-    {
-      medicine: "Dolo 650 Tablet",
-      supplier: "MedPlus",
-      expiryDate: "Oct. 23, 2024",
-      quantity: 30,
-    },
-    {
-      medicine: "Aspirin 300mg Tablet",
-      supplier: "CarePlus",
-      expiryDate: "Oct. 31, 2024",
-      quantity: 500,
-    },
-    {
-      medicine: "Paracetamol",
-      supplier: "HealthPharma",
-      expiryDate: "Nov. 03, 2024",
-      quantity: 50,
-    },
-    {
-      medicine: "Amoxicillin 500mg Capsule",
-      supplier: "MedPlus",
-      expiryDate: "Dec. 15, 2024",
-      quantity: 200,
-    },
-    {
-      medicine: "Ciprofloxacin 250mg Tablet",
-      supplier: "Apollo",
-      expiryDate: "Jan. 20, 2025",
-      quantity: 150,
-    },
-    {
-      medicine: "Ibuprofen 400mg Tablet",
-      supplier: "HealthPharma",
-      expiryDate: "Feb. 5, 2025",
-      quantity: 350,
-    },
-    {
-      medicine: "Metformin 500mg Tablet",
-      supplier: "WellnessStore",
-      expiryDate: "Mar. 30, 2025",
-      quantity: 500,
-    },
-    {
-      medicine: "Omeprazole 20mg Capsule",
-      supplier: "CarePlus",
-      expiryDate: "Apr. 12, 2025",
-      quantity: 300,
-    },
+  const fetchStock = async (pagenumber) => {
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.post(
+        compounderRoute,
+        {
+          page_stock_view: pagenumber,
+          search_view_stock: search,
+          datatype: "manage_stock_view",
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      console.log(response);
+      setView(response.data.report_stock_view);
+      setTotalPages(response.data.total_pages_stock_view);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const setCurrentPage = async (e) => {
+    setPage(e);
+    fetchStock(e);
+  };
 
-    // Add more entries as needed
-  ];
+  useEffect(() => {
+    fetchStock(1);
+  }, []);
 
-  const rows = data
-    .filter((item) =>
-      item.medicine.toLowerCase().includes(searchTerm.toLowerCase()),
-    )
-    .map((item, index) => (
-      <tr key={index}>
-        <td style={{ textAlign: "center" }}>{item.medicine}</td>
-        <td style={{ textAlign: "center" }}>{item.supplier}</td>
-        <td style={{ textAlign: "center" }}>{item.expiryDate}</td>
-        <td style={{ textAlign: "center" }}>{item.quantity}</td>
-      </tr>
-    ));
+  const rows = viewStock.map((item, index) => (
+    <tr key={index}>
+      <td style={{ textAlign: "center" }}>{item.medicine_id}</td>
+      <td style={{ textAlign: "center" }}>{item.supplier}</td>
+      <td style={{ textAlign: "center" }}>{item.Expiry_date}</td>
+      <td style={{ textAlign: "center" }}>{item.quantity}</td>
+    </tr>
+  ));
 
   return (
     <>
@@ -87,19 +71,28 @@ function ViewStock() {
             marginBottom: "20px",
           }}
         >
-          <input
-            type="text"
-            placeholder="Search"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              width: "50%",
-              padding: "10px",
-              border: "1px solid #ccc",
-              borderRadius: "5px",
-              fontSize: "16px",
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              fetchStock(1);
             }}
-          />
+          >
+            <input
+              type="text"
+              placeholder="Search"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+              }}
+              style={{
+                width: "50%",
+                padding: "10px",
+                border: "1px solid #ccc",
+                borderRadius: "5px",
+                fontSize: "16px",
+              }}
+            />
+          </form>
           <button
             style={{
               padding: "10px 20px",
@@ -148,6 +141,12 @@ function ViewStock() {
             <tbody>{rows}</tbody>
           </Table>
         </Paper>
+        <Pagination
+          value={activePage}
+          onChange={setCurrentPage}
+          total={totalPages}
+          style={{ marginTop: "20px", margin: "auto", width: "fit-content" }}
+        />
       </Paper>
     </>
   );

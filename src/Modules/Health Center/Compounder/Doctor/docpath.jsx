@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, Flex, Paper, Table, Text, Title } from "@mantine/core";
+import { Box, Button, Paper, Table, Text, Title } from "@mantine/core";
 import axios from "axios";
 import NavCom from "../NavCom";
 import Changenav from "./changenav";
@@ -43,17 +43,19 @@ export default function DoctorPath() {
       <Changenav />
       <br />
       <Paper shadow="xl" p="xl" withBorder>
-        <Flex display="flex" justify="space-between">
-          <Title order={4} style={{ color: "#15abff" }}>
-            Doctor's List
-          </Title>
-          <Button
-            onClick={handlePrint}
-            style={{ float: "right", backgroundColor: "#15abff" }}
-          >
-            Download
-          </Button>
-        </Flex>
+        <Title order={3} style={{ color: "#15abff", textAlign: "center" }}>
+          Doctor's List
+        </Title>
+        <Button
+          onClick={handlePrint}
+          style={{
+            float: "right",
+            backgroundColor: "#15abff",
+            marginBottom: "10px",
+          }}
+        >
+          Download
+        </Button>
 
         {doctors.map((element, index) => (
           <Table
@@ -64,9 +66,10 @@ export default function DoctorPath() {
             withColumnBorders
             withRowBorders
             striped
+            style={{ textAlign: "center" }}
           >
             <Table.Tr>
-              <Table.Td style={{ backgroundColor: "#f0f0f0" }}>
+              <Table.Td>
                 <Text fw={700}>Doctor</Text>
               </Table.Td>
               <Table.Td>
@@ -74,7 +77,7 @@ export default function DoctorPath() {
               </Table.Td>
             </Table.Tr>
             <Table.Tr>
-              <Table.Td style={{ backgroundColor: "#f0f0f0" }}>
+              <Table.Td>
                 <Text fw={700}>Specialization</Text>
               </Table.Td>
               <Table.Td>
@@ -82,13 +85,24 @@ export default function DoctorPath() {
               </Table.Td>
             </Table.Tr>
             <Table.Tr>
-              <Table.Td style={{ backgroundColor: "#f0f0f0" }}>
+              <Table.Td>
                 <Text fw={700}>Phone Number</Text>
               </Table.Td>
               <Table.Td>
-                <Text>{element.doctor_phone}</Text>
+                <Text style={{ marginRight: "10px" }}>
+                  {element.doctor_phone}
+                </Text>
               </Table.Td>
             </Table.Tr>
+
+            <Box
+              sx={{
+                height: "2px",
+                backgroundColor: "black",
+                width: "100%",
+                margin: "20px 0",
+              }}
+            />
           </Table>
         ))}
       </Paper>

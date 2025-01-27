@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, Paper, Flex } from "@mantine/core";
+import { Button, Paper, Flex, Title } from "@mantine/core";
 import axios from "axios";
 import NavCom from "../NavCom";
 import Changenav from "./changenav";
@@ -74,6 +74,16 @@ export default function Removepath() {
       <Changenav />
       <br />
       <Paper shadow="xl" p="xl" withBorder>
+        <Title
+          order={3}
+          style={{
+            textAlign: "center",
+            color: "#15abff",
+            marginBottom: "20px",
+          }}
+        >
+          Remove Pathologist
+        </Title>
         <Flex display="flex" justify="space-evenly" wrap="wrap">
           <select
             value={doctorName}
@@ -89,11 +99,7 @@ export default function Removepath() {
               </option>
             ))}
           </select>
-          <Button
-            mt="md"
-            style={{ backgroundColor: "#15abff" }}
-            onClick={handelRemove}
-          >
+          <Button style={{ backgroundColor: "#15abff" }} onClick={handelRemove}>
             Remove
           </Button>
         </Flex>
