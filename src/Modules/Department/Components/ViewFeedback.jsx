@@ -52,12 +52,20 @@ export default function ViewFeedback({ branch }) {
   }
 
   return (
-    <SpecialTable
-      title={`Feedback for ${branch}`}
-      columns={columns}
-      data={data.map(({ id, ...rest }) => rest)} // Exclude 'id' from the displayed data
-      rowOptions={["10", "15", "20"]}
-    />
+    <div
+      style={{
+        overflowX: "auto", // Enable horizontal scrolling
+        width: "100%", // Ensure the container takes the full width
+        marginTop: "10px", // Add some spacing
+      }}
+    >
+      <SpecialTable
+        title={`Feedback for ${branch}`}
+        columns={columns}
+        data={data.map(({ id, ...rest }) => rest)} // Exclude 'id' from the displayed data
+        rowOptions={["10", "15", "20"]}
+      />
+    </div>
   );
 }
 

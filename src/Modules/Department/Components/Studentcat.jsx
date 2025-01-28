@@ -127,13 +127,20 @@ function Studentcat({ branch }) {
   // Function to render the student table
   const renderStudentTable = () => {
     return (
-      <SpecialTable
-        title="Student"
-        columns={columns}
-        data={studentData}
-        // branch={branch}
-        rowOptions={["50", "60", "70"]}
-      />
+      <div
+        style={{
+          overflowX: "auto", // Enable horizontal scrolling
+          width: "100%", // Ensure the container takes the full width
+          marginTop: "10px", // Add some spacing
+        }}
+      >
+        <SpecialTable
+          title="Student"
+          columns={columns}
+          data={studentData}
+          rowOptions={["50", "60", "70"]}
+        />
+      </div>
     );
   };
 

@@ -27,12 +27,20 @@ function Alumnicat() {
     const data = studentData[category];
     return (
       <Suspense fallback={<Typography>Loading table...</Typography>}>
-        <SpecialTable
-          title="Student"
-          columns={columns}
-          data={data}
-          rowOptions={["3", "4", "6"]}
-        />
+        <div
+          style={{
+            overflowX: "auto", // Enable horizontal scrolling
+            width: "100%", // Ensure the container takes the full width
+            marginTop: "10px", // Add some spacing
+          }}
+        >
+          <SpecialTable
+            title="Student"
+            columns={columns}
+            data={data}
+            rowOptions={["3", "4", "6"]}
+          />
+        </div>
       </Suspense>
     );
   };

@@ -23,8 +23,7 @@ export default function Announcements({ branch }) {
   const authToken = localStorage.getItem("authToken");
 
   useEffect(() => {
-    const lowercaseDepartment = branch.toLowerCase();
-    fetch(`${host}/dep/api/dep-main/`, {
+    fetch(`${host}/dep/api/ann-data/${branch}/`, {
       method: "GET",
       headers: {
         Authorization: `Token ${authToken}`,
@@ -33,12 +32,13 @@ export default function Announcements({ branch }) {
     })
       .then((response) => response.json())
       .then((data) => {
-        const combinedAnnouncementsData =
-          data.announcements[lowercaseDepartment]?.map((announcement) => ({
+        // Format announcement dates
+        const formattedData =
+          data?.map((announcement) => ({
             ...announcement,
             ann_date: formatDateWithPeriod(announcement.ann_date),
           })) || [];
-        setAnnouncementsData(combinedAnnouncementsData);
+        setAnnouncementsData(formattedData);
       })
       .catch((error) => {
         console.error("Error fetching announcements data:", error);
@@ -48,43 +48,47 @@ export default function Announcements({ branch }) {
   return (
     <Suspense fallback={<p>Loading announcements...</p>}>
       <Grid>
-        {announcementsData.map((announcement) => (
-          <Grid.Col span={{ base: 12, md: 6 }} key={announcement.id}>
-            <Paper
-              radius="md"
-              px="lg"
-              pt="sm"
-              pb="xl"
-              style={{ borderLeft: "0.6rem solid #15ABFF" }}
-              withBorder
-              maw="1240px"
-            >
-              <Flex justify="space-between">
-                <Flex direction="column">
-                  <Flex gap="md">
-                    <Text fw={600} size="1.2rem" mb="0.4rem">
-                      {`${branch} Announcements`}
+        {announcementsData.length > 0 ? (
+          announcementsData.map((announcement) => (
+            <Grid.Col span={{ base: 12, md: 6 }} key={announcement.id}>
+              <Paper
+                radius="md"
+                px="lg"
+                pt="sm"
+                pb="xl"
+                style={{ borderLeft: "0.6rem solid #15ABFF" }}
+                withBorder
+                maw="1240px"
+              >
+                <Flex justify="space-between">
+                  <Flex direction="column">
+                    <Flex gap="md">
+                      <Text fw={600} size="1.2rem" mb="0.4rem">
+                        {`${branch} Announcements`}
+                      </Text>
+                    </Flex>
+                    <Text color="dimmed" size="0.7rem">
+                      {announcement.ann_date}
                     </Text>
+                    <Divider my="sm" w="10rem" />
                   </Flex>
-                  <Text color="dimmed" size="0.7rem">
-                    {announcement.ann_date}
-                  </Text>
-                  <Divider my="sm" w="10rem" />
                 </Flex>
-              </Flex>
-              <Flex justify="space-between">
-                <Text>{announcement.message || "No details available."}</Text>
-                <Text>
-                  <b>{`by ${announcement.maker_id || "Unknown"}`}</b>
-                </Text>
-              </Flex>
-              {/* <br/>
+                <Flex justify="space-between">
+                  <Text>{announcement.message || "No details available."}</Text>
+                  <Text>
+                    <b>{`by ${announcement.maker_id || "Unknown"}`}</b>
+                  </Text>
+                </Flex>
+                {/* <br/>
             <Text>
             <b>File : </b>{`${announcement.upload_announcement || "Unknown"}`}
             </Text> */}
-            </Paper>
-          </Grid.Col>
-        ))}
+              </Paper>
+            </Grid.Col>
+          ))
+        ) : (
+          <Text>No announcements available for this branch.</Text>
+        )}
       </Grid>
     </Suspense>
   );

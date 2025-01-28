@@ -67,12 +67,20 @@ function Faculty({ branch }) {
   }, [branch]);
 
   return (
-    <SpecialTable
-      title={`Faculties in ${branch} Department`}
-      columns={columns}
-      data={facultyData}
-      rowOptions={["10", "20", "30"]}
-    />
+    <div
+      style={{
+        overflowX: "auto", // Enable horizontal scrolling
+        width: "100%", // Ensure the container takes the full width
+        marginTop: "10px", // Add some spacing
+      }}
+    >
+      <SpecialTable
+        title={`Faculties in ${branch} Department`}
+        columns={columns}
+        data={facultyData}
+        rowOptions={["10", "20", "30"]}
+      />
+    </div>
   );
 }
 
