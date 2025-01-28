@@ -37,10 +37,10 @@ function AddPlacementEventForm() {
   const [endDatePickerOpened, setEndDatePickerOpened] = useState(false);
 
   // State to handle new eligibility form fields
-  const [passoutYear, setPassoutYear] = useState("");
-  const [gender, setGender] = useState("");
-  const [cpi, setCpi] = useState("");
-  const [branch, setBranch] = useState("");
+  const [passoutYear, setPassoutYear] = useState(-1);
+  const [gender, setGender] = useState("All");
+  const [cpi, setCpi] = useState(-1);
+  const [branch, setBranch] = useState("All");
 
   const [showPassoutYearInput, setShowPassoutYearInput] = useState(false);
   const [showGenderSelect, setShowGenderSelect] = useState(false);
@@ -79,6 +79,10 @@ function AddPlacementEventForm() {
     formData.append("location", location);
     formData.append("role", jobrole);
     formData.append("eligibility", eligibility.join(", "));
+    formData.append("passoutyr",passoutYear);
+    formData.append("gender",gender);
+    formData.append("cpi",cpi);
+    formData.append("branch",branch);
 
     // if (resumeFile) {
     //   formData.append("resume", resumeFile);
