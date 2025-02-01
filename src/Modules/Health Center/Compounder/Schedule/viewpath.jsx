@@ -80,7 +80,7 @@ function Viewpath() {
       <NavCom />
       <ScheduleNavBar />
       <br />
-      <Paper shadow="xl" p="xl" withBorder>
+      <Paper shadow="xl" p="sm" withBorder>
         <Title
           order={3}
           style={{
@@ -99,7 +99,7 @@ function Viewpath() {
         ) : (
           <table
             style={{
-              width: "100%",
+              width: "80%",
               borderCollapse: "collapse",
               border: "1px solid #ccc",
               textAlign: "center",

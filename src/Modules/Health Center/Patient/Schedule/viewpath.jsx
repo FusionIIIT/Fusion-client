@@ -77,7 +77,7 @@ function Pathologist() {
       <NavPatient />
       <ScheduleNavBar />
       <br />
-      <Paper shadow="xl" p="xl" withBorder>
+      <Paper shadow="xl" p="sm" withBorder>
         <Title
           order={3}
           style={{

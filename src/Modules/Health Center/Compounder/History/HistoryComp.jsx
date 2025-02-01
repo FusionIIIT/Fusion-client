@@ -2,7 +2,14 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { NavLink } from "react-router-dom";
-import { Pagination, Paper, Table, TextInput, Title } from "@mantine/core";
+import {
+  Button,
+  Pagination,
+  Paper,
+  Table,
+  TextInput,
+  Title,
+} from "@mantine/core";
 import { Download } from "@phosphor-icons/react";
 import NavCom from "../NavCom";
 import HistoryNavBar from "./historyPath";
@@ -68,7 +75,7 @@ function HistoryCompounder() {
             fontWeight: "bold",
           }}
         >
-          {element.prescription}
+          <Button>View</Button>
         </NavLink>
       </td>
     </tr>

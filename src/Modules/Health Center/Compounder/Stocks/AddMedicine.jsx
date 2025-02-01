@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   TextInput,
   Button,
@@ -8,12 +8,52 @@ import {
   FileInput,
   Grid,
 } from "@mantine/core";
+import axios from "axios";
 import { DownloadSimple } from "@phosphor-icons/react";
 import NavCom from "../NavCom";
 import ManageStock from "./ManageStocksNav";
 import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import { compounderRoute } from "../../../../routes/health_center";
 
 function AddMedicine() {
+  const [submit, setSubmit] = useState(false);
+  const [med, setMed] = useState("");
+  const [thres, setthres] = useState("");
+  const [brand, setBrand] = useState("");
+  const [constit, setconstit] = useState("");
+  const [manu, setmanu] = useState("");
+  const [pack, setpack] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    setSubmit(true);
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.post(
+        compounderRoute,
+        {
+          new_medicine: med,
+          threshold: thres,
+          brand_name: brand,
+          constituents: constit,
+          manufacture_name: manu,
+          packsize: pack,
+          add_medicine: 1,
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      console.log(response.data);
+      setSubmit(false);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   return (
     <>
       <CustomBreadcrumbs />
@@ -68,13 +108,15 @@ function AddMedicine() {
         <Divider my="lg" label="OR" labelPosition="center" />
 
         {/* Medicine Details Form */}
-        <form>
+        <form onSubmit={handleSubmit}>
           <Grid gutter="sm">
             <Grid.Col span={6}>
               <TextInput
                 label="Medicine Name"
                 placeholder="Enter medicine name"
                 required
+                value={med}
+                onChange={(e) => setMed(e.target.value)}
               />
             </Grid.Col>
 
@@ -83,6 +125,8 @@ function AddMedicine() {
                 label="Threshold"
                 placeholder="Enter threshold value"
                 required
+                value={thres}
+                onChange={(e) => setthres(e.target.value)}
               />
             </Grid.Col>
 
@@ -91,6 +135,8 @@ function AddMedicine() {
                 label="Brand Name"
                 placeholder="Enter brand name"
                 required
+                value={brand}
+                onChange={(e) => setBrand(e.target.value)}
               />
             </Grid.Col>
 
@@ -99,6 +145,8 @@ function AddMedicine() {
                 label="Constituents"
                 placeholder="Enter constituents"
                 required
+                value={constit}
+                onChange={(e) => setconstit(e.target.value)}
               />
             </Grid.Col>
 
@@ -107,6 +155,8 @@ function AddMedicine() {
                 label="Manufacturer Name"
                 placeholder="Enter manufacturer name"
                 required
+                value={manu}
+                onChange={(e) => setmanu(e.target.value)}
               />
             </Grid.Col>
 
@@ -115,6 +165,8 @@ function AddMedicine() {
                 label="Pack Size"
                 placeholder="Enter pack size"
                 required
+                value={pack}
+                onChange={(e) => setpack(e.target.value)}
               />
             </Grid.Col>
           </Grid>
@@ -129,7 +181,7 @@ function AddMedicine() {
                 display: "block",
               }}
             >
-              Submit
+              {submit ? "Submitting..." : "Submit"}
             </Button>
           </Group>
         </form>

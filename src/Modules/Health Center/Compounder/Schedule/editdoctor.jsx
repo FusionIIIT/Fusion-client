@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Alert, Paper, Text, Title } from "@mantine/core";
+import { Alert, Button, Paper, Text, Title } from "@mantine/core";
 import { Check, X } from "@phosphor-icons/react";
 import NavCom from "../NavCom";
 import ScheduleNavBar from "./schedulePath";
@@ -35,7 +35,8 @@ function Editdoctor() {
     padding: "20px",
     borderRadius: "10px",
     boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-    flex: "1",
+    display: "flex",
+    flexDirection: "column",
     minWidth: "300px",
   };
 
@@ -254,30 +255,37 @@ function Editdoctor() {
             </div>
 
             <div style={formGroupStyle}>
-              <input
-                type="time"
-                value={timeIn}
-                onChange={(e) => setTimeIn(e.target.value)}
-                placeholder="Time In"
-                style={{ marginRight: "10px", marginBottom: "10px" }}
-              />
-              <input
-                type="time"
-                value={timeOut}
-                onChange={(e) => setTimeOut(e.target.value)}
-                placeholder="Time Out"
-                style={{ marginRight: "10px", marginBottom: "10px" }}
-              />
-              <input
-                type="number"
-                placeholder="Room No"
-                style={{ marginRight: "10px", marginBottom: "10px" }}
-                value={roomToAdd}
-                onChange={(e) => setRoom(e.target.value)}
-              />
-              <button style={buttonStyle} onClick={editSchedule}>
-                {submit ? "Adding..." : "Add Schedule"}
-              </button>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <div>
+                  {" "}
+                  <input
+                    type="time"
+                    value={timeIn}
+                    onChange={(e) => setTimeIn(e.target.value)}
+                    placeholder="Time In"
+                    style={{ marginRight: "10px", marginBottom: "10px" }}
+                  />
+                  <input
+                    type="time"
+                    value={timeOut}
+                    onChange={(e) => setTimeOut(e.target.value)}
+                    placeholder="Time Out"
+                    style={{ marginRight: "10px", marginBottom: "10px" }}
+                  />
+                </div>
+                <div>
+                  <input
+                    type="number"
+                    placeholder="Room No"
+                    style={{ marginRight: "10px", marginBottom: "10px" }}
+                    value={roomToAdd}
+                    onChange={(e) => setRoom(e.target.value)}
+                  />
+                  <Button style={buttonStyle} onClick={editSchedule}>
+                    {submit ? "Adding..." : "Add Schedule"}
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -324,9 +332,9 @@ function Editdoctor() {
                   </option>
                 ))}
               </select>
-              <button style={buttonStyle} onClick={removeSchedule}>
+              <Button style={buttonStyle} onClick={removeSchedule}>
                 {submit ? "Removing..." : "Remove Schedule"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

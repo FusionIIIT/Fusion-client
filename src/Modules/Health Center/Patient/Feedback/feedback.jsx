@@ -61,14 +61,7 @@ function Feedback() {
               The Feedback Form
             </Title>
             <br />
-            <form
-              onSubmit={handleSubmit}
-              // onClick={() =>
-              //   notifications.show({
-              //     message: "Feedback submitted successfully",
-              //   })
-              // }
-            >
+            <form onSubmit={handleSubmit}>
               <Textarea
                 placeholder="Enter your feedback"
                 autosize

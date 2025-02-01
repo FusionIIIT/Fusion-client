@@ -30,30 +30,6 @@ function Inbox() {
     }
   };
 
-  // const elements = [
-  //   {
-  //     id: "Atul",
-  //     date: "11/09/2024",
-  //     description: "Application",
-  //     file: "",
-  //     status: "View",
-  //   },
-  //   {
-  //     id: "22bcs219",
-  //     date: "11/09/2024",
-  //     description: "Testing PHC",
-  //     file: "",
-  //     status: "Approved",
-  //   },
-  //   {
-  //     id: "Sahil",
-  //     date: "12/09/2024",
-  //     description: "Fever",
-  //     file: "",
-  //     status: "Approved",
-  //   },
-  // ];
-
   const handleStatusClick = (id, status) => {
     if (status === "Pending") {
       navigate(`/healthcenter/compounder/medical-relief/application/${id}`);

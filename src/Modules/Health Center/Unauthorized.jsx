@@ -40,6 +40,4 @@ function Unauthorized() {
   );
 }
 
-// Optional inline styling for a better user experience
-
 export default Unauthorized;

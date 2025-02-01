@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import React, { useEffect, useState } from "react";
-import { Paper } from "@mantine/core";
+import { Button, Paper } from "@mantine/core";
 import axios from "axios";
 import NavCom from "../NavCom";
 import ScheduleNavBar from "./schedulePath";
@@ -203,30 +203,36 @@ function Editpath() {
               </select>
             </div>
             <div style={formGroupStyle}>
-              <input
-                type="time"
-                value={timeIn}
-                onChange={(e) => setTimeIn(e.target.value)}
-                placeholder="Time In"
-                style={{ marginRight: "10px", marginBottom: "10px" }}
-              />
-              <input
-                type="time"
-                value={timeOut}
-                onChange={(e) => setTimeOut(e.target.value)}
-                placeholder="Time Out"
-                style={{ marginRight: "10px", marginBottom: "10px" }}
-              />
-              <input
-                type="number"
-                placeholder="Room No"
-                style={{ marginRight: "10px", marginBottom: "10px" }}
-                value={roomToAdd}
-                onChange={(e) => setRoom(e.target.value)}
-              />
-              <button style={buttonStyle} onClick={editSchedule}>
-                Add Schedule
-              </button>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <div>
+                  <input
+                    type="time"
+                    value={timeIn}
+                    onChange={(e) => setTimeIn(e.target.value)}
+                    placeholder="Time In"
+                    style={{ marginRight: "10px", marginBottom: "10px" }}
+                  />
+                  <input
+                    type="time"
+                    value={timeOut}
+                    onChange={(e) => setTimeOut(e.target.value)}
+                    placeholder="Time Out"
+                    style={{ marginRight: "10px", marginBottom: "10px" }}
+                  />
+                </div>
+                <div>
+                  <input
+                    type="number"
+                    placeholder="Room No"
+                    style={{ marginRight: "10px", marginBottom: "10px" }}
+                    value={roomToAdd}
+                    onChange={(e) => setRoom(e.target.value)}
+                  />
+                  <Button style={buttonStyle} onClick={editSchedule}>
+                    Add Schedule
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -269,9 +275,9 @@ function Editpath() {
                   </option>
                 ))}
               </select>
-              <button style={buttonStyle} onClick={removeSchedule}>
+              <Button style={buttonStyle} onClick={removeSchedule}>
                 Remove Schedule
-              </button>
+              </Button>
             </div>
           </div>
         </div>

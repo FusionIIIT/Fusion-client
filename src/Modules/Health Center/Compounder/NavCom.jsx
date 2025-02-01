@@ -61,10 +61,12 @@ function NavCom() {
   const navbarStyle = {
     tabsContainer: {
       display: "flex",
-      justifyContent: "space-between",
+      flexDirection: "row",
+      width: "100%",
       alignItems: "center",
-      marginTop: "16px",
+      marginTop: "1px",
       flexWrap: "wrap",
+      justifyContent: "space-between",
     },
     button: {
       padding: 0,
