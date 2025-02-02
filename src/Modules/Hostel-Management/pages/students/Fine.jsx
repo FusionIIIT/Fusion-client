@@ -33,14 +33,20 @@ export default function Fines() {
         headers: { Authorization: `Token ${token}` },
       });
 
-      if (response.data && response.data.student_fines) {
+      if (response.data.student_fines) {
         setFines(response.data.student_fines);
+      }
+      // ✅ Handle case when no fines are imposed
+      else if (response.data.message === "There is no fine imposed on you.") {
+        setFines([]); // No fines to display
       } else {
-        setError("No fines found for this user.");
+        setError("Unexpected response from the server.");
       }
     } catch (err) {
+      console.log(err);
       setError(
-        err.response?.data?.message ||
+        err.response?.data?.error ||
+          err.response?.data?.message ||
           "Failed to fetch fines. Please try again later.",
       );
     } finally {
