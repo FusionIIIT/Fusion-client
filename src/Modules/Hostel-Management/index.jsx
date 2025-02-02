@@ -5,6 +5,7 @@ import SectionNavigationStudent from "./pages/SectionNavigationStudent";
 import SectionNavigationAdmin from "./pages/SectionNavigationAdmin";
 import SectionNavigationWarden from "./pages/SectionNavigationWarden";
 import SectionNavigationCaretaker from "./pages/SectionNavigationCaretaker";
+import { UploadAttendance2 } from "./pages/caretaker/UploadAttendancePage";
 
 function HostelPage() {
   const userRole = useSelector((state) => state.user.role);
@@ -33,6 +34,7 @@ function HostelPage() {
   return (
     <div>
       <CustomBreadcrumbs />
+      <UploadAttendance2 />
       {renderSectionNavigation()}
     </div>
   );
