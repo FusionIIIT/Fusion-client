@@ -1,23 +1,28 @@
+import {
+  Paper,
+  TextInput,
+  Button,
+  Title,
+  Container,
+  Stack,
+} from "@mantine/core";
+import { Upload } from "@phosphor-icons/react";
+import { useState } from "react";
 
-
-import { Paper, TextInput, Button, Title, Container, Stack } from "@mantine/core"
-import { Upload } from "@phosphor-icons/react"
-import { useState } from "react"
-
-export default function UploadAttendance() {
-  const [file, setFile] = useState(null)
+export default function UploadAttendanceComponent() {
+  const [file, setFile] = useState(null);
 
   const handleFileChange = (event) => {
     if (event.target.files && event.target.files[0]) {
-      setFile(event.target.files[0])
+      setFile(event.target.files[0]);
     }
-  }
+  };
 
   const handleSubmit = (event) => {
-    event.preventDefault()
+    event.preventDefault();
     // Handle form submission here
-    console.log("Form submitted")
-  }
+    console.log("Form submitted");
+  };
 
   return (
     <Container size="sm" px="xs">
@@ -97,5 +102,5 @@ export default function UploadAttendance() {
         </form>
       </Paper>
     </Container>
-  )
+  );
 }
