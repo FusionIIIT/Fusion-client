@@ -5,17 +5,42 @@ import {
   Title,
   Container,
   Stack,
+  Select,
 } from "@mantine/core";
 import { Upload } from "@phosphor-icons/react";
 import { useState } from "react";
 
 export default function UploadAttendanceComponent() {
   const [file, setFile] = useState(null);
+  const [year, setYear] = useState(null);
+  const [month, setMonth] = useState(null);
+
+  // Example range of years
+  const years = Array.from({ length: 10 }, (_, i) => 2020 + i);
+
+  // Static months data
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
 
   const handleFileChange = (event) => {
     if (event.target.files && event.target.files[0]) {
       setFile(event.target.files[0]);
     }
+  };
+  const handleYearChange = (selectedYear) => {
+    setYear(selectedYear); // Set the year state correctly
   };
 
   const handleSubmit = (event) => {
@@ -33,15 +58,35 @@ export default function UploadAttendanceComponent() {
 
         <form onSubmit={handleSubmit}>
           <Stack spacing="md">
-            <TextInput
-              label="Month:"
-              placeholder="feb,2025"
+            {/* Year Dropdown */}
+            <Select
+              label="Year"
+              placeholder="Select year"
+              data={years.map((yr) => yr.toString())} // Map to string for display
               required
+              value={year}
+              onChange={handleYearChange} // Use the updated handler
               styles={{
                 label: { fontSize: "1rem", fontWeight: 500 },
               }}
             />
 
+            {/* Month Dropdown */}
+            {year && (
+              <Select
+                label="Month"
+                placeholder="Select month"
+                data={months}
+                required
+                value={month}
+                onChange={(selectedMonth) => setMonth(selectedMonth)}
+                styles={{
+                  label: { fontSize: "1rem", fontWeight: 500 },
+                }}
+              />
+            )}
+
+            {/* Hall Name */}
             <TextInput
               label="Hall Name:"
               placeholder="Vashishtha"
@@ -51,6 +96,7 @@ export default function UploadAttendanceComponent() {
               }}
             />
 
+            {/* Batch */}
             <TextInput
               label="Batch:"
               placeholder="2022"
@@ -61,9 +107,10 @@ export default function UploadAttendanceComponent() {
             />
 
             <Title order={3} size="h4" mt="md">
-              Upload Attendance
+              Upload Attendance Document
             </Title>
 
+            {/* File Input */}
             <input
               type="file"
               id="file"
@@ -76,25 +123,20 @@ export default function UploadAttendanceComponent() {
               component="label"
               htmlFor="file"
               variant="filled"
-              color="dark"
+              color="blue"
               leftIcon={<Upload size={20} />}
               fullWidth
-              styles={{
-                root: { backgroundColor: "#1a1b1e" },
-              }}
             >
               {file ? file.name : "Attach Document"}
             </Button>
 
+            {/* Submit Button */}
             <Button
               type="submit"
               variant="filled"
-              color="dark"
+              color="blue"
               fullWidth
               mt="xl"
-              styles={{
-                root: { backgroundColor: "#1a1b1e" },
-              }}
             >
               Submit
             </Button>
