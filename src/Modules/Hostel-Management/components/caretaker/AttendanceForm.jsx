@@ -1,24 +1,71 @@
 import {
   Paper,
-  TextInput,
   Button,
   Title,
   Container,
   Stack,
   Select,
+  Text,
 } from "@mantine/core";
 import { Upload } from "@phosphor-icons/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { viewHostel } from "../../../../routes/hostelManagementRoutes";
 
 export default function UploadAttendanceComponent() {
   const [file, setFile] = useState(null);
   const [year, setYear] = useState(null);
   const [month, setMonth] = useState(null);
+  const [selectedHall, setSelectedHall] = useState("");
+  const [selectedBatch, setSelectedBatch] = useState("");
+  const [hostelsData, setHostelsData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Example range of years
-  const years = Array.from({ length: 10 }, (_, i) => 2020 + i);
+  useEffect(() => {
+    const fetchHostels = async () => {
+      try {
+        const response = await fetch(viewHostel, {
+          headers: {
+            Authorization: `Token ${localStorage.getItem("authToken")}`,
+            "Content-Type": "application/json",
+          },
+        });
 
-  // Static months data
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+
+        const data = await response.json();
+        setHostelsData(data.hostel_details);
+        if (data.hostel_details.length > 0) {
+          setSelectedHall(data.hostel_details[0].hall_id);
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching hostel data:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchHostels();
+  }, []);
+
+  // Get data of the selected hall
+  const selectedHallData = hostelsData.find((h) => h.hall_id === selectedHall);
+
+  // Reset batch when hall changes
+  useEffect(() => {
+    setSelectedBatch("");
+  }, [selectedHall]);
+
+  if (loading) {
+    return (
+      <Text align="center" mt="xl">
+        Loading...
+      </Text>
+    );
+  }
+
+  const years = Array.from({ length: 10 }, (_, i) => 2025 + i);
   const months = [
     "January",
     "February",
@@ -39,14 +86,28 @@ export default function UploadAttendanceComponent() {
       setFile(event.target.files[0]);
     }
   };
+
   const handleYearChange = (selectedYear) => {
-    setYear(selectedYear); // Set the year state correctly
+    setYear(selectedYear);
+  };
+
+  const handleHallChange = (newHallId) => {
+    setSelectedHall(newHallId);
+  };
+
+  const handleBatchChange = (newBatch) => {
+    setSelectedBatch(newBatch);
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    // Handle form submission here
-    console.log("Form submitted");
+    console.log({
+      year,
+      month,
+      selectedHall,
+      selectedBatch,
+      file,
+    });
   };
 
   return (
@@ -58,20 +119,18 @@ export default function UploadAttendanceComponent() {
 
         <form onSubmit={handleSubmit}>
           <Stack spacing="md">
-            {/* Year Dropdown */}
             <Select
               label="Year"
               placeholder="Select year"
-              data={years.map((yr) => yr.toString())} // Map to string for display
+              data={years.map((yr) => yr.toString())}
               required
               value={year}
-              onChange={handleYearChange} // Use the updated handler
+              onChange={handleYearChange}
               styles={{
                 label: { fontSize: "1rem", fontWeight: 500 },
               }}
             />
 
-            {/* Month Dropdown */}
             {year && (
               <Select
                 label="Month"
@@ -86,31 +145,44 @@ export default function UploadAttendanceComponent() {
               />
             )}
 
-            {/* Hall Name */}
-            <TextInput
-              label="Hall Name:"
-              placeholder="Vashishtha"
-              required
-              styles={{
-                label: { fontSize: "1rem", fontWeight: 500 },
-              }}
-            />
+            {month && (
+              <Select
+                label="Hall"
+                data={hostelsData.map((hostelData) => ({
+                  value: hostelData.hall_id,
+                  label: hostelData.hall_name,
+                }))}
+                placeholder="Select Hall"
+                required
+                value={selectedHall}
+                onChange={handleHallChange}
+                styles={{
+                  label: { fontSize: "1rem", fontWeight: 500 },
+                }}
+              />
+            )}
 
-            {/* Batch */}
-            <TextInput
-              label="Batch:"
-              placeholder="2022"
-              required
-              styles={{
-                label: { fontSize: "1rem", fontWeight: 500 },
-              }}
-            />
+            {selectedHallData && selectedHallData.assigned_batch && (
+              <Select
+                label="Batch"
+                placeholder="Select Batch"
+                data={selectedHallData.assigned_batch.map((batch) => ({
+                  value: batch,
+                  label: batch,
+                }))}
+                required
+                value={selectedBatch}
+                onChange={handleBatchChange}
+                styles={{
+                  label: { fontSize: "1rem", fontWeight: 500 },
+                }}
+              />
+            )}
 
             <Title order={3} size="h4" mt="md">
               Upload Attendance Document
             </Title>
 
-            {/* File Input */}
             <input
               type="file"
               id="file"
@@ -130,7 +202,6 @@ export default function UploadAttendanceComponent() {
               {file ? file.name : "Attach Document"}
             </Button>
 
-            {/* Submit Button */}
             <Button
               type="submit"
               variant="filled"
