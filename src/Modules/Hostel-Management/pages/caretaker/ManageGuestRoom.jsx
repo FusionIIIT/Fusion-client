@@ -1,61 +1,62 @@
-import React from "react";
-import {
-  Text,
-  Paper,
-  Group,
-  Avatar,
-  Button,
-  Stack,
-  Flex,
-  ScrollArea,
-  Badge,
-} from "@mantine/core";
-import {
-  CalendarBlank,
-  CheckCircle,
-  XCircle,
-  Bed,
-} from "@phosphor-icons/react";
+import React, { useState, useEffect } from "react";
+import { Paper, Group, Text, Stack, Select, ScrollArea, Loader, Container } from "@mantine/core";
+import GuestRoomBookingCard from "../../components/students/GuestRoomBookingCard";
+import axios from "axios";
+import { show_guestroom_booking_request } from "../../../../routes/hostelManagementRoutes";
 
-const guestRoomRequests = [
-  {
-    id: "1",
-    name: "Rahul Sharma",
-    roomType: "Single",
-    checkIn: "2023-06-20",
-    checkOut: "2023-06-22",
-  },
-  {
-    id: "2",
-    name: "Priya Patel",
-    roomType: "Double",
-    checkIn: "2023-06-23",
-    checkOut: "2023-06-25",
-  },
-  {
-    id: "3",
-    name: "Amit Kumar",
-    roomType: "Single",
-    checkIn: "2023-06-26",
-    checkOut: "2023-06-28",
-  },
-  {
-    id: "4",
-    name: "Sneha Gupta",
-    roomType: "Double",
-    checkIn: "2023-06-29",
-    checkOut: "2023-07-01",
-  },
-];
+export default function GuestRoomBookingStatus() {
+  const [guestBookings, setGuestBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-export default function ManageGuestRoomRequest() {
-  const handleApprove = (id) => {
-    console.log(`Approved guest room request for id: ${id}`);
+  const fetchGuestBookings = async () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      setError("Authentication token not found. Please login again.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await axios.get(show_guestroom_booking_request, {
+        headers: { Authorization: `Token ${token}` },
+      });
+      setGuestBookings(Array.isArray(response.data) ? response.data : []);
+      console.log(guestBookings);
+      setError(null);
+    } catch (e) {
+      console.error("Error fetching guest room bookings:", e);
+      setError(
+        e.response?.data?.message ||
+          "Failed to fetch guest room bookings. Please try again later."
+      );
+      setGuestBookings([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDecline = (id) => {
-    console.log(`Declined guest room request for id: ${id}`);
-  };
+  useEffect(() => {
+    fetchGuestBookings();
+  }, []);
+
+  const renderBookingCards = (bookings, filterStatus) =>
+    bookings
+      .filter((booking) => booking.status === filterStatus)
+      .map((booking) => (
+        <GuestRoomBookingCard
+          key={booking.id}
+          roomType={booking.room_type}
+          roomSize={`${booking.room_size} sq m`}
+          checkInDate={booking.arrival_date}
+          checkOutDate={booking.departure_date}
+          bookingDate={booking.booking_date}
+          paymentStatus={booking.payment_status}
+          totalAmount={booking.total_amount}
+          guestName={booking.guest_name}
+          leaveStatus={booking.status}
+        />
+      ));
 
   return (
     <Paper
@@ -73,96 +74,85 @@ export default function ManageGuestRoomRequest() {
         borderRadius: theme.radius.md,
       })}
     >
-      <Text
-        align="left"
-        mb="xl"
-        size="24px"
-        style={{ color: "#757575", fontWeight: "bold" }}
-      >
-        Manage Guest Room Request
-      </Text>
+      <ScrollArea style={{ flex: 1 }}>
+        <Text
+          align="left"
+          mb="xl"
+          size="24px"
+          style={{ color: "#757575", fontWeight: "bold" }}
+        >
+          Guest Room Booking Status
+        </Text>
 
-      <ScrollArea style={{ flex: 1, height: "calc(66vh)" }}>
-        <Stack spacing="md" pb="md">
-          {guestRoomRequests.map((request) => (
-            <Paper
-              key={request.id}
-              p="md"
-              withBorder
-              shadow="xs"
-              sx={(theme) => ({
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                backgroundColor: theme.white,
-                borderColor: theme.colors.gray[3],
-              })}
-            >
-              <Flex
-                align="center"
-                justify="space-between"
-                style={{ width: "100%" }}
-              >
-                <Group spacing="md">
-                  <Avatar color="blue" radius="xl">
-                    {request.name[0]}
-                  </Avatar>
-                  <div>
-                    <Text weight={500} size="sm" lineClamp={1}>
-                      {request.name}
-                    </Text>
-                    <Badge
-                      size="sm"
-                      variant="outline"
-                      color="blue"
-                      leftSection={<Bed size={12} />}
-                    >
-                      {request.roomType}
-                    </Badge>
-                  </div>
+        {loading ? (
+          <Container
+            py="xl"
+            style={{ display: "flex", justifyContent: "center" }}
+          >
+            <Loader size="lg" />
+          </Container>
+        ) : error ? (
+          <Text align="center" color="red" size="lg">
+            {error}
+          </Text>
+        ) : guestBookings.length > 0 ? (
+          <Stack spacing="xl">
+            <Stack spacing="md">
+              <Group position="apart" align="center">
+                <Text weight={500} size="xl" color="dimmed">
+                  Active Bookings
+                </Text>
+                <Group spacing="xs">
+                  <Text size="sm" color="dimmed">
+                    Sort By:
+                  </Text>
+                  <Select
+                    placeholder="Date"
+                    data={[
+                      { value: "checkInDate", label: "Check-in Date" },
+                      { value: "bookingDate", label: "Booking Date" },
+                      { value: "roomType", label: "Room Type" },
+                    ]}
+                    style={{ width: "100px" }}
+                    variant="unstyled"
+                    size="sm"
+                  />
                 </Group>
-                <Group spacing="md">
-                  <Flex direction="column" align="flex-start">
-                    <Group spacing="xs">
-                      <CalendarBlank size={16} />
-                      <Text size="xs" color="dimmed">
-                        Check-in:
-                      </Text>
-                      <Text size="sm">{request.checkIn}</Text>
-                    </Group>
-                    <Group spacing="xs">
-                      <CalendarBlank size={16} />
-                      <Text size="xs" color="dimmed">
-                        Check-out:
-                      </Text>
-                      <Text size="sm">{request.checkOut}</Text>
-                    </Group>
-                  </Flex>
-                  <Group spacing="xs">
-                    <Button
-                      leftIcon={<CheckCircle size={16} />}
-                      color="green"
-                      variant="outline"
-                      size="xs"
-                      onClick={() => handleApprove(request.id)}
-                    >
-                      Approve
-                    </Button>
-                    <Button
-                      leftIcon={<XCircle size={16} />}
-                      color="red"
-                      variant="outline"
-                      size="xs"
-                      onClick={() => handleDecline(request.id)}
-                    >
-                      Decline
-                    </Button>
-                  </Group>
+              </Group>
+              {renderBookingCards(guestBookings, "confirmed")}
+            </Stack>
+
+            <Stack spacing="md">
+              <Group position="apart" align="center">
+                <Text weight={500} size="xl" color="dimmed">
+                  Past Bookings
+                </Text>
+                <Group spacing="xs">
+                  <Text size="sm" color="dimmed">
+                    Sort By:
+                  </Text>
+                  <Select
+                    placeholder="Date"
+                    data={[
+                      { value: "checkInDate", label: "Check-in Date" },
+                      { value: "bookingDate", label: "Booking Date" },
+                      { value: "roomType", label: "Room Type" },
+                    ]}
+                    style={{ width: "100px" }}
+                    variant="unstyled"
+                    size="sm"
+                  />
                 </Group>
-              </Flex>
-            </Paper>
-          ))}
-        </Stack>
+              </Group>
+              {renderBookingCards(guestBookings, "completed")}
+              {renderBookingCards(guestBookings, "cancelled")}
+            </Stack>
+          </Stack>
+        ) : (
+          <Text align="center" size="lg">
+            No guest room bookings found.
+          </Text>
+        )}
       </ScrollArea>
     </Paper>
   );

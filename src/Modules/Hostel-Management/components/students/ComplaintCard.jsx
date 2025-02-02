@@ -9,29 +9,38 @@ import {
   Stack,
 } from "@mantine/core";
 
+// Default properties for the ComplaintCard component
 const defaultProps = {
-  label: "Default Label",
-  date: "",
-  location: "",
-  description: "",
+  hall_name: "Unknown Hall",
+  student_name: "Unknown Name",
+  roll_number: "Unknown Roll Number",
+  description: "No description provided",
+  contact_number: "Not Available",
   status: "Pending",
 };
 
 export default function ComplaintCard(props) {
-  const { label, date, location, description, status } = {
-    ...defaultProps,
-    ...props,
-  };
-
+  // Determine badge color based on status
   const getStatusColor = (status) => {
     switch (status.toLowerCase()) {
-      case 'resolved':
-        return 'green';
-      case 'pending':
-        return 'yellow';
+      case "resolved":
+        return "green";
+      case "pending":
+        return "yellow";
       default:
-        return 'gray';
+        return "gray";
     }
+  };
+  const {
+    hall_name,
+    student_name,
+    roll_number,
+    description,
+    contact_number,
+    status,
+  } = {
+    ...defaultProps,
+    ...props,
   };
 
   return (
@@ -47,43 +56,51 @@ export default function ComplaintCard(props) {
       })}
     >
       <Stack spacing="md">
+        {/* Top section: Student name and status */}
         <Group position="apart" align="center">
           <Text weight={700} size="lg">
-            {label || "No Label"}
+            {student_name}
           </Text>
-          <Badge 
-            color={getStatusColor(status)} 
-            variant="filled" 
+          <Badge
+            color={getStatusColor(status)}
+            variant="filled"
             size="lg"
-            style={{ minWidth: '100px', textAlign: 'center' }}
+            style={{ minWidth: "100px", textAlign: "center" }}
           >
             {status}
           </Badge>
         </Group>
+
+        {/* Middle section: Hall name, Roll number, and Contact */}
         <Group grow>
-          <TextInput 
-            label="Date"
-            placeholder="Enter date" 
-            value={date} 
-            size="md" 
-          />
-          <TextInput 
-            label="Location"
-            placeholder="Enter location" 
-            value={location} 
-            size="md" 
+          <TextInput label="Hall Name" value={hall_name} size="md" readOnly />
+          <TextInput
+            label="Roll Number"
+            value={roll_number}
+            size="md"
+            readOnly
           />
         </Group>
+
+        <TextInput
+          label="Contact Number"
+          value={contact_number}
+          size="md"
+          readOnly
+        />
+
+        {/* Bottom section: Description */}
         <Textarea
           label="Description"
-          placeholder="Enter description"
           value={description}
           size="md"
           minRows={3}
+          readOnly
         />
       </Stack>
     </Box>
   );
 }
 
+// Set default props for the component
 ComplaintCard.defaultProps = defaultProps;

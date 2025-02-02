@@ -1,90 +1,153 @@
-import React from "react";
-import { Box, Paper, Button, Group, Text, Stack, Select, ScrollArea } from "@mantine/core";
-import FineCard from "../../components/students/FineCard"; // Assuming FineCard is in the same directory
+import React, { useState, useEffect } from "react";
+import {
+  Paper,
+  Text,
+  Stack,
+  ScrollArea,
+  Loader,
+  Group,
+  Alert,
+} from "@mantine/core";
+import axios from "axios";
+import FineCard from "../../components/students/FineCard";
+import { fine_show } from "../../../../routes/hostelManagementRoutes"; // Adjust this import path if necessary
 
 export default function Fines() {
+  const [fines, setFines] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const token = localStorage.getItem("authToken"); // Get the auth token from local storage
+
+  const fetchFines = async () => {
+    if (!token) {
+      setError("Authentication token not found. Please log in again.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // Fetch fines from the backend
+      const response = await axios.get(fine_show, {
+        headers: { Authorization: `Token ${token}` },
+      });
+
+      if (response.data && response.data.student_fines) {
+        setFines(response.data.student_fines);
+      } else {
+        setError("No fines found for this user.");
+      }
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          "Failed to fetch fines. Please try again later.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFines(); // Fetch fines on component mount
+  }, []);
+
+  if (loading) {
+    return (
+      <Group position="center" style={{ height: "100%" }}>
+        <Loader size="md" />
+      </Group>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert title="Error" color="red">
+        {error}
+      </Alert>
+    );
+  }
+
+  const activeFines = fines.filter((fine) => fine.status === "Pending");
+  const pastFines = fines.filter((fine) => fine.status === "Paid");
+
   return (
-   <Paper
+    <Paper
       shadow="md"
       p="md"
       withBorder
       sx={(theme) => ({
-        position: 'fixed',
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
+        position: "fixed",
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
         backgroundColor: theme.white,
         border: `1px solid ${theme.colors.gray[3]}`,
         borderRadius: theme.radius.md,
       })}
     >
-      <Group position="apart" style={{ width: "100%" }} mb="lg">
-        <Text 
-          align="left" 
-          mb="xl" 
-          size="24px" 
-          style={{ color: '#757575', fontWeight: 'bold' }}
+      <Group position="apart" style={{ width: "100%" }} mb="xl">
+        <Text
+          align="left"
+          size="24px"
+          style={{ color: "#757575", fontWeight: "bold" }}
         >
           My Fines
         </Text>
       </Group>
 
       <ScrollArea style={{ flex: 1 }}>
-        <Stack spacing="md">
+        <Stack spacing="lg">
+          {/* Active Fines */}
           <Group position="apart" align="center">
-            <Text weight={500} size="xl">Active Fines</Text>
-            <Group spacing="xs">
-              <Text size="lg" color="dimmed">
-                Sort By:
-              </Text>
-              <Select
-                placeholder="Date"
-                data={[{ value: "date", label: "Date" }]}
-                style={{ width: "100px" }}
-                variant="unstyled"
-                size="lg"
-              />
-            </Group>
+            <Text weight={500} size="xl">
+              Active Fines
+            </Text>
           </Group>
-          
-          <FineCard
-            amount={5000}
-            hall="Hall-1"
-            details="Details"
-            reason="Reason"
-          />
-
-          <Group position="apart" align="center" mt="lg">
-            <Text weight={500} size="xl">Past Fines' History</Text>
-            <Group spacing="xs">
-              <Text size="lg" color="dimmed">
-                Sort By:
-              </Text>
-              <Select
-                placeholder="Date"
-                data={[{ value: "date", label: "Date" }]}
-                style={{ width: "100px" }}
-                variant="unstyled"
-                size="lg"
+          {activeFines.length > 0 ? (
+            activeFines.map((fine) => (
+              <FineCard
+                key={fine.fine_id}
+                fine_id={fine.fine_id}
+                student_name={fine.student_name}
+                hall={fine.hall}
+                amount={fine.amount}
+                status={fine.status}
+                reason={fine.reason}
+                isPastFine={fine.isPastFine}
               />
-            </Group>
-          </Group>
+            ))
+          ) : (
+            <Text color="dimmed" align="center">
+              No active fines
+            </Text>
+          )}
 
-          <FineCard
-            amount={2000}
-            hall="Hall-1"
-            details="Details"
-            reason="Reason"
-            isPastFine={true}
-          />
-          <FineCard
-            amount={500}
-            hall="Hall-3"
-            details="Details"
-            reason="Reason"
-            isPastFine={true}
-          />
+          {/* Past Fines */}
+          <Group position="apart" align="center" mt="xl">
+            <Text weight={500} size="xl">
+              Past Fines History
+            </Text>
+          </Group>
+          {pastFines.length > 0 ? (
+            pastFines.map((fine) => (
+              <FineCard
+                key={fine.fine_id}
+                fine_id={fine.fine_id}
+                student_name={fine.student_name}
+                hall={fine.hall}
+                amount={fine.amount}
+                status={fine.status}
+                reason={fine.reason}
+                isPastFine={fine.isPastFine}
+              />
+            ))
+          ) : (
+            <Text color="dimmed" align="center">
+              No past fines found.
+            </Text>
+          )}
         </Stack>
       </ScrollArea>
     </Paper>
