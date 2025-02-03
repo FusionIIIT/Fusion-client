@@ -14,13 +14,15 @@ import {
   Text,
   Button,
   Select,
-  Paper,
+  Box,
 } from "@mantine/core";
+// import { useQueryClient } from "@tanstack/react-query";
 import PropTypes from "prop-types";
 import { notifications } from "@mantine/notifications";
 import { setRole, setCurrentAccessibleModules } from "../redux/userslice";
 import classes from "../Modules/Dashboard/Dashboard.module.css";
 import avatarImage from "../assets/avatar.png";
+
 import { logoutRoute, updateRoleRoute } from "../routes/dashboardRoutes";
 
 function Header({ opened, toggleSidebar }) {
@@ -30,6 +32,7 @@ function Header({ opened, toggleSidebar }) {
   const role = useSelector((state) => state.user.role);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  // const queryclient = useQueryClient();
 
   const handleRoleChange = async (newRole) => {
     const token = localStorage.getItem("authToken");
@@ -82,6 +85,7 @@ function Header({ opened, toggleSidebar }) {
       );
       localStorage.removeItem("authToken");
       navigate("/accounts/login");
+      // queryclient.invalidateQueries();
       console.log("User logged out successfully");
     } catch (err) {
       console.error("Logout error:", err);
@@ -89,21 +93,25 @@ function Header({ opened, toggleSidebar }) {
   };
 
   return (
-    <Paper
+    <Box
       bg="#F5F7F8"
-      justify={{ base: "space-between" }}
+      justify="space-between"
       align="center"
       pl="sm"
       h="64px" // Height has already been set in layout.jsx but had to set the height here as well for properly aligning the avatar
     >
-      <Burger
-        opened={opened}
-        onClick={toggleSidebar}
-        hiddenFrom="sm"
-        size="sm"
-      />
-      <Flex justify="space-between" align="center" h="100%">
-        <Text fz="h2">FUSION - IIITDMJ's ERP Portal</Text>
+      <Flex justify={{ base: "space-between" }} align="center" h="100%">
+        <Box>
+          <Burger
+            opened={opened}
+            onClick={toggleSidebar}
+            hiddenFrom="sm"
+            size="sm"
+          />
+        </Box>
+        <Text fz="h2" visibleFrom="md">
+          FUSION - IIITDMJ's ERP Portal
+        </Text>
         <Flex
           justify="flex-end"
           align="center"
@@ -121,8 +129,6 @@ function Header({ opened, toggleSidebar }) {
             value={role}
             onChange={handleRoleChange}
             placeholder="Role"
-            mr="64px"
-            size="md"
           />
           <Indicator>
             <Bell color="orange" size="32px" cursor="pointer" />
@@ -186,7 +192,7 @@ function Header({ opened, toggleSidebar }) {
           </Popover>
         </Flex>
       </Flex>
-    </Paper>
+    </Box>
   );
 }
 

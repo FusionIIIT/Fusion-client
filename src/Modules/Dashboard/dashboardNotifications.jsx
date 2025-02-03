@@ -353,7 +353,6 @@ function Dashboard() {
           />
         </Flex>
       </Flex>
-
       <Grid mt="xl">
         {loading ? (
           <Container py="xl">
