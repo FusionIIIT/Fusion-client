@@ -11,6 +11,7 @@ import ForgotPassword from "./pages/forgotPassword";
 import AcademicPage from "./Modules/Academic/index";
 import ValidateAuth from "./helper/validateauth";
 import InactivityHandler from "./helper/inactivityhandler";
+import DepartmentPage from "./Modules/Department/DepartmentDashboard";
 
 export default function App() {
   const location = useLocation();
@@ -43,6 +44,14 @@ export default function App() {
           element={
             <Layout>
               <Profile />
+            </Layout>
+          }
+        />
+        <Route
+          path="/department"
+          element={
+            <Layout>
+              <DepartmentPage />
             </Layout>
           }
         />
