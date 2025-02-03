@@ -9,8 +9,7 @@ import {
   Loader,
   Text,
 } from "@mantine/core";
-
-import { FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { CaretDown, CaretUp } from "@phosphor-icons/react";
 import axios from "axios";
 import { host } from "../../../routes/globalRoutes";
 
@@ -41,52 +40,37 @@ export default function LandingPage() {
   useEffect(() => {
     const fetchUserDepartment = async () => {
       const token = localStorage.getItem("authToken");
-
       try {
-        const response = await axios.get(
-          `${host}/dep/api/dep-main/`, // Ensure the endpoint matches your backend route
-          {
-            headers: {
-              Authorization: `Token ${token}`,
-              "Content-Type": "application/json",
-            },
+        const response = await axios.get(`${host}/dep/api/dep-main/`, {
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
           },
-        );
-        console.log(response.data);
+        });
         const { user_designation, department } = response.data;
-        setLoading(false); // Stop loading once data is fetched
-        console.log("User Designation:", user_designation);
-        console.log("Department:", department);
-
+        setLoading(false);
         setRole(user_designation);
         setBranch(department);
-
-        // Set the active tab to the user's department
         const deptTab = departments.find((d) => d.code === department)?.id;
-        setActiveTab(deptTab || "3"); // Default to CSE if department not found
+        setActiveTab(deptTab || "3");
       } catch (err) {
         console.error("Error fetching user department:", err);
-        setLoading(false); // Stop loading in case of error
+        setLoading(false);
         setError("Failed to fetch department data");
       }
     };
-
     fetchUserDepartment();
-  }, []); // Empty dependency array to run only once on mount
+  }, []);
 
   const renderTabContent = () => (
     <Suspense fallback={<Loader />}>
       {activeTab === "0" && <MakeAnnouncement />}
       {activeTab === "1" && <BrowseAnnouncements />}
       {activeTab === "2" && <FeedbackForm branch={branch} />}
-      {activeTab === "3" && <DeptTabs branch="CSE" initialTab="about" />}
-      {activeTab === "4" && <DeptTabs branch="ECE" initialTab="about" />}
-      {activeTab === "5" && <DeptTabs branch="ME" initialTab="about" />}
-      {activeTab === "6" && <DeptTabs branch="SM" initialTab="about" />}
-      {activeTab === "7" && <DeptTabs branch="DS" initialTab="about" />}
-      {activeTab === "8" && <DeptTabs branch="LA" initialTab="about" />}
-      {activeTab === "9" && (
-        <DeptTabs branch="Natural Science" initialTab="about" />
+      {departments.map((dept) =>
+        activeTab === dept.id ? (
+          <DeptTabs key={dept.id} branch={dept.code} initialTab="about" />
+        ) : null,
       )}
     </Suspense>
   );
@@ -95,15 +79,6 @@ export default function LandingPage() {
   if (error) return <Text color="red">{error}</Text>;
 
   const currentDept = departments.find((d) => d.code === branch);
-
-  const handleDepartmentSelect = (deptId) => {
-    setActiveTab(deptId);
-    setIsDropdownOpen(false); // Close dropdown when a department is selected
-  };
-
-  const handleDropdownToggle = () => {
-    setIsDropdownOpen((prev) => !prev); // Toggle dropdown state
-  };
 
   return (
     <Container fluid>
@@ -116,9 +91,7 @@ export default function LandingPage() {
             style={{ flexWrap: "nowrap" }}
           >
             <Title order={2}>Department Portal</Title>
-
             <Group spacing="sm" style={{ marginLeft: "auto" }}>
-              {/* Action Buttons for non-students */}
               {role !== "student" && (
                 <>
                   <Button
@@ -135,31 +108,24 @@ export default function LandingPage() {
                   </Button>
                 </>
               )}
-
-              {/* Feedback Button - shown to everyone */}
               <Button
                 variant={activeTab === "2" ? "filled" : "light"}
                 onClick={() => setActiveTab("2")}
               >
                 Provide Feedback
               </Button>
-
-              {/* Department Selector Dropdown */}
-
-              {/* Department Selector Dropdown */}
               <Menu position="bottom-end" withinPortal>
                 <Menu.Target>
                   <Button
                     variant="subtle"
                     style={{ marginRight: "50px", fontSize: "16px" }}
-                    onClick={handleDropdownToggle} // Toggle dropdown state
+                    onClick={() => setIsDropdownOpen((prev) => !prev)}
                   >
                     {currentDept?.title || "Select Department"}
-                    {/* Display arrow icon depending on the dropdown state */}
                     {isDropdownOpen ? (
-                      <FaChevronUp size={20} style={{ marginLeft: "10px" }} />
+                      <CaretUp size={20} style={{ marginLeft: "10px" }} />
                     ) : (
-                      <FaChevronDown size={20} style={{ marginLeft: "10px" }} />
+                      <CaretDown size={20} style={{ marginLeft: "10px" }} />
                     )}
                   </Button>
                 </Menu.Target>
@@ -167,7 +133,10 @@ export default function LandingPage() {
                   {departments.map((dept) => (
                     <Menu.Item
                       key={dept.id}
-                      onClick={() => handleDepartmentSelect(dept.id)} // Select department
+                      onClick={() => {
+                        setActiveTab(dept.id);
+                        setIsDropdownOpen(false);
+                      }}
                       fw={activeTab === dept.id ? 700 : 400}
                     >
                       {dept.title}
@@ -178,8 +147,6 @@ export default function LandingPage() {
             </Group>
           </Group>
         </Grid.Col>
-
-        {/* Content Area */}
         <Grid.Col span={12}>
           {activeTab !== null ? (
             renderTabContent()
