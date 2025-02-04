@@ -1,21 +1,20 @@
 import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { Text, Button, Flex, Grid, Loader, Alert } from "@mantine/core";
-import { getComplaintDetails } from "../routes/api"; // Import the utility function
+import { getComplaintDetails } from "../routes/api";
 import { host } from "../../../routes/globalRoutes/index";
 
+function formatDateTime(datetimeStr) {
+  const date = new Date(datetimeStr);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${day}-${month}-${year}, ${hours}:${minutes}`;
+}
+
 function ComplaintDetails({ complaintId, onBack }) {
-  const formatDateTime = (datetimeStr) => {
-    const date = new Date(datetimeStr);
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-
-    return `${day}-${month}-${year}, ${hours}:${minutes}`;
-  };
-
   const [complaintDetails, setComplaintDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -24,27 +23,23 @@ function ComplaintDetails({ complaintId, onBack }) {
     const fetchComplaintDetails = async () => {
       const token = localStorage.getItem("authToken");
       const response = await getComplaintDetails(complaintId, token);
-
       if (response.success) {
         setComplaintDetails(response.data);
-        setError(null); // Reset error on success
+        setError(null);
       } else {
-        console.error("Error fetching complaint details:", response.error);
         setError("Failed to fetch complaint details");
       }
       setLoading(false);
     };
-
     fetchComplaintDetails();
   }, [complaintId]);
 
   const handleViewAttachment = () => {
-    if (!complaintDetails.upload_complaint) {
+    if (!complaintDetails?.upload_complaint) {
       alert("No attachment found for this complaint.");
       return;
     }
-    const attachmentUrl = `${host}${complaintDetails.upload_complaint}`;
-    window.open(attachmentUrl, "_blank");
+    window.open(`${host}${complaintDetails.upload_complaint}`, "_blank");
   };
 
   if (loading) {
@@ -80,7 +75,6 @@ function ComplaintDetails({ complaintId, onBack }) {
           Complaint ID: {complaintDetails.id}
         </Text>
       </Flex>
-
       <Grid columns="2" style={{ width: "100%" }}>
         <Grid.Col span={1}>
           <Flex direction="column" gap="xs">
@@ -101,7 +95,6 @@ function ComplaintDetails({ complaintId, onBack }) {
           </Text>
         </Flex>
       </Grid>
-
       <Grid columns="2" style={{ width: "100%" }}>
         <Grid.Col span={1}>
           <Flex direction="column" gap="xs">
@@ -122,7 +115,6 @@ function ComplaintDetails({ complaintId, onBack }) {
           </Text>
         </Flex>
       </Grid>
-
       <Grid columns="2" style={{ width: "100%" }}>
         <Grid.Col span={1}>
           <Flex direction="column" gap="xs">
@@ -135,7 +127,6 @@ function ComplaintDetails({ complaintId, onBack }) {
           </Flex>
         </Grid.Col>
       </Grid>
-
       <Flex direction="row" gap="xs" align="center">
         <Text size="14px" style={{ fontWeight: "bold" }}>
           View attachment:
@@ -144,7 +135,6 @@ function ComplaintDetails({ complaintId, onBack }) {
           View
         </Button>
       </Flex>
-
       <Flex direction="row-reverse" gap="xs">
         <Button size="sm" variant="filled" color="black" onClick={onBack}>
           Back

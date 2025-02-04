@@ -12,7 +12,34 @@ import {
   Title,
   Text,
 } from "@mantine/core";
-import { lodgeComplaint } from "../routes/api"; // Import the utility function
+import { lodgeComplaint } from "../routes/api";
+
+const COMPLAINT_TYPES = [
+  "Electricity",
+  "carpenter",
+  "plumber",
+  "garbage",
+  "dustbin",
+  "internet",
+  "other",
+];
+
+const LOCATIONS = [
+  "hall-1",
+  "hall-3",
+  "hall-4",
+  "library",
+  "computer center",
+  "core_lab",
+  "LHTC",
+  "NR2",
+  "NR3",
+  "Admin building",
+  "Rewa_Residency",
+  "Maa Saraswati Hostel",
+  "Nagarjun Hostel",
+  "Panini Hostel",
+];
 
 function ComplaintForm() {
   const role = useSelector((state) => state.user.role);
@@ -42,8 +69,6 @@ function ComplaintForm() {
     setIsSuccess(false);
 
     const token = localStorage.getItem("authToken");
-
-    // Prepare form data
     const formData = new FormData();
     formData.append("complaint_type", complaintType);
     formData.append("location", location);
@@ -58,7 +83,6 @@ function ComplaintForm() {
     if (response.success) {
       setIsSuccess(true);
       console.log("Complaint registered:", response.data);
-
       setTimeout(() => {
         resetFormFields();
         setKey((prevKey) => prevKey + 1);
@@ -77,11 +101,10 @@ function ComplaintForm() {
   return (
     <Grid
       mt="xl"
-      // Original container styling retained
       style={{ paddingInline: "49px", width: "100%" }}
       sx={(theme) => ({
         [theme.fn.smallerThan("sm")]: {
-          paddingInline: theme.spacing.md, // Gentler padding on small devices
+          paddingInline: theme.spacing.md,
         },
       })}
     >
@@ -101,7 +124,7 @@ function ComplaintForm() {
         withBorder
         sx={(theme) => ({
           [theme.fn.smallerThan("sm")]: {
-            width: "90vw", // Expand slightly for small devices
+            width: "90vw",
           },
         })}
       >
@@ -109,21 +132,19 @@ function ComplaintForm() {
           order={3}
           mb="md"
           sx={(theme) => ({
-            fontSize: 24, // Keep your desktop size
+            fontSize: 24,
             [theme.fn.smallerThan("sm")]: {
-              fontSize: theme.fontSizes.md, // ~16px on smaller screens
+              fontSize: theme.fontSizes.md,
             },
           })}
         >
           Add a new Complaint
         </Title>
-
         {errorMessage && (
           <Text color="red" mb="md" fz="md">
             {errorMessage}
           </Text>
         )}
-
         <form onSubmit={handleSubmit}>
           <Grid>
             <Grid.Col xs={12} md={6}>
@@ -132,15 +153,7 @@ function ComplaintForm() {
                 placeholder="Select Complaint Type"
                 value={complaintType}
                 onChange={setComplaintType}
-                data={[
-                  "Electricity",
-                  "carpenter",
-                  "plumber",
-                  "garbage",
-                  "dustbin",
-                  "internet",
-                  "other",
-                ]}
+                data={COMPLAINT_TYPES}
                 required
                 mb="md"
                 labelProps={{ fz: "md" }}
@@ -157,22 +170,7 @@ function ComplaintForm() {
                 placeholder="Select Location"
                 value={location}
                 onChange={setLocation}
-                data={[
-                  "hall-1",
-                  "hall-3",
-                  "hall-4",
-                  "library",
-                  "computer center",
-                  "core_lab",
-                  "LHTC",
-                  "NR2",
-                  "NR3",
-                  "Admin building",
-                  "Rewa_Residency",
-                  "Maa Saraswati Hostel",
-                  "Nagarjun Hostel",
-                  "Panini Hostel",
-                ]}
+                data={LOCATIONS}
                 required
                 mb="md"
                 labelProps={{ fz: "md" }}
@@ -229,11 +227,6 @@ function ComplaintForm() {
             <Text size="sm" color="dimmed" fz="md">
               Complaint will be registered with your User ID.
             </Text>
-
-            {/* 
-              Submit button on large screens remains 150px wide, 
-              but on small screens it goes full-width for better responsiveness. 
-            */}
             <Button
               type="submit"
               variant="filled"
@@ -245,7 +238,7 @@ function ComplaintForm() {
                 backgroundColor: isSuccess ? "#2BB673" : theme.colors.blue[6],
                 color: isSuccess ? "black" : "white",
                 [theme.fn.smallerThan("sm")]: {
-                  width: "100%", // full width on small devices
+                  width: "100%",
                   marginTop: theme.spacing.sm,
                 },
               })}
