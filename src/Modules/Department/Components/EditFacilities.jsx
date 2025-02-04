@@ -338,11 +338,15 @@ export default function EditFacilities({ setIsEditing, branch }) {
             {labs.map((lab) => (
               <tr key={lab.id}>
                 <td>
-                  <input
-                    type="checkbox"
-                    checked={selectedLabs.includes(lab.id)}
-                    onChange={() => handleLabSelection(lab.id)}
-                  />
+                  <label htmlFor={`lab-${lab.id}`}>
+                    <input
+                      type="checkbox"
+                      id={`lab-${lab.id}`}
+                      checked={selectedLabs.includes(lab.id)}
+                      onChange={() => handleLabSelection(lab.id)}
+                    />
+                    {lab.name}
+                  </label>
                 </td>
                 <td>{lab.name}</td>
                 <td>{lab.capacity}</td>

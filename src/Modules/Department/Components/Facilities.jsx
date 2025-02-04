@@ -4,7 +4,7 @@ import axios from "axios"; // Import axios
 import PropTypes from "prop-types";
 import FacilitiesDescriptive from "./FacilitiesDescriptive.jsx";
 import EditFacilities from "./EditFacilities.jsx";
-import SpecialTable from "./SpecialTable"; // Make sure to keep this import
+import SpecialTable from "./SpecialTable.jsx"; // Make sure to keep this import
 import { host } from "../../../routes/globalRoutes/index.jsx";
 
 const columns = [

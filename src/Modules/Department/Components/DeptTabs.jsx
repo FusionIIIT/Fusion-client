@@ -9,7 +9,7 @@ import {
   Title,
   Box,
 } from "@mantine/core";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { CaretLeft, CaretRight } from "@phosphor-icons/react"; // Import icons from @phosphor-icons/react
 import { useSelector } from "react-redux";
 import PropTypes from "prop-types";
 
@@ -99,7 +99,7 @@ function DeptTabs({ branch }) {
           p={0}
           mr="xs"
         >
-          <ChevronLeft size={24} />
+          <CaretLeft size={24} />
         </Button>
 
         <Box style={{ maxWidth: "80%", overflowX: "auto" }} ref={tabsListRef}>
@@ -120,7 +120,7 @@ function DeptTabs({ branch }) {
           p={0}
           ml="xs"
         >
-          <ChevronRight size={24} />
+          <CaretRight size={24} />
         </Button>
       </Flex>
 

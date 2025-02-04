@@ -1,7 +1,13 @@
-import { Button, Typography, Card, CardContent, Collapse } from "@mui/material";
-import { Grid } from "@mantine/core";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import {
+  Button,
+  Card,
+  Collapse,
+  Text,
+  Title,
+  Grid,
+  Group,
+} from "@mantine/core"; // Use Mantine components
+import { CaretDown, CaretUp } from "@phosphor-icons/react"; // Importing the new icons
 import React, { useState, Suspense, lazy } from "react";
 import studentData from "./Data/Data";
 
@@ -26,7 +32,7 @@ function Alumnicat() {
   const renderStudentTable = (category) => {
     const data = studentData[category];
     return (
-      <Suspense fallback={<Typography>Loading table...</Typography>}>
+      <Suspense fallback={<Text>Loading table...</Text>}>
         <div
           style={{
             overflowX: "auto", // Enable horizontal scrolling
@@ -47,128 +53,46 @@ function Alumnicat() {
 
   return (
     <div style={{ margin: "20px" }}>
-      <Typography variant="h4" gutterBottom>
-        Student Categories
-      </Typography>
-      <Grid container spacing={8}>
-        <Grid item xs={12} sm={4}>
-          <Card
-            onClick={() => toggleCategory("phd")}
-            style={{ margin: "10px" }}
-          >
-            <CardContent
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
+      <Title order={4} style={{ marginBottom: "20px" }}>
+        Alumni Student Categories
+      </Title>
+      <Grid gutter="sm">
+        {["phd", "mtech", "btech"].map((cat) => (
+          <Grid.Col key={cat} span={4}>
+            <Card
+              onClick={() => toggleCategory(cat)}
+              style={{ margin: "10px" }}
             >
-              <Typography variant="h6">PhD Students</Typography>
-              {openCategory === "phd" ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            </CardContent>
-            <Collapse in={openCategory === "phd"}>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  marginTop: "10px",
-                  padding: "0 16px",
-                }}
-              >
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  onClick={() => setSelectedCategory("phd")}
-                  style={{ marginBottom: "5px" }}
+              <Group position="apart" style={{ cursor: "pointer" }}>
+                <Text weight={600}>{cat.toUpperCase()} Students</Text>
+                {openCategory === cat ? (
+                  <CaretUp size={18} />
+                ) : (
+                  <CaretDown size={18} />
+                )}
+              </Group>
+              <Collapse in={openCategory === cat}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    marginTop: "10px",
+                    padding: "0 16px",
+                  }}
                 >
-                  PhD Students
-                </Button>
-              </div>
-            </Collapse>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} sm={4}>
-          <Card
-            onClick={() => toggleCategory("mtech")}
-            style={{ margin: "10px" }}
-          >
-            <CardContent
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <Typography variant="h6">MTech Students</Typography>
-              {openCategory === "mtech" ? (
-                <ExpandLessIcon />
-              ) : (
-                <ExpandMoreIcon />
-              )}
-            </CardContent>
-            <Collapse in={openCategory === "mtech"}>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  marginTop: "10px",
-                  padding: "0 16px",
-                }}
-              >
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  onClick={() => setSelectedCategory("mtech1")}
-                  style={{ marginBottom: "5px" }}
-                >
-                  M.Tech Students
-                </Button>
-              </div>
-            </Collapse>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} sm={4}>
-          <Card
-            onClick={() => toggleCategory("btech")}
-            style={{ margin: "10px" }}
-          >
-            <CardContent
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <Typography variant="h6">BTech Students</Typography>
-              {openCategory === "btech" ? (
-                <ExpandLessIcon />
-              ) : (
-                <ExpandMoreIcon />
-              )}
-            </CardContent>
-            <Collapse in={openCategory === "btech"}>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  marginTop: "10px",
-                  padding: "0 16px",
-                }}
-              >
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  onClick={() => setSelectedCategory("btech1")}
-                  style={{ marginBottom: "5px" }}
-                >
-                  B.Tech Students
-                </Button>
-              </div>
-            </Collapse>
-          </Card>
-        </Grid>
+                  <Button
+                    variant="outline"
+                    color="blue"
+                    onClick={() => setSelectedCategory(cat)}
+                    style={{ marginBottom: "5px" }}
+                  >
+                    {cat.toUpperCase()} Students
+                  </Button>
+                </div>
+              </Collapse>
+            </Card>
+          </Grid.Col>
+        ))}
       </Grid>
 
       <div style={{ marginTop: "20px" }}>

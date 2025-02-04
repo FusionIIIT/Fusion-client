@@ -9,7 +9,7 @@ import {
   Title,
   Box,
 } from "@mantine/core";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { CaretLeft, CaretRight } from "@phosphor-icons/react"; // Import icons from @phosphor-icons/react
 
 // Lazy load the Announcements component
 const Announcements = lazy(() => import("./Announcements"));
@@ -71,7 +71,7 @@ function BrowseAnnouncements() {
           p={0}
           mr="xs"
         >
-          <ChevronLeft size={24} />
+          <CaretLeft size={24} />
         </Button>
 
         <Box style={{ maxWidth: "80%", overflowX: "auto" }} ref={tabsListRef}>
@@ -92,7 +92,7 @@ function BrowseAnnouncements() {
           p={0}
           ml="xs"
         >
-          <ChevronRight size={24} />
+          <CaretRight size={24} />
         </Button>
       </Flex>
 
