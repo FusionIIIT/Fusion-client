@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+
 import {
   Paper,
   Group,
@@ -12,11 +13,15 @@ import {
   Flex,
   Divider,
 } from "@mantine/core";
+
 import { useSelector } from "react-redux";
+
 import ComplaintDetails from "./ComplaintDetails";
 import { getComplaintsByRole } from "../routes/api";
 import detailIcon from "../../../assets/detail.png";
+
 import declinedIcon from "../../../assets/declined.png";
+
 import resolvedIcon from "../../../assets/resolved.png";
 
 const TABS = ["pending", "resolved", "declined"];
