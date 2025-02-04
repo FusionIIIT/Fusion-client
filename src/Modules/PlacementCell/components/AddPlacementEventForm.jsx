@@ -17,6 +17,7 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import { notifications } from "@mantine/notifications";
 import { addPlacementEventForm } from "../../../routes/placementCellRoutes";
+import { fetchRegistrationRoute } from "../../../routes/placementCellRoutes";
 
 function AddPlacementEventForm() {
   const role = useSelector((state) => state.user.role);

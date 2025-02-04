@@ -14,3 +14,4 @@ export const fetchTimeLineRoute = `${host}/placement/api/timeline/`;
 export const fetchDebaredlistRoute = `${host}/placement/api/debared-students/`;
 export const fetchFieldsSubmitformRoute = `${host}/placement/api/add-field/`;
 export const fetchRestrictionsRoute = `${host}/placement/api/restrictions/`;
+export const fetchRegistrationRoute = `${host}/placement/api/registration/`;
