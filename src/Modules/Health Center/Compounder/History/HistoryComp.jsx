@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   Button,
   Pagination,
@@ -22,6 +22,8 @@ function HistoryCompounder() {
   const [search, setSearch] = useState("");
   const [totalPages, setTotalPages] = useState(1);
   const [activePage, setPage] = useState(1);
+
+  const navigate = useNavigate();
 
   const fetchHistory = async (pagenumber) => {
     const token = localStorage.getItem("authToken");
@@ -53,8 +55,12 @@ function HistoryCompounder() {
     fetchHistory(1);
   }, []);
 
+  const handleViewClick = (id) => {
+    navigate(`/healthcenter/compounder/prescription/${id}`);
+  };
+
   const rows = history.map((element) => (
-    <tr key={element.treated}>
+    <tr key={element.id}>
       <td style={{ textAlign: "center" }}>{element.user_id}</td>
       <td style={{ textAlign: "center" }}>{element.doctor_id}</td>
       <td style={{ textAlign: "center" }}>{element.date}</td>
@@ -67,16 +73,12 @@ function HistoryCompounder() {
         )}
       </td>
       <td style={{ textAlign: "center" }}>
-        <NavLink
-          to="/healthcenter/compounder/prescription/:id"
-          style={{
-            textDecoration: "none",
-            color: "#15abff",
-            fontWeight: "bold",
-          }}
+        <Button
+          onClick={() => handleViewClick(element.id)}
+          style={{ backgroundColor: "#15abff" }}
         >
-          <Button>View</Button>
-        </NavLink>
+          View
+        </Button>
       </td>
     </tr>
   ));

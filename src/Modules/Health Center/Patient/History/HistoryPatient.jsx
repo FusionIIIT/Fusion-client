@@ -1,61 +1,76 @@
 import { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
-import { Paper, Table, Title } from "@mantine/core";
-import { Download } from "@phosphor-icons/react";
+import { useNavigate } from "react-router-dom";
+import {
+  Button,
+  Pagination,
+  Paper,
+  Table,
+  TextInput,
+  Title,
+} from "@mantine/core";
+import axios from "axios";
 import NavCom from "../Navigation";
 import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import { studentRoute } from "../../../../routes/health_center";
 
 function HistoryPatient() {
   const [history, setHistory] = useState([]);
+  // eslint-disable-next-line no-unused-vars
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [totalPages, setTotalPages] = useState(1);
+  const [activePage, setPage] = useState(1);
 
-  const fetchHistory = () => {
-    const elements = [
-      {
-        treated: "GS Sandhu",
-        date: "11/09/2024",
-        details: "Fever",
-        report: "",
-        prescription: "View",
-      },
-      {
-        treated: "A Shivi",
-        date: "12/09/2024",
-        details: "Tooth Pain",
-        report: "",
-        prescription: "View",
-      },
-    ];
-    setHistory(elements);
+  const navigate = useNavigate();
+
+  const fetchHistory = async (pagenumber) => {
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.post(
+        studentRoute,
+        { page: pagenumber, search_patientlog: search, datatype: "patientlog" },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      console.log(response);
+      setHistory(response.data.report);
+      setTotalPages(response.data.total_pages);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const setCurrentPage = async (e) => {
+    setPage(e);
+    fetchHistory(e);
   };
 
   useEffect(() => {
-    fetchHistory();
+    fetchHistory(1);
   }, []);
+
+  const handleViewClick = (id) => {
+    navigate(`/healthcenter/compounder/prescription/${id}`);
+  };
 
   const rows = history.map((element) => (
     <tr key={element.id}>
-      <td>{element.treated}</td>
-
-      <td>{element.date}</td>
-      <td>{element.details}</td>
-      <td>
-        {element.report ? (
-          <Download size={20} color="#15abff" />
-        ) : (
-          <Download size={20} color="black" />
-        )}
-      </td>
+      <td style={{ textAlign: "center" }}>{element.doctor_id}</td>
+      <td style={{ textAlign: "center" }}>{element.date}</td>
+      <td style={{ textAlign: "center" }}>{element.details}</td>
+      <td style={{ textAlign: "center" }}>{element.dependent_name}</td>
       <td style={{ textAlign: "center" }}>
-        <NavLink
-          to="/healthcenter/student/prescription/:id"
-          style={{
-            textDecoration: "none",
-            color: "#15abff",
-            fontWeight: "bold",
-          }}
+        <Button
+          onClick={() => handleViewClick(element.id)}
+          style={{ backgroundColor: "#15abff" }}
         >
-          {element.prescription}
-        </NavLink>
+          View
+        </Button>
       </td>
     </tr>
   ));
@@ -67,18 +82,23 @@ function HistoryPatient() {
       <br />
       <Paper shadow="xl" p="xl" withBorder>
         <Title
-          order={5}
+          order={3}
           style={{
             textAlign: "center",
             margin: "0 auto",
             color: "#15abff",
-            fontWeight: "bold",
-            fontSize: "24px",
           }}
         >
           Prescription
         </Title>
         <br />
+        <form style={{ marginBottom: "10px" }}>
+          <TextInput
+            placeholder="Search"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+          />
+        </form>
         <Table
           withTableBorder
           withColumnBorders
@@ -108,6 +128,12 @@ function HistoryPatient() {
             {rows}
           </Table.Tbody>
         </Table>
+        <Pagination
+          value={activePage}
+          onChange={setCurrentPage}
+          total={totalPages}
+          style={{ marginTop: "20px", margin: "auto", width: "fit-content" }}
+        />
       </Paper>
     </>
   );

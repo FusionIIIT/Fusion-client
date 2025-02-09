@@ -7,7 +7,6 @@ import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
 import { compounderRoute } from "../../../../routes/health_center";
 
 export default function Removedoctor() {
-  // eslint-disable-next-line no-unused-vars
   const [doctors, setDoctor] = useState([]);
   const [doctorName, setDoctorName] = useState("");
 

@@ -1,5 +1,6 @@
 import {
   Alert,
+  Autocomplete,
   Button,
   Flex,
   Input,
@@ -12,11 +13,13 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { useState } from "react";
-import { Check, MagnifyingGlass, X } from "@phosphor-icons/react";
+import { useEffect, useState } from "react";
+import { Check, X } from "@phosphor-icons/react";
+import axios from "axios";
 import NavCom from "../NavCom";
 import HistoryNavBar from "./historyPath";
 import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import { compounderRoute } from "../../../../routes/health_center";
 
 function getDummyData(medicineName) {
   const dummyDatabase = {
@@ -40,6 +43,7 @@ function getDummyData(medicineName) {
 }
 
 function UpdatePatient() {
+  const [patientId, setpatientId] = useState("");
   const [entries, setEntries] = useState([]);
   const [medicine, setMedicine] = useState("");
   const [quantity, setQuantity] = useState("");
@@ -48,29 +52,191 @@ function UpdatePatient() {
   const [selectedOption, setSelectedOption] = useState("self");
   const [dummyData, setDummyData] = useState(null);
   const [notification, setNotification] = useState(null);
+  const [doctors, setDoctor] = useState([]);
+  const [doctorName, setDoctorName] = useState("");
+  const [medicineName, setMedicineName] = useState([]);
+  const [similar, setsimilar] = useState([]);
+  const [manuname, setmanu] = useState("");
+  const [packsize, setpack] = useState(0);
+  const [stock, setStock] = useState("");
+  const [selectstock, setselectstock] = useState([]);
+  const [allstock, setallstock] = useState([]);
+  const [expiry, setexpiry] = useState("");
+  const [stockQuantity, setstockQuantity] = useState(0);
+  const [dependent, setDependent] = useState("");
+  const [alldependent, setAllDependent] = useState([]);
+  const [relation, setrelation] = useState("");
+  const [diseaseDetails, setdiseaseDetails] = useState("");
+  const [textSuggested, setTextSuggested] = useState("");
 
+  const fetchDoctors = async () => {
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.post(
+        compounderRoute,
+        { get_doctors: 1 },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      console.log(response);
+      setDoctor(response.data.doctors);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchDoctors();
+  }, []);
+
+  const fetchMedicine = async (med) => {
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.post(
+        compounderRoute,
+        {
+          medicine_name_for_stock: med,
+          get_stock: 1,
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      console.log(response);
+      const arr = [];
+      response.data.sim.forEach((value) => {
+        const tp = `${value.brand_name},${value.id}`;
+        arr.push(tp);
+      });
+      setsimilar(response.data.sim);
+      setMedicineName(arr);
+      if (response.data.val.length > 0) {
+        const arr1 = [];
+        response.data.val.forEach((value) => {
+          const tp = `${value.brand_name},${value.id}`;
+          arr1.push(tp);
+        });
+        setselectstock(arr1);
+        setallstock(response.data.val);
+        console.log(response);
+      } else {
+        setselectstock(["N/A at moment"]);
+        setallstock([]);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const handlebrand = (event) => {
+    console.log(event);
+    setMedicine(event);
+    let fl = 1;
+    similar.forEach((item) => {
+      const tp = `${item.brand_name},${item.id}`;
+      if (tp === event) {
+        fl = 0;
+        setmanu(item.manufacturer_name);
+        setpack(item.pack_size_label);
+        // setSelected(item.id);
+        fetchMedicine(tp);
+      }
+    });
+    if (fl) {
+      fetchMedicine(event);
+    }
+  };
+
+  const fetchDependent = async () => {
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.post(
+        compounderRoute,
+        {
+          user_for_dependents: patientId,
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      console.log(response);
+      if (response.data.status === -1) {
+        alert("No patient found");
+        setSelectedOption("self");
+      } else if (response.data.dep.length === 0) {
+        alert("No Dependent found");
+        setSelectedOption("self");
+      } else {
+        setAllDependent(response.data.dep);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const handleDependent = async () => {
+    setSelectedOption("dependent");
+    fetchDependent();
+  };
+  const handelsetrelation = (event) => {
+    setDependent(event);
+    alldependent.forEach((item) => {
+      if (item.name === event) {
+        setrelation(item.relation);
+      }
+    });
+  };
+
+  const handelstock = (event) => {
+    setStock(event);
+    setexpiry("");
+    setstockQuantity(0);
+    allstock.forEach((item) => {
+      const tp = `${item.brand_name},${item.id}`;
+      if (tp === event) {
+        setexpiry(item.expiry);
+        setstockQuantity(item.quantity);
+      }
+    });
+  };
   const handleAddEntry = () => {
     if (medicine && quantity && days && timesPerDay) {
-      const newEntry = {
-        medicine,
-        quantity,
-        days,
-        timesPerDay,
-      };
-      setEntries([...entries, newEntry]);
+      if (stockQuantity >= quantity) {
+        const newEntry = {
+          brand_name: medicine,
+          quantity,
+          Days: days,
+          Times: timesPerDay,
+          astock: stock,
+        };
+        setEntries([...entries, newEntry]);
 
-      const data = getDummyData(medicine);
-      setDummyData(data);
+        const data = getDummyData(medicine);
+        setDummyData(data);
 
-      setMedicine("");
-      setQuantity("");
-      setDays("");
-      setTimesPerDay("");
-
-      setNotification({
-        type: "success",
-        message: "Your medicine entry has been successfully added.",
-      });
+        setMedicine("");
+        setQuantity("");
+        setDays("");
+        setTimesPerDay("");
+        setstockQuantity(0);
+        setexpiry("");
+        setmanu("");
+        setpack("");
+        console.log(entries);
+        setNotification({
+          type: "success",
+          message: "Your medicine entry has been successfully added.",
+        });
+      } else {
+        alert("Stock is not enough");
+      }
     } else {
       setNotification({
         type: "error",
@@ -92,8 +258,42 @@ function UpdatePatient() {
     setTimeout(() => setNotification(null), 5000);
   };
 
-  const handleSubmit = () => {
-    // submit logic
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.post(
+        compounderRoute,
+        {
+          file: null,
+          user: patientId,
+          doctor: doctorName,
+          details: diseaseDetails,
+          is_dependent: selectedOption,
+          prescribe_b: 1,
+          dependent_name: dependent,
+          dependent_relation: relation,
+          pre_medicine: entries,
+          tests: textSuggested,
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      console.log(response);
+      if (response.data.status === -1) {
+        alert("No patient found");
+      } else if (response.data.status === 0) {
+        alert("Prescription Failed!");
+      } else {
+        alert("Prescribed Medicine Successfully");
+        window.location.reload();
+      }
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
@@ -107,7 +307,12 @@ function UpdatePatient() {
           <div style={{ display: "flex" }}>
             <div style={{ paddingRight: "100px" }}>
               <p style={{ marginBottom: "2px" }}>Patient</p>
-              <Input type="text" placeholder="Patient Id" />
+              <Input
+                type="text"
+                placeholder="Patient Id"
+                value={patientId}
+                onChange={(e) => setpatientId(e.target.value)}
+              />
             </div>
 
             <div style={{ display: "flex", gap: "2rem" }}>
@@ -116,7 +321,9 @@ function UpdatePatient() {
                 <Select
                   name="doctor"
                   placeholder="--Select--"
-                  data={["GS Sandhu"]}
+                  value={doctorName}
+                  onChange={(e) => setDoctorName(e)}
+                  data={doctors.map((doc) => doc.doctor_name)}
                 />
               </div>
 
@@ -126,6 +333,8 @@ function UpdatePatient() {
                   type="text"
                   name="diseaseDetails"
                   placeholder="Input Text"
+                  value={diseaseDetails}
+                  onChange={(e) => setdiseaseDetails(e.target.value)}
                 />
               </div>
             </div>
@@ -143,7 +352,7 @@ function UpdatePatient() {
             label="Dependent"
             value="dependent"
             checked={selectedOption === "dependent"}
-            onChange={() => setSelectedOption("dependent")}
+            onChange={handleDependent}
           />
         </div>
 
@@ -153,8 +362,22 @@ function UpdatePatient() {
             gap="1rem"
             style={{ maxWidth: "400px", display: "flex", marginTop: "1rem" }}
           >
-            <TextInput label="Dependent Name" placeholder="Write Here" />
-            <TextInput label="Relation" placeholder="Write Relation" />
+            <div>
+              <p style={{ marginBottom: "2px" }}>Dependent Name</p>
+              <Select
+                name="dependent_name"
+                placeholder="--Select--"
+                value={dependent}
+                onChange={handelsetrelation}
+                data={alldependent.map((dep) => dep.name)}
+              />
+            </div>
+            <TextInput
+              label="Relation"
+              placeholder="Write Relation"
+              value={relation}
+              readOnly
+            />
           </Flex>
         )}
 
@@ -179,23 +402,24 @@ function UpdatePatient() {
                   <Table.Th>Quantity</Table.Th>
                   <Table.Th>No. of Days</Table.Th>
                   <Table.Th>Times per Day</Table.Th>
+                  <Table.Th>Stocks</Table.Th>
                   <Table.Th>Actions</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
                 {entries.map((entry, index) => (
                   <Table.Tr key={index}>
-                    <Table.Td>{entry.medicine}</Table.Td>
+                    <Table.Td>{entry.brand_name}</Table.Td>
                     <Table.Td>{entry.quantity}</Table.Td>
-                    <Table.Td>{entry.days}</Table.Td>
-                    <Table.Td>{entry.timesPerDay}</Table.Td>
+                    <Table.Td>{entry.Days}</Table.Td>
+                    <Table.Td>{entry.Times}</Table.Td>
+                    <Table.Td>{entry.astock}</Table.Td>
                     <Table.Td>
                       <Button
                         onClick={() => handleDeleteEntry(index)}
                         style={{
                           backgroundColor: "#FF4D4D",
                           color: "white",
-
                           padding: "5px 10px",
                           cursor: "pointer",
                         }}
@@ -208,20 +432,12 @@ function UpdatePatient() {
                 <Table.Tr>
                   <Table.Td>
                     <div style={{ display: "flex", gap: "1rem" }}>
-                      <Input
+                      <Autocomplete
                         name="medicine"
                         value={medicine}
-                        onChange={(e) => setMedicine(e.target.value)}
+                        onChange={handlebrand}
+                        data={medicineName}
                         placeholder="Write Medicine Name"
-                      />
-                      <MagnifyingGlass
-                        size={32}
-                        style={{
-                          backgroundColor: "#15abff",
-                          color: "white",
-                          padding: "0.2rem",
-                          cursor: "pointer",
-                        }}
                       />
                     </div>
                   </Table.Td>
@@ -253,6 +469,16 @@ function UpdatePatient() {
                     />
                   </Table.Td>
                   <Table.Td>
+                    <Select
+                      name="stock"
+                      placeholder="--Select--"
+                      value={stock}
+                      onChange={handelstock}
+                      data={selectstock}
+                      required
+                    />
+                  </Table.Td>
+                  <Table.Td>
                     <Button
                       onClick={handleAddEntry}
                       style={{
@@ -268,6 +494,34 @@ function UpdatePatient() {
                 </Table.Tr>
               </Table.Tbody>
             </Table>
+
+            <Paper p="sm" withBorder mt="sm">
+              <TextInput
+                label="Manufacturer Name"
+                placeholder="Manufacturer Name"
+                readOnly
+                value={manuname}
+              />
+              <TextInput
+                label="Pack Size"
+                placeholder="Pack Size"
+                readOnly
+                value={packsize}
+              />
+
+              <TextInput
+                label="Expiry Date"
+                placeholder="Expiry Date"
+                value={expiry}
+                readOnly
+              />
+              <TextInput
+                label="Stock Quantity"
+                placeholder="Stock Quantity"
+                value={stockQuantity}
+                readOnly
+              />
+            </Paper>
           </div>
         </div>
 
@@ -315,6 +569,8 @@ function UpdatePatient() {
             <Textarea
               type="text"
               name="textSuggested"
+              value={textSuggested}
+              onChange={(e) => setTextSuggested(e.target.value)}
               placeholder="Input Text"
               style={{
                 width: "100%",
@@ -345,7 +601,7 @@ function UpdatePatient() {
             padding: "5px 20px",
             width: "20%",
           }}
-          onclick={handleSubmit}
+          onClick={handleSubmit}
         >
           Submit
         </Button>
