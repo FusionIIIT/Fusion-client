@@ -93,7 +93,7 @@ const Modules = [
     label: "Complaint System",
     id: "complaint_management",
     icon: <ComplaintIcon size={18} />,
-    url: "/",
+    url: "/complaints",
   },
   {
     label: "Placement Cell",
@@ -128,7 +128,7 @@ const Modules = [
   },
   {
     label: "Gymkhana",
-    id: "gymkhana",
+    id: "gymkhana", 
     icon: <GymkhanaIcon size={18} />,
     url: "/",
   },
