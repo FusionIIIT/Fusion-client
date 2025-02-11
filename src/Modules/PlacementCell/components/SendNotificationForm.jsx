@@ -9,14 +9,16 @@ import {
   Container,
 } from "@mantine/core";
 import { DatePickerInput, TimeInput } from "@mantine/dates";
-
+import { sendNotificationRoute } from "../../../routes/placementCellRoutes";
+import { notifications } from "@mantine/notifications";
+import axios from "axios";
 function SendNotificationForm() {
   const [formData, setFormData] = useState({
     sendTo: "Student",
-    studentName: "",
+    recipient: "",
     date: new Date(),
     time: "",
-    title: "",
+    type: "",
     description: "",
   });
 
@@ -24,9 +26,32 @@ function SendNotificationForm() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Implement notification sending logic here
-    console.log("Notification details:", formData);
+    try{
+      const token = localStorage.getItem("authToken");
+        console.log(formData);
+        const response = await axios.post(
+          sendNotificationRoute,
+          formData,
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+          },
+        );
+      console.log("Notification details:", formData);
+    }
+    catch (error) {
+      console.error("Error sending notification:", error);
+      notifications.show({
+        title: "Error",
+        message: "Failed to send notification.",
+        color: "red",
+        position: "top-center",
+      });
+    }
+    
   };
 
   return (
@@ -53,11 +78,11 @@ function SendNotificationForm() {
           data={["Student", "Faculty", "All"]}
         />
         <TextInput
-          label="Student Name"
-          placeholder="Enter student name (optional)"
-          value={formData.studentName}
+          label="Student Roll No"
+          placeholder="Enter student Roll No "
+          value={formData.recipient}
           onChange={(event) =>
-            handleChange("studentName", event.currentTarget.value)
+            handleChange("recipient", event.currentTarget.value)
           }
         />
       </Group>
@@ -80,8 +105,8 @@ function SendNotificationForm() {
         mt="md"
         label="Title"
         placeholder="Enter notification title"
-        value={formData.title}
-        onChange={(event) => handleChange("title", event.currentTarget.value)}
+        value={formData.type}
+        onChange={(event) => handleChange("type", event.currentTarget.value)}
       />
 
       <Textarea
