@@ -1,5 +1,8 @@
 import React, { useState } from "react";
-import { TextInput, Textarea, Title, Button, FileInput, Group, Notification } from "@mantine/core";
+import { TextInput, Textarea, Title, Button, FileInput, Group } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import { fetchRegistrationRoute } from "../../../routes/placementCellRoutes";
+import axios from "axios";
 
 function CompanyRegistrationForm() {
   const [companyName, setCompanyName] = useState("");
@@ -9,18 +12,53 @@ function CompanyRegistrationForm() {
   const [logo, setLogo] = useState(null);
   const [error, setError] = useState("");
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!companyName || !description || !address || !website) {
       setError("Please fill all required fields.");
       return;
     }
+    const newRegistration = { companyName, description, address, website, logo };
+    try {
+      const token = localStorage.getItem("authToken");
+      console.log(newRegistration);
+      const response = await axios.post(
+        fetchRegistrationRoute,
+        newRegistration,
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        },
+      );
 
-    // Handle form submission (e.g., send to backend)
-    console.log({ companyName, description, address, website, logo });
-    setError(""); // Clear error if form is valid
-    alert("Company Registered Successfully!");
+      if (response.status == 200) {
+        notifications.show({
+          title: "Success",
+          message: "successfully added!",
+          color: "green",
+          position: "top-center",
+        });
+      } else {
+        notifications.show({
+          title: "Failed",
+          message: `Failed to add`,
+          color: "red",
+          position: "top-center",
+        });
+      }
+    }
+    catch (error) {
+      console.error("Error adding restriction:", error);
+      notifications.show({
+        title: "Error",
+        message: "Failed to add restriction.",
+        color: "red",
+        position: "top-center",
+      });
+    }
   };
 
   return (
