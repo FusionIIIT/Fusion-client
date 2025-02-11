@@ -16,3 +16,4 @@ export const fetchFieldsSubmitformRoute = `${host}/placement/api/add-field/`;
 export const fetchRestrictionsRoute = `${host}/placement/api/restrictions/`;
 export const fetchRegistrationRoute = `${host}/placement/api/registration/`;
 export const sendNotificationRoute = `${host}/notifications/api/placement_cell_notification/`;
+
