@@ -82,7 +82,7 @@ function PlacementScheduleCard({
 
   const handelApplySubmit = async () => {
      const token = localStorage.getItem("authToken");
-    console.log("Auth Token:", token);
+    // console.log("Auth Token:", token);
     console.log("Placement ID:", jobId);
     try {
       const response = await fetch(
