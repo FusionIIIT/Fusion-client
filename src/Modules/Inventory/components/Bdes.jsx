@@ -63,9 +63,9 @@ export default function Inventory() {
   }, [selectedDepartment]);
 
 
-   const handleTransferClick = () => {
-     navigate("/inventory/transfer");
-  };
+  //  const handleTransferClick = () => {
+  //    navigate("/inventory/transfer");
+  // };
 
   const openAddProductModal = () => {
     setShowAddProductModal(true);
@@ -128,7 +128,7 @@ export default function Inventory() {
               style={{ fontSize: "14px" }}
               variant="filled"
               color="blue"
-              onClick={handleTransferClick}
+              onClick={openTransferProductModal}
               size="md"
             >
               Transfer Item
