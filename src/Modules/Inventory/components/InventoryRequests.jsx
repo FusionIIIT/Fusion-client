@@ -1,8 +1,21 @@
-import React, { useState } from "react";
-import { Button, Group, Table, Badge, Text } from "@mantine/core";
+import React, { useState, useEffect } from "react";
+import { Button, Group, Table, Badge, Select } from "@mantine/core";
 
 function InventoryRequests() {
   const [filter, setFilter] = useState("all");
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    // Listen for screen size changes to determine small screen
+    const handleResize = () => {
+      setIsSmallScreen(window.innerWidth <= 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    handleResize(); // Set initial state
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const requests = [
     {
@@ -38,30 +51,33 @@ function InventoryRequests() {
   });
 
   return (
-    <>
-      {/* Breadcrumb */}
-      <Text style={{ marginLeft: "70px", fontSize: "16px" }} color="dimmed">
-        <span style={{ cursor: "pointer" }}>
-          Requests
-        </span>
-        {/* {" > "} <span>{selectedDepartment}</span> */}
-      </Text>
-
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          padding: "20px",
-        }}
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        padding: "20px",
+      }}
+    >
+      <h2
+        style={{ color: "#007BFF", textAlign: "center", marginBottom: "20px" }}
       >
-        <h2
-          style={{ color: "#007BFF", textAlign: "center", marginBottom: "20px" }}
-        >
-          Inventory Requests
-        </h2>
+        Inventory Requests
+      </h2>
 
-        {/* Buttons for filters */}
+      {isSmallScreen ? (
+        <Select
+          placeholder="Filter Requests"
+          data={[
+            { value: "all", label: "All Requests" },
+            { value: "approved", label: "Approved" },
+            { value: "unapproved", label: "Unapproved" },
+          ]}
+          value={filter}
+          onChange={setFilter}
+          style={{ marginBottom: "20px", width: "80%" }}
+        />
+      ) : (
         <Group position="center" style={{ marginBottom: "20px" }}>
           <Button
             onClick={() => setFilter("all")}
@@ -85,80 +101,71 @@ function InventoryRequests() {
             Unapproved
           </Button>
         </Group>
+      )}
 
-        {/* Table */}
-        <Table
-          style={{
-            width: "80%",
-            textAlign: "center",
-            borderCollapse: "collapse",
-          }}
-        >
-          <thead>
-            <tr style={{ borderBottom: "2px solid #e0e0e0" }}>
-              <th style={{ padding: "15px", borderRight: "1px solid #e0e0e0" }}>
-                Date
-              </th>
-              <th style={{ padding: "15px", borderRight: "1px solid #e0e0e0" }}>
-                Item
-              </th>
-              <th style={{ padding: "15px", borderRight: "1px solid #e0e0e0" }}>
-                Department
-              </th>
-              <th style={{ padding: "15px" }}>Approval</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredRequests.map((request, index) => (
-              <tr
-                key={index}
+      <Table
+        style={{
+          width: "80%",
+          border: "1px solid #ddd",
+          borderCollapse: "collapse",
+        }}
+      >
+        <thead>
+          <tr
+            style={{
+              backgroundColor: "#f0f0f0",
+              borderBottom: "2px solid #ddd",
+            }}
+          >
+            <th style={{ padding: "15px", border: "1px solid #ddd" }}>Date</th>
+            <th style={{ padding: "15px", border: "1px solid #ddd" }}>Item</th>
+            <th style={{ padding: "15px", border: "1px solid #ddd" }}>
+              Department
+            </th>
+            <th style={{ padding: "15px", border: "1px solid #ddd" }}>
+              Approval
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredRequests.map((request, index) => (
+            <tr
+              key={index}
+              style={{
+                backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#fff",
+                borderBottom: "1px solid #ddd",
+              }}
+            >
+              <td style={{ padding: "15px", border: "1px solid #ddd" }}>
+                {request.date}
+              </td>
+              <td style={{ padding: "15px", border: "1px solid #ddd" }}>
+                {request.item}
+              </td>
+              <td style={{ padding: "15px", border: "1px solid #ddd" }}>
+                {request.department}
+              </td>
+              <td
                 style={{
-                  backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#fff",
-                  borderBottom: "1px solid #e0e0e0",
+                  padding: "15px",
+                  border: "1px solid #ddd",
+                  textAlign: "center",
+                  verticalAlign: "middle",
                 }}
               >
-                <td style={{ padding: "20px", borderRight: "1px solid #e0e0e0" }}>
-                  {request.date}
-                </td>
-                <td style={{ padding: "10px", borderRight: "1px solid #e0e0e0" }}>
-                  {request.item}
-                </td>
-                <td style={{ padding: "10px", borderRight: "1px solid #e0e0e0" }}>
-                  {request.department}
-                </td>
-                <td style={{ padding: "10px" }}>
-                  {request.approval === "Approved" ? (
-                    <Badge
-                      color="green"
-                      style={{
-                        padding: "20px 10px",
-                        color: "white",
-                        border: "1px green",
-                        borderRadius: "5px",
-                      }}
-                    >
-                      Approved
-                    </Badge>
-                  ) : (
-                    <Badge
-                      color="red"
-                      variant="light"
-                      style={{
-                        padding: "20px 10px",
-                        border: "1px solid red",
-                        borderRadius: "5px",
-                      }}
-                    >
-                      Not Approved
-                    </Badge>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      </div>
-    </>
+                {request.approval === "Approved" ? (
+                  <Badge color="green">Approved</Badge>
+                ) : (
+                  <Badge color="red" variant="light">
+                    Not Approved
+                  </Badge>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+    </div>
   );
 }
 
