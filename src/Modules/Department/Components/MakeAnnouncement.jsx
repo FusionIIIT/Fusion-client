@@ -55,14 +55,13 @@ function MakeAnnouncement() {
     }
 
     try {
-      const response = await axios.post(url, formData, {
+      await axios.post(url, formData, {
         headers: {
           Authorization: `Token ${token}`,
         },
       });
 
       setIsSuccess(true);
-      console.log("Announcement registered:", response.data);
 
       setTimeout(() => {
         resetFormFields();

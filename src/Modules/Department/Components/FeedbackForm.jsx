@@ -80,14 +80,13 @@ export default function Feedbackform() {
     };
 
     try {
-      const response = await axios.post(url, feedbackData, {
+      await axios.post(url, feedbackData, {
         headers: {
           Authorization: `Token ${token}`,
           "Content-Type": "application/json",
         },
       });
 
-      console.log("Feedback submitted:", response.data);
       // Reset form fields after submission if needed
       setFeedback("");
       setRating("Poor"); // Reset to default
