@@ -9,7 +9,10 @@ import {
 } from "@mantine/core";
 import { Upload } from "@phosphor-icons/react";
 import { useState, useEffect } from "react";
-import { viewHostel } from "../../../../routes/hostelManagementRoutes";
+import {
+  viewHostel,
+  upload_attendance,
+} from "../../../../routes/hostelManagementRoutes";
 
 export default function UploadAttendanceComponent() {
   const [file, setFile] = useState(null);
@@ -99,15 +102,40 @@ export default function UploadAttendanceComponent() {
     setSelectedBatch(newBatch);
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log({
-      year,
-      month,
-      selectedHall,
-      selectedBatch,
-      file,
-    });
+
+    const formData = new FormData();
+    formData.append("year", year);
+    formData.append("month", month);
+    formData.append("selectedHall", selectedHall);
+    formData.append("selectedBatch", selectedBatch);
+    formData.append("file", file);
+
+    try {
+      const response = await fetch(upload_attendance, {
+        method: "POST",
+        headers: {
+          Authorization: `Token ${localStorage.getItem("authToken")}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Upload failed");
+      }
+
+      // Clear form after successful upload
+      setFile(null);
+      setYear(null);
+      setMonth(null);
+      setSelectedBatch("");
+
+      alert("Attendance uploaded successfully!");
+    } catch (error) {
+      console.error("Error uploading attendance:", error);
+      alert("Failed to upload attendance. Please try again.");
+    }
   };
 
   return (

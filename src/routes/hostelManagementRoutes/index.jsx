@@ -30,3 +30,4 @@ export const update_guest_room = `${host}/hostelmanagement/update_guest_room/`;
 export const get_intender_id = `${host}/hostelmanagement/get_intender_id/`;
 export const get_guestroom_bookings_for_students = `${host}/hostelmanagement/get_guest_room_request_students/`;
 export const view_attendance = `${host}/hostelmanagement/view_attendance_students`;
+export const upload_attendance = `${host}/hostelmanagement/upload_attendance/`;
