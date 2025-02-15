@@ -37,34 +37,53 @@ export default function ViewAttendanceComponent() {
   const handleFetchAttendance = async () => {
     const token = localStorage.getItem("authToken");
     if (!token) {
-      console.error("Authentication token not found. Please log in again.");
-      setLoading(false);
+      alert("Please login again");
       return;
     }
+
     setLoading(true);
-    // viewAttendance
+
     try {
-      const response = axios.get(
+      const response = await axios.get(
         `${view_attendance}?year=${year}&month=${month}`,
         {
-          headers: {
-            Authorization: `Token ${localStorage.getItem("authToken")}`,
-            "Content-Type": "application/json",
-          },
+          headers: { Authorization: `Token ${token}` },
+          responseType: "blob",
         },
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch attendance data");
+      const blob = new Blob([response.data], {
+        type: response.headers["content-type"],
+      });
+      const fileUrl = URL.createObjectURL(blob);
+
+      setAttendanceFile({
+        url: fileUrl,
+        type: blob.type,
+        name: `Attendance_${year}_${month}${blob.type.includes("pdf") ? ".pdf" : ".png"}`,
+      });
+    } catch (error) {
+      let errorMessage = "Error fetching attendance";
+
+      if (error.response) {
+        if (error.response.status === 404) {
+          errorMessage = "Attendance record not found";
+        }
+
+        if (error.response.data instanceof Blob) {
+          try {
+            const text = await error.response.data.text();
+            errorMessage = text || errorMessage;
+          } catch (e) {
+            console.error("Error reading error message:", e);
+          }
+        }
       }
 
-      const blob = await response.blob();
-      const fileType = blob.type;
-      setAttendanceFile({ blob, fileType });
-    } catch (error) {
-      console.error("Error fetching attendance:", error);
+      alert(errorMessage);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -106,20 +125,28 @@ export default function ViewAttendanceComponent() {
 
         {attendanceFile && (
           <Paper mt="lg" p="md" shadow="sm" withBorder>
-            {attendanceFile.fileType.includes("image") ? (
+            {attendanceFile.type.includes("image") ? (
               <Image
-                src={URL.createObjectURL(attendanceFile.blob)}
+                src={attendanceFile.url}
                 alt="Attendance Record"
+                withPlaceholder
               />
             ) : (
-              <Button
-                component="a"
-                href={URL.createObjectURL(attendanceFile.blob)}
-                download={`Attendance_${year}_${month}.pdf`}
-                mt="md"
-              >
-                Download PDF
-              </Button>
+              <Stack>
+                <iframe
+                  src={attendanceFile.url}
+                  style={{ width: "100%", height: "500px", border: "none" }}
+                  title="Attendance PDF Viewer"
+                />
+                <Button
+                  component="a"
+                  href={attendanceFile.url}
+                  download={attendanceFile.name}
+                  mt="md"
+                >
+                  Download PDF
+                </Button>
+              </Stack>
             )}
           </Paper>
         )}
