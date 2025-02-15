@@ -11,6 +11,7 @@ import LeaveForm from "./students/LeaveForm";
 import LeaveStatus from "./students/LeaveStatus";
 import Fine from "./students/Fine";
 import AllotedRooms from "./students/AllotedRooms";
+import ViewAttendance from "./students/ViewAttendance";
 
 const sections = [
   "Notice Board",
@@ -19,6 +20,7 @@ const sections = [
   "Guest Room",
   "Complaint",
   "Alloted rooms",
+  "My Attendance",
 ];
 
 const subSections = {
@@ -35,6 +37,7 @@ const components = {
   "Leave_Leave Status": LeaveStatus,
   "My Fine": Fine,
   "Alloted rooms": AllotedRooms,
+  "My Attendance": ViewAttendance,
 };
 
 export default function SectionNavigationStudent() {
