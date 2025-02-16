@@ -69,7 +69,7 @@ const Modules = [
     label: "Visitor's Hostel",
     id: "visitor_hostel",
     icon: <GuestIcon size={18} />,
-    url: "/",
+    url: "/visitors_hostel",
   },
   {
     label: "HealthCare Center",
@@ -93,7 +93,7 @@ const Modules = [
     label: "Complaint System",
     id: "complaint_management",
     icon: <ComplaintIcon size={18} />,
-    url: "/",
+    url: "/complaints",
   },
   {
     label: "Placement Cell",
