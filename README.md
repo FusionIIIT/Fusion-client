@@ -1,7 +1,6 @@
 # Fusion Frontend
 
 ## Overview
-
 This Project is the frontend of the Fusion - IIITDMJ's ERP Portal. We've migrated the frontend of fusion from Django templates to a modern React-based architecture.
 
 ## ## Tech Stack
@@ -36,24 +35,23 @@ Make sure that your backend server is running properly before starting the front
 6. All the web pages related to a a **module** are in `src/modules/<module-name>` folder.
 7. All the components related to a **module** are in the `src/modules/<module-name>/components` folder.
 8. All the styles related to a **module** are in the `src/modules/<module-name>/styles` folder.
-9. All the state management related code is in the `src/redux` folder. The `src/redux/userSlice.jsx` file contains user-related states.
-
+9. All the state management related code is in the `src/redux` folder. The `src/redux/userSlice.jsx` file contains user-related states. 
 
 - Note: You can access the username and role of the user using the `useSelector` hook.
 
 ```jsx
-import { useSelector } from "react-redux";
+import { useSelector } from 'react-redux';
 
 const ExampleComponent = () => {
-  const role = useSelector((state) => state.user.role);
-  const username = useSelector((state) => state.user.username);
+  const role = useSelector(state => state.user.role);
+  const username = useSelector(state => state.user.username);
   return (
     <div>
       {username}
       {role}
     </div>
   );
-};
+}
 ```
 
 - For styles, you can use the `mantine` library for components and css-modules for custom styles(Refer this [guide](https://mantine.dev/styles/css-modules/)).
@@ -65,3 +63,4 @@ const ExampleComponent = () => {
 - All the constants should be in UPPERCASE.
 
 **Note**: Please make sure to follow the project structure and naming conventions while adding new files or folders to the project.
+

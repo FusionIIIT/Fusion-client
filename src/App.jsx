@@ -54,9 +54,8 @@
 // }
 
 /* eslint-disable eqeqeq */
-/* eslint-disable no-unused-vars */
 /* eslint-disable react/jsx-pascal-case */
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
 import { MantineProvider } from "@mantine/core";
 import "@mantine/core/styles.css";
