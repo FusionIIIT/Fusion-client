@@ -9,6 +9,12 @@ import LoginPage from "./pages/login";
 import ForgotPassword from "./pages/forgotPassword";
 import AcademicPage from "./Modules/Academic/index";
 import ValidateAuth from "./helper/validateauth";
+import PlacementCellPage from "./Modules/PlacementCell";
+import JobApplicationForm from "./Modules/PlacementCell/ApplyForPlacementForm";
+import AddPlacementRecordForm from "./Modules/PlacementCell/components/AddPlacementRecordForm";
+import AddPlacementEventForm from "./Modules/PlacementCell/components/AddPlacementEventForm";
+import PlacementEventHandeling from "./Modules/PlacementCell/components/PlacementEventHandeling";
+import ApplicationStatusTimeline from "./Modules/PlacementCell/components/Timeline";
 
 export default function App() {
   const location = useLocation();
@@ -37,6 +43,38 @@ export default function App() {
           element={
             <Layout>
               <AcademicPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/placement-cell"
+          element={
+            <Layout>
+              <PlacementCellPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/placement-cell/apply"
+          element={
+            <Layout>
+              <JobApplicationForm />
+            </Layout>
+          }
+        />
+        <Route
+          path="/placement-cell/view"
+          element={
+            <Layout>
+              <PlacementEventHandeling />
+            </Layout>
+          }
+        />
+        <Route
+          path="/placement-cell/timeline"
+          element={
+            <Layout>
+              <ApplicationStatusTimeline />
             </Layout>
           }
         />
