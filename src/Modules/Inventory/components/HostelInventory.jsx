@@ -1,19 +1,30 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, ScrollArea, Select, Group } from "@mantine/core";
+import {
+  Table,
+  Container,
+  Group,
+  Paper,
+  Button,
+  Text,
+  Select,
+  ScrollArea
+} from "@mantine/core";
 import { useSelector } from "react-redux";
 import AddProduct from "./AddProduct";
 import TransferProduct from "./TransferProduct";
+import RequestProduct from "./RequestProduct";
 
 export default function HostelInventory() {
   const role = useSelector((state) => state.user.role);
+
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [inventoryData, setInventoryData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showAddProductModal, setShowAddProductModal] = useState(false);
-  const [showTransferProductModal, setShowTransferProductModal] =
-    useState(false);
+  const [showTransferProductModal, setShowTransferProductModal] = useState(false);
+  const [showRequestProductModal, setShowRequestProductModal] = useState(false);
 
-  // Initial department list (this may change based on role)
+  // Full list of departments (will be overridden for specific roles)
   let departments = [
     { label: "H1", value: "H1" },
     { label: "H3", value: "H3" },
@@ -29,8 +40,11 @@ export default function HostelInventory() {
     { label: "VH", value: "VH" },
   ];
 
-  // Customize departments and department label based on the user's role
+  // Returns the appropriate department label and customizes the department list based on role.
   const renderDepartmentLabel = () => {
+    if (role === "ps_admin") {
+      return selectedDepartment || "H1";
+    }
     switch (role) {
       case "hall1caretaker":
         departments = [{ label: "H1", value: "H1" }];
@@ -58,7 +72,7 @@ export default function HostelInventory() {
         return "IWD";
       case "mess_manager":
         departments = [{ label: "Mess", value: "Mess" }];
-        return "Academic";
+        return "Mess";
       case "acadadmin":
         departments = [{ label: "Academic", value: "Academic" }];
         return "Academic";
@@ -66,25 +80,23 @@ export default function HostelInventory() {
         departments = [{ label: "VH", value: "VH" }];
         return "VH";
       default:
-        departments = [
-          { label: "H1", value: "H1" },
-          { label: "H3", value: "H3" },
-          { label: "H4", value: "H4" },
-          { label: "Panini", value: "Panini" },
-          { label: "Nagarjuna", value: "Nagarjuna" },
-          { label: "Maa Saraswati", value: "Maa Saraswati" },
-          { label: "RSPC", value: "RSPC" },
-          { label: "GymKhana", value: "GymKhana" },
-          { label: "IWD", value: "IWD" },
-          { label: "Mess", value: "Mess" },
-          { label: "Academic", value: "Academic" },
-          { label: "VH", value: "VH" },
-        ];
         return "H1";
     }
   };
 
-  // Fetch data based on the selected department
+  // Auto-set the department if not already selected.
+  useEffect(() => {
+    if (!selectedDepartment) {
+      if (role === "ps_admin") {
+        setSelectedDepartment("H1");
+      } else {
+        setSelectedDepartment(renderDepartmentLabel());
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [role, selectedDepartment]);
+
+  // Fetch inventory data based on the selected department.
   const fetchDepartmentData = async () => {
     const token = localStorage.getItem("authToken");
     if (!token) {
@@ -100,7 +112,7 @@ export default function HostelInventory() {
           headers: {
             Authorization: `Token ${token}`,
           },
-        },
+        }
       );
       if (!response.ok) {
         throw new Error("Failed to fetch department data");
@@ -115,34 +127,43 @@ export default function HostelInventory() {
   };
 
   useEffect(() => {
-    fetchDepartmentData();
+    if (selectedDepartment) {
+      fetchDepartmentData();
+    }
   }, [selectedDepartment]);
 
+  // Modal open/close functions
   const openAddProductModal = () => setShowAddProductModal(true);
   const closeAddProductModal = () => setShowAddProductModal(false);
   const openTransferProductModal = () => setShowTransferProductModal(true);
   const closeTransferProductModal = () => setShowTransferProductModal(false);
+  const openRequestProductModal = () => setShowRequestProductModal(true);
+  const closeRequestProductModal = () => setShowRequestProductModal(false);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        padding: "20px",
-      }}
-    >
-      <h2
+    <>
+      {/* Breadcrumb */}
+      <Text style={{ marginLeft: "70px", fontSize: "16px" }} color="dimmed">
+        <span style={{ cursor: "pointer" }} onClick={() => setSelectedDepartment("")}>
+          Sections
+        </span>
+        {" > "} <span>{renderDepartmentLabel()}</span>
+      </Text>
+
+      <Text
+        align="center"
         style={{
-          color: "#007BFF",
-          textAlign: "center",
+          fontSize: "26px",
           marginBottom: "20px",
+          fontWeight: 600,
+          color: "#228BE6",
         }}
       >
         {renderDepartmentLabel()} Inventory
-      </h2>
+      </Text>
 
-      {/* Department dropdown for selection */}
+
+      {/* Dropdown for department selection (always visible) */}
       <Select
         placeholder="Select Department"
         data={departments.map((dept) => ({
@@ -151,32 +172,30 @@ export default function HostelInventory() {
         }))}
         value={selectedDepartment}
         onChange={setSelectedDepartment}
-        style={{ marginBottom: "20px", width: "80%" }}
+        style={{ marginBottom: "20px", width: "80%", marginLeft: "auto", marginRight: "auto" }}
       />
 
       {/* Action Buttons */}
-      <Group
-        position="center"
-        style={{
-          marginBottom: "20px",
-          width: "100%",
-          justifyContent: "center",
-        }}
-      >
-        <Button
-          variant="filled"
-          color="blue"
-          onClick={openTransferProductModal}
-        >
-          Transfer Item
-        </Button>
-        <Button variant="filled" color="blue" onClick={openAddProductModal}>
-          Add Product
-        </Button>
-      </Group>
+      {role === "ps_admin" ? (
+        <Group position="center" style={{ marginBottom: "20px", gap: "10px", display: "flex", justifyContent: "center" }}>
+          <Button variant="filled" color="blue" onClick={openTransferProductModal} size="md">
+            Transfer Item
+          </Button>
+          <Button variant="filled" color="blue" onClick={openAddProductModal} size="md">
+            Add Product
+          </Button>
+        </Group>
+      ) : (
+        <Group position="center" style={{ marginBottom: "20px", display: "flex", justifyContent: "center" }}>
+          <Button variant="filled" color="blue" size="md" onClick={openRequestProductModal}>
+            Request Product
+          </Button>
+        </Group>
+      )}
 
-      {/* Responsive Table */}
-      <ScrollArea style={{ width: "80%" }}>
+      {/* Inventory Table */}
+
+      <ScrollArea style={{ width: "80%", margin: "0 auto" }}>
         <Table
           style={{
             width: "100%",
@@ -248,8 +267,11 @@ export default function HostelInventory() {
         </Table>
       </ScrollArea>
 
-      {/* Add Product Modal */}
-      {showAddProductModal && (
+
+
+
+      {/* Modals */}
+      {role === "ps_admin" && showAddProductModal && (
         <>
           <div
             style={{
@@ -267,7 +289,7 @@ export default function HostelInventory() {
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") closeAddProductModal();
             }}
-            aria-label="Close Add Item Modal Background"
+            aria-label="Close Add Product Modal Background"
           />
           <div
             style={{
@@ -281,6 +303,7 @@ export default function HostelInventory() {
               boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
               borderRadius: "8px",
               zIndex: 1001,
+              overflow: "hidden",
             }}
           >
             <button
@@ -310,8 +333,7 @@ export default function HostelInventory() {
         </>
       )}
 
-      {/* Transfer Product Modal */}
-      {showTransferProductModal && (
+      {role === "ps_admin" && showTransferProductModal && (
         <>
           <div
             style={{
@@ -327,10 +349,9 @@ export default function HostelInventory() {
             tabIndex={0}
             onClick={closeTransferProductModal}
             onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ")
-                closeTransferProductModal();
+              if (e.key === "Enter" || e.key === " ") closeTransferProductModal();
             }}
-            aria-label="Close Transfer Item Modal Background"
+            aria-label="Close Transfer Product Modal Background"
           />
           <div
             style={{
@@ -344,6 +365,7 @@ export default function HostelInventory() {
               boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
               borderRadius: "8px",
               zIndex: 1001,
+              overflow: "hidden",
             }}
           >
             <button
@@ -370,6 +392,66 @@ export default function HostelInventory() {
           </div>
         </>
       )}
-    </div>
+
+      {role !== "ps_admin" && showRequestProductModal && (
+        <>
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100vw",
+              height: "100vh",
+              backgroundColor: "rgba(0, 0, 0, 0.5)",
+              zIndex: 1000,
+            }}
+            role="button"
+            tabIndex={0}
+            onClick={closeRequestProductModal}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") closeRequestProductModal();
+            }}
+            aria-label="Close Request Product Modal Background"
+          />
+          <div
+            style={{
+              position: "fixed",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: "80%",
+              maxWidth: "600px",
+              backgroundColor: "#fff",
+              boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+              borderRadius: "8px",
+              zIndex: 1001,
+              overflow: "hidden",
+            }}
+          >
+            <button
+              style={{
+                position: "absolute",
+                top: "10px",
+                right: "10px",
+                backgroundColor: "transparent",
+                border: "none",
+                fontSize: "16px",
+                cursor: "pointer",
+              }}
+              onClick={closeRequestProductModal}
+              aria-label="Close Modal"
+            >
+              X
+            </button>
+            <div style={{ margin: "20px" }}>
+              <RequestProduct
+                closeModal={closeRequestProductModal}
+                selectedDepartment={selectedDepartment}
+              />
+            </div>
+          </div>
+        </>
+      )}
+    </>
   );
 }
