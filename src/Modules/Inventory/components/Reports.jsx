@@ -1,176 +1,203 @@
-import React, { useState } from "react";
-import {
-  Table,
-  Checkbox,
-  Container,
-  Group,
-  Badge,
-  Paper,
-  Button,
-  Text
-} from "@mantine/core";
+import React, { useState, useEffect } from "react";
+import { Table, Checkbox, Button, Select } from "@mantine/core";
 
-const data = [
+const departments = [
+  { label: "CSE", value: "CSE" },
+  { label: "ECE", value: "ECE" },
+  { label: "Mech", value: "Mech" },
+  { label: "SM", value: "SM" },
+  { label: "Design", value: "Design" },
+  { label: "NS", value: "NS" },
+  { label: "H1", value: "H1" },
+  { label: "H3", value: "H3" },
+  { label: "H4", value: "H4" },
+  { label: "Panini", value: "Panini" },
+  { label: "Nagarjuna", value: "Nagarjuna" },
+  { label: "Maa Saraswati", value: "Maa Saraswati" },
+  { label: "RSPC", value: "RSPC" },
+  { label: "GymKhana", value: "GymKhana" },
+  { label: "IWD", value: "IWD" },
+  { label: "Mess", value: "Mess" },
+  { label: "Academic", value: "Academic" },
+  { label: "VH", value: "VH" },
+];
+
+const inventoryData = [
   {
+    department: "CSE",
     product: "Computer",
     quantity: 50,
     missing: 0,
-    department: "CSE",
     lastUpdated: "29-03-2024",
   },
   {
+    department: "CSE",
     product: "Peripherals",
     quantity: 50,
     missing: 0,
-    department: "CSE",
     lastUpdated: "29-03-2024",
   },
-  // ... rest of your data
+  {
+    department: "ECE",
+    product: "Oscilloscope",
+    quantity: 20,
+    missing: 1,
+    lastUpdated: "28-03-2024",
+  },
+  {
+    department: "ECE",
+    product: "Microcontroller Kits",
+    quantity: 30,
+    missing: 2,
+    lastUpdated: "27-03-2024",
+  },
 ];
 
 export default function Reports() {
   const [selectedDepartment, setSelectedDepartment] = useState("CSE");
-  const [checkedItems, setCheckedItems] = useState({});
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
 
-  const departments = [
-    { label: "CSE", value: "CSE" },
-    { label: "ECE", value: "ECE" },
-    { label: "Mech", value: "Mech" },
-    { label: "SM", value: "SM" },
-    { label: "Design", value: "Design" },
-    { label: "NS", value: "NS" },
+  useEffect(() => {
+    const handleResize = () => setIsSmallScreen(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    handleResize();
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-    { label: "H1", value: "H1" },
-    { label: "H3", value: "H3" },
-    { label: "H4", value: "H4" },
-    { label: "Panini", value: "Panini" },
-    { label: "Nagarjuna", value: "Nagarjuna" },
-    { label: "Maa Saraswati", value: "Maa Saraswati" },
-    { label: "RSPC", value: "RSPC" },
-    { label: "GymKhana", value: "GymKhana" },
-    { label: "IWD", value: "IWD" },
-    { label: "Mess", value: "Mess" },
-    { label: "Academic", value: "Academic" },
-    { label: "VH", value: "VH" },
-  ];
-
-  const filteredData = data.filter(item => item.department === selectedDepartment);
-
-  const handleCheckboxChange = (product) => {
-    setCheckedItems((prev) => ({
-      ...prev,
-      [product]: !prev[product],
-    }));
-  };
+  const filteredData = inventoryData.filter(
+    (item) => item.department === selectedDepartment,
+  );
 
   return (
-    <>
-      {/* Breadcrumb */}
-      <Text style={{ marginLeft: "70px", fontSize: "16px" }} color="dimmed">
-        <span style={{ cursor: "pointer" }} onClick={() => setSelectedDepartment("")}>
-          Reports
-        </span>
-        {" > "} <span>{selectedDepartment}</span>
-      </Text>
-
-      <Container style={{ marginTop: "20px", maxWidth: "1000px", padding: "20px" }}>
-        <Text
-          align="center"
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        padding: "20px",
+        width: "100%",
+        maxWidth: "1200px",
+        margin: "auto",
+      }}
+    >
+      <h3
+        style={{ color: "#007BFF", marginBottom: "10px", fontSize: "1.2rem" }}
+      >
+        {selectedDepartment} Reports
+      </h3>
+      {isSmallScreen ? (
+        <Select
+          data={departments}
+          value={selectedDepartment}
+          onChange={setSelectedDepartment}
+          placeholder="Select Department"
+          style={{ marginBottom: "20px", width: "80%" }}
+        />
+      ) : (
+        <div
           style={{
-            fontSize: "26px",
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))",
+            gap: "10px",
+            maxWidth: "800px",
             marginBottom: "20px",
-            fontWeight: 600,
-            color: "#228BE6",
           }}
         >
-          {selectedDepartment} Reports
-        </Text>
-
-        {/* Stats Paper */}
-        {/* <Paper
-          shadow="xs"
-          p="lg"
+          {departments.map((dept) => (
+            <Button
+              key={dept.value}
+              variant={selectedDepartment === dept.value ? "filled" : "outline"}
+              color="blue"
+              style={{ minWidth: "80px" }}
+              onClick={() => setSelectedDepartment(dept.value)}
+            >
+              {dept.label}
+            </Button>
+          ))}
+        </div>
+      )}
+      <div style={{ width: "100%", overflowX: "auto" }}>
+        <Table
+          striped
+          highlightOnHover
           style={{
-            borderRadius: "12px",
-            marginBottom: "20px",
+            width: "100%",
+            minWidth: "600px",
+            border: "1px solid #ddd",
+            borderCollapse: "collapse",
             backgroundColor: "white",
           }}
-        > */}
-          {/* <Group position="apart" spacing="xl">
-            <div>
-              <Text style={{ fontSize: "20px", marginBottom: "8px" }}>
-                Total Categories
-              </Text>
-              <Badge size="xl" color="blue">26</Badge>
-            </div>
-            <div>
-              <Text style={{ fontSize: "20px", marginBottom: "8px" }}>
-                Total Products
-              </Text>
-              <Badge size="xl" color="blue">1000</Badge>
-            </div>
-          </Group> */}
-        {/* </Paper> */}
-
-        {/* Department Buttons */}
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: "20px", marginLeft:"70px" }}>
-          <Group spacing="md">
-            {departments.map((dept, index) => (
-              <Button
-                key={index}
-                style={{
-                  fontSize: "14px",
-                  backgroundColor:
-                    selectedDepartment === dept.value ? "#228BE6" : "white",
-                  color: selectedDepartment === dept.value ? "white" : "black",
-                  border: "1px solid #1366D9",
-                }}
-                onClick={() => setSelectedDepartment(dept.value)}
-                size="md"
-              >
-                {dept.label}
-              </Button>
-            ))}
-          </Group>
-        </div>
-
-        {/* Table Paper */}
-        <Paper
-          shadow="xs"
-          p="lg"
-          style={{ borderRadius: "12px", marginLeft: "81px", width: "800px" }}
         >
-          <div style={{ overflowX: "auto" }}>
-            <Table striped highlightOnHover verticalSpacing="md">
-              <thead>
-                <tr>
-                  <th style={{ fontSize: "20px", textAlign: "center" }}>Select</th>
-                  <th style={{ fontSize: "20px", textAlign: "center" }}>Products</th>
-                  <th style={{ fontSize: "20px", textAlign: "center" }}>Quantity</th>
-                  <th style={{ fontSize: "20px", textAlign: "center" }}>Missing</th>
-                  <th style={{ fontSize: "20px", textAlign: "center" }}>Last Updated</th>
+          <thead>
+            <tr
+              style={{
+                backgroundColor: "#f0f0f0",
+                borderBottom: "2px solid #ddd",
+                textAlign: "center",
+              }}
+            >
+              <th style={{ padding: "10px", border: "1px solid #ddd" }}>
+                Select
+              </th>
+              <th style={{ padding: "10px", border: "1px solid #ddd" }}>
+                Products
+              </th>
+              <th style={{ padding: "10px", border: "1px solid #ddd" }}>
+                Quantity
+              </th>
+              <th style={{ padding: "10px", border: "1px solid #ddd" }}>
+                Missing
+              </th>
+              <th style={{ padding: "10px", border: "1px solid #ddd" }}>
+                Last Updated
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredData.length > 0 ? (
+              filteredData.map((item, index) => (
+                <tr
+                  key={index}
+                  style={{
+                    backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#fff",
+                    borderBottom: "1px solid #ddd",
+                    textAlign: "center",
+                  }}
+                >
+                  <td style={{ padding: "10px", border: "1px solid #ddd" }}>
+                    <Checkbox />
+                  </td>
+                  <td style={{ padding: "10px", border: "1px solid #ddd" }}>
+                    {item.product}
+                  </td>
+                  <td style={{ padding: "10px", border: "1px solid #ddd" }}>
+                    {item.quantity}
+                  </td>
+                  <td style={{ padding: "10px", border: "1px solid #ddd" }}>
+                    {item.missing}
+                  </td>
+                  <td style={{ padding: "10px", border: "1px solid #ddd" }}>
+                    {item.lastUpdated}
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {filteredData.map((item, index) => (
-                  <tr key={index}>
-                    <td style={{ textAlign: "center" }}>
-                      <Checkbox
-                        checked={!!checkedItems[item.product]}
-                        onChange={() => handleCheckboxChange(item.product)}
-                      />
-                    </td>
-                    <td style={{ textAlign: "center" }}>{item.product}</td>
-                    <td style={{ textAlign: "center" }}>{item.quantity}</td>
-                    <td style={{ textAlign: "center" }}>{item.missing}</td>
-                    <td style={{ textAlign: "center" }}>{item.lastUpdated}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </div>
-        </Paper>
-      </Container>
-    </>
+              ))
+            ) : (
+              <tr>
+                <td
+                  colSpan="5"
+                  style={{
+                    padding: "10px",
+                    textAlign: "center",
+                    border: "1px solid #ddd",
+                  }}
+                >
+                  No data available for {selectedDepartment}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </Table>
+      </div>
+    </div>
   );
 }
