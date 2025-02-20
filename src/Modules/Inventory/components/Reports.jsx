@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Table, Checkbox, Button, Select } from "@mantine/core";
+import React, { useState } from "react";
+import { Table, Checkbox, Select, TextInput } from "@mantine/core";
 
 const departments = [
   { label: "CSE", value: "CSE" },
@@ -55,17 +55,12 @@ const inventoryData = [
 
 export default function Reports() {
   const [selectedDepartment, setSelectedDepartment] = useState("CSE");
-  const [isSmallScreen, setIsSmallScreen] = useState(false);
-
-  useEffect(() => {
-    const handleResize = () => setIsSmallScreen(window.innerWidth <= 768);
-    window.addEventListener("resize", handleResize);
-    handleResize();
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const filteredData = inventoryData.filter(
-    (item) => item.department === selectedDepartment,
+    (item) =>
+      item.department === selectedDepartment &&
+      item.product.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
@@ -85,37 +80,19 @@ export default function Reports() {
       >
         {selectedDepartment} Reports
       </h3>
-      {isSmallScreen ? (
-        <Select
-          data={departments}
-          value={selectedDepartment}
-          onChange={setSelectedDepartment}
-          placeholder="Select Department"
-          style={{ marginBottom: "20px", width: "80%" }}
-        />
-      ) : (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))",
-            gap: "10px",
-            maxWidth: "800px",
-            marginBottom: "20px",
-          }}
-        >
-          {departments.map((dept) => (
-            <Button
-              key={dept.value}
-              variant={selectedDepartment === dept.value ? "filled" : "outline"}
-              color="blue"
-              style={{ minWidth: "80px" }}
-              onClick={() => setSelectedDepartment(dept.value)}
-            >
-              {dept.label}
-            </Button>
-          ))}
-        </div>
-      )}
+      <Select
+        data={departments}
+        value={selectedDepartment}
+        onChange={setSelectedDepartment}
+        placeholder="Select Department"
+        style={{ marginBottom: "20px", width: "80%" }}
+      />
+      <TextInput
+        placeholder="Search products"
+        value={searchTerm}
+        onChange={(event) => setSearchTerm(event.currentTarget.value)}
+        style={{ marginBottom: "20px", width: "80%" }}
+      />
       <div style={{ width: "100%", overflowX: "auto" }}>
         <Table
           striped
