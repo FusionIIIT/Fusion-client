@@ -85,7 +85,7 @@ function ViewStock() {
                 setSearch(e.target.value);
               }}
               style={{
-                width: "50%",
+                width: "130%",
                 padding: "10px",
                 border: "1px solid #ccc",
                 borderRadius: "5px",
@@ -108,7 +108,6 @@ function ViewStock() {
           </button>
         </div>
 
-        {/* Styled Table */}
         <Paper shadow="xl" p="xl" withBorder>
           <Title
             order={5}

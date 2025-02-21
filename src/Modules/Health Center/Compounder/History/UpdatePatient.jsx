@@ -564,7 +564,7 @@ function UpdatePatient() {
             style={{ display: "flex", flexDirection: "column", width: "30%" }}
           >
             <Input.Label style={{ marginBottom: "0.5rem" }}>
-              Text Suggested
+              Test Suggested
             </Input.Label>
             <Textarea
               type="text"

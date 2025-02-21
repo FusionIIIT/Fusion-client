@@ -1,6 +1,8 @@
 import {
+  Alert,
   Button,
   Flex,
+  Loader,
   Paper,
   Radio,
   Select,
@@ -10,24 +12,51 @@ import {
   Title,
 } from "@mantine/core";
 import { useEffect, useState } from "react";
-import NavCom from "../Navigation";
+import { Check, X } from "@phosphor-icons/react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
 import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import { studentRoute } from "../../../../routes/health_center";
+import NavPatient from "../Navigation";
 
-function Prescription() {
+function CompPrescription() {
   const [prescrip, setPrescrip] = useState(null);
+  const [notification, setNotification] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
   const [printMode, setPrintMode] = useState("latest");
+  const [loading, setLoading] = useState(true);
+  const [followid, setFollowid] = useState(0);
+  const { id } = useParams();
 
   useEffect(() => {
     const fetchData = async () => {
+      const token = localStorage.getItem("authToken");
       try {
         const data = {
           rollNumber: "22bcs219",
-          doctor: "Dr. John Doe",
-          diseaseDetails: "Chronic Disease Details",
           prescriptions: [
             {
+              id: 0,
               followUpDate: "2024-11-15",
+              doctor: "Dr. Challa",
+              diseaseDetails: "Chronic Disease Details",
+              tests: "trial test1",
+              revoked_medicines: [
+                {
+                  medicine: "Medicine R",
+                  quantity: "2",
+                  days: "7",
+                  times: "3",
+                  date: "2024-11-20",
+                },
+                {
+                  medicine: "Medicine Re",
+                  quantity: "1",
+                  days: "5",
+                  times: "2",
+                  date: "2024-11-18",
+                },
+              ],
               medicines: [
                 {
                   medicine: "Medicine A",
@@ -46,7 +75,27 @@ function Prescription() {
               ],
             },
             {
+              id: 1,
               followUpDate: "2024-11-10",
+              doctor: "Dr. Sahil",
+              diseaseDetails: "Chronic Disease Details",
+              tests: "trial test",
+              revoked_medicines: [
+                {
+                  medicine: "Medicine Ra",
+                  quantity: "2",
+                  days: "7",
+                  times: "3",
+                  date: "2024-11-20",
+                },
+                {
+                  medicine: "Medicine Rb",
+                  quantity: "1",
+                  days: "5",
+                  times: "2",
+                  date: "2024-11-18",
+                },
+              ],
               medicines: [
                 {
                   medicine: "Medicine C",
@@ -59,10 +108,30 @@ function Prescription() {
             },
           ],
         };
-
+        const response = await axios.post(
+          studentRoute,
+          {
+            presc_id: id,
+            get_prescription: 1,
+          },
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+          },
+        );
+        console.log(response);
+        if (response.data.prescription.dependent_name === "SELF") {
+          data.rollNumber = response.data.prescription.user_id;
+        } else {
+          data.rollNumber = response.data.prescription.dependent_name;
+        }
+        data.prescriptions = response.data.prescriptions;
         setPrescrip(data);
+        setLoading(false);
         if (data?.prescriptions?.length > 0) {
           setSelectedDate(data.prescriptions[0].followUpDate);
+          setFollowid(data.prescriptions[0].id);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -72,20 +141,58 @@ function Prescription() {
     fetchData();
   }, []);
 
-  if (!prescrip) {
+  if (loading) {
     return (
-      <div>
-        <h2>Prescription not available!</h2>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <Loader />
       </div>
     );
   }
 
-  const filteredPrescription = prescrip?.prescriptions?.find(
-    (prescription) => prescription.followUpDate === selectedDate,
-  );
+  if ((prescrip === null || prescrip.length === 0) && !loading) {
+    return (
+      <div>
+        <h2>No prescriptions found!</h2>
+      </div>
+    );
+  }
 
   const generatePrescriptionTable = (prescription) => (
-    <div key={prescription.followUpDate} style={{ marginBottom: "20px" }}>
+    <div key={prescription.id}>
+      <Flex gap="lg" mb="md">
+        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+          <Text>Doctor</Text>
+          <Text
+            style={{
+              color: "#15abff",
+              textTransform: "capitalize",
+              fontWeight: "bold",
+            }}
+          >
+            {prescription.doctor}
+          </Text>
+        </div>
+
+        <div style={{ display: "flex", gap: "0.5rem" }}>
+          <Text>Details of Disease</Text>
+          <Text
+            style={{
+              color: "#15abff",
+              textTransform: "capitalize",
+              fontWeight: "bold",
+            }}
+          >
+            {prescription.diseaseDetails}
+          </Text>
+        </div>
+      </Flex>
       <Title
         order={5}
         style={{
@@ -108,28 +215,82 @@ function Prescription() {
             <Table.Th style={{ textAlign: "center" }}>Quantity</Table.Th>
             <Table.Th style={{ textAlign: "center" }}>Days</Table.Th>
             <Table.Th style={{ textAlign: "center" }}>Times</Table.Th>
-            <Table.Th style={{ textAlign: "center" }}>Expiry Date</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
-          {prescription.medicines.map((medicine) => (
-            <Table.Tr key={medicine.medicine}>
-              <Table.Td>{medicine.medicine}</Table.Td>
-              <Table.Td>{medicine.quantity}</Table.Td>
-              <Table.Td>{medicine.days}</Table.Td>
-              <Table.Td>{medicine.times}</Table.Td>
-              <Table.Td>{medicine.date}</Table.Td>
+          {prescription.revoked_medicines.map((med) => (
+            <Table.Tr key={med.medicine}>
+              <Table.Td>{med.medicine}</Table.Td>
+              <Table.Td>{med.quantity}</Table.Td>
+              <Table.Td>{med.days}</Table.Td>
+              <Table.Td>{med.times}</Table.Td>
             </Table.Tr>
           ))}
         </Table.Tbody>
       </Table>
+      <Title
+        order={5}
+        style={{
+          textAlign: "center",
+          color: "#15abff",
+        }}
+      >
+        Prescribed Medicine in Follow-up on {prescription.followUpDate}
+      </Title>
+      <Table
+        withTableBorder
+        withColumnBorders
+        highlightOnHover
+        striped
+        style={{ textAlign: "center" }}
+      >
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th style={{ textAlign: "center" }}>Medicine</Table.Th>
+            <Table.Th style={{ textAlign: "center" }}>Quantity</Table.Th>
+            <Table.Th style={{ textAlign: "center" }}>Days</Table.Th>
+            <Table.Th style={{ textAlign: "center" }}>Times</Table.Th>
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
+          {prescription.medicines.map((med) => (
+            <Table.Tr key={med.medicine}>
+              <Table.Td>{med.medicine}</Table.Td>
+              <Table.Td>{med.quantity}</Table.Td>
+              <Table.Td>{med.days}</Table.Td>
+              <Table.Td>{med.times}</Table.Td>
+            </Table.Tr>
+          ))}
+        </Table.Tbody>
+      </Table>
+
+      <Flex align="center" justify="space-between">
+        <Textarea
+          label="Text Suggested"
+          placeholder="Write Here"
+          style={{ width: "60%" }}
+          autosize
+        >
+          {prescription.tests}
+        </Textarea>
+
+        <Button
+          style={{
+            backgroundColor: "#15abff",
+            color: "white",
+            padding: "5px 30px",
+          }}
+        >
+          View Report
+        </Button>
+      </Flex>
     </div>
   );
 
   return (
     <>
       <CustomBreadcrumbs />
-      <NavCom />
+      <NavPatient />
       <br />
       <Paper shadow="xl" p="xl" withBorder>
         <h1 style={{ textAlign: "center", color: "#15abff" }}>
@@ -169,10 +330,20 @@ function Prescription() {
           {printMode === "latest" && prescrip?.prescriptions?.length > 0 && (
             <div style={{ width: "30%" }}>
               <Select
-                value={`Follow-up on ${selectedDate}`}
-                onChange={(value) => setSelectedDate(value.split(" on ")[1])}
+                value={`Follow-up on ${selectedDate} id ${followid}`}
+                onChange={(value) => {
+                  const [_, date, fid] = value.match(
+                    /Follow-up on (.+) id (.+)/,
+                  );
+                  console.log(_);
+                  console.log(date);
+                  console.log(fid);
+                  setSelectedDate(date);
+                  setFollowid(fid);
+                }}
                 data={prescrip?.prescriptions?.map(
-                  (prescription) => `Follow-up on ${prescription.followUpDate}`,
+                  (prescription) =>
+                    `Follow-up on ${prescription.followUpDate} id ${prescription.id}`,
                 )}
                 sort={(a, b) => {
                   return (
@@ -197,67 +368,44 @@ function Prescription() {
         </div>
 
         <br />
-        <Flex gap="lg" align="center">
-          <div style={{ paddingRight: "100px" }}>
-            <Text>Doctor</Text>
-            <Text
-              style={{
-                color: "#15abff",
-                textTransform: "capitalize",
-                fontWeight: "bold",
-              }}
-            >
-              {prescrip?.doctor}
-            </Text>
-          </div>
-
-          <div>
-            <Text>Details of Disease</Text>
-            <Text
-              style={{
-                color: "#15abff",
-                textTransform: "capitalize",
-                fontWeight: "bold",
-              }}
-            >
-              {prescrip?.diseaseDetails}
-            </Text>
-          </div>
-        </Flex>
-        <br />
 
         <div>
           {printMode === "latest"
-            ? generatePrescriptionTable(filteredPrescription)
+            ? prescrip?.prescriptions
+                ?.filter((prescription) => prescription.id === Number(followid))
+                .map((prescription) => generatePrescriptionTable(prescription))
             : prescrip?.prescriptions?.map((prescription) =>
                 generatePrescriptionTable(prescription),
               )}
         </div>
-
-        <Textarea
-          label="Text Suggested"
-          placeholder="Write Here"
-          style={{ width: "100%" }}
-        >
-          dummy data
-        </Textarea>
-
-        <Button
+      </Paper>
+      {notification && (
+        <Alert
+          icon={
+            notification.type === "success" ? (
+              <Check size={16} />
+            ) : (
+              <X size={16} />
+            )
+          }
+          title={notification.type === "success" ? "Success" : "Error"}
+          color={notification.type === "success" ? "green" : "red"}
+          withCloseButton
+          onClose={() => setNotification(null)}
           style={{
-            backgroundColor: "#15abff",
-            color: "white",
-            padding: "5px 30px",
-            marginTop: "1rem",
-            marginLeft: "auto",
-            marginRight: "auto",
-            display: "block",
+            position: "fixed",
+            top: "20px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 1000,
+            width: "auto",
           }}
         >
-          View Report
-        </Button>
-      </Paper>
+          <Text>{notification.message}</Text>
+        </Alert>
+      )}
     </>
   );
 }
 
-export default Prescription;
+export default CompPrescription;

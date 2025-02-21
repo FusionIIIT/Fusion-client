@@ -89,7 +89,7 @@ function ExpiredMedicine() {
                 setSearch(e.target.value);
               }}
               style={{
-                width: "50%",
+                width: "130%",
                 padding: "10px",
                 border: "1px solid #ccc",
                 borderRadius: "5px",
@@ -112,7 +112,6 @@ function ExpiredMedicine() {
           </button>
         </div>
 
-        {/* Styled Table */}
         <Paper shadow="xl" p="xl" withBorder>
           <Title
             order={5}

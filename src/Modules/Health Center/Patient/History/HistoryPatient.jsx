@@ -55,7 +55,7 @@ function HistoryPatient() {
   }, []);
 
   const handleViewClick = (id) => {
-    navigate(`/healthcenter/compounder/prescription/${id}`);
+    navigate(`/healthcenter/student/prescription/${id}`);
   };
 
   const rows = history.map((element) => (
