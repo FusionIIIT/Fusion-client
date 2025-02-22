@@ -1,14 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Table,
-  Container,
-  Group,
-  Paper,
-  Button,
-  Text,
-  Select,
-  ScrollArea
-} from "@mantine/core";
+import { Table, Group, Button, Text, Select, ScrollArea } from "@mantine/core";
 import { useSelector } from "react-redux";
 import AddProduct from "./AddProduct";
 import TransferProduct from "./TransferProduct";
@@ -21,7 +12,8 @@ export default function HostelInventory() {
   const [inventoryData, setInventoryData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showAddProductModal, setShowAddProductModal] = useState(false);
-  const [showTransferProductModal, setShowTransferProductModal] = useState(false);
+  const [showTransferProductModal, setShowTransferProductModal] =
+    useState(false);
   const [showRequestProductModal, setShowRequestProductModal] = useState(false);
 
   // Full list of departments (will be overridden for specific roles)
@@ -112,7 +104,7 @@ export default function HostelInventory() {
           headers: {
             Authorization: `Token ${token}`,
           },
-        }
+        },
       );
       if (!response.ok) {
         throw new Error("Failed to fetch department data");
@@ -144,7 +136,15 @@ export default function HostelInventory() {
     <>
       {/* Breadcrumb */}
       <Text style={{ marginLeft: "70px", fontSize: "16px" }} color="dimmed">
-        <span style={{ cursor: "pointer" }} onClick={() => setSelectedDepartment("")}>
+        <span
+          style={{ cursor: "pointer" }}
+          onClick={() => setSelectedDepartment("")}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") setSelectedDepartment("");
+          }}
+        >
           Sections
         </span>
         {" > "} <span>{renderDepartmentLabel()}</span>
@@ -162,7 +162,6 @@ export default function HostelInventory() {
         {renderDepartmentLabel()} Inventory
       </Text>
 
-
       {/* Dropdown for department selection (always visible) */}
       <Select
         placeholder="Select Department"
@@ -172,22 +171,57 @@ export default function HostelInventory() {
         }))}
         value={selectedDepartment}
         onChange={setSelectedDepartment}
-        style={{ marginBottom: "20px", width: "80%", marginLeft: "auto", marginRight: "auto" }}
+        style={{
+          marginBottom: "20px",
+          width: "70%",
+          marginLeft: "auto",
+          marginRight: "auto",
+        }}
       />
 
       {/* Action Buttons */}
       {role === "ps_admin" ? (
-        <Group position="center" style={{ marginBottom: "20px", gap: "10px", display: "flex", justifyContent: "center" }}>
-          <Button variant="filled" color="blue" onClick={openTransferProductModal} size="md">
+        <Group
+          position="center"
+          style={{
+            marginBottom: "20px",
+            gap: "10px",
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          <Button
+            variant="filled"
+            color="blue"
+            onClick={openTransferProductModal}
+            size="md"
+          >
             Transfer Item
           </Button>
-          <Button variant="filled" color="blue" onClick={openAddProductModal} size="md">
+          <Button
+            variant="filled"
+            color="blue"
+            onClick={openAddProductModal}
+            size="md"
+          >
             Add Product
           </Button>
         </Group>
       ) : (
-        <Group position="center" style={{ marginBottom: "20px", display: "flex", justifyContent: "center" }}>
-          <Button variant="filled" color="blue" size="md" onClick={openRequestProductModal}>
+        <Group
+          position="center"
+          style={{
+            marginBottom: "20px",
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          <Button
+            variant="filled"
+            color="blue"
+            size="md"
+            onClick={openRequestProductModal}
+          >
             Request Product
           </Button>
         </Group>
@@ -266,9 +300,6 @@ export default function HostelInventory() {
           </tbody>
         </Table>
       </ScrollArea>
-
-
-
 
       {/* Modals */}
       {role === "ps_admin" && showAddProductModal && (
@@ -349,7 +380,8 @@ export default function HostelInventory() {
             tabIndex={0}
             onClick={closeTransferProductModal}
             onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") closeTransferProductModal();
+              if (e.key === "Enter" || e.key === " ")
+                closeTransferProductModal();
             }}
             aria-label="Close Transfer Product Modal Background"
           />
@@ -409,7 +441,8 @@ export default function HostelInventory() {
             tabIndex={0}
             onClick={closeRequestProductModal}
             onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") closeRequestProductModal();
+              if (e.key === "Enter" || e.key === " ")
+                closeRequestProductModal();
             }}
             aria-label="Close Request Product Modal Background"
           />

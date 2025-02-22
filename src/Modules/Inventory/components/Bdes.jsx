@@ -1,21 +1,28 @@
 import React, { useState, useEffect } from "react";
-import { Table, Container, Group, Paper, Button, Text } from "@mantine/core";
-import { useNavigate } from "react-router-dom";
+import {
+  Table,
+  Container,
+  Group,
+  Button,
+  Text,
+  ScrollArea,
+  Select,
+} from "@mantine/core";
+import { useSelector } from "react-redux";
 import AddProduct from "./AddProduct";
 import TransferProduct from "./TransferProduct";
-import RequestProduct from "./RequestProduct"; // Import RequestProduct
+import RequestProduct from "./RequestProduct";
 import "../styles/popupModal.css";
-import { useSelector } from "react-redux";
 
 export default function Inventory() {
   const role = useSelector((state) => state.user.role);
   const [showAddProductModal, setShowAddProductModal] = useState(false);
-  const [showTransferProductModal, setShowTransferProductModal] = useState(false);
+  const [showTransferProductModal, setShowTransferProductModal] =
+    useState(false);
   const [showRequestProductModal, setShowRequestProductModal] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [inventoryData, setInventoryData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   const departments = [
     { label: "CSE", value: "CSE" },
@@ -29,11 +36,11 @@ export default function Inventory() {
   // Helper function to return the auto-assigned department based on role
   const getDepartmentLabel = () => {
     if (role === "deptadmin_cse") return "CSE";
-    else if (role === "deptadmin_ece" || role === "Junior Technician") return "ECE";
-    else if (role === "deptadmin_me") return "Mech";
-    else if (role === "deptadmin_sm") return "SM";
-    else if (role === "deptadmin_design") return "Design";
-    else return "";
+    if (role === "deptadmin_ece" || role === "Junior Technician") return "ECE";
+    if (role === "deptadmin_me") return "Mech";
+    if (role === "deptadmin_sm") return "SM";
+    if (role === "deptadmin_design") return "Design";
+    return "";
   };
 
   // Determine if the user has a default role (full UI) or not (auto‑assigned dept)
@@ -70,7 +77,7 @@ export default function Inventory() {
           headers: {
             Authorization: `Token ${token}`,
           },
-        }
+        },
       );
 
       if (!response.ok) {
@@ -104,13 +111,21 @@ export default function Inventory() {
   const openRequestProductModal = () => setShowRequestProductModal(true);
   const closeRequestProductModal = () => setShowRequestProductModal(false);
 
-  const relevantColumns = ["Item", "Quantity"];
-
   return (
     <>
       {/* Breadcrumb */}
       <Text style={{ marginLeft: "70px", fontSize: "16px" }} color="dimmed">
-        <span style={{ cursor: "pointer" }} onClick={() => setSelectedDepartment("")}>
+        <span
+          style={{ cursor: "pointer" }}
+          role="button"
+          tabIndex={0}
+          onClick={() => setSelectedDepartment("")}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              setSelectedDepartment("");
+            }
+          }}
+        >
           Departments
         </span>
         {" > "} <span>{selectedDepartment}</span>
@@ -118,7 +133,6 @@ export default function Inventory() {
 
       <Container
         style={{
-          marginTop: "20px",
           maxWidth: "1000px",
           maxHeight: "1000px",
           padding: "20px",
@@ -135,114 +149,129 @@ export default function Inventory() {
         >
           {selectedDepartment} Department Inventory
         </Text>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginBottom: "20px",
-          }}
-        >
-          <Group spacing="md">
-            {isDefaultRole ? (
-              <>
-                <Button
-                  style={{ fontSize: "14px" }}
-                  variant="filled"
-                  color="blue"
-                  onClick={openTransferProductModal}
-                  size="md"
-                >
-                  Transfer Item
-                </Button>
-                {departments.map((dept, index) => (
-                  <Button
+
+        {/* Dropdown for department selection */}
+        <Select
+          placeholder="Select Department"
+          data={departments}
+          value={selectedDepartment}
+          onChange={setSelectedDepartment}
+          style={{ width: "90%", margin: "0 auto 20px auto" }}
+        />
+
+        {/* Action Buttons */}
+        {isDefaultRole ? (
+          <Group
+            position="center"
+            style={{
+              marginBottom: "20px",
+              gap: "10px",
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <Button
+              variant="filled"
+              color="blue"
+              onClick={openTransferProductModal}
+              size="md"
+            >
+              Transfer Item
+            </Button>
+            <Button
+              variant="filled"
+              color="blue"
+              onClick={openAddProductModal}
+              size="md"
+            >
+              Add Product
+            </Button>
+          </Group>
+        ) : (
+          <Group position="center" style={{ marginBottom: "20px" }}>
+            <Button
+              variant="filled"
+              color="blue"
+              onClick={openRequestProductModal}
+              size="md"
+            >
+              Request Product
+            </Button>
+          </Group>
+        )}
+
+        {/* Inventory Table */}
+        <ScrollArea style={{ width: "80%", margin: "0 auto" }}>
+          <Table
+            style={{
+              width: "100%",
+              border: "1px solid #ddd",
+              borderCollapse: "collapse",
+            }}
+          >
+            <thead>
+              <tr
+                style={{
+                  backgroundColor: "#f0f0f0",
+                  borderBottom: "2px solid #ddd",
+                }}
+              >
+                <th style={{ padding: "15px", border: "1px solid #ddd" }}>
+                  Item
+                </th>
+                <th style={{ padding: "15px", border: "1px solid #ddd" }}>
+                  Quantity
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td
+                    colSpan={2}
+                    style={{
+                      textAlign: "center",
+                      padding: "20px",
+                      fontSize: "16px",
+                      color: "#666",
+                    }}
+                  >
+                    Loading data...
+                  </td>
+                </tr>
+              ) : (
+                inventoryData.map((item, index) => (
+                  <tr
                     key={index}
                     style={{
-                      fontSize: "14px",
-                      backgroundColor:
-                        selectedDepartment === dept.value ? "#228BE6" : "white",
-                      color: selectedDepartment === dept.value ? "white" : "black",
-                      border: "1px solid #1366D9",
+                      borderBottom: "1px solid #ddd",
+                      backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#fff",
                     }}
-                    onClick={() => setSelectedDepartment(dept.value)}
-                    size="md"
                   >
-                    {dept.label}
-                  </Button>
-                ))}
-                <Button
-                  style={{ fontSize: "14px" }}
-                  variant="filled"
-                  color="blue"
-                  onClick={openAddProductModal}
-                  size="md"
-                >
-                  Add Product
-                </Button>
-              </>
-            ) : (
-              <>
-                {/* <Button
-                  disabled
-                  style={{
-                    fontSize: "14px",
-                    backgroundColor: "#228BE6",
-                    color: "white",
-                    border: "1px solid #1366D9",
-                  }}
-                  size="md"
-                >
-                  {getDepartmentLabel()} */}
-                {/* </Button> */}
-                <Button
-                  style={{ fontSize: "14px" }}
-                  variant="filled"
-                  color="blue"
-                  onClick={openRequestProductModal}
-                  size="md"
-                >
-                  Request Product
-                </Button>
-              </>
-            )}
-          </Group>
-        </div>
-
-        <Paper
-          shadow="xs"
-          p="lg"
-          style={{ borderRadius: "12px", marginLeft: "81px", width: "800px" }}
-        >
-          <div style={{ overflowX: "auto" }}>
-            <Table striped highlightOnHover verticalSpacing="md">
-              <thead>
-                <tr>
-                  {relevantColumns.map((col) => (
-                    <th key={col} style={{ fontSize: "20px" }}>
-                      {col.charAt(0).toUpperCase() + col.slice(1)}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={relevantColumns.length} style={{ textAlign: "center" }}>
-                      Loading data...
+                    <td
+                      style={{
+                        padding: "15px",
+                        border: "1px solid #ddd",
+                        textAlign: "center",
+                      }}
+                    >
+                      {item.item_name}
+                    </td>
+                    <td
+                      style={{
+                        padding: "15px",
+                        border: "1px solid #ddd",
+                        textAlign: "center",
+                      }}
+                    >
+                      {item.quantity}
                     </td>
                   </tr>
-                ) : (
-                  inventoryData.map((item, index) => (
-                    <tr key={index}>
-                      <td style={{ textAlign: "center" }}>{item.item_name}</td>
-                      <td style={{ textAlign: "center" }}>{item.quantity}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </Table>
-          </div>
-        </Paper>
+                ))
+              )}
+            </tbody>
+          </Table>
+        </ScrollArea>
 
         {/* Add Product Modal */}
         {showAddProductModal && (
@@ -261,7 +290,9 @@ export default function Inventory() {
               role="button"
               tabIndex={0}
               onClick={closeAddProductModal}
-              onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && closeAddProductModal()}
+              onKeyDown={(e) =>
+                (e.key === "Enter" || e.key === " ") && closeAddProductModal()
+              }
               aria-label="Close Add Product Modal Background"
             />
 
@@ -332,7 +363,8 @@ export default function Inventory() {
               tabIndex={0}
               onClick={closeTransferProductModal}
               onKeyDown={(e) =>
-                (e.key === "Enter" || e.key === " ") && closeTransferProductModal()
+                (e.key === "Enter" || e.key === " ") &&
+                closeTransferProductModal()
               }
               aria-label="Close Transfer Product Modal Background"
             />
@@ -399,7 +431,8 @@ export default function Inventory() {
               tabIndex={0}
               onClick={closeRequestProductModal}
               onKeyDown={(e) =>
-                (e.key === "Enter" || e.key === " ") && closeRequestProductModal()
+                (e.key === "Enter" || e.key === " ") &&
+                closeRequestProductModal()
               }
               aria-label="Close Request Product Modal Background"
             />

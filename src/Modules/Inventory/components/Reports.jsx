@@ -75,11 +75,11 @@ export default function Reports() {
         margin: "auto",
       }}
     >
-      <h3
-        style={{ color: "#007BFF", marginBottom: "10px", fontSize: "1.2rem" }}
+      <h1
+        style={{ color: "#007BFF", marginBottom: "10px", fontSize: "1.5rem" }}
       >
         {selectedDepartment} Reports
-      </h3>
+      </h1>
       <Select
         data={departments}
         value={selectedDepartment}
@@ -99,7 +99,7 @@ export default function Reports() {
           highlightOnHover
           style={{
             width: "100%",
-            minWidth: "600px",
+            minWidth: "500px",
             border: "1px solid #ddd",
             borderCollapse: "collapse",
             backgroundColor: "white",
