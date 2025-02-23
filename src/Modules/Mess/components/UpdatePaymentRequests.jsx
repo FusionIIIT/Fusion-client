@@ -11,7 +11,7 @@ import {
   Alert,
   TextInput,
 } from "@mantine/core";
-import { viewUpdatePaymentRequestsRoute } from "../routes";
+import { updateBalanceRequestRoute } from "../routes";
 
 const tableHeaders = [
   "Student ID",
@@ -28,7 +28,6 @@ function ViewUpdatePaymentRequests() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch update payment requests data from API
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -38,25 +37,21 @@ function ViewUpdatePaymentRequests() {
           return;
         }
 
-        const response = await axios.get(
-          viewUpdatePaymentRequestsRoute, // Replace with your correct API endpoint
-          {
-            headers: {
-              Authorization: `Token ${token}`,
-            },
-          },
-        );
-
-        console.log("API Response Data:", response.data); // Debugging log to check data
+        const response = await axios.get(updateBalanceRequestRoute, {
+          headers: { Authorization: `Token ${token}` },
+        });
 
         if (response.data && response.data.payload) {
-          setUpdatePaymentData(response.data.payload); // Store update payment data
+          const filteredData = response.data.payload.filter(
+            (item) => item.status !== "accept",
+          );
+          setUpdatePaymentData(filteredData);
         } else {
           setError("No payment request data found.");
         }
       } catch (errors) {
         setError("Error fetching payment request data.");
-        console.error("Error fetching payment request data:", errors);
+        console.error(errors);
       } finally {
         setLoading(false);
       }
@@ -65,19 +60,31 @@ function ViewUpdatePaymentRequests() {
     fetchData();
   }, []);
 
-  // Handle Accept Action
-  const handleAccept = (id) => {
-    console.log("Accepting payment request:", id);
-    // Implement API call for accepting payment request here
+  const handleStatusUpdate = async (id, status) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const item = updatePaymentData.find((items) => items.id === id);
+      const payload = {
+        student_id: item.student_id,
+        payment_date: item.payment_date,
+        amount: item.amount,
+        Txn_no: item.Txn_no,
+        img: item.img,
+        status,
+        update_payment_remark: item.remark || "",
+      };
+      await axios.put(updateBalanceRequestRoute, payload, {
+        headers: { Authorization: `Token ${token}` },
+      });
+      setUpdatePaymentData((prevData) =>
+        prevData.filter((items) => items.id !== id),
+      );
+    } catch (errors) {
+      console.error(`Error updating payment request ${status}:`, errors);
+      setError(`Error updating payment request: ${error.message}`);
+    }
   };
 
-  // Handle Reject Action
-  const handleReject = (id) => {
-    console.log("Rejecting payment request:", id);
-    // Implement API call for rejecting payment request here
-  };
-
-  // Handle Change in Remark Field
   const handleRemarkChange = (id, value) => {
     setUpdatePaymentData((prevData) =>
       prevData.map((item) =>
@@ -92,8 +99,6 @@ function ViewUpdatePaymentRequests() {
         <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
           Update Payment Requests
         </Title>
-
-        {/* Error and Loading State */}
         {loading ? (
           <Flex justify="center" align="center" style={{ minHeight: "200px" }}>
             <Loader size="xl" />
@@ -146,7 +151,7 @@ function ViewUpdatePaymentRequests() {
                       <Button
                         color="green"
                         size="xs"
-                        onClick={() => handleAccept(item.id)}
+                        onClick={() => handleStatusUpdate(item.id, "accept")}
                         style={{ marginRight: "8px" }}
                       >
                         Accept
@@ -154,7 +159,7 @@ function ViewUpdatePaymentRequests() {
                       <Button
                         color="red"
                         size="xs"
-                        onClick={() => handleReject(item.id)}
+                        onClick={() => handleStatusUpdate(item.id, "reject")}
                       >
                         Reject
                       </Button>

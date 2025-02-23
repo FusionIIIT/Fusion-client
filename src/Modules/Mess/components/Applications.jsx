@@ -11,7 +11,7 @@ import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
 import { useRef, useState } from "react";
 import classes from "../styles/messModule.module.css";
 import SpecialFoodRequests from "./SpecialFoodRequests.jsx";
-import RebateRequests from "./RebateRequests.jsx";
+import RebateRequests from "./StudentRebatePage.jsx";
 
 function MyComponent() {
   const [activeTab, setActiveTab] = useState("0");

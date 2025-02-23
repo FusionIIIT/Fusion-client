@@ -11,13 +11,13 @@ import {
   Flex,
 } from "@mantine/core";
 import { DownloadSimple } from "@phosphor-icons/react";
-import { viewBillsRoute } from "../routes";
+import { viewBillsRoute, getMessStatusRoute } from "../routes";
 
 function MessBilling() {
   const rollNo = useSelector((state) => state.user.roll_no); // Use Redux state to get roll number
   const [billData, setBillData] = useState([]); // Store fetched bill data
   const [totalBalance, setTotalBalance] = useState(0); // Track total remaining balance
-  const [messStatus, setMessStatus] = useState("Active"); // Track current mess status
+  const [messStatus, setMessStatus] = useState(""); // Track current mess status
   const authToken = localStorage.getItem("authToken"); // Authorization token
 
   // Fetch payment data from API
@@ -44,22 +44,35 @@ function MessBilling() {
             monthlyBill: bill.total_bill,
           }));
           setBillData(mappedData);
-
-          // Calculate total remaining balance
-          const total = mappedData.reduce(
-            (acc, curr) => acc + curr.monthlyBill,
-            0,
-          );
-          setTotalBalance(total);
-
-          // Update mess status based on balance
-          setMessStatus(total > 0 ? "Registered" : "Deregistered");
         }
       })
       .catch((error) => {
         console.error("Error fetching payment data:", error);
       });
   }, [authToken, rollNo]);
+
+  useEffect(() => {
+    // Fetch registration status
+    const fetchRegistrationStatus = async () => {
+      try {
+        const response = await fetch(getMessStatusRoute, {
+          method: "GET",
+          headers: {
+            Authorization: `Token ${authToken}`,
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
+        setMessStatus(data.payload.current_mess_status);
+        setTotalBalance(data.payload.current_rem_balance);
+      } catch (error) {
+        console.error("Error fetching registration status:", error);
+      }
+    };
+    if (rollNo) {
+      fetchRegistrationStatus();
+    }
+  });
 
   const renderHeader = () => (
     <Table.Tr>

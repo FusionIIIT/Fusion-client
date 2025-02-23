@@ -13,7 +13,7 @@ import classes from "../styles/messModule.module.css";
 
 import ViewRegistrationRequests from "./ViewRegistrationRequests.jsx";
 import ViewDeregistrationRequests from "./ViewDeregistrationRequests.jsx";
-import ViewUpdatePaymentRequests from "./ViewUpdatePaymentRequests.jsx";
+import ViewUpdatePaymentRequests from "./UpdatePaymentRequests.jsx";
 
 function RegDeregUpdatePayment() {
   const [activeTab, setActiveTab] = useState("0");

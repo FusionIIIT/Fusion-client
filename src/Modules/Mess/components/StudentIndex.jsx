@@ -1,67 +1,121 @@
 import { Button, Container, Flex, Loader, Tabs, Text } from "@mantine/core";
 import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import axios from "axios";
 import CustomBreadcrumbs from "../../../components/Breadcrumbs.jsx";
 import classes from "../styles/messModule.module.css";
 import UpdatePayments from "./UpdatePayments.jsx";
-import Registration from "./registration.jsx";
-import Deregistration from "./deregistration.jsx";
+import Registration from "./Registration.jsx";
+import Deregistration from "./Deregistration.jsx";
 import ViewMenu from "./ViewMenu.jsx";
 import MessFeedback from "./StudentFeedback.jsx";
 import Applications from "./Applications.jsx";
 import ViewBillandPayments from "./ViewBillAndPayments.jsx";
+import { viewRegistrationDataRoute } from "../routes";
 
 function Student() {
-  const [activeTab, setActiveTab] = useState("0");
+  const student_id = useSelector((state) => state.user.roll_no);
+  const [activeTab, setActiveTab] = useState(null);
+  const [registrationStatus, setRegistrationStatus] = useState(null);
   const tabsListRef = useRef(null);
 
   const tabItems = [
-    { title: "View Menu" },
-    { title: "View Bill and Payments" },
-    { title: "Registration" },
-    { title: "Feedback" },
-    { title: "Applications" },
-    { title: "Update Payment" },
-    { title: "Deregistration" },
+    { key: "viewMenu", title: "View Menu", component: <ViewMenu /> },
+    {
+      key: "viewBillPayments",
+      title: "View Bill and Payments",
+      component: <ViewBillandPayments />,
+    },
+    { key: "registration", title: "Registration", component: <Registration /> },
+    { key: "feedback", title: "Feedback", component: <MessFeedback /> },
+    { key: "applications", title: "Applications", component: <Applications /> },
+    {
+      key: "updatePayment",
+      title: "Update Payment",
+      component: <UpdatePayments />,
+    },
+    {
+      key: "deregistration",
+      title: "Deregistration",
+      component: <Deregistration />,
+    },
   ];
 
+  useEffect(() => {
+    const fetchRegistrationStatus = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        const response = await axios.post(
+          viewRegistrationDataRoute,
+          {
+            type: "search",
+            student_id: student_id.toUpperCase(),
+          },
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+          },
+        );
+        setRegistrationStatus(response.data.payload.current_mess_status);
+      } catch (error) {
+        console.error("Error fetching registration status:", error);
+      }
+    };
+
+    if (student_id) {
+      fetchRegistrationStatus();
+    }
+  }, [student_id]);
+
+  const filteredTabItems = tabItems.filter((item) => {
+    if (registrationStatus === "Registered") {
+      return item.key !== "registration";
+    }
+    if (registrationStatus === "Deregistered") {
+      return ![
+        "deregistration",
+        "updatePayment",
+        "feedback",
+        "applications",
+      ].includes(item.key);
+    }
+    return true;
+  });
+
+  useEffect(() => {
+    if (filteredTabItems.length > 0 && !activeTab) {
+      setActiveTab(filteredTabItems[0].key);
+    }
+  }, [filteredTabItems]);
+
   const handleTabChange = (direction) => {
+    const currentIndex = filteredTabItems.findIndex(
+      (item) => item.key === activeTab,
+    );
     const newIndex =
       direction === "next"
-        ? Math.min(+activeTab + 1, tabItems.length - 1)
-        : Math.max(+activeTab - 1, 0);
-    setActiveTab(String(newIndex));
+        ? Math.min(currentIndex + 1, filteredTabItems.length - 1)
+        : Math.max(currentIndex - 1, 0);
+
+    setActiveTab(filteredTabItems[newIndex].key);
+
     tabsListRef.current.scrollBy({
       left: direction === "next" ? 50 : -50,
       behavior: "smooth",
     });
   };
 
-  // Function to render content based on active tab
   const renderTabContent = () => {
-    switch (activeTab) {
-      case "0":
-        return <ViewMenu />;
-      case "1":
-        return <ViewBillandPayments />;
-      case "2":
-        return <Registration />;
-      case "3":
-        return <MessFeedback />;
-      case "4":
-        return <Applications />;
-      case "5":
-        return <UpdatePayments />;
-      case "6":
-        return <Deregistration />;
-      default:
-        return <Loader />;
-    }
+    const activeTabItem = filteredTabItems.find(
+      (item) => item.key === activeTab,
+    );
+    return activeTabItem ? activeTabItem.component : <Loader />;
   };
 
   return (
     <>
-      {/* Navbar contents */}
       <CustomBreadcrumbs />
       <Flex justify="space-between" align="center" mt="lg">
         <Flex justify="flex-start" align="center" gap="1rem" mt="1.5rem">
@@ -81,12 +135,12 @@ function Student() {
           <div className={classes.fusionTabsContainer} ref={tabsListRef}>
             <Tabs value={activeTab} onChange={setActiveTab}>
               <Tabs.List style={{ display: "flex", flexWrap: "nowrap" }}>
-                {tabItems.map((item, index) => (
+                {filteredTabItems.map((item) => (
                   <Tabs.Tab
-                    value={`${index}`}
-                    key={index}
+                    value={item.key}
+                    key={item.key}
                     className={
-                      activeTab === `${index}`
+                      activeTab === item.key
                         ? classes.fusionActiveRecentTab
                         : ""
                     }
@@ -115,7 +169,6 @@ function Student() {
         </Flex>
       </Flex>
 
-      {/* Main content */}
       <Container fluid>{renderTabContent()}</Container>
     </>
   );

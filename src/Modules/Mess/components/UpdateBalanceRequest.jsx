@@ -8,29 +8,22 @@ import {
   Paper,
   Space,
   FileInput,
-  Group,
-  Select,
   Grid,
 } from "@mantine/core"; // Import Mantine components
 import { DateInput } from "@mantine/dates";
-import { User, FunnelSimple } from "@phosphor-icons/react"; // Import Phosphor Icons
+import { useSelector } from "react-redux";
+import { User } from "@phosphor-icons/react"; // Import Phosphor Icons
 import "@mantine/dates/styles.css"; // Import Mantine DateInput styles
 import dayjs from "dayjs";
 import axios from "axios";
-import { useSelector } from "react-redux";
 import { updateBalanceRequestRoute } from "../routes";
 
 function UpdateBalanceRequest() {
+  const student_id = useSelector((state) => state.user.roll_no);
   const [image, setImage] = useState(null);
   const [paymentDate, setPaymentDate] = useState(null);
   const [transactionNo, setTransactionNo] = useState("");
   const [amount, setAmount] = useState(null);
-
-  // Fetch roll number and name from Redux state
-  const rollNo = useSelector((state) => state.user.roll_no); // Roll number
-  const name = useSelector((state) => state.user.username); // Name
-  console.log(name);
-  const [messOption, setMessOption] = useState("");
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -42,7 +35,7 @@ function UpdateBalanceRequest() {
     formData.append("amount", amount);
     formData.append("payment_date", dayjs(paymentDate).format("YYYY-MM-DD"));
     formData.append("img", image);
-    formData.append("student_id", rollNo);
+    formData.append("student_id", student_id);
 
     try {
       const response = await axios.post(updateBalanceRequestRoute, formData, {
@@ -91,41 +84,7 @@ function UpdateBalanceRequest() {
           Update Balance Request
         </Title>
 
-        {/* Display Name */}
-        <TextInput
-          label="Name"
-          value={name || ""}
-          readOnly
-          size="md"
-          mb="md"
-          radius="md"
-        />
-
-        {/* Display Roll No. */}
-        <TextInput
-          label="Roll No."
-          value={rollNo || ""}
-          readOnly
-          size="md"
-          mb="md"
-          radius="md"
-        />
-
         <form onSubmit={handleSubmit}>
-          {/* Dropdown for mess option */}
-          <Group grow mb="lg">
-            <Select
-              label="Select Mess"
-              placeholder="Choose Mess"
-              value={messOption}
-              onChange={setMessOption}
-              data={["Mess 1", "Mess 2"]}
-              radius="md"
-              size="md"
-              icon={<FunnelSimple size={18} />} // Phosphor icon
-            />
-          </Group>
-
           {/* Transaction Number input */}
           <TextInput
             label="Transaction No."
@@ -202,7 +161,6 @@ function UpdateBalanceRequest() {
               },
             })}
           />
-
           <Space h="xl" />
 
           {/* Submit button */}

@@ -9,21 +9,18 @@ import {
   Flex,
 } from "@mantine/core";
 import axios from "axios";
+import { useSelector } from "react-redux";
 import { host } from "../../../routes/globalRoutes";
-import { updateBalanceRequestStatusRoute } from "../routes";
+import { updateBalanceRequestRoute } from "../routes";
 
-const token = localStorage.getItem("authToken");
-
-const axiosInstance = axios.create({
-  baseURL: updateBalanceRequestStatusRoute,
-  headers: {
-    Authorization: `Token ${token}`,
-  },
-});
-
-export const fetchUpdateBalanceRequestsStatus = async () => {
+const fetchUpdateBalanceRequestsStatus = async (studentId, token) => {
   try {
-    const response = await axiosInstance.get("/");
+    const response = await axios.get(
+      `${updateBalanceRequestRoute}?student_id=${studentId}`,
+      {
+        headers: { Authorization: `Token ${token}` },
+      },
+    );
     return response.data.payload;
   } catch (error) {
     console.error("Error fetching update payment request status:", error);
@@ -33,20 +30,22 @@ export const fetchUpdateBalanceRequestsStatus = async () => {
 
 function UpdateBalanceRequest() {
   const [balanceRequests, setBalanceRequests] = useState([]);
+  const studentId = useSelector((state) => state.user.roll_no);
+  const token = localStorage.getItem("authToken");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await fetchUpdateBalanceRequestsStatus();
+        const data = await fetchUpdateBalanceRequestsStatus(studentId, token);
         setBalanceRequests(data);
+        console.log("Data:", data);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
 
     fetchData();
-  }, []);
-
+  }, [studentId, token]);
   const renderHeader = () => (
     <Table.Tr>
       <Table.Th>
@@ -113,14 +112,14 @@ function UpdateBalanceRequest() {
               item.status === "accept"
                 ? "1.5px solid #40C057"
                 : item.status === "pending"
-                  ? "1.5px solid grey"
+                  ? "1.5px solid yellow"
                   : "1.5px solid red"
             }
             c={
               item.status === "accept"
                 ? "white"
                 : item.status === "pending"
-                  ? "grey"
+                  ? "yellow"
                   : "red"
             }
             style={{ borderRadius: "4px" }}

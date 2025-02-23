@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   TextInput,
   NumberInput,
@@ -7,19 +7,18 @@ import {
   Title,
   Paper,
   FileInput,
-  Group,
+  Textarea,
   Select,
+  Group,
 } from "@mantine/core";
+import { useSelector } from "react-redux";
 import { DateInput } from "@mantine/dates";
 import axios from "axios";
-import { useSelector } from "react-redux";
 import { FunnelSimple } from "@phosphor-icons/react";
-import {
-  registrationRequestRoute,
-  checkRegistrationStatusRoute,
-} from "../routes";
+import { registrationRequestRoute } from "../routes";
 
 function Registration() {
+  const roll_no = useSelector((state) => state.user.roll_no);
   const [txnNo, setTxnNo] = useState("");
   const [amount, setAmount] = useState(0);
   const [file, setFile] = useState(null);
@@ -27,38 +26,7 @@ function Registration() {
   const [startDate, setStartDate] = useState(null);
   const [error, setError] = useState(null);
   const [messOption, setMessOption] = useState("");
-  const [isRegistered, setIsRegistered] = useState(false);
-  const [registrationStatus, setRegistrationStatus] = useState("");
-
-  useEffect(() => {
-    const fetchRegistrationStatus = async () => {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        setError("Authentication token not found.");
-        return;
-      }
-
-      try {
-        const response = await axios.get(checkRegistrationStatusRoute, {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
-        });
-
-        if (response.data.isRegistered) {
-          setIsRegistered(true);
-          setRegistrationStatus(response.data.status); // 'Approved', 'Pending', etc.
-        }
-      } catch (err) {
-        setError("Error fetching registration status. Please try again.");
-        console.error("Error:", err.response?.data || err.message);
-      }
-    };
-
-    fetchRegistrationStatus();
-  }, []);
-  const rollNo = useSelector((state) => state.user.roll_no); // Get roll number from state
-  const name = useSelector((state) => state.user.username); // Get name from state
+  const [remark, setRemark] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -84,7 +52,8 @@ function Registration() {
     formData.append("start_date", formattedStartDate);
     // formData.append("student_id", studentId);
     formData.append("mess_option", messOption);
-    formData.append("student_id", rollNo); // Use roll number as student ID
+    formData.append("student_id", roll_no);
+    formData.append("registration_remark", remark);
 
     try {
       const response = await axios.post(registrationRequestRoute, formData, {
@@ -95,9 +64,8 @@ function Registration() {
       });
 
       if (response.status === 200) {
-        setRegistrationStatus("Pending"); // Update status after submission
         console.log("Form submitted successfully", response.data);
-        alert("Registration request submitted successfully!");
+        setError(null);
       }
     } catch (errors) {
       setError("Error submitting the form. Please try again.");
@@ -105,45 +73,10 @@ function Registration() {
     }
   };
 
-  if (isRegistered) {
-    return (
-      <Container
-        size="lg"
-        style={{
-          maxWidth: "800px",
-          width: "570px",
-          marginTop: "25px",
-        }}
-      >
-        <Paper
-          shadow="md"
-          radius="md"
-          p="xl"
-          withBorder
-          style={{ width: "100%", padding: "30px" }}
-        >
-          <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
-            Registration Status
-          </Title>
-          <p style={{ fontSize: "16px", textAlign: "center" }}>
-            You are already registered in the mess.
-          </p>
-          <p style={{ fontSize: "16px", textAlign: "center" }}>
-            Registration Status: <strong>{registrationStatus}</strong>
-          </p>
-        </Paper>
-      </Container>
-    );
-  }
-
   return (
     <Container
       size="lg"
-      style={{
-        maxWidth: "800px",
-        width: "570px",
-        marginTop: "25px",
-      }}
+      style={{ maxWidth: "800px", width: "570px", marginTop: "25px" }}
     >
       <Paper
         shadow="md"
@@ -159,37 +92,23 @@ function Registration() {
         {error && <p style={{ color: "red" }}>{error}</p>}
 
         <form onSubmit={handleSubmit}>
-          {/* Display Name */}
-          <TextInput
-            label="Name"
-            value={name || ""}
-            readOnly
-            size="md"
-            mb="md"
-            radius="md"
-          />
-
-          {/* Display Roll No. */}
-          <TextInput
-            label="Roll No."
-            value={rollNo || ""}
-            readOnly
-            size="md"
-            mb="md"
-            radius="md"
-          />
           <Group grow mb="lg">
             <Select
               label="Select Mess"
               placeholder="Choose Mess"
               value={messOption}
-              onChange={setMessOption}
-              data={["Mess 1", "Mess 2"]}
+              onChange={(value) => setMessOption(value)}
+              data={[
+                { value: "mess1", label: "Mess 1" },
+                { value: "mess2", label: "Mess 2" },
+              ]}
               radius="md"
               size="md"
               icon={<FunnelSimple size={18} />}
+              required
             />
           </Group>
+
           <TextInput
             label="Transaction No."
             placeholder="Transaction No."
@@ -248,6 +167,16 @@ function Registration() {
             size="md"
             mb="lg"
             valueFormat="MMMM D, YYYY"
+          />
+
+          <Textarea
+            label="Remark"
+            placeholder="Add any remarks"
+            value={remark}
+            onChange={(e) => setRemark(e.target.value)}
+            radius="md"
+            size="md"
+            mb="lg"
           />
 
           <Button fullWidth size="md" radius="md" color="blue" type="submit">
