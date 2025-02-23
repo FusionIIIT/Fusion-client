@@ -15,5 +15,5 @@ export const deregistrationRequestRoute = `${host}${messRoute}/deRegistrationReq
 export const viewBillsRoute = `${host}${messRoute}/get_student_bill/`;
 export const rebateRoute = `${host}${messRoute}/rebateApi/`;
 export const registrationRequestRoute = `${host}${messRoute}/registrationRequestApi/`;
-export const checkRegistrationStatusRoute = `${host}${messRoute}/checkRegistrationStatusApi/`;
+export const checkRegistrationStatusRoute = `${host}${messRoute}/get_reg_records/`;
 export const paymentRoute = `${host}${messRoute}/paymentsApi/`;
