@@ -17,6 +17,7 @@ import { User, FunnelSimple } from "@phosphor-icons/react"; // Import Phosphor I
 import "@mantine/dates/styles.css"; // Import Mantine DateInput styles
 import dayjs from "dayjs";
 import axios from "axios";
+import { useSelector } from "react-redux";
 import { updateBalanceRequestRoute } from "../routes";
 
 function UpdateBalanceRequest() {
@@ -24,7 +25,11 @@ function UpdateBalanceRequest() {
   const [paymentDate, setPaymentDate] = useState(null);
   const [transactionNo, setTransactionNo] = useState("");
   const [amount, setAmount] = useState(null);
-  const [rollNumber, setRollNumber] = useState(null);
+
+  // Fetch roll number and name from Redux state
+  const rollNo = useSelector((state) => state.user.roll_no); // Roll number
+  const name = useSelector((state) => state.user.username); // Name
+  console.log(name);
   const [messOption, setMessOption] = useState("");
 
   const handleSubmit = async (event) => {
@@ -37,7 +42,7 @@ function UpdateBalanceRequest() {
     formData.append("amount", amount);
     formData.append("payment_date", dayjs(paymentDate).format("YYYY-MM-DD"));
     formData.append("img", image);
-    formData.append("student_id", rollNumber);
+    formData.append("student_id", rollNo);
 
     try {
       const response = await axios.post(updateBalanceRequestRoute, formData, {
@@ -52,8 +57,9 @@ function UpdateBalanceRequest() {
       setAmount(null);
       setPaymentDate(null);
       setImage(null);
-      setImage(null);
-      setRollNumber(null);
+      if (response.status === 200) {
+        alert("Update Balance request submitted successfully!");
+      }
     } catch (error) {
       console.error("Error posting data:", error);
     }
@@ -84,6 +90,26 @@ function UpdateBalanceRequest() {
         <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
           Update Balance Request
         </Title>
+
+        {/* Display Name */}
+        <TextInput
+          label="Name"
+          value={name || ""}
+          readOnly
+          size="md"
+          mb="md"
+          radius="md"
+        />
+
+        {/* Display Roll No. */}
+        <TextInput
+          label="Roll No."
+          value={rollNo || ""}
+          readOnly
+          size="md"
+          mb="md"
+          radius="md"
+        />
 
         <form onSubmit={handleSubmit}>
           {/* Dropdown for mess option */}
@@ -175,21 +201,6 @@ function UpdateBalanceRequest() {
                 },
               },
             })}
-          />
-          {/* Roll Number Input */}
-          <TextInput
-            label="Roll No."
-            placeholder="Roll Number"
-            id="RollNo"
-            required
-            radius="md"
-            size="md"
-            icon={<User size={20} />}
-            labelProps={{ style: { marginBottom: "10px" } }}
-            mt="xl"
-            mb="md"
-            value={rollNumber}
-            onChange={(event) => setRollNumber(event.currentTarget.value)}
           />
 
           <Space h="xl" />

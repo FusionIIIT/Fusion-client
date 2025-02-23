@@ -10,18 +10,19 @@ import {
   Title,
 } from "@mantine/core"; // Import Mantine components
 import { DatePicker } from "@mantine/dates"; // Import DatePicker for end date
-import { User } from "@phosphor-icons/react"; // Import Phosphor Icons
 import axios from "axios"; // Import axios
+import { useSelector } from "react-redux";
 import { deregistrationRequestRoute } from "../routes";
 
 function Deregistration() {
-  const [name, setName] = useState(""); // State for name
-  const [rollNo, setRollNo] = useState(""); // State for roll number
   const [batch, setBatch] = useState(""); // State for batch
   const [semester, setSemester] = useState(null); // State for semester
   const [txnNo, setTxnNo] = useState(""); // State for transaction number
   const [deregistrationRemark, setDeregistrationRemark] = useState(""); // State for deregistration remark
   const [endDate, setEndDate] = useState(null); // State for end date
+
+  const rollNo = useSelector((state) => state.user.roll_no); // Get roll number from state
+  const name = useSelector((state) => state.user.username); // Get name from state
 
   // Generate a random transaction number (Txn_no)
   const generateTxnNo = () => {
@@ -29,20 +30,17 @@ function Deregistration() {
     setTxnNo(randomTxn);
   };
 
-  // Call this function when form is submitted
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    // Make sure we have required fields
     if (!rollNo || !deregistrationRemark || !endDate) {
       alert("Please fill out all required fields.");
       return;
     }
 
-    // Prepare data to send to backend
     const data = {
-      txn_no: txnNo || generateTxnNo(), // Ensure txnNo is generated
-      student_id: rollNo, // rollNo as student_id
+      txn_no: txnNo || generateTxnNo(),
+      student_id: rollNo,
       batch,
       semester,
       deregistration_remark: deregistrationRemark, // Include the remark
@@ -50,10 +48,9 @@ function Deregistration() {
     };
 
     try {
-      // Send POST request to backend API
       const response = await axios.post(deregistrationRequestRoute, data, {
         headers: {
-          Authorization: `Token ${localStorage.getItem("authToken")}`, // Include auth token
+          Authorization: `Token ${localStorage.getItem("authToken")}`,
         },
       });
 
@@ -93,40 +90,32 @@ function Deregistration() {
         }}
       >
         <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
-          Dregistration Form
+          Deregistration Form
         </Title>
 
         <form onSubmit={handleSubmit}>
           <Grid grow>
+            {/* Display Name */}
             <Grid.Col span={12}>
-              {/* Name Input */}
               <TextInput
                 label="Name"
-                placeholder="Enter your name"
-                value={name}
-                onChange={(event) => setName(event.currentTarget.value)}
-                required
-                radius="md"
+                value={name || ""}
+                readOnly
                 size="md"
-                icon={<User size={20} />}
-                labelProps={{ style: { marginBottom: "10px" } }}
-                mt="xl"
                 mb="md"
+                radius="md"
               />
             </Grid.Col>
 
-            {/* Roll Number Input */}
+            {/* Roll Number Display */}
             <Grid.Col span={6}>
               <TextInput
                 label="Roll No."
-                placeholder="Enter your roll number"
-                value={rollNo}
-                onChange={(event) => setRollNo(event.currentTarget.value)}
-                required
-                radius="md"
+                value={rollNo || ""}
+                readOnly
                 size="md"
-                labelProps={{ style: { marginBottom: "10px" } }}
                 mb="md"
+                radius="md"
               />
             </Grid.Col>
 
@@ -157,7 +146,7 @@ function Deregistration() {
                 size="md"
                 labelProps={{ style: { marginBottom: "10px" } }}
                 min={1}
-                max={10} // Adjust max value as necessary
+                max={8} // Adjust max value as necessary
                 mb="lg"
               />
             </Grid.Col>
@@ -178,20 +167,21 @@ function Deregistration() {
                 mb="lg"
               />
             </Grid.Col>
-          </Grid>
 
-          {/* End Date input */}
-          <DatePicker
-            label="End Date"
-            placeholder="Select an end date"
-            value={endDate}
-            onChange={setEndDate}
-            required
-            radius="md"
-            size="md"
-            labelProps={{ style: { marginBottom: "10px" } }}
-            mb="lg"
-          />
+            {/* End Date Picker */}
+            <Grid.Col span={6}>
+              <DatePicker
+                label="Select End Date"
+                placeholder="Pick a date"
+                value={endDate}
+                onChange={setEndDate}
+                required
+                radius="md"
+                size="md"
+                mb="lg"
+              />
+            </Grid.Col>
+          </Grid>
 
           <Space h="xl" />
 

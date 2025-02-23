@@ -1,4 +1,12 @@
-import { Button, Container, Flex, Loader, Tabs, Text, Alert } from "@mantine/core";
+import {
+  Button,
+  Container,
+  Flex,
+  Loader,
+  Tabs,
+  Text,
+  Alert,
+} from "@mantine/core";
 import { CaretCircleLeft, CaretCircleRight, Info } from "@phosphor-icons/react";
 import { useRef, useState } from "react";
 import classes from "../styles/messModule.module.css";
@@ -107,7 +115,8 @@ function MessActivities() {
             color="blue"
             radius="md"
           >
-            Please ensure that the Excel file is named as <b>"MessBillUpload.xlsx"</b> before uploading.
+            Please ensure that the Excel file is named as{" "}
+            <b>"MessBillUpload.xlsx"</b> before uploading.
           </Alert>
         </Container>
       )}

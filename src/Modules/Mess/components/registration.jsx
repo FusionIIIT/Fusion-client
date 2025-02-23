@@ -12,6 +12,7 @@ import {
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import axios from "axios";
+import { useSelector } from "react-redux";
 import { FunnelSimple } from "@phosphor-icons/react";
 import {
   registrationRequestRoute,
@@ -24,7 +25,6 @@ function Registration() {
   const [file, setFile] = useState(null);
   const [paymentDate, setPaymentDate] = useState(null);
   const [startDate, setStartDate] = useState(null);
-  const [studentId, setStudentId] = useState("");
   const [error, setError] = useState(null);
   const [messOption, setMessOption] = useState("");
   const [isRegistered, setIsRegistered] = useState(false);
@@ -57,6 +57,8 @@ function Registration() {
 
     fetchRegistrationStatus();
   }, []);
+  const rollNo = useSelector((state) => state.user.roll_no); // Get roll number from state
+  const name = useSelector((state) => state.user.username); // Get name from state
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -80,8 +82,9 @@ function Registration() {
     formData.append("img", file);
     formData.append("payment_date", formattedPaymentDate);
     formData.append("start_date", formattedStartDate);
-    formData.append("student_id", studentId);
+    // formData.append("student_id", studentId);
     formData.append("mess_option", messOption);
+    formData.append("student_id", rollNo); // Use roll number as student ID
 
     try {
       const response = await axios.post(registrationRequestRoute, formData, {
@@ -94,6 +97,7 @@ function Registration() {
       if (response.status === 200) {
         setRegistrationStatus("Pending"); // Update status after submission
         console.log("Form submitted successfully", response.data);
+        alert("Registration request submitted successfully!");
       }
     } catch (errors) {
       setError("Error submitting the form. Please try again.");
@@ -155,6 +159,25 @@ function Registration() {
         {error && <p style={{ color: "red" }}>{error}</p>}
 
         <form onSubmit={handleSubmit}>
+          {/* Display Name */}
+          <TextInput
+            label="Name"
+            value={name || ""}
+            readOnly
+            size="md"
+            mb="md"
+            radius="md"
+          />
+
+          {/* Display Roll No. */}
+          <TextInput
+            label="Roll No."
+            value={rollNo || ""}
+            readOnly
+            size="md"
+            mb="md"
+            radius="md"
+          />
           <Group grow mb="lg">
             <Select
               label="Select Mess"
@@ -167,7 +190,6 @@ function Registration() {
               icon={<FunnelSimple size={18} />}
             />
           </Group>
-
           <TextInput
             label="Transaction No."
             placeholder="Transaction No."
@@ -226,17 +248,6 @@ function Registration() {
             size="md"
             mb="lg"
             valueFormat="MMMM D, YYYY"
-          />
-
-          <TextInput
-            label="Student ID"
-            placeholder="Student ID"
-            value={studentId}
-            onChange={(e) => setStudentId(e.target.value)}
-            required
-            radius="md"
-            size="md"
-            mb="lg"
           />
 
           <Button fullWidth size="md" radius="md" color="blue" type="submit">
