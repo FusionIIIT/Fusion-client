@@ -1,101 +1,67 @@
 import React, { useState, useEffect } from "react";
-import { Card, Text } from "@mantine/core";
+import {
+  Card,
+  Text,
+  TextInput,
+  Select,
+  FileInput,
+  Button,
+  Grid,
+} from "@mantine/core";
 import FusionTable from "../../components/FusionTable";
 
-const mockFinalRegistrationAPIResponse = [
-  {
-    id: 1,
-    code: "OE3C41",
-    name: "Agile Software Development Process",
-    type: "Elective",
-    semester: "6",
-    credits: 3,
-  },
-  {
-    id: 2,
-    code: "OE3M36",
-    name: "Generative AI for Product Innovation",
-    type: "Elective",
-    semester: "6",
-    credits: 3,
-  },
-  {
-    id: 3,
-    code: "OE3D12",
-    name: "Communication Skills Management",
-    type: "Elective",
-    semester: "6",
-    credits: 3,
-  },
-  {
-    id: 4,
-    code: "PC3003",
-    name: "Professional Development Course 3",
-    type: "Core",
-    semester: "6",
-    credits: 1,
-  },
-  {
-    id: 5,
-    code: "IT3C03",
-    name: "Web And Mobile App Development",
-    type: "Core",
-    semester: "6",
-    credits: 2,
-  },
-  {
-    id: 6,
-    code: "DS3014",
-    name: "Fabrication Project",
-    type: "Core",
-    semester: "6",
-    credits: 4,
-  },
-  {
-    id: 7,
-    code: "PR2001",
-    name: "PR Project",
-    type: "Backlog/Improvement",
-    semester: "6",
-    credits: 2,
-  },
-];
+const API_BASE_URL = "https://your-api-endpoint.com";
+const inputStyle = { width: "100%" };
 
 function FinalRegistration() {
   const [courses, setCourses] = useState([]);
+  const [paymentDetails, setPaymentDetails] = useState({
+    modeOfPayment: "",
+    transactionId: "",
+    feeReceipt: null,
+    actualFee: "",
+    feePaid: "",
+    lateFeeReason: "",
+    feeDepositDate: "",
+    utrNumber: "",
+  });
 
   useEffect(() => {
     const fetchCourses = async () => {
-      const data = await new Promise((resolve) => {
-        setTimeout(() => {
-          resolve(mockFinalRegistrationAPIResponse);
-        }, 500);
-      });
-      setCourses(data);
+      try {
+        const response = await fetch(`${API_BASE_URL}/courses`);
+        const data = await response.json();
+        setCourses(data);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      }
     };
 
     fetchCourses();
   }, []);
 
-  const columnNames = [
-    "ID",
-    "Course Code",
-    "Course Name",
-    "Type",
-    "Semester",
-    "Credits",
-  ];
+  const handleInputChange = (field, value) => {
+    setPaymentDetails((prev) => ({ ...prev, [field]: value }));
+  };
 
-  const mappedCourses = courses.map((course) => ({
-    ID: course.id,
-    "Course Code": course.code,
-    "Course Name": course.name,
-    Type: course.type,
-    Semester: course.semester,
-    Credits: course.credits,
-  }));
+  const handleSubmit = async () => {
+    const formData = new FormData();
+    Object.keys(paymentDetails).forEach((key) => {
+      if (paymentDetails[key]) formData.append(key, paymentDetails[key]);
+    });
 
-  const totalCredits = courses.reduce((sum, course) => sum + course.credits, 0);
+    try {
+      const response = await fetch(`${API_BASE_URL}/register`, {
+        method: "POST",
+        body: formData,
+      });
+      const result = await response.json();
+      alert(result.message || "Registration successful");
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      alert("Failed to submit registration");
+    }
+  };
 
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
@@ -103,29 +69,129 @@ function FinalRegistration() {
         size="lg"
         weight={700}
         mb="md"
-        style={{
-          textAlign: "center",
-          width: "100%",
-          color: "#3B82F6",
-        }}
+        style={{ textAlign: "center", color: "#3B82F6" }}
       >
         Final Registration For This Semester
       </Text>
-      <div style={{ overflowX: "auto" }}>
-        <FusionTable
-          columnNames={columnNames}
-          elements={mappedCourses}
-          width="100%"
-        />
-      </div>
-      <Text
-        size="md"
-        weight={700}
-        mt="md"
-        style={{ textAlign: "left", width: "100%" }}
-      >
-        Total Credits: {totalCredits}
+      <FusionTable
+        columnNames={[
+          "ID",
+          "Course Code",
+          "Course Name",
+          "Type",
+          "Semester",
+          "Credits",
+        ]}
+        elements={courses}
+        width="100%"
+      />
+      <Text size="md" weight={700} mt="md">
+        Total Credits:{" "}
+        {courses.reduce((sum, course) => sum + course.credits, 0)}
       </Text>
+
+      <Card mt="lg" p="md" shadow="xs" withBorder>
+        <Text size="md" weight={700} color="blue" mb="md">
+          Payment Details
+        </Text>
+        <Grid gutter="md">
+          <Grid.Col span={{ base: 12, md: 4 }}>
+            <Select
+              label="Mode of Payment"
+              placeholder="Select payment method"
+              data={[
+                "Axis Easypay",
+                "Subpaisa",
+                "NEFT",
+                "RTGS",
+                "Bank Challan",
+                "Education Loan",
+              ]}
+              value={paymentDetails.modeOfPayment}
+              onChange={(value) => handleInputChange("modeOfPayment", value)}
+              style={inputStyle}
+            />
+          </Grid.Col>
+          {paymentDetails.modeOfPayment === "Education Loan" && (
+            <Grid.Col span={{ base: 12, md: 4 }}>
+              <TextInput
+                label="UTR / Transaction Number"
+                placeholder="Enter UTR number"
+                value={paymentDetails.utrNumber}
+                onChange={(e) => handleInputChange("utrNumber", e.target.value)}
+                style={inputStyle}
+              />
+            </Grid.Col>
+          )}
+          <Grid.Col span={{ base: 12, md: 4 }}>
+            <TextInput
+              label="Challan No / Transaction ID"
+              placeholder="Enter transaction ID"
+              value={paymentDetails.transactionId}
+              onChange={(e) =>
+                handleInputChange("transactionId", e.target.value)
+              }
+              style={inputStyle}
+            />
+          </Grid.Col>
+          <Grid.Col span={{ base: 12, md: 4 }}>
+            <FileInput
+              label="Fee Receipt (.pdf)"
+              placeholder="Choose File"
+              accept="application/pdf"
+              onChange={(file) => handleInputChange("feeReceipt", file)}
+              buttonLabel="Browse"
+              style={inputStyle}
+            />
+          </Grid.Col>
+          <Grid.Col span={{ base: 12, md: 4 }}>
+            <TextInput
+              label="Actual Fee Amount"
+              placeholder="Enter actual fee amount"
+              type="number"
+              value={paymentDetails.actualFee}
+              onChange={(e) => handleInputChange("actualFee", e.target.value)}
+              style={inputStyle}
+            />
+          </Grid.Col>
+          <Grid.Col span={{ base: 12, md: 4 }}>
+            <TextInput
+              label="Fee Amount Paid"
+              placeholder="Enter paid fee amount"
+              type="number"
+              value={paymentDetails.feePaid}
+              onChange={(e) => handleInputChange("feePaid", e.target.value)}
+              style={inputStyle}
+            />
+          </Grid.Col>
+          <Grid.Col span={{ base: 12, md: 4 }}>
+            <TextInput
+              label="Reason for Late Fee (if any)"
+              placeholder="Enter reason"
+              value={paymentDetails.lateFeeReason}
+              onChange={(e) =>
+                handleInputChange("lateFeeReason", e.target.value)
+              }
+              style={inputStyle}
+            />
+          </Grid.Col>
+          <Grid.Col span={{ base: 12, md: 4 }}>
+            <TextInput
+              label="Fee Deposit Date"
+              placeholder="YYYY-MM-DD"
+              type="date"
+              value={paymentDetails.feeDepositDate}
+              onChange={(e) =>
+                handleInputChange("feeDepositDate", e.target.value)
+              }
+              style={inputStyle}
+            />
+          </Grid.Col>
+        </Grid>
+        <Button color="blue" fullWidth mt="md" onClick={handleSubmit}>
+          Register
+        </Button>
+      </Card>
     </Card>
   );
 }
