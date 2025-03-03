@@ -64,7 +64,7 @@ function CompPrescription() {
   const [days, setDays] = useState("");
   const [timesPerDay, setTimesPerDay] = useState("");
   const [stockQuantity, setstockQuantity] = useState(0);
-  // const [dummyData, setDummyData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [manuname, setmanu] = useState("");
   const [packsize, setpack] = useState(0);
   const [expiry, setexpiry] = useState("");
@@ -301,6 +301,7 @@ function CompPrescription() {
           data.rollNumber = response.data.prescription.dependent_name;
         }
         data.prescriptions = response.data.prescriptions;
+        setLoading(false);
         setPrescrip(data);
         setRevokeData(response.data.not_revoked);
         if (data?.prescriptions?.length > 0) {
@@ -315,11 +316,25 @@ function CompPrescription() {
     fetchData();
   }, []);
 
-  if (!prescrip) {
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <Loader />
+      </div>
+    );
+  }
+
+  if ((prescrip === null || prescrip.length === 0) && !loading) {
     return (
       <div>
         <h2>Prescription not available!</h2>
-        <Loader size={32} />
       </div>
     );
   }
