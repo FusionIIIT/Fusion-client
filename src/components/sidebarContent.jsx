@@ -69,7 +69,7 @@ const Modules = [
     label: "Visitor's Hostel",
     id: "visitor_hostel",
     icon: <GuestIcon size={18} />,
-    url: "/",
+    url: "/visitors_hostel",
   },
   {
     label: "HealthCare Center",
@@ -81,7 +81,7 @@ const Modules = [
     label: "File Tracking",
     id: "fts",
     icon: <FileTrackingIcon size={18} />,
-    url: "/",
+    url: "/filetracking",
   },
   {
     label: "Scholarship Portal",
@@ -93,7 +93,7 @@ const Modules = [
     label: "Complaint System",
     id: "complaint_management",
     icon: <ComplaintIcon size={18} />,
-    url: "/",
+    url: "/complaints",
   },
   {
     label: "Placement Cell",
@@ -105,7 +105,7 @@ const Modules = [
     label: "Department Portal",
     id: "department",
     icon: <DepartmentIcon size={18} />,
-    url: "/",
+    url: "/department",
   },
   { label: "Research", id: "rspc", icon: <ResearchIcon size={18} />, url: "/" },
   {
@@ -153,7 +153,12 @@ const Modules = [
 ];
 
 const otherItems = [
-  { label: "Profile", icon: <ProfileIcon size={18} /> },
+  {
+    label: "Profile",
+    id: "profile",
+    icon: <ProfileIcon size={18} />,
+    url: "/profile",
+  },
   { label: "Settings", icon: <SettingsIcon size={18} /> },
   { label: "Help", icon: <HelpIcon size={18} /> },
 ];
@@ -198,7 +203,13 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
 
   return (
     <>
-      <Flex gap={32} align="center" h={64} justify="center">
+      <Flex
+        gap={32}
+        align="center"
+        h={64}
+        justify="center"
+        w={{ xxs: "300px" }}
+      >
         {!isCollapsed && (
           <img src={IIITLOGO} alt="IIIT Logo" style={{ maxWidth: "150px" }} />
         )}
@@ -279,6 +290,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
               }
               onMouseEnter={() => setHover(item.label)}
               onMouseLeave={() => setHover(null)}
+              onClick={() => handleModuleClick(item)}
             >
               {!isCollapsed && item.label}
             </Button>
