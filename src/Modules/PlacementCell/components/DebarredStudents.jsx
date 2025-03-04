@@ -15,6 +15,8 @@ import { MantineReactTable, useMantineReactTable } from "mantine-react-table";
 import { notifications } from "@mantine/notifications";
 import axios from "axios";
 import { fetchDebaredlistRoute } from "../../../routes/placementCellRoutes";
+import {sendNotificationRoute} from "../../../routes/placementCellRoutes";
+
 
 function DebarredStudents() {
   const [debarredStudents, setDebarredStudents] = useState([]);
@@ -79,10 +81,27 @@ function DebarredStudents() {
         name: studentDetails.name,
         reason,
       };
+      const notificationData = {
+        sendTo: "Student",
+        recipient: rollNo,
+        date: new Date(),
+        time: "",
+        type: "You are debared",
+        description: "",
+      }
       const token = localStorage.getItem("authToken");
       const response = await axios.post(
         `http://127.0.0.1:8000/placement/api/debared-status/${rollNo}/`,
         newDebarredStudent,
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      const response2 = await axios.post(
+        sendNotificationRoute,
+        notificationData,
         {
           headers: {
             Authorization: `Token ${token}`,
