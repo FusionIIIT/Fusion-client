@@ -11,6 +11,7 @@ import LoginPage from "./pages/login";
 import ForgotPassword from "./pages/forgotPassword";
 import AcademicPage from "./Modules/Academic/index";
 import ValidateAuth from "./helper/validateauth";
+import MessPage from "./Modules/Mess/pages/index";
 import FileTracking from "./Modules/FileTracking";
 import VisitorsContent from "./Modules/Visitors_Hostel/visitorsContent";
 import CancellationRequest from "./Modules/Visitors_Hostel/cancellationRequest";
@@ -60,6 +61,14 @@ export default function App() {
           element={
             <Layout>
               <AcademicPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/mess"
+          element={
+            <Layout>
+              <MessPage />
             </Layout>
           }
         />

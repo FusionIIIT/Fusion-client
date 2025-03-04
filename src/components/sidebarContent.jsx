@@ -43,9 +43,10 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
   const role = useSelector((state) => state.user.role);
 
   const deployedModules = [
-    "home",
-    "fts",
     "complaint_management",
+    "fts",
+    "home",
+    "mess_management",
     "visitor_hostel",
   ];
 
@@ -73,13 +74,13 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "Mess Management",
       id: "mess_management",
       icon: <MessIcon size={18} />,
-      url: "/",
+      url: "/mess",
     },
     {
       label: "Visitor's Hostel",
       id: "visitor_hostel",
       icon: <GuestIcon size={18} />,
-      url: "/visitors_hostel",
+      url: "/",
     },
     {
       label: "HealthCare Center",
@@ -91,7 +92,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "File Tracking",
       id: "fts",
       icon: <FileTrackingIcon size={18} />,
-      url: "/filetracking",
+      url: "/",
     },
     {
       label: "Scholarship Portal",
@@ -103,7 +104,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "Complaint System",
       id: "complaint_management",
       icon: <ComplaintIcon size={18} />,
-      url: "/complaints",
+      url: "/",
     },
     {
       label: "Placement Cell",
@@ -115,7 +116,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "Department Portal",
       id: "department",
       icon: <DepartmentIcon size={18} />,
-      url: "/department",
+      url: "/",
     },
     {
       label: "Research",
