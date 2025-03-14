@@ -15,7 +15,6 @@ import { submitPdm } from "../../../routes/SPACSRoutes";
 export default function DMProficiencyForm() {
   const [formData, setFormData] = useState({
     award_type: "DMProficiencyform",
-   
     justification: "",
     correspondence_address: "",
     nearest_policestation: "",
@@ -24,11 +23,11 @@ export default function DMProficiencyForm() {
     grand_total: "",
     title_name: "",
     no_of_students: "",
-    roll_no_1: "",
-    roll_no_2: "",
-    roll_no_3: "",
-    roll_no_4: "",
-    roll_no_5: "",
+    roll_no1: "",
+    roll_no2: "",
+    roll_no3: "",
+    roll_no4: "",
+    roll_no5: "",
     brief_description: "",
     cse_topic: "",
     ece_topic: "",
@@ -54,15 +53,11 @@ export default function DMProficiencyForm() {
     e.preventDefault();
 
     const formDataToSend = new FormData();
-    for (const key in formData) {
+    Object.keys(formData).forEach((key) => {
       if (formData[key]) {
-        if (key === "Marksheet") {
-          formDataToSend.append(key, formData[key]);
-        } else {
-          formDataToSend.append(key, formData[key]);
-        }
+        formDataToSend.append(key, formData[key]);
       }
-    }
+    });
 
     try {
       const token = localStorage.getItem("authToken");
@@ -71,16 +66,13 @@ export default function DMProficiencyForm() {
         return;
       }
 
-      const response = await fetch(
-        submitPdm,
-        {
-          method: "POST",
-          body: formDataToSend,
-          headers: {
-            Authorization: `Token ${token}`,
-          },
-        }
-      );
+      const response = await fetch(submitPdm, {
+        method: "POST",
+        body: formDataToSend,
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      });
 
       if (response.ok) {
         const result = await response.json();
@@ -90,7 +82,7 @@ export default function DMProficiencyForm() {
         const errorData = await response.json();
         console.error("Submission failed:", errorData);
         alert(
-          `Failed to submit the form: ${errorData.detail || response.statusText}`
+          `Failed to submit the form: ${errorData.detail || response.statusText}`,
         );
       }
     } catch (error) {
@@ -108,7 +100,6 @@ export default function DMProficiencyForm() {
         <form onSubmit={handleSubmit}>
           <Grid gutter="lg">
             {/* Basic Information */}
-           
 
             {/* Addresses */}
             <Grid.Col span={12}>
@@ -131,7 +122,7 @@ export default function DMProficiencyForm() {
                 minRows={3}
               />
             </Grid.Col>
-            <Grid.Col span={{base: 12,sm: 6}}>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
               <TextInput
                 label="Nearest Police Station"
                 name="nearest_policestation"
@@ -140,7 +131,7 @@ export default function DMProficiencyForm() {
                 placeholder="Enter Nearest Police Station"
               />
             </Grid.Col>
-            <Grid.Col span={{base: 12,sm: 6}}>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
               <TextInput
                 label="Nearest Railway Station"
                 name="nearest_railwaystation"
@@ -151,7 +142,7 @@ export default function DMProficiencyForm() {
             </Grid.Col>
 
             {/* Financial Information */}
-            <Grid.Col span={{base: 12,sm: 6}}>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
               <TextInput
                 label="Financial Assistance"
                 name="financial_assistance"
@@ -160,7 +151,7 @@ export default function DMProficiencyForm() {
                 placeholder="Enter Financial Assistance"
               />
             </Grid.Col>
-            <Grid.Col span={{base: 12,sm: 6}}>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
               <TextInput
                 label="Grand Total"
                 name="grand_total"
@@ -172,7 +163,7 @@ export default function DMProficiencyForm() {
             </Grid.Col>
 
             {/* Project/Team Information */}
-            <Grid.Col span={{base: 12,sm: 6}}>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
               <TextInput
                 label="Title Name"
                 name="title_name"
@@ -181,7 +172,7 @@ export default function DMProficiencyForm() {
                 placeholder="Enter Title Name"
               />
             </Grid.Col>
-            <Grid.Col span={{base: 12,sm: 6}}>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
               <TextInput
                 label="Number of Students"
                 name="no_of_students"
@@ -192,11 +183,11 @@ export default function DMProficiencyForm() {
               />
             </Grid.Col>
             {[1, 2, 3, 4, 5].map((num) => (
-              <Grid.Col span={{base: 12,sm: 6}} key={`roll_no_${num}`}>
+              <Grid.Col span={{ base: 12, sm: 6 }} key={`roll_no${num}`}>
                 <TextInput
                   label={`Roll No ${num}`}
-                  name={`roll_no_${num}`}
-                  value={formData[`roll_no_${num}`]}
+                  name={`roll_no${num}`}
+                  value={formData[`roll_no${num}`]}
                   onChange={handleChange}
                   placeholder={`Enter Roll No ${num}`}
                 />
@@ -218,7 +209,7 @@ export default function DMProficiencyForm() {
             {/* Disciplines */}
             {["cse", "ece", "mech", "design"].map((field) => (
               <React.Fragment key={field}>
-                <Grid.Col span={{base: 12,sm: 6}}>
+                <Grid.Col span={{ base: 12, sm: 6 }}>
                   <TextInput
                     label={`${field.toUpperCase()} Topic`}
                     name={`${field}_topic`}
@@ -227,7 +218,7 @@ export default function DMProficiencyForm() {
                     placeholder={`Enter ${field.toUpperCase()} Topic`}
                   />
                 </Grid.Col>
-                <Grid.Col span={{base: 12,sm: 6}}>
+                <Grid.Col span={{ base: 12, sm: 6 }}>
                   <TextInput
                     label={`${field.toUpperCase()} Percentage`}
                     name={`${field}_percentage`}
@@ -244,6 +235,7 @@ export default function DMProficiencyForm() {
             <Grid.Col span={12}>
               <FileButton onChange={handleFileUpload} accept="application/pdf">
                 {(props) => (
+                  // eslint-disable-next-line react/jsx-props-no-spreading
                   <Button {...props} fullWidth>
                     Upload Marksheet (PDF)
                   </Button>
