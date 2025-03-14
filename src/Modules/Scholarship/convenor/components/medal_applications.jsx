@@ -27,6 +27,8 @@ function MedalApplications() {
         apiUrl = "http://127.0.0.1:8000/spacs/director-silver/";
       } else if (selectedAward === "Director's Gold Medal") {
         apiUrl = "http://127.0.0.1:8000/spacs/director_gold_list/";
+      } else if (selectedAward === "D&M Proficiency Gold Medal") {
+        apiUrl = "http://127.0.0.1:8000/spacs/dm-proficiency-list/";
       }
 
       const response = await axios.get(apiUrl, {
@@ -85,6 +87,12 @@ function MedalApplications() {
           id: medalId,
           status: action === "approved" ? "ACCEPTED" : "REJECTED",
         };
+      } else if (selectedAward === "D&M Proficiency Gold Medal") {
+        apiUrl = "http://127.0.0.1:8000/spacs/api/dm-proficiency/decsion/";
+        payload = {
+          id: medalId,
+          status: action === "approved" ? "ACCEPTED" : "REJECTED",
+        };
       }
 
       console.log("Sending payload:", payload); // Log payload for debugging
@@ -127,6 +135,9 @@ function MedalApplications() {
             Director's Silver Medal
           </option>
           <option value="Director's Gold Medal">Director's Gold Medal</option>
+          <option value="D&M Proficiency Gold Medal">
+            D&M Proficiency Gold Medal
+          </option>
         </select>
       </div>
 
