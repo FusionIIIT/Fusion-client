@@ -83,18 +83,7 @@ import AccountStatemnts from "./Modules/Visitors_Hostel/accountStatements";
 import FacultyProfessionalProfile from "./Modules/facultyProfessionalProfile/facultyProfessionalProfile";
 
 // eslint-disable-next-line import/no-unresolved
-import ScholarshipPage from "./Modules/Scholarship/user/pages/ScholarshipPage";
-// eslint-disable-next-line import/no-unresolved
-import ScholarStatusPage from "./Modules/Scholarship/user/pages/ScholarshipStatusPage";
-// eslint-disable-next-line import/no-unresolved
-import Convenor from "./Modules/Scholarship/convenor/pages/Convenor";
-
-import InviteApplications from "./Modules/Scholarship/convenor/forms/inviteApplications";
-import MCM_Applications from "./Modules/Scholarship/convenor/components/MCM_Applications";
-import Medal_applications from "./Modules/Scholarship/convenor/components/medal_applications";
-import ConvenorBreadcumbs from "./Modules/Scholarship/convenor/components/ConvenorBreadcumbs";
-
-import BrowseApplicationPage from "./Modules/Scholarship/user/pages/BrowseApplicationPage";
+import ConvenorBreadcumbs from "./Modules/Scholarship/convenor/components/ConvenorBreadcumbs";;
 import UserBreadcrumbs from "./Modules/Scholarship/user/components/UserBreadcumbs";
 
 import InactivityHandler from "./helper/inactivityhandler";
@@ -242,7 +231,6 @@ export default function App() {
 
         {/* scholarship */}
         {/* user routes */}
-
         <Route
           path="/scholarship"
           element={
@@ -250,78 +238,24 @@ export default function App() {
               {role === "spacsconvenor" && (
                 <>
                   <ConvenorBreadcumbs />
-                  <Convenor />
+
                 </>
               )}
               {role === "student" && (
                 <>
                   <UserBreadcrumbs />
-                  <ScholarshipPage />
                 </>
               )}
               {role === "spacsassistant" && (
                 <>
                   <ConvenorBreadcumbs />
-                  <Convenor />
+
                 </>
               )}
             </Layout>
           }
         />
-        <Route
-          path="/user/browseApplication"
-          element={
-            <Layout>
-              <BrowseApplicationPage />
-            </Layout>
-          }
-        />
-        <Route
-          path="/user/scholarshipStatus"
-          element={
-            <Layout>
-              <ScholarStatusPage />
-            </Layout>
-          }
-        />
 
-        {/* convenor routes */}
-        <Route
-          path="/convenor/members"
-          element={
-            <Layout>
-              <ConvenorBreadcumbs />
-              <Convenor />
-            </Layout>
-          }
-        />
-        <Route
-          path="/convenor/invite"
-          element={
-            <Layout>
-              <ConvenorBreadcumbs />
-              <InviteApplications />
-            </Layout>
-          }
-        />
-        <Route
-          path="/convenor/MCM_application"
-          element={
-            <Layout>
-              <ConvenorBreadcumbs />
-              <MCM_Applications />
-            </Layout>
-          }
-        />
-        <Route
-          path="/convenor/Medal_applications"
-          element={
-            <Layout>
-              <ConvenorBreadcumbs />
-              <Medal_applications />
-            </Layout>
-          }
-        />
         <Route path="/accounts/login" element={<LoginPage />} />
         <Route path="/reset-password" element={<ForgotPassword />} />
       </Routes>

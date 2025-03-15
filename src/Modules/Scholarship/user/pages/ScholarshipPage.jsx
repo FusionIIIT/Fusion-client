@@ -3,7 +3,7 @@ import AwardsAndScholarshipCatalog from "../components/AwardsAndScholarshipCatal
 import SpacsMembers from "../components/SpacsMembers";
 import PreviousWinners from "../components/PreviousWinners";
 import styles from "./ScholarshipPage.module.css";
-import UserBreadcumbs from "../components/UserBreadcumbs";
+
 
 const CatalogPage = () => {
   const [desc, setDesc] = useState(1);
@@ -13,7 +13,7 @@ const CatalogPage = () => {
   };
 
   return (
-    <div className={styles.pageBackground}> 
+    <div className={styles.pageBackground}>  
       <div className={styles.wrapper}>
         <div className={styles.buttonContainer}>
           <button onClick={changeDesc} value={1} className={styles.button}>

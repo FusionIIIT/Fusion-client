@@ -1,103 +1,79 @@
 import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
 import { Tabs, Button, Flex, Text } from "@mantine/core";
-import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { useState } from "react";
 import styles from "../../../Dashboard/Dashboard.module.css";
+import CatalogPage from "../../user/pages/ScholarshipPage";
+import InviteApplications from "../forms/inviteApplications";
+import MCMApplications from "./MCM_Applications";
+
+
 
 function ConvenorBreadcrumbs() {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const [activeTab, setActiveTab] = useState("catalog");
 
-  // Define the tabs
   const tabItems = [
-    { path: "/scholarship", label: "Catalog" },
-    { path: "/convenor/invite", label: "Invite Application" },
-    { path: "/convenor/MCM_application", label: "Browse Application" },
+    { key: "catalog", label: "Catalog", component: <CatalogPage></CatalogPage> },
+    { key: "invite", label: "Invite Application", component: <InviteApplications></InviteApplications> },
+    { key: "browse", label: "Browse Application", component: <MCMApplications></MCMApplications> },
   ];
 
-  const activeTab = location.pathname;
+  const currentIndex = tabItems.findIndex((item) => item.key === activeTab);
 
   const handleTabChange = (direction) => {
-    const currentIndex = tabItems.findIndex((item) => item.path === activeTab);
     const newIndex =
       direction === "next"
         ? (currentIndex + 1) % tabItems.length
         : (currentIndex - 1 + tabItems.length) % tabItems.length;
 
-    navigate(tabItems[newIndex].path);
+    setActiveTab(tabItems[newIndex].key);
   };
 
   return (
-    <Flex
-      justify="flex-start"
-      align="center"
-      gap={{ base: "0.75rem", md: "1.25rem" }}
-      mt={{ base: "1.5rem", md: "2rem" }}
-      ml={{ md: "lg" }}
-      style={{ fontSize: "1.5rem" }} // Match size with UserBreadcrumbs
-    >
-      {/* Left Caret */}
-      <Button
-        onClick={() => handleTabChange("prev")}
-        variant="default"
-        p={0}
-        style={{ border: "none" }}
+    <>
+      <Flex
+        justify="flex-start"
+        align="center"
+        gap={{ base: "0.75rem", md: "1.25rem" }}
+        mt={{ base: "1.5rem", md: "2rem" }}
+        ml={{ md: "lg" }}
+        style={{ fontSize: "1.5rem" }}
       >
-        <CaretCircleLeft
-          className={styles.fusionCaretCircleIcon}
-          weight="light"
-          size={32}
-        />
-      </Button>
+        <Button onClick={() => handleTabChange("prev")} variant="default" p={0} style={{ border: "none" }}>
+          <CaretCircleLeft className={styles.fusionCaretCircleIcon} weight="light" size={32} />
+        </Button>
 
-      {/* Tabs */}
-      <div className={styles.fusionTabsContainer}>
-        <Tabs value={activeTab}>
-          <Tabs.List style={{ display: "flex", flexWrap: "nowrap" }}>
-            {tabItems.map((item, index) => (
-              <Tabs.Tab
-                key={index}
-                value={item.path}
-                className={
-                  activeTab === item.path
-                    ? styles.fusionActiveRecentTab // Apply active styles
-                    : styles.fusionInactiveTab // Apply inactive styles
-                }
-                style={{
-                  textAlign: "center",
-                  padding: "1rem 1.5rem", // Consistent padding
-                }}
-              >
-                <NavLink
-                  to={item.path}
-                  style={{
-                    textDecoration: "none",
-                    color: activeTab === item.path ? "#17abff" : "black", // Ensure NavLink color matches the active/inactive styles
-                  }}
+        <div className={styles.fusionTabsContainer}>
+          <Tabs value={activeTab}>
+            <Tabs.List style={{ display: "flex", flexWrap: "nowrap" }}>
+              {tabItems.map((item) => (
+                <Tabs.Tab
+                  key={item.key}
+                  value={item.key}
+                  className={
+                    activeTab === item.key
+                      ? styles.fusionActiveRecentTab
+                      : styles.fusionInactiveTab
+                  }
+                  onClick={() => setActiveTab(item.key)}
+                  style={{ textAlign: "center", padding: "1rem 1.5rem" }}
                 >
-                  <Text size="lg" weight={500}>
+                  <Text size="lg" weight={500} style={{ color: activeTab === item.key ? "#17abff" : "black" }}>
                     {item.label}
                   </Text>
-                </NavLink>
-              </Tabs.Tab>
-            ))}
-          </Tabs.List>
-        </Tabs>
-      </div>
+                </Tabs.Tab>
+              ))}
+            </Tabs.List>
+          </Tabs>
+        </div>
 
-      {/* Right Caret */}
-      <Button
-        onClick={() => handleTabChange("next")}
-        variant="default"
-        p={0}
-        style={{ border: "none" }}
-      >
-        <CaretCircleRight
-          className={styles.fusionCaretCircleIcon}
-          weight="light"
-          size={32}
-        />
-      </Button>
-    </Flex>
+        <Button onClick={() => handleTabChange("next")} variant="default" p={0} style={{ border: "none" }}>
+          <CaretCircleRight className={styles.fusionCaretCircleIcon} weight="light" size={32} />
+        </Button>
+      </Flex>
+
+      {/* Conditionally render component based on activeTab */}
+      {tabItems.find((item) => item.key === activeTab)?.component}
+    </>
   );
 }
 

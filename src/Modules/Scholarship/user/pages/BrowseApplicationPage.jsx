@@ -2,7 +2,6 @@ import ConvocationMedal from "../../Convocation/ConvocationMedal";
 import ScholarshipForm from "../../MCM_Application/ScholarshipForm";
 import styles from "./BrowseApplication.module.css";
 import React, { useState } from "react";
-import UserBreadcumbs from "../components/UserBreadcumbs";
 
 
 const BrowseApplicationPage = () => {
@@ -14,7 +13,6 @@ const BrowseApplicationPage = () => {
   
     return (
       <>
-        <UserBreadcumbs></UserBreadcumbs>
         <div className={styles.wrapper}>
           <div className={styles.buttonContainer}>
             <button onClick={changeDesc} value={1} className={styles.button}>

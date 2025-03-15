@@ -14,7 +14,7 @@ function ScholarStatusPage() {
 
   return (
     <>
-      <UserBreadcumbs />
+      {/* <UserBreadcumbs /> */}
       <div className={styles.pageContainer}>
         <div className={styles.gridContainer}>
           <button onClick={changeDesc} value={1}>

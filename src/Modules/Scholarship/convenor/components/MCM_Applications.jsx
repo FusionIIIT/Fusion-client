@@ -5,7 +5,7 @@ import { Table, Button } from "@mantine/core";
 import styles from "./MCM_applications.module.css";
 import Medal_applications from "./medal_applications";
 
-function MCM_Applications() {
+function MCMApplications() {
   const [activeTab, setActiveTab] = useState("MCM");
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -120,4 +120,4 @@ function MCM_Applications() {
   );
 }
 
-export default MCM_Applications;
+export default MCMApplications;
