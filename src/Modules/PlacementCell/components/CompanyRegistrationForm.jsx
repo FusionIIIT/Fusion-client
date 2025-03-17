@@ -1,8 +1,16 @@
-import React, { useState } from "react";
-import { TextInput, Textarea, Title, Button, FileInput, Group } from "@mantine/core";
+import React, { useState, useEffect } from "react";
+import {
+  TextInput,
+  Textarea,
+  Title,
+  Button,
+  FileInput,
+  Group,
+  Notification,
+  Container,
+} from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { fetchRegistrationRoute } from "../../../routes/placementCellRoutes";
-import axios from "axios";
+import { MantineReactTable } from "mantine-react-table";
 
 function CompanyRegistrationForm() {
   const [companyName, setCompanyName] = useState("");
@@ -11,6 +19,29 @@ function CompanyRegistrationForm() {
   const [website, setWebsite] = useState("");
   const [logo, setLogo] = useState(null);
   const [error, setError] = useState("");
+  const [companies, setCompanies] = useState([
+    {
+      id: 1,
+      companyName: "Company A",
+      description: "Description A",
+      address: "Address A",
+      website: "www.companya.com",
+    },
+    {
+      id: 2,
+      companyName: "Company B",
+      description: "Description B",
+      address: "Address B",
+      website: "www.companyb.com",
+    },
+    {
+      id: 3,
+      companyName: "Company C",
+      description: "Description C",
+      address: "Address C",
+      website: "www.companyc.com",
+    },
+  ]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -19,7 +50,13 @@ function CompanyRegistrationForm() {
       setError("Please fill all required fields.");
       return;
     }
-    const newRegistration = { companyName, description, address, website, logo };
+    const newRegistration = {
+      companyName,
+      description,
+      address,
+      website,
+      logo,
+    };
     try {
       const token = localStorage.getItem("authToken");
       console.log(newRegistration);
@@ -41,6 +78,7 @@ function CompanyRegistrationForm() {
           color: "green",
           position: "top-center",
         });
+        setCompanies([...companies, response.data]);
       } else {
         notifications.show({
           title: "Failed",
@@ -49,8 +87,7 @@ function CompanyRegistrationForm() {
           position: "top-center",
         });
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.error("Error adding restriction:", error);
       notifications.show({
         title: "Error",
@@ -61,57 +98,74 @@ function CompanyRegistrationForm() {
     }
   };
 
+  const columns = [
+    { accessorKey: "companyName", header: "Company Name" },
+    { accessorKey: "description", header: "Description" },
+    { accessorKey: "address", header: "Address" },
+    { accessorKey: "website", header: "Website" },
+  ];
+
   return (
-    <div>
-        <Title order={2}mb="xl">
-                Company Registration
+    <div style={{display: "flex", flexDirection: "row"}}>
+
+      <Container mt="xl" flex={1}>
+        <Title order={2} mb="xl">
+          Company Registration
         </Title>
-      {error && (
-        <Notification color="red" onClose={() => setError("")}>
-          {error}
-        </Notification>
-      )}
-      
-      <form onSubmit={handleSubmit}>
-        <TextInput
-          label="Company Name"
-          placeholder="Enter company name"
-          value={companyName}
-          onChange={(e) => setCompanyName(e.target.value)}
-          required
-        />
-        <Textarea
-          label="Company Description"
-          placeholder="Enter a brief description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          required
-        />
-        <TextInput
-          label="Company Address"
-          placeholder="Enter company address"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          required
-        />
-        <TextInput
-          label="Website URL"
-          placeholder="Enter website URL"
-          value={website}
-          onChange={(e) => setWebsite(e.target.value)}
-          required
-        />
-        <FileInput
-          label="Company Logo"
-          value={logo}
-          onChange={setLogo}
-          placeholder="Upload logo"
-          accept="image/*"
-        />
-        <Group position="right" mt="md">
-          <Button type="submit">Register Company</Button>
-        </Group>
-      </form>
+        {error && (
+          <Notification color="red" onClose={() => setError("")}>
+            {error}
+          </Notification>
+        )}
+
+        <form onSubmit={handleSubmit}>
+          <TextInput
+            label="Company Name"
+            placeholder="Enter company name"
+            value={companyName}
+            onChange={(e) => setCompanyName(e.target.value)}
+            required
+          />
+          <Textarea
+            label="Company Description"
+            placeholder="Enter a brief description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            required
+          />
+          <TextInput
+            label="Company Address"
+            placeholder="Enter company address"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            required
+          />
+          <TextInput
+            label="Website URL"
+            placeholder="Enter website URL"
+            value={website}
+            onChange={(e) => setWebsite(e.target.value)}
+            required
+          />
+          <FileInput
+            label="Company Logo"
+            value={logo}
+            onChange={setLogo}
+            placeholder="Upload logo"
+            accept="image/*"
+          />
+          <Group position="right" mt="md">
+            <Button type="submit">Register Company</Button>
+          </Group>
+        </form>
+      </Container>
+
+      <Container mt="xl" flex={1}>
+      <Title order={2} mb="xl">
+          Registred Companies
+        </Title>
+        <MantineReactTable columns={columns} data={companies} />
+      </Container>
     </div>
   );
 }
