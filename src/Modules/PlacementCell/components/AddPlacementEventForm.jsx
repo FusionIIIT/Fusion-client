@@ -48,6 +48,33 @@ function AddPlacementEventForm() {
   const [showCpiInput, setShowCpiInput] = useState(false);
   const [showBranchSelect, setShowBranchSelect] = useState(false);
 
+  const [selectedCompany, setSelectedCompany] = useState(null);
+
+  // sample dta for companies
+  const [companies] = useState([
+    {
+      id: 1,
+      companyName: "Company A",
+      description: "Description A",
+      address: "Address A",
+      website: "www.companya.com",
+    },
+    {
+      id: 2,
+      companyName: "Company B",
+      description: "Description B",
+      address: "Address B",
+      website: "www.companyb.com",
+    },
+    {
+      id: 3,
+      companyName: "Company C",
+      description: "Description C",
+      address: "Address C",
+      website: "www.companyc.com",
+    },
+  ]);
+
   const getCurrentTime = () => {
     const now = new Date();
     return now.toLocaleTimeString("en-GB", { hour12: false });
@@ -59,6 +86,7 @@ function AddPlacementEventForm() {
 
   const handleSubmit = async () => {
     console.log("Submitting form");
+    console.log("selected companiy", selectedCompany);
 
     const token = localStorage.getItem("authToken");
     if (!token) {
@@ -73,17 +101,17 @@ function AddPlacementEventForm() {
 
     const formData = new FormData();
     formData.append("placement_type", placementType);
-    formData.append("company_name", company);
+    // formData.append("company_name", company);
     formData.append("ctc", ctc);
     formData.append("description", description);
     formData.append("title", company);
     formData.append("location", location);
     formData.append("role", jobrole);
     formData.append("eligibility", eligibility.join(", "));
-    formData.append("passoutyr",passoutYear);
-    formData.append("gender",gender);
-    formData.append("cpi",cpi);
-    formData.append("branch",branch);
+    formData.append("passoutyr", passoutYear);
+    formData.append("gender", gender);
+    formData.append("cpi", cpi);
+    formData.append("branch", branch);
 
     // if (resumeFile) {
     //   formData.append("resume", resumeFile);
@@ -115,7 +143,7 @@ function AddPlacementEventForm() {
       const response = await axios.post(addPlacementEventForm, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
-          Authorization: `Token ${token}`, 
+          Authorization: `Token ${token}`,
         },
       });
       // alert(response.data.message);
@@ -126,7 +154,6 @@ function AddPlacementEventForm() {
         color: "green",
         position: "top-center",
       });
-      
     } catch (error) {
       const errorMessage = error.response?.data?.error || error.message;
       notifications.show({
@@ -156,12 +183,22 @@ function AddPlacementEventForm() {
       </Title>
 
       <Grid gutter="lg">
-        <Grid.Col span={4}>
+        {/* <Grid.Col span={4}>
           <TextInput
             label="Company Name"
             placeholder="Enter company name"
             value={company}
             onChange={(e) => setCompany(e.target.value)}
+          />
+        </Grid.Col> */}
+        <Grid.Col span={4} style={{ position: "relative" }}>
+          <Select
+            label="Select Company"
+            placeholder="Select a company"
+            data={companies.map((company) => company.companyName)}
+            value={selectedCompany}
+            onChange={setSelectedCompany}
+            required
           />
         </Grid.Col>
 
