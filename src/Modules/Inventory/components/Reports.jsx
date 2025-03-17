@@ -1,108 +1,328 @@
 import React, { useState } from "react";
-import { Table, Checkbox, Select, TextInput } from "@mantine/core";
+import {
+  Table,
+  Button,
+  TextInput,
+  Select,
+  Group,
+  Text,
+  ScrollArea,
+} from "@mantine/core";
 
 const departments = [
-  { label: "CSE", value: "CSE" },
-  { label: "ECE", value: "ECE" },
-  { label: "Mech", value: "Mech" },
-  { label: "SM", value: "SM" },
-  { label: "Design", value: "Design" },
-  { label: "NS", value: "NS" },
-  { label: "H1", value: "H1" },
-  { label: "H3", value: "H3" },
-  { label: "H4", value: "H4" },
-  { label: "Panini", value: "Panini" },
-  { label: "Nagarjuna", value: "Nagarjuna" },
-  { label: "Maa Saraswati", value: "Maa Saraswati" },
-  { label: "RSPC", value: "RSPC" },
-  { label: "GymKhana", value: "GymKhana" },
-  { label: "IWD", value: "IWD" },
-  { label: "Mess", value: "Mess" },
-  { label: "Academic", value: "Academic" },
-  { label: "VH", value: "VH" },
+  "CSE",
+  "ECE",
+  "Mech",
+  "SM",
+  "Design",
+  "NS",
+  "H1",
+  "H3",
+  "H4",
+  "Panini",
+  "Nagarjuna",
+  "Maa Saraswati",
+  "RSPC",
+  "GymKhana",
+  "IWD",
+  "Mess",
+  "Academic",
+  "VH",
 ];
 
 const inventoryData = [
-  {
-    department: "CSE",
-    product: "Computer",
-    quantity: 50,
-    missing: 0,
-    lastUpdated: "29-03-2024",
-  },
-  {
-    department: "CSE",
-    product: "Peripherals",
-    quantity: 50,
-    missing: 0,
-    lastUpdated: "29-03-2024",
-  },
-  {
-    department: "ECE",
-    product: "Oscilloscope",
-    quantity: 20,
-    missing: 1,
-    lastUpdated: "28-03-2024",
-  },
-  {
-    department: "ECE",
-    product: "Microcontroller Kits",
-    quantity: 30,
-    missing: 2,
-    lastUpdated: "27-03-2024",
-  },
+  { product: "Computer", quantity: 10 },
+  { product: "Oscilloscope", quantity: 5 },
+  { product: "Projector", quantity: 3 },
+  { product: "Printer", quantity: 7 },
+  { product: "Desk Chair", quantity: 15 },
+  { product: "Whiteboard", quantity: 4 },
+  { product: "Laptop", quantity: 12 },
+  { product: "Microscope", quantity: 6 },
+  { product: "3D Printer", quantity: 2 },
+  { product: "Tablet", quantity: 8 },
+  { product: "Server Rack", quantity: 3 },
+  { product: "Smart Board", quantity: 5 },
+  { product: "Drone", quantity: 4 },
+  { product: "VR Headset", quantity: 7 },
+  { product: "Robot Kit", quantity: 9 },
 ];
 
-export default function Reports() {
-  const [selectedDepartment, setSelectedDepartment] = useState("CSE");
-  const [searchTerm, setSearchTerm] = useState("");
+const productDetails = {
+  Computer: [
+    {
+      purchaseId: "C001",
+      issueDate: "01-01-2024",
+      department: "CSE",
+      supplier: "ABC Corp",
+    },
+    {
+      purchaseId: "C002",
+      issueDate: "02-01-2024",
+      department: "ECE",
+      supplier: "XYZ Ltd",
+    },
+    {
+      purchaseId: "C003",
+      issueDate: "03-01-2024",
+      department: "Mech",
+      supplier: "Tech Solutions",
+    },
+  ],
+  Oscilloscope: [
+    {
+      purchaseId: "O001",
+      issueDate: "05-02-2024",
+      department: "ECE",
+      supplier: "Tech Supplies",
+    },
+    {
+      purchaseId: "O002",
+      issueDate: "06-02-2024",
+      department: "CSE",
+      supplier: "Electro World",
+    },
+    {
+      purchaseId: "O003",
+      issueDate: "07-02-2024",
+      department: "Design",
+      supplier: "InnovaTech",
+    },
+  ],
+  Projector: [
+    {
+      purchaseId: "P001",
+      issueDate: "10-03-2024",
+      department: "Mech",
+      supplier: "Vision Ltd",
+    },
+    {
+      purchaseId: "P002",
+      issueDate: "11-03-2024",
+      department: "Design",
+      supplier: "ProTech",
+    },
+    {
+      purchaseId: "P003",
+      issueDate: "12-03-2024",
+      department: "Academic",
+      supplier: "EduTech",
+    },
+  ],
+  Printer: [
+    {
+      purchaseId: "PR001",
+      issueDate: "15-04-2024",
+      department: "Admin",
+      supplier: "PrintMaster",
+    },
+    {
+      purchaseId: "PR002",
+      issueDate: "16-04-2024",
+      department: "CSE",
+      supplier: "Ink Solutions",
+    },
+    {
+      purchaseId: "PR003",
+      issueDate: "17-04-2024",
+      department: "Design",
+      supplier: "QuickPrint",
+    },
+  ],
+  "Desk Chair": [
+    {
+      purchaseId: "DC001",
+      issueDate: "20-05-2024",
+      department: "Admin",
+      supplier: "FurniCorp",
+    },
+    {
+      purchaseId: "DC002",
+      issueDate: "21-05-2024",
+      department: "Design",
+      supplier: "Comfort Works",
+    },
+    {
+      purchaseId: "DC003",
+      issueDate: "22-05-2024",
+      department: "Academic",
+      supplier: "ErgoDesign",
+    },
+  ],
+  Whiteboard: [
+    {
+      purchaseId: "WB001",
+      issueDate: "25-06-2024",
+      department: "Academic",
+      supplier: "BoardMakers",
+    },
+    {
+      purchaseId: "WB002",
+      issueDate: "26-06-2024",
+      department: "CSE",
+      supplier: "WriteRight",
+    },
+    {
+      purchaseId: "WB003",
+      issueDate: "27-06-2024",
+      department: "Design",
+      supplier: "SmartBoards",
+    },
+  ],
+  Laptop: [
+    {
+      purchaseId: "L001",
+      issueDate: "01-07-2024",
+      department: "CSE",
+      supplier: "TechWorld",
+    },
+    {
+      purchaseId: "L002",
+      issueDate: "02-07-2024",
+      department: "ECE",
+      supplier: "LaptopHub",
+    },
+    {
+      purchaseId: "L003",
+      issueDate: "03-07-2024",
+      department: "Academic",
+      supplier: "EduTech",
+    },
+  ],
+  Microscope: [
+    {
+      purchaseId: "M001",
+      issueDate: "05-08-2024",
+      department: "ECE",
+      supplier: "LabTech",
+    },
+    {
+      purchaseId: "M002",
+      issueDate: "06-08-2024",
+      department: "CSE",
+      supplier: "MicroLabs",
+    },
+    {
+      purchaseId: "M003",
+      issueDate: "07-08-2024",
+      department: "NS",
+      supplier: "BioTech",
+    },
+  ],
+  "3D Printer": [
+    {
+      purchaseId: "3D001",
+      issueDate: "10-09-2024",
+      department: "Design",
+      supplier: "Print3D",
+    },
+    {
+      purchaseId: "3D002",
+      issueDate: "11-09-2024",
+      department: "Mech",
+      supplier: "Tech3D",
+    },
+    {
+      purchaseId: "3D003",
+      issueDate: "12-09-2024",
+      department: "CSE",
+      supplier: "Innovate3D",
+    },
+  ],
+  Tablet: [
+    {
+      purchaseId: "T001",
+      issueDate: "15-10-2024",
+      department: "CSE",
+      supplier: "TabWorld",
+    },
+    {
+      purchaseId: "T002",
+      issueDate: "16-10-2024",
+      department: "ECE",
+      supplier: "TabTech",
+    },
+    {
+      purchaseId: "T003",
+      issueDate: "17-10-2024",
+      department: "Academic",
+      supplier: "EduTab",
+    },
+  ],
+  "Smart Board": [
+    {
+      purchaseId: "SB001",
+      issueDate: "01-11-2024",
+      department: "CSE",
+      supplier: "SmartTech Inc.",
+    },
+  ],
+};
 
-  const filteredData = inventoryData.filter(
-    (item) =>
-      item.department === selectedDepartment &&
-      item.product.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+export default function InventoryReport() {
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedDepartment, setSelectedDepartment] = useState("");
+
+  const filteredData = inventoryData.filter((item) => {
+    const matchesSearch = item.product
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+
+    const matchesDepartment =
+      !selectedDepartment ||
+      (productDetails[item.product] &&
+        productDetails[item.product].some(
+          (detail) => detail.department === selectedDepartment,
+        ));
+
+    return matchesSearch && matchesDepartment;
+  });
 
   return (
     <div
       style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        padding: "20px",
-        width: "100%",
         maxWidth: "1200px",
         margin: "auto",
+        padding: "20px",
+        height: "100vh",
+        overflowY: "auto",
       }}
     >
-      <h1
-        style={{ color: "#007BFF", marginBottom: "10px", fontSize: "1.5rem" }}
-      >
-        {selectedDepartment} Reports
-      </h1>
+      <Group position="center" mb="xl">
+        <Text size="xl" weight={700} color="blue">
+          Inventory Report
+        </Text>
+      </Group>
+
+      {/* Primary Filter: Search by product name */}
+      <TextInput
+        placeholder="Search by product name"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        style={{ marginBottom: "20px", width: "300px" }}
+      />
+
+      {/* Secondary Filter: Filter by department */}
       <Select
-        data={departments}
+        data={[
+          { value: "", label: "All Departments" },
+          ...departments.map((dept) => ({ value: dept, label: dept })),
+        ]}
         value={selectedDepartment}
         onChange={setSelectedDepartment}
-        placeholder="Select Department"
-        style={{ marginBottom: "20px", width: "80%" }}
+        placeholder="Filter by department"
+        clearable
+        style={{ marginBottom: "20px", width: "300px" }}
       />
-      <TextInput
-        placeholder="Search products"
-        value={searchTerm}
-        onChange={(event) => setSearchTerm(event.currentTarget.value)}
-        style={{ marginBottom: "20px", width: "80%" }}
-      />
-      <div style={{ width: "100%", overflowX: "auto" }}>
+
+      {/* Main Table Container with ScrollArea */}
+      <ScrollArea style={{ height: "100vh", marginBottom: "20px" }}>
         <Table
-          striped
-          highlightOnHover
           style={{
             width: "100%",
-            minWidth: "500px",
-            border: "1px solid #ddd",
             borderCollapse: "collapse",
-            backgroundColor: "white",
+            overflowY: "auto",
           }}
         >
           <thead>
@@ -110,71 +330,170 @@ export default function Reports() {
               style={{
                 backgroundColor: "#f0f0f0",
                 borderBottom: "2px solid #ddd",
-                textAlign: "center",
               }}
             >
-              <th style={{ padding: "10px", border: "1px solid #ddd" }}>
-                Select
+              <th style={{ padding: "15px", border: "1px solid #ddd" }}>
+                Product
               </th>
-              <th style={{ padding: "10px", border: "1px solid #ddd" }}>
-                Products
-              </th>
-              <th style={{ padding: "10px", border: "1px solid #ddd" }}>
+              <th style={{ padding: "15px", border: "1px solid #ddd" }}>
                 Quantity
               </th>
-              <th style={{ padding: "10px", border: "1px solid #ddd" }}>
-                Missing
-              </th>
-              <th style={{ padding: "10px", border: "1px solid #ddd" }}>
-                Last Updated
+              <th style={{ padding: "15px", border: "1px solid #ddd" }}>
+                Actions
               </th>
             </tr>
           </thead>
           <tbody>
-            {filteredData.length > 0 ? (
-              filteredData.map((item, index) => (
+            {filteredData.map((item, index) => (
+              <React.Fragment key={index}>
                 <tr
-                  key={index}
                   style={{
                     backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#fff",
                     borderBottom: "1px solid #ddd",
-                    textAlign: "center",
                   }}
                 >
-                  <td style={{ padding: "10px", border: "1px solid #ddd" }}>
-                    <Checkbox />
-                  </td>
-                  <td style={{ padding: "10px", border: "1px solid #ddd" }}>
+                  <td style={{ padding: "15px", border: "1px solid #ddd" }}>
                     {item.product}
                   </td>
-                  <td style={{ padding: "10px", border: "1px solid #ddd" }}>
+                  <td style={{ padding: "15px", border: "1px solid #ddd" }}>
                     {item.quantity}
                   </td>
-                  <td style={{ padding: "10px", border: "1px solid #ddd" }}>
-                    {item.missing}
-                  </td>
-                  <td style={{ padding: "10px", border: "1px solid #ddd" }}>
-                    {item.lastUpdated}
+                  <td
+                    style={{
+                      padding: "15px",
+                      border: "1px solid #ddd",
+                      textAlign: "center",
+                      verticalAlign: "middle",
+                    }}
+                  >
+                    <Button
+                      variant="light"
+                      color="blue"
+                      size="xs"
+                      onClick={() =>
+                        setSelectedProduct(
+                          selectedProduct === item.product
+                            ? null
+                            : item.product,
+                        )
+                      }
+                    >
+                      {selectedProduct === item.product
+                        ? "Hide Details"
+                        : "View Details"}
+                    </Button>
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td
-                  colSpan="5"
-                  style={{
-                    padding: "10px",
-                    textAlign: "center",
-                    border: "1px solid #ddd",
-                  }}
-                >
-                  No data available for {selectedDepartment}
-                </td>
-              </tr>
-            )}
+                {selectedProduct === item.product &&
+                  productDetails[item.product] && (
+                    <tr>
+                      <td colSpan={3}>
+                        {/* Nested Table Container with ScrollArea */}
+                        <ScrollArea
+                          style={{ maxHeight: "100vh", margin: "10px 0" }}
+                        >
+                          <Table
+                            style={{
+                              width: "100%",
+                              borderCollapse: "collapse",
+                            }}
+                          >
+                            <thead>
+                              <tr
+                                style={{
+                                  backgroundColor: "#e0e0e0",
+                                  borderBottom: "2px solid #ddd",
+                                }}
+                              >
+                                <th
+                                  style={{
+                                    padding: "15px",
+                                    border: "1px solid #ddd",
+                                  }}
+                                >
+                                  Purchase ID
+                                </th>
+                                <th
+                                  style={{
+                                    padding: "15px",
+                                    border: "1px solid #ddd",
+                                  }}
+                                >
+                                  Date of Issue
+                                </th>
+                                <th
+                                  style={{
+                                    padding: "15px",
+                                    border: "1px solid #ddd",
+                                  }}
+                                >
+                                  Department
+                                </th>
+                                <th
+                                  style={{
+                                    padding: "15px",
+                                    border: "1px solid #ddd",
+                                  }}
+                                >
+                                  Supplier Name
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {productDetails[item.product].map((detail, i) => (
+                                <tr
+                                  key={i}
+                                  style={{
+                                    backgroundColor:
+                                      i % 2 === 0 ? "#f9f9f9" : "#fff",
+                                    borderBottom: "1px solid #ddd",
+                                  }}
+                                >
+                                  <td
+                                    style={{
+                                      padding: "15px",
+                                      border: "1px solid #ddd",
+                                    }}
+                                  >
+                                    {detail.purchaseId}
+                                  </td>
+                                  <td
+                                    style={{
+                                      padding: "15px",
+                                      border: "1px solid #ddd",
+                                    }}
+                                  >
+                                    {detail.issueDate}
+                                  </td>
+                                  <td
+                                    style={{
+                                      padding: "15px",
+                                      border: "1px solid #ddd",
+                                    }}
+                                  >
+                                    {detail.department}
+                                  </td>
+                                  <td
+                                    style={{
+                                      padding: "15px",
+                                      border: "1px solid #ddd",
+                                    }}
+                                  >
+                                    {detail.supplier}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </Table>
+                        </ScrollArea>
+                      </td>
+                    </tr>
+                  )}
+              </React.Fragment>
+            ))}
           </tbody>
         </Table>
-      </div>
+      </ScrollArea>
     </div>
   );
 }
