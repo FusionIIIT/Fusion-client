@@ -39,6 +39,15 @@ const EditPlacementForm = ({ isOpen, onClose, placementData, onSubmit }) => {
   const [datePickerOpened, setDatePickerOpened] = useState(false);
   const [role, setRole] = useState(position);
 
+  // sample data for fields created by TPO
+  const [tpoFields] = useState([
+    { value: "field1", label: "Field 1" },
+    { value: "field2", label: "Field 2" },
+    { value: "field3", label: "Field 3" },
+  ]);
+
+  const [selectedFields, setSelectedFields] = useState([]);
+
   const getFormattedDate = (date) => {
     if (!date) return null;
     const year = date.getFullYear();
@@ -64,7 +73,7 @@ const EditPlacementForm = ({ isOpen, onClose, placementData, onSubmit }) => {
       company,
       date: getFormattedDate(date),
       location: locationInput,
-      ctc: formattedCtc,  // Use formatted CTC here
+      ctc: formattedCtc, // Use formatted CTC here
       time,
       placementType,
       description: descriptionInput,
@@ -90,7 +99,7 @@ const EditPlacementForm = ({ isOpen, onClose, placementData, onSubmit }) => {
 
           {/* Date Picker */}
           <Grid.Col span={4}>
-           <DateInput
+            <DateInput
               label="Date"
               placeholder="Pick a date"
               value={date}
@@ -182,11 +191,22 @@ const EditPlacementForm = ({ isOpen, onClose, placementData, onSubmit }) => {
               onChange={(e) => setRole(e.target.value)}
             />
           </Grid.Col>
+
+          <Grid.Col span={12}>
+            <MultiSelect
+              label="Select Fields"
+              placeholder="Select fields"
+              data={tpoFields}
+              value={selectedFields}
+              onChange={setSelectedFields}
+              searchable
+              clearable
+            />
+          </Grid.Col>
         </Grid>
+
         <Group position="right" style={{ marginTop: "20px" }}>
-          <Button onClick={handleSubmit}>
-            Save Changes
-          </Button>
+          <Button onClick={handleSubmit}>Save Changes</Button>
         </Group>
       </Card>
     </Modal>
