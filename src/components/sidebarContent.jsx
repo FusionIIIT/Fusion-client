@@ -76,7 +76,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "Mess Management",
       id: "mess_management",
       icon: <MessIcon size={18} />,
-      url: "/",
+      url: "/mess",
     },
     {
       label: "Visitor's Hostel",
@@ -94,7 +94,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "File Tracking",
       id: "fts",
       icon: <FileTrackingIcon size={18} />,
-      url: "/",
+      url: "/filetracking",
     },
     {
       label: "Scholarship Portal",
@@ -118,7 +118,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "Department Portal",
       id: "department",
       icon: <DepartmentIcon size={18} />,
-      url: "/",
+      url: "/department",
     },
     {
       label: "Research",
@@ -154,7 +154,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "Institute Work Departments",
       id: "iwd",
       icon: <IWDIcon size={18} />,
-      url: "/",
+      url: "/iwd",
     },
     {
       label: "Hostel Management",
