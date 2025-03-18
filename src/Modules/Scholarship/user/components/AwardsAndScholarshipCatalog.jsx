@@ -1,14 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
-import {
-  List,
-  Text,
-  Title,
-  Divider,
-  Container,
-  Loader,
-  Grid,
-} from "@mantine/core";
+import { List, Title, Divider, Container, Loader, Grid } from "@mantine/core";
 import axios from "axios";
 import { showAwardRoute } from "../../../../routes/SPACSRoutes";
 
@@ -56,6 +48,7 @@ function AwardsAndScholarshipCatalog() {
         <Loader size="lg" />
       ) : (
         <Grid gap={{ base: "sm", md: "lg" }}>
+          {/* List of Awards */}
           <Grid.Col
             span={{ sm: 12, md: 4 }}
             bg={{ base: "gray.0", md: "gray.1" }}
@@ -78,6 +71,8 @@ function AwardsAndScholarshipCatalog() {
               ))}
             </List>
           </Grid.Col>
+
+          {/* Award Details */}
           <Grid.Col
             span={{ sm: 12, md: 8 }}
             bg="gray.0"
@@ -93,9 +88,13 @@ function AwardsAndScholarshipCatalog() {
                   {selectedAward.award_name}
                 </Title>
                 <Divider my="sm" />
-                <Text size={{ base: "16px", sm: "18px" }}>
-                  {selectedAward.catalog}
-                </Text>
+
+                {/* Display catalog as bullet points */}
+                <List size="md" spacing="sm">
+                  {selectedAward.catalog.split("\n").map((point, index) => (
+                    <List.Item key={index}>{point}</List.Item>
+                  ))}
+                </List>
               </>
             )}
           </Grid.Col>
