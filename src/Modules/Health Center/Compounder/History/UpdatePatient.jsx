@@ -68,6 +68,7 @@ function UpdatePatient() {
   const [relation, setrelation] = useState("");
   const [diseaseDetails, setdiseaseDetails] = useState("");
   const [textSuggested, setTextSuggested] = useState("");
+  const [reportfile, setFile] = useState(null);
 
   const fetchDoctors = async () => {
     const token = localStorage.getItem("authToken");
@@ -208,7 +209,7 @@ function UpdatePatient() {
   };
   const handleAddEntry = () => {
     if (medicine && quantity && days && timesPerDay) {
-      if (stockQuantity >= quantity) {
+      if (stockQuantity >= quantity || stock === "N/A at moment") {
         const newEntry = {
           brand_name: medicine,
           quantity,
@@ -261,11 +262,19 @@ function UpdatePatient() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     const token = localStorage.getItem("authToken");
+
     try {
+      const fileArrayBuffer = await reportfile.arrayBuffer();
+      const fileBase64 = btoa(
+        new Uint8Array(fileArrayBuffer).reduce(
+          (data, byte) => data + String.fromCharCode(byte),
+          "",
+        ),
+      );
       const response = await axios.post(
         compounderRoute,
         {
-          file: null,
+          file: fileBase64,
           user: patientId,
           doctor: doctorName,
           details: diseaseDetails,
@@ -296,6 +305,17 @@ function UpdatePatient() {
     }
   };
 
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+    console.log("CHANGE");
+    console.log(reportfile);
+  };
+
+  useEffect(() => {
+    if (reportfile) {
+      console.log("State Updated:", reportfile);
+    }
+  }, [reportfile]);
   return (
     <>
       <CustomBreadcrumbs />
@@ -585,6 +605,7 @@ function UpdatePatient() {
             <Input
               type="file"
               name="report"
+              onChange={handleFileChange}
               style={{
                 width: "100%",
               }}
