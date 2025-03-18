@@ -194,22 +194,15 @@ function CombinedBookingForm({ modalOpened, onClose }) {
                 label="Arrival Date"
                 placeholder="From"
                 type="date"
-                value={
-                  form.values.arrivalDate
-                    ? form.values.arrivalDate.split("/").reverse().join("-")
-                    : ""
-                }
+                value={form.values.arrivalDate || ""}
                 onChange={(event) => {
-                  const formattedDate = event.currentTarget.value
-                    .split("-")
-                    .reverse()
-                    .join("/");
-                  form.setFieldValue("arrivalDate", formattedDate);
+                  form.setFieldValue("arrivalDate", event.currentTarget.value);
                 }}
                 required
                 min={todayDate} // Ensures that the arrival date can't be in the past (yyyy-mm-dd format)
               />
             </Grid.Col>
+
             <Grid.Col span={6}>
               <NumberInput
                 label="Arrival Hour"
@@ -251,26 +244,18 @@ function CombinedBookingForm({ modalOpened, onClose }) {
                 label="Departure Date"
                 placeholder="To"
                 type="date"
-                value={
-                  form.values.departureDate
-                    ? form.values.departureDate.split("/").reverse().join("-")
-                    : ""
-                }
+                value={form.values.departureDate || ""}
                 onChange={(event) => {
-                  const formattedDate = event.currentTarget.value
-                    .split("-")
-                    .reverse()
-                    .join("/");
-                  form.setFieldValue("departureDate", formattedDate);
+                  form.setFieldValue(
+                    "departureDate",
+                    event.currentTarget.value,
+                  );
                 }}
                 required
-                min={
-                  form.values.arrivalDate
-                    ? form.values.arrivalDate.split("/").reverse().join("-")
-                    : todayDate
-                } // Departure date must be after arrival date (yyyy-mm-dd format)
+                min={form.values.arrivalDate || todayDate} // Ensures departure date is after arrival date
               />
             </Grid.Col>
+
             <Grid.Col span={6}>
               <NumberInput
                 label="Departure Hour"
