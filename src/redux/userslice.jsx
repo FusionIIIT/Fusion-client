@@ -1,11 +1,9 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, current } from "@reduxjs/toolkit";
 
 const userSlice = createSlice({
   name: "user",
   initialState: {
-    name: "",
     username: "User",
-    roll_no: "",
     roles: ["Guest-User"],
     role: "Guest-User",
     accessibleModules: {}, // Format---> {role: {module: true}}
@@ -14,12 +12,6 @@ const userSlice = createSlice({
   reducers: {
     setUserName: (state, action) => {
       state.username = action.payload;
-    },
-    setName: (state, action) => {
-      state.name = action.payload;
-    },
-    setRollNo: (state, action) => {
-      state.roll_no = action.payload;
     },
     setRoles: (state, action) => {
       state.roles = action.payload;
@@ -31,8 +23,9 @@ const userSlice = createSlice({
       state.accessibleModules = action.payload;
     },
     setCurrentAccessibleModules: (state) => {
-      state.currentAccessibleModules =
-        state.accessibleModules[state.role] || {};
+      state.currentAccessibleModules = current(state.accessibleModules)[
+        state.role
+      ];
     },
     clearUserName: (state) => {
       state.username = "User";
@@ -45,8 +38,6 @@ const userSlice = createSlice({
 
 export const {
   setUserName,
-  setName,
-  setRollNo,
   setRoles,
   setRole,
   setAccessibleModules,

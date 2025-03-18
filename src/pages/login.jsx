@@ -1,18 +1,19 @@
 import {
+  Anchor,
   Button,
   Center,
   Container,
+  Group,
   Paper,
   PasswordInput,
   TextInput,
   Title,
 } from "@mantine/core";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { notifications } from "@mantine/notifications";
-import { useDispatch } from "react-redux";
-import { setName } from "../redux/userslice";
+
 import { loginRoute } from "../routes/globalRoutes";
 
 function LoginPage() {
@@ -20,7 +21,7 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+
   useEffect(() => {
     if (localStorage.getItem("authToken")) {
       navigate("/dashboard");
@@ -39,12 +40,6 @@ function LoginPage() {
       });
 
       if (response.status === 200) {
-        dispatch(setName(username));
-        notifications.show({
-          title: "Login Successful",
-          message: "You have been successfully logged in.",
-          color: "green",
-        });
         const { token } = response.data;
 
         localStorage.setItem("authToken", token);
@@ -53,14 +48,12 @@ function LoginPage() {
     } catch (err) {
       console.error("Login error:", err);
 
-      if (err.response?.status === 400) {
+      if (err.response?.status === 401) {
         notifications.show({
           title: "Login Failed",
-          message:
-            "Invalid username or password ! Please use correct credentials.",
+          message: "Invalid username or password",
           color: "red",
           position: "top-center",
-          withCloseButton: false,
         });
       } else {
         notifications.show({
@@ -96,12 +89,6 @@ function LoginPage() {
               onChange={(e) => setUsername(e.target.value)}
               required
               disabled={loading}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  handleSubmit(e);
-                }
-              }}
             />
             <PasswordInput
               label="Password"
@@ -111,13 +98,14 @@ function LoginPage() {
               required
               mt="lg"
               disabled={loading}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  handleSubmit(e);
-                }
-              }}
             />
+            <Group justify="space-between" mt="lg">
+              <Link style={{ textDecoration: "none" }} to="/reset-password">
+                <Anchor component="button" size="sm" c="#15ABFF">
+                  Forgot password?
+                </Anchor>
+              </Link>
+            </Group>
             <Button
               fullWidth
               size="md"
