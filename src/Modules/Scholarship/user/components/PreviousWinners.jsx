@@ -3,9 +3,7 @@ import { CaretDown } from "@phosphor-icons/react";
 import axios from "axios";
 import { Select, Button, Table, Text, Loader } from "@mantine/core";
 import styles from "./PreviousWinners.module.css";
-import { showGetAwardRoute } from "../../../../routes/SPACSRoutes";
-
-
+import { getPreviousWinnersRoute } from "../../../../routes/SPACSRoutes";
 
 function PreviousWinners() {
   const [programme, setProgramme] = useState("");
@@ -37,16 +35,12 @@ function PreviousWinners() {
 
     try {
       const token = localStorage.getItem("authToken");
-      const response = await axios.post(
-        showGetAwardRoute,
-        formData,
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await axios.post(getPreviousWinnersRoute, formData, {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
       if (response.data.result === "Success") {
         console.log(response.data);
@@ -60,14 +54,12 @@ function PreviousWinners() {
         setWinners(winnersArray);
       } else {
         console.error("No winners found:", response.data.error);
-
       }
     } catch (error) {
       setWinners([]);
       console.error(
         "Error fetching winners:",
-        error.response ? error.response.data : error.message
-
+        error.response ? error.response.data : error.message,
       );
     } finally {
       setIsLoading(false);
@@ -161,8 +153,6 @@ function PreviousWinners() {
           )}
         </div>
       )}
-
-
     </div>
   );
 }

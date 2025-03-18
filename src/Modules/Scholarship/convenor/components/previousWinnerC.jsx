@@ -3,6 +3,7 @@ import { CaretDown } from "@phosphor-icons/react";
 import axios from "axios";
 import { Select, Button, Table, Text, Loader } from "@mantine/core";
 import styles from "./previousWinnersC.module.css";
+import { getPreviousWinnersRoute } from "../../../../routes/SPACSRoutes";
 
 function PreviousWinners() {
   const [programme, setProgramme] = useState("");
@@ -34,16 +35,12 @@ function PreviousWinners() {
 
     try {
       const token = localStorage.getItem("authToken");
-      const response = await axios.post(
-        "http://127.0.0.1:8000/spacs/get-winners/",
-        formData,
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-            "Content-Type": "application/json",
-          },
+      const response = await axios.post(getPreviousWinnersRoute, formData, {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
         },
-      );
+      });
 
       if (response.data.result === "Success") {
         console.log(response.data);

@@ -5,6 +5,15 @@ import * as XLSX from "xlsx";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import styles from "./medal_applications.module.css"; // Ensure this file is present with correct styles
+import {
+  getDirectorGoldApplicationsRoute,
+  getDirectorSilverApplicationsRoute,
+  getProficiencyDMApplicationsRoute,
+  updateDirectorGoldStatusRoute,
+  updateDirectorSilverStatusRoute,
+  updateProficiencyDMStatusRoute,
+} from "../../../../routes/SPACSRoutes";
+import { host } from "../../../../routes/globalRoutes";
 
 function MedalApplications() {
   const [selectedAward, setSelectedAward] = useState("Director's Silver Medal");
@@ -27,11 +36,11 @@ function MedalApplications() {
       let apiUrl = "";
       // Select the API based on the selected award
       if (selectedAward === "Director's Silver Medal") {
-        apiUrl = "http://127.0.0.1:8000/spacs/director-silver/";
+        apiUrl = getDirectorSilverApplicationsRoute;
       } else if (selectedAward === "Director's Gold Medal") {
-        apiUrl = "http://127.0.0.1:8000/spacs/director_gold_list/";
+        apiUrl = getDirectorGoldApplicationsRoute;
       } else if (selectedAward === "D&M Proficiency Gold Medal") {
-        apiUrl = "http://127.0.0.1:8000/spacs/dm-proficiency-list/";
+        apiUrl = getProficiencyDMApplicationsRoute;
       }
 
       const response = await axios.get(apiUrl, {
@@ -79,21 +88,21 @@ function MedalApplications() {
       let payload = {};
 
       if (selectedAward === "Director's Gold Medal") {
-        apiUrl = "http://127.0.0.1:8000/spacs/director-gold/accept-reject/";
+        apiUrl = updateDirectorGoldStatusRoute;
         // For Gold Medal, send "accept" or "reject" as action
         payload = {
           id: medalId,
           action: action === "approved" ? "accept" : "reject", // Ensure it's 'accept' or 'reject'
         };
       } else if (selectedAward === "Director's Silver Medal") {
-        apiUrl = "http://127.0.0.1:8000/spacs/api/director_silver/decision/";
+        apiUrl = updateDirectorSilverStatusRoute;
         // For Silver Medal, send 'ACCEPTED' or 'REJECTED'
         payload = {
           id: medalId,
           status: action === "approved" ? "ACCEPTED" : "REJECTED",
         };
       } else if (selectedAward === "D&M Proficiency Gold Medal") {
-        apiUrl = "http://127.0.0.1:8000/spacs/api/dm-proficiency/decsion/";
+        apiUrl = updateProficiencyDMStatusRoute;
         payload = {
           id: medalId,
           status: action === "approved" ? "ACCEPTED" : "REJECTED",
@@ -115,11 +124,10 @@ function MedalApplications() {
       } else {
         setError("Error updating status.");
       }
-      // eslint-disable-next-line no-shadow
-    } catch (error) {
-      console.error("Error updating status:", error.response || error.message);
+    } catch (err) {
+      console.error("Error updating status:", err.response || err.message);
       setError(
-        `Error updating status: ${error.response ? error.response.data : error.message}`,
+        `Error updating status: ${err.response ? err.response.data : err.message}`,
       );
     }
   };
@@ -157,7 +165,7 @@ function MedalApplications() {
     // Fetch and add marksheets
     const fetchPromises = medals.map(async (medal, index) => {
       if (medal.Marksheet) {
-        const markSheetUrl = `http://127.0.0.1:8000${medal.Marksheet}`;
+        const markSheetUrl = `${host}${medal.Marksheet}`;
         try {
           const response = await fetch(markSheetUrl);
           if (!response.ok) throw new Error(`Failed to fetch ${markSheetUrl}`);

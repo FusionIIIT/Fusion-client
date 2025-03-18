@@ -19,9 +19,15 @@ export default function AwardRegistration() {
         value={selectedAward}
         onChange={(value) => setSelectedAward(value)}
         data={[
-          { value: "Director's Silver Medal", label: "Director's Silver Medal" },
+          {
+            value: "Director's Silver Medal",
+            label: "Director's Silver Medal",
+          },
           { value: "Director's Gold Medal", label: "Director's Gold Medal" },
-          { value: "D&M Proficiency Gold Medal", label: "D&M Proficiency Gold Medal" },
+          {
+            value: "D&M Proficiency Gold Medal",
+            label: "D&M Proficiency Gold Medal",
+          },
         ]}
       />
 

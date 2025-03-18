@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import styles from "./ScholarshipStatusPage.module.css"; // Import CSS module
 import ScholarshipStatus from "../components/ScholarshipStatus";
-import UserBreadcumbs from "../components/UserBreadcumbs";
 
 function ScholarStatusPage() {
   const [desc, setDesc] = useState(1);

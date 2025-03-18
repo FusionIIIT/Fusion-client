@@ -10,15 +10,14 @@ import {
   Paper,
   Title,
 } from "@mantine/core";
-import { submitSilver } from "../../../routes/SPACSRoutes";
+import { submitSilverRoute } from "../../../routes/SPACSRoutes";
+
 export default function DirectorSilverForm() {
   const [formData, setFormData] = useState({
     award_type: "Director's Silver Medal",
     Marksheet: null,
-    
     justification: "",
     correspondence_address: "",
-    
     nearest_policestation: "",
     nearest_railwaystation: "",
     financial_assistance: "",
@@ -40,15 +39,11 @@ export default function DirectorSilverForm() {
     e.preventDefault();
 
     const formDataToSend = new FormData();
-    for (const key in formData) {
-      if (formData[key]) {
-        if (key === "Marksheet") {
-          formDataToSend.append(key, formData[key]); // Append the file directly
-        } else {
-          formDataToSend.append(key, formData[key]);
-        }
+    Object.entries(formData).forEach(([key, value]) => {
+      if (value) {
+        formDataToSend.append(key, value);
       }
-    }
+    });
 
     try {
       const token = localStorage.getItem("authToken");
@@ -57,16 +52,13 @@ export default function DirectorSilverForm() {
         return;
       }
 
-      const response = await fetch(
-        submitSilver,
-        {
-          method: "POST",
-          body: formDataToSend,
-          headers: {
-            Authorization: `Token ${token}`,
-          },
-        }
-      );
+      const response = await fetch(submitSilverRoute, {
+        method: "POST",
+        body: formDataToSend,
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      });
 
       if (response.ok) {
         const result = await response.json();
@@ -76,7 +68,7 @@ export default function DirectorSilverForm() {
         const errorData = await response.json();
         console.error("Submission failed:", errorData);
         alert(
-          `Failed to submit the form: ${errorData.detail || response.statusText}`
+          `Failed to submit the form: ${errorData.detail || response.statusText}`,
         );
       }
     } catch (error) {
@@ -94,9 +86,8 @@ export default function DirectorSilverForm() {
         <form onSubmit={handleSubmit}>
           <Grid gutter="lg">
             {/* Basic Information */}
-            
-           
-            <Grid.Col span={{base: 12,sm: 6}}>
+
+            <Grid.Col span={{ base: 12, sm: 6 }}>
               <TextInput
                 label="Nearest Police Station"
                 name="nearest_policestation"
@@ -105,7 +96,7 @@ export default function DirectorSilverForm() {
                 placeholder="Enter Nearest Police Station"
               />
             </Grid.Col>
-            <Grid.Col span={{base: 12,sm: 6}}>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
               <TextInput
                 label="Nearest Railway Station"
                 name="nearest_railwaystation"
@@ -114,7 +105,7 @@ export default function DirectorSilverForm() {
                 placeholder="Enter Nearest Railway Station"
               />
             </Grid.Col>
-            <Grid.Col span={{base: 12,sm: 6}}>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
               <TextInput
                 label="Grand Total Amount"
                 name="grand_total"
@@ -177,6 +168,7 @@ export default function DirectorSilverForm() {
             <Grid.Col span={12}>
               <FileButton onChange={handleFileChange} accept="application/pdf">
                 {(props) => (
+                  // eslint-disable-next-line react/jsx-props-no-spreading
                   <Button {...props} fullWidth>
                     Upload Marksheet (PDF)
                   </Button>

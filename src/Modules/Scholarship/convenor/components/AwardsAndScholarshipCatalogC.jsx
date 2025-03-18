@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   List,
-  // eslint-disable-next-line no-unused-vars
-  Text,
   Title,
   Divider,
   Container,
@@ -13,6 +11,10 @@ import {
 import axios from "axios";
 import { Pencil } from "@phosphor-icons/react";
 import styles from "./CatalogC.module.css";
+import {
+  showAwardRoute,
+  updateCatalogRoute,
+} from "../../../../routes/SPACSRoutes";
 
 function AwardsAndScholarshipCatalog() {
   const [selectedAward, setSelectedAward] = useState(null);
@@ -43,7 +45,7 @@ function AwardsAndScholarshipCatalog() {
       }
 
       await axios.post(
-        "http://127.0.0.1:8000/spacs/award/",
+        updateCatalogRoute,
         { id: selectedAward.id, catalog: updatedText },
         {
           headers: {
@@ -78,15 +80,12 @@ function AwardsAndScholarshipCatalog() {
           throw new Error("Authentication token not found");
         }
 
-        const response = await axios.get(
-          "http://127.0.0.1:8000/spacs/create-award/",
-          {
-            headers: {
-              Authorization: `Token ${token}`,
-              "Content-Type": "application/json",
-            },
+        const response = await axios.get(showAwardRoute, {
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
           },
-        );
+        });
 
         setAwards(response.data);
         setSelectedAward(response.data[0]);

@@ -6,15 +6,21 @@ import CatalogPage from "../../user/pages/ScholarshipPage";
 import InviteApplications from "../forms/inviteApplications";
 import MCMApplications from "./MCM_Applications";
 
-
-
 function ConvenorBreadcrumbs() {
   const [activeTab, setActiveTab] = useState("catalog");
 
   const tabItems = [
-    { key: "catalog", label: "Catalog", component: <CatalogPage></CatalogPage> },
-    { key: "invite", label: "Invite Application", component: <InviteApplications></InviteApplications> },
-    { key: "browse", label: "Browse Application", component: <MCMApplications></MCMApplications> },
+    { key: "catalog", label: "Catalog", component: <CatalogPage /> },
+    {
+      key: "invite",
+      label: "Invite Application",
+      component: <InviteApplications />,
+    },
+    {
+      key: "browse",
+      label: "Browse Application",
+      component: <MCMApplications />,
+    },
   ];
 
   const currentIndex = tabItems.findIndex((item) => item.key === activeTab);
@@ -38,8 +44,17 @@ function ConvenorBreadcrumbs() {
         ml={{ md: "lg" }}
         style={{ fontSize: "1.5rem" }}
       >
-        <Button onClick={() => handleTabChange("prev")} variant="default" p={0} style={{ border: "none" }}>
-          <CaretCircleLeft className={styles.fusionCaretCircleIcon} weight="light" size={32} />
+        <Button
+          onClick={() => handleTabChange("prev")}
+          variant="default"
+          p={0}
+          style={{ border: "none" }}
+        >
+          <CaretCircleLeft
+            className={styles.fusionCaretCircleIcon}
+            weight="light"
+            size={32}
+          />
         </Button>
 
         <div className={styles.fusionTabsContainer}>
@@ -57,7 +72,13 @@ function ConvenorBreadcrumbs() {
                   onClick={() => setActiveTab(item.key)}
                   style={{ textAlign: "center", padding: "1rem 1.5rem" }}
                 >
-                  <Text size="lg" weight={500} style={{ color: activeTab === item.key ? "#17abff" : "black" }}>
+                  <Text
+                    size="lg"
+                    weight={500}
+                    style={{
+                      color: activeTab === item.key ? "#17abff" : "black",
+                    }}
+                  >
                     {item.label}
                   </Text>
                 </Tabs.Tab>
@@ -66,8 +87,17 @@ function ConvenorBreadcrumbs() {
           </Tabs>
         </div>
 
-        <Button onClick={() => handleTabChange("next")} variant="default" p={0} style={{ border: "none" }}>
-          <CaretCircleRight className={styles.fusionCaretCircleIcon} weight="light" size={32} />
+        <Button
+          onClick={() => handleTabChange("next")}
+          variant="default"
+          p={0}
+          style={{ border: "none" }}
+        >
+          <CaretCircleRight
+            className={styles.fusionCaretCircleIcon}
+            weight="light"
+            size={32}
+          />
         </Button>
       </Flex>
 

@@ -10,7 +10,7 @@ import {
   Paper,
   Title,
 } from "@mantine/core";
-import { submitPdm } from "../../../routes/SPACSRoutes";
+import { submitPdmRoute } from "../../../routes/SPACSRoutes";
 
 export default function DMProficiencyForm() {
   const [formData, setFormData] = useState({
@@ -66,7 +66,7 @@ export default function DMProficiencyForm() {
         return;
       }
 
-      const response = await fetch(submitPdm, {
+      const response = await fetch(submitPdmRoute, {
         method: "POST",
         body: formDataToSend,
         headers: {

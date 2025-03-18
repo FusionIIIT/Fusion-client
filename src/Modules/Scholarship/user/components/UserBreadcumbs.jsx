@@ -18,7 +18,7 @@ function UserBreadcrumbs() {
   ];
 
   const handleTabChange = (direction) => {
-    const currentIndex = tabItems.findIndex(item => item.key === activeTab);
+    const currentIndex = tabItems.findIndex((item) => item.key === activeTab);
     let newIndex;
 
     if (direction === "next") {
@@ -47,8 +47,17 @@ function UserBreadcrumbs() {
         ml={{ md: "lg" }}
         style={{ fontSize: "1.5rem" }}
       >
-        <Button onClick={() => handleTabChange("prev")} variant="default" p={0} style={{ border: "none" }}>
-          <CaretCircleLeft className={classes.fusionCaretCircleIcon} weight="light" size={32} />
+        <Button
+          onClick={() => handleTabChange("prev")}
+          variant="default"
+          p={0}
+          style={{ border: "none" }}
+        >
+          <CaretCircleLeft
+            className={classes.fusionCaretCircleIcon}
+            weight="light"
+            size={32}
+          />
         </Button>
 
         <div className={classes.fusionTabsContainer} ref={tabsListRef}>
@@ -58,29 +67,42 @@ function UserBreadcrumbs() {
                 <Tabs.Tab
                   value={item.key}
                   key={index}
-                  className={activeTab === item.key ? classes.fusionActiveRecentTab : ""}
+                  className={
+                    activeTab === item.key ? classes.fusionActiveRecentTab : ""
+                  }
                   style={{
                     padding: "1rem 1.5rem",
                     color: activeTab === item.key ? "blue" : "black",
                     transition: "color 0.3s",
                   }}
                 >
-                  <Text size="lg" weight={activeTab === item.key ? 700 : 500}>{item.label}</Text>
+                  <Text size="lg" weight={activeTab === item.key ? 700 : 500}>
+                    {item.label}
+                  </Text>
                 </Tabs.Tab>
               ))}
             </Tabs.List>
           </Tabs>
         </div>
 
-        <Button onClick={() => handleTabChange("next")} variant="default" p={0} style={{ border: "none" }}>
-          <CaretCircleRight className={classes.fusionCaretCircleIcon} weight="light" size={32} />
+        <Button
+          onClick={() => handleTabChange("next")}
+          variant="default"
+          p={0}
+          style={{ border: "none" }}
+        >
+          <CaretCircleRight
+            className={classes.fusionCaretCircleIcon}
+            weight="light"
+            size={32}
+          />
         </Button>
       </Flex>
 
       {/* Conditional rendering based on the active tab key */}
-      {activeTab === "catalog" && <CatalogPage></CatalogPage>}
-      {activeTab === "browseApplication" && <BrowseApplicationPage></BrowseApplicationPage>}
-      {activeTab === "scholarshipStatus" && <ScholarStatusPage></ScholarStatusPage>}
+      {activeTab === "catalog" && <CatalogPage />}
+      {activeTab === "browseApplication" && <BrowseApplicationPage />}
+      {activeTab === "scholarshipStatus" && <ScholarStatusPage />}
     </>
   );
 }

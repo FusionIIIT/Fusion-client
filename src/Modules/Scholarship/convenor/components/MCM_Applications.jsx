@@ -8,6 +8,11 @@ import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import styles from "./MCM_applications.module.css";
 import Medal_applications from "./medal_applications";
+import {
+  getMCMApplicationsRoute,
+  updateMCMStatusRoute,
+} from "../../../../routes/SPACSRoutes";
+import { host } from "../../../../routes/globalRoutes";
 
 function MCMApplications() {
   const [activeTab, setActiveTab] = useState("MCM");
@@ -17,14 +22,11 @@ function MCMApplications() {
   const fetchApplications = async () => {
     try {
       const token = localStorage.getItem("authToken");
-      const response = await fetch(
-        "http://127.0.0.1:8000/spacs/scholarship-details/",
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
+      const response = await fetch(getMCMApplicationsRoute, {
+        headers: {
+          Authorization: `Token ${token}`,
         },
-      );
+      });
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -57,7 +59,7 @@ function MCMApplications() {
         return;
       }
 
-      const apiUrl = "http://127.0.0.1:8000/spacs/mcm/status-update/";
+      const apiUrl = updateMCMStatusRoute;
       const payload = {
         id,
         status:
@@ -145,7 +147,7 @@ function MCMApplications() {
 
     const fetchPromises = fileFields.map(async (field, index) => {
       if (app[field]) {
-        const fileUrl = `http://127.0.0.1:8000${app[field]}`;
+        const fileUrl = `${host}${app[field]}`;
         try {
           const response = await fetch(fileUrl);
           if (!response.ok) throw new Error(`Failed to fetch ${fileUrl}`);

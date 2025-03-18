@@ -14,6 +14,7 @@ import {
   NumberInput,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { submitMCMApplicationsRoute } from "../../../routes/SPACSRoutes";
 
 /* eslint-disable react/jsx-props-no-spreading */
 
@@ -91,7 +92,7 @@ function ScholarshipForm() {
 
     try {
       const token = localStorage.getItem("authToken");
-      const response = await fetch("http://127.0.0.1:8000/spacs/mcm_update/", {
+      const response = await fetch(submitMCMApplicationsRoute, {
         method: "POST",
         body: submissionData,
         headers: {

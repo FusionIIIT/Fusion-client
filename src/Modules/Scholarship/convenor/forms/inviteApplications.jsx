@@ -1,6 +1,7 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import React, { useState } from "react";
 import styles from "./inviteApplications.module.css";
+import { inviteApplicationsRoute } from "../../../../routes/SPACSRoutes";
 
 function InviteApplications() {
   const [formData, setFormData] = useState({
@@ -20,18 +21,12 @@ function InviteApplications() {
     }));
   };
 
-  // const handleSubmit = (e) => {
-  //   e.preventDefault();
-  //   console.log("Form submitted:", formData);
-  //   // Add your form submission logic here
-  // };
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
       const token = localStorage.getItem("authToken");
-      const response = await fetch("http://127.0.0.1:8000/spacs/release", {
-        // Adjust the URL if needed
+      const response = await fetch(inviteApplicationsRoute, {
         method: "POST",
         headers: {
           Authorization: `Token ${token}`,

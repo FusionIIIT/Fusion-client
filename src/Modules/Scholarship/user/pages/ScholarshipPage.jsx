@@ -4,8 +4,7 @@ import SpacsMembers from "../components/SpacsMembers";
 import PreviousWinners from "../components/PreviousWinners";
 import styles from "./ScholarshipPage.module.css";
 
-
-const CatalogPage = () => {
+function CatalogPage() {
   const [desc, setDesc] = useState(1);
 
   const changeDesc = (event) => {
@@ -13,7 +12,7 @@ const CatalogPage = () => {
   };
 
   return (
-    <div className={styles.pageBackground}>  
+    <div className={styles.pageBackground}>
       <div className={styles.wrapper}>
         <div className={styles.buttonContainer}>
           <button onClick={changeDesc} value={1} className={styles.button}>
@@ -31,16 +30,19 @@ const CatalogPage = () => {
           <button
             onClick={changeDesc}
             value={1}
+            aria-label="Awards and Scholarship Catalogue"
             className={`${styles.progressButton} ${desc === 1 ? styles.activeProgress : styles.inactiveProgress}`}
           />
           <button
             onClick={changeDesc}
             value={2}
+            aria-label="SPACS Members and details"
             className={`${styles.progressButton} ${desc === 2 ? styles.activeProgress : styles.inactiveProgress}`}
           />
           <button
             onClick={changeDesc}
             value={3}
+            aria-label="Previous Winners"
             className={`${styles.progressButton} ${desc === 3 ? styles.activeProgress : styles.inactiveProgress}`}
           />
         </div>
@@ -51,6 +53,6 @@ const CatalogPage = () => {
       </div>
     </div>
   );
-};
+}
 
 export default CatalogPage;
