@@ -11,7 +11,8 @@ import {
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { MantineReactTable } from "mantine-react-table";
-
+import { fetchRegistrationRoute } from "../../../routes/placementCellRoutes";
+import axios from "axios";
 function CompanyRegistrationForm() {
   const [companyName, setCompanyName] = useState("");
   const [description, setDescription] = useState("");
@@ -42,6 +43,37 @@ function CompanyRegistrationForm() {
       website: "www.companyc.com",
     },
   ]);
+
+  useEffect(() => {
+    const fetchRegistrationData = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        const response = await axios.get(fetchRegistrationRoute, {
+          headers: { Authorization: `Token ${token}` },
+        });
+  
+        if (response.status !== 200) {
+          notifications.show({
+            title: "Error fetching data",
+            message: `Error fetching data: ${response.status}`,
+            color: "red",
+          });
+        }
+        else{
+          setCompanies(response.data);
+        }
+  
+      } catch (error) {
+        notifications.show({
+          title: "Failed to fetch data",
+          message: "Failed to fetch companies list",
+          color: "red",
+        });
+        console.error(error);
+      }
+    };
+    fetchRegistrationData();
+  }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
