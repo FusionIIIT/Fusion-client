@@ -3,6 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button } from "@mantine/core";
 import axios from "axios";
+import * as XLSX from "xlsx";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 import styles from "./MCM_applications.module.css";
 import Medal_applications from "./medal_applications";
 
@@ -26,8 +29,14 @@ function MCMApplications() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      setApplications(data); // Assuming data is an array of application objects
-      setLoading(false);
+      if (data) {
+        const incompleteApplications = data.filter(
+          (app) => app.status !== "REJECTED",
+        );
+        setApplications(incompleteApplications);
+        console.log("Fetched scholarship details:", incompleteApplications);
+        setLoading(false);
+      }
     } catch (error) {
       console.error("Failed to fetch scholarship details:", error);
       setLoading(false);
@@ -80,6 +89,83 @@ function MCMApplications() {
     }
   };
 
+  const handleExportInExcel = async () => {
+    if (applications.length === 0) {
+      alert("No applications available to download.");
+      return;
+    }
+
+    // Generate applications data with all fields, using spread operator
+    const applicationsData = applications.map((app, index) => ({
+      ...app,
+      Marksheet: `Marksheet_${app.student}_${index}.pdf`,
+      Aadhar_card: `AadharCard_${app.student}_${index}.pdf`,
+      Affidavit: `Affidavit_${app.student}_${index}.pdf`,
+      Bank_details: `Bank_details_${app.student}_${index}.pdf`,
+      Fee_Receipt: `Fee_Receipt_${app.student}_${index}.pdf`,
+      income_certificate: `Income_certificate_${app.student}_${index}.pdf`,
+    }));
+
+    // Generate Excel file
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(applicationsData);
+
+    XLSX.utils.book_append_sheet(wb, ws, "applications");
+
+    // Convert Excel file to Blob and add to ZIP
+    const excelBlob = new Blob(
+      [XLSX.write(wb, { bookType: "xlsx", type: "array" })],
+      {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      },
+    );
+    const excelUrl = URL.createObjectURL(excelBlob);
+    const link = document.createElement("a");
+    link.href = excelUrl;
+    link.download = "applications.xlsx";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    alert("ZIP file containing all application details downloaded!");
+  };
+
+  const handleDownloadFiles = async (app) => {
+    const zip = new JSZip();
+    const folder = zip.folder(`Application_${app.student}`);
+
+    const fileFields = [
+      "Marksheet",
+      "Aadhar",
+      "Affidavit",
+      "Bank_details",
+      "Fee_Receipt",
+      "income_certificate",
+    ];
+
+    const fetchPromises = fileFields.map(async (field, index) => {
+      if (app[field]) {
+        const fileUrl = `http://127.0.0.1:8000${app[field]}`;
+        try {
+          const response = await fetch(fileUrl);
+          if (!response.ok) throw new Error(`Failed to fetch ${fileUrl}`);
+          const blob = await response.blob();
+          folder.file(`${field}_${app.student}_${index}.pdf`, blob);
+        } catch (err) {
+          console.error("Error fetching file:", err);
+        }
+      }
+    });
+
+    await Promise.all(fetchPromises); // Wait for all files to be added
+
+    // Generate ZIP and trigger download
+    zip.generateAsync({ type: "blob" }).then((content) => {
+      saveAs(content, `Application_${app.student}.zip`);
+    });
+    alert("ZIP file containing all files of the application downloaded!");
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.whiteBox}>
@@ -118,64 +204,77 @@ function MCMApplications() {
             {loading ? (
               <p>Loading applications...</p>
             ) : (
-              <div className={styles.tableWrapper}>
-                <Table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th>Roll</th>
-                      <th>Income</th>
-                      <th>File</th>
-                      <th>Accept</th>
-                      <th>Reject</th>
-                      <th>Under Review</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {applications.map(
-                      (app, index) =>
-                        app.status !== "REJECTED" && (
-                          <tr key={index}>
-                            <td>{app.student}</td>
-                            <td>{app.annual_income}</td>
-                            <td>
-                              <Button color="blue">Files</Button>
-                            </td>
-                            <td>
-                              <Button
-                                color="green"
-                                onClick={() =>
-                                  handleApproval(app.id, "approved")
-                                }
-                              >
-                                Accept
-                              </Button>
-                            </td>
-                            <td>
-                              <Button
-                                color="red"
-                                onClick={() =>
-                                  handleApproval(app.id, "rejected")
-                                }
-                              >
-                                Reject
-                              </Button>
-                            </td>
-                            <td>
-                              <Button
-                                color="gray"
-                                onClick={() =>
-                                  handleApproval(app.id, "under_review")
-                                }
-                              >
-                                Under Review
-                              </Button>
-                            </td>
-                          </tr>
-                        ),
-                    )}
-                  </tbody>
-                </Table>
-              </div>
+              <>
+                <button
+                  onClick={handleExportInExcel}
+                  className={styles.exportButton}
+                >
+                  Export All
+                </button>
+                <div className={styles.tableWrapper}>
+                  <Table className={styles.table}>
+                    <thead>
+                      <tr>
+                        <th>Roll</th>
+                        <th>Income</th>
+                        <th>File</th>
+                        <th>Accept</th>
+                        <th>Reject</th>
+                        <th>Under Review</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {applications.map(
+                        (app, index) =>
+                          app.status !== "REJECTED" && (
+                            <tr key={index}>
+                              <td>{app.student}</td>
+                              <td>{app.annual_income}</td>
+                              <td>
+                                <Button
+                                  color="blue"
+                                  onClick={() => handleDownloadFiles(app)}
+                                >
+                                  Files
+                                </Button>
+                              </td>
+                              <td>
+                                <Button
+                                  color="green"
+                                  onClick={() =>
+                                    handleApproval(app.id, "approved")
+                                  }
+                                >
+                                  Accept
+                                </Button>
+                              </td>
+                              <td>
+                                <Button
+                                  color="red"
+                                  onClick={() =>
+                                    handleApproval(app.id, "rejected")
+                                  }
+                                >
+                                  Reject
+                                </Button>
+                              </td>
+                              <td>
+                                <Button
+                                  color="gray"
+                                  onClick={() =>
+                                    handleApproval(app.id, "under_review")
+                                  }
+                                >
+                                  Under Review
+                                </Button>
+                              </td>
+                            </tr>
+                          ),
+                      )}
+                    </tbody>
+                  </Table>
+                </div>
+              </>
             )}
           </>
         )}
