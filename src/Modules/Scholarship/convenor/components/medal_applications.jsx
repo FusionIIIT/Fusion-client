@@ -1,12 +1,10 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import styles from "./medal_applications.module.css"; // Ensure this file is present with correct styles
 import * as XLSX from "xlsx";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
-
-
+import styles from "./medal_applications.module.css"; // Ensure this file is present with correct styles
 
 function MedalApplications() {
   const [selectedAward, setSelectedAward] = useState("Director's Silver Medal");
@@ -32,6 +30,8 @@ function MedalApplications() {
         apiUrl = "http://127.0.0.1:8000/spacs/director-silver/";
       } else if (selectedAward === "Director's Gold Medal") {
         apiUrl = "http://127.0.0.1:8000/spacs/director_gold_list/";
+      } else if (selectedAward === "D&M Proficiency Gold Medal") {
+        apiUrl = "http://127.0.0.1:8000/spacs/dm-proficiency-list/";
       }
 
       const response = await axios.get(apiUrl, {
@@ -69,17 +69,14 @@ function MedalApplications() {
     try {
       const token = localStorage.getItem("authToken");
 
-
       if (!token) {
         console.log("No authorization token found in localStorage.");
         setError("No authorization token found.");
         return;
       }
 
-
       let apiUrl = "";
       let payload = {};
-
 
       if (selectedAward === "Director's Gold Medal") {
         apiUrl = "http://127.0.0.1:8000/spacs/director-gold/accept-reject/";
@@ -95,9 +92,15 @@ function MedalApplications() {
           id: medalId,
           status: action === "approved" ? "ACCEPTED" : "REJECTED",
         };
+      } else if (selectedAward === "D&M Proficiency Gold Medal") {
+        apiUrl = "http://127.0.0.1:8000/spacs/api/dm-proficiency/decsion/";
+        payload = {
+          id: medalId,
+          status: action === "approved" ? "ACCEPTED" : "REJECTED",
+        };
       }
 
-      console.log("Sending payload:", payload);  // Log payload for debugging
+      console.log("Sending payload:", payload); // Log payload for debugging
 
       const response = await axios.post(apiUrl, payload, {
         headers: {
@@ -105,7 +108,6 @@ function MedalApplications() {
           "Content-Type": "application/json",
         },
       });
-
 
       if (response.status === 200) {
         fetchMedalsData(); // Refresh the list of medals
@@ -132,9 +134,9 @@ function MedalApplications() {
     const folder = zip.folder("Marksheets");
 
     // Generate medals data with all fields, using spread operator
-    const medalsData = medals.map((medal,index) => ({
+    const medalsData = medals.map((medal, index) => ({
       ...medal, // Spread all medal fields dynamically
-      "Marksheet":`Marksheet_${medal.student}_${index}.pdf` // Add Marksheet link field
+      Marksheet: `Marksheet_${medal.student}_${index}.pdf`, // Add Marksheet link field
     }));
 
     // Generate Excel file
@@ -146,7 +148,9 @@ function MedalApplications() {
     // Convert Excel file to Blob and add to ZIP
     const excelBlob = new Blob(
       [XLSX.write(wb, { bookType: "xlsx", type: "array" })],
-      { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
+      {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      },
     );
     folder.file("Medals.xlsx", excelBlob);
 
@@ -159,8 +163,8 @@ function MedalApplications() {
           if (!response.ok) throw new Error(`Failed to fetch ${markSheetUrl}`);
           const blob = await response.blob();
           folder.file(`Marksheet_${medal.student}_${index}.pdf`, blob);
-        } catch (error) {
-          console.error("Error fetching file:", error);
+        } catch (err) {
+          console.error("Error fetching file:", err);
         }
       }
     });
@@ -177,7 +181,10 @@ function MedalApplications() {
   return (
     <div className={styles.container}>
       <h2 className={styles.title}>Medal Applications</h2>
-      <button onClick={handleDownloadAllMarksheets} className={styles.exportButton}>
+      <button
+        onClick={handleDownloadAllMarksheets}
+        className={styles.exportButton}
+      >
         Export All
       </button>
 
@@ -193,11 +200,13 @@ function MedalApplications() {
             Director's Silver Medal
           </option>
           <option value="Director's Gold Medal">Director's Gold Medal</option>
+          <option value="D&M Proficiency Gold Medal">
+            D&M Proficiency Gold Medal
+          </option>
         </select>
       </div>
 
       {isLoading && <p>Loading medals...</p>}
-
 
       {!isLoading && !error && medals.length > 0 && (
         <table className={styles.table}>
