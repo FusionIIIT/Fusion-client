@@ -3,7 +3,6 @@ import {
   Autocomplete,
   Button,
   Checkbox,
-  FileInput,
   Flex,
   Grid,
   Input,
@@ -24,7 +23,10 @@ import { useForm } from "@mantine/form";
 import axios from "axios";
 import NavCom from "../NavCom";
 import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
-import { compounderRoute } from "../../../../routes/health_center";
+import {
+  compounderRoute,
+  GetfileRoute,
+} from "../../../../routes/health_center";
 
 // function getDummyData(medicineName) {
 //   const dummyDatabase = {
@@ -79,6 +81,7 @@ function CompPrescription() {
   const [testsSuggested, setTestsSuggested] = useState("");
   const [revoke, setRevoke] = useState([]);
   const [followid, setFollowid] = useState(0);
+  const [reportfile, setFile] = useState(null);
 
   const handelcheck = async (event) => {
     const { value, checked } = event.target;
@@ -170,10 +173,20 @@ function CompPrescription() {
   const handleSubmitFollowup = async () => {
     const token = localStorage.getItem("authToken");
     try {
+      let fileBase64 = null;
+      if (reportfile !== null) {
+        const fileArrayBuffer = await reportfile.arrayBuffer();
+        fileBase64 = btoa(
+          new Uint8Array(fileArrayBuffer).reduce(
+            (data, byte) => data + String.fromCharCode(byte),
+            "",
+          ),
+        );
+      }
       const response = await axios.post(
         compounderRoute,
         {
-          file: null,
+          file: fileBase64,
           pre_id: id,
           doctor: doctorName,
           details: diseaseDetails,
@@ -202,6 +215,18 @@ function CompPrescription() {
     }
   };
 
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+    console.log("CHANGE");
+    console.log(reportfile);
+  };
+
+  useEffect(() => {
+    if (reportfile) {
+      console.log("State Updated:", reportfile);
+    }
+  }, [reportfile]);
+
   useEffect(() => {
     const fetchData = async () => {
       const token = localStorage.getItem("authToken");
@@ -215,6 +240,7 @@ function CompPrescription() {
               doctor: "Dr. Challa",
               diseaseDetails: "Chronic Disease Details",
               tests: "trial test1",
+              file_id: 0,
               revoked_medicines: [
                 {
                   medicine: "Medicine R",
@@ -254,6 +280,7 @@ function CompPrescription() {
               doctor: "Dr. Sahil",
               diseaseDetails: "Chronic Disease Details",
               tests: "trial test",
+              file_id: 0,
               revoked_medicines: [
                 {
                   medicine: "Medicine Ra",
@@ -339,13 +366,20 @@ function CompPrescription() {
     );
   }
 
+  const handelgetfile = (fid) => {
+    console.log("clicked");
+    const url = `${GetfileRoute}${fid}`;
+    console.log(url);
+    window.open(url, "_blank");
+  };
+
   // const filteredPrescription = prescrip?.prescriptions?.find(
   //   (prescription) => prescription.id === followid,
   // );
 
   const handleAddEntry = () => {
     if (medicine && quantity && days && timesPerDay) {
-      if (stockQuantity >= quantity) {
+      if (stockQuantity >= quantity || stock === "N/A at moment") {
         const newEntry = {
           brand_name: medicine,
           quantity,
@@ -578,15 +612,18 @@ function CompPrescription() {
           {prescription.tests}
         </Textarea>
 
-        <Button
-          style={{
-            backgroundColor: "#15abff",
-            color: "white",
-            padding: "5px 30px",
-          }}
-        >
-          View Report
-        </Button>
+        {prescription.file_id !== 0 ? (
+          <Button
+            style={{
+              backgroundColor: "#15abff",
+              color: "white",
+              padding: "5px 30px",
+            }}
+            onClick={() => handelgetfile(prescription.file_id)}
+          >
+            View Report
+          </Button>
+        ) : null}
       </Flex>
     </div>
   );
@@ -927,11 +964,16 @@ function CompPrescription() {
                   />
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, md: 6 }}>
-                  <FileInput
-                    label="Upload Report"
-                    value={form.values.report}
-                    onChange={(file) => form.setFieldValue("report", file)}
-                    error={form.errors.report}
+                  <Input.Label style={{ marginBottom: "0.5rem" }}>
+                    Upload Report
+                  </Input.Label>
+                  <Input
+                    type="file"
+                    name="report"
+                    onChange={handleFileChange}
+                    style={{
+                      width: "100%",
+                    }}
                   />
                 </Grid.Col>
 
