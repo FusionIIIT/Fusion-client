@@ -1,5 +1,3 @@
-/* eslint-disable eqeqeq */
-/* eslint-disable jsx-a11y/control-has-associated-label */
 import React, { useState } from "react";
 import styles from "./ScholarshipStatusPage.module.css"; // Import CSS module
 import ScholarshipStatus from "../components/ScholarshipStatus";
@@ -24,11 +22,14 @@ function ScholarStatusPage() {
           <button
             onClick={changeDesc}
             value={1}
-            className={`${styles.progressButton} ${desc == 1 ? styles.active : styles.inactive}`}
-          />
+            className={`${styles.progressButton} ${desc === 1 ? styles.active : styles.inactive}`}
+            aria-label="Progress Button"
+          >
+            Progress
+          </button>
         </div>
         {/* Removed the horizontal line here */}
-        {desc == 1 && <ScholarshipStatus />}
+        {desc === 1 && <ScholarshipStatus />}
       </div>
     </>
   );

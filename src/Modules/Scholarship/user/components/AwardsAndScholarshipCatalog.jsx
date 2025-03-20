@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { List, Title, Divider, Container, Loader, Grid } from "@mantine/core";
 import axios from "axios";

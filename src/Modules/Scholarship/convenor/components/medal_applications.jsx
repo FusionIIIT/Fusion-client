@@ -59,11 +59,9 @@ function MedalApplications() {
       } else {
         setError("No data received from the API.");
       }
-
       setIsLoading(false);
-      // eslint-disable-next-line no-shadow
-    } catch (error) {
-      console.error("Error fetching medals data:", error);
+    } catch (err) {
+      console.error("Error fetching medals data:", err);
       setError("Error fetching medals data.");
       setIsLoading(false);
     }
@@ -234,9 +232,9 @@ function MedalApplications() {
                 <td>{selectedAward}</td>
                 <td>
                   <a
-                    href={`http://127.0.0.1:8000${medal.Marksheet}`} // Construct full URL
-                    target="_blank" // Open in new tab
-                    rel="noopener noreferrer" // Security best practices
+                    href={`${host}${medal.Marksheet}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className={`${styles.button} ${styles.fileButton}`}
                   >
                     View Marksheet

@@ -1,5 +1,3 @@
-/* eslint-disable react/jsx-pascal-case */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
 import React, { useState, useEffect } from "react";
 import { Table, Button } from "@mantine/core";
 import axios from "axios";
@@ -7,7 +5,7 @@ import * as XLSX from "xlsx";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import styles from "./MCM_applications.module.css";
-import Medal_applications from "./medal_applications";
+import MedalApplications from "./medal_applications";
 import {
   getMCMApplicationsRoute,
   updateMCMStatusRoute,
@@ -177,6 +175,9 @@ function MCMApplications() {
             tabIndex={0}
             className={activeTab === "MCM" ? styles.activeTab : styles.tab}
             onClick={() => setActiveTab("MCM")}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") setActiveTab("MCM");
+            }}
             style={{
               borderBottom: activeTab === "MCM" ? "4px solid #1e90ff" : "none",
               color: activeTab === "MCM" ? "#1e90ff" : "#000",
@@ -184,12 +185,14 @@ function MCMApplications() {
           >
             Merit-cum-Means Scholarship
           </div>
-
           <div
             role="button"
             tabIndex={0}
             className={activeTab === "Medals" ? styles.activeTab : styles.tab}
             onClick={() => setActiveTab("Medals")}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") setActiveTab("Medals");
+            }}
             style={{
               borderBottom:
                 activeTab === "Medals" ? "4px solid #1e90ff" : "none",
@@ -281,7 +284,7 @@ function MCMApplications() {
           </>
         )}
 
-        {activeTab === "Medals" && <Medal_applications />}
+        {activeTab === "Medals" && <MedalApplications />}
       </div>
     </div>
   );
