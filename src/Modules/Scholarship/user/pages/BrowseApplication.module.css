@@ -6,12 +6,8 @@
   border-radius: 0.375rem;
   padding: 4%;
   overflow: visible;
-
-  
   border: 0.5mm solid #C9EBFF;
-  
   background-color: white;
-  
 }
 
 .buttonContainer {
@@ -24,9 +20,7 @@
   padding: 0.5rem;
   cursor: pointer;
   border: none;
-  /* Remove button borders */
   background: none;
-  /* Optional: remove any background styling */
 }
 
 .progressBar {
@@ -43,9 +37,9 @@
   cursor: pointer;
   height: 100%;
   width: 100%;
-  border-radius: 0.375rem;
+  border-radius: 2px;
   border: none;
-  /* Remove border from progress buttons */
+  padding: 4px;
 }
 
 .activeProgress {
@@ -60,5 +54,4 @@
   margin: 1rem 0;
   border: 0;
   /* Remove default hr border */
-  /* Black line to match the box border */
 }
