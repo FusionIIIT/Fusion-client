@@ -51,6 +51,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
     "department",
     "iwd",
     "phc",
+    "spacs",
   ];
 
   const Modules = [
@@ -101,7 +102,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "Scholarship Portal",
       id: "spacs",
       icon: <ScholarshipIcon size={18} />,
-      url: "/",
+      url: "/scholarship",
     },
     {
       label: "Complaint System",
