@@ -14,21 +14,15 @@ function ScholarStatusPage() {
       {/* <UserBreadcumbs /> */}
       <div className={styles.pageContainer}>
         <div className={styles.gridContainer}>
-          <button onClick={changeDesc} value={1}>
-            View Application Status
-          </button>
-        </div>
-        <div className={styles.progressBarContainer}>
           <button
             onClick={changeDesc}
             value={1}
             className={`${styles.progressButton} ${desc === 1 ? styles.active : styles.inactive}`}
             aria-label="Progress Button"
           >
-            Progress
+            View Application Status
           </button>
         </div>
-        {/* Removed the horizontal line here */}
         {desc === 1 && <ScholarshipStatus />}
       </div>
     </>

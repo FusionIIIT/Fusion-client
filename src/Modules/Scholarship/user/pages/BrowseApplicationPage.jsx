@@ -13,15 +13,6 @@ function BrowseApplicationPage() {
   return (
     <div className={styles.wrapper}>
       <div className={styles.buttonContainer}>
-        <button onClick={changeDesc} value={1} className={styles.button}>
-          Merit-cum-Means Scholarship
-        </button>
-        <button onClick={changeDesc} value={2} className={styles.button}>
-          Convocation Medals
-        </button>
-      </div>
-
-      <div className={styles.progressBar}>
         <button
           onClick={changeDesc}
           value={1}
