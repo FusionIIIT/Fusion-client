@@ -28,6 +28,7 @@ import InventoryManagement from "./Modules/Visitors_Hostel/inventory";
 import RoomsAvailibility from "./Modules/Visitors_Hostel/roomsAvailability";
 import AccountStatemnts from "./Modules/Visitors_Hostel/accountStatements";
 import FacultyProfessionalProfile from "./Modules/facultyProfessionalProfile/facultyProfessionalProfile";
+import { HealthCenter } from "./Modules/Health Center";
 
 // eslint-disable-next-line import/no-unresolved
 import ConvenorBreadcumbs from "./Modules/Scholarship/convenor/components/ConvenorBreadcumbs";
@@ -234,6 +235,7 @@ export default function App() {
           }
         />
 
+        <Route path="/healthcenter/*" element={<HealthCenter />} />
         <Route path="/accounts/login" element={<LoginPage />} />
         <Route path="/reset-password" element={<ForgotPassword />} />
       </Routes>

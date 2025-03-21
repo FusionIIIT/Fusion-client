@@ -50,6 +50,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
     "visitor_hostel",
     "department",
     "iwd",
+    "phc",
   ];
 
   const Modules = [
@@ -88,7 +89,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "HealthCare Center",
       id: "phc",
       icon: <HealthIcon size={18} />,
-      url: "/",
+      url: "/healthcenter",
     },
     {
       label: "File Tracking",
@@ -198,10 +199,21 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
   }, [accessibleModules]);
 
   const handleModuleClick = (item) => {
+    let path = item.url;
+
+    // HealthCare Center icon clicked navigation
+    if (item.id === "phc") {
+      if (role === "Compounder") {
+        path = "/healthcenter/compounder/patient-log";
+      } else if (role === "student" || role === "Professor") {
+        path = "/healthcenter/student/history";
+      }
+    }
+
     setSelected(item.label);
     toggleSidebar();
     dispatch(setCurrentModule(item.label));
-    navigate(item.url);
+    navigate(path);
   };
 
   return (
