@@ -9,11 +9,14 @@ import {
   Stack,
   Notification,
   TextInput,
+  Group,
 } from "@mantine/core";
+import { Upload } from "@phosphor-icons/react";
 
 import {
   getBatches,
   assignBatch,
+  upload_attendance,
 } from "../../../../routes/hostelManagementRoutes"; // API routes for fetching halls and batches, and assigning batches
 
 axios.defaults.withXSRFToken = true;
@@ -23,11 +26,16 @@ export default function AssignBatch() {
   const [selectedHall, setSelectedHall] = useState(null);
   const [batchInput, setBatchInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [file, setFile] = useState(null);
+  const [year, setYear] = useState("2025");
   const [notification, setNotification] = useState({
     opened: false,
     message: "",
     color: "",
   });
+
+  // Generate array of years starting from 2025
+  const years = Array.from({ length: 10 }, (_, i) => (2025 + i).toString());
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
@@ -66,6 +74,12 @@ export default function AssignBatch() {
         });
       });
   }, []);
+
+  const handleFileChange = (event) => {
+    if (event.target.files && event.target.files[0]) {
+      setFile(event.target.files[0]);
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -125,6 +139,69 @@ export default function AssignBatch() {
       });
   };
 
+  const handleUpload = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem("authToken");
+
+    if (!token) {
+      setNotification({
+        opened: true,
+        message: "Authentication token not found. Please login again.",
+        color: "red",
+      });
+      return;
+    }
+
+    if (!selectedHall || !batchInput || !file || !year) {
+      setNotification({
+        opened: true,
+        message: "Please fill in all fields and select a file to upload.",
+        color: "red",
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    const formData = new FormData();
+    formData.append("year", year);
+    formData.append("selectedHall", selectedHall);
+    formData.append("selectedBatch", batchInput);
+    formData.append("file", file);
+
+    try {
+      const response = await fetch(upload_attendance, {
+        method: "POST",
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Upload failed");
+      }
+
+      // Clear file after successful upload
+      setFile(null);
+
+      setNotification({
+        opened: true,
+        message: "File uploaded successfully!",
+        color: "green",
+      });
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      setNotification({
+        opened: true,
+        message: "Failed to upload file. Please try again.",
+        color: "red",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Paper
       shadow="md"
@@ -178,9 +255,60 @@ export default function AssignBatch() {
           />
         </Box>
 
-        <Button variant="filled" onClick={handleSubmit} loading={loading}>
-          Assign
-        </Button>
+        <Box>
+          <Text component="label" size="lg" fw={500}>
+            Current Year:
+          </Text>
+          <Select
+            placeholder="Select Year"
+            data={years}
+            value={year}
+            onChange={setYear}
+            w="100%"
+            styles={{ root: { marginTop: 5 } }}
+          />
+        </Box>
+
+        <Box>
+          <Text component="label" size="lg" fw={500}>
+            Upload Document:
+          </Text>
+          <Group position="center" mt={5}>
+            <input
+              type="file"
+              id="file"
+              style={{ display: "none" }}
+              onChange={handleFileChange}
+              accept=".pdf,.doc,.docx,.xls,.xlsx"
+            />
+            <Button
+              component="label"
+              htmlFor="file"
+              variant="outline"
+              color="blue"
+              leftIcon={<Upload size={20} />}
+              fullWidth
+            >
+              {file ? file.name : "Attach Document"}
+            </Button>
+          </Group>
+        </Box>
+
+        <Group position="apart">
+          <Button variant="filled" onClick={handleSubmit} loading={loading}>
+            Assign Batch
+          </Button>
+          <Button
+            variant="filled"
+            color="green"
+            onClick={handleUpload}
+            loading={loading}
+            disabled={!file}
+          >
+            Upload Document
+          </Button>
+        </Group>
+
         {notification.opened && (
           <Notification
             title="Notification"
