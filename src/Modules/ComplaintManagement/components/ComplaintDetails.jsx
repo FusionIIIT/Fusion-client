@@ -126,6 +126,20 @@ function ComplaintDetails({ complaintId, onBack }) {
             </Text>
           </Flex>
         </Grid.Col>
+        <Flex direction="column" gap="xs">
+          <Text size="14px" style={{ fontWeight: "bold" }}>
+            Status:
+          </Text>
+          <Text weight="300" size="14px">
+            {complaintDetails.status === 0
+              ? "Pending"
+              : complaintDetails.status === 1
+                ? "Redirected"
+                : complaintDetails.status === 2
+                  ? "Resolved"
+                  : "Declined"}
+          </Text>
+        </Flex>
       </Grid>
       <Flex direction="row" gap="xs" align="center">
         <Text size="14px" style={{ fontWeight: "bold" }}>
