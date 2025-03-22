@@ -27,15 +27,27 @@ export default function AssignBatch() {
   const [batchInput, setBatchInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState(null);
-  const [year, setYear] = useState("2025");
+  const [academicSession, setAcademicSession] = useState(
+    "August 2024 - July 2025",
+  );
   const [notification, setNotification] = useState({
     opened: false,
     message: "",
     color: "",
   });
 
-  // Generate array of years starting from 2025
-  const years = Array.from({ length: 10 }, (_, i) => (2025 + i).toString());
+  // Generate array of academic sessions starting from 2024-2025
+  const generateAcademicSessions = () => {
+    const sessions = [];
+    for (let i = 0; i < 10; i += 1) {
+      const startYear = 2024 + i;
+      const endYear = startYear + 1;
+      sessions.push(`August ${startYear} - July ${endYear}`);
+    }
+    return sessions;
+  };
+
+  const academicSessions = generateAcademicSessions();
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
@@ -152,7 +164,7 @@ export default function AssignBatch() {
       return;
     }
 
-    if (!selectedHall || !batchInput || !file || !year) {
+    if (!selectedHall || !batchInput || !file || !academicSession) {
       setNotification({
         opened: true,
         message: "Please fill in all fields and select a file to upload.",
@@ -164,7 +176,7 @@ export default function AssignBatch() {
     setLoading(true);
 
     const formData = new FormData();
-    formData.append("year", year);
+    formData.append("academicSession", academicSession);
     formData.append("selectedHall", selectedHall);
     formData.append("selectedBatch", batchInput);
     formData.append("file", file);
@@ -257,13 +269,13 @@ export default function AssignBatch() {
 
         <Box>
           <Text component="label" size="lg" fw={500}>
-            Current Year:
+            Academic Session:
           </Text>
           <Select
-            placeholder="Select Year"
-            data={years}
-            value={year}
-            onChange={setYear}
+            placeholder="Select Academic Session"
+            data={academicSessions}
+            value={academicSession}
+            onChange={setAcademicSession}
             w="100%"
             styles={{ root: { marginTop: 5 } }}
           />
