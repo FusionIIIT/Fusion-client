@@ -14,7 +14,9 @@ import {
   Text,
 } from "@mantine/core";
 import axios from "axios";
+// eslint-disable-next-line import/no-unresolved
 import html2canvas from "html2canvas";
+// eslint-disable-next-line import/no-unresolved
 import JsPDF from "jspdf";
 import { host } from "../../routes/globalRoutes";
 

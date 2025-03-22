@@ -1,4 +1,6 @@
-export const host = "http://127.0.0.1:8000";
+// export const host = "http://127.0.0.1:8000";
+import { host } from "../globalRoutes";
+
 export const fetchAvailableRoomsRoute = `${host}/visitorhostel/room_availabity_new/`;
 export const confirmBookingRoute = `${host}/visitorhostel/confirm-booking-new/`;
 export const fetchCompletedBookingsRoute = `${host}/visitorhostel/completed-bookings/`;
