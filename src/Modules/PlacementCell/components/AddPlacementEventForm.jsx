@@ -452,7 +452,7 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import { notifications } from "@mantine/notifications";
 import { addPlacementEventForm } from "../../../routes/placementCellRoutes";
-import { fetchRegistrationRoute } from "../../../routes/placementCellRoutes";
+import { fetchRegistrationRoute , fetchFieldsSubmitformRoute } from "../../../routes/placementCellRoutes";
 
 function AddPlacementEventForm() {
   const role = useSelector((state) => state.user.role);
@@ -487,13 +487,7 @@ function AddPlacementEventForm() {
   const [companies, setCompanies] = useState([]);
 
   // sample data for fields created by TPO
-  const [tpoFields] = useState([
-    { value: "field1", label: "Field 1" },
-    { value: "field2", label: "Field 2" },
-    { value: "field3", label: "Field 3" },
-    { value: "Jee Mains Rank", label: "Jee Mains Rank" },
-    { value: "Country of Residence", label: "Country of Residence" },
-  ]);
+  const [tpoFields,setTpoFields] = useState([]);
 
   const [selectedFields, setSelectedFields] = useState([]);
 
@@ -553,6 +547,42 @@ function AddPlacementEventForm() {
     setTime(getCurrentTime());
   }, []);
 
+  useEffect(() => {
+    const fetchFieldsData = async () => {
+        try{
+          const token = localStorage.getItem("authToken");
+          const response = await axios.get(fetchFieldsSubmitformRoute, {
+            headers: { Authorization: `Token ${token}` },
+          });
+
+          if (response.status !== 200) {
+            notifications.show({
+              title: "Error fetching data",
+              message: `Error fetching data: ${response.status}`,
+              color: "red",
+            });
+          }
+          else{
+            const formattedFields = response.data.map((field) => ({
+              value: field.name, 
+              label: field.name,
+              id: field.id,
+            }));
+            setTpoFields(formattedFields);
+          }
+        }
+        catch (error) {
+          notifications.show({
+            title: "Failed to fetch fields data",
+            message: "Failed to fetch fields list",
+            color: "red",
+          });
+          console.error(error);
+        }
+    };
+    fetchFieldsData();
+  }, []);
+
   const handleSubmit = async () => {
     console.log("Submitting form");
     console.log("selected company", selectedCompany);
@@ -570,6 +600,12 @@ function AddPlacementEventForm() {
     // console.log(companies);
     const companyId = getCompanyId(selectedCompany);
     // console.log(companyId);
+
+    const matchingIds = selectedFields.map(value => {
+      const field = tpoFields.find(field => field.value === value);
+      return field ? field.id : null; 
+    }).filter(id => id !== null); 
+
     const formData = new FormData();
     formData.append("placement_type", placementType);
     formData.append("company_name", selectedCompany);
@@ -585,6 +621,8 @@ function AddPlacementEventForm() {
     formData.append("cpi", cpi);
     formData.append("branch", branch);
     formData.append("schedule_at", time);
+    formData.append("fields",matchingIds);
+    console.log(matchingIds);
 
     if (date) {
       formData.append("placement_date", date.toISOString().split("T")[0]);
