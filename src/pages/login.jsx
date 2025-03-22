@@ -11,6 +11,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { notifications } from "@mantine/notifications";
+import { useDispatch } from "react-redux";
+import { setName } from "../redux/userslice";
 import { loginRoute } from "../routes/globalRoutes";
 
 function LoginPage() {
@@ -18,7 +20,7 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
+  const dispatch = useDispatch();
   useEffect(() => {
     if (localStorage.getItem("authToken")) {
       navigate("/dashboard");
@@ -37,6 +39,7 @@ function LoginPage() {
       });
 
       if (response.status === 200) {
+        dispatch(setName(username));
         notifications.show({
           title: "Login Successful",
           message: "You have been successfully logged in.",
