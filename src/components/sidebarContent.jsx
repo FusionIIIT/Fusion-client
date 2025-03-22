@@ -48,6 +48,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
     "complaint_management",
     "mess_management",
     "visitor_hostel",
+    "hostel_management",
     "department",
     "iwd",
     "phc",
