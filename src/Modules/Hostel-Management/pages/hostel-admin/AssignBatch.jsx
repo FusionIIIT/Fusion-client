@@ -15,8 +15,7 @@ import { Upload } from "@phosphor-icons/react";
 
 import {
   getBatches,
-  assignBatch,
-  upload_attendance,
+  assign_batch,
 } from "../../../../routes/hostelManagementRoutes"; // API routes for fetching halls and batches, and assigning batches
 
 axios.defaults.withXSRFToken = true;
@@ -93,64 +92,6 @@ export default function AssignBatch() {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const token = localStorage.getItem("authToken");
-
-    if (!token) {
-      setNotification({
-        opened: true,
-        message: "Authentication token not found. Please login again.",
-        color: "red",
-      });
-      return;
-    }
-
-    if (!selectedHall || !batchInput) {
-      setNotification({
-        opened: true,
-        message: "Please select a hall and enter a batch.",
-        color: "red",
-      });
-      return;
-    }
-
-    setLoading(true);
-
-    axios
-      .post(
-        assignBatch,
-        {
-          hall_id: selectedHall,
-          batch: batchInput,
-        },
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
-        },
-      )
-      .then((response) => {
-        console.log(response);
-        setNotification({
-          opened: true,
-          message: "Batch assigned successfully!",
-          color: "green",
-        });
-      })
-      .catch((error) => {
-        console.error("Error assigning batch", error);
-        setNotification({
-          opened: true,
-          message: "Failed to assign batch. Please try again.",
-          color: "red",
-        });
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
-
   const handleUpload = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("authToken");
@@ -182,7 +123,7 @@ export default function AssignBatch() {
     formData.append("file", file);
 
     try {
-      const response = await fetch(upload_attendance, {
+      const response = await fetch(assign_batch, {
         method: "POST",
         headers: {
           Authorization: `Token ${token}`,
@@ -307,9 +248,6 @@ export default function AssignBatch() {
         </Box>
 
         <Group position="apart">
-          <Button variant="filled" onClick={handleSubmit} loading={loading}>
-            Assign Batch
-          </Button>
           <Button
             variant="filled"
             color="green"

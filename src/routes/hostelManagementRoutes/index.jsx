@@ -31,3 +31,4 @@ export const get_intender_id = `${host}/hostelmanagement/get_intender_id/`;
 export const get_guestroom_bookings_for_students = `${host}/hostelmanagement/get_guest_room_request_students/`;
 export const upload_attendance = `${host}/hostelmanagement/upload_attendance/`;
 export const view_attendance = `${host}/hostelmanagement/view_attendance/`;
+export const assign_batch = `${host}/hostelmanagement/batch-assign/`;
