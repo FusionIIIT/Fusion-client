@@ -92,7 +92,7 @@ function CreateNextRoundForm() {
   };
 
   return (
-    <Container fluid style={{display:'flex', alignContent:'flex-end'}}>
+    <Container fluid style={{ display: "flex", alignContent: "flex-end" }}>
       <Button onClick={() => setModalOpened(true)}>Create Next Round</Button>
       <Modal
         opened={modalOpened}
@@ -100,8 +100,9 @@ function CreateNextRoundForm() {
         centered
       >
         <Container d>
-
-          <Title order={3} mb={32}>Add next round details</Title>
+          <Title order={3} mb={32}>
+            Add next round details
+          </Title>
           <form
             onSubmit={(e) => {
               e.preventDefault();

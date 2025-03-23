@@ -11,7 +11,7 @@ import {
   Textarea,
   Group,
   Button,
-  MultiSelect ,
+  MultiSelect,
 } from "@mantine/core";
 import { DateInput, DatePicker } from "@mantine/dates";
 import { TimeInput } from "@mantine/dates";

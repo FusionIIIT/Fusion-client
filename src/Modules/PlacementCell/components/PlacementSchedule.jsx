@@ -276,7 +276,7 @@ function PlacementScheduleGrid({ data, itemsPerPage, cardsPerRow }) {
     <Container fluid>
       <Grid gutter="md">
         {paddedItems.map((item, index) => (
-          <Grid.Col key={index} span={'content'}>
+          <Grid.Col key={index} span={"content"}>
             {item ? (
               <PlacementScheduleCard
                 jobId={item.id}
@@ -326,16 +326,13 @@ function PlacementSchedule() {
     const fetchData = async () => {
       const token = localStorage.getItem("authToken");
       try {
-        const response = await axios.get(
-          fetchPlacementScheduleRoute,
-          {
-            headers: {
-              Authorization: `Token ${token}`,
-              "X-CSRFToken": csrfToken,
-              "Content-Type": "application/json",
-            },
+        const response = await axios.get(fetchPlacementScheduleRoute, {
+          headers: {
+            Authorization: `Token ${token}`,
+            "X-CSRFToken": csrfToken,
+            "Content-Type": "application/json",
           },
-        );
+        });
         setPlacementData(response.data);
       } catch (err) {
         console.error(

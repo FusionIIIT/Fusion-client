@@ -167,7 +167,6 @@
 
 // export default AddPlacementRecordForm;
 
-
 import "@mantine/dates/styles.css";
 
 import React, { useState } from "react";
@@ -265,15 +264,12 @@ function AddPlacementRecordForm({ opened, onClose }) {
 
   return (
     <Container>
-      <Modal
-        opened={opened}
-        onClose={onClose}
-        size="lg"
-        centered
-      >
+      <Modal opened={opened} onClose={onClose} size="lg" centered>
         {/* Grouping input fields */}
 
-        <Title order={3} mb={32}>Add Placement Record</Title>
+        <Title order={3} mb={32}>
+          Add Placement Record
+        </Title>
         <Group
           grow
           spacing="md"

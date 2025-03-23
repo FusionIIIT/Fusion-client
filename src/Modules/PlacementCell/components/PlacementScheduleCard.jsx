@@ -50,7 +50,7 @@ function PlacementScheduleCard({
     email: "john.doe@example.com",
     roll_no: "123456",
   };
-  
+
   const additionalFields = [
     {
       name: "resume",
@@ -74,15 +74,13 @@ function PlacementScheduleCard({
       required: false,
     },
   ];
-  
 
   const handleApplyClick = async () => {
     setModalOpened(true);
-   
   };
 
   const handelApplySubmit = async () => {
-     const token = localStorage.getItem("authToken");
+    const token = localStorage.getItem("authToken");
     // console.log("Auth Token:", token);
     console.log("Placement ID:", jobId);
     try {
@@ -105,7 +103,7 @@ function PlacementScheduleCard({
     } catch (error) {
       console.error("Error:", error);
     }
-  }
+  };
 
   const handelViewClick = () => {
     navigate(`/placement-cell/view?jobId=${encodeURIComponent(jobId)}`);
@@ -393,12 +391,12 @@ function PlacementScheduleCard({
         size={"lg"}
       >
         <Container d>
-        <ApplyForPlacementForm
-        jobID={jobId2}
-        prefilledFields={prefilledFields}
-        additionalFields={additionalFields}
-        onSubmit={handelApplySubmit}
-      />
+          <ApplyForPlacementForm
+            jobID={jobId2}
+            prefilledFields={prefilledFields}
+            additionalFields={additionalFields}
+            onSubmit={handelApplySubmit}
+          />
         </Container>
       </Modal>
     </>

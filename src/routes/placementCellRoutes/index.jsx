@@ -18,7 +18,4 @@ export const fetchRegistrationRoute = `${host}/placement/api/registration/`;
 export const ApplyForPlacementRoute = `${host}/placement/api/apply-for-placement/`;
 export const fetchFormFieldsRoute = `${host}/placement/api/form-fields/`;
 
-
-
 export const sendNotificationRoute = `${host}/notifications/api/placement_cell_notification/`;
-

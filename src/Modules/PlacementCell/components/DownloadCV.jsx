@@ -32,17 +32,13 @@ function DownloadCV() {
     const token = localStorage.getItem("authToken");
     console.log("Auth Token:", token);
     try {
-      const response = await axios.post(
-        downloadCVRoute,
-        fields,
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-            "X-CSRFToken": getCookie("csrftoken"),
-          },
-          responseType: "blob",
+      const response = await axios.post(downloadCVRoute, fields, {
+        headers: {
+          Authorization: `Token ${token}`,
+          "X-CSRFToken": getCookie("csrftoken"),
         },
-      );
+        responseType: "blob",
+      });
       const blob = new Blob([response.data], { type: "application/pdf" });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);

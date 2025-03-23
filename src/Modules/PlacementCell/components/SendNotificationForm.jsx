@@ -28,21 +28,16 @@ function SendNotificationForm() {
 
   const handleSubmit = async () => {
     // Implement notification sending logic here
-    try{
+    try {
       const token = localStorage.getItem("authToken");
-        console.log(formData);
-        const response = await axios.post(
-          sendNotificationRoute,
-          formData,
-          {
-            headers: {
-              Authorization: `Token ${token}`,
-            },
-          },
-        );
+      console.log(formData);
+      const response = await axios.post(sendNotificationRoute, formData, {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      });
       console.log("Notification details:", formData);
-    }
-    catch (error) {
+    } catch (error) {
       console.error("Error sending notification:", error);
       notifications.show({
         title: "Error",
@@ -51,7 +46,6 @@ function SendNotificationForm() {
         position: "top-center",
       });
     }
-    
   };
 
   return (

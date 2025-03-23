@@ -1,12 +1,20 @@
-
-import React, { useState ,useEffect } from "react";
-import { TextInput, Select, Switch, Button, Group, Notification, Title, List, ActionIcon } from "@mantine/core";
+import React, { useState, useEffect } from "react";
+import {
+  TextInput,
+  Select,
+  Switch,
+  Button,
+  Group,
+  Notification,
+  Title,
+  List,
+  ActionIcon,
+} from "@mantine/core";
 //import { Trash } from "tabler-icons-react"; // Import trash icon for delete
-import {Trash } from "@phosphor-icons/react";
+import { Trash } from "@phosphor-icons/react";
 import { notifications } from "@mantine/notifications";
 import axios from "axios";
 import { fetchFieldsSubmitformRoute } from "../../../routes/placementCellRoutes";
-
 
 function FieldsForm() {
   const [name, setname] = useState("");
@@ -31,12 +39,11 @@ function FieldsForm() {
           // setFields(response.data);
           // console.log(fields);
           setFields([]);
-          response.data.forEach(element => {
+          response.data.forEach((element) => {
             // console.log(element);
-            const newField = [ element.name, element.type, element.required ];
+            const newField = [element.name, element.type, element.required];
             setFields((prevFields) => [...prevFields, newField]);
           });
-          
         } else if (response.status == 406) {
           console.log(`error fetching data: ${response.status}`);
           notifications.show({
@@ -75,19 +82,14 @@ function FieldsForm() {
 
     // Add the new field to the fields list
     const newField = { name, type, required };
-    
 
     try {
       const token = localStorage.getItem("authToken");
-      const response = await axios.post(
-        fetchFieldsSubmitformRoute,
-        newField,
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
+      const response = await axios.post(fetchFieldsSubmitformRoute, newField, {
+        headers: {
+          Authorization: `Token ${token}`,
         },
-      );
+      });
 
       if (response.status == 200) {
         notifications.show({
@@ -105,8 +107,7 @@ function FieldsForm() {
           position: "top-center",
         });
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.error("Error adding fields:", error);
       notifications.show({
         title: "Error",
@@ -114,8 +115,7 @@ function FieldsForm() {
         color: "red",
         position: "top-center",
       });
-    }
-    finally{
+    } finally {
       setname("");
       settype("");
       setrequired(false);
@@ -123,7 +123,7 @@ function FieldsForm() {
     }
 
     // Clear the form inputs
-     // Clear any error
+    // Clear any error
   };
 
   const handleDelete = (index) => {
@@ -174,7 +174,9 @@ function FieldsForm() {
           />
         </Group>
         <Group position="right" mt="md">
-          <Button type="submit" label="">Add Field</Button>
+          <Button type="submit" label="">
+            Add Field
+          </Button>
         </Group>
       </form>
 
@@ -188,7 +190,8 @@ function FieldsForm() {
                 <Group position="apart">
                   <div>
                     {/* {console.log(field)} */}
-                    <strong>{field[0]}</strong> ({field[1]}) - Required: {field[2] ? "Yes" : "No"}
+                    <strong>{field[0]}</strong> ({field[1]}) - Required:{" "}
+                    {field[2] ? "Yes" : "No"}
                   </div>
                   <ActionIcon color="red" onClick={() => handleDelete(index)}>
                     <Trash />

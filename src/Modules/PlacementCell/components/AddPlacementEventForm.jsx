@@ -452,7 +452,10 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import { notifications } from "@mantine/notifications";
 import { addPlacementEventForm } from "../../../routes/placementCellRoutes";
-import { fetchRegistrationRoute , fetchFieldsSubmitformRoute } from "../../../routes/placementCellRoutes";
+import {
+  fetchRegistrationRoute,
+  fetchFieldsSubmitformRoute,
+} from "../../../routes/placementCellRoutes";
 
 function AddPlacementEventForm() {
   const role = useSelector((state) => state.user.role);
@@ -487,7 +490,7 @@ function AddPlacementEventForm() {
   const [companies, setCompanies] = useState([]);
 
   // sample data for fields created by TPO
-  const [tpoFields,setTpoFields] = useState([]);
+  const [tpoFields, setTpoFields] = useState([]);
 
   const [selectedFields, setSelectedFields] = useState([]);
 
@@ -497,27 +500,26 @@ function AddPlacementEventForm() {
   };
 
   const getCompanyId = (companyName) => {
-    const company = companies.find(c => c.companyName === companyName);
-    return company ? company.id : null; 
+    const company = companies.find((c) => c.companyName === companyName);
+    return company ? company.id : null;
   };
-  
+
   useEffect(() => {
-      const fetchRegistrationData = async () => {
-        try {
-          const token = localStorage.getItem("authToken");
-          const response = await axios.get(fetchRegistrationRoute, {
-            headers: { Authorization: `Token ${token}` },
+    const fetchRegistrationData = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        const response = await axios.get(fetchRegistrationRoute, {
+          headers: { Authorization: `Token ${token}` },
+        });
+
+        if (response.status !== 200) {
+          notifications.show({
+            title: "Error fetching data",
+            message: `Error fetching data: ${response.status}`,
+            color: "red",
           });
-    
-          if (response.status !== 200) {
-            notifications.show({
-              title: "Error fetching data",
-              message: `Error fetching data: ${response.status}`,
-              color: "red",
-            });
-          }
-          else{
-            const uniqueCompanies = [];
+        } else {
+          const uniqueCompanies = [];
           const companyNames = new Set();
 
           response.data.forEach((comp) => {
@@ -528,20 +530,18 @@ function AddPlacementEventForm() {
           });
 
           setCompanies(uniqueCompanies);
-          }
-    
-        } catch (error) {
-          notifications.show({
-            title: "Failed to fetch data",
-            message: "Failed to fetch companies list",
-            color: "red",
-          });
-          console.error(error);
         }
-      };
-      fetchRegistrationData();
-    }, []);
-
+      } catch (error) {
+        notifications.show({
+          title: "Failed to fetch data",
+          message: "Failed to fetch companies list",
+          color: "red",
+        });
+        console.error(error);
+      }
+    };
+    fetchRegistrationData();
+  }, []);
 
   useEffect(() => {
     setTime(getCurrentTime());
@@ -549,36 +549,34 @@ function AddPlacementEventForm() {
 
   useEffect(() => {
     const fetchFieldsData = async () => {
-        try{
-          const token = localStorage.getItem("authToken");
-          const response = await axios.get(fetchFieldsSubmitformRoute, {
-            headers: { Authorization: `Token ${token}` },
-          });
+      try {
+        const token = localStorage.getItem("authToken");
+        const response = await axios.get(fetchFieldsSubmitformRoute, {
+          headers: { Authorization: `Token ${token}` },
+        });
 
-          if (response.status !== 200) {
-            notifications.show({
-              title: "Error fetching data",
-              message: `Error fetching data: ${response.status}`,
-              color: "red",
-            });
-          }
-          else{
-            const formattedFields = response.data.map((field) => ({
-              value: field.name, 
-              label: field.name,
-              id: field.id,
-            }));
-            setTpoFields(formattedFields);
-          }
-        }
-        catch (error) {
+        if (response.status !== 200) {
           notifications.show({
-            title: "Failed to fetch fields data",
-            message: "Failed to fetch fields list",
+            title: "Error fetching data",
+            message: `Error fetching data: ${response.status}`,
             color: "red",
           });
-          console.error(error);
+        } else {
+          const formattedFields = response.data.map((field) => ({
+            value: field.name,
+            label: field.name,
+            id: field.id,
+          }));
+          setTpoFields(formattedFields);
         }
+      } catch (error) {
+        notifications.show({
+          title: "Failed to fetch fields data",
+          message: "Failed to fetch fields list",
+          color: "red",
+        });
+        console.error(error);
+      }
     };
     fetchFieldsData();
   }, []);
@@ -601,15 +599,17 @@ function AddPlacementEventForm() {
     const companyId = getCompanyId(selectedCompany);
     // console.log(companyId);
 
-    const matchingIds = selectedFields.map(value => {
-      const field = tpoFields.find(field => field.value === value);
-      return field ? field.id : null; 
-    }).filter(id => id !== null); 
+    const matchingIds = selectedFields
+      .map((value) => {
+        const field = tpoFields.find((field) => field.value === value);
+        return field ? field.id : null;
+      })
+      .filter((id) => id !== null);
 
     const formData = new FormData();
     formData.append("placement_type", placementType);
     formData.append("company_name", selectedCompany);
-    formData.append("company_id",companyId);
+    formData.append("company_id", companyId);
     formData.append("ctc", ctc);
     formData.append("description", description);
     formData.append("title", company);
@@ -621,7 +621,7 @@ function AddPlacementEventForm() {
     formData.append("cpi", cpi);
     formData.append("branch", branch);
     formData.append("schedule_at", time);
-    formData.append("fields",matchingIds);
+    formData.append("fields", matchingIds);
     console.log(matchingIds);
 
     if (date) {

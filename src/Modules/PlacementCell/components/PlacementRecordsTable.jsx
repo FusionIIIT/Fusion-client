@@ -393,7 +393,10 @@ import { MantineReactTable } from "mantine-react-table";
 import { useSelector } from "react-redux";
 import AddPlacementRecordForm from "./AddPlacementRecordForm";
 import { notifications } from "@mantine/notifications";
-import { deletePlacementStatsRoute, fetchPlacementStatsRoute } from "../../../routes/placementCellRoutes";
+import {
+  deletePlacementStatsRoute,
+  fetchPlacementStatsRoute,
+} from "../../../routes/placementCellRoutes";
 
 function PlacementRecordsTable() {
   const role = useSelector((state) => state.user.role);
@@ -410,14 +413,11 @@ function PlacementRecordsTable() {
       setLoading(true);
       try {
         const token = localStorage.getItem("authToken");
-        const response = await axios.get(
-          fetchPlacementStatsRoute,
-          {
-            headers: {
-              Authorization: `Token ${token}`,
-            },
+        const response = await axios.get(fetchPlacementStatsRoute, {
+          headers: {
+            Authorization: `Token ${token}`,
           },
-        );
+        });
 
         if (response.status === 200) {
           setPlacementStats(response.data);

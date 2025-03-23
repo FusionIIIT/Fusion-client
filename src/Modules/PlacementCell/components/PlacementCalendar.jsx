@@ -25,7 +25,7 @@ const localizer = dateFnsLocalizer({
 
 function PlacementCalendar() {
   const [events, setEvents] = useState([]);
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchScheduleData() {
@@ -33,14 +33,11 @@ function PlacementCalendar() {
       console.log("Auth Token:", token);
 
       try {
-        const response = await axios.get(
-          calendarEventsRoute,
-          {
-            headers: {
-              Authorization: `Token ${token}`,
-            },
-          }
-        );
+        const response = await axios.get(calendarEventsRoute, {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        });
 
         console.log("API Response:", response.data);
 
@@ -48,7 +45,7 @@ function PlacementCalendar() {
 
         if (Array.isArray(scheduleData)) {
           const calendarEvents = scheduleData.map((item) => ({
-            id: item.id, 
+            id: item.id,
             title: `${item.company_name} - Round ${item.round}`,
             start: new Date(item.date),
             end: new Date(item.date),

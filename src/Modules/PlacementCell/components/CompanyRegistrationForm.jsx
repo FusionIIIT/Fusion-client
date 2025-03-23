@@ -51,18 +51,16 @@ function CompanyRegistrationForm() {
         const response = await axios.get(fetchRegistrationRoute, {
           headers: { Authorization: `Token ${token}` },
         });
-  
+
         if (response.status !== 200) {
           notifications.show({
             title: "Error fetching data",
             message: `Error fetching data: ${response.status}`,
             color: "red",
           });
-        }
-        else{
+        } else {
           setCompanies(response.data);
         }
-  
       } catch (error) {
         notifications.show({
           title: "Failed to fetch data",
@@ -138,8 +136,7 @@ function CompanyRegistrationForm() {
   ];
 
   return (
-    <div style={{display: "flex", flexDirection: "row"}}>
-
+    <div style={{ display: "flex", flexDirection: "row" }}>
       <Container mt="xl" flex={1}>
         <Title order={2} mb="xl">
           Company Registration
@@ -193,7 +190,7 @@ function CompanyRegistrationForm() {
       </Container>
 
       <Container mt="xl" flex={1}>
-      <Title order={2} mb="xl">
+        <Title order={2} mb="xl">
           Registred Companies
         </Title>
         <MantineReactTable columns={columns} data={companies} />

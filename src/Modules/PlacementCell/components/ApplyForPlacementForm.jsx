@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   TextInput,
   Button,
@@ -12,11 +12,19 @@ import {
   NumberInput,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { fetchFormFieldsRoute ,ApplyForPlacementRoute } from "../../../routes/placementCellRoutes";
+import {
+  fetchFormFieldsRoute,
+  ApplyForPlacementRoute,
+} from "../../../routes/placementCellRoutes";
 import axios from "axios";
 import { DateInput, TimeInput } from "@mantine/dates";
 
-function ApplyToPlacementForm({ jobID,prefilledFields, additionalFields, onSubmit }) {
+function ApplyToPlacementForm({
+  jobID,
+  prefilledFields,
+  additionalFields,
+  onSubmit,
+}) {
   const [fields, setFields] = useState([]);
   const [formData, setFormData] = useState({});
   const [errors, setErrors] = useState({});
@@ -27,18 +35,17 @@ function ApplyToPlacementForm({ jobID,prefilledFields, additionalFields, onSubmi
         const token = localStorage.getItem("authToken");
         const response = await axios.get(fetchFormFieldsRoute, {
           headers: { Authorization: `Token ${token}` },
-          params: { jobId: jobID }, 
+          params: { jobId: jobID },
         });
-    
+
         if (response.status === 200) {
           setFields(response.data);
-          
-         
+
           const initialFormData = response.data.reduce((acc, field) => {
             acc[field.field_id] = { value: "", name: field.name };
             return acc;
           }, {});
-  
+
           setFormData(initialFormData);
         } else {
           notifications.show({
@@ -55,7 +62,6 @@ function ApplyToPlacementForm({ jobID,prefilledFields, additionalFields, onSubmi
         });
       }
     };
-    
 
     fetchFieldslist();
   }, [fetchFormFieldsRoute]);
@@ -63,7 +69,7 @@ function ApplyToPlacementForm({ jobID,prefilledFields, additionalFields, onSubmi
   const handleChange = (field_id, value) => {
     setFormData((prev) => ({
       ...prev,
-      [field_id]: { ...prev[field_id], value: value ?? ""},
+      [field_id]: { ...prev[field_id], value: value ?? "" },
     }));
   };
 
@@ -78,11 +84,9 @@ function ApplyToPlacementForm({ jobID,prefilledFields, additionalFields, onSubmi
     return Object.keys(newErrors).length === 0;
   };
 
-  
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (!validateFields()) {
       notifications.show({
         title: "Validation Failed",
@@ -91,25 +95,25 @@ function ApplyToPlacementForm({ jobID,prefilledFields, additionalFields, onSubmi
       });
       return;
     }
-  
+
     try {
       const token = localStorage.getItem("authToken");
-  
+
       const responses = Object.entries(formData)
-        .filter(([field_id, data]) => data?.value !== undefined) 
+        .filter(([field_id, data]) => data?.value !== undefined)
         .map(([field_id, data]) => ({
-          field_id, 
+          field_id,
           value: data.value,
         }));
-  
+
       console.log(responses);
-  
+
       const response = await axios.post(
         ApplyForPlacementRoute,
         { jobId: jobID, responses },
-        { headers: { Authorization: `Token ${token}` } }
+        { headers: { Authorization: `Token ${token}` } },
       );
-  
+
       if (response.status === 200) {
         notifications.show({
           title: "Success",
@@ -131,7 +135,6 @@ function ApplyToPlacementForm({ jobID,prefilledFields, additionalFields, onSubmi
       });
     }
   };
-  
 
   return (
     <Card style={{ maxWidth: "800px", margin: "0 auto" }}>
@@ -207,11 +210,17 @@ function ApplyToPlacementForm({ jobID,prefilledFields, additionalFields, onSubmi
               )}
             </Grid.Col>
           ))}
-
         </Grid>
 
         <Group position="right" style={{ marginTop: "20px" }}>
-          <Button type="submit" onClick={()=>{handleSubmit}}>Submit Application</Button>
+          <Button
+            type="submit"
+            onClick={() => {
+              handleSubmit;
+            }}
+          >
+            Submit Application
+          </Button>
         </Group>
       </form>
     </Card>

@@ -22,14 +22,11 @@ function ApplicationStatusTimeline() {
       const jobId = new URLSearchParams(window.location.search).get("jobId");
 
       try {
-        const response = await axios.get(
-          `${fetchTimeLineRoute}${jobId}/`,
-          {
-            headers: {
-              Authorization: `Token ${token}`,
-            },
+        const response = await axios.get(`${fetchTimeLineRoute}${jobId}/`, {
+          headers: {
+            Authorization: `Token ${token}`,
           },
-        );
+        });
 
         setStatusData(response.data.next_data);
         setLoading(false);

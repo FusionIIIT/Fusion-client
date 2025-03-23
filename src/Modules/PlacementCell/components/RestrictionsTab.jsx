@@ -321,7 +321,6 @@ function RestrictionsTab() {
 
     const fetchRestrictionsList = async () => {
       try {
-        
         const token = localStorage.getItem("authToken");
         const response = await axios.get(fetchRestrictionsRoute, {
           headers: {
@@ -331,11 +330,15 @@ function RestrictionsTab() {
 
         if (response.status == 200) {
           setRestrictions([]);
-          response.data.forEach(element => {
-            const newField = { 'criteria':element.criteria, 'condition':element.condition, 'value':element.value,'description':element.description };
+          response.data.forEach((element) => {
+            const newField = {
+              criteria: element.criteria,
+              condition: element.condition,
+              value: element.value,
+              description: element.description,
+            };
             setRestrictions((prevFields) => [...prevFields, newField]);
           });
-          
         } else if (response.status == 406) {
           console.log(`error fetching data: ${response.status}`);
           notifications.show({
@@ -399,7 +402,7 @@ function RestrictionsTab() {
             },
           },
         );
-  
+
         if (response.status == 200) {
           notifications.show({
             title: "Success",
@@ -416,8 +419,7 @@ function RestrictionsTab() {
             position: "top-center",
           });
         }
-      }
-      catch (error) {
+      } catch (error) {
         console.error("Error adding restriction:", error);
         notifications.show({
           title: "Error",
@@ -426,10 +428,9 @@ function RestrictionsTab() {
           position: "top-center",
         });
       }
-  
+
       // Clear the form inputs
-       // Clear any error
-      
+      // Clear any error
     }
     setIsModalOpen(false);
     resetForm();
@@ -527,13 +528,23 @@ function RestrictionsTab() {
 
   return (
     <Container>
-      <Card shadow="sm" padding="lg" radius="lg" withBorder style={{display:'flex', justifyContent:'center', alignItems:'center'}}>
+      <Card
+        shadow="sm"
+        padding="lg"
+        radius="lg"
+        withBorder
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
         <Title order={3} align="center" style={{ marginBottom: "20px" }}>
           Restrictions
         </Title>
         <Button
           onClick={() => setIsModalOpen(true)}
-          style={{ marginBottom: "20px", width:'10rem' }}
+          style={{ marginBottom: "20px", width: "10rem" }}
         >
           Add Restriction
         </Button>
@@ -556,7 +567,7 @@ function RestrictionsTab() {
         opened={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title="Add/Edit Restriction"
-        size={'lg'}
+        size={"lg"}
         centered
       >
         <Card style={{ maxWidth: "800px", margin: "0 auto" }}>

@@ -57,7 +57,7 @@ const chairmanTabs = [
     value: "debarred-students",
     label: "Debarred Students",
     component: <DebarredStudents />,
-  }
+  },
 ];
 
 const tpoTabs = [
@@ -100,8 +100,7 @@ const tpoTabs = [
     value: "restrictions",
     label: "Restrictions",
     component: <RestrictionsTab />,
-  }
-
+  },
 ];
 
 const styles = {
