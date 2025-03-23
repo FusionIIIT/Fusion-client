@@ -14,6 +14,8 @@ import {
 } from "@mantine/core";
 import { CloudArrowUp, CloudArrowDown, Plus, X } from "@phosphor-icons/react";
 import { useState } from "react";
+import axios from "axios";
+import { download_hostel_allotment } from "../../../../routes/hostelManagementRoutes";
 
 export default function AssignRoomsComponent() {
   const [files, setFiles] = useState([]);
@@ -60,8 +62,55 @@ export default function AssignRoomsComponent() {
     );
   };
 
-  const handleDownload = () => {
-    console.log("Downloading batch sheet template");
+  const handleDownload = async () => {
+    const token = localStorage.getItem("authToken");
+
+    try {
+      const response = await axios.get(download_hostel_allotment, {
+        headers: { Authorization: `Token ${token}` },
+      });
+
+      if (
+        !response ||
+        !response.data.files ||
+        response.data.files.length === 0
+      ) {
+        alert("No files available for download.");
+        return;
+      }
+
+      // Loop through each file URL and trigger download
+      response.data.files.forEach(async (fileUrl, index) => {
+        try {
+          // Fetch the actual file as a blob
+          const fileResponse = await axios.get(fileUrl, {
+            responseType: "blob",
+          });
+
+          // Create a blob URL
+          const blob = new Blob([fileResponse.data], {
+            type: fileResponse.headers["content-type"],
+          });
+          const url = window.URL.createObjectURL(blob);
+
+          // Create an <a> element and trigger download
+          const link = document.createElement("a");
+          link.href = url;
+          link.setAttribute("download", `Hostel_Allotment_${index + 1}`);
+          document.body.appendChild(link);
+          link.click();
+
+          // Clean up
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+        } catch (err) {
+          console.error(`Failed to download file ${index + 1}:`, err);
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching file list:", error);
+      alert("Failed to fetch files. Please try again.");
+    }
   };
 
   const uploadAllFiles = () => {
