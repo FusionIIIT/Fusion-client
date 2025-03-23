@@ -183,6 +183,7 @@ import {
   downloadExcelRoute,
   fetchApplicationsRoute,
   handleStatusChangeRoute,
+  fetchFormFieldsRoute,
 } from "../../../routes/placementCellRoutes";
 
 function JobApplicationsTable() {
@@ -192,6 +193,7 @@ function JobApplicationsTable() {
   const recordsPerPage = 10;
 
   const jobId = new URLSearchParams(window.location.search).get("jobId");
+  const [fields,setFields] = useState([]);
 
   useEffect(() => {
     const fetchApplications = async () => {
@@ -208,8 +210,31 @@ function JobApplicationsTable() {
         setLoading(false);
       }
     };
+    const fetchFieldslist = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        const response = await axios.get(fetchFormFieldsRoute, {
+          headers: { Authorization: `Token ${token}` },
+          params: { jobId: jobId }, 
+        });
+    
+        if (response.status === 200) {
+          setFields(response.data);
+          console.log(fields);
+        } 
+      } catch (error) {
+        notifications.show({
+          title: "Failed to fetch data",
+          message: "Failed to fetch fields list",
+          color: "red",
+        });
+      }
+    };
+    
+
+    fetchFieldslist();
     fetchApplications();
-  }, [jobId]);
+  }, [jobId,fetchFormFieldsRoute]);
 
   const handleStatusChange = (applicationId, status) => {
     const data = { status: status };

@@ -280,6 +280,7 @@ function PlacementScheduleGrid({ data, itemsPerPage, cardsPerRow }) {
             {item ? (
               <PlacementScheduleCard
                 jobId={item.id}
+                jobId2={item.jobID}
                 companyName={item.company_name}
                 location={item.location}
                 position={item.role_st}

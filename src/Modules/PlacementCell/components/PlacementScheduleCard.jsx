@@ -23,6 +23,7 @@ import { notifications } from "@mantine/notifications";
 
 function PlacementScheduleCard({
   jobId,
+  jobId2,
   // companyLogo,
   companyName,
   location,
@@ -393,6 +394,7 @@ function PlacementScheduleCard({
       >
         <Container d>
         <ApplyForPlacementForm
+        jobID={jobId2}
         prefilledFields={prefilledFields}
         additionalFields={additionalFields}
         onSubmit={handelApplySubmit}
