@@ -15,7 +15,11 @@ import {
 import { CloudArrowUp, CloudArrowDown, Plus, X } from "@phosphor-icons/react";
 import { useState } from "react";
 import axios from "axios";
-import { download_hostel_allotment } from "../../../../routes/hostelManagementRoutes";
+import {
+  download_hostel_allotment,
+  assign_roomsbywarden,
+  update_student_allotment,
+} from "../../../../routes/hostelManagementRoutes";
 
 export default function AssignRoomsComponent() {
   const [files, setFiles] = useState([]);
@@ -24,6 +28,7 @@ export default function AssignRoomsComponent() {
   const [currentFile, setCurrentFile] = useState(null);
   const [currentBatch, setCurrentBatch] = useState("");
   const [batchError, setBatchError] = useState("");
+  const [alloting, setAlloting] = useState(false);
 
   const handleFileSelect = (event) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -113,29 +118,101 @@ export default function AssignRoomsComponent() {
     }
   };
 
-  const uploadAllFiles = () => {
+  const uploadAllFiles = async () => {
     if (files.length === 0) {
       alert("Please select at least one file to upload");
       return;
     }
 
     setUploading(true);
-    console.log("Uploading all files with batch information:", files);
+    const token = localStorage.getItem("authToken");
+    const successfulUploads = [];
+    const failedUploads = [];
 
-    // Here you would implement the actual API call to upload the files
-    // For example with FormData:
-    // const formData = new FormData();
-    // files.forEach((fileObj, index) => {
-    //   formData.append(`file${index}`, fileObj.file);
-    //   formData.append(`batch${index}`, fileObj.batch);
-    // });
+    try {
+      // Process files in parallel using Promise.all
+      const uploadPromises = files.map(async (fileObj) => {
+        const formData = new FormData();
+        formData.append("file", fileObj.file);
+        formData.append("selectedBatch", fileObj.batch);
 
-    // Simulate upload completion after 2 seconds
-    setTimeout(() => {
+        try {
+          const response = await axios.post(assign_roomsbywarden, formData, {
+            headers: {
+              Authorization: `Token ${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          });
+
+          if (response.status === 200) {
+            successfulUploads.push({
+              fileName: fileObj.file.name,
+              batch: fileObj.batch,
+              message: response.data.message,
+            });
+          }
+        } catch (error) {
+          console.error(`Error uploading ${fileObj.file.name}:`, error);
+          failedUploads.push({
+            fileName: fileObj.file.name,
+            batch: fileObj.batch,
+            error: error.response?.data?.error || "Unknown error occurred",
+          });
+        }
+      });
+
+      // Wait for all uploads to complete
+      await Promise.all(uploadPromises);
+
       setUploading(false);
       setFiles([]);
-      alert("All files uploaded successfully!");
-    }, 2000);
+
+      // Create summary message
+      if (successfulUploads.length > 0 && failedUploads.length === 0) {
+        alert(`All ${successfulUploads.length} files uploaded successfully!`);
+      } else if (successfulUploads.length > 0 && failedUploads.length > 0) {
+        alert(
+          `${successfulUploads.length} files uploaded successfully. ${failedUploads.length} files failed to upload. Check console for details.`,
+        );
+      } else {
+        alert("Failed to upload any files. Please check console for details.");
+      }
+    } catch (error) {
+      console.error("Error in upload process:", error);
+      setUploading(false);
+      alert("An error occurred during the upload process. Please try again.");
+    }
+    try {
+      setAlloting(true);
+      await axios.get(update_student_allotment, {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      });
+      setAlloting(false);
+    } catch (error) {
+      console.error("Error in updating process:", error);
+      setAlloting(false);
+      alert("An error occurred during the updating process. Please try again.");
+    }
+  };
+
+  const refreshAllotment = async () => {
+    setAlloting(true);
+    const token = localStorage.getItem("authToken");
+    try {
+      await axios.get(update_student_allotment, {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      });
+    } catch (error) {
+      console.error("Error in updating process:", error);
+      setAlloting(false);
+      alert("An error occurred during the updating process. Please try again.");
+    } finally {
+      setAlloting(false);
+    }
   };
 
   // Helper function to get file type icon/color
@@ -166,7 +243,24 @@ export default function AssignRoomsComponent() {
       <Title order={2} mb="xl" weight={500}>
         Assign Rooms
       </Title>
-
+      <Button
+        variant="filled"
+        size="md"
+        onClick={refreshAllotment}
+        loading={alloting}
+        styles={(theme) => ({
+          root: {
+            backgroundColor: theme.colors.cyan[4],
+            "&:hover": {
+              backgroundColor: theme.colors.cyan[5],
+            },
+            minWidth: "150px",
+            borderRadius: "4px",
+          },
+        })}
+      >
+        Refresh Allotment
+      </Button>
       <Grid gutter="lg">
         {/* Upload Card */}
         <Grid.Col span={{ base: 12, md: 6 }}>

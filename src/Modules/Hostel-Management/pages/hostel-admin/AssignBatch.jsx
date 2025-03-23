@@ -232,7 +232,7 @@ export default function AssignBatch() {
               id="file"
               style={{ display: "none" }}
               onChange={handleFileChange}
-              accept=".pdf,.doc,.docx,.xls,.xlsx"
+              accept=".xls,.xlsx,.csv"
             />
             <Button
               component="label"

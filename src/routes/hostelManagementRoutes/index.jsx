@@ -33,3 +33,5 @@ export const upload_attendance = `${host}/hostelmanagement/upload_attendance/`;
 export const view_attendance = `${host}/hostelmanagement/view_attendance/`;
 export const assign_batch = `${host}/hostelmanagement/batch-assign/`;
 export const download_hostel_allotment = `${host}/hostelmanagement/download_hostel_allotment/`;
+export const assign_roomsbywarden = `${host}/hostelmanagement/assign-roomsbywarden/`;
+export const update_student_allotment = `${host}/hostelmanagement/update-student-allotment/`;
