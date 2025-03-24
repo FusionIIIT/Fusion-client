@@ -50,6 +50,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
     "visitor_hostel",
     "hostel_management",
     "department",
+    "gymkhana",
     "iwd",
     "phc",
     "spacs",
@@ -151,7 +152,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "Gymkhana",
       id: "gymkhana",
       icon: <GymkhanaIcon size={18} />,
-      url: "/",
+      url: "/GymKhana",
     },
     {
       label: "Institute Work Departments",
@@ -197,6 +198,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
     const filterModules = Modules.filter(
       (module) => accessibleModules[module.id] || module.id === "home",
     );
+
     setFilteredModules(filterModules);
   }, [accessibleModules]);
 
