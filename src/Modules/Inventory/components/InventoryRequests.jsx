@@ -4,9 +4,13 @@ import { Button, Group, Table, Badge, Select } from "@mantine/core";
 function InventoryRequests() {
   const [filter, setFilter] = useState("all");
   const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const [requests, setRequests] = useState([]);
+  // const token = localStorage.getItem("token");
 
+  const token = localStorage.getItem("authToken");
+
+  // Listen for screen size changes
   useEffect(() => {
-    // Listen for screen size changes to determine small screen
     const handleResize = () => {
       setIsSmallScreen(window.innerWidth <= 768);
     };
@@ -17,36 +21,37 @@ function InventoryRequests() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const requests = [
-    {
-      date: "2024-11-01",
-      item: "Printer Ink",
-      department: "CSE",
-      approval: "Approved",
-    },
-    {
-      date: "2024-11-02",
-      item: "Office Chairs",
-      department: "Admin",
-      approval: "Not Approved",
-    },
-    {
-      date: "2024-11-03",
-      item: "Monitors",
-      department: "CSE",
-      approval: "Approved",
-    },
-    {
-      date: "2024-11-04",
-      item: "Design Sheets",
-      department: "Design",
-      approval: "Not Approved",
-    },
-  ];
+  // Fetch inventory requests from backend API
+  useEffect(() => {
+    async function fetchRequests() {
+      try {
+        const response = await fetch(
+          "http://127.0.0.1:8000/inventory/api/requests/",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Token ${token}`,
+            },
+          },
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch requests");
+        }
+        const data = await response.json();
+        setRequests(data);
+      } catch (error) {
+        console.error("Error fetching inventory requests:", error);
+      }
+    }
+    fetchRequests();
+  }, [token]);
 
+  // Filter requests based on approval status
   const filteredRequests = requests.filter((request) => {
-    if (filter === "approved") return request.approval === "Approved";
-    if (filter === "unapproved") return request.approval === "Not Approved";
+    if (filter === "approved") return request.approval_status === "APPROVED";
+    if (filter === "unapproved")
+      return request.approval_status === "NOT_APPROVED";
     return true;
   });
 
@@ -122,6 +127,14 @@ function InventoryRequests() {
             <th style={{ padding: "15px", border: "1px solid #ddd" }}>
               Department
             </th>
+
+            <th style={{ padding: "15px", border: "1px solid #ddd" }}>
+              Purpose
+            </th>
+            <th style={{ padding: "15px", border: "1px solid #ddd" }}>
+              Specifications
+            </th>
+
             <th style={{ padding: "15px", border: "1px solid #ddd" }}>
               Approval
             </th>
@@ -140,11 +153,19 @@ function InventoryRequests() {
                 {request.date}
               </td>
               <td style={{ padding: "15px", border: "1px solid #ddd" }}>
-                {request.item}
+                {request.item_name}
               </td>
               <td style={{ padding: "15px", border: "1px solid #ddd" }}>
-                {request.department}
+                {request.department_name}
               </td>
+
+              <td style={{ padding: "15px", border: "1px solid #ddd" }}>
+                {request.purpose}
+              </td>
+              <td style={{ padding: "15px", border: "1px solid #ddd" }}>
+                {request.specifications}
+              </td>
+
               <td
                 style={{
                   padding: "15px",
@@ -153,7 +174,7 @@ function InventoryRequests() {
                   verticalAlign: "middle",
                 }}
               >
-                {request.approval === "Approved" ? (
+                {request.approval_status === "APPROVED" ? (
                   <Badge color="green">Approved</Badge>
                 ) : (
                   <Badge color="red" variant="light">
