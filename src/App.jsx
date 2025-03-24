@@ -7,11 +7,6 @@ import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { Notifications } from "@mantine/notifications";
 import { Layout } from "./components/layout";
 
-import PlacementCellPage from "./Modules/PlacementCell";
-import JobApplicationForm from "./Modules/PlacementCell/ApplyForPlacementForm";
-import PlacementEventHandeling from "./Modules/PlacementCell/components/PlacementEventHandeling";
-import ApplicationStatusTimeline from "./Modules/PlacementCell/components/Timeline";
-
 // import { IwdRoutes } from "./Modules/Iwd/routes/index";
 import IwdModule from "./Modules/Iwd/index";
 import { DesignationsProvider } from "./Modules/Iwd/helper/designationContext";
@@ -126,38 +121,6 @@ export default function App() {
           element={
             <Layout>
               <MessPage />
-            </Layout>
-          }
-        />
-        <Route
-          path="/placement-cell"
-          element={
-            <Layout>
-              <PlacementCellPage />
-            </Layout>
-          }
-        />
-        <Route
-          path="/placement-cell/apply"
-          element={
-            <Layout>
-              <JobApplicationForm />
-            </Layout>
-          }
-        />
-        <Route
-          path="/placement-cell/view"
-          element={
-            <Layout>
-              <PlacementEventHandeling />
-            </Layout>
-          }
-        />
-        <Route
-          path="/placement-cell/timeline"
-          element={
-            <Layout>
-              <ApplicationStatusTimeline />
             </Layout>
           }
         />
