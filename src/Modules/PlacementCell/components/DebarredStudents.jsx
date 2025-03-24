@@ -79,7 +79,7 @@ function DebarredStudents() {
       };
       const token = localStorage.getItem("authToken");
       const response = await axios.post(
-        `http://127.0.0.1:8000/placement/api/debared-status/${rollNo}/`,
+        `${debarredStatusRoute}${rollNo}/`,
         newDebarredStudent,
         {
           headers: {
@@ -122,7 +122,7 @@ function DebarredStudents() {
     try {
       const token = localStorage.getItem("authToken");
       const response = await axios.get(
-        `http://127.0.0.1:8000/placement/api/debared-status/${rollNo}/`,
+        `${debarredStatusRoute}${rollNo}/`,
         {
           headers: {
             Authorization: `Token ${token}`,
@@ -160,7 +160,7 @@ function DebarredStudents() {
     try {
       const token = localStorage.getItem("authToken");
       const response = await axios.delete(
-        `http://127.0.0.1:8000/placement/api/debared-status/${rollNo}/`,
+        `${debarredStatusRoute}${rollNo}/`,
         {
           headers: {
             Authorization: `Token ${token}`,

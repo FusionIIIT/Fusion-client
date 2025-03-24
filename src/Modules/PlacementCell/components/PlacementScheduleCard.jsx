@@ -19,6 +19,8 @@ import { format } from "date-fns";
 import EditPlacementForm from "./EditPlacementForm";
 import ApplyForPlacementForm from "./ApplyForPlacementForm";
 import { notifications } from "@mantine/notifications";
+import { ApplyForPlacementRoute } from "../../../routes/placementCellRoutes";
+import { addPlacementEventForm } from "../../../routes/placementCellRoutes";
 
 function PlacementScheduleCard({
   jobId,
@@ -81,17 +83,14 @@ function PlacementScheduleCard({
   const handelApplySubmit = async () => {
     const token = localStorage.getItem("authToken");
     try {
-      const response = await fetch(
-        "http://127.0.0.1:8000/placement/api/apply-placement/",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Token ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ jobId }),
+      const response = await fetch(ApplyForPlacementRoute, {
+        method: "POST",
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({ jobId }),
+      });
       if (response.ok) {
         console.log("Application successful");
       } else {
@@ -110,16 +109,13 @@ function PlacementScheduleCard({
     setVisible(false);
     const token = localStorage.getItem("authToken");
     try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/placement/api/placement/${jobId}/`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Token ${token}`,
-            "Content-Type": "application/json",
-          },
+      const response = await fetch(`${addPlacementEventForm}${jobId}/`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
         },
-      );
+      });
 
       if (response.ok) {
         notifications.show({
@@ -179,17 +175,14 @@ function PlacementScheduleCard({
     };
 
     try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/placement/api/placement/${jobId}/`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Token ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(updatedData),
+      const response = await fetch(`${addPlacementEventForm}${jobId}/`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify(updatedData),
+      });
 
       if (response.ok) {
         notifications.show({

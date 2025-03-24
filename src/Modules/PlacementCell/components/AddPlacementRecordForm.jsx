@@ -12,6 +12,7 @@ import {
 } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
 import { notifications } from "@mantine/notifications";
+import fetchPlacementStatsRoute from "../globalRoutes";
 
 function AddPlacementRecordForm({ opened, onClose }) {
   const [companyName, setCompanyName] = useState("");
@@ -49,7 +50,7 @@ function AddPlacementRecordForm({ opened, onClose }) {
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/placement/api/statistics/",
+        fetchPlacementStatsRoute,
         {
           method: "POST",
           body: formData,
