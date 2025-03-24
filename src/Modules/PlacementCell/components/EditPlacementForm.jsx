@@ -29,7 +29,6 @@ const EditPlacementForm = ({ isOpen, onClose, placementData, onSubmit }) => {
     salary,
   } = placementData;
 
-  // Initialize state
   const [company, setCompany] = useState(companyName);
   const [date, setDate] = useState(new Date());
   const [locationInput, setLocation] = useState(location);
@@ -40,7 +39,6 @@ const EditPlacementForm = ({ isOpen, onClose, placementData, onSubmit }) => {
   const [datePickerOpened, setDatePickerOpened] = useState(false);
   const [role, setRole] = useState(position);
 
-  // sample data for fields created by TPO
   const [tpoFields] = useState([
     { value: "field1", label: "Field 1" },
     { value: "field2", label: "Field 2" },
@@ -57,24 +55,20 @@ const EditPlacementForm = ({ isOpen, onClose, placementData, onSubmit }) => {
     return `${year}-${month}-${day}`;
   };
 
-  // Handle form submission
   const handleSubmit = () => {
-    // Ensure ctc is a valid number
     const parsedCtc = parseFloat(ctc);
     if (isNaN(parsedCtc) || parsedCtc <= 0) {
       alert("CTC must be a valid positive decimal number.");
       return;
     }
 
-    // Format the CTC to two decimal places
     const formattedCtc = parsedCtc.toFixed(2);
 
-    // Submit the form with all fields
     onSubmit({
       company,
       date: getFormattedDate(date),
       location: locationInput,
-      ctc: formattedCtc, // Use formatted CTC here
+      ctc: formattedCtc,
       time,
       placementType,
       description: descriptionInput,
@@ -98,7 +92,6 @@ const EditPlacementForm = ({ isOpen, onClose, placementData, onSubmit }) => {
             />
           </Grid.Col>
 
-          {/* Date Picker */}
           <Grid.Col span={4}>
             <DateInput
               label="Date"
@@ -152,7 +145,6 @@ const EditPlacementForm = ({ isOpen, onClose, placementData, onSubmit }) => {
             />
           </Grid.Col>
 
-          {/* Time Picker */}
           <Grid.Col span={4}>
             <TimeInput
               label="Time"

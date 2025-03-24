@@ -24,13 +24,12 @@ function DownloadCV() {
     courses: true,
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null); // Use `error` instead of `err`
+  const [error, setError] = useState(null);
 
   const handleDownload = async () => {
     setLoading(true);
     setError(null);
     const token = localStorage.getItem("authToken");
-    console.log("Auth Token:", token);
     try {
       const response = await axios.post(downloadCVRoute, fields, {
         headers: {

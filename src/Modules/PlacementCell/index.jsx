@@ -84,12 +84,12 @@ const tpoTabs = [
   {
     value: "company-registration",
     label: "Company Registration",
-    component: <CompanyRegistrationForm />, // Add this tab
+    component: <CompanyRegistrationForm />,
   },
   {
     value: "fields",
     label: "Fields",
-    component: <FieldsForm />, // Add this tab
+    component: <FieldsForm />,
   },
   {
     value: "debarred-students",
@@ -104,9 +104,7 @@ const tpoTabs = [
 ];
 
 const styles = {
-  container: {
-    // padding: "20px",
-  },
+  container: {},
   navContainer: {
     display: "flex",
     alignItems: "center",
@@ -116,13 +114,13 @@ const styles = {
     display: "flex",
     flexWrap: "nowrap",
     overflowX: "auto",
-    scrollbarWidth: "none", // Hides scrollbar in Firefox
-    msOverflowStyle: "none", // Hides scrollbar in Internet Explorer
-    marginLeft: "10px", // Reduced distance between the left arrow and the tabs
+    scrollbarWidth: "none",
+    msOverflowStyle: "none",
+    marginLeft: "10px",
   },
   tabsList: {
     display: "flex",
-    gap: "0px", // No gap between tabs
+    gap: "0px",
   },
   navButton: {
     border: "none",
@@ -179,7 +177,6 @@ function PlacementCellPage() {
       <CustomBreadcrumbs />
       <Container fluid mt={48}>
         <div style={styles.navContainer}>
-          {/* Left navigation button */}
           <Button
             onClick={() => handleTabChange("prev")}
             variant="default"
@@ -192,7 +189,6 @@ function PlacementCellPage() {
             />
           </Button>
 
-          {/* Tabs list */}
           <div
             className="fusionTabsContainer"
             style={styles.tabsContainer}
@@ -217,7 +213,6 @@ function PlacementCellPage() {
             </Tabs>
           </div>
 
-          {/* Right navigation button */}
           <Button
             onClick={() => handleTabChange("next")}
             variant="default"
@@ -231,7 +226,6 @@ function PlacementCellPage() {
           </Button>
         </div>
 
-        {/* Tab content */}
         <div style={styles.tabContent}>
           {tabs.map((tab) =>
             tab.value === activeTab ? (

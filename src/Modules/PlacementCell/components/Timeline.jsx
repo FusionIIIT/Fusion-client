@@ -51,7 +51,6 @@ function ApplicationStatusTimeline() {
         withBorder
         style={{ display: "flex", flexDirection: "column", gap: "2rem" }}
       >
-        {/* Back button */}
         <Group position="left" mb="xl">
           <ActionIcon
             variant="outline"
@@ -64,14 +63,12 @@ function ApplicationStatusTimeline() {
 
         <Title order={2}>Application Status</Title>
 
-        {/* Timeline */}
         <Timeline active={statusData.length - 1} bulletSize={24} lineWidth={2}>
           {statusData.map((item, index) => {
             const isRejected = item.round_no === -1;
             const IsUpdated = item.round_no === 0;
             const isLast = index === statusData.length - 1;
 
-            // Determine circle color
             const circleColor = isLast ? "gray" : isRejected ? "red" : "green";
 
             return (

@@ -26,12 +26,6 @@ function DebarredStudents() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    // Fetch debarred students from the backend
-    // For now, we will use sample data
-    const sampleData = [
-      // { rollNo: "12345", name: "John Doe", reason: "Academic misconduct" },
-      // { rollNo: "67890", name: "Jane Smith", reason: "Violation of code of conduct" },
-    ];
     const fetchDebaredlist = async () => {
       try {
         const token = localStorage.getItem("authToken");
@@ -44,14 +38,12 @@ function DebarredStudents() {
         if (response.status == 200) {
           setDebarredStudents(response.data);
         } else if (response.status == 404) {
-          console.log(`error fetching data: ${response.status}`);
           notifications.show({
             title: "Error fetching data",
             message: `Error fetching data: ${response.status}`,
             color: "red",
           });
         } else {
-          console.log(`error fetching data: ${response.status}`);
           notifications.show({
             title: "Error fetching data",
             message: `Error fetching data: ${response.status}`,
@@ -59,7 +51,6 @@ function DebarredStudents() {
           });
         }
       } catch (error) {
-        // setError("Failed to fetch debared students list");
         notifications.show({
           title: "Failed to fetch data",
           message: "Failed to fetch debared students list",
@@ -73,8 +64,6 @@ function DebarredStudents() {
   const handleDebar = async () => {
     setLoading(true);
     try {
-      // Send debar request to the backend
-      // For now, we will just add the student to the sample data
       const newDebarredStudent = {
         rollNo,
         name: studentDetails.name,
@@ -107,7 +96,7 @@ function DebarredStudents() {
           },
         },
       );
-      console.log(response);
+
       setDebarredStudents((prev) => [...prev, newDebarredStudent]);
       notifications.show({
         title: "Success",
@@ -131,18 +120,7 @@ function DebarredStudents() {
 
   const handleFetchStudentDetails = async () => {
     try {
-      // Fetch student details from the backend
-      // For now, we will use sample data
-      // const sampleStudentDetails = {
-      //   rollNo,
-      //   name: "Sample Student",
-      //   email: "sample@student.com",
-      //   department: "Computer Science",
-      //   year: "3rd Year",
-      // };
-
       const token = localStorage.getItem("authToken");
-      console.log("token", token);
       const response = await axios.get(
         `http://127.0.0.1:8000/placement/api/debared-status/${rollNo}/`,
         {
@@ -151,21 +129,16 @@ function DebarredStudents() {
           },
         },
       );
-      console.log(response.data);
-      // console.log(token)
       if (response.status == 200) {
         setStudentDetails(response.data);
-        console.log(studentDetails);
         setIsModalOpen(true);
       } else if (response.status == 404) {
-        console.log(`no user found with that roll no: ${rollNo}`);
         notifications.show({
           title: "Error fetching data",
           message: `no user found with that roll no: ${rollNo}`,
           color: "red",
         });
       } else {
-        console.log(`error fetching data: ${response.status}`);
         notifications.show({
           title: "Error fetching data",
           message: `Error fetching data: ${response.status}`,
@@ -241,7 +214,7 @@ function DebarredStudents() {
 
   const table = useMantineReactTable({
     columns,
-    data: debarredStudents, //must be memoized or stable (useState, useMemo, defined outside of this component, etc.)
+    data: debarredStudents,
   });
 
   return (

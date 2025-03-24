@@ -19,7 +19,6 @@ import { format } from "date-fns";
 import EditPlacementForm from "./EditPlacementForm";
 import ApplyForPlacementForm from "./ApplyForPlacementForm";
 import { notifications } from "@mantine/notifications";
-// import EditPlacementForm from "./EditPlacementForm";
 
 function PlacementScheduleCard({
   jobId,
@@ -81,8 +80,6 @@ function PlacementScheduleCard({
 
   const handelApplySubmit = async () => {
     const token = localStorage.getItem("authToken");
-    // console.log("Auth Token:", token);
-    console.log("Placement ID:", jobId);
     try {
       const response = await fetch(
         "http://127.0.0.1:8000/placement/api/apply-placement/",
@@ -402,19 +399,9 @@ function PlacementScheduleCard({
     </>
   );
 }
-// PlacementScheduleCard.propTypes = {
-//   // companyLogo: PropTypes.string,
-//   companyName: PropTypes.string.isRequired,
-//   location: PropTypes.string.isRequired,
-//   position: PropTypes.string.isRequired,
-//   jobType: PropTypes.string.isRequired,
-//   postedTime: PropTypes.string.isRequired,
-//   // deadline: PropTypes.string,
-//   description: PropTypes.string,
-//   salary: PropTypes.string,
-// };
+
 PlacementScheduleCard.propTypes = {
-  jobId: PropTypes.string.isRequired, // Add this line to validate jobId
+  jobId: PropTypes.string.isRequired,
   companyName: PropTypes.string.isRequired,
   location: PropTypes.string.isRequired,
   position: PropTypes.string.isRequired,

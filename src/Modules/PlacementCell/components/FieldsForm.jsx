@@ -10,7 +10,6 @@ import {
   List,
   ActionIcon,
 } from "@mantine/core";
-//import { Trash } from "tabler-icons-react"; // Import trash icon for delete
 import { Trash } from "@phosphor-icons/react";
 import { notifications } from "@mantine/notifications";
 import axios from "axios";
@@ -21,9 +20,8 @@ function FieldsForm() {
   const [type, settype] = useState("");
   const [required, setrequired] = useState(false);
   const [error, setError] = useState("");
-  const [fields, setFields] = useState([]); // State to store the list of fields
+  const [fields, setFields] = useState([]);
 
-  // DOne
   useEffect(() => {
     const fetchFieldslist = async () => {
       try {
@@ -35,24 +33,18 @@ function FieldsForm() {
         });
 
         if (response.status == 200) {
-          // console.log(response.data);
-          // setFields(response.data);
-          // console.log(fields);
           setFields([]);
           response.data.forEach((element) => {
-            // console.log(element);
             const newField = [element.name, element.type, element.required];
             setFields((prevFields) => [...prevFields, newField]);
           });
         } else if (response.status == 406) {
-          console.log(`error fetching data: ${response.status}`);
           notifications.show({
             title: "Error fetching data",
             message: `Error fetching data: ${response.status}`,
             color: "red",
           });
         } else {
-          console.log(`error fetching data: ${response.status}`);
           notifications.show({
             title: "Error fetching data",
             message: `Error fetching data: ${response.status}`,
@@ -60,7 +52,6 @@ function FieldsForm() {
           });
         }
       } catch (error) {
-        // setError("Failed to fetch debared students list");
         notifications.show({
           title: "Failed to fetch data",
           message: "Failed to fetch feilds list",
@@ -71,7 +62,6 @@ function FieldsForm() {
     fetchFieldslist();
   }, []);
 
-  // done
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -80,7 +70,6 @@ function FieldsForm() {
       return;
     }
 
-    // Add the new field to the fields list
     const newField = { name, type, required };
 
     try {
@@ -121,9 +110,6 @@ function FieldsForm() {
       setrequired(false);
       setError("");
     }
-
-    // Clear the form inputs
-    // Clear any error
   };
 
   const handleDelete = (index) => {
@@ -168,7 +154,6 @@ function FieldsForm() {
             checked={required}
             onChange={() => {
               setrequired((prev) => !prev);
-              console.log(required);
             }}
             label={required ? "Yes" : "No"}
           />
@@ -180,7 +165,6 @@ function FieldsForm() {
         </Group>
       </form>
 
-      {/* Display list of added fields */}
       {fields.length > 0 && (
         <div style={{ marginTop: "20px" }}>
           <Title order={3}>Added Fields</Title>
@@ -189,7 +173,6 @@ function FieldsForm() {
               <List.Item key={index}>
                 <Group position="apart">
                   <div>
-                    {/* {console.log(field)} */}
                     <strong>{field[0]}</strong> ({field[1]}) - Required:{" "}
                     {field[2] ? "Yes" : "No"}
                   </div>

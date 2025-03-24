@@ -27,16 +27,13 @@ function SendNotificationForm() {
   };
 
   const handleSubmit = async () => {
-    // Implement notification sending logic here
     try {
       const token = localStorage.getItem("authToken");
-      console.log(formData);
       const response = await axios.post(sendNotificationRoute, formData, {
         headers: {
           Authorization: `Token ${token}`,
         },
       });
-      console.log("Notification details:", formData);
     } catch (error) {
       console.error("Error sending notification:", error);
       notifications.show({

@@ -30,7 +30,6 @@ function PlacementCalendar() {
   useEffect(() => {
     async function fetchScheduleData() {
       const token = localStorage.getItem("authToken");
-      console.log("Auth Token:", token);
 
       try {
         const response = await axios.get(calendarEventsRoute, {
@@ -38,8 +37,6 @@ function PlacementCalendar() {
             Authorization: `Token ${token}`,
           },
         });
-
-        console.log("API Response:", response.data);
 
         const scheduleData = response.data.schedule_data;
 
@@ -54,8 +51,6 @@ function PlacementCalendar() {
           }));
 
           setEvents(calendarEvents);
-          console.log("Mapped Events:", calendarEvents);
-          console.log("Mapped Events:", calendarEvents);
         } else {
           console.error("Schedule data is not an array:", scheduleData);
         }

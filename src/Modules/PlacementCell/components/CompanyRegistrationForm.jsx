@@ -89,7 +89,6 @@ function CompanyRegistrationForm() {
     };
     try {
       const token = localStorage.getItem("authToken");
-      console.log(newRegistration);
       const response = await axios.post(
         fetchRegistrationRoute,
         newRegistration,
@@ -139,9 +138,7 @@ function CompanyRegistrationForm() {
     <div style={{ display: "flex", flexDirection: "row" }}>
       <Container mt="xl" flex={1}>
         <Title order={2} mb="xl">
-          
           Company Registration
-
         </Title>
         {error && (
           <Notification color="red" onClose={() => setError("")}>

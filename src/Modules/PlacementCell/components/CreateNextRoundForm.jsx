@@ -37,9 +37,7 @@ function CreateNextRoundForm() {
       test_type: roundType,
     };
 
-    console.log("Next Round Details:", nextRoundDetails);
     setModalOpened(false);
-    // Reset form fields
     setRoundNumber();
     setDate("");
     setTime("");
@@ -49,7 +47,6 @@ function CreateNextRoundForm() {
 
     const submitFunc = async () => {
       const token = localStorage.getItem("authToken");
-      console.log(jobId);
       try {
         const response = await axios.post(
           `${submitNextRoundDetailsRoute}${jobId}/`,
@@ -124,20 +121,6 @@ function CreateNextRoundForm() {
               onChange={(e) => setDate(e.target.value)}
               required
             />
-            {/* <TextInput
-              label="Time"
-              placeholder="HH:MM (24-hour format)"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-              required
-            />
-            <TextInput
-              label="Location"
-              placeholder="Enter location"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              required
-            /> */}
             <Textarea
               label="Description"
               placeholder="Enter a brief description"

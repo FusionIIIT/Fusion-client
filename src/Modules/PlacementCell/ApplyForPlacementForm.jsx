@@ -44,7 +44,6 @@ function JobApplicationForm() {
       padding="md"
       style={{ marginLeft: "0", marginRight: "auto" }}
     >
-      {/* Back button */}
       <Group position="left" mb="xl">
         <ActionIcon
           variant="outline"
@@ -63,7 +62,6 @@ function JobApplicationForm() {
           alignItems: "flex-start",
         }}
       >
-        {/* Align company logo and name vertically to the left */}
         {companyLogo && (
           <Image
             style={{ width: "20%", height: "20%" }}

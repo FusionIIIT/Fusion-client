@@ -3,12 +3,9 @@ import {
   TextInput,
   Button,
   Group,
-  Select,
-  Textarea,
   Card,
   Title,
   Grid,
-  FileInput,
   NumberInput,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
@@ -21,9 +18,9 @@ import { DateInput, TimeInput } from "@mantine/dates";
 
 function ApplyToPlacementForm({
   jobID,
-  prefilledFields,
-  additionalFields,
-  onSubmit,
+  // prefilledFields,
+  // additionalFields,
+  // onSubmit,
 }) {
   const [fields, setFields] = useState([]);
   const [formData, setFormData] = useState({});
@@ -106,8 +103,6 @@ function ApplyToPlacementForm({
           value: data.value,
         }));
 
-      console.log(responses);
-
       const response = await axios.post(
         ApplyForPlacementRoute,
         { jobId: jobID, responses },
@@ -144,16 +139,6 @@ function ApplyToPlacementForm({
 
       <form onSubmit={handleSubmit}>
         <Grid gutter="lg">
-          {/* {Object.keys(prefilledFields).map((field) => (
-            <Grid.Col span={6} key={field}>
-              <TextInput
-                label={field.replace(/_/g, " ").toUpperCase()}
-                value={formData[field]}
-                disabled
-              />
-            </Grid.Col>
-          ))} */}
-
           {fields.map((field) => (
             <Grid.Col span={6} key={field.name}>
               {field.type === "text" && (
