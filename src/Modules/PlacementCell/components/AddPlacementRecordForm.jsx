@@ -12,7 +12,7 @@ import {
 } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
 import { notifications } from "@mantine/notifications";
-import fetchPlacementStatsRoute from "../globalRoutes";
+import {fetchPlacementStatsRoute} from "../../../routes/placementCellRoutes";
 
 function AddPlacementRecordForm({ opened, onClose }) {
   const [companyName, setCompanyName] = useState("");
