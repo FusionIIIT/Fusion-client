@@ -16,6 +16,8 @@ import { HealthCenter } from "./Modules/Health Center";
 import ConvenorBreadcumbs from "./Modules/Scholarship/convenor/components/ConvenorBreadcumbs";
 import UserBreadcrumbs from "./Modules/Scholarship/user/components/UserBreadcumbs";
 
+import HostelPage from "./Modules/Hostel-Management/index";
+
 const Dashboard = lazy(
   () => import("./Modules/Dashboard/dashboardNotifications"),
 );
@@ -70,8 +72,6 @@ const DepartmentPage = lazy(
 const GymkhanaDashboard = lazy(
   () => import("./Modules/Gymkhana/GymkhanaDashboard.jsx"),
 );
-
-const HostelPage = lazy(() => import("./Modules/Hostel-Management/index"));
 
 const theme = createTheme({
   breakpoints: { xs: "30em", sm: "48em", md: "64em", lg: "74em", xl: "90em" },

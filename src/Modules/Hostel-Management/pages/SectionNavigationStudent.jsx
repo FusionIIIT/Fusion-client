@@ -17,8 +17,6 @@ const sections = [
   "Notice Board",
   "My Fine",
   "Leave",
-  "Guest Room",
-  "Complaint",
   "Alloted rooms",
   "My Attendance",
 ];

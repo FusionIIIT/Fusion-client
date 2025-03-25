@@ -4,7 +4,6 @@ import {
   Paper,
   Text,
   Input,
-  Select,
   Group,
   Card,
   ScrollArea,
@@ -21,7 +20,7 @@ export default function StudentInfo() {
   const [opened, setOpened] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedBlock, setSelectedBlock] = useState("All");
+  const selectedBlock = "All";
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -102,19 +101,6 @@ export default function StudentInfo() {
           style={{ flex: 1 }}
           value={searchTerm}
           onChange={(event) => setSearchTerm(event.currentTarget.value)}
-        />
-        <Select
-          data={[
-            "All",
-            "Block - A",
-            "Block - B",
-            "Block - C",
-            "Block - D",
-            "Block - E",
-          ]}
-          value={selectedBlock}
-          onChange={setSelectedBlock}
-          style={{ width: 120 }}
         />
       </Group>
 

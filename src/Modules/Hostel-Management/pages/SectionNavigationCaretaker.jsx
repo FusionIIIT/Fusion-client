@@ -15,7 +15,6 @@ const sections = [
   "Notice Board",
   "Manage Leave Request",
   "Fine",
-  "Manage Guest Room Request",
   "Student Allotment",
   "Upload Attendance",
 ];
