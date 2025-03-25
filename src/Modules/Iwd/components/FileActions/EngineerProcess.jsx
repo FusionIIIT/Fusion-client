@@ -17,8 +17,6 @@ import classes from "../../iwd.module.css";
 import { HandleEngineerProcess } from "../../handlers/handlers";
 
 function EngineerProcess({ form, request, handleBackToList }) {
-  console.log("engineer\n\n");
-
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const role = useSelector((state) => state.user.role);

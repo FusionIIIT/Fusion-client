@@ -1,3 +1,5 @@
+/* eslint-disable no-await-in-loop */
+/* eslint-disable no-restricted-syntax */
 import axios from "axios";
 import { IWD_ROUTES } from "../routes/iwdRoutes";
 
@@ -140,7 +142,7 @@ const HandleIssueWorkOrder = async ({
   data,
   setIsLoading,
   setIsSuccess,
-  onBack,
+  submitter,
 }) => {
   /* 
     This function is for issuing work order for requests approved by director
@@ -175,7 +177,7 @@ const HandleIssueWorkOrder = async ({
       setIsLoading(false);
       setIsSuccess(true);
       setTimeout(() => {
-        onBack();
+        submitter();
       }, 1000);
     }, 1000);
   } catch (error) {
@@ -472,6 +474,102 @@ const HandleDeanProcessRequest = async ({
     setIsLoading(false);
   }
 };
+const HandleProposalSubmission = async ({
+  setIsLoading,
+  setIsSuccess,
+  submitter,
+  form,
+}) => {
+  setIsLoading(true);
+  setIsSuccess(false);
+
+  const token = localStorage.getItem("authToken");
+  const payload = {
+    ...form.values,
+    supporting_documents: form.values.supporting_documents || null,
+    items: form.values.items.map((item) => ({
+      name: item.name,
+      description: item.description,
+      unit: item.unit,
+      price_per_unit: item.price_per_unit,
+      quantity: item.quantity,
+      docs: item.docs || null,
+    })),
+  };
+  console.log(payload);
+
+  try {
+    const response = await axios.post(IWD_ROUTES.CREATE_PROPOSAL, payload, {
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    });
+
+    if (response.status < 200 || response.status >= 300) {
+      throw new Error("Failed to submit form");
+    }
+
+    setIsSuccess(true);
+    setTimeout(() => {
+      setIsSuccess(false);
+      submitter();
+    }, 1500);
+  } catch (error) {
+    console.error("Error submitting proposal:", error);
+  } finally {
+    setIsLoading(false);
+  }
+};
+const GetProposals = async ({
+  setLoading,
+  setProposalList,
+  requestId,
+  setProposalIds,
+}) => {
+  setLoading(true);
+  const token = localStorage.getItem("authToken");
+
+  try {
+    console.log("Requesting proposals with Request ID:", requestId);
+    const response = await axios.get(`${IWD_ROUTES.VIEW_PROPOSALS}`, {
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+      params: { request_id: requestId },
+    });
+    const proposals = response.data || [];
+    const proposalIds = proposals.map((proposal) => proposal.id);
+    setProposalIds(proposalIds);
+
+    setProposalList(response.data || []);
+  } catch (error) {
+    console.log(error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+const GetItems = async ({ setLoading, setItemsList, proposalIds }) => {
+  setLoading(true);
+  const token = localStorage.getItem("authToken");
+
+  try {
+    let allItems = [];
+    for (const proposalId of proposalIds) {
+      const response = await axios.get(IWD_ROUTES.VIEW_ITEMS, {
+        headers: { Authorization: `Token ${token}` },
+        params: { proposal_id: proposalId },
+      });
+
+      allItems = [...allItems, ...response.data];
+    }
+    setItemsList(allItems);
+  } catch (error) {
+    console.error("Error fetching items:", error);
+  } finally {
+    setLoading(false);
+  }
+};
 
 export {
   GetRequestsOrBills,
@@ -486,4 +584,7 @@ export {
   HandleEditBudget,
   HandleDeanProcessRequest,
   HandleEngineerProcess,
+  HandleProposalSubmission,
+  GetProposals,
+  GetItems,
 };

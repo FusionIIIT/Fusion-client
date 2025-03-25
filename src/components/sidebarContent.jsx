@@ -54,6 +54,8 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
     "iwd",
     "phc",
     "spacs",
+    "placement_cell",
+    "purchase_and_store",
   ];
 
   const Modules = [
@@ -116,7 +118,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "Placement Cell",
       id: "placement_cell",
       icon: <PlacementIcon size={18} />,
-      url: "/",
+      url: "/placement-cell",
     },
     {
       label: "Department Portal",
@@ -134,7 +136,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "Purchase and Store",
       id: "purchase_and_store",
       icon: <StoreIcon size={18} />,
-      url: "/",
+      url: "/purchase",
     },
     {
       label: "Human Resource",
