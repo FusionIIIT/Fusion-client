@@ -13,7 +13,7 @@ import InventoryRequests from "./InventoryRequests";
 const sectionComponents = {
   "Overall Inventory": InventoryDashboard,
   Section: HostelInventory,
-  Reports:Reports,
+  Reports,
   Department,
   Requests: InventoryRequests,
 };
@@ -38,27 +38,26 @@ export default function SectionNavigation() {
               ? ["Department"]
               : role === "deptadmin_design"
                 ? ["Department"]
-                : role === "Hostel_admin" ||
-                  role === "hall1caretaker"
-                  ? ["Section"]  // Role "hall1caretaker" shows "h1"
+                : role === "Hostel_admin" || role === "hall1caretaker"
+                  ? ["Section"] // Role "hall1caretaker" shows "h1"
                   : role === "hall3caretaker"
-                    ? ["Section"]  // Role "hall3caretaker" shows "h3"
+                    ? ["Section"] // Role "hall3caretaker" shows "h3"
                     : role === "hall4caretaker"
-                      ? ["Section"]  // Role "hall4caretaker" shows "h4"
+                      ? ["Section"] // Role "hall4caretaker" shows "h4"
                       : role === "phcaretaker"
-                        ? ["Section"]  // Role "phcaretaker" shows "panini"
+                        ? ["Section"] // Role "phcaretaker" shows "panini"
                         : role === "nhcaretaker"
-                          ? ["Section"]  // Role "nhcaretaker" shows "nagarjuna"
+                          ? ["Section"] // Role "nhcaretaker" shows "nagarjuna"
                           : role === "mshcaretaker"
-                            ? ["Section"]  // Role "mshcaretaker" shows "maa saraswati"
+                            ? ["Section"] // Role "mshcaretaker" shows "maa saraswati"
                             : role === "rspc_admin"
-                              ? ["Section"]  // Role "rspc_admin" shows "rspc"
+                              ? ["Section"] // Role "rspc_admin" shows "rspc"
                               : role === "SectionHead_IWD"
-                                ? ["Section"]  // Role "SectionHead_IWD" shows "iwd"
+                                ? ["Section"] // Role "SectionHead_IWD" shows "iwd"
                                 : role === "acadadmin"
-                                  ? ["Section"]  // Role "acadadmin" shows "academic"
+                                  ? ["Section"] // Role "acadadmin" shows "academic"
                                   : role === "VhCaretaker"
-                                    ? ["Section"]  // Role "VhCaretaker" shows "vh"
+                                    ? ["Section"] // Role "VhCaretaker" shows "vh"
                                     : [];
 
   const tabItems = sections.map((section) => ({ title: section }));
