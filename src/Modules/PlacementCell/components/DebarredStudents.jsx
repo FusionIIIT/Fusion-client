@@ -16,6 +16,7 @@ import { notifications } from "@mantine/notifications";
 import axios from "axios";
 import { fetchDebaredlistRoute } from "../../../routes/placementCellRoutes";
 import { sendNotificationRoute } from "../../../routes/placementCellRoutes";
+import { debarredStatusRoute } from "../../../routes/placementCellRoutes";
 
 function DebarredStudents() {
   const [debarredStudents, setDebarredStudents] = useState([]);
@@ -35,9 +36,9 @@ function DebarredStudents() {
           },
         });
 
-        if (response.status == 200) {
+        if (response.status === 200) {
           setDebarredStudents(response.data);
-        } else if (response.status == 404) {
+        } else if (response.status === 404) {
           notifications.show({
             title: "Error fetching data",
             message: `Error fetching data: ${response.status}`,
@@ -65,7 +66,7 @@ function DebarredStudents() {
     setLoading(true);
     try {
       const newDebarredStudent = {
-        rollNo,
+        rollNo: rollNo,
         name: studentDetails.name,
         reason,
       };
@@ -96,7 +97,6 @@ function DebarredStudents() {
           },
         },
       );
-
       setDebarredStudents((prev) => [...prev, newDebarredStudent]);
       notifications.show({
         title: "Success",
@@ -121,18 +121,15 @@ function DebarredStudents() {
   const handleFetchStudentDetails = async () => {
     try {
       const token = localStorage.getItem("authToken");
-      const response = await axios.get(
-        `${debarredStatusRoute}${rollNo}/`,
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
+      const response = await axios.get(`${debarredStatusRoute}${rollNo}/`, {
+        headers: {
+          Authorization: `Token ${token}`,
         },
-      );
-      if (response.status == 200) {
+      });
+      if (response.status === 200) {
         setStudentDetails(response.data);
         setIsModalOpen(true);
-      } else if (response.status == 404) {
+      } else if (response.status === 404) {
         notifications.show({
           title: "Error fetching data",
           message: `no user found with that roll no: ${rollNo}`,
@@ -159,16 +156,14 @@ function DebarredStudents() {
   const handleDebarDelete = async () => {
     try {
       const token = localStorage.getItem("authToken");
-      const response = await axios.delete(
-        `${debarredStatusRoute}${rollNo}/`,
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
-        },
-      );
 
-      if (response.status == 200) {
+      const response = await axios.delete(`${debarredStatusRoute}${rollNo}/`, {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      });
+
+      if (response.status === 200) {
         notifications.show({
           title: "Success",
           message: "Student deleted from debarred successfully!",
@@ -299,7 +294,7 @@ function DebarredStudents() {
               style={{ marginTop: "20px" }}
             />
             <Group position="right" style={{ marginTop: "20px" }}>
-              {studentDetails.debar_status == true ? (
+              {studentDetails.debar_status === true ? (
                 <Button
                   onClick={handleDebarDelete}
                   color="red"

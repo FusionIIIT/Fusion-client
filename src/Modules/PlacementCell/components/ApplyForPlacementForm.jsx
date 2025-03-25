@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 import {
   TextInput,
   Button,
@@ -16,12 +17,7 @@ import {
 import axios from "axios";
 import { DateInput, TimeInput } from "@mantine/dates";
 
-function ApplyToPlacementForm({
-  jobID,
-  // prefilledFields,
-  // additionalFields,
-  // onSubmit,
-}) {
+function ApplyToPlacementForm({ jobID }) {
   const [fields, setFields] = useState([]);
   const [formData, setFormData] = useState({});
   const [errors, setErrors] = useState({});
@@ -61,7 +57,7 @@ function ApplyToPlacementForm({
     };
 
     fetchFieldslist();
-  }, [fetchFormFieldsRoute]);
+  }, [jobID]);
 
   const handleChange = (field_id, value) => {
     setFormData((prev) => ({
@@ -73,8 +69,8 @@ function ApplyToPlacementForm({
   const validateFields = () => {
     const newErrors = {};
     fields.forEach((field) => {
-      if (field.required && !formData[field.name]) {
-        newErrors[field.name] = `${field.label} is required.`;
+      if (field.required && !formData[field.field_id]?.value) {
+        newErrors[field.field_id] = `${field.name} is required.`;
       }
     });
     setErrors(newErrors);
@@ -140,14 +136,14 @@ function ApplyToPlacementForm({
       <form onSubmit={handleSubmit}>
         <Grid gutter="lg">
           {fields.map((field) => (
-            <Grid.Col span={6} key={field.name}>
+            <Grid.Col span={6} key={field.field_id}>
               {field.type === "text" && (
                 <TextInput
                   label={field.name.replace(/_/g, " ").toUpperCase()}
                   placeholder={`Enter ${field.name}`}
                   value={formData[field.field_id]?.value || ""}
                   onChange={(e) => handleChange(field.field_id, e.target.value)}
-                  error={errors[field.name]}
+                  error={errors[field.field_id]}
                   required={field.required}
                 />
               )}
@@ -157,7 +153,7 @@ function ApplyToPlacementForm({
                   placeholder={`Enter ${field.name}`}
                   value={formData[field.field_id]?.value || ""}
                   onChange={(value) => handleChange(field.field_id, value)}
-                  error={errors[field.name]}
+                  error={errors[field.field_id]}
                   required={field.required}
                 />
               )}
@@ -169,7 +165,7 @@ function ApplyToPlacementForm({
                   precision={2}
                   step={0.01}
                   onChange={(value) => handleChange(field.field_id, value)}
-                  error={errors[field.name]}
+                  error={errors[field.field_id]}
                   required={field.required}
                 />
               )}
@@ -178,8 +174,8 @@ function ApplyToPlacementForm({
                   label={field.name.replace(/_/g, " ").toUpperCase()}
                   placeholder={`Select ${field.name}`}
                   value={formData[field.field_id]?.value || ""}
-                  onChange={(e) => handleChange(field.field_id, e.target.value)}
-                  error={errors[field.name]}
+                  onChange={(value) => handleChange(field.field_id, value)}
+                  error={errors[field.field_id]}
                   required={field.required}
                 />
               )}
@@ -188,8 +184,8 @@ function ApplyToPlacementForm({
                   label={field.name.replace(/_/g, " ").toUpperCase()}
                   placeholder={`Select ${field.name}`}
                   value={formData[field.field_id]?.value || ""}
-                  onChange={(e) => handleChange(field.field_id, e.target.value)}
-                  error={errors[field.name]}
+                  onChange={(value) => handleChange(field.field_id, value)}
+                  error={errors[field.field_id]}
                   required={field.required}
                 />
               )}
@@ -198,18 +194,15 @@ function ApplyToPlacementForm({
         </Grid>
 
         <Group position="right" style={{ marginTop: "20px" }}>
-          <Button
-            type="submit"
-            onClick={() => {
-              handleSubmit;
-            }}
-          >
-            Submit Application
-          </Button>
+          <Button type="submit">Submit Application</Button>
         </Group>
       </form>
     </Card>
   );
 }
+
+ApplyToPlacementForm.propTypes = {
+  jobID: PropTypes.string.isRequired,
+};
 
 export default ApplyToPlacementForm;

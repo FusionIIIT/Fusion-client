@@ -9,6 +9,7 @@ import {
   Title,
   Tabs,
 } from "@mantine/core";
+import dayjs from "dayjs";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import AddPlacementEventForm from "./AddPlacementEventForm";
@@ -36,7 +37,6 @@ function PlacementScheduleGrid({ data, itemsPerPage, cardsPerRow }) {
   const remainingCards = totalRows * cardsPerRow - currentItems.length;
 
   Array.from({ length: remainingCards }).forEach(() => paddedItems.push(null));
-
   return (
     <Container fluid>
       <Grid gutter="md">
@@ -98,6 +98,7 @@ function PlacementSchedule() {
             "Content-Type": "application/json",
           },
         });
+
         setPlacementData(response.data);
       } catch (err) {
         console.error(
@@ -113,13 +114,13 @@ function PlacementSchedule() {
     fetchData();
   }, []);
 
-  const today = new Date();
+  const today = dayjs();
 
-  const activeEvents = placementData.filter(
-    (item) => new Date(item.placement_date) >= today,
+  const activeEvents = placementData.filter((item) =>
+    dayjs(item.placement_date).isAfter(today, "day"),
   );
-  const closedEvents = placementData.filter(
-    (item) => new Date(item.placement_date) < today,
+  const closedEvents = placementData.filter((item) =>
+    dayjs(item.placement_date).isBefore(today, "day"),
   );
 
   if (loading) return <div>Loading...</div>;
@@ -152,7 +153,7 @@ function PlacementSchedule() {
         <Tabs defaultValue="active" variant="pills" style={{ marginLeft: 16 }}>
           <Tabs.List>
             <Tabs.Tab value="active">Active</Tabs.Tab>
-            {role != "student" && <Tabs.Tab value="closed">Closed</Tabs.Tab>}
+            {role !== "student" && <Tabs.Tab value="closed">Closed</Tabs.Tab>}
           </Tabs.List>
 
           <Tabs.Panel value="active" pt="md">
@@ -187,59 +188,3 @@ function PlacementSchedule() {
 }
 
 export default PlacementSchedule;
-
-// // import { useState } from 'react';
-// // import { Grid, Pagination, Container } from '@mantine/core';
-
-// // // Example data
-// // const items = Array.from({ length: 20 }, (_, i) => `Item ${i + 1}`);
-
-// // const PlacementSchedule = () => {
-// //   const [activePage, setActivePage] = useState(1);
-// //   const itemsPerPage = 8; // Two rows of 4 items each
-
-// //   // Calculate visible items for the current page
-// //   const startIdx = (activePage - 1) * itemsPerPage;
-// //   const visibleItems = items.slice(startIdx, startIdx + itemsPerPage);
-
-// //   return (
-// //     <Container fluid>
-// //       <Grid gutter="md">
-// //         {visibleItems.map((item, index) => (
-// //           <Grid.Col
-// //             key={index}
-// //             span={{
-// //               sm:6 ,// 2 items per row on small screens
-// //               md:4, // 3 items per row on medium screens
-// //               lg:3 // 4 items per row on large screens
-
-// //             }}
-
-// //           >
-// //             <div
-// //               style={{
-// //                 padding: '16px',
-// //                 border: '1px solid #ddd',
-// //                 borderRadius: '8px',
-// //                 textAlign: 'center',
-// //                 backgroundColor: '#f9f9f9',
-// //               }}
-// //             >
-// //               {item}
-// //             </div>
-// //           </Grid.Col>
-// //         ))}
-// //       </Grid>
-
-// //       <Pagination
-// //         total={Math.ceil(items.length / itemsPerPage)}
-// //         value={activePage}
-// //         onChange={setActivePage}
-// //         mt="lg"
-// //         position="center"
-// //       />
-// //     </Container>
-// //   );
-// // };
-
-// // export default PlacementSchedule;
