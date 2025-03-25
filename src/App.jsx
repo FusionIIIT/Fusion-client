@@ -13,14 +13,26 @@ import PlacementEventHandeling from "./Modules/PlacementCell/components/Placemen
 import ApplicationStatusTimeline from "./Modules/PlacementCell/components/Timeline";
 
 // import { IwdRoutes } from "./Modules/Iwd/routes/index";
-import IwdModule from "./Modules/Iwd/index";
 import { DesignationsProvider } from "./Modules/Iwd/helper/designationContext";
 import { HealthCenter } from "./Modules/Health Center";
+import PurchaseNavbar from "./Modules/Purchase/PurchaseNavbar";
+import Inbox from "./Modules/Purchase/Inbox";
+import FiledIndents from "./Modules/Purchase/FilledIndents.jsx";
+import ViewIndentInbox from "./Modules/Purchase/ViewIndentInbox.jsx";
+import EmployeeViewFileIndent from "./Modules/Purchase/EmployeeViewFileIndent";
+import Archieved from "./Modules/Purchase/ArchievedIndents";
+import ViewIndent from "./Modules/Purchase/ViewIndent";
+import StockEntry from "./Modules/Purchase/StockEntry";
+import SavedIndents from "./Modules/Purchase/SavedIndentes";
+import Outbox from "./Modules/Purchase/Outbox.jsx";
+import { IndentForm } from "./Modules/Purchase/IndentForm.jsx";
+import NewForwardIndent from "./Modules/Purchase/NewForwardIndent.jsx";
 
 // eslint-disable-next-line import/no-unresolved
 import ConvenorBreadcumbs from "./Modules/Scholarship/convenor/components/ConvenorBreadcumbs";
 import UserBreadcrumbs from "./Modules/Scholarship/user/components/UserBreadcumbs";
 
+const IwdModule = lazy(() => import("./Modules/Iwd/index"));
 const Dashboard = lazy(
   () => import("./Modules/Dashboard/dashboardNotifications"),
 );
@@ -326,7 +338,9 @@ export default function App() {
           element={
             <DesignationsProvider>
               <Layout>
-                <IwdModule />
+                <Suspense fallback={<div>Loading .... </div>}>
+                  <IwdModule />
+                </Suspense>
               </Layout>
             </DesignationsProvider>
           }
@@ -466,6 +480,129 @@ export default function App() {
         />
 
         <Route path="/healthcenter/*" element={<HealthCenter />} />
+        <Route
+          path="/purchase"
+          element={
+            <Layout>
+              <PurchaseNavbar />
+              <div style={{ margin: "32px" }}>
+                {/* <MultiItemIndentForm /> */}
+                <IndentForm />
+              </div>
+            </Layout>
+          }
+        />
+        <Route
+          path="/purchase/all_filed_indents"
+          element={
+            <Layout>
+              <PurchaseNavbar />
+              <div style={{ margin: "32px" }}>
+                <FiledIndents />
+              </div>
+            </Layout>
+          }
+        />
+        <Route
+          path="/purchase/inbox"
+          element={
+            <Layout>
+              <PurchaseNavbar />
+              <div style={{ margin: "32px" }}>
+                <Inbox />
+              </div>
+            </Layout>
+          }
+        />
+        <Route
+          path="/purchase/forward_indent/:indentID"
+          element={
+            <Layout>
+              <PurchaseNavbar />
+              {/* <ForwardIndent /> */}
+              <NewForwardIndent />
+            </Layout>
+          }
+        />
+        <Route
+          path="/purchase/saved_indents"
+          element={
+            <Layout>
+              <PurchaseNavbar />
+              <div style={{ margin: "32px" }}>
+                <SavedIndents />
+              </div>
+            </Layout>
+          }
+        />
+        <Route
+          path="/purchase/archieved_indents"
+          element={
+            <Layout>
+              <PurchaseNavbar />
+              <div style={{ margin: "32px" }}>
+                <Archieved />
+              </div>
+            </Layout>
+          }
+        />
+        <Route
+          path="/purchase/outbox"
+          element={
+            <Layout>
+              <PurchaseNavbar />
+              <div style={{ margin: "32px" }}>
+                <Outbox />
+              </div>
+            </Layout>
+          }
+        />
+        <Route
+          path="/purchase/viewindent/:indentID"
+          element={
+            <Layout>
+              <PurchaseNavbar />
+              <ViewIndentInbox />
+            </Layout>
+          }
+        />
+        <Route
+          path="/purchase/viewsavedindent/:indentID"
+          element={
+            <Layout>
+              <PurchaseNavbar />
+              <ViewIndent />
+            </Layout>
+          }
+        />
+        <Route
+          path="/purchase/employeeviewfiledindent/:indentID"
+          element={
+            <Layout>
+              <PurchaseNavbar />
+              <EmployeeViewFileIndent />
+            </Layout>
+          }
+        />
+        <Route
+          path="/purchase/stock_entry"
+          element={
+            <Layout>
+              <PurchaseNavbar />
+              <StockEntry />
+            </Layout>
+          }
+        />
+        <Route
+          path="/iwd"
+          element={
+            <DesignationsProvider>
+              <Layout>
+                <IwdModule />
+              </Layout>
+            </DesignationsProvider>
+          }
+        />
         <Route path="/accounts/login" element={<LoginPage />} />
         <Route path="/reset-password" element={<ForgotPassword />} />
         <Route
