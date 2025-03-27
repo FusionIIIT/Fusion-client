@@ -1,10 +1,67 @@
 import React, { useState } from "react";
-
 import { useSelector } from "react-redux";
+
+// Inline CSS styles
+const styles = {
+  container: {
+    maxWidth: "450px",
+    margin: "40px auto",
+    padding: "20px",
+    borderRadius: "8px",
+    boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.1)",
+    backgroundColor: "#fff",
+    fontFamily: "Arial, sans-serif",
+  },
+  heading: {
+    textAlign: "center",
+    color: "#007BFF",
+  },
+  error: {
+    color: "red",
+    textAlign: "center",
+    fontSize: "14px",
+    marginBottom: "10px",
+  },
+  form: {
+    display: "flex",
+    flexDirection: "column",
+  },
+  label: {
+    marginBottom: "5px",
+    fontWeight: "bold",
+  },
+  input: {
+    padding: "10px",
+    marginBottom: "15px",
+    borderRadius: "5px",
+    border: "1px solid #ccc",
+    fontSize: "14px",
+  },
+  textarea: {
+    padding: "10px",
+    marginBottom: "15px",
+    borderRadius: "5px",
+    border: "1px solid #ccc",
+    fontSize: "14px",
+    minHeight: "80px",
+    resize: "vertical",
+  },
+  button: {
+    padding: "10px",
+    border: "none",
+    borderRadius: "5px",
+    backgroundColor: "#007BFF",
+    color: "#fff",
+    fontSize: "16px",
+    cursor: "pointer",
+    transition: "background 0.3s",
+  },
+};
 
 function SubmitInventoryRequest() {
   const role = useSelector((state) => state.user.role);
   console.log(role);
+
   const [formData, setFormData] = useState({
     item_name: "",
     quantity: "",
@@ -16,7 +73,7 @@ function SubmitInventoryRequest() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
 
-  const token = localStorage.getItem("authToken"); // Replace with actual authentication token
+  const token = localStorage.getItem("authToken");
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -67,50 +124,69 @@ function SubmitInventoryRequest() {
   };
 
   return (
-    <div>
-      <h3>Inventory Request Form</h3>
-      {errorMessage && <p className="error-message">{errorMessage}</p>}
+    <div style={styles.container}>
+      <h3 style={styles.heading}>Inventory Request Form</h3>
 
-      <form onSubmit={(e) => e.preventDefault()}>
+      {errorMessage && <p style={styles.error}>{errorMessage}</p>}
+
+      <form style={styles.form} onSubmit={(e) => e.preventDefault()}>
+        <label style={styles.label}>Product Name</label>
         <input
           type="text"
           name="item_name"
-          placeholder="Product Name"
+          placeholder="Enter product name"
           value={formData.item_name}
           onChange={handleChange}
+          style={styles.input}
           required
         />
+
+        <label style={styles.label}>Quantity</label>
         <input
           type="number"
           name="quantity"
-          placeholder="Quantity"
+          placeholder="Enter quantity"
           value={formData.quantity}
           onChange={handleChange}
+          style={styles.input}
           required
         />
+
+        <label style={styles.label}>Department</label>
         <input
           type="text"
           name="department_name"
-          placeholder="Department"
+          placeholder="Enter department"
           value={formData.department_name}
           onChange={handleChange}
+          style={styles.input}
           required
-        />
-        <textarea
-          name="purpose"
-          placeholder="Purpose"
-          value={formData.purpose}
-          onChange={handleChange}
-          required
-        />
-        <textarea
-          name="specifications"
-          placeholder="Specifications"
-          value={formData.specifications}
-          onChange={handleChange}
         />
 
-        <button onClick={submitRequest} disabled={loading}>
+        <label style={styles.label}>Purpose</label>
+        <textarea
+          name="purpose"
+          placeholder="Enter purpose"
+          value={formData.purpose}
+          onChange={handleChange}
+          style={styles.textarea}
+          required
+        />
+
+        <label style={styles.label}>Specifications</label>
+        <textarea
+          name="specifications"
+          placeholder="Enter specifications (optional)"
+          value={formData.specifications}
+          onChange={handleChange}
+          style={styles.textarea}
+        />
+
+        <button
+          style={styles.button}
+          onClick={submitRequest}
+          disabled={loading}
+        >
           {loading ? "Submitting..." : "Submit Request"}
         </button>
       </form>

@@ -7,7 +7,6 @@ function InventoryRequests() {
   const [requests, setRequests] = useState([]);
   const token = localStorage.getItem("authToken");
 
-  // Screen size detection
   useEffect(() => {
     const handleResize = () => setIsSmallScreen(window.innerWidth <= 768);
     window.addEventListener("resize", handleResize);
@@ -15,7 +14,6 @@ function InventoryRequests() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Fetch requests from API
   useEffect(() => {
     async function fetchRequests() {
       try {
@@ -32,7 +30,45 @@ function InventoryRequests() {
     fetchRequests();
   }, [token]);
 
-  // Filter requests based on selected filter
+  const handleStatusChange = async (requestId, newStatus) => {
+    if (newStatus === "UNAPPROVED") {
+      newStatus = "NOT_APPROVED";
+    }
+
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/inventory/api/requests/${requestId}/`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Token ${token}`,
+          },
+          body: JSON.stringify({ approval_status: newStatus }),
+        },
+      );
+
+      const responseData = await response.json();
+      console.log("API Response:", responseData);
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to update: ${responseData.detail || "Unknown error"}`,
+        );
+      }
+
+      setRequests((prevRequests) =>
+        prevRequests.map((req) =>
+          req.request_id === requestId
+            ? { ...req, approval_status: newStatus }
+            : req,
+        ),
+      );
+    } catch (error) {
+      console.error("Error updating status:", error);
+    }
+  };
+
   const filteredRequests = requests.filter((request) => {
     const status = request.approval_status.toUpperCase();
     switch (filter) {
@@ -47,18 +83,6 @@ function InventoryRequests() {
     }
   });
 
-  // Get badge properties based on status
-  const getStatusBadge = (status) => {
-    switch (status.toUpperCase()) {
-      case "APPROVED":
-        return { color: "green", label: "Approved" };
-      case "PENDING":
-        return { color: "yellow", label: "Pending" };
-      default:
-        return { color: "red", label: "Not Approved" };
-    }
-  };
-
   return (
     <div
       style={{
@@ -69,16 +93,11 @@ function InventoryRequests() {
       }}
     >
       <h2
-        style={{
-          color: "#007BFF",
-          textAlign: "center",
-          marginBottom: "20px",
-        }}
+        style={{ color: "#007BFF", textAlign: "center", marginBottom: "20px" }}
       >
         Inventory Requests
       </h2>
 
-      {/* Filter Controls */}
       {isSmallScreen ? (
         <Select
           placeholder="Filter Requests"
@@ -107,77 +126,121 @@ function InventoryRequests() {
         </Group>
       )}
 
-      {/* Requests Table */}
-      <Table
+      <div
         style={{
           width: "80%",
+          overflowX: "auto",
+          maxHeight: "500px", // Adjust height as needed
+          overflowY: "auto",
           border: "1px solid #ddd",
-          borderCollapse: "collapse",
         }}
       >
-        <thead>
-          <tr
-            style={{
-              backgroundColor: "#f0f0f0",
-              borderBottom: "2px solid #ddd",
-            }}
-          >
-            <th style={{ padding: "15px", border: "1px solid #ddd" }}>Date</th>
-            <th style={{ padding: "15px", border: "1px solid #ddd" }}>Item</th>
-            <th style={{ padding: "15px", border: "1px solid #ddd" }}>
-              Department
-            </th>
-            <th style={{ padding: "15px", border: "1px solid #ddd" }}>
-              Purpose
-            </th>
-            <th style={{ padding: "15px", border: "1px solid #ddd" }}>
-              Specifications
-            </th>
-            <th style={{ padding: "15px", border: "1px solid #ddd" }}>
-              Status
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredRequests.map((request, index) => {
-            const status = getStatusBadge(request.approval_status);
-            return (
-              <tr
-                key={index}
-                style={{
-                  backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#fff",
-                  borderBottom: "1px solid #ddd",
-                }}
-              >
-                <td style={{ padding: "15px", border: "1px solid #ddd" }}>
-                  {new Date(request.date).toLocaleDateString()}
-                </td>
-                <td style={{ padding: "15px", border: "1px solid #ddd" }}>
-                  {request.item_name}
-                </td>
-                <td style={{ padding: "15px", border: "1px solid #ddd" }}>
-                  {request.department_name}
-                </td>
-                <td style={{ padding: "15px", border: "1px solid #ddd" }}>
-                  {request.purpose}
-                </td>
-                <td style={{ padding: "15px", border: "1px solid #ddd" }}>
-                  {request.specifications}
-                </td>
-                <td
+        <Table
+          style={{
+            minWidth: "1000px", // Ensures the table doesn't shrink too much
+            borderCollapse: "collapse",
+          }}
+        >
+          <thead>
+            <tr
+              style={{
+                backgroundColor: "#f0f0f0",
+                borderBottom: "2px solid #ddd",
+              }}
+            >
+              <th style={{ padding: "15px", border: "1px solid #ddd" }}>
+                Date
+              </th>
+              <th style={{ padding: "15px", border: "1px solid #ddd" }}>
+                Item
+              </th>
+              <th style={{ padding: "15px", border: "1px solid #ddd" }}>
+                Department
+              </th>
+              <th style={{ padding: "15px", border: "1px solid #ddd" }}>
+                Purpose
+              </th>
+              <th style={{ padding: "15px", border: "1px solid #ddd" }}>
+                Specifications
+              </th>
+              <th style={{ padding: "15px", border: "1px solid #ddd" }}>
+                Status
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredRequests.map((request, index) => {
+              return (
+                <tr
+                  key={index}
                   style={{
-                    padding: "15px",
-                    border: "1px solid #ddd",
-                    textAlign: "center",
+                    backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#fff",
+                    borderBottom: "1px solid #ddd",
                   }}
                 >
-                  <Badge color={status.color}>{status.label}</Badge>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </Table>
+                  <td style={{ padding: "15px", border: "1px solid #ddd" }}>
+                    {new Date(request.date).toLocaleDateString()}
+                  </td>
+                  <td style={{ padding: "15px", border: "1px solid #ddd" }}>
+                    {request.item_name}
+                  </td>
+                  <td style={{ padding: "15px", border: "1px solid #ddd" }}>
+                    {request.department_name}
+                  </td>
+                  <td style={{ padding: "15px", border: "1px solid #ddd" }}>
+                    {request.purpose}
+                  </td>
+                  <td style={{ padding: "15px", border: "1px solid #ddd" }}>
+                    {request.specifications}
+                  </td>
+                  <td
+                    style={{
+                      padding: "15px",
+                      border: "1px solid #ddd",
+                      textAlign: "center",
+                    }}
+                  >
+                    <Badge
+                      color={
+                        request.approval_status.toUpperCase() === "APPROVED"
+                          ? "green"
+                          : request.approval_status.toUpperCase() === "PENDING"
+                            ? "yellow"
+                            : "red"
+                      }
+                    >
+                      {request.approval_status.toUpperCase()}
+                    </Badge>
+                    {request.approval_status.toUpperCase() === "PENDING" && (
+                      <div style={{ marginTop: "5px" }}>
+                        <Button
+                          size="xs"
+                          color="green"
+                          onClick={() =>
+                            handleStatusChange(request.request_id, "APPROVED")
+                          }
+                          style={{ marginRight: "5px" }}
+                        >
+                          ✓
+                        </Button>
+                        <Button
+                          size="xs"
+                          color="red"
+                          onClick={() =>
+                            handleStatusChange(request.request_id, "UNAPPROVED")
+                          }
+                        >
+                          ✗
+                        </Button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </Table>
+      </div>
     </div>
   );
 }
