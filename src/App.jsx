@@ -6,10 +6,7 @@ import "@mantine/notifications/styles.css";
 import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { Notifications } from "@mantine/notifications";
 import { Layout } from "./components/layout";
-import Reports from "./Modules/Inventory/components/Reports";
 import InventoryIndex from "./Modules/Inventory/components/InventoryIndex";
-import Btech from "./Modules/Inventory/components/Btech";
-import InventoryTable from "./Modules/Inventory/components/InventoryTable";
 
 // eslint-disable-next-line import/no-unresolved
 import { DesignationsProvider } from "./Modules/Iwd/helper/designationContext";
@@ -203,14 +200,6 @@ export default function App() {
           }
         />
 
-        <Route
-          path="/inventory/btech"
-          element={
-            <Layout>
-              <Btech />
-            </Layout>
-          }
-        />
         <Route
           path="/profile"
           element={
@@ -570,24 +559,6 @@ export default function App() {
                 <PurchaseNavbar />
                 <StockEntry />
               </Suspense>
-            </Layout>
-          }
-        />
-
-        <Route
-          path="/inventory/report"
-          element={
-            <Layout>
-              <Reports />
-            </Layout>
-          }
-        />
-
-        <Route
-          path="/inventory/InventoryTable"
-          element={
-            <Layout>
-              <InventoryTable />
             </Layout>
           }
         />
