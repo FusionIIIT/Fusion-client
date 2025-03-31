@@ -57,6 +57,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
     "placement_cell",
     "purchase_and_store",
     "rspc",
+    "inventory_management",
   ];
 
   const Modules = [
@@ -132,6 +133,12 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       id: "rspc",
       icon: <ResearchIcon size={18} />,
       url: "/research",
+    },
+    {
+      label: "Inventory",
+      id: "inventory_management",
+      icon: <ResearchIcon size={18} />,
+      url: "/inventory",
     },
     {
       label: "Purchase and Store",
