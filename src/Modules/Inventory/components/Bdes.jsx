@@ -13,6 +13,7 @@ import AddProduct from "./AddProduct";
 import TransferProduct from "./TransferProduct";
 import RequestProduct from "./RequestProduct";
 import "../styles/popupModal.css";
+import { InventoryDepartments } from "../../../routes/inventoryRoutes";
 
 export default function Inventory() {
   const role = useSelector((state) => state.user.role);
@@ -71,7 +72,7 @@ export default function Inventory() {
     setLoading(true);
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/inventory/api/departments/?department=${selectedDepartment}`,
+        InventoryDepartments(`${selectedDepartment}`),
         {
           method: "GET",
           headers: {

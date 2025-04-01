@@ -1,18 +1,23 @@
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import '../styles/transferProduct.css';
+import React from "react";
+import { useForm } from "react-hook-form";
+import "../styles/transferProduct.css";
+import { InventoryTransfer } from "../../../routes/inventoryRoutes";
 
 function TransferProduct() {
-  const { register, handleSubmit, formState: { errors } } = useForm();
-  const [inventoryData, setInventoryData] = useState([]); // State to manage inventory data
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
+  // Removed unused inventoryData state
 
   const onSubmit = async (data) => {
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch('http://127.0.0.1:8000/inventory/api/transfer_product/', {
-        method: 'POST',
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(InventoryTransfer, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Token ${token}`,
         },
         body: JSON.stringify({
@@ -25,28 +30,18 @@ function TransferProduct() {
 
       if (response.ok) {
         const result = await response.json();
-        console.log('Product transferred successfully:', result);
-        alert('Product transferred successfully.');
+        console.log("Product transferred successfully:", result);
+        alert("Product transferred successfully.");
 
-        setInventoryData((prevData) => {
-          const updatedData = [...prevData];
-          const existingIndex = updatedData.findIndex(
-            (item) => item.name === result.name && item.department === result.department.name
-          );
-          if (existingIndex !== -1) {
-            updatedData[existingIndex] = result;
-          } else {
-            updatedData.push(result);
-          }
-          return updatedData;
-        });
+        // Update inventory data logic can be implemented here if needed
+        console.log("Inventory data update logic is not defined.");
       } else {
         const error = await response.json();
-        alert('Error: ' + error.error || error.detail);
+        alert(`Error: ${error.error || error.detail}`);
       }
     } catch (error) {
-      console.error('Error transferring product:', error);
-      alert('Something went wrong. Please try again.');
+      console.error("Error transferring product:", error);
+      alert("Something went wrong. Please try again.");
     }
   };
 
@@ -60,10 +55,13 @@ function TransferProduct() {
         </label>
         <input
           type="text"
-          {...register('productName', { required: 'Product Name is required' })}
+          name="productName"
+          ref={(e) => register(e, { required: "Product Name is required" })}
           placeholder="Enter Product Name"
         />
-        {errors.productName && <p className="error-message">{errors.productName.message}</p>}
+        {errors.productName && (
+          <p className="error-message">{errors.productName.message}</p>
+        )}
 
         <label>
           Quantity
@@ -71,13 +69,16 @@ function TransferProduct() {
         </label>
         <input
           type="number"
-          {...register('quantity', {
-            required: 'Quantity is required',
-            min: { value: 1, message: 'Quantity must be at least 1' },
+          name="quantity"
+          ref={register({
+            required: "Quantity is required",
+            min: { value: 1, message: "Quantity must be at least 1" },
           })}
           placeholder="Enter Quantity"
         />
-        {errors.quantity && <p className="error-message">{errors.quantity.message}</p>}
+        {errors.quantity && (
+          <p className="error-message">{errors.quantity.message}</p>
+        )}
 
         <label>
           From Department
@@ -85,16 +86,25 @@ function TransferProduct() {
         </label>
         <input
           type="text"
-          {...register('fromDepartment', { required: 'From Department is required' })}
+          name="fromDepartment"
+          ref={register({
+            required: "From Department is required",
+          })}
           placeholder="Enter From Department"
         />
-        {errors.fromDepartment && <p className="error-message">{errors.fromDepartment.message}</p>}
+        {errors.fromDepartment && (
+          <p className="error-message">{errors.fromDepartment.message}</p>
+        )}
 
         <label>
           To Department
           <span className="required">*</span>
         </label>
-        <select {...register('toDepartment', { required: 'To Department is required' })}>
+        <select
+          ref={(e) => {
+            register(e, { required: "To Department is required" });
+          }}
+        >
           <option value="">Select Department</option>
           <option value="CSE">CSE</option>
           <option value="ECE">ECE</option>
@@ -102,7 +112,9 @@ function TransferProduct() {
           <option value="SM">SM</option>
           <option value="DS">DS</option>
         </select>
-        {errors.toDepartment && <p className="error-message">{errors.toDepartment.message}</p>}
+        {errors.toDepartment && (
+          <p className="error-message">{errors.toDepartment.message}</p>
+        )}
 
         <center>
           <button type="submit">Transfer Product</button>

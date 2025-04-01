@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { House, Package } from "@phosphor-icons/react";
 import { Section } from "lucide-react";
+import { InventoryData } from "../../../routes/inventoryRoutes";
 
 // --- Styled Components ---
 
@@ -108,15 +109,12 @@ function InventoryDashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(
-          "http://127.0.0.1:8000/inventory/api/item-count/",
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Token ${token}`,
-            },
-          }
-        );
+        const response = await fetch(InventoryData, {
+          method: "GET",
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        });
         if (!response.ok) {
           throw new Error("Network error");
         }
@@ -162,7 +160,7 @@ function InventoryDashboard() {
                 <div style={{ fontSize: "20px", fontWeight: "bold" }}>
                   {inventoryItems.reduce(
                     (total, item) => total + item.totalQuantity,
-                    0
+                    0,
                   )}
                 </div>
               </div>
@@ -181,9 +179,7 @@ function InventoryDashboard() {
                 <CardItem key={index}>
                   <IconWrapper>{item.icon}</IconWrapper>
                   <div>
-                    <div
-                      style={{ fontWeight: "bold", fontSize: "18px" }}
-                    >
+                    <div style={{ fontWeight: "bold", fontSize: "18px" }}>
                       {item.name}
                     </div>
                     <InfoText>{item.totalQuantity} items</InfoText>

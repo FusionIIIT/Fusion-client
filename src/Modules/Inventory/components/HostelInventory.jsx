@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import AddProduct from "./AddProduct";
 import TransferProduct from "./TransferProduct";
 import RequestProduct from "./RequestProduct";
+import { InventorySections } from "../../../routes/inventoryRoutes";
 
 export default function HostelInventory() {
   const role = useSelector((state) => state.user.role);
@@ -97,15 +98,12 @@ export default function HostelInventory() {
     }
     setLoading(true);
     try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/inventory/api/sections/?section=${selectedDepartment}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Token ${token}`,
-          },
+      const response = await fetch(InventorySections(`${selectedDepartment}`), {
+        method: "GET",
+        headers: {
+          Authorization: `Token ${token}`,
         },
-      );
+      });
       if (!response.ok) {
         throw new Error("Failed to fetch department data");
       }
