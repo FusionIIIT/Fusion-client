@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+=======
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+>>>>>>> 08ed62789486fbb022e960c1403ad90633889470
 import React, { useState } from "react";
 import {
   Table,
@@ -12,11 +17,18 @@ import {
   Button,
 } from "@mantine/core";
 
+<<<<<<< HEAD
 import AddProduct from './AddProduct'; 
 import TransferProduct from './TransferProduct'; 
 import "../styles/popupModal.css";
 
 
+=======
+import AddProduct from "./AddProduct";
+import TransferProduct from "./TransferProduct";
+import "../styles/popupModal.css";
+
+>>>>>>> 08ed62789486fbb022e960c1403ad90633889470
 const data = [
   {
     product: "Computer",
@@ -100,8 +112,14 @@ const data = [
 export default function Inventory() {
   const [selectedCategory, setSelectedCategory] = useState("CSE");
   const [sortOption, setSortOption] = useState("Last Updated");
+<<<<<<< HEAD
   const [showAddProductModal, setShowAddProductModal] = useState(false); 
   const [showTransferProductModal, setShowTransferProductModal] = useState(false); 
+=======
+  const [showAddProductModal, setShowAddProductModal] = useState(false);
+  const [showTransferProductModal, setShowTransferProductModal] =
+    useState(false);
+>>>>>>> 08ed62789486fbb022e960c1403ad90633889470
 
   const categories = [
     { label: "CSE", value: "CSE" },
@@ -150,6 +168,7 @@ export default function Inventory() {
       )}
     </React.Fragment>
   ));
+<<<<<<< HEAD
  
   const openAddProductModal = () => {
     setShowAddProductModal(true);  // Show the modal when "Add Product" is clicked
@@ -165,6 +184,23 @@ export default function Inventory() {
 
   const closeTransferProductModal = () => {
     setShowTransferProductModal(false);  // Close the modal when needed
+=======
+
+  const openAddProductModal = () => {
+    setShowAddProductModal(true); // Show the modal when "Add Product" is clicked
+  };
+
+  const closeAddProductModal = () => {
+    setShowAddProductModal(false); // Close the modal when needed
+  };
+
+  const openTransferProductModal = () => {
+    setShowTransferProductModal(true); // Show the modal when "Add Product" is clicked
+  };
+
+  const closeTransferProductModal = () => {
+    setShowTransferProductModal(false); // Close the modal when needed
+>>>>>>> 08ed62789486fbb022e960c1403ad90633889470
   };
 
   return (
@@ -217,7 +253,16 @@ export default function Inventory() {
               30252
             </Badge>
           </div>
+<<<<<<< HEAD
           <Button color="blue" size="lg" style={{ marginLeft: "auto" }} onClick={openTransferProductModal}>
+=======
+          <Button
+            color="blue"
+            size="lg"
+            style={{ marginLeft: "auto" }}
+            onClick={openTransferProductModal}
+          >
+>>>>>>> 08ed62789486fbb022e960c1403ad90633889470
             Transfer Product
           </Button>
         </Group>
@@ -252,12 +297,26 @@ export default function Inventory() {
                 {category.label}
               </Tabs.Tab>
             ))}
+<<<<<<< HEAD
           
 
             <Button className="button-blue" style={{ marginLeft: "auto" }} onClick={openAddProductModal}>
               Add Product
             </Button>
             <Button className="button-blue" style={{ marginLeft: "10px" }}>Filters</Button>
+=======
+
+            <Button
+              className="button-blue"
+              style={{ marginLeft: "auto" }}
+              onClick={openAddProductModal}
+            >
+              Add Product
+            </Button>
+            <Button className="button-blue" style={{ marginLeft: "10px" }}>
+              Filters
+            </Button>
+>>>>>>> 08ed62789486fbb022e960c1403ad90633889470
           </Tabs.List>
 
           <Group position="apart" style={{ marginBottom: "10px" }}>
@@ -347,6 +406,7 @@ export default function Inventory() {
           </Group>
         </Tabs>
       </Paper>
+<<<<<<< HEAD
     
       {showAddProductModal && (
         <>
@@ -373,3 +433,34 @@ export default function Inventory() {
     </Container>
   );
 }
+=======
+
+      {showAddProductModal && (
+        <>
+          <div className="overlay" onClick={closeAddProductModal} />
+          <div className="modal">
+            <button className="close-button" onClick={closeAddProductModal}>
+              X
+            </button>
+            <AddProduct />
+          </div>
+        </>
+      )}
+      {showTransferProductModal && (
+        <>
+          <div className="overlay" onClick={closeTransferProductModal} />
+          <div className="modal">
+            <button
+              className="close-button"
+              onClick={closeTransferProductModal}
+            >
+              X
+            </button>
+            <TransferProduct />
+          </div>
+        </>
+      )}
+    </Container>
+  );
+}
+>>>>>>> 08ed62789486fbb022e960c1403ad90633889470

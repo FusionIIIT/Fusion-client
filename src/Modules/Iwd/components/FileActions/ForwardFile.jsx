@@ -14,11 +14,9 @@ import {
 
 import { DesignationsContext } from "../../helper/designationContext";
 import classes from "../../iwd.module.css";
-import { HandleDirectorApproval } from "../../handlers/handlers";
+import { ForwardRequest } from "../../handlers/handlers";
 
-function DirectorApproval({ form, request, handleBackToList }) {
-  console.log("director\n\n");
-
+function ForwardFile({ form, request, handleBackToList }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const role = useSelector((state) => state.user.role);
@@ -87,13 +85,12 @@ function DirectorApproval({ form, request, handleBackToList }) {
           }}
           disabled={isLoading || isSuccess}
           onClick={() => {
-            HandleDirectorApproval({
+            ForwardRequest({
               form,
               request,
               setIsLoading,
               setIsSuccess,
               handleBackToList,
-              action: "approve",
               role,
             });
           }}
@@ -107,44 +104,7 @@ function DirectorApproval({ form, request, handleBackToList }) {
               <CheckIcon size="16px" color="black" />
             </Center>
           ) : (
-            "Approve File"
-          )}
-        </Button>
-        <Button
-          size="sm"
-          variant="filled"
-          color="black"
-          type="submit"
-          style={{
-            width: "auto",
-            backgroundColor: "#1E90FF",
-            color: isSuccess ? "black" : "white",
-            border: "none",
-            borderRadius: "20px",
-          }}
-          disabled={isLoading || isSuccess}
-          onClick={() => {
-            HandleDirectorApproval({
-              form,
-              request,
-              setIsLoading,
-              setIsSuccess,
-              handleBackToList,
-              action: "reject",
-              role,
-            });
-          }}
-        >
-          {isLoading ? (
-            <Center>
-              <Loader color="black" size="xs" />
-            </Center>
-          ) : isSuccess ? (
-            <Center>
-              <CheckIcon size="16px" color="black" />
-            </Center>
-          ) : (
-            "Reject File"
+            "Forward File"
           )}
         </Button>
       </Flex>
@@ -152,10 +112,10 @@ function DirectorApproval({ form, request, handleBackToList }) {
     /* eslint-enable react/jsx-props-no-spreading */
   );
 }
-DirectorApproval.propTypes = {
+ForwardFile.propTypes = {
   form: PropTypes.isRequired,
   handleBackToList: PropTypes.func.isRequired,
-  request: PropTypes,
+  request: PropTypes.isRequired,
 };
 
-export default DirectorApproval;
+export default ForwardFile;

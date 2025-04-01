@@ -2,7 +2,10 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { House, Package } from "@phosphor-icons/react";
 import { Section } from "lucide-react";
+<<<<<<< HEAD
 import { InventoryData } from "../../../routes/inventoryRoutes";
+=======
+>>>>>>> 08ed62789486fbb022e960c1403ad90633889470
 
 // --- Styled Components ---
 
@@ -109,12 +112,24 @@ function InventoryDashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+<<<<<<< HEAD
         const response = await fetch(InventoryData, {
           method: "GET",
           headers: {
             Authorization: `Token ${token}`,
           },
         });
+=======
+        const response = await fetch(
+          "http://127.0.0.1:8000/inventory/api/item-count/",
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+          },
+        );
+>>>>>>> 08ed62789486fbb022e960c1403ad90633889470
         if (!response.ok) {
           throw new Error("Network error");
         }

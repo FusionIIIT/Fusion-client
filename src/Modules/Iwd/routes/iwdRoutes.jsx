@@ -19,9 +19,10 @@ export const IWD_ROUTES = {
   CREATE_REQUESTS: `${host}/iwdModuleV2/api/create-request/`,
   ADD_BUDGET: `${host}/iwdModuleV2/api/add-budget/`,
   ISSUE_WORK_ORDER: `${host}/iwdModuleV2/api/issue-work-order/`,
+  HANDLE_ADMIN_APPROVAL: `${host}/iwdModuleV2/api/handle-admin-approval/`,
   HANDLE_DIRECTOR_APPROVAL: `${host}/iwdModuleV2/api/handle-director-approval/`,
   HANDLE_DEAN_PROCESS_REQUEST: `${host}/iwdModuleV2/api/handle-dean-process-request/`,
-  HANDLE_ENGINEER_PROCESS: `${host}/iwdModuleV2/api/handle-engineer-process/`,
+  FORWARD_REQUEST: `${host}/iwdModuleV2/api/forward-request/`,
   AUDIT_DOCUMENT: `${host}/iwdModuleV2/api/audit-document/`,
   CREATE_PROPOSAL: `${host}/iwdModuleV2/api/create-proposal/`,
   // PATCH

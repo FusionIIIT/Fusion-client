@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
+<<<<<<< HEAD
 import { InventoryRequest } from "../../../routes/inventoryRoutes";
+=======
+>>>>>>> 08ed62789486fbb022e960c1403ad90633889470
 
 // Inline CSS styles
 const styles = {
@@ -91,6 +94,7 @@ function SubmitInventoryRequest() {
     };
 
     try {
+<<<<<<< HEAD
       const response = await fetch(InventoryRequest, {
         method: "POST",
         headers: {
@@ -99,6 +103,19 @@ function SubmitInventoryRequest() {
         },
         body: JSON.stringify(requestData),
       });
+=======
+      const response = await fetch(
+        "http://127.0.0.1:8000/inventory/api/requests/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Token ${token}`,
+          },
+          body: JSON.stringify(requestData),
+        },
+      );
+>>>>>>> 08ed62789486fbb022e960c1403ad90633889470
 
       if (!response.ok) {
         throw new Error(`Request failed: ${response.status}`);

@@ -52,9 +52,9 @@ const GetFileData = async ({ setLoading, request, setMessages }) => {
       params,
     });
     setMessages(response.data);
-    setLoading(false);
   } catch (error) {
     console.error(error);
+  } finally {
     setLoading(false);
   }
 };
@@ -338,7 +338,7 @@ const HandleMarkAsCompleted = async ({
   }
 };
 
-const HandleEngineerProcess = async ({
+const ForwardRequest = async ({
   form,
   request,
   setIsLoading,
@@ -358,8 +358,52 @@ const HandleEngineerProcess = async ({
   formData.fileid = request.file_id;
   formData.role = role;
   try {
+    const response = await axios.post(IWD_ROUTES.FORWARD_REQUEST, formData, {
+      headers: {
+        Authorization: `Token ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    console.log(response);
+    setTimeout(() => {
+      setIsLoading(false);
+      setIsSuccess(true);
+      setTimeout(() => {
+        setIsSuccess(false);
+        handleBackToList();
+      }, 1000);
+    }, 1000);
+  } catch (error) {
+    console.log(error);
+    setIsLoading(false);
+  }
+};
+
+const HandleAdminApproval = async ({
+  form,
+  request,
+  setIsLoading,
+  setIsSuccess,
+  handleBackToList,
+  role,
+  action,
+}) => {
+  /* 
+    This function is for approving/rejecting requests for IWD Admin
+    Used in :
+    - ViewRequestFile
+  */
+  console.log("admin approval");
+  setIsLoading(true);
+  setIsSuccess(false);
+  const token = localStorage.getItem("authToken");
+  const formData = form.getValues();
+  formData.fileid = request.file_id;
+  formData.role = role;
+  formData.action = action;
+  try {
     const response = await axios.post(
-      IWD_ROUTES.HANDLE_ENGINEER_PROCESS,
+      IWD_ROUTES.HANDLE_ADMIN_APPROVAL,
       formData,
       {
         headers: {
@@ -549,26 +593,24 @@ const GetProposals = async ({
   }
 };
 
-const GetItems = async ({ setLoading, setItemsList, proposalIds }) => {
-  setLoading(true);
+const GetItems = async (setLoading, proposalId) => {
+  console.log(setLoading);
   const token = localStorage.getItem("authToken");
-
+  setLoading(true);
   try {
-    let allItems = [];
-    for (const proposalId of proposalIds) {
-      const response = await axios.get(IWD_ROUTES.VIEW_ITEMS, {
-        headers: { Authorization: `Token ${token}` },
-        params: { proposal_id: proposalId },
-      });
-
-      allItems = [...allItems, ...response.data];
-    }
-    setItemsList(allItems);
+    let allItems = {};
+    const response = await axios.get(IWD_ROUTES.VIEW_ITEMS, {
+      headers: { Authorization: `Token ${token}` },
+      params: { proposal_id: proposalId },
+    });
+    allItems = response.data;
+    return allItems;
   } catch (error) {
     console.error("Error fetching items:", error);
   } finally {
     setLoading(false);
   }
+  return [];
 };
 
 export {
@@ -579,11 +621,12 @@ export {
   HandleAddBudget,
   HandleIssueWorkOrder,
   HandleUpdateRequest,
+  HandleAdminApproval,
   HandleDirectorApproval,
   HandleMarkAsCompleted,
   HandleEditBudget,
   HandleDeanProcessRequest,
-  HandleEngineerProcess,
+  ForwardRequest,
   HandleProposalSubmission,
   GetProposals,
   GetItems,

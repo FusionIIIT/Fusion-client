@@ -14,9 +14,11 @@ import {
 
 import { DesignationsContext } from "../../helper/designationContext";
 import classes from "../../iwd.module.css";
-import { HandleEngineerProcess } from "../../handlers/handlers";
+import { HandleAdminApproval } from "../../handlers/handlers";
 
-function EngineerProcess({ form, request, handleBackToList }) {
+function AdminApproval({ form, request, handleBackToList }) {
+  console.log("In admin approval");
+
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const role = useSelector((state) => state.user.role);
@@ -59,12 +61,14 @@ function EngineerProcess({ form, request, handleBackToList }) {
             mb="sm"
             comboboxProps={{ withinPortal: true }}
             data={designationsList}
-            placeholder="Director(Dir)"
+            placeholder="IWD Admin"
             label="designation"
             classNames={classes}
             key={form.key("designation")}
             {...form.getInputProps("designation")}
             required
+            searchable
+            clearable
           />
         </Flex>
       </Flex>
@@ -83,12 +87,13 @@ function EngineerProcess({ form, request, handleBackToList }) {
           }}
           disabled={isLoading || isSuccess}
           onClick={() => {
-            HandleEngineerProcess({
+            HandleAdminApproval({
               form,
               request,
               setIsLoading,
               setIsSuccess,
               handleBackToList,
+              action: "approve",
               role,
             });
           }}
@@ -102,7 +107,44 @@ function EngineerProcess({ form, request, handleBackToList }) {
               <CheckIcon size="16px" color="black" />
             </Center>
           ) : (
-            "Forward File"
+            "Approve File"
+          )}
+        </Button>
+        <Button
+          size="sm"
+          variant="filled"
+          color="black"
+          type="submit"
+          style={{
+            width: "auto",
+            backgroundColor: "#1E90FF",
+            color: isSuccess ? "black" : "white",
+            border: "none",
+            borderRadius: "20px",
+          }}
+          disabled={isLoading || isSuccess}
+          onClick={() => {
+            HandleAdminApproval({
+              form,
+              request,
+              setIsLoading,
+              setIsSuccess,
+              handleBackToList,
+              action: "reject",
+              role,
+            });
+          }}
+        >
+          {isLoading ? (
+            <Center>
+              <Loader color="black" size="xs" />
+            </Center>
+          ) : isSuccess ? (
+            <Center>
+              <CheckIcon size="16px" color="black" />
+            </Center>
+          ) : (
+            "Reject File"
           )}
         </Button>
       </Flex>
@@ -110,10 +152,10 @@ function EngineerProcess({ form, request, handleBackToList }) {
     /* eslint-enable react/jsx-props-no-spreading */
   );
 }
-EngineerProcess.propTypes = {
+AdminApproval.propTypes = {
   form: PropTypes.isRequired,
   handleBackToList: PropTypes.func.isRequired,
   request: PropTypes.isRequired,
 };
 
-export default EngineerProcess;
+export default AdminApproval;

@@ -19,6 +19,7 @@
     "@mantine/hooks": "^7.17.2",
     "@mantine/modals": "^7.13.3",
     "@mantine/notifications": "^7.13.3",
+    "@mantine/styles": "^6.0.22",
     "@phosphor-icons/react": "^2.1.7",
     "@reduxjs/toolkit": "^2.2.7",
     "@tabler/icons-react": "^3.22.0",
@@ -28,13 +29,17 @@
     "dayjs": "^1.11.13",
     "exceljs": "^4.4.0",
     "file-saver": "^2.0.5",
+    "fusion-frontend": "file:",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.2",
     "jszip": "^3.10.1",
     "mantine-react-table": "^2.0.0-beta.6",
     "phosphor-react": "^1.4.1",
+<<<<<<< HEAD
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.2",
+=======
+>>>>>>> 08ed62789486fbb022e960c1403ad90633889470
     "lucide-react": "^0.460.0",
     "prop-types": "^15.8.1",
     "react": "^18.3.1",
