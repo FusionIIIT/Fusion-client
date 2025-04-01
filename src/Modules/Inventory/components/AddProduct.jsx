@@ -1,14 +1,7 @@
-<<<<<<< HEAD
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import "../styles/addProduct.css";
 import { InventoryAdd } from "../../../routes/inventoryRoutes";
-=======
-/* eslint-disable no-shadow */
-import React, { useState } from "react";
-import PropTypes from "prop-types";
-import "../styles/addProduct.css";
->>>>>>> 08ed62789486fbb022e960c1403ad90633889470
 
 function AddProduct({ onSuccess, selectedDepartment, val, name }) {
   const [formData, setFormData] = useState({
@@ -17,13 +10,8 @@ function AddProduct({ onSuccess, selectedDepartment, val, name }) {
   });
 
   const handleChange = (e) => {
-<<<<<<< HEAD
     const { name: inputName, value } = e.target;
     setFormData({ ...formData, [inputName]: value });
-=======
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
->>>>>>> 08ed62789486fbb022e960c1403ad90633889470
   };
 
   const handleSubmit = async (e) => {
@@ -42,7 +30,6 @@ function AddProduct({ onSuccess, selectedDepartment, val, name }) {
     }
 
     try {
-<<<<<<< HEAD
       const response = await fetch(InventoryAdd(`${val}`), {
         method: "POST",
         headers: {
@@ -56,24 +43,6 @@ function AddProduct({ onSuccess, selectedDepartment, val, name }) {
           [name]: selectedDepartment,
         }),
       });
-=======
-      const response = await fetch(
-        `http://127.0.0.1:8000/inventory/api/${val}/`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Token ${token}`,
-          },
-          body: JSON.stringify({
-            item_name: formData.productName,
-            quantity: parseInt(formData.quantity, 10), // Add radix parameter
-            // department_name: selectedDepartment,
-            [name]: selectedDepartment,
-          }),
-        },
-      );
->>>>>>> 08ed62789486fbb022e960c1403ad90633889470
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -133,13 +102,8 @@ function AddProduct({ onSuccess, selectedDepartment, val, name }) {
 AddProduct.propTypes = {
   onSuccess: PropTypes.func,
   selectedDepartment: PropTypes.string.isRequired,
-<<<<<<< HEAD
   val: PropTypes.string.isRequired, // Add validation for 'val'
   name: PropTypes.string.isRequired, // Add validation for 'name'
-=======
-  val: PropTypes.string.isRequired,
-  name: PropTypes.string.isRequired,
->>>>>>> 08ed62789486fbb022e960c1403ad90633889470
 };
 
 export default AddProduct;

@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button, Group, Table, Badge, Select } from "@mantine/core";
-<<<<<<< HEAD
 import { InventoryRequest } from "../../../routes/inventoryRoutes";
-=======
->>>>>>> 08ed62789486fbb022e960c1403ad90633889470
 
 function InventoryRequests() {
   const [filter, setFilter] = useState("all");
@@ -21,16 +18,9 @@ function InventoryRequests() {
   useEffect(() => {
     async function fetchRequests() {
       try {
-<<<<<<< HEAD
         const response = await fetch(InventoryRequest, {
           headers: { Authorization: `Token ${token}` },
         });
-=======
-        const response = await fetch(
-          "http://127.0.0.1:8000/inventory/api/requests/",
-          { headers: { Authorization: `Token ${token}` } },
-        );
->>>>>>> 08ed62789486fbb022e960c1403ad90633889470
         const data = await response.json();
         setRequests(data);
       } catch (error) {

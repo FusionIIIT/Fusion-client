@@ -13,10 +13,7 @@ import AddProduct from "./AddProduct";
 import TransferProduct from "./TransferProduct";
 import RequestProduct from "./RequestProduct";
 import "../styles/popupModal.css";
-<<<<<<< HEAD
 import { InventoryDepartments } from "../../../routes/inventoryRoutes";
-=======
->>>>>>> 08ed62789486fbb022e960c1403ad90633889470
 
 export default function Inventory() {
   const role = useSelector((state) => state.user.role);
@@ -75,11 +72,7 @@ export default function Inventory() {
     setLoading(true);
     try {
       const response = await fetch(
-<<<<<<< HEAD
         InventoryDepartments(`${selectedDepartment}`),
-=======
-        `http://127.0.0.1:8000/inventory/api/departments/?department=${selectedDepartment}`,
->>>>>>> 08ed62789486fbb022e960c1403ad90633889470
         {
           method: "GET",
           headers: {
