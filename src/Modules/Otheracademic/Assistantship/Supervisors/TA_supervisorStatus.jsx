@@ -14,6 +14,8 @@ function AssistantshipStatus() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (!roll || !name || !authToken) return;
+
     const fetchAssistantshipStatus = async () => {
       try {
         const response = await axios.post(
@@ -21,22 +23,8 @@ function AssistantshipStatus() {
           { roll_no: roll, username: name },
           { headers: { Authorization: `Token ${authToken}` } },
         );
-        console.log("API Response:", response.data); // Log response data
-
-        setData(
-          response.data.map((item) => {
-            let status = "Pending";
-            if (item.Acad_rejected) status = "Rejected by Academic Admin";
-            else if (item.HOD_rejected) status = "Rejected by HOD";
-            else if (item.TA_rejected) status = "Rejected by TA Supervisor";
-            else if (item.Acad_approved) status = "Approved";
-
-            return {
-              ...item,
-              status,
-            };
-          }),
-        );
+        console.log("API Response:", response.data);
+        setData(response.data.reverse());
       } catch (err) {
         setError("Failed to fetch Assistantship requests. Please try again.");
         console.error("Error fetching assistantship status:", err);
@@ -45,22 +33,17 @@ function AssistantshipStatus() {
       }
     };
 
-    if (roll && name) {
-      fetchAssistantshipStatus();
-    }
-  }, [roll, name]);
+    fetchAssistantshipStatus();
+  }, [roll, name, authToken]);
 
-  if (loading) {
+  if (loading)
     return (
       <div className="loader-container">
         <Loader color="blue" size="lg" />
       </div>
     );
-  }
 
-  if (error) {
-    return <div className="error-message">{error}</div>;
-  }
+  if (error) return <div className="error-message">{error}</div>;
 
   return (
     <Paper className="status-paper">
@@ -69,22 +52,26 @@ function AssistantshipStatus() {
           <thead>
             <tr>
               <th>Date Applied</th>
-              <th>Applicability</th>
               <th>TA Supervisor</th>
               <th>Thesis Supervisor</th>
+              <th>HOD</th>
+              <th>Academic Admin</th>
+              <th>Dean</th>
+              <th>Director</th>
               <th>Status</th>
             </tr>
           </thead>
           <tbody>
             {data.map((item, index) => (
               <tr key={index}>
-                <td>{item.dateApplied}</td>
-                <td>{item.applicability}</td>
-                <td>{item.ta_supervisor}</td>
-                <td>{item.thesis_supervisor}</td>
-                <td
-                  className={`status-${item.status.toLowerCase().replace(/\s/g, "-")}`}
-                >
+                <td>{item.dateApplied || "N/A"}</td>
+                <td>{item.approvalStages.TA_Supervisor}</td>
+                <td>{item.approvalStages.Thesis_Supervisor}</td>
+                <td>{item.approvalStages.HOD}</td>
+                <td>{item.approvalStages.Academic_Admin}</td>
+                <td>{item.approvalStages.Dean_Academic}</td>
+                <td>{item.approvalStages.Director}</td>
+                <td className={`status-${item.status.toLowerCase()}`}>
                   {item.status}
                 </td>
               </tr>

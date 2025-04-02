@@ -20,21 +20,18 @@ export default function AssistantshipForm() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevState) => ({ ...prevState, [name]: value }));
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleFileChange = (e) => {
-    setFormData((prevState) => ({
-      ...prevState,
-      signature: e.target.files[0],
-    }));
+    setFormData({ ...formData, signature: e.target.files[0] });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Submitting form...");
 
-    // Check for missing required fields using .some()
+    // Check for missing required fields
     const requiredFields = [
       "discipline",
       "date_from",
@@ -46,17 +43,17 @@ export default function AssistantshipForm() {
       "thesis_supervisor",
       "hod",
     ];
-
-    const missingField = requiredFields.find((field) => !formData[field]);
-    if (missingField) {
-      alert(`Please fill out the "${missingField}" field.`);
-      return;
+    for (const field of requiredFields) {
+      if (!formData[field]) {
+        alert(`Please fill out the "${field}" field.`);
+        return;
+      }
     }
 
     const form = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-      form.append(key, value);
-    });
+    for (const key in formData) {
+      form.append(key, formData[key]);
+    }
 
     const authToken = localStorage.getItem("authToken");
     if (!authToken) {
@@ -79,68 +76,187 @@ export default function AssistantshipForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ maxWidth: "500px", margin: "auto" }}>
-      <input
-        type="text"
-        name="discipline"
-        placeholder="Discipline"
-        value={formData.discipline}
-        onChange={handleChange}
-        required
-      />
-      <input
-        type="date"
-        name="date_from"
-        value={formData.date_from}
-        onChange={handleChange}
-        required
-      />
-      <input
-        type="date"
-        name="date_to"
-        value={formData.date_to}
-        onChange={handleChange}
-        required
-      />
-      <input
-        type="text"
-        name="bank_account_no"
-        placeholder="Bank Account Number"
-        value={formData.bank_account_no}
-        onChange={handleChange}
-        required
-      />
-      <input
-        type="file"
-        name="signature"
-        accept=".png,.jpg,.jpeg"
-        onChange={handleFileChange}
-        required
-      />
-      <input
-        type="text"
-        name="applicability"
-        placeholder="Applicability"
-        value={formData.applicability}
-        onChange={handleChange}
-        required
-      />
-      <input
-        type="text"
-        name="ta_supervisor"
-        placeholder="TA Supervisor"
-        value={formData.ta_supervisor}
-        onChange={handleChange}
-        required
-      />
-      <input
-        type="text"
-        name="thesis_supervisor"
-        placeholder="Thesis Supervisor"
-        value={formData.thesis_supervisor}
-        onChange={handleChange}
-        required
-      />
+    <form
+      onSubmit={handleSubmit}
+      style={{
+        maxWidth: "800px",
+        margin: "20px auto",
+        padding: "20px",
+        borderRadius: "10px",
+        backgroundColor: "#F5F7F8",
+        display: "flex",
+        flexDirection: "column",
+        gap: "20px",
+      }}
+    >
+      <h2 style={{ textAlign: "center", fontSize: "24px", color: "#212529" }}>
+        Assistantship Form
+      </h2>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "20px",
+        }}
+      >
+        <input
+          type="text"
+          name="discipline"
+          placeholder="Discipline"
+          value={formData.discipline}
+          onChange={handleChange}
+          required
+          style={{
+            backgroundColor: "#eff3f4",
+            border: "none",
+            padding: "10px",
+            fontSize: "16px",
+            borderRadius: "5px",
+            color: "#0f1010",
+          }}
+        />
+        <input
+          type="date"
+          name="date_from"
+          value={formData.date_from}
+          onChange={handleChange}
+          required
+          style={{
+            backgroundColor: "#eff3f4",
+            border: "none",
+            padding: "10px",
+            fontSize: "16px",
+            borderRadius: "5px",
+            color: "#0f1010",
+          }}
+        />
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "20px",
+        }}
+      >
+        <input
+          type="date"
+          name="date_to"
+          value={formData.date_to}
+          onChange={handleChange}
+          required
+          style={{
+            backgroundColor: "#eff3f4",
+            border: "none",
+            padding: "10px",
+            fontSize: "16px",
+            borderRadius: "5px",
+            color: "#0f1010",
+          }}
+        />
+        <input
+          type="text"
+          name="bank_account_no"
+          placeholder="Bank Account Number"
+          value={formData.bank_account_no}
+          onChange={handleChange}
+          required
+          style={{
+            backgroundColor: "#eff3f4",
+            border: "none",
+            padding: "10px",
+            fontSize: "16px",
+            borderRadius: "5px",
+            color: "#0f1010",
+          }}
+        />
+      </div>
+
+      <div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "20px",
+  }}
+>
+  <input
+    type="file"
+    name="signature"
+    accept=".png,.jpg,.jpeg"
+    onChange={handleFileChange}
+    required
+    style={{
+      backgroundColor: "#eff3f4",
+      border: "none",
+      padding: "10px",
+      fontSize: "16px",
+      borderRadius: "5px",
+      color: "#0f1010",
+    }}
+  />
+  <input
+    type="text"
+    name="applicability"
+    placeholder="Applicability"
+    value={formData.applicability}
+    onChange={handleChange}
+    required
+    style={{
+      backgroundColor: "#eff3f4",
+      border: "none",
+      padding: "10px",
+      fontSize: "16px",
+      borderRadius: "5px",
+      color: "#0f1010",
+    }}
+  />
+</div>
+
+
+  
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "20px",
+        }}
+      >
+        <input
+          type="text"
+          name="ta_supervisor"
+          placeholder="TA Supervisor"
+          value={formData.ta_supervisor}
+          onChange={handleChange}
+          required
+          style={{
+            backgroundColor: "#eff3f4",
+            border: "none",
+            padding: "10px",
+            fontSize: "16px",
+            borderRadius: "5px",
+            color: "#0f1010",
+          }}
+        />
+        <input
+          type="text"
+          name="thesis_supervisor"
+          placeholder="Thesis Supervisor"
+          value={formData.thesis_supervisor}
+          onChange={handleChange}
+          required
+          style={{
+            backgroundColor: "#eff3f4",
+            border: "none",
+            padding: "10px",
+            fontSize: "16px",
+            borderRadius: "5px",
+            color: "#0f1010",
+          }}
+        />
+      </div>
+
       <input
         type="text"
         name="hod"
@@ -148,8 +264,34 @@ export default function AssistantshipForm() {
         value={formData.hod}
         onChange={handleChange}
         required
+        style={{
+          backgroundColor: "#eff3f4",
+          border: "none",
+          padding: "10px",
+          fontSize: "16px",
+          borderRadius: "5px",
+          color: "#0f1010",
+          width:"50%",
+        }}
       />
-      <button type="submit" style={{ marginTop: "20px", padding: "10px 20px" }}>
+
+      <button
+        type="submit"
+        style={{
+          backgroundColor: "#007BFF",
+          color: "white",
+          border: "none",
+          margin: "20px auto",
+          padding: "10px 20px",
+          cursor: "pointer",
+          fontSize: "16px",
+          borderRadius: "5px",
+          display: "block",
+          width: "fit-content",
+        }}
+        onMouseOver={(e) => (e.target.style.backgroundColor = "#0056b3")}
+        onMouseOut={(e) => (e.target.style.backgroundColor = "#007BFF")}
+      >
         Submit
       </button>
     </form>

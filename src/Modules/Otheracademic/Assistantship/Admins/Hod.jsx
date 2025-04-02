@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Table, Paper, Switch, Button, Modal, Text } from "@mantine/core";
 import axios from "axios";
 import {
-  Hod_Fetch_Pending_Assistantship_Requests,
-  Hod_Update_Assistantship_Status,
+  HOD_Fetch,
+  HOD_Update,
 } from "../../../../routes/otheracademicRoutes/index"; // Adjust API paths if needed
 
 function ApproveAssistantship() {
@@ -17,14 +17,11 @@ function ApproveAssistantship() {
   const fetchPendingAssistantships = async () => {
     try {
       console.log("Fetching pending assistantship requests...");
-      const response = await axios.get(
-        Hod_Fetch_Pending_Assistantship_Requests,
-        {
-          headers: {
-            Authorization: `Token ${authToken}`,
-          },
+      const response = await axios.get(HOD_Fetch, {
+        headers: {
+          Authorization: `Token ${authToken}`,
         },
-      );
+      });
       console.log("Response from server:", response.data);
 
       if (response.status === 200 && Array.isArray(response.data)) {
@@ -93,7 +90,7 @@ function ApproveAssistantship() {
 
     try {
       const response = await axios.post(
-        Hod_Update_Assistantship_Status,
+        HOD_Update,
         {
           approvedRequests: approvedRequests.map((request) => request.id), // Send only the ids
           rejectedRequests: rejectedRequests.map((request) => request.id), // Send only the ids

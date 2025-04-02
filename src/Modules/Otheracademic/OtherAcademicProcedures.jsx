@@ -14,8 +14,8 @@ import ApproveLeave from "./Leave/ApproveLeave";
 import AdminBonafideRequests from "./Bonafide/AdminBonafideRequests";
 import ApproveLeaveTA from "./Leave/ApproveLeaveTA";
 import ApproveLeaveThesis from "./Leave/ApproveLeaveThesis";
-import DeptAdminPage from "./Assistantship/Admins/Dept_admin";
 import DeanPage from "./Assistantship/Admins/dean";
+import Director from "./Assistantship/Admins/director";
 import AcadAdminPage from "./Assistantship/Admins/Acad_admin";
 import HoDPage from "./Assistantship/Admins/Hod";
 import LeavePGCombined from "./Leave/LeavePGcombined";
@@ -40,7 +40,8 @@ function OtherAcadProcedures() {
     { title: "Bonafide Request", component: <AdminBonafideRequests /> }, // 6
     { title: "Leave TA", component: <ApproveLeaveTA /> }, // 7
     { title: "Leave Thesis", component: <ApproveLeaveThesis /> }, // 8
-    { title: "Assistant Request Dept", component: <DeptAdminPage /> }, // 9
+
+    { title: "Assistant Request Director", component: <Director /> },
     { title: "Assistant Request Dean ", component: <DeanPage /> }, // 10
     { title: "Assistant Request HOD ", component: <HoDPage /> }, // 11
     { title: "Assistant Request Acadadmin ", component: <AcadAdminPage /> }, // 12

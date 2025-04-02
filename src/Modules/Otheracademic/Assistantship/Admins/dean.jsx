@@ -1,46 +1,49 @@
 import React, { useState, useEffect } from "react";
 import { Table, Paper, Switch, Button, Modal, Text } from "@mantine/core";
+import axios from "axios";
+import {
+  Dean_fetch,
+  Dean_Update,
+} from "../../../../routes/otheracademicRoutes/index"; // Adjust API paths if needed
 
 function ApproveAssistantship() {
-  const dummyData = [
-    {
-      id: 1,
-      roll_no: "22MCS021",
-      student_name: "John Doe",
-      discipline: "CSE",
-      dateFrom: "2023-01-01",
-      dateTo: "2023-06-01",
-      ta_supervisor: "Dr. Smith",
-      thesis_supervisor: "Dr. Brown",
-      applicability: "Yes",
-    },
-    {
-      id: 2,
-      roll_no: "21MCS011",
-      student_name: "Jane Smith",
-      discipline: "ECE",
-      dateFrom: "2023-01-01",
-      dateTo: "2023-06-01",
-      ta_supervisor: "Dr. Wilson",
-      thesis_supervisor: "Dr. Taylor",
-      applicability: "No",
-    },
-  ];
-
   const [assistantshipRequests, setAssistantshipRequests] = useState([]);
   const [status, setStatus] = useState([]);
   const [opened, setOpened] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
 
+  const authToken = localStorage.getItem("authToken");
+
+  const fetchPendingAssistantships = async () => {
+    try {
+      console.log("Fetching pending assistantship requests...");
+      const response = await axios.get(Dean_fetch, {
+        headers: {
+          Authorization: `Token ${authToken}`,
+        },
+      });
+      console.log("Response from server:", response.data);
+
+      if (response.status === 200 && Array.isArray(response.data)) {
+        setAssistantshipRequests(response.data);
+
+        // Initialize status for each assistantship request
+        const initialStatus = response.data.map(() => ({
+          approveCheck: false,
+          rejectCheck: false,
+          submitted: false,
+        }));
+        setStatus(initialStatus);
+      } else {
+        console.error("Unexpected response structure:", response.data);
+      }
+    } catch (err) {
+      console.error("Error fetching assistantship requests", err);
+    }
+  };
+
   useEffect(() => {
-    // Simulating API fetch with dummy data
-    setAssistantshipRequests(dummyData);
-    const initialStatus = dummyData.map(() => ({
-      approveCheck: false,
-      rejectCheck: false,
-      submitted: false,
-    }));
-    setStatus(initialStatus);
+    fetchPendingAssistantships();
   }, []);
 
   const handleToggle = (index, stat) => {
@@ -68,16 +71,42 @@ function ApproveAssistantship() {
     setOpened(true);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const updatedStatus = status.map((entry) => {
       if (entry.approveCheck || entry.rejectCheck) {
         return { ...entry, submitted: true };
       }
       return entry;
     });
+
     setStatus(updatedStatus);
 
-    console.log("Updated Status:", updatedStatus);
+    const approvedRequests = assistantshipRequests.filter(
+      (_, index) => status[index]?.approveCheck,
+    );
+    const rejectedRequests = assistantshipRequests.filter(
+      (_, index) => status[index]?.rejectCheck,
+    );
+
+    try {
+      const response = await axios.post(
+        Dean_Update,
+        {
+          approvedRequests: approvedRequests.map((request) => request.id), // Send only the ids
+          rejectedRequests: rejectedRequests.map((request) => request.id), // Send only the ids
+        },
+        {
+          headers: {
+            Authorization: `Token ${authToken}`,
+          },
+        },
+      );
+      console.log("Status updated successfully:", response.data);
+    } catch (error) {
+      console.error("Error updating assistantship status:", error);
+    }
+
+    fetchPendingAssistantships();
   };
 
   return (
