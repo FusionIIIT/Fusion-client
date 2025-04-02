@@ -58,6 +58,9 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
     "purchase_and_store",
     "rspc",
     "inventory_management",
+    "program_and_curriculum",
+    "course_registration",
+    "examinations",
   ];
 
   const Modules = [
@@ -78,7 +81,12 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "Program & Curriculum",
       id: "program_and_curriculum",
       icon: <CurriculumIcon size={18} />,
-      url: "/",
+      url:
+        role === "acadadmin" || role === "studentacadadmin"
+          ? "/programme_curriculum/acad_view_all_programme"
+          : role === "student"
+            ? "/programme_curriculum/view_all_programmes"
+            : "/programme_curriculum/faculty_view_all_programmes",
     },
     {
       label: "Mess Management",
@@ -156,7 +164,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "Examination",
       id: "examinations",
       icon: <ExamIcon size={18} />,
-      url: "/",
+      url: "/examination",
     },
     {
       label: "Gymkhana",

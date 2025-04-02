@@ -105,6 +105,14 @@ const GymkhanaDashboard = lazy(
   () => import("./Modules/Gymkhana/GymkhanaDashboard.jsx"),
 );
 
+const Examination = lazy(
+  () => import("./Modules/Examination/examination"),
+);
+
+const ProgrammeCurriculumRoutes = lazy(
+  () => import("./Modules/Program_curriculum/programmCurriculum"),
+);
+
 const theme = createTheme({
   breakpoints: { xs: "30em", sm: "48em", md: "64em", lg: "74em", xl: "90em" },
 });
@@ -136,6 +144,26 @@ export default function App() {
             <Layout>
               <Suspense fallback={<div>Loading .... </div>}>
                 <AcademicPage />
+              </Suspense>
+            </Layout>
+          }
+        />
+        <Route
+          path="/programme_curriculum/*"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <ProgrammeCurriculumRoutes />
+              </Suspense>
+            </Layout>
+          }
+        />
+        <Route
+          path="/examination/*"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <Examination />
               </Suspense>
             </Layout>
           }
