@@ -9,6 +9,7 @@ import LoginPage from "./pages/login";
 import ForgotPassword from "./pages/forgotPassword";
 import AcademicPage from "./Modules/Academic/index";
 import ValidateAuth from "./helper/validateauth";
+import CourseManagementPage from "./Modules/Academic/CourseManagement";
 
 export default function App() {
   const location = useLocation();
@@ -32,6 +33,7 @@ export default function App() {
             </Layout>
           }
         />
+
         <Route
           path="/academics"
           element={
@@ -40,6 +42,15 @@ export default function App() {
             </Layout>
           }
         />
+        <Route
+          path="/academics/course-management"
+          element={
+            <Layout>
+              <CourseManagementPage />
+            </Layout>
+          }
+        />
+
         <Route
           path="/profile"
           element={
