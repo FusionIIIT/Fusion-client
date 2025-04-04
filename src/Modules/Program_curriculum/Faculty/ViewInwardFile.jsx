@@ -219,7 +219,7 @@ function ViewInward() {
   return (
     <Box style={pageStyle}>
       {/* Toggle Buttons */}
-      <Group position="center" mb="lg">
+      <Group position="center" mb="lg" mt="lg">
         <Button
           variant={activeTab === "notesheet" ? "filled" : "outline"}
           onClick={() => setActiveTab("notesheet")}
