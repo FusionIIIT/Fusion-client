@@ -56,6 +56,7 @@ import AdminEditDisciplineForm from "./Acad_admin/Admin_edit_discipline_form";
 import AdminEditCourseForm from "./Acad_admin/Admin_edit_course_form";
 import AdminEditBatchForm from "./Acad_admin/Admin_edit_batch_form";
 import AdminEditCourseInstructor from "./Acad_admin/Admin_edit_course_instructor_form";
+import Breadcrumb from "./BreadCrumbs";
 
 // breadcrumb
 import BreadcrumbTabsAcadadmin from "./Acad_admin/BreadcrumbTabsAcadadmin";
@@ -94,7 +95,7 @@ export default function ProgrammeCurriculumRoutes() {
         timer = setTimeout(() => {
           setHasAccess(allowedRoles.includes(role));
           setIsLoading(false);
-        }, 300);
+        }, 2000);
       } else {
         // Immediate check for other roles
         setHasAccess(allowedRoles.includes(role));
@@ -114,13 +115,23 @@ export default function ProgrammeCurriculumRoutes() {
   };
 
   // Determine which navigation tabs to show based on role
-  const NavTab = STUDENT_ROLES.includes(role)
-    ? BreadcrumbTabs
-    : FACULTY_ROLES.includes(role)
-      ? BreadcrumbTabsFaculty
-      : ADMIN_ROLES.includes(role)
-        ? BreadcrumbTabsAcadadmin
-        : () => null;
+  const NavTab = () => {
+    const TabComponent = 
+      STUDENT_ROLES.includes(role)
+        ? BreadcrumbTabs
+        : FACULTY_ROLES.includes(role)
+          ? BreadcrumbTabsFaculty
+          : ADMIN_ROLES.includes(role)
+            ? BreadcrumbTabsAcadadmin
+            : () => null;
+    
+    return (
+      <>
+        <Breadcrumb />
+        <TabComponent />
+      </>
+    );
+  };
 
   return (
     <>
@@ -331,6 +342,7 @@ export default function ProgrammeCurriculumRoutes() {
           element={
             <ProtectedRoute allowedRoles={FACULTY_ROLES}>
               <Layout>
+              <NavTab />
                 <ViewInwardFile />
               </Layout>
             </ProtectedRoute>
@@ -363,6 +375,7 @@ export default function ProgrammeCurriculumRoutes() {
           element={
             <ProtectedRoute allowedRoles={FACULTY_ROLES}>
               <Layout>
+              <NavTab />
                 <BDesView />
               </Layout>
             </ProtectedRoute>
@@ -393,7 +406,7 @@ export default function ProgrammeCurriculumRoutes() {
         <Route
           path="/course_slot_details"
           element={
-            <ProtectedRoute allowedRoles={ADMIN_ROLES}>
+            <ProtectedRoute allowedRoles={[...FACULTY_ROLES, ...ADMIN_ROLES]}>
               <Layout>
                 <NavTab />
                 <CourseSlotDetails />
@@ -718,7 +731,7 @@ export default function ProgrammeCurriculumRoutes() {
           element={
             <ProtectedRoute allowedRoles={FACULTY_ROLES}>
               <Layout>
-                <BreadcrumbTabsFaculty />
+              <NavTab />
                 <FacultyCourseProposalFinalForm />
               </Layout>
             </ProtectedRoute>
