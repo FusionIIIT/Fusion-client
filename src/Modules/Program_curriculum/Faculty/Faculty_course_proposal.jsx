@@ -470,7 +470,7 @@ function Admin_course_proposal_form() {
             JSON.stringify(response.courseProposals),
           );
           sessionStorage.setItem(
-            "updateProposals",
+            "courseProposals",
             JSON.stringify(response.updateProposals),
           );
           setProposals({
