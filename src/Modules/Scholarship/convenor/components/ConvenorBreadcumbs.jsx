@@ -2,9 +2,9 @@ import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
 import { Tabs, Button, Flex, Text } from "@mantine/core";
 import { useState } from "react";
 import styles from "../../../Dashboard/Dashboard.module.css";
-import AwardsAndScholarshipCatalog from "./AwardsAndScholarshipCatalogC";
 import InviteApplications from "../forms/inviteApplications";
 import MCMApplications from "./MCM_Applications";
+import ConvenorPage from "../pages/Convenor";
 
 function ConvenorBreadcrumbs() {
   const [activeTab, setActiveTab] = useState("catalog");
@@ -13,7 +13,7 @@ function ConvenorBreadcrumbs() {
     {
       key: "catalog",
       label: "Catalog",
-      component: <AwardsAndScholarshipCatalog />,
+      component: <ConvenorPage />,
     },
     {
       key: "invite",
