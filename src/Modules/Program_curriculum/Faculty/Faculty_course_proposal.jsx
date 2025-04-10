@@ -18,6 +18,9 @@ import { host } from "../../../routes/globalRoutes";
 
 function CourseProposalTable({ courseProposals, onArchiveSuccess }) {
   const navigate = useNavigate();
+  console.log(courseProposals);
+  // const updateFlag=courseProposals.is_update==="true"?1:0;
+  // console.log(updateFlag)
   const handleNavigation = (id) => {
     navigate(
       `/programme_curriculum/view_a_course_proposal_form?proposalid=${id}`,
@@ -159,7 +162,7 @@ function CourseProposalTable({ courseProposals, onArchiveSuccess }) {
                     }}
                   >
                     <Link
-                      to={`/programme_curriculum/filetracking?id=${proposal.pk}`}
+                      to={`/programme_curriculum/filetracking?id=${proposal.pk}&update=${proposal.fields.is_update?1:0}`}
                     >
                       <Button
                         variant="filled"
@@ -470,7 +473,7 @@ function Admin_course_proposal_form() {
             JSON.stringify(response.courseProposals),
           );
           sessionStorage.setItem(
-            "courseProposals",
+            "updateProposals",
             JSON.stringify(response.updateProposals),
           );
           setProposals({
