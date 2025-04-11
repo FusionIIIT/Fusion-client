@@ -21,9 +21,9 @@ function CourseProposalTable({ courseProposals, onArchiveSuccess }) {
   console.log(courseProposals);
   // const updateFlag=courseProposals.is_update==="true"?1:0;
   // console.log(updateFlag)
-  const handleNavigation = (id) => {
+  const handleNavigation = (id,flag) => {
     navigate(
-      `/programme_curriculum/view_a_course_proposal_form?proposalid=${id}`,
+      `/programme_curriculum/view_a_course_proposal_form?proposalid=${id}&update=${flag?1:0}`,
     );
   };
 
@@ -146,7 +146,7 @@ function CourseProposalTable({ courseProposals, onArchiveSuccess }) {
                     }}
                   >
                     <Button
-                      onClick={() => handleNavigation(proposal.pk)}
+                      onClick={() => handleNavigation(proposal.pk, proposal.fields.is_update)}
                       variant="filled"
                       style={{ backgroundColor: "#3498db" }}
                     >
@@ -208,8 +208,8 @@ function CourseProposalTable({ courseProposals, onArchiveSuccess }) {
 
 function ArchivedCoursesTable({ courseProposals, onRestoreSuccess }) {
   const navigate = useNavigate();
-  const handleNavigation = (courseCode) => {
-    navigate(`/programme_curriculum/faculty_course_view?course=${courseCode}`);
+  const handleNavigation = (id,flag) => {
+    navigate(`/programme_curriculum/view_a_course_proposal_form?proposalid=${id}&update=${flag?1:0}`,);
   };
 
   const handleRestore = async (id) => {
@@ -331,7 +331,7 @@ function ArchivedCoursesTable({ courseProposals, onRestoreSuccess }) {
                     }}
                   >
                     <Button
-                      onClick={() => handleNavigation(proposal.fields.code)}
+                      onClick={() => handleNavigation(proposal.pk,proposal.fields.is_update)}
                       variant="filled"
                       style={{ backgroundColor: "#3498db" }}
                     >

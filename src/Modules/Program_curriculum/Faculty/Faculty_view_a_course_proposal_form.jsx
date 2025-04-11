@@ -7,7 +7,11 @@ function Faculty_view_a_course_proposal_form() {
 
   // Get the 'id' query parameter
   const id = searchParams.get("proposalid");
-  const courseProposals = JSON.parse(sessionStorage.getItem("courseProposals"));
+  const update = searchParams.get("update");
+  console.log(update)
+  const courseProposals = JSON.parse(
+    sessionStorage.getItem(update === "0" ? "courseProposals" : "updateProposals")
+  );
   const courseProposal = courseProposals.find(
     (proposal) => proposal.pk === parseInt(id, 10),
   );
@@ -71,10 +75,10 @@ function Faculty_view_a_course_proposal_form() {
                 <td style={{ color: "blue", fontWeight: "bold" }}>Course Name</td>
                 <td>{courseProposal.fields.name}</td>
               </tr>
-              <tr>
+              {/* <tr>
                 <td style={{ color: "blue", fontWeight: "bold" }}>Version</td>
                 <td>{courseProposal.fields.version}</td>
-              </tr>
+              </tr> */}
 
               {/* Contact Hours Section */}
               <tr>
