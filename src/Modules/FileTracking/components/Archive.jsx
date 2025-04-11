@@ -16,6 +16,10 @@ export default function ArchiveFiles() {
   const username = useSelector((state) => state.user.roll_no);
   let current_module = useSelector((state) => state.module.current_module);
   current_module = current_module.split(" ").join("").toLowerCase();
+  const convertDate = (date) => {
+    const d = new Date(date);
+    return d.toLocaleString();
+  };
   useEffect(() => {
     const getFiles = async () => {
       try {
@@ -35,9 +39,9 @@ export default function ArchiveFiles() {
             },
           },
         );
-        // Set the response data to the files state
         setFiles(response.data);
-        console.log(response.data);
+        console.log("Archived Files: ", files);
+        // Set the response data to the files state
       } catch (err) {
         console.error("Error fetching files:", err);
       }
@@ -45,7 +49,7 @@ export default function ArchiveFiles() {
 
     // Call the getFiles function to fetch data on component mount
     getFiles();
-  }, []);
+  }, [role, username, token]);
 
   const [selectedFile, setSelectedFile] = useState(null);
 
@@ -154,8 +158,8 @@ export default function ArchiveFiles() {
             <thead>
               <tr style={{ backgroundColor: "#0000" }}>
                 <th style={{ ...tableStyles, width: "8%" }}>Unarchive</th>
-                <th style={{ ...tableStyles, width: "18%" }}>Sent By</th>
                 <th style={{ ...tableStyles, width: "15%" }}>File ID</th>
+                <th style={{ ...tableStyles, width: "15%" }}>Uploader</th>
                 <th style={{ ...tableStyles, width: "25%" }}>Subject</th>
                 <th style={{ ...tableStyles, width: "15%" }}>Date</th>
                 <th style={{ ...tableStyles, width: "7%" }}>View File</th>
@@ -181,10 +185,17 @@ export default function ArchiveFiles() {
                     </Tooltip>
                   </td>
 
+                  <td style={tableStyles}>
+                    {" "}
+                    {file.branch}-{new Date(file.upload_date).getFullYear()}-
+                    {(new Date(file.upload_date).getMonth() + 1)
+                      .toString()
+                      .padStart(2, "0")}
+                    -#{file.id}
+                  </td>
                   <td style={tableStyles}>{file.uploader}</td>
-                  <td style={tableStyles}>{file.id}</td>
                   <td style={tableStyles}>{file.subject}</td>
-                  <td style={tableStyles}>{file.upload_date}</td>
+                  <td style={tableStyles}>{convertDate(file.upload_date)}</td>
                   <td style={tableStyles}>
                     <ActionIcon
                       variant="outline"

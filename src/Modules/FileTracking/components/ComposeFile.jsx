@@ -282,9 +282,16 @@ export default function Compose() {
           placeholder="Enter description"
           mb="sm"
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={(e) => {
+            const words = e.currentTarget.value.trim().split(/\s+/);
+            if (words.length < 100) {
+              setDescription(e.currentTarget.value);
+            }
+          }}
           required
         />
+        <Text align="right">{description.split(/\s+/).length} / 100 words</Text>
+
         <Textarea
           label="Remarks"
           placeholder="Enter remarks"

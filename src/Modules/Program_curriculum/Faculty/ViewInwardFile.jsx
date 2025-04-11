@@ -46,6 +46,30 @@ const boldTextStyle = {
 
 // Main Component
 function ViewInward() {
+  function formatDateWithRounding(isoDateString) {
+    const date = new Date(isoDateString);
+    // Round minutes up if seconds > 30
+    const seconds = date.getSeconds();
+    if (seconds > 30) {
+      date.setMinutes(date.getMinutes() + 1);
+    }
+    const options = {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true,
+    };
+    let formatted = date.toLocaleString("en-US", options);
+    // Handle edge cases (e.g., 11:59 -> 12:00)
+    if (date.getMinutes() === 60) {
+      date.setHours(date.getHours() + 1);
+      date.setMinutes(0);
+      formatted = date.toLocaleString("en-US", options);
+    }
+    return formatted.replace(/(AM|PM)/, (match) => match.toLowerCase());
+  }
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id"); // Extracting the ID from URL parameters
   const username = useSelector((state) => state.user.roll_no);
@@ -78,6 +102,7 @@ function ViewInward() {
           uploaderDesignation: data.data.tracking?.current_design || "",
           discipline: data.data.tracking?.disciplines_name || "",
           disciplineAcronym: data.data.tracking?.disciplines_acronym || "",
+          forwarddate: data.data.tracking?.forward_date || "",
         });
         setcourseDetails({
           code: data.data.proposal?.code || "",
@@ -181,7 +206,7 @@ function ViewInward() {
   // Effect to set noteData when the active tab changes
   useEffect(() => {
     if (activeTab === "notesheet") {
-      setNoteData(file1Data); // Populate noteData with file1Data
+      // setNoteData(file1Data); // Populate noteData with file1Data
     }
   }, [activeTab]);
 
@@ -194,7 +219,7 @@ function ViewInward() {
   return (
     <Box style={pageStyle}>
       {/* Toggle Buttons */}
-      <Group position="center" mb="lg">
+      <Group position="center" mb="lg" mt="lg">
         <Button
           variant={activeTab === "notesheet" ? "filled" : "outline"}
           onClick={() => setActiveTab("notesheet")}
@@ -288,7 +313,7 @@ function ViewInward() {
               {/* <Group position="apart" style={{ marginTop: "10px" }}> */}
               <Text style={textStyle}>
                 {" "}
-                <b>Sent By:</b> {noteData.sentBy} - {noteData.designation}
+                <b>Sent By:</b> {noteData.sentBy} - {noteData.designation}, {formatDateWithRounding(noteData.forwarddate)}
               </Text>
             </Box>
             <Box
@@ -361,8 +386,7 @@ function ViewInward() {
           <hr style={{ width: "80%" }} />
 
           <Text size="lg" padding="lg" className="course-title">
-            Course Proposal Form by - {noteData.createdBy} -{" "}
-            {noteData.designation}
+            Course Proposal Form by - {noteData.createdBy} - {noteData.designation}
           </Text>
 
           <Table className="course-table" striped highlightOnHover>
@@ -680,7 +704,9 @@ function ViewInward() {
                 <td style={{ color: "blue", fontWeight: "bold" }}>
                   References & Books
                 </td>
-                <td>{courseDetails.references}</td>
+                <td>
+                  {courseDetails.references}
+                </td>
               </tr>
             </tbody>
           </Table>
