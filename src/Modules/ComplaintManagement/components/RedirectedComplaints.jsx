@@ -30,7 +30,7 @@ function RedirectedComplaints() {
     setIsError(false);
 
     try {
-      const response = await getComplaintsByRole("supervisor", token);
+      const response = await getComplaintsByRole("service_provider", token);
       if (response.success) {
         setComplaints(response.data);
       } else {

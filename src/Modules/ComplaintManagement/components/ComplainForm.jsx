@@ -12,6 +12,7 @@ import {
   Title,
   Text,
 } from "@mantine/core";
+import { showNotification } from "@mantine/notifications"; // Import notifications
 import { lodgeComplaint } from "../routes/api";
 
 const COMPLAINT_TYPES = [
@@ -83,6 +84,14 @@ function ComplaintForm() {
     if (response.success) {
       setIsSuccess(true);
       console.log("Complaint registered:", response.data);
+
+      // Show success notification
+      showNotification({
+        title: "Success",
+        message: "Complaint lodged successfully!",
+        color: "green",
+      });
+
       setTimeout(() => {
         resetFormFields();
         setKey((prevKey) => prevKey + 1);
@@ -93,6 +102,13 @@ function ComplaintForm() {
           "Error registering complaint. Please try again.",
       );
       console.error("Error registering complaint:", response.error);
+
+      // Show error notification
+      showNotification({
+        title: "Error",
+        message: "Failed to lodge the complaint. Please try again.",
+        color: "red",
+      });
     }
 
     setLoading(false);
