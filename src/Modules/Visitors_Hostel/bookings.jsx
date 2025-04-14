@@ -11,6 +11,7 @@ import {
 } from "@mantine/core";
 import PropTypes from "prop-types";
 import { useSelector } from "react-redux";
+// eslint-disable-next-line import/no-unresolved
 import { FaEye } from "react-icons/fa"; // Import the eye icon
 import CombinedBookingForm from "./bookingForm";
 import ViewBooking from "./viewBooking"; // Import the new ViewBooking component

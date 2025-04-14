@@ -9,6 +9,7 @@ import {
   Select,
   Button,
 } from "@mantine/core";
+// eslint-disable-next-line import/no-unresolved
 import * as XLSX from "xlsx";
 import { fetchIncomeDataRoute } from "../../routes/visitorsHostelRoutes";
 import { host } from "../../routes/globalRoutes";

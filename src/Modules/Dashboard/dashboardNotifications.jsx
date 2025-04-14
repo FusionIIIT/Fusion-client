@@ -16,6 +16,7 @@ import {
   CloseButton,
 } from "@mantine/core";
 import { useDispatch } from "react-redux";
+import { setTotalNotifications } from "../../redux/userslice.jsx";
 import classes from "./Dashboard.module.css";
 import { Empty } from "../../components/empty";
 import CustomBreadcrumbs from "../../components/Breadcrumbs.jsx";
@@ -110,6 +111,9 @@ function Dashboard() {
     (n) => !n.deleted && n.unread,
   ).length;
   const badges = [notificationBadgeCount, announcementBadgeCount];
+  dispatch(
+    setTotalNotifications(notificationBadgeCount + announcementBadgeCount),
+  );
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -267,7 +271,12 @@ function Dashboard() {
   return (
     <>
       <CustomBreadcrumbs />
-      <Flex justify="space-between" align="center" mt="lg">
+      <Flex
+        justify="space-between"
+        align={{ base: "start", sm: "center" }}
+        mt="lg"
+        direction={{ base: "column", sm: "row" }}
+      >
         {/* <Flex
           justify="flex-start"
           align="center"
@@ -338,7 +347,14 @@ function Dashboard() {
           badges={badges}
         />
 
-        <Flex align="center" mt="md" rowGap="1rem" columnGap="4rem" wrap="wrap">
+        <Flex
+          w={{ base: "40%", sm: "auto" }}
+          align="center"
+          mt="md"
+          rowGap="1rem"
+          columnGap="4rem"
+          wrap="wrap"
+        >
           <Select
             classNames={{
               option: classes.selectoptions,
