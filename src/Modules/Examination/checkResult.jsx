@@ -120,7 +120,7 @@ function CheckResult() {
               </div>
               <div className="box">
                 <span style={{ fontSize: "50px" }}>{cpi}</span>
-                <span>CPI</span>
+                <span>Present CPI</span>
               </div>
               <div className="box">
                 <span style={{ fontSize: "50px" }}>{su}</span>
