@@ -144,6 +144,7 @@ function ViewBooking({ modalOpened, onClose, bookingId, bookingf, onCancel }) {
       console.log("Successfully checked in booking with ID:", bookingId);
       // Optionally, you can add logic to refresh the booking data or close the modal
       onClose(); // Close the modal after check-in
+      window.location.reload();
     } catch (error) {
       console.error("Error checking in the booking:", error);
     }

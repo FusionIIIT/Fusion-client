@@ -12,6 +12,7 @@ import InventoryIndex from "./Modules/Inventory/components/InventoryIndex";
 import { DesignationsProvider } from "./Modules/Iwd/helper/designationContext";
 import UserBreadcrumbs from "./Modules/Scholarship/user/components/UserBreadcumbs";
 import OtherAcadProcedures from "./Modules/Otheracademic/OtherAcademicProcedures";
+import PendingReqs from "./Modules/Visitors_Hostel/pendingRequests.jsx";
 
 const PlacementCellPage = lazy(() => import("./Modules/PlacementCell"));
 const JobApplicationForm = lazy(
@@ -275,7 +276,7 @@ export default function App() {
             <Layout>
               <Suspense fallback={<div>Loading .... </div>}>
                 <VisitorsContent />
-                <Bookings />
+                <PendingReqs />
               </Suspense>
             </Layout>
           }
