@@ -53,15 +53,6 @@ function ViewBooking({ modalOpened, onClose, bookingId, bookingf, onCancel }) {
   const printRef = useRef();
   const role = useSelector((state) => state.user.role);
 
-  // const handleForwardButtonClick = (bookingId) => {
-  //   setForwardModalOpened(bookingId); // Open modal for the specific booking
-  // };
-
-  // const handleForwardCloseModal = () => {
-  //   setForwardModalOpened(null); // Close modal
-  //   // onBookingForward(); // Call the fetch function to refresh bookings when closing the modal
-  // };
-
   useEffect(() => {
     const fetchBookingData = async () => {
       try {
@@ -217,6 +208,7 @@ function ViewBooking({ modalOpened, onClose, bookingId, bookingf, onCancel }) {
     } catch (error) {
       console.error("Error canceling the booking:", error);
     }
+    window.location.reload();
   };
 
   const isCheckInEnabled = () => {
@@ -382,6 +374,17 @@ function ViewBooking({ modalOpened, onClose, bookingId, bookingf, onCancel }) {
                   readOnly
                 />
               </Grid.Col>
+              {/* <Grid.Col span={12}>
+                <MultiSelect
+                  label="Rooms"
+                  value={formData.rooms}
+                  data={availableRooms.map((room) => ({
+                    value: room,
+                    label: room,
+                  }))}
+                  readOnly
+                />
+              </Grid.Col> */}
 
               <Grid.Col span={12}>
                 <MultiSelect

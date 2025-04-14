@@ -144,11 +144,20 @@ function UpdateBookingForm({
       modified_category: formData.modifiedCategory,
       rooms: formData.rooms,
       remarks: formData.remarks,
+      visitorOrganization: formData.visitorOrganization,
+      visitorPhone: formData.visitorPhone,
+      visitorEmail: formData.visitorEmail,
+      visitorName: formData.visitorName,
+      visitorAddress: formData.visitorAddress,
+      billToBeSettledBy: formData.billToBeSettledBy,
+      purpose: formData.purpose,
+      numberOfRooms: formData.numberOfRooms,
+      personCount: formData.personCount,
     };
 
     try {
       const response = await axios.post(
-        `${host}/visitorhostel/forward-booking-new/`,
+        `${host}/visitorhostel/update-booking-new/`,
         requestData,
         {
           headers: {
@@ -166,6 +175,7 @@ function UpdateBookingForm({
     } finally {
       setLoading(false);
     }
+    window.location.reload();
   };
 
   return (
@@ -173,7 +183,7 @@ function UpdateBookingForm({
       <Modal
         opened={forwardmodalOpened}
         onClose={onClose}
-        title="Forward Booking Request"
+        title="Update Booking Request"
         size="xl"
         overlayOpacity={0.55}
         overlayBlur={3}
@@ -241,6 +251,8 @@ function UpdateBookingForm({
               <NumberInput
                 label="Number Of People"
                 value={formData.personCount}
+                min={1} // Set minimum value to 1
+                onChange={(value) => handleInputChange("personCount", value)}
               />
             </Grid.Col>
 
@@ -248,6 +260,9 @@ function UpdateBookingForm({
               <NumberInput
                 label="Rooms Required"
                 value={formData.numberOfRooms}
+                min={1}
+                max={availableRooms.length}
+                onChange={(value) => handleInputChange("numberOfRooms", value)}
               />
             </Grid.Col>
 
@@ -271,15 +286,29 @@ function UpdateBookingForm({
               <TextInput
                 label="Purpose Of Visit"
                 value={formData.purpose}
-                readOnly
+                onChange={(event) =>
+                  handleInputChange("purpose", event.currentTarget.value)
+                }
               />
             </Grid.Col>
 
             <Grid.Col span={12}>
-              <TextInput
+              <Select
                 label="Bill to be settled by"
                 value={formData.billToBeSettledBy}
-                readOnly
+                onChange={(value) =>
+                  handleInputChange("billToBeSettledBy", value)
+                }
+                data={[
+                  { value: "Visitor", label: "Visitor" },
+                  { value: "Intender", label: "Intender" },
+                  {
+                    value: "Institute / No Charges",
+                    label: "Institute / No Charges",
+                  },
+                  { value: "Project No.", label: "Project No." },
+                ]}
+                placeholder="Select an option"
               />
             </Grid.Col>
 
@@ -297,7 +326,9 @@ function UpdateBookingForm({
               <TextInput
                 label="Visitor Name"
                 value={formData.visitorName}
-                readOnly
+                onChange={(event) =>
+                  handleInputChange("visitorName", event.currentTarget.value)
+                }
               />
             </Grid.Col>
 
@@ -305,7 +336,27 @@ function UpdateBookingForm({
               <TextInput
                 label="Visitor Email"
                 value={formData.visitorEmail}
-                readOnly
+                onChange={(event) => {
+                  const email = event.currentTarget.value;
+
+                  // Regex for validating email
+                  const emailRegex =
+                    /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+                  if (email.trim() === "" || !emailRegex.test(email)) {
+                    console.error("Invalid email format");
+                  } else {
+                    handleInputChange("visitorEmail", email);
+                  }
+                }}
+                error={
+                  formData.visitorEmail &&
+                  !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
+                    formData.visitorEmail,
+                  )
+                    ? "Invalid email format"
+                    : undefined
+                }
               />
             </Grid.Col>
 
@@ -313,7 +364,9 @@ function UpdateBookingForm({
               <TextInput
                 label="Visitor Phone"
                 value={formData.visitorPhone}
-                readOnly
+                onChange={(event) =>
+                  handleInputChange("visitorPhone", event.currentTarget.value)
+                }
               />
             </Grid.Col>
 
@@ -321,7 +374,12 @@ function UpdateBookingForm({
               <TextInput
                 label="Visitor Organization"
                 value={formData.visitorOrganization}
-                readOnly
+                onChange={(event) =>
+                  handleInputChange(
+                    "visitorOrganization",
+                    event.currentTarget.value,
+                  )
+                }
               />
             </Grid.Col>
 
@@ -329,7 +387,9 @@ function UpdateBookingForm({
               <TextInput
                 label="Visitor Address"
                 value={formData.visitorAddress}
-                readOnly
+                onChange={(event) =>
+                  handleInputChange("visitorAddress", event.currentTarget.value)
+                }
               />
             </Grid.Col>
 
