@@ -19,7 +19,6 @@ function MakeAnnouncement() {
   const [batch, setBatch] = useState("");
   const [department, setDepartment] = useState("");
   const [announcement, setAnnouncement] = useState("");
-  const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
@@ -30,7 +29,6 @@ function MakeAnnouncement() {
     setBatch("");
     setDepartment("");
     setAnnouncement("");
-    setFile(null);
     setIsSuccess(false);
   };
 
@@ -40,6 +38,13 @@ function MakeAnnouncement() {
     setErrorMessage("");
     setIsSuccess(false);
 
+    // Validate fields
+    if (!programme || !batch || !department || !announcement) {
+      setErrorMessage("All fields are required.");
+      setLoading(false);
+      return;
+    }
+
     const token = localStorage.getItem("authToken");
     const url = `${host}/dep/api/announcements/`;
 
@@ -48,9 +53,6 @@ function MakeAnnouncement() {
     formData.append("batch", batch);
     formData.append("department", department);
     formData.append("message", announcement);
-    if (file) {
-      formData.append("upload_announcement", file);
-    }
 
     try {
       const response = await axios.post(url, formData, {
