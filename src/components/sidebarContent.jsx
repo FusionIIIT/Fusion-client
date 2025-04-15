@@ -99,7 +99,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "Visitor's Hostel",
       id: "visitor_hostel",
       icon: <GuestIcon size={18} />,
-      url: "/",
+      url: "/visitors_hostel",
     },
     {
       label: "HealthCare Center",
@@ -111,7 +111,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "File Tracking",
       id: "fts",
       icon: <FileTrackingIcon size={18} />,
-      url: "/",
+      url: "/filetracking",
     },
     {
       label: "Scholarship Portal",
@@ -123,7 +123,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "Complaint System",
       id: "complaint_management",
       icon: <ComplaintIcon size={18} />,
-      url: "/",
+      url: "/complaints",
     },
     {
       label: "Placement Cell",
@@ -135,7 +135,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "Department Portal",
       id: "department",
       icon: <DepartmentIcon size={18} />,
-      url: "/",
+      url: "/department",
     },
     {
       label: "Research Projects",
