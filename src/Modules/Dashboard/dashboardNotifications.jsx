@@ -1,13 +1,8 @@
 import axios from "axios";
 import PropTypes from "prop-types";
+import { SortAscending } from "@phosphor-icons/react";
+import { useEffect, useMemo, useState } from "react";
 import {
-  SortAscending,
-  CaretCircleLeft,
-  CaretCircleRight,
-} from "@phosphor-icons/react";
-import { useEffect, useMemo, useState, useRef } from "react";
-import {
-  Tabs,
   Container,
   Loader,
   Badge,
@@ -21,6 +16,7 @@ import {
   CloseButton,
 } from "@mantine/core";
 import { useDispatch } from "react-redux";
+import { setTotalNotifications } from "../../redux/userslice.jsx";
 import classes from "./Dashboard.module.css";
 import { Empty } from "../../components/empty";
 import CustomBreadcrumbs from "../../components/Breadcrumbs.jsx";
@@ -30,6 +26,7 @@ import {
   notificationUnreadRoute,
   getNotificationsRoute,
 } from "../../routes/dashboardRoutes";
+import ModuleTabs from "../../components/moduleTabs.jsx";
 
 const categories = ["Most Recent", "Tags", "Title"];
 
@@ -104,8 +101,19 @@ function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [read_Loading, setRead_Loading] = useState(-1);
   const dispatch = useDispatch();
-  const tabsListRef = useRef(null);
+  // const tabsListRef = useRef(null);
   const tabItems = [{ title: "Notifications" }, { title: "Announcements" }];
+
+  const notificationBadgeCount = notificationsList.filter(
+    (n) => !n.deleted && n.unread,
+  ).length;
+  const announcementBadgeCount = announcementsList.filter(
+    (n) => !n.deleted && n.unread,
+  ).length;
+  const badges = [notificationBadgeCount, announcementBadgeCount];
+  dispatch(
+    setTotalNotifications(notificationBadgeCount + announcementBadgeCount),
+  );
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -143,27 +151,27 @@ function Dashboard() {
     fetchDashboardData();
   }, [dispatch]);
 
-  const handleTabChange = (direction) => {
-    const newIndex =
-      direction === "next"
-        ? Math.min(+activeTab + 1, tabItems.length - 1)
-        : Math.max(+activeTab - 1, 0);
-    setActiveTab(String(newIndex));
-    tabsListRef.current.scrollBy({
-      left: direction === "next" ? 50 : -50,
-      behavior: "smooth",
-    });
-  };
+  // const handleTabChange = (direction) => {
+  //   const newIndex =
+  //     direction === "next"
+  //       ? Math.min(+activeTab + 1, tabItems.length - 1)
+  //       : Math.max(+activeTab - 1, 0);
+  //   setActiveTab(String(newIndex));
+  //   tabsListRef.current.scrollBy({
+  //     left: direction === "next" ? 50 : -50,
+  //     behavior: "smooth",
+  //   });
+  // };
 
   const notificationsToDisplay =
     activeTab === "1" ? announcementsList : notificationsList;
 
-  const notification_for_badge_count =
-    activeTab === "0" ? announcementsList : notificationsList;
+  // const notification_for_badge_count =
+  //   activeTab === "0" ? announcementsList : notificationsList;
 
-  const notification_count = notification_for_badge_count.filter(
-    (n) => !n.deleted && n.unread,
-  ).length;
+  // const notification_count = notification_for_badge_count.filter(
+  //   (n) => !n.deleted && n.unread,
+  // ).length;
 
   // sortMap is an object that maps sorting categories to sorting functions.
   const sortedNotifications = useMemo(() => {
@@ -263,8 +271,13 @@ function Dashboard() {
   return (
     <>
       <CustomBreadcrumbs />
-      <Flex justify="space-between" align="center" mt="lg">
-        <Flex
+      <Flex
+        justify="space-between"
+        align={{ base: "start", sm: "center" }}
+        mt="lg"
+        direction={{ base: "column", sm: "row" }}
+      >
+        {/* <Flex
           justify="flex-start"
           align="center"
           gap={{ base: "0.5rem", md: "1rem" }}
@@ -325,8 +338,23 @@ function Dashboard() {
               weight="light"
             />
           </Button>
-        </Flex>
-        <Flex align="center" mt="md" rowGap="1rem" columnGap="4rem" wrap="wrap">
+        </Flex> */}
+
+        <ModuleTabs
+          tabs={tabItems}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          badges={badges}
+        />
+
+        <Flex
+          w={{ base: "40%", sm: "auto" }}
+          align="center"
+          mt="md"
+          rowGap="1rem"
+          columnGap="4rem"
+          wrap="wrap"
+        >
           <Select
             classNames={{
               option: classes.selectoptions,
@@ -341,7 +369,6 @@ function Dashboard() {
           />
         </Flex>
       </Flex>
-
       <Grid mt="xl">
         {loading ? (
           <Container py="xl">
