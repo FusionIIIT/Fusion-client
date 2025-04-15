@@ -6,28 +6,6 @@ import "@mantine/notifications/styles.css";
 import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { Notifications } from "@mantine/notifications";
 import { Layout } from "./components/layout";
-import Dashboard from "./Modules/Dashboard/dashboardNotifications";
-import ComplaintSystem from "./Modules/ComplaintManagement/index";
-import Profile from "./Modules/Dashboard/StudentProfile/profilePage";
-import LoginPage from "./pages/login";
-import ForgotPassword from "./pages/forgotPassword";
-import AcademicPage from "./Modules/Academic/index";
-import ValidateAuth from "./helper/validateauth";
-import MessPage from "./Modules/Mess/pages/index";
-import FileTracking from "./Modules/FileTracking";
-import VisitorsContent from "./Modules/Visitors_Hostel/visitorsContent";
-import CancellationRequest from "./Modules/Visitors_Hostel/cancellationRequest";
-import BookingForm from "./Modules/Visitors_Hostel/bookingForm";
-import Bookings from "./Modules/Visitors_Hostel/bookings";
-import ActiveBookingsPage from "./Modules/Visitors_Hostel/activeBookings";
-import CompletedBookingsPage from "./Modules/Visitors_Hostel/completedBookings";
-import VHGuidelinesPage from "./Modules/Visitors_Hostel/vhGuidelines";
-import InventoryManagement from "./Modules/Visitors_Hostel/inventory";
-import RoomsAvailibility from "./Modules/Visitors_Hostel/roomsAvailability";
-import AccountStatemnts from "./Modules/Visitors_Hostel/accountStatements";
-import FacultyProfessionalProfile from "./Modules/facultyProfessionalProfile/facultyProfessionalProfile";
-import InactivityHandler from "./helper/inactivityhandler";
-import DepartmentPage from "./Modules/Department/DepartmentDashboard";
 import InventoryIndex from "./Modules/Inventory/components/InventoryIndex";
 
 // eslint-disable-next-line import/no-unresolved
