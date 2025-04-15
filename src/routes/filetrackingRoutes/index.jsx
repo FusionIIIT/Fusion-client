@@ -1,4 +1,5 @@
-export const host = "http://127.0.0.1:8000";
+import { host } from "../globalRoutes";
+
 export const designationsRoute = `${host}/filetracking/api/designations/`;
 export const createDraftRoute = `${host}/filetracking/api/createdraft/`;
 export const getDraftRoute = `${host}/filetracking/api/draft/`;

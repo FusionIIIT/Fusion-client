@@ -6,26 +6,17 @@ import { useDispatch } from "react-redux";
 import Compose from "./ComposeFile";
 import Outboxfunc from "./Outbox";
 import Inboxfunc from "./Inbox";
-import Track from "./Track";
 import Draft from "./Drafts";
 import ArchiveFiles from "./Archive";
 import { setActiveTab_ } from "../../../redux/moduleslice";
 import classes from "../../Dashboard/Dashboard.module.css";
 
-const sections = [
-  "Compose File",
-  "Drafts",
-  "Inbox",
-  "Outbox",
-  "Track",
-  "Archive",
-];
+const sections = ["Compose File", "Drafts", "Inbox", "Outbox", "Archive"];
 
 const sectionComponents = {
   "Compose File": Compose,
   Outbox: Outboxfunc,
   Inbox: Inboxfunc,
-  Track,
   Drafts: Draft,
   Archive: ArchiveFiles,
 };
@@ -62,6 +53,7 @@ export default function SectionNavigation() {
         spacing={0}
         style={{
           display: "flex",
+          overflowY: "auto",
           overflowX: "auto",
           padding: "8px",
           borderBottom: "2px solid #E2E8F0",
@@ -148,7 +140,7 @@ export default function SectionNavigation() {
         }}
       >
         {ActiveComponent ? (
-          <Box style={{ width: "100%", height: "100%", overflowY: "auto" }}>
+          <Box style={{ width: "100%", height: "100%", overflow: "auto" }}>
             <ActiveComponent />
           </Box>
         ) : (

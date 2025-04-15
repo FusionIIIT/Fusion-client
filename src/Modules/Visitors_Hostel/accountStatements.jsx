@@ -9,6 +9,7 @@ import {
   Select,
   Button,
 } from "@mantine/core";
+// eslint-disable-next-line import/no-unresolved
 import * as XLSX from "xlsx";
 import { fetchIncomeDataRoute } from "../../routes/visitorsHostelRoutes";
 import { host } from "../../routes/globalRoutes";
@@ -57,7 +58,7 @@ function FinancialManagement() {
             "Content-Type": "application/json",
           },
         });
-
+        console.log(response.data);
         setExpenditureData(response.data);
         setLoadingExpenditure(false);
       } catch (err) {
@@ -105,7 +106,7 @@ function FinancialManagement() {
         ...expenditureData.map((item) => ({
           heads: `Spent on ${item.item_name}`,
           bill: item.id, // Assuming quantity is the amount
-          amount: item.quantity, // Adjust if necessary
+          amount: item.quantity * item.total_usable, // Adjust if necessary
           bill_date: item.bill_date, // Assuming bill_date is available
         })),
         ...incomeData.map((item) => ({
@@ -272,11 +273,13 @@ function FinancialManagement() {
           (sum, item) => sum + item.total_bill,
           0,
         );
-      } else {
+      } else if (groupedData[selectedMonth]) {
         totalIncomeForSelectedMonth = groupedData[selectedMonth].reduce(
           (sum, item) => sum + item.total_bill,
           0,
         );
+      } else {
+        totalIncomeForSelectedMonth = 0; // Default to 0 if no data for the selected month
       }
     } catch (err) {
       console.error(
@@ -491,7 +494,9 @@ function FinancialManagement() {
                   textAlign: "center",
                 }}
               >
-                {item.quantity} {/* Assuming 'quantity' is the amount */}
+                {item.quantity * item.total_usable}{" "}
+                {/* Assuming 'quantity' is the amount */}
+                {console.log("Item :", item)}
               </td>
             </tr>
           ))}

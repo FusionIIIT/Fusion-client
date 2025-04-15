@@ -1,4 +1,6 @@
-import { createTheme, MantineProvider } from "@mantine/core";
+import { MantineProvider, createTheme } from "@mantine/core";
+import { Suspense, lazy } from "react";
+import { useSelector } from "react-redux";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 import { Route, Routes, Navigate, useLocation } from "react-router-dom";
@@ -26,20 +28,121 @@ import AccountStatemnts from "./Modules/Visitors_Hostel/accountStatements";
 import FacultyProfessionalProfile from "./Modules/facultyProfessionalProfile/facultyProfessionalProfile";
 import InactivityHandler from "./helper/inactivityhandler";
 import DepartmentPage from "./Modules/Department/DepartmentDashboard";
+import InventoryIndex from "./Modules/Inventory/components/InventoryIndex";
+
+// eslint-disable-next-line import/no-unresolved
+import { DesignationsProvider } from "./Modules/Iwd/helper/designationContext";
+import UserBreadcrumbs from "./Modules/Scholarship/user/components/UserBreadcumbs";
+import OtherAcadProcedures from "./Modules/Otheracademic/OtherAcademicProcedures";
+import PendingReqs from "./Modules/Visitors_Hostel/pendingRequests.jsx";
+
+const PlacementCellPage = lazy(() => import("./Modules/PlacementCell"));
+const JobApplicationForm = lazy(
+  () => import("./Modules/PlacementCell/ApplyForPlacementForm"),
+);
+const PlacementEventHandeling = lazy(
+  () => import("./Modules/PlacementCell/components/PlacementEventHandeling"),
+);
+const ApplicationStatusTimeline = lazy(
+  () => import("./Modules/PlacementCell/components/Timeline"),
+);
+
+const HealthCenter = lazy(() => import("./Modules/Health Center"));
+const PurchaseNavbar = lazy(() => import("./Modules/Purchase/PurchaseNavbar"));
+const Inbox = lazy(() => import("./Modules/Purchase/Inbox"));
+const FiledIndents = lazy(() => import("./Modules/Purchase/FilledIndents.jsx"));
+const ViewIndentInbox = lazy(
+  () => import("./Modules/Purchase/ViewIndentInbox.jsx"),
+);
+const EmployeeViewFileIndent = lazy(
+  () => import("./Modules/Purchase/EmployeeViewFileIndent"),
+);
+const Archieved = lazy(() => import("./Modules/Purchase/ArchievedIndents"));
+const ViewIndent = lazy(() => import("./Modules/Purchase/ViewIndent"));
+const StockEntry = lazy(() => import("./Modules/Purchase/StockEntry"));
+const SavedIndents = lazy(() => import("./Modules/Purchase/SavedIndentes"));
+const Outbox = lazy(() => import("./Modules/Purchase/Outbox.jsx"));
+const IndentForm = lazy(() => import("./Modules/Purchase/IndentForm.jsx"));
+const NewForwardIndent = lazy(
+  () => import("./Modules/Purchase/NewForwardIndent.jsx"),
+);
+const ConvenorBreadcumbs = lazy(
+  () => import("./Modules/Scholarship/convenor/components/ConvenorBreadcumbs"),
+);
+const HostelPage = lazy(() => import("./Modules/Hostel-Management/index"));
+const IwdModule = lazy(() => import("./Modules/Iwd/index"));
+
+const Dashboard = lazy(
+  () => import("./Modules/Dashboard/dashboardNotifications"),
+);
+const ComplaintSystem = lazy(
+  () => import("./Modules/ComplaintManagement/index"),
+);
+const Profile = lazy(
+  () => import("./Modules/Dashboard/StudentProfile/profilePage"),
+);
+const LoginPage = lazy(() => import("./pages/login"));
+const ForgotPassword = lazy(() => import("./pages/forgotPassword"));
+const AcademicPage = lazy(() => import("./Modules/Academic/index"));
+const ValidateAuth = lazy(() => import("./helper/validateauth"));
+const HR = lazy(() => import("./Modules/HR/index"));
+const MessPage = lazy(() => import("./Modules/Mess/pages/index"));
+const FileTracking = lazy(() => import("./Modules/FileTracking"));
+const ResearchProjects = lazy(() => import("./Modules/RSPC/researchProjects"));
+const RequestForms = lazy(() => import("./Modules/RSPC/requestForms"));
+const VisitorsContent = lazy(
+  () => import("./Modules/Visitors_Hostel/visitorsContent"),
+);
+const CancellationRequest = lazy(
+  () => import("./Modules/Visitors_Hostel/cancellationRequest"),
+);
+const BookingForm = lazy(() => import("./Modules/Visitors_Hostel/bookingForm"));
+const Bookings = lazy(() => import("./Modules/Visitors_Hostel/bookings"));
+const ActiveBookingsPage = lazy(
+  () => import("./Modules/Visitors_Hostel/activeBookings"),
+);
+const CompletedBookingsPage = lazy(
+  () => import("./Modules/Visitors_Hostel/completedBookings"),
+);
+const VHGuidelinesPage = lazy(
+  () => import("./Modules/Visitors_Hostel/vhGuidelines"),
+);
+const InventoryManagement = lazy(
+  () => import("./Modules/Visitors_Hostel/inventory"),
+);
+const RoomsAvailibility = lazy(
+  () => import("./Modules/Visitors_Hostel/roomsAvailability"),
+);
+const AccountStatemnts = lazy(
+  () => import("./Modules/Visitors_Hostel/accountStatements"),
+);
+const FacultyProfessionalProfile = lazy(
+  () =>
+    import("./Modules/facultyProfessionalProfile/facultyProfessionalProfile"),
+);
+
+const InactivityHandler = lazy(() => import("./helper/inactivityhandler"));
+const DepartmentPage = lazy(
+  () => import("./Modules/Department/DepartmentDashboard"),
+);
+
+const GymkhanaDashboard = lazy(
+  () => import("./Modules/Gymkhana/GymkhanaDashboard.jsx"),
+);
+
+const Examination = lazy(() => import("./Modules/Examination/examination"));
+
+const ProgrammeCurriculumRoutes = lazy(
+  () => import("./Modules/Program_curriculum/programmCurriculum"),
+);
 
 const theme = createTheme({
-  breakpoints: {
-    xxs: "300px",
-    xs: "375px",
-    sm: "768px",
-    md: "992px",
-    lg: "1200px",
-    xl: "1408px",
-  },
+  breakpoints: { xs: "30em", sm: "48em", md: "64em", lg: "74em", xl: "90em" },
 });
 
 export default function App() {
   const location = useLocation();
+  const role = useSelector((state) => state.user.role);
   return (
     <MantineProvider theme={theme}>
       <Notifications position="top-center" autoClose={2000} limit={1} />
@@ -52,7 +155,9 @@ export default function App() {
           path="/dashboard"
           element={
             <Layout>
-              <Dashboard />
+              <Suspense fallback={<div>Loading .... </div>}>
+                <Dashboard />
+              </Suspense>
             </Layout>
           }
         />
@@ -60,7 +165,39 @@ export default function App() {
           path="/academics"
           element={
             <Layout>
-              <AcademicPage />
+              <Suspense fallback={<div>Loading .... </div>}>
+                <AcademicPage />
+              </Suspense>
+            </Layout>
+          }
+        />
+        <Route
+          path="/programme_curriculum/*"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <ProgrammeCurriculumRoutes />
+              </Suspense>
+            </Layout>
+          }
+        />
+        <Route
+          path="/hr/*"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <HR />
+              </Suspense>
+            </Layout>
+          }
+        />
+        <Route
+          path="/examination/*"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <Examination />
+              </Suspense>
             </Layout>
           }
         />
@@ -68,15 +205,69 @@ export default function App() {
           path="/mess"
           element={
             <Layout>
-              <MessPage />
+              <Suspense fallback={<div>Loading .... </div>}>
+                <MessPage />
+              </Suspense>
             </Layout>
           }
         />
         <Route
+          path="/placement-cell"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <PlacementCellPage />
+              </Suspense>
+            </Layout>
+          }
+        />
+        <Route
+          path="/placement-cell/apply-placement"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <JobApplicationForm />
+              </Suspense>
+            </Layout>
+          }
+        />
+        <Route
+          path="/placement-cell/view"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <PlacementEventHandeling />
+              </Suspense>
+            </Layout>
+          }
+        />
+        <Route
+          path="/placement-cell/timeline"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <ApplicationStatusTimeline />
+              </Suspense>
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/inventory"
+          element={
+            <Layout>
+              <InventoryIndex />
+            </Layout>
+          }
+        />
+
+        <Route
           path="/profile"
           element={
             <Layout>
-              <Profile />
+              <Suspense fallback={<div>Loading .... </div>}>
+                <Profile />
+              </Suspense>
             </Layout>
           }
         />
@@ -84,7 +275,9 @@ export default function App() {
           path="/filetracking"
           element={
             <Layout>
-              <FileTracking />
+              <Suspense fallback={<div>Loading .... </div>}>
+                <FileTracking />
+              </Suspense>
             </Layout>
           }
         />
@@ -92,8 +285,21 @@ export default function App() {
           path="/visitors_hostel"
           element={
             <Layout>
-              <VisitorsContent />
-              <Bookings />
+              <Suspense fallback={<div>Loading .... </div>}>
+                <VisitorsContent />
+                <Bookings />
+              </Suspense>
+            </Layout>
+          }
+        />
+        <Route
+          path="/visitors_hostel/pending_requests"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <VisitorsContent />
+                <PendingReqs />
+              </Suspense>
             </Layout>
           }
         />
@@ -101,8 +307,10 @@ export default function App() {
           path="/visitors_hostel/cancel_request"
           element={
             <Layout>
-              <VisitorsContent />
-              <CancellationRequest />
+              <Suspense fallback={<div>Loading .... </div>}>
+                <VisitorsContent />
+                <CancellationRequest />
+              </Suspense>
             </Layout>
           }
         />
@@ -110,8 +318,10 @@ export default function App() {
           path="/visitors_hostel/active_bookings"
           element={
             <Layout>
-              <VisitorsContent />
-              <ActiveBookingsPage />
+              <Suspense fallback={<div>Loading .... </div>}>
+                <VisitorsContent />
+                <ActiveBookingsPage />
+              </Suspense>
             </Layout>
           }
         />
@@ -119,8 +329,10 @@ export default function App() {
           path="/visitors_hostel/completed_bookings"
           element={
             <Layout>
-              <VisitorsContent />
-              <CompletedBookingsPage />
+              <Suspense fallback={<div>Loading .... </div>}>
+                <VisitorsContent />
+                <CompletedBookingsPage />
+              </Suspense>
             </Layout>
           }
         />
@@ -128,8 +340,11 @@ export default function App() {
           path="/visitors_hostel/booking-form"
           element={
             <Layout>
-              <VisitorsContent />
-              <BookingForm />
+              <Suspense fallback={<div>Loading .... </div>}>
+                {" "}
+                <VisitorsContent />
+                <BookingForm />
+              </Suspense>
             </Layout>
           }
         />
@@ -137,8 +352,10 @@ export default function App() {
           path="/visitors_hostel/room-availability"
           element={
             <Layout>
-              <VisitorsContent />
-              <RoomsAvailibility />
+              <Suspense fallback={<div>Loading .... </div>}>
+                <VisitorsContent />
+                <RoomsAvailibility />
+              </Suspense>
             </Layout>
           }
         />
@@ -146,7 +363,9 @@ export default function App() {
           path="/visitors_hostel/mess-record"
           element={
             <Layout>
-              <VisitorsContent />
+              <Suspense fallback={<div>Loading .... </div>}>
+                <VisitorsContent />
+              </Suspense>
             </Layout>
           }
         />
@@ -154,8 +373,10 @@ export default function App() {
           path="/visitors_hostel/inventory"
           element={
             <Layout>
-              <VisitorsContent />
-              <InventoryManagement />
+              <Suspense fallback={<div>Loading .... </div>}>
+                <VisitorsContent />
+                <InventoryManagement />
+              </Suspense>
             </Layout>
           }
         />
@@ -163,8 +384,10 @@ export default function App() {
           path="/visitors_hostel/account-statement"
           element={
             <Layout>
-              <VisitorsContent />
-              <AccountStatemnts />
+              <Suspense fallback={<div>Loading .... </div>}>
+                <VisitorsContent />
+                <AccountStatemnts />
+              </Suspense>
             </Layout>
           }
         />
@@ -172,8 +395,10 @@ export default function App() {
           path="/visitors_hostel/rules"
           element={
             <Layout>
-              <VisitorsContent />
-              <VHGuidelinesPage />
+              <Suspense fallback={<div>Loading .... </div>}>
+                <VisitorsContent />
+                <VHGuidelinesPage />
+              </Suspense>
             </Layout>
           }
         />
@@ -181,7 +406,9 @@ export default function App() {
           path="/facultyprofessionalprofile/*"
           element={
             <Layout>
-              <FacultyProfessionalProfile />
+              <Suspense fallback={<div>Loading .... </div>}>
+                <FacultyProfessionalProfile />
+              </Suspense>
             </Layout>
           }
         />
@@ -189,7 +416,9 @@ export default function App() {
           path="/complaints"
           element={
             <Layout>
-              <ComplaintSystem />
+              <Suspense fallback={<div>Loading .... </div>}>
+                <ComplaintSystem />
+              </Suspense>
             </Layout>
           }
         />
@@ -197,12 +426,235 @@ export default function App() {
           path="/department"
           element={
             <Layout>
-              <DepartmentPage />
+              <Suspense fallback={<div>Loading .... </div>}>
+                <DepartmentPage />
+              </Suspense>
             </Layout>
           }
         />
+        <Route
+          path="/hostel"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <HostelPage />
+              </Suspense>
+            </Layout>
+          }
+        />
+        <Route
+          path="/iwd"
+          element={
+            <DesignationsProvider>
+              <Layout>
+                <Suspense fallback={<div>Loading .... </div>}>
+                  <IwdModule />
+                </Suspense>
+              </Layout>
+            </DesignationsProvider>
+          }
+        />
+        <Route
+          path="/research"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <ResearchProjects />
+              </Suspense>
+            </Layout>
+          }
+        />
+        <Route
+          path="/research/forms"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <RequestForms />
+              </Suspense>
+            </Layout>
+          }
+        />
+        <Route
+          path="/facultyprofessionalprofile/*"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <FacultyProfessionalProfile />
+              </Suspense>
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/scholarship"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                {role === "spacsconvenor" && <ConvenorBreadcumbs />}
+                {role === "student" && <UserBreadcrumbs />}
+                {role === "spacsassistant" && <ConvenorBreadcumbs />}
+              </Suspense>
+            </Layout>
+          }
+        />
+
+        <Route path="/healthcenter/*" element={<HealthCenter />} />
+        <Route
+          path="/purchase"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <PurchaseNavbar />
+                <div style={{ margin: "32px" }}>
+                  <IndentForm />
+                </div>
+              </Suspense>
+            </Layout>
+          }
+        />
+        <Route
+          path="/purchase/all_filed_indents"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <PurchaseNavbar />
+                <div style={{ margin: "32px" }}>
+                  <FiledIndents />
+                </div>
+              </Suspense>
+            </Layout>
+          }
+        />
+        <Route
+          path="/purchase/inbox"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <PurchaseNavbar />
+                <div style={{ margin: "32px" }}>
+                  <Inbox />
+                </div>
+              </Suspense>
+            </Layout>
+          }
+        />
+        <Route
+          path="/purchase/forward_indent/:indentID"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <PurchaseNavbar />
+                <NewForwardIndent />
+              </Suspense>
+            </Layout>
+          }
+        />
+        <Route
+          path="/purchase/saved_indents"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <PurchaseNavbar />
+                <div style={{ margin: "32px" }}>
+                  <SavedIndents />
+                </div>
+              </Suspense>
+            </Layout>
+          }
+        />
+        <Route
+          path="/purchase/archieved_indents"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <PurchaseNavbar />
+                <div style={{ margin: "32px" }}>
+                  <Archieved />
+                </div>
+              </Suspense>
+            </Layout>
+          }
+        />
+        <Route
+          path="/purchase/outbox"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <PurchaseNavbar />
+                <div style={{ margin: "32px" }}>
+                  <Outbox />
+                </div>
+              </Suspense>
+            </Layout>
+          }
+        />
+        <Route
+          path="/purchase/viewindent/:indentID"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <PurchaseNavbar />
+                <ViewIndentInbox />
+              </Suspense>
+            </Layout>
+          }
+        />
+        <Route
+          path="/purchase/viewsavedindent/:indentID"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <PurchaseNavbar />
+                <ViewIndent />
+              </Suspense>
+            </Layout>
+          }
+        />
+        <Route
+          path="/purchase/employeeviewfiledindent/:indentID"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <PurchaseNavbar />
+                <EmployeeViewFileIndent />
+              </Suspense>
+            </Layout>
+          }
+        />
+        <Route
+          path="/purchase/stock_entry"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <PurchaseNavbar />
+                <StockEntry />
+              </Suspense>
+            </Layout>
+          }
+        />
+
         <Route path="/accounts/login" element={<LoginPage />} />
         <Route path="/reset-password" element={<ForgotPassword />} />
+        <Route
+          path="/GymKhana"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <GymkhanaDashboard />
+              </Suspense>
+            </Layout>
+          }
+        />
+        <Route
+          path="/otherAcadProcedures"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <OtherAcadProcedures />
+              </Suspense>
+            </Layout>
+          }
+        />
       </Routes>
     </MantineProvider>
   );

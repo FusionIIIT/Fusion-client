@@ -48,6 +48,21 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
     "home",
     "mess_management",
     "visitor_hostel",
+    "hostel_management",
+    "department",
+    "gymkhana",
+    "iwd",
+    "phc",
+    "spacs",
+    "placement_cell",
+    "purchase_and_store",
+    "rspc",
+    "inventory_management",
+    "program_and_curriculum",
+    "course_registration",
+    "examinations",
+    "other_academics",
+    "hr",
   ];
 
   const Modules = [
@@ -57,7 +72,6 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       icon: <HomeIcon size={18} />,
       url: "/dashboard",
     },
-    // { label: "Course Management", id:"course_management", icon: <OtherIcon size={18} />, url: "/" },
     {
       label: "Academics",
       id: "course_registration",
@@ -68,7 +82,12 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "Program & Curriculum",
       id: "program_and_curriculum",
       icon: <CurriculumIcon size={18} />,
-      url: "/",
+      url:
+        role === "acadadmin" || role === "studentacadadmin"
+          ? "/programme_curriculum/acad_view_all_programme"
+          : role === "student"
+            ? "/programme_curriculum/view_all_programmes"
+            : "/programme_curriculum/faculty_view_all_programmes",
     },
     {
       label: "Mess Management",
@@ -86,7 +105,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "HealthCare Center",
       id: "phc",
       icon: <HealthIcon size={18} />,
-      url: "/",
+      url: "/healthcenter",
     },
     {
       label: "File Tracking",
@@ -98,7 +117,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "Scholarship Portal",
       id: "spacs",
       icon: <ScholarshipIcon size={18} />,
-      url: "/",
+      url: "/scholarship",
     },
     {
       label: "Complaint System",
@@ -110,7 +129,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "Placement Cell",
       id: "placement_cell",
       icon: <PlacementIcon size={18} />,
-      url: "/",
+      url: "/placement-cell",
     },
     {
       label: "Department Portal",
@@ -119,52 +138,58 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       url: "/",
     },
     {
-      label: "Research",
+      label: "Research Projects",
       id: "rspc",
       icon: <ResearchIcon size={18} />,
-      url: "/",
+      url: "/research",
+    },
+    {
+      label: "Inventory",
+      id: "inventory_management",
+      icon: <ResearchIcon size={18} />,
+      url: "/inventory",
     },
     {
       label: "Purchase and Store",
       id: "purchase_and_store",
       icon: <StoreIcon size={18} />,
-      url: "/",
+      url: "/purchase",
     },
     {
       label: "Human Resource",
       id: "hr",
       icon: <HumanResourceIcon size={18} />,
-      url: "/",
+      url: "/hr",
     },
     {
       label: "Examination",
       id: "examinations",
       icon: <ExamIcon size={18} />,
-      url: "/",
+      url: "/examination",
     },
     {
       label: "Gymkhana",
       id: "gymkhana",
       icon: <GymkhanaIcon size={18} />,
-      url: "/",
+      url: "/GymKhana",
     },
     {
       label: "Institute Work Departments",
       id: "iwd",
       icon: <IWDIcon size={18} />,
-      url: "/",
+      url: "/iwd",
     },
     {
       label: "Hostel Management",
       id: "hostel_management",
       icon: <HostelIcon size={18} />,
-      url: "/",
+      url: "/hostel",
     },
     {
       label: "Other Academic Procedure",
       id: "other_academics",
       icon: <OtherAcademicIcon size={18} />,
-      url: "/",
+      url: "/otherAcadProcedures",
     },
   ];
 
@@ -196,10 +221,21 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
   }, [accessibleModules]);
 
   const handleModuleClick = (item) => {
+    let path = item.url;
+
+    // HealthCare Center icon clicked navigation
+    if (item.id === "phc") {
+      if (role === "Compounder") {
+        path = "/healthcenter/compounder/patient-log";
+      } else if (role === "student" || role === "Professor") {
+        path = "/healthcenter/student/history";
+      }
+    }
+
     setSelected(item.label);
     toggleSidebar();
     dispatch(setCurrentModule(item.label));
-    navigate(item.url);
+    navigate(path);
   };
 
   return (
