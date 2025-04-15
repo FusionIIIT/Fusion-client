@@ -264,13 +264,16 @@ function UpdatePatient() {
     const token = localStorage.getItem("authToken");
 
     try {
-      const fileArrayBuffer = await reportfile.arrayBuffer();
-      const fileBase64 = btoa(
-        new Uint8Array(fileArrayBuffer).reduce(
-          (data, byte) => data + String.fromCharCode(byte),
-          "",
-        ),
-      );
+      let fileBase64 = null;
+      if (reportfile !== null) {
+        const fileArrayBuffer = await reportfile.arrayBuffer();
+        fileBase64 = btoa(
+          new Uint8Array(fileArrayBuffer).reduce(
+            (data, byte) => data + String.fromCharCode(byte),
+            "",
+          ),
+        );
+      }
       const response = await axios.post(
         compounderRoute,
         {
@@ -605,6 +608,7 @@ function UpdatePatient() {
             <Input
               type="file"
               name="report"
+              accept=".pdf"
               onChange={handleFileChange}
               style={{
                 width: "100%",

@@ -981,6 +981,7 @@ function CompPrescription() {
                   <Input
                     type="file"
                     name="report"
+                    accept=".pdf"
                     onChange={handleFileChange}
                     style={{
                       width: "100%",
