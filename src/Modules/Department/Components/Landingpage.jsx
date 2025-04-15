@@ -1,4 +1,4 @@
-import React, { lazy, Suspense,useRef, useState, useEffect } from "react";
+import React, { lazy, Suspense, useRef, useState, useEffect } from "react";
 import {
   Container,
   Grid,
@@ -37,7 +37,7 @@ const departments = [
 ];
 
 export default function LandingPage() {
-  const [role, setRole] = useState(null);
+  const [, setRole] = useState(null);
   const [branch, setBranch] = useState(null);
   const [activeTab, setActiveTab] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -110,22 +110,6 @@ export default function LandingPage() {
           >
             <Title order={2}>Department Portal</Title>
             <Group spacing="sm" style={{ marginLeft: "auto" }}>
-              {/* {role !== "student" && (
-                <>
-                  <Button
-                    variant={activeTab === "0" ? "filled" : "light"}
-                    onClick={() => setActiveTab("0")}
-                  >
-                    Make Announcement
-                  </Button>
-                  <Button
-                    variant={activeTab === "1" ? "filled" : "light"}
-                    onClick={() => setActiveTab("1")}
-                  >
-                    Browse Announcements
-                  </Button>
-                </>
-              )} */}
               {}
               <Button
                 onClick={() => handleTabChange("prev")}
@@ -153,6 +137,12 @@ export default function LandingPage() {
                       onClick={() => setActiveTab("1")}
                     >
                       Browse Announcements
+                    </Button>
+                    <Button
+                      variant={activeTab === "2" ? "filled" : "light"}
+                      onClick={() => setActiveTab("2")}
+                    >
+                      Provide Feedback
                     </Button>
                   </Tabs.List>
                 </Tabs>
