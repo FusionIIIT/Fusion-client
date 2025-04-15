@@ -149,7 +149,7 @@ function VCourseProposalForm() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to submit form");
+        alert(errorData.message || "Failed to submit form");
       }
       if (response.ok) {
         // alert("Form submitted successfully!");
