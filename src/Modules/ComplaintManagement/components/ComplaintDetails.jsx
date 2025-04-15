@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import { Text, Button, Flex, Grid, Loader, Alert } from "@mantine/core";
+import { Text, Button, Flex, Grid, Loader } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import { getComplaintDetails } from "../routes/api";
 import { host } from "../../../routes/globalRoutes/index";
 
@@ -36,7 +37,11 @@ function ComplaintDetails({ complaintId, onBack }) {
 
   const handleViewAttachment = () => {
     if (!complaintDetails?.upload_complaint) {
-      alert("No attachment found for this complaint.");
+      notifications.show({
+        title: "No Attachment",
+        message: "No attachment found for this complaint.",
+        color: "red",
+      });
       return;
     }
     window.open(`${host}${complaintDetails.upload_complaint}`, "_blank");
@@ -55,9 +60,15 @@ function ComplaintDetails({ complaintId, onBack }) {
 
   if (error) {
     return (
-      <Alert title="Error" color="red" withCloseButton>
-        {error}
-      </Alert>
+      <Flex justify="center" align="center" style={{ height: "100%" }}>
+        <notifications.Notification
+          title="Error"
+          color="red"
+          onClose={() => setError(null)}
+        >
+          {error}
+        </notifications.Notification>
+      </Flex>
     );
   }
 

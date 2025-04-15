@@ -10,6 +10,7 @@ import {
   CheckIcon,
 } from "@mantine/core";
 import PropTypes from "prop-types";
+import { notifications } from "@mantine/notifications";
 import { submitFeedback } from "../routes/api";
 
 function formatDateTime(str) {
@@ -31,7 +32,11 @@ function FeedbackForm({ complaint }) {
 
   const handleSubmit = async () => {
     if (!feedback || !rating) {
-      alert("Please provide feedback and a rating.");
+      notifications.show({
+        title: "Incomplete Feedback",
+        message: "Please provide feedback and a rating.",
+        color: "red",
+      });
       return;
     }
     setIsLoading(true);
@@ -44,9 +49,18 @@ function FeedbackForm({ complaint }) {
       );
       console.log("Feedback submitted:", response.data);
       setIsSuccess(true);
+      notifications.show({
+        title: "Feedback Submitted",
+        message: "Your feedback has been submitted successfully.",
+        color: "green",
+      });
     } catch (err) {
       console.error("Error submitting feedback:", err);
-      alert("Failed to submit feedback. Please try again.");
+      notifications.show({
+        title: "Submission Failed",
+        message: "Failed to submit feedback. Please try again.",
+        color: "red",
+      });
     } finally {
       setIsLoading(false);
     }

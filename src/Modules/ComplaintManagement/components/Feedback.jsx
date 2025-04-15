@@ -39,13 +39,11 @@ function Feedback() {
     if (isError || complaints.length === 0) {
       return (
         <Center>
-          {isError ? (
-            <Text color="red" fz="md">
-              Failed to fetch complaints. Please try again.
-            </Text>
-          ) : (
-            <Text fz="md">No resolved complaints available</Text>
-          )}
+          <Text color="red" fz="md">
+            {isError
+              ? "Failed to fetch complaints. Please try again."
+              : "No resolved complaints available"}
+          </Text>
         </Center>
       );
     }
@@ -90,6 +88,8 @@ function Feedback() {
         sx={(theme) => ({
           [theme.fn.smallerThan("sm")]: {
             width: selectedComplaint ? "90vw" : "100%",
+            maxHeight: "auto",
+            minHeight: "auto",
           },
         })}
       >

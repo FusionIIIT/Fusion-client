@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Paper, Badge, Button, Flex, Divider, Text } from "@mantine/core";
 import { useSelector } from "react-redux";
+import { notifications } from "@mantine/notifications";
 import { getComplaintReport } from "../routes/api"; // Ensure correct import path for getComplaintReport
 import "../styles/GenerateReport.css";
 import detailIcon from "../../../assets/detail.png";
@@ -70,21 +71,22 @@ function GenerateReport() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const { success, data, error } = await getComplaintReport(
-          filters,
-          token,
-        );
+        const { success, data } = await getComplaintReport(filters, token);
         if (success) {
-          // Remove or comment out debug logs for production
-          // console.log("Fetched data:", data);
           setComplaintsData(data);
         } else {
-          console.error("Error fetching complaints data:", error);
-          alert("Error fetching complaints. Please try again.");
+          notifications.show({
+            title: "Error",
+            message: "Error fetching complaints. Please try again.",
+            color: "red",
+          });
         }
       } catch (error) {
-        console.error("Unexpected error:", error);
-        alert("Unexpected error occurred. Please try again.");
+        notifications.show({
+          title: "Unexpected Error",
+          message: "Unexpected error occurred. Please try again.",
+          color: "red",
+        });
       }
     }
     fetchData();
@@ -177,8 +179,11 @@ function GenerateReport() {
 
   const generateCSV = () => {
     if (!filteredData.length) {
-      console.error("No data to generate CSV");
-      alert("No data to generate CSV");
+      notifications.show({
+        title: "No Data",
+        message: "No data to generate CSV.",
+        color: "red",
+      });
       return;
     }
     const currentDateTime = new Date().toLocaleString().replace(",", "");

@@ -1,6 +1,7 @@
 import { Textarea, Text, Button, Flex, Grid, Select } from "@mantine/core";
 import { useState } from "react";
 import PropTypes from "prop-types";
+import { notifications } from "@mantine/notifications";
 import { updateComplaintStatus } from "../routes/api"; // Import API function
 
 function UnresComp_ChangeStatus({ complaint, onBack }) {
@@ -21,7 +22,11 @@ function UnresComp_ChangeStatus({ complaint, onBack }) {
 
   const handleSubmit = async () => {
     if (!status) {
-      alert("Please select an option before submitting.");
+      notifications.show({
+        title: "Incomplete Action",
+        message: "Please select an option before submitting.",
+        color: "red",
+      });
       return;
     }
 
@@ -33,17 +38,26 @@ function UnresComp_ChangeStatus({ complaint, onBack }) {
       );
 
       if (response.success) {
-        alert("Thank you for resolving the complaint.");
+        notifications.show({
+          title: "Success",
+          message: "Thank you for resolving the complaint.",
+          color: "green",
+        });
         onBack();
       } else {
-        throw new Error(response.error || "Unknown error");
+        notifications.show({
+          title: "Error",
+          message:
+            "There was an issue submitting your response. Please try again.",
+          color: "red",
+        });
       }
     } catch (error) {
-      console.error(
-        "Error resolving the complaint:",
-        error.response ? error.response.data : error.message,
-      );
-      alert("There was an issue submitting your response. Please try again.");
+      notifications.show({
+        title: "Unexpected Error",
+        message: "An unexpected error occurred. Please try again.",
+        color: "red",
+      });
     }
   };
 

@@ -141,6 +141,7 @@ function ComplaintForm() {
         sx={(theme) => ({
           [theme.fn.smallerThan("sm")]: {
             width: "90vw",
+            padding: theme.spacing.sm,
           },
         })}
       >
@@ -163,7 +164,7 @@ function ComplaintForm() {
         )}
         <form onSubmit={handleSubmit}>
           <Grid>
-            <Grid.Col xs={12} md={6}>
+            <Grid.Col xs={12} md={6} sm={12}>
               <Select
                 label="Complaint Type"
                 placeholder="Select Complaint Type"
@@ -180,7 +181,7 @@ function ComplaintForm() {
                 })}
               />
             </Grid.Col>
-            <Grid.Col xs={12} md={6}>
+            <Grid.Col xs={12} md={6} sm={12}>
               <Select
                 label="Location"
                 placeholder="Select Location"
@@ -239,7 +240,17 @@ function ComplaintForm() {
               },
             })}
           />
-          <Flex direction="row" justify="space-between" align="center">
+          <Flex
+            direction="row"
+            justify="space-between"
+            align="center"
+            sx={(theme) => ({
+              [theme.fn.smallerThan("sm")]: {
+                flexDirection: "column",
+                alignItems: "stretch",
+              },
+            })}
+          >
             <Text size="sm" color="dimmed" fz="md">
               Complaint will be registered with your User ID.
             </Text>
