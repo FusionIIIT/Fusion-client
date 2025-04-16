@@ -2,9 +2,9 @@ import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
 import { Tabs, Button, Flex, Text } from "@mantine/core";
 import { useState } from "react";
 import styles from "../../../Dashboard/Dashboard.module.css";
+import ConvenorPage from "../pages/Convenor";
 import InviteApplications from "../forms/inviteApplications";
 import MCMApplications from "./MCM_Applications";
-import ConvenorPage from "../pages/Convenor";
 
 function ConvenorBreadcrumbs() {
   const [activeTab, setActiveTab] = useState("catalog");
