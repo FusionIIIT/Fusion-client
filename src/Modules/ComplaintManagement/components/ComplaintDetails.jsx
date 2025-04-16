@@ -47,6 +47,14 @@ function ComplaintDetails({ complaintId, onBack }) {
     window.open(`${host}${complaintDetails.upload_complaint}`, "_blank");
   };
 
+  const handleViewResolvedAttachment = () => {
+    if (!complaintDetails?.upload_resolved) {
+      alert("No resolved attachment found for this complaint.");
+      return;
+    }
+    window.open(`${host}${complaintDetails.upload_resolved}`, "_blank");
+  };
+
   if (loading) {
     return (
       <Flex justify="center" align="center" style={{ height: "100%" }}>
@@ -137,21 +145,9 @@ function ComplaintDetails({ complaintId, onBack }) {
             </Text>
           </Flex>
         </Grid.Col>
-        <Flex direction="column" gap="xs">
-          <Text size="14px" style={{ fontWeight: "bold" }}>
-            Status:
-          </Text>
-          <Text weight="300" size="14px">
-            {complaintDetails.status === 0
-              ? "Pending"
-              : complaintDetails.status === 1
-                ? "Redirected"
-                : complaintDetails.status === 2
-                  ? "Resolved"
-                  : "Declined"}
-          </Text>
-        </Flex>
       </Grid>
+
+      {/* View Complaint Attachment */}
       <Flex direction="row" gap="xs" align="center">
         <Text size="14px" style={{ fontWeight: "bold" }}>
           View attachment:
@@ -160,6 +156,22 @@ function ComplaintDetails({ complaintId, onBack }) {
           View
         </Button>
       </Flex>
+
+      {/* View Resolved Attachment */}
+      <Flex direction="row" gap="xs" align="center">
+        <Text size="14px" style={{ fontWeight: "bold" }}>
+          View resolved attachment:
+        </Text>
+        <Button
+          onClick={handleViewResolvedAttachment}
+          px={10}
+          py={0}
+          color="green"
+        >
+          View Resolved
+        </Button>
+      </Flex>
+
       <Flex direction="row-reverse" gap="xs">
         <Button size="sm" variant="filled" color="black" onClick={onBack}>
           Back
