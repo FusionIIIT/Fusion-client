@@ -198,7 +198,7 @@ export const rejectEventButton = async (eventId, token) => {
 export const modifyEventButton = async (eventId, token) => {
   return axios.put(
     `${host}/gymkhana/api/modify_event/`,
-    { id: eventId },
+    { id: eventId.eventId },
     {
       headers: {
         Authorization: `Token ${token}`,
@@ -256,7 +256,7 @@ export const useGetCommentsBudgetInfo = (budgetId, token) => {
 export const approveFICBudgetButton = async (budgetId, token) => {
   const response = axios.put(
     `${host}/gymkhana/api/fic_approve_budget/`,
-    { id: budgetId },
+    { id: budgetId.budgetId },
     {
       headers: {
         Authorization: `Token ${token}`,
@@ -320,7 +320,7 @@ export const rejectBudgetButton = async (budgetId, token) => {
 export const modifyBudgetButton = async (budgetId, token) => {
   return axios.put(
     `${host}/gymkhana/api/modify_budget/`,
-    { id: budgetId },
+    { id: budgetId.budgetId },
     {
       headers: {
         Authorization: `Token ${token}`,
@@ -351,6 +351,29 @@ export const useGetCurrentLoginnedRoleRelatedClub = (InputName, token) => {
     },
   });
 };
+
+export const useGetClubPositionData = (token) => {
+  return useQuery({
+    queryKey: ["RoleRelatedTocLUB"],
+    queryFn: async () => {
+      try {
+        const { data } = await axios.get(
+          `${host}/gymkhana/api/list_all_club_position/`,
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+          },
+        );
+        return data;
+      } catch (error) {
+        console.error("Error:", error.response?.data || error.message);
+        throw new Error("Failed to fetch data");
+      }
+    },
+  });
+};
+
 export const useGetFests = (token) => {
   return useQuery({
     queryKey: ["FestsData"],

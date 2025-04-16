@@ -41,6 +41,7 @@ function GymkhanaDashboard() {
 
   const { data: upcomingEvents } = useGetUpcomingEvents(token);
   const { data: pastEvents } = useGetPastEvents(token);
+  console.log(pastEvents);
   const { data: fests } = useGetFests(token);
   const { data: clubMembers, refetch: refetchClubMembers } = useGetClubMembers(
     value,

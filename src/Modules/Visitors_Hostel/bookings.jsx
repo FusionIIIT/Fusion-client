@@ -226,7 +226,7 @@ function BookingsRequestTable({ bookings }) {
                     textAlign: "center",
                   }}
                 >
-                  {booking.modifiedCategory || booking.category}
+                  {booking.category || booking.modifiedCategory}
                   {/* {console.log("BOOKING: ", booking)} */}
                 </td>
                 {role === "VhIncharge" ? (

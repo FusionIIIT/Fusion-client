@@ -62,7 +62,7 @@ function ConfirmBookingIn({
           bookingFrom: booking.bookingFrom,
           bookingTo: booking.bookingTo,
           visitorCategory: booking.visitorCategory,
-          modifiedCategory: bookingf?.modifiedCategory || "", // Use optional chaining and fallback
+          modifiedCategory: booking.visitorCategory || "", // Use optional chaining and fallback
           personCount: booking.personCount,
           numberOfRooms: booking.numberOfRooms,
           rooms: bookingf?.rooms || [], // Use optional chaining and fallback
@@ -208,7 +208,7 @@ function ConfirmBookingIn({
               {console.log("FORMDATA :", formData)}
               <Select
                 label="Modified Category"
-                value={formData.visitorCategory}
+                value={formData.modifiedCategory}
                 onChange={(value) =>
                   handleInputChange("modifiedCategory", value)
                 }
