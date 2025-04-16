@@ -254,7 +254,13 @@ function ForwardBookingForm({
               <MultiSelect
                 label="Rooms (required*)"
                 value={formData.rooms}
-                onChange={(value) => handleInputChange("rooms", value)}
+                onChange={(value) => {
+                  if (value.length <= formData.numberOfRooms) {
+                    handleInputChange("rooms", value); // Allow selection if within limit
+                  } else {
+                    console.warn("Cannot select more rooms than required!"); // Warn user
+                  }
+                }}
                 data={availableRooms.map((room) => ({
                   value: room,
                   label: room,
