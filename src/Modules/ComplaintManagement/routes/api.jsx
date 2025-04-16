@@ -5,8 +5,8 @@ const hostAdd = host;
 
 // Function to lodge a complaint
 export const lodgeComplaint = async (role, complaintData, token) => {
-  const url = role.includes("supervisor")
-    ? `${hostAdd}/complaint/supervisor/lodge/`
+  const url = role.includes("service_provider")
+    ? `${hostAdd}/complaint/service_provider/lodge/`
     : role.includes("caretaker") || role.includes("convener")
       ? `${hostAdd}/complaint/caretaker/lodge/`
       : `${hostAdd}/complaint/user/`;
@@ -44,8 +44,8 @@ export const getComplaintDetails = async (complaintId, token) => {
 
 // Function to fetch complaints by role
 export const getComplaintsByRole = async (role, token) => {
-  const url = role.includes("supervisor")
-    ? `${hostAdd}/complaint/supervisor/`
+  const url = role.includes("service_provider")
+    ? `${hostAdd}/complaint/service_provider/`
     : role.includes("caretaker") || role.includes("convener")
       ? `${hostAdd}/complaint/caretaker/`
       : `${hostAdd}/complaint/user/`;

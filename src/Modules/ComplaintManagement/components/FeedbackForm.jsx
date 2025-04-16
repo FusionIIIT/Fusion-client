@@ -3,10 +3,10 @@ import {
   Button,
   Flex,
   Grid,
-  Loader,
   Text,
   Textarea,
   Select,
+  Loader,
   CheckIcon,
 } from "@mantine/core";
 import PropTypes from "prop-types";
@@ -80,22 +80,26 @@ function FeedbackForm({ complaint }) {
           Complaint ID: {complaint.id}
         </Text>
       </Flex>
-      <Grid columns="3" style={{ width: "100%" }}>
+      <Grid columns="2" style={{ width: "100%" }}>
         <Grid.Col span={1}>
-          <Text size="14px" style={{ fontWeight: "bold" }}>
-            Register Date:
-          </Text>
-          <Text weight="300" size="14px">
-            {formatDateTime(complaint.complaint_date)}
-          </Text>
+          <Flex direction="column" gap="xs">
+            <Text size="14px" style={{ fontWeight: "bold" }}>
+              Register Date:
+            </Text>
+            <Text weight="300" size="14px">
+              {formatDateTime(complaint.complaint_date)}
+            </Text>
+          </Flex>
         </Grid.Col>
         <Grid.Col span={1}>
-          <Text size="14px" style={{ fontWeight: "bold" }}>
-            Finished Date:
-          </Text>
-          <Text weight="300" size="14px">
-            {formatDateTime(complaint.complaint_finish)}
-          </Text>
+          <Flex direction="column" gap="xs">
+            <Text size="14px" style={{ fontWeight: "bold" }}>
+              Finished Date:
+            </Text>
+            <Text weight="300" size="14px">
+              {formatDateTime(complaint.complaint_finish)}
+            </Text>
+          </Flex>
         </Grid.Col>
       </Grid>
       <Flex direction="column" gap="xs">
@@ -127,7 +131,7 @@ function FeedbackForm({ complaint }) {
           ]}
         />
       </Flex>
-      <Flex direction="row" justify="end" align="center" gap="sm">
+      <Flex direction="row-reverse" gap="xs">
         <Button
           onClick={handleSubmit}
           disabled={isLoading || isSuccess}

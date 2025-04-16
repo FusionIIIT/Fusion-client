@@ -60,7 +60,7 @@ function GenerateReport() {
     status: "",
     startDate: "",
     endDate: "",
-    sortBy: "",
+    sortBy: "mostRecent", // Default sort set to most recent
   });
 
   const username = useSelector((state) => state.user.username);
