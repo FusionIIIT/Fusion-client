@@ -8,93 +8,60 @@ import {
   Text,
   Loader,
   Button,
-  Badge,
   ScrollArea,
 } from "@mantine/core";
-import { ArrowBendDoubleUpRight, Eye, FileText } from "@phosphor-icons/react";
+import {
+  Eye,
+  DownloadSimple,
+  FileText,
+  ArrowUp,
+  ArrowDown,
+  ArrowsDownUp,
+} from "@phosphor-icons/react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import classes from "../../styles/tableStyle.module.css";
-import { fetchStaffRoute, fetchPIDsRoute } from "../../../../routes/RSPCRoutes";
+import { fetchStaffRoute } from "../../../../routes/RSPCRoutes";
 import StaffViewModal from "../modals/staffViewModal";
-import { badgeColor } from "../../helpers/badgeColours";
-import SelectionCommitteeReportApprovalModal from "../modals/selectionCommitteeReportApprovalModal";
-import AdvertisementAndCommitteeApprovalModal from "../modals/advertisementAndCommitteeApprovalModal";
-import JoiningReportAndIDCardApprovalModal from "../modals/joiningReportAndIDCardApprovalModal";
+import JoiningReportAndIDCardFormModal from "../modals/joiningReportAndIDCardFormModal";
+import { host } from "../../../../routes/globalRoutes";
 
-function StaffTable({ setActiveTab }) {
+function StaffTable({ projectData }) {
   const [scrolled, setScrolled] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fetched, setFetched] = useState(true);
   const role = useSelector((state) => state.user.role);
-
+  const [documentModalOpened, setDocumentModalOpened] = useState(false);
   const [viewModalOpened, setViewModalOpened] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState(null);
-  const [documentModalOpened, setDocumentModalOpened] = useState(false);
-  const [reportApprovalModalOpened, setReportApprovalModalOpened] =
-    useState(false);
-  const [
-    advertisementAndCommitteeApprovalModalOpened,
-    setAdvertisementAndCommitteeApprovalModalOpened,
-  ] = useState(false);
 
-  const [PIDs, setPIDs] = useState([]);
-  useEffect(() => {
-    const fetchPIDs = async () => {
-      const token = localStorage.getItem("authToken");
-      if (!token) return console.error("No authentication token found!");
-      try {
-        const response = await axios.get(fetchPIDsRoute(role), {
-          headers: {
-            Authorization: `Token ${token}`,
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        });
-        console.log("Fetched PIDs:", response.data);
-        setPIDs(response.data);
-      } catch (error) {
-        console.error("Error during Axios GET:", error);
-      }
-    };
-    fetchPIDs();
-  }, [role]);
+  const [sortColumn, setSortColumn] = useState(null);
+  const [sortDirection, setSortDirection] = useState("asc");
+  const sortData = (data, column) => {
+    const sorted = [...data].sort((a, b) => {
+      if (a[column] === null || a[column] === undefined) return 1;
+      if (b[column] === null || b[column] === undefined) return -1;
 
-  const handleViewClick = (row) => {
-    setSelectedStaff(row);
-    setViewModalOpened(true);
-  };
+      const aValue =
+        typeof a[column] === "string" ? a[column].toLowerCase() : a[column];
+      const bValue =
+        typeof b[column] === "string" ? b[column].toLowerCase() : b[column];
 
-  const handleStaffDecisionClick = (row) => {
-    setSelectedStaff(row);
-    if (!row.final_selection || row.final_selection.length === 0) {
-      setAdvertisementAndCommitteeApprovalModalOpened(true);
-    } else if (row.doc_approval === "Pending") {
-      setDocumentModalOpened(true);
-    } else {
-      setReportApprovalModalOpened(true);
-    }
-  };
-
-  const navigate = useNavigate();
-  const handleStaffActionClick = (row) => {
-    navigate("/research/forms", {
-      state: { data: row, initialTab: "4" },
+      if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+      return 0;
     });
+    return sorted;
   };
-
-  const handleCommitteeActionClick = (row) => {
-    setSelectedStaff(row);
-    if ("pi_name" in row) {
-      navigate("/research/forms", {
-        state: { data: row, initialTab: "3" },
-      });
+  const handleSort = (column) => {
+    if (sortColumn === column) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
-      setReportApprovalModalOpened(true);
+      setSortColumn(column);
+      setSortDirection("asc");
     }
   };
 
-  const [staffRequests, setStaffRequests] = useState([]);
+  const [staff, setStaff] = useState([]);
   useEffect(() => {
     setLoading(true);
     const fetchStaffData = async () => {
@@ -103,7 +70,7 @@ function StaffTable({ setActiveTab }) {
 
       try {
         const response = await axios.get(fetchStaffRoute, {
-          params: { "pids[]": PIDs, role },
+          params: { "pids[]": [projectData.pid], type: 3 },
           headers: {
             Authorization: `Token ${token}`,
             "Content-Type": "application/json",
@@ -111,7 +78,7 @@ function StaffTable({ setActiveTab }) {
           withCredentials: true, // Include credentials if necessary
         });
         console.log("Fetched Staff:", response.data);
-        setStaffRequests(response.data);
+        setStaff(response.data);
         setLoading(false);
       } catch (error) {
         console.error("Error during fetching details:", error);
@@ -120,117 +87,87 @@ function StaffTable({ setActiveTab }) {
       }
     };
     fetchStaffData();
-  }, [PIDs]);
+  }, projectData);
 
-  const staffRows = staffRequests.map((row, index) => (
-    <Table.Tr key={index}>
-      <Table.Td className={classes["row-content"]}>
-        <Badge color={badgeColor[row.approval]} size="lg">
-          {row.approval}
-        </Badge>
-      </Table.Td>
-      <Table.Td className={classes["row-content"]}>
-        {row.project_title}
-      </Table.Td>
-      <Table.Td className={classes["row-content"]}>
-        {row.person ? row.person : "TBD"}
-      </Table.Td>
-      <Table.Td className={classes["row-content"]}>
-        {role.includes("HOD") ? (
+  const handleViewClick = (row) => {
+    setSelectedStaff(row);
+    setViewModalOpened(true);
+  };
+  const handleActionClick = (row) => {
+    setSelectedStaff(row);
+    setDocumentModalOpened(true);
+  };
+
+  const displayedStaff = sortColumn ? sortData(staff, sortColumn) : staff;
+  const staffRows = displayedStaff.map((row, index) => {
+    const startDate = row.start_date ? new Date(row.start_date) : null;
+    const endDate =
+      startDate && row.duration > 0
+        ? new Date(startDate.setMonth(startDate.getMonth() + row.duration))
+        : null;
+    const isOver = endDate && new Date() > endDate;
+    return (
+      <Table.Tr key={index} style={isOver && { backgroundColor: "#D3D3D3" }}>
+        <Table.Td className={classes["row-content"]}>{row.person}</Table.Td>
+        <Table.Td className={classes["row-content"]}>{row.type}</Table.Td>
+        <Table.Td className={classes["row-content"]}>
+          {row.start_date
+            ? new Date(row.start_date).toLocaleDateString()
+            : "---"}
+        </Table.Td>
+        <Table.Td className={classes["row-content"]}>
+          {row.duration > 0 ? `${row.duration} months` : "---"}
+        </Table.Td>
+        <Table.Td className={classes["row-content"]}>
+          {row.salary_per_month > 0 ? `₹${row.salary_per_month}` : "---"}
+        </Table.Td>
+        <Table.Td className={classes["row-content"]}>
+          {role.includes("SectionHead_RSPC") ? (
+            <Button
+              onClick={() => handleActionClick(row)}
+              variant="outline"
+              color="#15ABFF"
+              size="xs"
+              disabled={projectData.status !== "OnGoing"}
+              style={{ borderRadius: "8px" }}
+            >
+              <FileText size={26} style={{ marginRight: "3px" }} />
+              Document Upload
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              color="#15ABFF"
+              size="xs"
+              style={{ borderRadius: "8px" }}
+              component="a"
+              href={
+                row.joining_report ? `${host}/${row.joining_report}` : undefined
+              } // Directly access the file URL
+              target="_blank"
+              rel="noopener noreferrer"
+              disabled={!row.joining_report}
+            >
+              <DownloadSimple size={26} style={{ marginRight: "3px" }} />
+              Open Report
+            </Button>
+          )}
+        </Table.Td>
+        <Table.Td className={classes["row-content"]}>
           <Button
-            onClick={() => handleStaffDecisionClick(row)}
+            onClick={() => handleViewClick(row)}
             variant="outline"
             color="#15ABFF"
             size="xs"
-            disabled={row.approval !== "HoD Forward"}
             style={{ borderRadius: "8px" }}
           >
-            <ArrowBendDoubleUpRight size={26} style={{ marginRight: "3px" }} />
-            Forward File
+            <Eye size={26} style={{ margin: "3px" }} />
+            View
           </Button>
-        ) : role.includes("SectionHead_RSPC") ? (
-          <Button
-            onClick={() => handleStaffDecisionClick(row)}
-            variant="outline"
-            color="#15ABFF"
-            size="xs"
-            disabled={
-              (row.approval !== "RSPC Approval" ||
-                row.current_approver !== role) &&
-              row.doc_approval !== "Pending"
-            }
-            style={{ borderRadius: "8px" }}
-          >
-            <FileText size={26} style={{ marginRight: "3px" }} />
-            Dean Approval
-          </Button>
-        ) : role.includes("rspc_admin") ? (
-          <Button
-            onClick={() => handleStaffDecisionClick(row)}
-            variant="outline"
-            color="#15ABFF"
-            size="xs"
-            disabled={
-              row.approval !== "RSPC Approval" || row.current_approver !== role
-            }
-            style={{ borderRadius: "8px" }}
-          >
-            <FileText size={26} style={{ marginRight: "3px" }} />
-            Dean Approval
-          </Button>
-        ) : !("pi_name" in row) ? (
-          <Button
-            onClick={() => handleCommitteeActionClick(row)}
-            variant="outline"
-            color="#15ABFF"
-            size="xs"
-            disabled={row.approval !== "Committee Approval"}
-            style={{ borderRadius: "8px" }}
-          >
-            <FileText size={26} style={{ marginRight: "3px" }} />
-            {"pi_name" in row ? "Selection Committee Report" : ""}
-            Approve Report
-          </Button>
-        ) : row.approval === "Hiring" ? (
-          <Button
-            onClick={() => handleCommitteeActionClick(row)}
-            variant="outline"
-            color="#15ABFF"
-            size="xs"
-            disabled={row.approval !== "Hiring"}
-            style={{ borderRadius: "8px" }}
-          >
-            <FileText size={26} style={{ marginRight: "3px" }} />
-            Selection Committee Report
-          </Button>
-        ) : (
-          <Button
-            onClick={() => handleStaffActionClick(row)}
-            variant="outline"
-            color="#15ABFF"
-            size="xs"
-            disabled={row.approval !== "Approved"}
-            style={{ borderRadius: "8px" }}
-          >
-            <FileText size={26} style={{ marginRight: "3px" }} />
-            Forms
-          </Button>
-        )}
-      </Table.Td>
-      <Table.Td className={classes["row-content"]}>
-        <Button
-          onClick={() => handleViewClick(row)}
-          variant="outline"
-          color="#15ABFF"
-          size="xs"
-          style={{ borderRadius: "8px" }}
-        >
-          <Eye size={26} style={{ margin: "3px" }} />
-          View
-        </Button>
-      </Table.Td>
-    </Table.Tr>
-  ));
+        </Table.Td>
+      </Table.Tr>
+    );
+  });
 
   return (
     <div style={{ padding: "3% 5%" }}>
@@ -243,13 +180,123 @@ function StaffTable({ setActiveTab }) {
             className={cx(classes.header, { [classes.scrolled]: scrolled })}
           >
             <Table.Tr>
-              <Table.Th className={classes["header-cell"]}>Status</Table.Th>
-              <Table.Th className={classes["header-cell"]}>
-                Project Title
+              <Table.Th
+                className={classes["header-cell"]}
+                onClick={() => handleSort("person")}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  Name
+                  {sortColumn === "person" ? (
+                    sortDirection === "asc" ? (
+                      <ArrowUp size={16} style={{ marginLeft: "5px" }} />
+                    ) : (
+                      <ArrowDown size={16} style={{ marginLeft: "5px" }} />
+                    )
+                  ) : (
+                    <ArrowsDownUp size={16} style={{ marginLeft: "5px" }} />
+                  )}
+                </div>
               </Table.Th>
-              <Table.Th className={classes["header-cell"]}>Staff Name</Table.Th>
+              <Table.Th
+                className={classes["header-cell"]}
+                onClick={() => handleSort("type")}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  Designation
+                  {sortColumn === "type" ? (
+                    sortDirection === "asc" ? (
+                      <ArrowUp size={16} style={{ marginLeft: "5px" }} />
+                    ) : (
+                      <ArrowDown size={16} style={{ marginLeft: "5px" }} />
+                    )
+                  ) : (
+                    <ArrowsDownUp size={16} style={{ marginLeft: "5px" }} />
+                  )}
+                </div>
+              </Table.Th>
+              <Table.Th
+                className={classes["header-cell"]}
+                onClick={() => handleSort("start_date")}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  Joining Date
+                  {sortColumn === "start_date" ? (
+                    sortDirection === "asc" ? (
+                      <ArrowUp size={16} style={{ marginLeft: "5px" }} />
+                    ) : (
+                      <ArrowDown size={16} style={{ marginLeft: "5px" }} />
+                    )
+                  ) : (
+                    <ArrowsDownUp size={16} style={{ marginLeft: "5px" }} />
+                  )}
+                </div>
+              </Table.Th>
+              <Table.Th
+                className={classes["header-cell"]}
+                onClick={() => handleSort("duration")}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  Tenure
+                  {sortColumn === "duration" ? (
+                    sortDirection === "asc" ? (
+                      <ArrowUp size={16} style={{ marginLeft: "5px" }} />
+                    ) : (
+                      <ArrowDown size={16} style={{ marginLeft: "5px" }} />
+                    )
+                  ) : (
+                    <ArrowsDownUp size={16} style={{ marginLeft: "5px" }} />
+                  )}
+                </div>
+              </Table.Th>
+              <Table.Th
+                className={classes["header-cell"]}
+                onClick={() => handleSort("salary_per_month")}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  Salary (per month)
+                  {sortColumn === "salary_per_month" ? (
+                    sortDirection === "asc" ? (
+                      <ArrowUp size={16} style={{ marginLeft: "5px" }} />
+                    ) : (
+                      <ArrowDown size={16} style={{ marginLeft: "5px" }} />
+                    )
+                  ) : (
+                    <ArrowsDownUp size={16} style={{ marginLeft: "5px" }} />
+                  )}
+                </div>
+              </Table.Th>
               <Table.Th className={classes["header-cell"]}>
-                Action Centre
+                Joining Report
               </Table.Th>
               <Table.Th className={classes["header-cell"]}>
                 File Details
@@ -270,8 +317,8 @@ function StaffTable({ setActiveTab }) {
             ) : (
               <Table.Tr>
                 <Table.Td colSpan="6" align="center">
-                  <Text color="red" size="xl" weight={700} align="center">
-                    Failed to load personnel details
+                  <Text color="red" align="center">
+                    Failed to load staff details
                   </Text>
                 </Table.Td>
               </Table.Tr>
@@ -279,35 +326,26 @@ function StaffTable({ setActiveTab }) {
           </Table.Tbody>
         </Table>
       </ScrollArea>
+
       <StaffViewModal
         opened={viewModalOpened}
         onClose={() => setViewModalOpened(false)}
         staffData={selectedStaff}
       />
-      <SelectionCommitteeReportApprovalModal
-        opened={reportApprovalModalOpened}
-        onClose={() => setReportApprovalModalOpened(false)}
-        staffData={selectedStaff}
-        setActiveTab={setActiveTab}
-      />
-      <AdvertisementAndCommitteeApprovalModal
-        opened={advertisementAndCommitteeApprovalModalOpened}
-        onClose={() => setAdvertisementAndCommitteeApprovalModalOpened(false)}
-        staffData={selectedStaff}
-        setActiveTab={setActiveTab}
-      />
-      <JoiningReportAndIDCardApprovalModal
+      <JoiningReportAndIDCardFormModal
         opened={documentModalOpened}
         onClose={() => setDocumentModalOpened(false)}
         staffData={selectedStaff}
-        setActiveTab={setActiveTab}
       />
     </div>
   );
 }
 
 StaffTable.propTypes = {
-  setActiveTab: PropTypes.func.isRequired,
+  projectData: PropTypes.shape({
+    pid: PropTypes.string.isRequired,
+    status: PropTypes.string.isRequired,
+  }).isRequired,
 };
 
 export default StaffTable;

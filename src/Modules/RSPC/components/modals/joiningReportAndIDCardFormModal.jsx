@@ -1,37 +1,38 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import PropTypes from "prop-types";
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
+  Modal,
   Button,
-  TextInput,
-  NumberInput,
-  Paper,
-  Title,
-  Grid,
   Text,
-  Alert,
   Divider,
+  Grid,
+  TextInput,
+  Title,
+  NumberInput,
   Anchor,
+  Alert,
+  Group,
 } from "@mantine/core";
-import { FileText, ThumbsUp, ThumbsDown } from "@phosphor-icons/react";
 import { useForm } from "@mantine/form";
 import axios from "axios";
+import { FileText, ThumbsUp, ThumbsDown } from "@phosphor-icons/react";
 import classes from "../../styles/formStyle.module.css";
 import { staffDocumentUploadRoute } from "../../../../routes/RSPCRoutes";
 import { host } from "../../../../routes/globalRoutes";
 
-function JoiningReportAndIDCardForm({ staffData }) {
+function JoiningReportAndIDCardFormModal({ opened, onClose, staffData }) {
   const [report, setReport] = useState(null);
   const [ID, setID] = useState(null);
   const [successAlertVisible, setSuccessAlertVisible] = useState(false);
   const [failureAlertVisible, setFailureAlertVisible] = useState(false);
-  const navigate = useNavigate();
 
   const form = useForm({
     initialValues: {
-      salary_per_month: staffData.salary_per_month,
-      start_date: new Date(staffData.start_date).toISOString().split("T")[0],
+      salary_per_month: staffData?.salary_per_month,
+      start_date: staffData?.start_date
+        ? new Date(staffData.start_date).toISOString().split("T")[0]
+        : "",
     },
     validate: {
       salary_per_month: (value) =>
@@ -75,10 +76,11 @@ function JoiningReportAndIDCardForm({ staffData }) {
         withCredentials: true,
       });
       console.log(response.data);
+      onClose();
       setSuccessAlertVisible(true);
       setTimeout(() => {
         setSuccessAlertVisible(false);
-        navigate("/research");
+        window.location.reload();
       }, 2500);
     } catch (error) {
       console.error("Error during Axios POST:", error);
@@ -90,23 +92,29 @@ function JoiningReportAndIDCardForm({ staffData }) {
   };
 
   return (
-    <>
+    <Modal
+      opened={opened}
+      onClose={onClose}
+      size="xl"
+      styles={{
+        content: {
+          borderLeft: "0.7rem solid #15ABFF",
+        },
+      }}
+    >
       <form onSubmit={form.onSubmit(handleSubmit)}>
         {staffData &&
         Object.keys(staffData).length > 0 &&
         "sid" in staffData ? (
-          <Paper padding="lg" shadow="s" className={classes.formContainer}>
+          <>
             <Title order={2} className={classes.formTitle}>
               Upload Joining Report And ID Card
             </Title>
-
             {staffData.approval === "Approved" ? (
               <>
                 <Grid gutter="xl">
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Project Title
-                    </Text>
+                    <Text className={classes.fieldLabel}>Project Title</Text>
                     <TextInput
                       value={staffData.project_title}
                       readOnly
@@ -119,9 +127,7 @@ function JoiningReportAndIDCardForm({ staffData }) {
                     />
                   </Grid.Col>
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Project ID
-                    </Text>
+                    <Text className={classes.fieldLabel}>Project ID</Text>
                     <TextInput
                       value={staffData.pid}
                       readOnly
@@ -135,9 +141,7 @@ function JoiningReportAndIDCardForm({ staffData }) {
                   </Grid.Col>
 
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Personnel Name
-                    </Text>
+                    <Text className={classes.fieldLabel}>Personnel Name</Text>
                     <TextInput
                       value={staffData.person}
                       readOnly
@@ -150,9 +154,7 @@ function JoiningReportAndIDCardForm({ staffData }) {
                     />
                   </Grid.Col>
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Staff ID
-                    </Text>
+                    <Text className={classes.fieldLabel}>Staff ID</Text>
                     <TextInput
                       value={staffData.sid}
                       readOnly
@@ -166,9 +168,7 @@ function JoiningReportAndIDCardForm({ staffData }) {
                   </Grid.Col>
 
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Designation
-                    </Text>
+                    <Text className={classes.fieldLabel}>Designation</Text>
                     <TextInput
                       value={staffData.type}
                       readOnly
@@ -181,11 +181,11 @@ function JoiningReportAndIDCardForm({ staffData }) {
                     />
                   </Grid.Col>
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
+                    <Text className={classes.fieldLabel}>
                       Consolidated Salary
                     </Text>
                     <TextInput
-                      value={`INR ${staffData.salary}`}
+                      value={`₹${staffData.salary}`}
                       readOnly
                       styles={{
                         input: {
@@ -197,7 +197,7 @@ function JoiningReportAndIDCardForm({ staffData }) {
                   </Grid.Col>
 
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
+                    <Text className={classes.fieldLabel}>
                       Appointment Duration
                     </Text>
                     <TextInput
@@ -212,9 +212,7 @@ function JoiningReportAndIDCardForm({ staffData }) {
                     />
                   </Grid.Col>
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Joining Date
-                    </Text>
+                    <Text className={classes.fieldLabel}>Joining Date</Text>
                     <TextInput
                       value={new Date(
                         staffData.start_date,
@@ -231,24 +229,24 @@ function JoiningReportAndIDCardForm({ staffData }) {
 
                   <Grid.Col span={12}>
                     <Divider
-                      my="lg"
-                      label="X X X"
+                      my="sm"
+                      label=""
                       labelPosition="center"
-                      size="md"
+                      size="sm"
                     />
                   </Grid.Col>
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
+                    <Text className={classes.fieldLabel}>
                       Salary Per Month (as mentioned in Joining Report)
                     </Text>
                     <NumberInput
-                      placeholder="Salary per month for personnel (in INR)"
+                      placeholder="Salary per month for personnel (in ₹)"
                       min={0}
                       {...form.getInputProps("salary_per_month")}
                     />
                   </Grid.Col>
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
+                    <Text className={classes.fieldLabel}>
                       Joining Date (as mentioned in Joining Report)
                     </Text>
                     <input
@@ -259,43 +257,47 @@ function JoiningReportAndIDCardForm({ staffData }) {
                     />
                   </Grid.Col>
                   <Grid.Col span={12}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Joining Report{" "}
-                      <Anchor
-                        href="https://www.iiitdmj.ac.in/rspc.iiitdmj.ac.in/DRSPC/PEM/PEM06%20Joining%20Report.docx"
-                        style={{ fontSize: "0.85em" }}
-                      >
-                        (Download format here)
-                      </Anchor>
-                    </Text>
-                    <div className={classes.fileInputContainer}>
-                      <Button
-                        variant="outline"
-                        color="#15ABFF"
-                        size="md"
-                        component="label"
-                        className={classes.fileInputButton}
-                        style={{ borderRadius: "8px" }}
-                      >
-                        <FileText size={26} style={{ marginRight: "3px" }} />
-                        Choose File
-                        <input
-                          type="file"
-                          hidden
-                          onChange={(event) =>
-                            setReport(event.currentTarget.files[0])
-                          }
-                        />
-                      </Button>
-                      {report && (
-                        <span className={classes.fileName}>{report.name}</span>
-                      )}
-                    </div>
+                    <Group position="apart" align="center">
+                      <Text className={classes.fieldLabel}>
+                        Joining Report{" "}
+                        <Anchor
+                          href="https://www.iiitdmj.ac.in/rspc.iiitdmj.ac.in/DRSPC/PEM/PEM06%20Joining%20Report.docx"
+                          style={{ fontSize: "0.85em" }}
+                        >
+                          (Download format here)
+                        </Anchor>
+                      </Text>
+                      <div className={classes.fileInputContainer}>
+                        <Button
+                          variant="outline"
+                          color="#15ABFF"
+                          size="xs"
+                          component="label"
+                          className={classes.fileInputButton}
+                          style={{ borderRadius: "8px" }}
+                        >
+                          <FileText size={26} style={{ marginRight: "3px" }} />
+                          Choose File
+                          <input
+                            type="file"
+                            hidden
+                            onChange={(event) =>
+                              setReport(event.currentTarget.files[0])
+                            }
+                          />
+                        </Button>
+                        {report && (
+                          <span className={classes.fileName}>
+                            {report.name}
+                          </span>
+                        )}
+                      </div>
+                    </Group>
                     {staffData.joining_report && (
                       <Button
                         variant="outline"
                         color="#15ABFF"
-                        size="md"
+                        size="xs"
                         className={classes.fileInputButton}
                         style={{ borderRadius: "8px" }}
                         component="a"
@@ -304,57 +306,59 @@ function JoiningReportAndIDCardForm({ staffData }) {
                         rel="noopener noreferrer"
                       >
                         <FileText size={26} style={{ marginRight: "3px" }} />
-                        Already Uploaded Joining Report
+                        Uploaded Joining Report
                       </Button>
                     )}
                   </Grid.Col>
 
                   <Grid.Col span={12}>
                     <Divider
-                      my="lg"
-                      label="X X X"
+                      my="sm"
+                      label=""
                       labelPosition="center"
-                      size="md"
+                      size="sm"
                     />
                   </Grid.Col>
                   <Grid.Col span={12}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      ID Card{" "}
-                      <Anchor
-                        href="https://www.iiitdmj.ac.in/rspc.iiitdmj.ac.in/DRSPC/PEM/PEM07%20ID%20Card.doc"
-                        style={{ fontSize: "0.85em" }}
-                      >
-                        (Download format here)
-                      </Anchor>
-                    </Text>
-                    <div className={classes.fileInputContainer}>
-                      <Button
-                        variant="outline"
-                        color="#15ABFF"
-                        size="md"
-                        component="label"
-                        className={classes.fileInputButton}
-                        style={{ borderRadius: "8px" }}
-                      >
-                        <FileText size={26} style={{ marginRight: "3px" }} />
-                        Choose File
-                        <input
-                          type="file"
-                          hidden
-                          onChange={(event) =>
-                            setID(event.currentTarget.files[0])
-                          }
-                        />
-                      </Button>
-                      {ID && (
-                        <span className={classes.fileName}>{ID.name}</span>
-                      )}
-                    </div>
+                    <Group position="apart" align="center">
+                      <Text className={classes.fieldLabel}>
+                        ID Card{" "}
+                        <Anchor
+                          href="https://www.iiitdmj.ac.in/rspc.iiitdmj.ac.in/DRSPC/PEM/PEM07%20ID%20Card.doc"
+                          style={{ fontSize: "0.85em" }}
+                        >
+                          (Download format here)
+                        </Anchor>
+                      </Text>
+                      <div className={classes.fileInputContainer}>
+                        <Button
+                          variant="outline"
+                          color="#15ABFF"
+                          size="xs"
+                          component="label"
+                          className={classes.fileInputButton}
+                          style={{ borderRadius: "8px" }}
+                        >
+                          <FileText size={26} style={{ marginRight: "3px" }} />
+                          Choose File
+                          <input
+                            type="file"
+                            hidden
+                            onChange={(event) =>
+                              setID(event.currentTarget.files[0])
+                            }
+                          />
+                        </Button>
+                        {ID && (
+                          <span className={classes.fileName}>{ID.name}</span>
+                        )}
+                      </div>
+                    </Group>
                     {staffData.id_card && (
                       <Button
                         variant="outline"
                         color="#15ABFF"
-                        size="md"
+                        size="xs"
                         className={classes.fileInputButton}
                         style={{ borderRadius: "8px" }}
                         component="a"
@@ -363,7 +367,7 @@ function JoiningReportAndIDCardForm({ staffData }) {
                         rel="noopener noreferrer"
                       >
                         <FileText size={26} style={{ marginRight: "3px" }} />
-                        Already Uploaded ID Card
+                        Uploaded ID Card
                       </Button>
                     )}
                   </Grid.Col>
@@ -381,18 +385,17 @@ function JoiningReportAndIDCardForm({ staffData }) {
                 </div>
               </>
             ) : (
-              <Text color="red" size="xl" weight={700} align="center">
+              <Text color="red" align="center">
                 Staff position not yet filled!
               </Text>
             )}
-          </Paper>
+          </>
         ) : (
-          <Text color="red" size="xl" weight={700} align="center">
+          <Text color="red" align="center">
             Failed to load staff details
           </Text>
         )}
       </form>
-
       {(successAlertVisible || failureAlertVisible) && (
         <div className={classes.overlay}>
           <Alert
@@ -418,23 +421,31 @@ function JoiningReportAndIDCardForm({ staffData }) {
           </Alert>
         </div>
       )}
-    </>
+    </Modal>
   );
 }
 
-JoiningReportAndIDCardForm.propTypes = {
+JoiningReportAndIDCardFormModal.propTypes = {
+  opened: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
   staffData: PropTypes.shape({
     sid: PropTypes.number,
     pid: PropTypes.number,
     project_title: PropTypes.string,
-    salary_per_month: PropTypes.string,
+    eligibility: PropTypes.string,
+    sponsor_agency: PropTypes.string,
     duration_project: PropTypes.number,
+    ad_file: PropTypes.string,
+    comparative_file: PropTypes.string,
     selection_committee: PropTypes.arrayOf(PropTypes.string),
     test_date: PropTypes.string,
+    test_mode: PropTypes.string,
     submission_date: PropTypes.string,
     id_card: PropTypes.string,
     duration: PropTypes.number,
-    pi_name: PropTypes.string,
+    candidates_applied: PropTypes.number,
+    candidates_called: PropTypes.number,
+    candidates_interviewed: PropTypes.number,
     approval: PropTypes.string,
     joining_report: PropTypes.string,
     type: PropTypes.string,
@@ -443,9 +454,21 @@ JoiningReportAndIDCardForm.propTypes = {
     interview_date: PropTypes.string,
     interview_place: PropTypes.string,
     salary: PropTypes.number,
-    has_funds: PropTypes.string,
+    salary_per_month: PropTypes.number,
     person: PropTypes.string,
+    biodata_final: PropTypes.arrayOf(PropTypes.string),
+    biodata_number: PropTypes.number,
+    final_selection: PropTypes.arrayOf(
+      PropTypes.shape({
+        name: PropTypes.string.isRequired,
+      }),
+    ),
+    waiting_list: PropTypes.arrayOf(
+      PropTypes.shape({
+        name: PropTypes.string.isRequired,
+      }),
+    ),
   }).isRequired,
 };
 
-export default JoiningReportAndIDCardForm;
+export default JoiningReportAndIDCardFormModal;

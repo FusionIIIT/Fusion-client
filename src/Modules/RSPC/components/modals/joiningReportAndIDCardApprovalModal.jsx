@@ -9,6 +9,7 @@ import {
   Divider,
   GridCol,
   Alert,
+  Title,
 } from "@mantine/core";
 import axios from "axios";
 import { ThumbsUp, ThumbsDown, FileText } from "@phosphor-icons/react";
@@ -77,9 +78,7 @@ function JoiningReportAndIDCardApprovalModal({
         {staffData && Object.keys(staffData).length > 0 ? (
           <>
             <Group position="apart" style={{ marginBottom: 10 }}>
-              <Text size="32px" weight={700}>
-                Approval Of Joining Report And ID Card
-              </Text>
+              <Title order={2}>Approval Of Joining Report And ID Card</Title>
               <Group position="left" style={{ marginTop: "20px" }}>
                 <Button
                   color="green"
@@ -151,12 +150,7 @@ function JoiningReportAndIDCardApprovalModal({
 
               {/* -------------- */}
               <Grid.Col span={12}>
-                <Divider
-                  my="lg"
-                  label="X X X"
-                  labelPosition="center"
-                  size="md"
-                />
+                <Divider my="sm" label="" labelPosition="center" size="sm" />
               </Grid.Col>
 
               <GridCol span={6}>
@@ -207,12 +201,7 @@ function JoiningReportAndIDCardApprovalModal({
 
               {/* -------------- */}
               <Grid.Col span={12}>
-                <Divider
-                  my="lg"
-                  label="X X X"
-                  labelPosition="center"
-                  size="md"
-                />
+                <Divider my="sm" label="" labelPosition="center" size="sm" />
               </Grid.Col>
               <GridCol span={12}>
                 <Text size="xl">

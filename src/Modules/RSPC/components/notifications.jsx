@@ -12,7 +12,7 @@ import {
 } from "@mantine/core";
 import PropTypes from "prop-types";
 import axios from "axios";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useDispatch } from "react-redux";
 import { Empty } from "../../../components/empty";
 import {
@@ -106,19 +106,14 @@ NotificationItem.propTypes = {
 function Notifications() {
   const [notificationsList, setNotificationsList] = useState([]);
   const [announcementsList, setAnnouncementsList] = useState([]);
-
-  // Does below two states really needed?
-
-  // eslint-disable-next-line no-unused-vars
   const [activeTab, setActiveTab] = useState("0");
-  // eslint-disable-next-line no-unused-vars
   const [sortedBy, setSortedBy] = useState("Most Recent");
   const [loading, setLoading] = useState(false);
   const [read_Loading, setRead_Loading] = useState(-1);
   const dispatch = useDispatch();
-  // const tabsListRef = useRef(null);
-  // const tabItems = [{ title: "Notifications" }, { title: "Announcements" }];
-
+  const tabsListRef = useRef(null);
+  const tabItems = [{ title: "Notifications" }, { title: "Announcements" }];
+  setSortedBy("Most Recent");
   useEffect(() => {
     const fetchDashboardData = async () => {
       const token = localStorage.getItem("authToken");
@@ -155,32 +150,28 @@ function Notifications() {
     fetchDashboardData();
   }, [dispatch]);
 
-  // Module team has not used this yet So commenting it out to avoid eslint error
-
-  // const handleTabChange = (direction) => {
-  //   const newIndex =
-  //     direction === "next"
-  //       ? Math.min(+activeTab + 1, tabItems.length - 1)
-  //       : Math.max(+activeTab - 1, 0);
-  //   setActiveTab(String(newIndex));
-  //   tabsListRef.current.scrollBy({
-  //     left: direction === "next" ? 50 : -50,
-  //     behavior: "smooth",
-  //   });
-  // };
-
+  const handleTabChange = (direction) => {
+    const newIndex =
+      direction === "next"
+        ? Math.min(+activeTab + 1, tabItems.length - 1)
+        : Math.max(+activeTab - 1, 0);
+    setActiveTab(String(newIndex));
+    tabsListRef.current.scrollBy({
+      left: direction === "next" ? 50 : -50,
+      behavior: "smooth",
+    });
+  };
+  console.log(handleTabChange);
   const notificationsToDisplay =
     activeTab === "1" ? announcementsList : notificationsList;
 
-  // Unused Code hence commenting it out
+  const notification_for_badge_count =
+    activeTab === "0" ? announcementsList : notificationsList;
 
-  // const notification_for_badge_count =
-  //   activeTab === "0" ? announcementsList : notificationsList;
-
-  // const notification_count = notification_for_badge_count.filter(
-  //   (n) => !n.deleted && n.unread,
-  // ).length;
-
+  const notification_count = notification_for_badge_count.filter(
+    (n) => !n.deleted && n.unread,
+  ).length;
+  console.log(notification_count);
   // sortMap is an object that maps sorting categories to sorting functions.
   const sortedNotifications = useMemo(() => {
     const sortMap = {
