@@ -85,14 +85,14 @@ function DeptTabs({ branch }) {
   };
 
   return (
-    <Container size="xl">
+    <Container size="xl" style={{ marginLeft: 0, paddingLeft: 0 }}>
       <Box mb="xl">
-        <Title order={2} align="center">
+        <Title order={2} align="left">
           Welcome to {branch} Department
         </Title>
       </Box>
 
-      <Flex justify="center" align="center" mb="xl">
+      <Flex justify="flex-start" align="center" mb="xl">
         <Button
           onClick={() => handleTabChange("prev")}
           variant="subtle"

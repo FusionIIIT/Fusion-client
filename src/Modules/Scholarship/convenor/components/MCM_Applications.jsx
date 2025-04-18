@@ -9,6 +9,7 @@ import MedalApplications from "./medal_applications";
 import {
   getMCMApplicationsRoute,
   updateMCMStatusRoute,
+  scholarshipNotification,
 } from "../../../../routes/SPACSRoutes";
 import { host } from "../../../../routes/globalRoutes";
 
@@ -46,6 +47,39 @@ function MCMApplications() {
   useEffect(() => {
     fetchApplications();
   }, []);
+
+  // to send notifications
+  const handleNotification = async (recipientId, type) => {
+    try {
+      const token = localStorage.getItem("authToken");
+
+      if (!token) {
+        console.log("No authorization token found for notification.");
+        return;
+      }
+
+      const response = await axios.post(
+        scholarshipNotification,
+        {
+          recipient: recipientId,
+          type,
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+      if (response.status === 201) {
+        console.log("Notification sent successfully");
+      } else {
+        console.error("Error sending notification:", response);
+      }
+    } catch (error) {
+      console.error("Notification error:", error.response || error.message);
+    }
+  };
 
   // Handle MCM status update
   const handleApproval = async (id, action) => {
@@ -89,6 +123,17 @@ function MCMApplications() {
     }
   };
 
+  const handleAction = async (id, action, student) => {
+    await handleApproval(id, action);
+
+    let notifType = "";
+    if (action === "approved") notifType = "Accept_MCM";
+    else if (action === "rejected") notifType = "Reject_MCM";
+    else if (action === "under_review") notifType = "MCM_UNDER_REVIEW";
+
+    await handleNotification(student, notifType); // replace `app.student_id` with correct recipient ID if different
+  };
+
   const handleExportInExcel = async () => {
     if (applications.length === 0) {
       alert("No applications available to download.");
@@ -109,16 +154,16 @@ function MCMApplications() {
     // Generate Excel file
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(applicationsData);
-
     XLSX.utils.book_append_sheet(wb, ws, "applications");
 
-    // Convert Excel file to Blob and add to ZIP
+    // Convert Excel file to Blob
     const excelBlob = new Blob(
       [XLSX.write(wb, { bookType: "xlsx", type: "array" })],
       {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       },
     );
+
     const excelUrl = URL.createObjectURL(excelBlob);
     const link = document.createElement("a");
     link.href = excelUrl;
@@ -127,7 +172,7 @@ function MCMApplications() {
     link.click();
     document.body.removeChild(link);
 
-    alert("ZIP file containing all application details downloaded!");
+    alert("Excel file containing all application details downloaded!");
   };
 
   const handleDownloadFiles = async (app) => {
@@ -247,7 +292,11 @@ function MCMApplications() {
                                 <Button
                                   color="green"
                                   onClick={() =>
-                                    handleApproval(app.id, "approved")
+                                    handleAction(
+                                      app.id,
+                                      "approved",
+                                      app.student,
+                                    )
                                   }
                                 >
                                   Accept
@@ -257,7 +306,11 @@ function MCMApplications() {
                                 <Button
                                   color="red"
                                   onClick={() =>
-                                    handleApproval(app.id, "rejected")
+                                    handleAction(
+                                      app.id,
+                                      "rejected",
+                                      app.student,
+                                    )
                                   }
                                 >
                                   Reject
@@ -267,7 +320,11 @@ function MCMApplications() {
                                 <Button
                                   color="gray"
                                   onClick={() =>
-                                    handleApproval(app.id, "under_review")
+                                    handleAction(
+                                      app.id,
+                                      "under_review",
+                                      app.student,
+                                    )
                                   }
                                 >
                                   Under Review

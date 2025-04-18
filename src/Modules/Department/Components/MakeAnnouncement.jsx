@@ -9,7 +9,6 @@ import {
   Paper,
   Select,
   Textarea,
-  FileInput,
   Group,
   Box,
 } from "@mantine/core";
@@ -20,7 +19,6 @@ function MakeAnnouncement() {
   const [batch, setBatch] = useState("");
   const [department, setDepartment] = useState("");
   const [announcement, setAnnouncement] = useState("");
-  const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
@@ -31,7 +29,6 @@ function MakeAnnouncement() {
     setBatch("");
     setDepartment("");
     setAnnouncement("");
-    setFile(null);
     setIsSuccess(false);
   };
 
@@ -41,8 +38,14 @@ function MakeAnnouncement() {
     setErrorMessage("");
     setIsSuccess(false);
 
-    const token = localStorage.getItem("authToken");
+    // Validate fields
+    if (!programme || !batch || !department || !announcement) {
+      setErrorMessage("All fields are required.");
+      setLoading(false);
+      return;
+    }
 
+    const token = localStorage.getItem("authToken");
     const url = `${host}/dep/api/announcements/`;
 
     const formData = new FormData();
@@ -50,18 +53,16 @@ function MakeAnnouncement() {
     formData.append("batch", batch);
     formData.append("department", department);
     formData.append("message", announcement);
-    if (file) {
-      formData.append("upload_announcement", file);
-    }
 
     try {
-      await axios.post(url, formData, {
+      const response = await axios.post(url, formData, {
         headers: {
           Authorization: `Token ${token}`,
         },
       });
 
       setIsSuccess(true);
+      console.log("Announcement registered:", response.data);
 
       setTimeout(() => {
         resetFormFields();
@@ -83,20 +84,19 @@ function MakeAnnouncement() {
     <Container
       size="xl"
       style={{
-        height: "75vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        marginTop: 0,
+        height: "auto",
+        marginTop: "2rem",
+        display: "block",
+        paddingLeft: 0,
       }}
     >
-      <Box style={{ width: "60vw", maxWidth: "1240px" }}>
-        <Title order={2} align="center" mb="xl">
+      <Box style={{ width: "60vw" }}>
+        <Title order={2} align="left" mb="xl">
           Create Announcement
         </Title>
 
         {errorMessage && (
-          <Text color="red" mb="md" align="center">
+          <Text color="red" mb="md" align="left">
             {errorMessage}
           </Text>
         )}
@@ -169,14 +169,6 @@ function MakeAnnouncement() {
               value={announcement}
               onChange={(e) => setAnnouncement(e.target.value)}
               required
-              mb="md"
-            />
-
-            <FileInput
-              label="Attach Files (PDF, JPEG, PNG, JPG)"
-              placeholder="Choose File"
-              accept=".pdf,.jpeg,.png,.jpg"
-              onChange={setFile}
               mb="md"
             />
 

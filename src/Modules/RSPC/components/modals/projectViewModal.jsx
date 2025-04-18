@@ -12,9 +12,11 @@ import {
   Divider,
   Grid,
   GridCol,
+  Title,
 } from "@mantine/core";
 import { DownloadSimple } from "@phosphor-icons/react";
 import axios from "axios";
+import { ProjectPDF } from "../../helpers/projectPDF";
 import classes from "../../styles/formStyle.module.css";
 import {
   fetchStaffPositionsRoute,
@@ -87,7 +89,16 @@ function ProjectViewModal({ opened, onClose, projectData }) {
   }, [projectData]);
 
   return (
-    <Modal opened={opened} onClose={onClose} size="xl">
+    <Modal
+      opened={opened}
+      onClose={onClose}
+      size="xl"
+      styles={{
+        content: {
+          borderLeft: "0.7rem solid #15ABFF",
+        },
+      }}
+    >
       {loading ? (
         <Container py="xl">
           {" "}
@@ -95,243 +106,243 @@ function ProjectViewModal({ opened, onClose, projectData }) {
         </Container>
       ) : projectData && Object.keys(projectData).length > 0 && fetched ? (
         <>
-          <Group position="apart" style={{ marginBottom: 20 }}>
-            <Text size="32px" weight={700}>
-              {projectData.name}
-            </Text>
-            <Badge
-              color={badgeColor[projectData.status]}
-              size="lg"
-              style={{ fontSize: "18px" }}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              width: "100%",
+              marginBottom: 20,
+            }}
+          >
+            <Group position="apart">
+              <Title order={2}>{projectData.name}</Title>
+              <Badge
+                color={badgeColor[projectData.status]}
+                size="lg"
+                style={{ color: "#3f3f3f" }}
+              >
+                {projectData.status}
+              </Badge>
+            </Group>
+            <Button
+              color="#15abff"
+              style={{ borderRadius: "8px" }}
+              size="xs"
+              onClick={() => ProjectPDF(projectData, staffPositions, budget)}
             >
-              {projectData.status}
-            </Badge>
-          </Group>
+              <DownloadSimple size={26} style={{ marginRight: "3px" }} />
+              Report
+            </Button>
+          </div>
 
           <Grid gutter="xs" style={{ marginBottom: 20 }}>
             <GridCol span={6}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>
                   Principal Investigator:
-                </strong>{" "}
+                </span>{" "}
                 {projectData.pi_name} ({projectData.pi_id})
               </Text>
             </GridCol>
             <Grid.Col span={6}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>
-                  Co-Principal Investigators:
-                </strong>
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>
+                  Co-Principal Investigators:{" "}
+                </span>
+                {projectData.copis.length > 0 ? (
+                  <ul style={{ paddingLeft: "20px", margin: "0 0" }}>
+                    {projectData.copis.map((copi, index) => (
+                      <li key={index}>
+                        <span>{copi}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <span>No Co-PIs</span>
+                )}
               </Text>
-              {projectData.copis.length > 0 ? (
-                <ul style={{ paddingLeft: "20px", margin: "5px 0" }}>
-                  {projectData.copis.map((copi, index) => (
-                    <li key={index}>
-                      <Text size="lg">{copi}</Text>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <Text color="dimmed">No Co-PIs</Text>
-              )}
             </Grid.Col>
 
             <GridCol span={6}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>
                   Project To Be Operated By:
-                </strong>{" "}
+                </span>{" "}
                 {projectData.access === "Co"
                   ? "Only PI"
                   : "Either PI or Co-PI(s)"}
               </Text>
             </GridCol>
             <GridCol span={6}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>Project Type:</strong>{" "}
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>Project Type:</span>{" "}
                 {projectData.type}
               </Text>
             </GridCol>
 
             <GridCol span={6}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>Department:</strong>{" "}
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>Department:</span>{" "}
                 {projectData.dept}
               </Text>
             </GridCol>
             <GridCol span={6}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>Sponsoring Agency:</strong>{" "}
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>Sponsoring Agency:</span>{" "}
                 {projectData.sponsored_agency}
               </Text>
             </GridCol>
 
             <GridCol span={6}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>Category:</strong>{" "}
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>Category:</span>{" "}
                 {projectData.category}
               </Text>
             </GridCol>
             <GridCol span={6}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>Scheme:</strong>{" "}
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>Scheme:</span>{" "}
                 {projectData.scheme}
               </Text>
             </GridCol>
-            <Grid.Col span={6}>
-              <Text size="xl">
-                <strong
-                  style={{
-                    color: "blue",
-                    textAlign: "center",
-                    width: "100%",
-                  }}
-                >
-                  Project Agreement (Sanction Letter, MoU, etc.)
-                </strong>
-              </Text>
-              {projectData.file && (
-                <Button
-                  variant="outline"
-                  color="#15ABFF"
-                  size="md"
-                  className={classes.fileInputButton}
-                  style={{ borderRadius: "8px" }}
-                  component="a"
-                  href={`${host}/${projectData.file}`} // Directly access the file URL
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <DownloadSimple size={26} style={{ marginRight: "3px" }} />
-                  Open File
-                </Button>
-              )}
+            <Grid.Col span={12}>
+              <Group position="apart" align="center">
+                <Text style={{ color: "#A0A0A0" }}>
+                  Project Agreement (Sanction Letter, MoU, etc.):
+                </Text>
+                {projectData.file ? (
+                  <Button
+                    variant="outline"
+                    color="#15ABFF"
+                    size="xs"
+                    className={classes.fileInputButton}
+                    style={{ borderRadius: "8px" }}
+                    component="a"
+                    href={`${host}/${projectData.file}`} // Directly access the file URL
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <DownloadSimple size={26} style={{ marginRight: "3px" }} />
+                    Open File
+                  </Button>
+                ) : (
+                  <span>No file uploaded</span>
+                )}
+              </Group>
             </Grid.Col>
             <GridCol span={12}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>Project Abstract:</strong>{" "}
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>Project Abstract:</span>{" "}
                 {projectData.description}
               </Text>
             </GridCol>
 
             <Grid.Col span={12}>
-              <Divider my="lg" label="X X X" labelPosition="center" size="md" />
+              <Divider my="sm" label="" labelPosition="center" size="sm" />
             </Grid.Col>
 
             <GridCol span={6}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>
                   Proposal Submission Date:
-                </strong>{" "}
+                </span>{" "}
                 {new Date(projectData.submission_date).toLocaleDateString()}
               </Text>
             </GridCol>
             <GridCol span={6}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>
-                  Project Sanction Date:
-                </strong>{" "}
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>Project Sanction Date:</span>{" "}
                 {new Date(projectData.sanction_date).toLocaleDateString()}
               </Text>
             </GridCol>
 
             <GridCol span={6}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>Project Duration:</strong>{" "}
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>Project Duration:</span>{" "}
                 {projectData.duration} months
               </Text>
             </GridCol>
             <GridCol span={6}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>
                   Project Commencement Date:
-                </strong>{" "}
+                </span>{" "}
                 {new Date(projectData.start_date).toLocaleDateString()}
               </Text>
             </GridCol>
 
             <Grid.Col span={12}>
-              <Divider my="lg" label="X X X" labelPosition="center" size="md" />
+              <Divider my="sm" label="" labelPosition="center" size="sm" />
             </Grid.Col>
 
             <GridCol span={6}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>
-                  Total Proposed Budget:
-                </strong>{" "}
-                INR {projectData.total_budget}
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>Total Proposed Budget:</span>{" "}
+                ₹{projectData.total_budget}
               </Text>
             </GridCol>
             <GridCol span={6}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>
                   Total Sanctioned Amount:
-                </strong>{" "}
-                INR {projectData.sanctioned_amount}
+                </span>{" "}
+                ₹{projectData.sanctioned_amount}
               </Text>
             </GridCol>
-            {budget && (
-              <GridCol span={6}>
-                <Text size="xl">
-                  <strong style={{ color: "blue" }}>Current Funds:</strong> INR{" "}
-                  {budget.current_funds}
-                </Text>
-              </GridCol>
-            )}
-            <Grid.Col span={6}>
-              <Text size="xl">
-                <strong
-                  style={{
-                    color: "blue",
-                    textAlign: "center",
-                    width: "100%",
-                  }}
-                >
-                  Project Registration
-                </strong>
+            <GridCol span={6}>
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>Current Funds:</span>
+                {budget ? (
+                  <span>₹{budget.current_funds}</span>
+                ) : (
+                  <span>NIL</span>
+                )}
               </Text>
-              {projectData.registration_form && (
-                <Button
-                  variant="outline"
-                  color="#15ABFF"
-                  size="md"
-                  className={classes.fileInputButton}
-                  style={{ borderRadius: "8px" }}
-                  component="a"
-                  href={`${host}/${projectData.registration_form}`} // Directly access the file URL
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <DownloadSimple size={26} style={{ marginRight: "3px" }} />
-                  Open Registration
-                </Button>
-              )}
+            </GridCol>
+            <Grid.Col span={6}>
+              <Group position="apart" align="center">
+                <Text style={{ color: "#A0A0A0" }}>Project Registration:</Text>
+                {projectData.registration_form ? (
+                  <Button
+                    variant="outline"
+                    color="#15ABFF"
+                    size="xs"
+                    className={classes.fileInputButton}
+                    style={{ borderRadius: "8px" }}
+                    component="a"
+                    href={`${host}/${projectData.registration_form}`} // Directly access the file URL
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <DownloadSimple size={26} style={{ marginRight: "3px" }} />
+                    Open Registration
+                  </Button>
+                ) : (
+                  <span>No file uploaded</span>
+                )}
+              </Group>
             </Grid.Col>
           </Grid>
 
           {budget && Object.keys(budget).length > 0 && (
             <>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>Budget Heads</strong>
-              </Text>
+              <Title
+                order={4}
+                style={{ textAlign: "center", color: "#A0A0A0" }}
+              >
+                Budget Heads
+              </Title>
               <Table striped>
-                <thead style={{ textAlign: "left" }}>
-                  <tr>
-                    <th>
-                      <Text size="lg">
-                        <strong>Category</strong>
-                      </Text>
-                    </th>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>Category</Table.Th>
                     {budget.manpower.map((_, index) => (
-                      <th key={index}>
-                        <Text size="lg" weight="bold">
-                          <strong>Year {index + 1}</strong>
-                        </Text>
-                      </th>
+                      <Table.Th key={index}>Year {index + 1}</Table.Th>
                     ))}
-                  </tr>
-                </thead>
-                <tbody>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
                   {[
                     "manpower",
                     "travel",
@@ -339,95 +350,70 @@ function ProjectViewModal({ opened, onClose, projectData }) {
                     "consumables",
                     "equipments",
                   ].map((category) => (
-                    <tr key={category}>
-                      <td>
-                        <Text size="lg">
-                          {category.charAt(0).toUpperCase() + category.slice(1)}
-                        </Text>
-                      </td>
+                    <Table.Tr key={category}>
+                      <Table.Td>
+                        {category.charAt(0).toUpperCase() + category.slice(1)}
+                      </Table.Td>
                       {budget[category].map((value, index) => (
-                        <td key={index}>
-                          <Text size="lg">{value}</Text>
-                        </td>
+                        <Table.Td key={index}>₹{value}</Table.Td>
                       ))}
-                    </tr>
+                    </Table.Tr>
                   ))}
-                </tbody>
+                </Table.Tbody>
               </Table>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>Overhead Expenses:</strong>{" "}
-                INR {budget.overhead}
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>Overhead Expenses:</span> ₹
+                {budget.overhead}
               </Text>
             </>
           )}
 
           {staffPositions && Object.keys(staffPositions).length > 0 && (
             <>
-              <Divider my="lg" label="X X X" labelPosition="center" size="md" />
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>Project Personnel</strong>
-              </Text>
+              <Divider my="sm" label="" labelPosition="center" size="sm" />
+              <Title
+                order={4}
+                style={{ textAlign: "center", color: "#A0A0A0" }}
+              >
+                Project Personnel
+              </Title>
               <Table striped>
-                <thead style={{ textAlign: "left" }}>
-                  <tr>
-                    <th>
-                      <Text size="lg">
-                        <strong>Designation</strong>
-                      </Text>
-                    </th>
-                    <th>
-                      <Text size="lg">
-                        <strong>Available Spots</strong>
-                      </Text>
-                    </th>
-                    <th>
-                      <Text size="lg">
-                        <strong>Occupied Spots</strong>
-                      </Text>
-                    </th>
-                    <th>
-                      <Text size="lg">
-                        <strong>Current Staff</strong>
-                      </Text>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>Designation</Table.Th>
+                    <Table.Th>Available Spots</Table.Th>
+                    <Table.Th>Occupied Spots</Table.Th>
+                    <Table.Th>Current Staff</Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
                   {Object.keys(staffPositions.positions).map((position) => (
-                    <tr key={position}>
-                      <td>
-                        <Text size="lg">{position}</Text>
-                      </td>
-                      <td>
-                        <Text size="lg">
-                          {staffPositions.positions[position][0]}
-                        </Text>
-                      </td>
-                      <td>
-                        <Text size="lg">
-                          {staffPositions.positions[position][1]}
-                        </Text>
-                      </td>
-                      <td>
-                        <Text size="lg">
-                          {staffPositions.incumbents[position]?.length > 0
-                            ? staffPositions.incumbents[position].map(
-                                (incumbent, index) => (
-                                  <div key={index}>{incumbent.name}</div>
-                                ),
-                              )
-                            : "None"}
-                        </Text>
-                      </td>
-                    </tr>
+                    <Table.Tr key={position}>
+                      <Table.Td>{position}</Table.Td>
+                      <Table.Td>
+                        {staffPositions.positions[position][0]}
+                      </Table.Td>
+                      <Table.Td>
+                        {staffPositions.positions[position][1]}
+                      </Table.Td>
+                      <Table.Td>
+                        {staffPositions.incumbents[position]?.length > 0
+                          ? staffPositions.incumbents[position].map(
+                              (incumbent, index) => (
+                                <div key={index}>{incumbent.name}</div>
+                              ),
+                            )
+                          : "None"}
+                      </Table.Td>
+                    </Table.Tr>
                   ))}
-                </tbody>
+                </Table.Tbody>
               </Table>
             </>
           )}
         </>
       ) : (
-        <Text color="red" size="xl" weight={700} align="center">
+        <Text color="red" align="center">
           Failed to load project details
         </Text>
       )}

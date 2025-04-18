@@ -31,10 +31,10 @@ function ConfirmBookingIn({
     bookingFrom: "",
     bookingTo: "",
     visitorCategory: "",
-    modifiedCategory: "",
+    modifiedCategory: bookingf?.modifiedCategory || "", // Provide a fallback value
     personCount: 1,
     numberOfRooms: 1,
-    rooms: [],
+    rooms: bookingf?.rooms || [], // Provide a fallback value
     purpose: "",
     billToBeSettledBy: "",
     remarks: "",
@@ -44,7 +44,6 @@ function ConfirmBookingIn({
     visitorOrganization: "",
     visitorAddress: "",
   });
-
   const [loading, setLoading] = useState(false);
   const [availableRooms, setAvailableRooms] = useState([]);
 
@@ -63,10 +62,10 @@ function ConfirmBookingIn({
           bookingFrom: booking.bookingFrom,
           bookingTo: booking.bookingTo,
           visitorCategory: booking.visitorCategory,
-          modifiedCategory: bookingf.modifiedCategory, // Set from bookingf
+          modifiedCategory: booking.visitorCategory || "", // Use optional chaining and fallback
           personCount: booking.personCount,
           numberOfRooms: booking.numberOfRooms,
-          rooms: bookingf.rooms, // Keep this field empty for editing
+          rooms: bookingf?.rooms || [], // Use optional chaining and fallback
           purpose: booking.purpose,
           billToBeSettledBy: booking.billToBeSettledBy,
           remarks: booking.remarks,
@@ -145,6 +144,7 @@ function ConfirmBookingIn({
     } finally {
       setLoading(false);
     }
+    window.location.reload();
   };
 
   return (

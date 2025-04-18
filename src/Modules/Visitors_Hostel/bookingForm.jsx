@@ -16,6 +16,7 @@ import {
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { useForm } from "@mantine/form";
+import { showNotification } from "@mantine/notifications";
 import { requestBookingRoute } from "../../routes/visitorsHostelRoutes";
 import { countries } from "./data/countries";
 
@@ -76,6 +77,22 @@ function CombinedBookingForm({ modalOpened, onClose }) {
   const handleSubmit = async (values) => {
     const token = localStorage.getItem("authToken");
     console.log(" Token : ", token);
+
+    const emailRegex =
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?$/;
+
+    if (!emailRegex.test(values.visitor_email)) {
+      form.setFieldError("visitor_email", "Invalid email format");
+
+      // Show notification for invalid email
+      showNotification({
+        title: "Invalid Email",
+        message: "Please enter a valid email address.",
+        color: "red",
+      });
+
+      return; // Stop form submission
+    }
 
     const requestData = {
       intender: values.intender,
@@ -163,19 +180,22 @@ function CombinedBookingForm({ modalOpened, onClose }) {
           <Grid>
             {/* {username} */}
             {/* Conditionally render Intender ID field */}
-            {role !== "student" && role !== "Professor" && (
-              <Grid.Col span={12}>
-                <TextInput
-                  label="Intender"
-                  placeholder="Intender ID"
-                  value={form.values.intender}
-                  onChange={(event) =>
-                    form.setFieldValue("intender", event.currentTarget.value)
-                  }
-                  required
-                />
-              </Grid.Col>
-            )}
+            {role !== "student" &&
+              role !== "Professor" &&
+              role !== "VhCaretaker" &&
+              role !== "VhIncharge" && (
+                <Grid.Col span={12}>
+                  <TextInput
+                    label="Intender"
+                    placeholder="Intender ID"
+                    value={form.values.intender}
+                    onChange={(event) =>
+                      form.setFieldValue("intender", event.currentTarget.value)
+                    }
+                    required
+                  />
+                </Grid.Col>
+              )}
             <Grid.Col span={12}>
               <TextInput
                 label="Name"
@@ -365,11 +385,22 @@ function CombinedBookingForm({ modalOpened, onClose }) {
             <Grid.Col span={6}>
               <TextInput
                 label="Email"
-                placeholder="Visitor's Email: abc@domain.com"
+                placeholder="Visitor's Email: abc@gmail.com"
                 value={form.values.visitor_email}
-                onChange={(event) =>
-                  form.setFieldValue("visitor_email", event.currentTarget.value)
-                }
+                onChange={(event) => {
+                  const email = event.currentTarget.value;
+                  form.setFieldValue("visitor_email", email);
+
+                  const emailRegex =
+                    /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?$/;
+
+                  if (email.trim() === "" || !emailRegex.test(email)) {
+                    form.setFieldError("visitor_email", "Invalid email format");
+                  } else {
+                    form.clearFieldError("visitor_email");
+                  }
+                }}
+                error={form.errors.visitor_email || undefined}
                 required
               />
             </Grid.Col>

@@ -8,6 +8,7 @@ import {
   Divider,
   Grid,
   GridCol,
+  Title,
 } from "@mantine/core";
 import { DownloadSimple } from "@phosphor-icons/react";
 import classes from "../../styles/formStyle.module.css";
@@ -16,343 +17,327 @@ import { host } from "../../../../routes/globalRoutes";
 
 function StaffViewModal({ opened, onClose, staffData }) {
   return (
-    <Modal opened={opened} onClose={onClose} size="xl">
+    <Modal
+      opened={opened}
+      onClose={onClose}
+      size="xl"
+      styles={{
+        content: {
+          borderLeft: "0.7rem solid #15ABFF",
+        },
+      }}
+    >
       {staffData && Object.keys(staffData).length > 0 ? (
         <>
-          <Group position="apart" style={{ marginBottom: 10 }}>
-            <Text size="32px" weight={700}>
+          <Group position="apart">
+            <Title order={2}>
               {staffData.person && staffData.person.trim() !== ""
                 ? staffData.person
                 : "TBD"}
-            </Text>
+            </Title>
             <Badge
               color={badgeColor[staffData.approval]}
               size="lg"
-              style={{ fontSize: "18px" }}
+              style={{ color: "#3f3f3f" }}
             >
               {staffData.approval}
             </Badge>
           </Group>
-
-          <Text size="26px" style={{ marginBottom: 30 }}>
+          <Title order={4} style={{ color: "#A0A0A0", marginBottom: 20 }}>
             {staffData.type}
-          </Text>
+          </Title>
           <Grid gutter="xs" style={{ marginBottom: 20 }}>
             <GridCol span={6}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>Project Title:</strong>{" "}
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>Project Title:</span>{" "}
                 {staffData.project_title}
               </Text>
             </GridCol>
             <GridCol span={6}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>Staff ID:</strong>{" "}
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>Staff ID:</span>{" "}
                 {staffData.sid}
               </Text>
             </GridCol>
 
             <GridCol span={6}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>Joining Date:</strong>{" "}
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>Joining Date:</span>{" "}
                 {new Date(staffData.start_date).toLocaleDateString()}
               </Text>
             </GridCol>
             <GridCol span={6}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>Appointment Duration:</strong>{" "}
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>Appointment Duration:</span>{" "}
                 {staffData.duration} months
               </Text>
             </GridCol>
 
             <GridCol span={6}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>Consolidated Salary:</strong>{" "}
-                INR {staffData.salary}
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>Consolidated Salary:</span> ₹
+                {staffData.salary}
               </Text>
             </GridCol>
             <GridCol span={6}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>Salary Per Month:</strong> INR{" "}
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>Salary Per Month:</span> ₹
                 {staffData.salary_per_month}
               </Text>
             </GridCol>
 
             <Grid.Col span={6}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>Resume</strong>
-              </Text>
-              {staffData.biodata_final[staffData.biodata_number] && (
-                <Button
-                  variant="outline"
-                  color="#15ABFF"
-                  size="md"
-                  className={classes.fileInputButton}
-                  style={{ borderRadius: "8px" }}
-                  component="a"
-                  href={`${host}/${staffData.biodata_final[staffData.biodata_number]}`} // Directly access the file URL
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <DownloadSimple size={26} style={{ marginRight: "3px" }} />
-                  Open Resume
-                </Button>
-              )}
+              <Group position="apart" align="center">
+                <Text style={{ color: "#A0A0A0" }}>Resume:</Text>
+                {staffData.biodata_final[staffData.biodata_number] ? (
+                  <Button
+                    variant="outline"
+                    color="#15ABFF"
+                    size="xs"
+                    className={classes.fileInputButton}
+                    style={{ borderRadius: "8px" }}
+                    component="a"
+                    href={`${host}/${staffData.biodata_final[staffData.biodata_number]}`} // Directly access the file URL
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <DownloadSimple size={26} style={{ marginRight: "3px" }} />
+                    Open Resume
+                  </Button>
+                ) : (
+                  <span>No resume uploaded</span>
+                )}
+              </Group>
             </Grid.Col>
             <GridCol span={6}>
-              <Text size="xl">
-                <strong
-                  style={{
-                    color: "blue",
-                    textAlign: "center",
-                    width: "100%",
-                  }}
-                >
-                  Joining Report
-                </strong>
-              </Text>
-              {staffData.joining_report && (
-                <Button
-                  variant="outline"
-                  color="#15ABFF"
-                  size="md"
-                  className={classes.fileInputButton}
-                  style={{ borderRadius: "8px" }}
-                  component="a"
-                  href={`${host}/${staffData.joining_report}`} // Directly access the file URL
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <DownloadSimple size={26} style={{ marginRight: "3px" }} />
-                  Open Report
-                </Button>
-              )}
+              <Group position="apart" align="center">
+                <Text style={{ color: "#A0A0A0" }}>Joining Report:</Text>
+                {staffData.joining_report ? (
+                  <Button
+                    variant="outline"
+                    color="#15ABFF"
+                    size="xs"
+                    className={classes.fileInputButton}
+                    style={{ borderRadius: "8px" }}
+                    component="a"
+                    href={`${host}/${staffData.joining_report}`} // Directly access the file URL
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <DownloadSimple size={26} style={{ marginRight: "3px" }} />
+                    Open Report
+                  </Button>
+                ) : (
+                  <span>No report uploaded</span>
+                )}
+              </Group>
             </GridCol>
             <GridCol span={12}>
-              <Text size="xl">
-                <strong
-                  style={{
-                    color: "blue",
-                    textAlign: "center",
-                    width: "100%",
-                  }}
-                >
-                  ID Card
-                </strong>
-              </Text>
-              {staffData.id_card && (
-                <Button
-                  variant="outline"
-                  color="#15ABFF"
-                  size="md"
-                  className={classes.fileInputButton}
-                  style={{ borderRadius: "8px" }}
-                  component="a"
-                  href={`${host}/${staffData.id_card}`} // Directly access the file URL
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <DownloadSimple size={26} style={{ marginRight: "3px" }} />
-                  Open ID
-                </Button>
-              )}
+              <Group position="apart" align="center">
+                <Text style={{ color: "#A0A0A0" }}>ID Card:</Text>
+                {staffData.id_card ? (
+                  <Button
+                    variant="outline"
+                    color="#15ABFF"
+                    size="xs"
+                    className={classes.fileInputButton}
+                    style={{ borderRadius: "8px" }}
+                    component="a"
+                    href={`${host}/${staffData.id_card}`} // Directly access the file URL
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <DownloadSimple size={26} style={{ marginRight: "3px" }} />
+                    Open ID
+                  </Button>
+                ) : (
+                  <span>No ID uploaded</span>
+                )}
+              </Group>
             </GridCol>
 
             <Grid.Col span={12}>
-              <Divider my="lg" label="X X X" labelPosition="center" size="md" />
+              <Divider my="sm" label="" labelPosition="center" size="sm" />
             </Grid.Col>
 
             <GridCol span={6}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>Test Date:</strong>{" "}
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>Test Date:</span>{" "}
                 {new Date(staffData.test_date).toLocaleDateString()}
               </Text>
             </GridCol>
             <GridCol span={6}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>Mode Of Test:</strong>{" "}
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>Mode Of Test:</span>{" "}
                 {staffData.test_mode}
               </Text>
             </GridCol>
             <GridCol span={6}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>Interview Date:</strong>{" "}
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>Interview Date:</span>{" "}
                 {new Date(staffData.interview_date).toLocaleDateString()}
               </Text>
             </GridCol>
             <GridCol span={6}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>Interview Venue:</strong>{" "}
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>Interview Venue:</span>{" "}
                 {staffData.interview_place}
               </Text>
             </GridCol>
 
             <GridCol span={12}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>Eligibility Criteria:</strong>{" "}
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>Eligibility Criteria:</span>{" "}
                 {staffData.eligibility}
               </Text>
             </GridCol>
             <Grid.Col span={12}>
-              <Text size="xl">
-                <strong
-                  style={{
-                    color: "blue",
-                    textAlign: "center",
-                    width: "100%",
-                  }}
-                >
-                  Copy Of Advertisement Uploaded On Institute Website
-                </strong>
-              </Text>
-              {staffData.ad_file && (
-                <Button
-                  variant="outline"
-                  color="#15ABFF"
-                  size="md"
-                  className={classes.fileInputButton}
-                  style={{ borderRadius: "8px" }}
-                  component="a"
-                  href={`${host}/${staffData.ad_file}`} // Directly access the file URL
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <DownloadSimple size={26} style={{ marginRight: "3px" }} />
-                  Open Copy
-                </Button>
-              )}
+              <Group position="apart" align="center">
+                <Text style={{ color: "#A0A0A0" }}>
+                  Copy Of Advertisement Uploaded On Institute Website:
+                </Text>
+                {staffData.ad_file ? (
+                  <Button
+                    variant="outline"
+                    color="#15ABFF"
+                    size="xs"
+                    className={classes.fileInputButton}
+                    style={{ borderRadius: "8px" }}
+                    component="a"
+                    href={`${host}/${staffData.ad_file}`} // Directly access the file URL
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <DownloadSimple size={26} style={{ marginRight: "3px" }} />
+                    Open Copy
+                  </Button>
+                ) : (
+                  <span>No file uploaded</span>
+                )}
+              </Group>
             </Grid.Col>
+
             <Grid.Col span={12}>
-              <Text size="xl">
-                <strong
-                  style={{
-                    color: "blue",
-                    textAlign: "center",
-                    width: "100%",
-                  }}
-                >
-                  Selection Committee
-                </strong>
+              <Divider my="sm" label="" labelPosition="center" size="sm" />
+            </Grid.Col>
+
+            <Grid.Col span={12}>
+              <Title
+                order={4}
+                style={{ textAlign: "center", color: "#A0A0A0" }}
+              >
+                Selection Committee
+              </Title>
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>
+                  PI (Convener of the Committee):
+                </span>{" "}
+                {staffData.pi_name}
               </Text>
-              {staffData.selection_committee &&
-              Object.keys(staffData.selection_committee).length > 0 ? (
-                <ul style={{ paddingLeft: "20px", margin: "5px 0" }}>
-                  {Object.values(staffData.selection_committee)
-                    .flat()
-                    .map((name, index) => (
-                      <li key={index}>{name}</li>
-                    ))}
-                </ul>
-              ) : (
-                <Text color="dimmed">None</Text>
+              {Object.entries(staffData.selection_committee).map(
+                ([role, name], index) => (
+                  <Text key={index}>
+                    <span style={{ color: "#A0A0A0" }}>{role}:</span>{" "}
+                    {Array.isArray(name) ? name.join(", ") : name}
+                  </Text>
+                ),
               )}
             </Grid.Col>
 
             <Grid.Col span={12}>
-              <Divider my="lg" label="X X X" labelPosition="center" size="md" />
+              <Divider my="sm" label="" labelPosition="center" size="sm" />
             </Grid.Col>
 
             <Grid.Col span={6}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>
                   Number Of Candidates Applied:
-                </strong>{" "}
+                </span>{" "}
                 {staffData.candidates_applied}
               </Text>
             </Grid.Col>
             <Grid.Col span={6}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>
                   Number Of Candidates Called For Test:
-                </strong>{" "}
+                </span>{" "}
                 {staffData.candidates_called}
               </Text>
             </Grid.Col>
             <Grid.Col span={6}>
-              <Text size="xl">
-                <strong style={{ color: "blue" }}>
+              <Text>
+                <span style={{ color: "#A0A0A0" }}>
                   Number Of Candidates Interviewed:
-                </strong>{" "}
+                </span>{" "}
                 {staffData.candidates_interviewed}
               </Text>
             </Grid.Col>
 
             <Grid.Col span={12}>
-              <Text size="xl">
-                <strong
-                  style={{
-                    color: "blue",
-                    textAlign: "center",
-                    width: "100%",
-                  }}
-                >
-                  Final Selections
-                </strong>
-              </Text>
+              <Title
+                order={4}
+                style={{ textAlign: "center", color: "#A0A0A0" }}
+              >
+                Final Selections
+              </Title>
               {staffData.final_selection.length > 0 ? (
-                <ul style={{ paddingLeft: "20px", margin: "5px 0" }}>
+                <ul style={{ paddingLeft: "20px", margin: "0 0" }}>
                   {staffData.final_selection.map((candidate, index) => (
-                    <li key={index}>{candidate.name}</li>
+                    <li key={index}>
+                      <span>{candidate.name}</span>
+                    </li>
                   ))}
                 </ul>
               ) : (
-                <Text color="dimmed">None</Text>
+                <Text style={{ textAlign: "center" }} color="dimmed">
+                  None
+                </Text>
               )}
             </Grid.Col>
-            <Grid.Col span={12}>
-              <Text size="xl">
-                <strong
-                  style={{
-                    color: "blue",
-                    textAlign: "center",
-                    width: "100%",
-                  }}
+            {staffData.waiting_list.length > 0 && (
+              <Grid.Col span={12}>
+                <Title
+                  order={4}
+                  style={{ textAlign: "center", color: "#A0A0A0" }}
                 >
                   Waiting List
-                </strong>
-              </Text>
-              {staffData.waiting_list.length > 0 ? (
-                <ul style={{ paddingLeft: "20px", margin: "5px 0" }}>
+                </Title>
+                <ul style={{ paddingLeft: "20px", margin: "0 0" }}>
                   {staffData.waiting_list.map((candidate, index) => (
                     <li key={index}>{candidate.name}</li>
                   ))}
                 </ul>
-              ) : (
-                <Text color="dimmed">None</Text>
-              )}
-            </Grid.Col>
+              </Grid.Col>
+            )}
             <Grid.Col span={12}>
-              <Text size="xl">
-                <strong
-                  style={{
-                    color: "blue",
-                    textAlign: "center",
-                    width: "100%",
-                  }}
-                >
-                  Comparative Statements Of Candidates
-                </strong>
-              </Text>
-              {staffData.comparative_file && (
-                <Button
-                  variant="outline"
-                  color="#15ABFF"
-                  size="md"
-                  className={classes.fileInputButton}
-                  style={{ borderRadius: "8px" }}
-                  component="a"
-                  href={`${host}/${staffData.comparative_file}`} // Directly access the file URL
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <DownloadSimple size={26} style={{ marginRight: "3px" }} />
-                  Open Statement
-                </Button>
-              )}
+              <Group position="apart" align="center">
+                <Text style={{ color: "#A0A0A0" }}>
+                  Comparative Statements Of Candidates:
+                </Text>
+                {staffData.comparative_file ? (
+                  <Button
+                    variant="outline"
+                    color="#15ABFF"
+                    size="xs"
+                    className={classes.fileInputButton}
+                    style={{ borderRadius: "8px" }}
+                    component="a"
+                    href={`${host}/${staffData.comparative_file}`} // Directly access the file URL
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <DownloadSimple size={26} style={{ marginRight: "3px" }} />
+                    Open Statement
+                  </Button>
+                ) : (
+                  <span>No file uploaded</span>
+                )}
+              </Group>
             </Grid.Col>
           </Grid>
         </>
       ) : (
-        <Text color="red" size="xl" weight={700} align="center">
+        <Text color="red" align="center">
           Failed to load staff details
         </Text>
       )}
@@ -367,6 +352,7 @@ StaffViewModal.propTypes = {
     sid: PropTypes.number,
     pid: PropTypes.number,
     project_title: PropTypes.string,
+    pi_name: PropTypes.string,
     eligibility: PropTypes.string,
     ad_file: PropTypes.string,
     comparative_file: PropTypes.string,

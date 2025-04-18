@@ -8,16 +8,13 @@ import { useSelector } from "react-redux";
 import { Tabs, Button, Flex, Select, Text } from "@mantine/core";
 import { useLocation } from "react-router-dom";
 import classes from "./styles/researchProjectsStyle.module.css";
-import CustomRSPCBreadcrumbs from "./components/RSPCBreadcrumbs.jsx";
-import JoiningReportAndIDCardForm from "./components/forms/joiningReportAndIDCardForm.jsx";
-import AdvertisementAndCommitteeApprovalForm from "./components/forms/advertisementAndCommitteeApprovalForm.jsx";
-// import ExpenditureForm from "./components/forms/expenditureForm.jsx";
-import SelectionCommitteeReportForm from "./components/forms/selectionCommitteeReportForm.jsx";
+import RSPCBreadcrumbs from "./components/RSPCBreadcrumbs.jsx";
+import StaffRecruitmentForm from "./components/forms/staffRecruitmentForm.jsx";
 import ProjectClosureForm from "./components/forms/projectClosureForm.jsx";
 import ProjectRegisterForm from "./components/forms/projectRegisterForm.jsx";
-import Notifications from "./components/notifications.jsx";
 import Appendix from "./components/forms/appendix.jsx";
 import ProjectCommencementForm from "./components/forms/projectCommencementForm.jsx";
+import StaffTable from "./components/tables/staffTable.jsx";
 
 const categories = ["Most Recent", "Ongoing", "Completed", "Terminated"];
 
@@ -27,40 +24,34 @@ function RequestForms() {
   const tabsListRef = useRef(null);
   const location = useLocation();
   const { data, initialTab } = location.state || {};
-  const [activeTab, setActiveTab] = useState(initialTab || "1");
+  const [activeTab, setActiveTab] = useState(initialTab || "0");
 
-  const tabItems = [{ title: "Notifications", component: <Notifications /> }];
+  const tabItems = [];
   if (role.includes("Professor")) {
-    tabItems.push(
-      {
-        title: "Project Registration",
-        component: <ProjectRegisterForm projectData={data} />,
-      },
-      {
-        title: "Advertisement And Committee Approval",
-        component: <AdvertisementAndCommitteeApprovalForm projectData={data} />,
-      },
-      {
-        title: "Selection Committee Report",
-        component: <SelectionCommitteeReportForm staffData={data} />,
-      },
-      {
-        title: "Joining Report And ID Card",
-        component: <JoiningReportAndIDCardForm staffData={data} />,
-      },
-      // {
-      //   title: "Expenditure",
-      //   component: <ExpenditureForm projectData={data} />,
-      // },
-      {
-        title: "UC/SE And Project Closure",
-        component: <ProjectClosureForm projectData={data} />,
-      },
-    );
+    tabItems.push({
+      title: "Project Registration",
+      component: <ProjectRegisterForm projectData={data} />,
+    });
   } else if (role.includes("SectionHead_RSPC")) {
     tabItems.push({
       title: "Project Commencement And First Funding",
       component: <ProjectCommencementForm projectData={data} />,
+    });
+  }
+  tabItems.push(
+    {
+      title: "Staff Recruitment",
+      component: <StaffRecruitmentForm projectData={data} />,
+    },
+    {
+      title: "Staff Details",
+      component: <StaffTable projectData={data} />,
+    },
+  );
+  if (role.includes("Professor")) {
+    tabItems.push({
+      title: "UC/SE And Project Closure",
+      component: <ProjectClosureForm projectData={data} />,
     });
   }
   tabItems.push({
@@ -80,12 +71,9 @@ function RequestForms() {
     });
   };
 
-  // const notificationsToDisplay =
-  //   activeTab === "1" ? announcementsList : notificationsList;
-
   return (
     <>
-      <CustomRSPCBreadcrumbs />
+      <RSPCBreadcrumbs projectTitle={data.name} />
       <Flex justify="space-between" align="center" mt="lg">
         <Flex
           justify="flex-start"
@@ -155,7 +143,7 @@ function RequestForms() {
           />
         </Flex>
       </Flex>
-      {tabItems[parseInt(activeTab, 10)].component}
+      {tabItems[parseInt(activeTab, 10)]?.component}
     </>
   );
 }

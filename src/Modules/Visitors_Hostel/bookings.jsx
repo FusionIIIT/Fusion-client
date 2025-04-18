@@ -7,30 +7,31 @@ import {
   Badge,
   Text,
   Box,
+  TextInput,
+  Select, // Add TextInput import
 } from "@mantine/core";
 import PropTypes from "prop-types";
 import { useSelector } from "react-redux";
 // eslint-disable-next-line import/no-unresolved
 import { FaEye } from "react-icons/fa"; // Import the eye icon
 import CombinedBookingForm from "./bookingForm";
-import ForwardBookingForm from "./forwardBooking";
-import ConfirmBookingIn from "./confirmBooking_Incharge";
 import ViewBooking from "./viewBooking"; // Import the new ViewBooking component
 import { fetchBookingsRoute } from "../../routes/visitorsHostelRoutes";
 
-function BookingsRequestTable({ bookings, onBookingForward }) {
+function BookingsRequestTable({ bookings }) {
   const [modalOpened, setModalOpened] = useState(false); // State to control modal
-  const [forwardModalOpened, setForwardModalOpened] = useState(null); // State to control forward modal for each booking
+  // const [forwardModalOpened, setForwardModalOpened] = useState(null); // State to control forward modal for each booking
   const [viewModalOpened, setViewModalOpened] = useState(null); // State to control view modal for each booking
+  const [searchTerm, setSearchTerm] = useState(""); // State to store the search term
 
-  const handleForwardButtonClick = (bookingId) => {
-    setForwardModalOpened(bookingId); // Open modal for the specific booking
-  };
+  // const handleForwardButtonClick = (bookingId) => {
+  //   setForwardModalOpened(bookingId); // Open modal for the specific booking
+  // };
 
-  const handleForwardCloseModal = () => {
-    setForwardModalOpened(null); // Close modal
-    onBookingForward(); // Call the fetch function to refresh bookings when closing the modal
-  };
+  // const handleForwardCloseModal = () => {
+  //   setForwardModalOpened(null); // Close modal
+  //   onBookingForward(); // Call the fetch function to refresh bookings when closing the modal
+  // };
 
   const handleButtonClick = () => {
     setModalOpened(true); // Open modal when "Place Request" is clicked
@@ -47,28 +48,41 @@ function BookingsRequestTable({ bookings, onBookingForward }) {
   const handleViewCloseModal = () => {
     setViewModalOpened(null); // Close modal
   };
-
+  const [sortBy, setSortBy] = useState("bookingFrom"); // Default sorting by "Booking From"
   const role = useSelector((state) => state.user.role);
 
   // Filter bookings based on role and status
-  const filteredBookings = bookings.filter((booking) => {
+  const filteredBookings = bookings.filter(() => {
     if (role === "VhIncharge") {
-      return booking.status === "Forward";
+      return true;
     }
     if (role === "VhCaretaker") {
-      return booking.status === "Pending";
+      return true;
     }
-    return booking.status !== "Forward";
+    return true;
   });
 
-  // Sort bookings by "booking from" date in ascending order
-  const sortedBookings = filteredBookings.sort(
-    (a, b) => new Date(a.bookingFrom) - new Date(b.bookingFrom),
-  );
+  // Filter bookings based on search term
+  const searchedBookings = filteredBookings.filter((booking) => {
+    return (
+      booking.intender.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      booking.status.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
+
+  // Sort bookings by "booking from" date in descending order
+  const sortedBookings = searchedBookings.sort((a, b) => {
+    if (sortBy === "bookingFrom") {
+      return new Date(b.bookingFrom) - new Date(a.bookingFrom);
+    }
+    if (sortBy === "bookingTo") {
+      return new Date(b.bookingTo) - new Date(a.bookingTo);
+    }
+    return 0;
+  });
 
   return (
     <Box p="md" style={{ margin: 10 }}>
-      {bookings.status}
       <Box
         mb="md"
         style={{
@@ -97,6 +111,33 @@ function BookingsRequestTable({ bookings, onBookingForward }) {
         <Button variant="outline" color="red" onClick={handleButtonClick}>
           Place Request
         </Button>
+      </Box>
+
+      <Box
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "1rem",
+        }}
+      >
+        <TextInput
+          placeholder="Search by Intender or Booking Status"
+          value={searchTerm}
+          onChange={(event) => setSearchTerm(event.currentTarget.value)}
+          style={{ flex: 1, marginRight: "1rem" }} // Adjust spacing
+        />
+
+        <Select
+          placeholder="Sort by"
+          value={sortBy}
+          onChange={(value) => setSortBy(value)}
+          data={[
+            { value: "bookingFrom", label: "Booking From" },
+            { value: "bookingTo", label: "Booking To" },
+          ]}
+          style={{ flex: 1 }} // Adjust spacing
+        />
       </Box>
 
       {modalOpened && (
@@ -185,8 +226,8 @@ function BookingsRequestTable({ bookings, onBookingForward }) {
                     textAlign: "center",
                   }}
                 >
-                  {booking.category}
-                  {console.log("BOOKING: ", booking)}
+                  {booking.category || booking.modifiedCategory}
+                  {/* {console.log("BOOKING: ", booking)} */}
                 </td>
                 {role === "VhIncharge" ? (
                   <td
@@ -206,72 +247,39 @@ function BookingsRequestTable({ bookings, onBookingForward }) {
                     textAlign: "center",
                   }}
                 >
-                  {role === "VhCaretaker" && booking.status === "Pending" ? (
-                    <>
-                      <Button
-                        variant="outline"
-                        color="green"
-                        onClick={() => handleForwardButtonClick(booking.id)}
-                      >
-                        Forward
-                      </Button>
-                      {forwardModalOpened === booking.id && (
-                        <ForwardBookingForm
-                          forwardmodalOpened={forwardModalOpened === booking.id}
-                          onClose={handleForwardCloseModal}
-                          onBookingForward={onBookingForward} // Pass the function down
-                          bookingId={booking.id}
-                        />
-                      )}
-                    </>
-                  ) : role === "VhIncharge" && booking.status === "Forward" ? (
-                    <>
-                      <Button
-                        variant="outline"
-                        color="green"
-                        onClick={() => handleForwardButtonClick(booking.id)}
-                      >
-                        Confirm
-                      </Button>
-                      {forwardModalOpened === booking.id && (
-                        <ConfirmBookingIn
-                          forwardmodalOpened={forwardModalOpened === booking.id}
-                          onClose={handleForwardCloseModal}
-                          bookingId={booking.id}
-                          bookingf={booking}
-                        />
-                      )}
-                    </>
-                  ) : (
-                    <Badge
-                      color={
+                  <Badge
+                    color={
+                      booking.status === "Pending"
+                        ? "gray"
+                        : booking.status === "Confirmed" ||
+                            booking.status === "Complete"
+                          ? "green"
+                          : "red"
+                    }
+                    variant="light"
+                    style={{
+                      backgroundColor:
                         booking.status === "Pending"
-                          ? "gray"
-                          : booking.status === "Confirmed"
-                            ? "green"
-                            : "red"
-                      }
-                      variant="light"
-                      style={{
-                        backgroundColor:
-                          booking.status === "Pending"
-                            ? "#E0E0E0"
-                            : booking.status === "Confirmed"
-                              ? "#dffbe0"
-                              : "#f8d7da",
-                        color:
-                          booking.status === "Pending"
-                            ? "#757575"
-                            : booking.status === "Confirmed"
-                              ? "#84b28c"
-                              : "#721c24",
-                        padding: "4px 8px",
-                        borderRadius: "4px",
-                      }}
-                    >
-                      {booking.status}
-                    </Badge>
-                  )}
+                          ? "#E0E0E0"
+                          : booking.status === "Confirmed" ||
+                              booking.status === "Complete"
+                            ? "#dffbe0"
+                            : "#f8d7da",
+                      color:
+                        booking.status === "Pending"
+                          ? "#757575"
+                          : booking.status === "Confirmed" ||
+                              booking.status === "Complete"
+                            ? "#84b28c"
+                            : "#721c24",
+                      padding: "4px 8px",
+                      borderRadius: "4px",
+                    }}
+                  >
+                    {booking.status}
+                  </Badge>
+                  {/* )
+                  } */}
                 </td>
                 <td
                   style={{
@@ -318,7 +326,7 @@ BookingsRequestTable.propTypes = {
       status: PropTypes.string.isRequired,
     }),
   ).isRequired,
-  onBookingForward: PropTypes.func.isRequired, // Add this line for validation
+  // onBookingForward: PropTypes.func.isRequired, // Add this line for validation
 };
 
 function Bookings() {

@@ -36,8 +36,14 @@ function ClubViewComponent({
   const userRole = user.role;
   const [activeclubfeature, setactiveclubfeature] = useState("0"); // Default index as string for ModuleTabs
   const { data: CurrentLogginedRelatedClub = [] } =
-    useGetCurrentLoginnedRoleRelatedClub(user.username, token);
+    useGetCurrentLoginnedRoleRelatedClub(user.roll_no, token);
 
+  const VisibeClubArray = [];
+  CurrentLogginedRelatedClub.forEach((c) => {
+    VisibeClubArray.push(c.club);
+  });
+  console.log(user, CurrentLogginedRelatedClub);
+  console.log(VisibeClubArray);
   // Create a tabs array dynamically based on user role and conditions
   const tabs = [{ title: "About" }];
 
@@ -68,9 +74,16 @@ function ClubViewComponent({
   }
 
   if (
-    ["FIC", "Counsellor", "Professor"].includes(userRole) &&
+    [
+      "FIC",
+      "Counsellor",
+      "Professor",
+      "Tech_Counsellor",
+      "Sports_Counsellor",
+      "Cultural_Counsellor",
+    ].includes(userRole) &&
     CurrentLogginedRelatedClub.length > 0 &&
-    CurrentLogginedRelatedClub[0].club === clubName
+    VisibeClubArray.includes(clubName)
   ) {
     tabs.push({ title: "Events Approval" }, { title: "Budget Approval" });
   }

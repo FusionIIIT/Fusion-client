@@ -95,12 +95,17 @@ export default function EditFacilities({ setIsEditing, branch }) {
 
     try {
       // Make the API request using PUT method
-      await axios.put(`${host}/dep/api/information/update-create/`, data, {
-        headers: {
-          Authorization: `Token ${token}`, // Include the token in the headers
+      const response = await axios.put(
+        `${host}/dep/api/information/update-create/`,
+        data,
+        {
+          headers: {
+            Authorization: `Token ${token}`, // Include the token in the headers
+          },
         },
-      });
+      );
 
+      console.log("Form Data Updated:", response.data); // Log the response
       setIsSuccess(true); // Set success state
 
       // Reset the form fields
@@ -134,12 +139,13 @@ export default function EditFacilities({ setIsEditing, branch }) {
 
     try {
       // Make the API request using POST method
-      await axios.post(`${host}/dep/api/labsadd/`, labData, {
+      const response = await axios.post(`${host}/dep/api/labsadd/`, labData, {
         headers: {
           Authorization: `Token ${token}`, // Include the token in the headers
         },
       });
 
+      console.log("Lab Data Submitted:", response.data); // Log the response
       setLabIsSuccess(true); // Set success state for lab submission
 
       // Reset the form fields
@@ -173,6 +179,8 @@ export default function EditFacilities({ setIsEditing, branch }) {
   };
 
   const handleDeleteLabs = async () => {
+    console.log("Selected Labs for Deletion:", selectedLabs); // Check selected labs
+
     if (selectedLabs.length === 0) {
       alert("No labs selected for deletion.");
       return; // Exit if no labs are selected
@@ -181,7 +189,7 @@ export default function EditFacilities({ setIsEditing, branch }) {
     const token = localStorage.getItem("authToken"); // Get token from local storage
 
     try {
-      await axios.delete(`${host}/dep/api/labs/delete/`, {
+      const response = await axios.delete(`${host}/dep/api/labs/delete/`, {
         headers: {
           Authorization: `Token ${token}`, // Include the token in the headers
         },
@@ -190,6 +198,7 @@ export default function EditFacilities({ setIsEditing, branch }) {
         },
       });
 
+      console.log("Labs Deleted:", response.data); // Log the response
       // Re-fetch labs to update the table after deletion
       const responseLabs = await axios.get(`${host}/dep/api/labs/`, {
         headers: {

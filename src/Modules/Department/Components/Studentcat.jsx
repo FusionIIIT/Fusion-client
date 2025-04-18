@@ -21,11 +21,12 @@ const columns = [
       </Link>
     ),
   },
+  { accessorKey: "first_name", header: "Name" },
   { accessorKey: "specialization", header: "Department" },
   { accessorKey: "programme", header: "Programme" },
   { accessorKey: "batch", header: "Batch" },
-  { accessorKey: "cpi", header: "CPI" },
-  { accessorKey: "category", header: "Category" },
+  { accessorKey: "hall_no", header: "Hostel" },
+  { accessorKey: "room_no", header: "Room No" },
 ];
 
 let year = 2022;
