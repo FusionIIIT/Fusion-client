@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Paper, Badge, Button, Flex, Divider, Text } from "@mantine/core";
 import { useSelector } from "react-redux";
+import { notifications } from "@mantine/notifications";
 import { getComplaintReport } from "../routes/api"; // Ensure correct import path for getComplaintReport
 import "../styles/GenerateReport.css";
 import detailIcon from "../../../assets/detail.png";
@@ -32,49 +33,77 @@ const locations = [
   "NR2",
 ];
 
+const statusMapping = {
+  0: "Pending",
+  2: "Resolved",
+  3: "Declined",
+};
+
+const calculateDaysElapsed = (complaintDate) => {
+  const lodgeDate = new Date(complaintDate);
+  const currentDate = new Date();
+  const diffTime = Math.abs(currentDate - lodgeDate);
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+};
+
+const getSeverityColor = (days) => {
+  if (days <= 2) return "#4CAF50"; // Green for recent complaints
+  if (days <= 5) return "#FFC107"; // Yellow for moderate urgency
+  return "#FF5252"; // Red for high urgency
+};
+
 function GenerateReport() {
   const [complaintsData, setComplaintsData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
   const [filters, setFilters] = useState({
     location: "",
     complaintType: "",
     status: "",
     startDate: "",
     endDate: "",
-    sortBy: "",
+    sortBy: "mostRecent", // Default sort set to most recent
   });
+
   const username = useSelector((state) => state.user.username);
   const token = localStorage.getItem("authToken");
   const role = useSelector((state) => state.user.role);
 
-  const fetchComplaintsData = async () => {
-    try {
-      const { success, data, error } = await getComplaintReport(filters, token);
-      if (success) {
-        console.log("Fetched data:", data);
-        setComplaintsData(data);
-        setFilteredData(data);
-      } else {
-        console.error("Error fetching complaints data:", error);
-        alert("Error fetching complaints. Please try again.");
+  // Fetch complaints data when filters change.
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const { success, data } = await getComplaintReport(filters, token);
+        if (success) {
+          setComplaintsData(data);
+        } else {
+          notifications.show({
+            title: "Error",
+            message: "Error fetching complaints. Please try again.",
+            color: "red",
+          });
+        }
+      } catch (error) {
+        notifications.show({
+          title: "Unexpected Error",
+          message: "Unexpected error occurred. Please try again.",
+          color: "red",
+        });
       }
-    } catch (error) {
-      console.error("Unexpected error:", error);
-      alert("Unexpected error occurred. Please try again.");
     }
-  };
+    fetchData();
+  }, [filters, token]);
 
-  const applyFilters = () => {
+  // Compute filtered data using useMemo to avoid unnecessary state updates.
+  const filteredData = useMemo(() => {
     let filtered = [...complaintsData];
 
-    // Apply location filter
+    // Location filter – applied if role includes "supervisor"
     if (filters.location) {
       filtered = filtered.filter(
         (complaint) =>
           complaint.location.toLowerCase() === filters.location.toLowerCase(),
       );
     }
-    // Apply complaint type filter
+    // Complaint type filter – applied if role includes "caretaker" or "convener"
     if (filters.complaintType) {
       filtered = filtered.filter(
         (complaint) =>
@@ -82,35 +111,29 @@ function GenerateReport() {
           filters.complaintType.toLowerCase(),
       );
     }
-
-    // Apply status filter
+    // Status filter
     if (filters.status) {
       filtered = filtered.filter(
         (complaint) => String(complaint.status) === filters.status,
       );
     }
-
-    // Apply date filters
+    // Date filters
     if (filters.startDate) {
       filtered = filtered.filter(
         (complaint) =>
           new Date(complaint.complaint_date) >= new Date(filters.startDate),
       );
     }
-
     if (filters.endDate) {
       filtered = filtered.filter(
         (complaint) =>
           new Date(complaint.complaint_date) <= new Date(filters.endDate),
       );
     }
-
-    // Apply sorting
+    // Sorting
     if (filters.sortBy) {
       if (filters.sortBy === "status") {
-        filtered.sort((a, b) => {
-          return a.status - b.status;
-        });
+        filtered.sort((a, b) => a.status - b.status);
       } else if (filters.sortBy === "mostRecent") {
         filtered.sort(
           (a, b) => new Date(b.complaint_date) - new Date(a.complaint_date),
@@ -121,17 +144,25 @@ function GenerateReport() {
         );
       }
     }
-
-    setFilteredData(filtered);
-  };
-
-  useEffect(() => {
-    fetchComplaintsData();
-  }, [filters]);
-
-  useEffect(() => {
-    applyFilters();
-  }, [filters, complaintsData]);
+    if (filters.sortBy === "severity") {
+      filtered.sort((a, b) => {
+        const severityA = calculateDaysElapsed(a.complaint_date);
+        const severityB = calculateDaysElapsed(b.complaint_date);
+        return severityB - severityA; // Higher severity first
+      });
+    }
+    if (filters.severity) {
+      filtered = filtered.filter((complaint) => {
+        const daysElapsed = calculateDaysElapsed(complaint.complaint_date);
+        if (filters.severity === "high") return daysElapsed > 5;
+        if (filters.severity === "medium")
+          return daysElapsed > 2 && daysElapsed <= 5;
+        if (filters.severity === "low") return daysElapsed <= 2;
+        return true;
+      });
+    }
+    return filtered;
+  }, [complaintsData, filters]);
 
   const handleFilterChange = (event) => {
     const { name, value } = event.target;
@@ -146,19 +177,15 @@ function GenerateReport() {
     return date.toLocaleDateString();
   };
 
-  const statusMapping = {
-    0: "Pending",
-    2: "Resolved",
-    3: "Declined",
-  };
-
   const generateCSV = () => {
     if (!filteredData.length) {
-      console.error("No data to generate CSV");
-      alert("No data to generate CSV");
+      notifications.show({
+        title: "No Data",
+        message: "No data to generate CSV.",
+        color: "red",
+      });
       return;
     }
-
     const currentDateTime = new Date().toLocaleString().replace(",", "");
     const reportTitle = `Complaint Report`;
     const dateLine = `Date of Generation: ${currentDateTime}`;
@@ -174,7 +201,6 @@ function GenerateReport() {
 
     // CSV headers
     const headers = ["Complaint Type", "Location", "Status", "Date", "Details"];
-
     // Create rows from complaints data
     const rows = filteredData.map((complaint) => [
       complaint.complaint_type,
@@ -201,12 +227,9 @@ function GenerateReport() {
 
   const downloadCSV = () => {
     const csvData = generateCSV();
-
     if (!csvData) return;
-
     // Create a Blob from the CSV data
     const blob = new Blob([csvData], { type: "text/csv" });
-
     // Create a download link and simulate a click
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
@@ -221,12 +244,11 @@ function GenerateReport() {
     const year = date.getFullYear();
     const hours = String(date.getHours()).padStart(2, "0");
     const minutes = String(date.getMinutes()).padStart(2, "0");
-
     return `${day}-${month}-${year}, ${hours}:${minutes}`; // Format: DD-MM-YYYY HH:MM
   };
 
   return (
-    <div className="full-width-container ">
+    <div className="full-width-container">
       <Paper
         radius="md"
         px="lg"
@@ -244,7 +266,7 @@ function GenerateReport() {
         maw="1240px"
         backgroundColor="white"
       >
-        <Flex direction="column ">
+        <Flex direction="column">
           {filteredData.length > 0 ? (
             filteredData.map((complaint, index) => {
               const displayedStatus =
@@ -253,8 +275,6 @@ function GenerateReport() {
                   : complaint.status === 3
                     ? "Declined"
                     : "Pending";
-              console.log("Complaint:", displayedStatus);
-
               return (
                 <Paper
                   key={index}
@@ -271,7 +291,7 @@ function GenerateReport() {
                   <Flex direction="column" style={{ width: "100%" }}>
                     <Flex direction="row" justify="space-between">
                       <Flex direction="row" gap="xs" align="center">
-                        <Text size="14px" style={{ fontWeight: "Bold" }}>
+                        <Text size="14px" style={{ fontWeight: "bold" }}>
                           Complaint Id: {complaint.id}
                         </Text>
                         <Badge
@@ -281,6 +301,17 @@ function GenerateReport() {
                           }
                         >
                           {complaint.complaint_type}
+                        </Badge>
+                        <Badge
+                          size="lg"
+                          style={{
+                            backgroundColor: getSeverityColor(
+                              calculateDaysElapsed(complaint.complaint_date),
+                            ),
+                            color: "white",
+                          }}
+                        >
+                          {calculateDaysElapsed(complaint.complaint_date)} days
                         </Badge>
                       </Flex>
                       {displayedStatus === "Resolved" ? (
@@ -318,26 +349,24 @@ function GenerateReport() {
                         />
                       )}
                     </Flex>
-
                     <Flex direction="column" gap="xs">
                       <Text size="14px">
-                        <b>Date:</b> {formatDateTime(complaint.complaint_date)}
+                        <strong>Date:</strong>{" "}
+                        {formatDateTime(complaint.complaint_date)}
                       </Text>
                       <Text size="14px">
-                        <b>Location:</b> {complaint.specific_location},{" "}
-                        {complaint.location}
+                        <strong>Location:</strong> {complaint.specific_location}
+                        , {complaint.location}
                       </Text>
                     </Flex>
-
                     <Divider my="md" size="sm" />
-
                     <Flex
                       direction="row"
                       justify="space-between"
                       align="center"
                     >
                       <Text size="14px">
-                        <b>Description:</b> {complaint.details}
+                        <strong>Description:</strong> {complaint.details}
                       </Text>
                     </Flex>
                   </Flex>
@@ -352,8 +381,9 @@ function GenerateReport() {
 
       <div className="filter-card-container mt-5">
         <h2>Filters</h2>
-
-        {role.includes("supervisor") && (
+        {(role.includes("SA") ||
+          role.includes("SP") ||
+          role.includes("complaint_admin")) && (
           <>
             <div className="filter-label" style={{ fontWeight: "bold" }}>
               Location
@@ -368,13 +398,13 @@ function GenerateReport() {
             </select>
           </>
         )}
-
-        {(role.includes("caretaker") || role.includes("convener")) && (
+        {(role.includes("caretaker") ||
+          role.includes("warden") ||
+          role.includes("complaint_admin")) && (
           <>
             <div className="filter-label" style={{ fontWeight: "bold" }}>
               Complaint Type
             </div>
-
             <select name="complaintType" onChange={handleFilterChange}>
               <option value="">Select Complaint Type</option>
               {complaintTypes.map((type) => (
@@ -385,7 +415,6 @@ function GenerateReport() {
             </select>
           </>
         )}
-
         <div className="filter-label" style={{ fontWeight: "bold" }}>
           Status
         </div>
@@ -395,17 +424,23 @@ function GenerateReport() {
           <option value="2">Resolved</option>
           <option value="3">Declined</option>
         </select>
-
+        <div className="filter-label" style={{ fontWeight: "bold" }}>
+          Severity
+        </div>
+        <select name="severity" onChange={handleFilterChange}>
+          <option value="">Select Severity</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
         <div className="filter-label" style={{ fontWeight: "bold" }}>
           From Date
         </div>
         <input type="date" name="startDate" onChange={handleFilterChange} />
-
         <div className="filter-label" style={{ fontWeight: "bold" }}>
           To Date
         </div>
         <input type="date" name="endDate" onChange={handleFilterChange} />
-
         <div className="filter-label" style={{ fontWeight: "bold" }}>
           Sort By
         </div>
@@ -414,8 +449,8 @@ function GenerateReport() {
           <option value="mostRecent">Most Recent</option>
           <option value="mostOlder">Most Older</option>
           <option value="status">Status</option>
+          <option value="severity">Severity</option>
         </select>
-
         <Flex direction="row-reverse">
           <Button onClick={downloadCSV} size="xs" variant="outline">
             Download CSV
