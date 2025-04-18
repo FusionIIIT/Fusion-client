@@ -63,7 +63,9 @@ function AllocateCourses() {
         setError(result.message);
       }
     } catch (err) {
-      setError("Error checking allocation.");
+      const errorMessage =
+        err.response?.data?.message || "Error checking allocation.";
+      setError(errorMessage);
     }
 
     setLoading(false);

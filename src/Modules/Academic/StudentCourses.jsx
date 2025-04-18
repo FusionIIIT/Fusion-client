@@ -123,7 +123,7 @@ function StudentCourses() {
       // console.log("Fetched Courses:", response.data);
       if (response.status === 200) {
         alert("Course Added Successfully!");
-        handleGetCourses();
+        await handleGetCourses();
       }
     } catch (fetchError) {
       setError(fetchError);
@@ -286,7 +286,7 @@ function StudentCourses() {
                 studentData
                   ? studentData.course_list.map((course) => ({
                       value: course.id.toString(),
-                      label: `${course.code} - ${course.name}`,
+                      label: `${course.code} - ${course.name} - ${course.credit} credits`,
                     }))
                   : []
               }
