@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Card, Text } from "@mantine/core";
+import {
+  Card,
+  Text,
+  Select,
+  Loader,
+  Center,
+} from "@mantine/core";
 import axios from "axios";
 import FusionTable from "../../components/FusionTable";
 import { currentCourseRegistrationRoute } from "../../routes/academicRoutes";
@@ -8,32 +14,52 @@ function RegisteredCourses() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [semester, setSemester] = useState("");
+  const [availableSemesters, setAvailableSemesters] = useState([]);
+
+  const fetchCourses = async (semesterParam) => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      setError(new Error("No token found"));
+      setLoading(false);
+      return;
+    }
+    try {
+      const url = semesterParam
+        ? `${currentCourseRegistrationRoute}?semester=${semesterParam}`
+        : currentCourseRegistrationRoute;
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      });
+      setCourses(response.data);
+    } catch (fetchError) {
+      setError(fetchError);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchAvailableSemesters = async () => {
+    setAvailableSemesters(
+      Array.from({ length: 8 }, (_, i) => ({
+        value: (i + 1).toString(),
+        label: `Semester ${i + 1}`,
+      }))
+    );
+  };
 
   useEffect(() => {
-    const fetchCourses = async () => {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        setError(new Error("No token found"));
-        setLoading(false);
-        return;
-      }
-      try {
-        const response = await axios.get(currentCourseRegistrationRoute, {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
-        });
-        console.log("Fetched Courses:", response.data);
-        setCourses(response.data);
-      } catch (fetchError) {
-        setError(fetchError);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchCourses();
+    fetchAvailableSemesters();
   }, []);
+
+  const handleSemesterChange = (value) => {
+    setSemester(value);
+    setLoading(true);
+    fetchCourses(value);
+  };
 
   const columnNames = [
     "Course Code",
@@ -53,15 +79,19 @@ function RegisteredCourses() {
 
   const totalCredits = courses.reduce(
     (sum, course) => sum + (course.course_id?.credit || 0),
-    0,
+    0
   );
 
   if (loading) {
-    return <Text>Loading...</Text>;
+    return (
+      <Center style={{ height: "200px" }}>
+        <Loader size="lg" variant="dots" />
+      </Center>
+    );
   }
 
   if (error) {
-    return <Text>Error: {error.message}</Text>;
+    return <Text color="red">Error: {error.message}</Text>;
   }
 
   return (
@@ -72,8 +102,18 @@ function RegisteredCourses() {
         mb="md"
         style={{ textAlign: "center", width: "100%", color: "#3B82F6" }}
       >
-        Registered Courses This Semester
+        Registered Courses
       </Text>
+
+      <Select
+        label="Select Semester"
+        placeholder="Select a semester"
+        data={availableSemesters}
+        value={semester}
+        onChange={handleSemesterChange}
+        mb="md"
+      />
+
       <div style={{ overflowX: "auto" }}>
         <FusionTable
           columnNames={columnNames}
@@ -81,6 +121,7 @@ function RegisteredCourses() {
           width="100%"
         />
       </div>
+
       <Text
         size="md"
         weight={700}

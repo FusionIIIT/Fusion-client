@@ -15,6 +15,7 @@ import SubmitGradesProf from "./submitGradesProf.jsx";
 import ProtectedRoute from "./routes/protectedRoutes.jsx";
 import { useSelector } from "react-redux";
 import { useState, useEffect } from "react";
+import AnnounceResult from "./AnnounceResult.jsx";
 
 export default function Examination() {
   const userRole = useSelector((state) => state.user.role);
@@ -87,14 +88,14 @@ export default function Examination() {
               </ProtectedRoute>
             }
           />
-          <Route
+          {/* <Route
             path="/announcement"
             element={
               <ProtectedRoute roles={["acadadmin"]}>
                 <Announcement />
               </ProtectedRoute>
             }
-          />
+          /> */}
           <Route
             path="/update"
             element={
@@ -132,6 +133,14 @@ export default function Examination() {
             element={
               <ProtectedRoute roles={["Associate Professor", "Assistant Professor", "Professor"]}>
                 <CheckResultProf />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/result-announcement"
+            element={
+              <ProtectedRoute roles={["acadadmin", "Dean Academic"]}>
+                <AnnounceResult />
               </ProtectedRoute>
             }
           />
