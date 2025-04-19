@@ -65,11 +65,11 @@ export default function Nav() {
       path: "/examination/verify-grades",
       roles: ["acadadmin"],
     },
-    {
-      title: "Announcement",
-      path: "/examination/announcement",
-      roles: ["acadadmin"],
-    },
+    // {
+    //   title: "Announcement",
+    //   path: "/examination/announcement",
+    //   roles: ["acadadmin"],
+    // },
     {
       title: "Transcript",
       path: "/examination/generate-transcript",
@@ -87,7 +87,9 @@ export default function Nav() {
       roles: ["Professor","Assistant Professor","Associate Professor"],
     },
     
-    { title: "Result", path: "/examination/result", roles: ["Student"] },
+    { title: "Result", path: "/examination/result", roles: ["student"] },
+
+    { title: "Announce Result", path: "/examination/result-announcement", roles: ["acadadmin", "Dean Academic"] },
   ];
 
   // Filter tabs based on user role
