@@ -431,7 +431,17 @@ function VerifyStudentRegistration() {
             {selectedCourses.map((course, index) => (
               <List.Item key={index}>
                 {course.course_id.name} ({course.course_id.code}) -{" "}
-                {course.course_id.credit} credits
+                {course.course_id.credit} credits 
+                {course.old_course_registration && (
+                  <>
+                    <strong> replaces</strong>{" "}
+                    <span style={{ color: "#555" }}>
+                      {course.old_course_registration.course_id.name} ({course.old_course_registration.course_id.code}) -{" "}
+                      {course.old_course_registration.course_id.credit} credits —{" "}
+                      {course.old_course_registration.semester_id.semester_no} semester
+                    </span>
+                  </>
+                )}
               </List.Item>
             ))}
           </List>

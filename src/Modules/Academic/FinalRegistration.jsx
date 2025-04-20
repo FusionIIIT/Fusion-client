@@ -59,7 +59,7 @@ function FinalRegistration() {
           setCourses(data.final_registration || []);
           setPaymentDetails((prev) => ({
             ...prev,
-            semester: data.final_registration[0].semester_id.id,
+            semester: (data.final_registration) ? data.final_registration[0].semester_id.id : 1,
           }));
         }
       } catch (error) {
