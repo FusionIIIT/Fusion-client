@@ -69,6 +69,28 @@ function ComplaintForm() {
     setErrorMessage("");
     setIsSuccess(false);
 
+    if (!complaintType || complaintType === "") {
+      setErrorMessage("Please select a complaint type.");
+      setLoading(false);
+      showNotification({
+        title: "Error",
+        message: "Please select a complaint type.",
+        color: "red",
+      });
+      return;
+    }
+
+    if (!location || location === "") {
+      setErrorMessage("Please select a location.");
+      setLoading(false);
+      showNotification({
+        title: "Error",
+        message: "Please select a location.",
+        color: "red",
+      });
+      return;
+    }
+
     const token = localStorage.getItem("authToken");
     const formData = new FormData();
     formData.append("complaint_type", complaintType);
