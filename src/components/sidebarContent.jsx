@@ -29,6 +29,7 @@ import {
   Question as HelpIcon,
   User as ProfileIcon,
   Gear as SettingsIcon,
+  AmazonLogo as CourseManagementIcon,
   CaretRight,
   CaretLeft,
 } from "@phosphor-icons/react";
@@ -63,6 +64,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
     "examinations",
     "other_academics",
     "hr",
+    "course_management",
   ];
 
   const Modules = [
@@ -190,6 +192,12 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       id: "other_academics",
       icon: <OtherAcademicIcon size={18} />,
       url: "/otherAcadProcedures",
+    },
+    {
+      label: "Course Management",
+      id: "course_management",
+      icon: <CourseManagementIcon size={18} />,
+      url: "/course-management",
     },
   ];
 
