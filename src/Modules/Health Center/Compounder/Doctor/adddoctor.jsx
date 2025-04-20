@@ -1,9 +1,6 @@
 import { Button, Flex, Paper, TextInput, Title } from "@mantine/core";
 import { useState } from "react";
 import axios from "axios";
-import NavCom from "../NavCom";
-import Changenav from "./changenav";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
 import { compounderRoute } from "../../../../routes/health_center";
 
 export default function Adddoctor() {
@@ -48,58 +45,52 @@ export default function Adddoctor() {
   };
 
   return (
-    <>
-      <CustomBreadcrumbs />
-      <NavCom />
-      <Changenav />
-      <br />
-      <Paper shadow="xl" p="xl" withBorder>
-        <Title
-          order={3}
-          style={{
-            color: "#15ABFF",
-            textAlign: "center",
-            marginBottom: "20px",
-          }}
-        >
-          Add Doctor
-        </Title>
+    <Paper shadow="xl" p="xl" withBorder>
+      <Title
+        order={3}
+        style={{
+          color: "#15ABFF",
+          textAlign: "center",
+          marginBottom: "20px",
+        }}
+      >
+        Add Doctor
+      </Title>
 
-        <Flex display="flex" flexDirection="row" wrap="wrap" gap="md">
-          <TextInput
-            label="Doctor Name"
-            placeholder="Doctor Name"
-            value={doctor}
-            onChange={(e) => {
-              setDoctor(e.target.value);
-            }}
-          />
-          <TextInput
-            label="Specialization"
-            placeholder="Specialization"
-            value={doctor_specialization}
-            onChange={(e) => {
-              setSpecialization(e.target.value);
-            }}
-          />
-          <TextInput
-            label="Phone Number"
-            placeholder="Phone"
-            value={doctor_phone}
-            onChange={(e) => {
-              setPhone(e.target.value);
-            }}
-          />
-          <Button
-            mt="lg"
-            onClick={handleAdd}
-            style={{ backgroundColor: "#15abff" }}
-          >
-            {" "}
-            Add Doctor
-          </Button>
-        </Flex>
-      </Paper>
-    </>
+      <Flex display="flex" flexDirection="row" wrap="wrap" gap="md">
+        <TextInput
+          label="Doctor Name"
+          placeholder="Doctor Name"
+          value={doctor}
+          onChange={(e) => {
+            setDoctor(e.target.value);
+          }}
+        />
+        <TextInput
+          label="Specialization"
+          placeholder="Specialization"
+          value={doctor_specialization}
+          onChange={(e) => {
+            setSpecialization(e.target.value);
+          }}
+        />
+        <TextInput
+          label="Phone Number"
+          placeholder="Phone"
+          value={doctor_phone}
+          onChange={(e) => {
+            setPhone(e.target.value);
+          }}
+        />
+        <Button
+          mt="lg"
+          onClick={handleAdd}
+          style={{ backgroundColor: "#15abff" }}
+        >
+          {" "}
+          Add Doctor
+        </Button>
+      </Flex>
+    </Paper>
   );
 }

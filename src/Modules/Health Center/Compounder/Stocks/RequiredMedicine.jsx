@@ -1,5 +1,13 @@
-import React, { useEffect, useState } from "react";
-import { Pagination, Paper, Table, Title } from "@mantine/core";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Pagination,
+  Paper,
+  Table,
+  Title,
+  Loader,
+  Center,
+  Text,
+} from "@mantine/core";
 import axios from "axios";
 import NavCom from "../NavCom";
 import ManageStock from "./ManageStocksNav";
@@ -7,15 +15,16 @@ import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
 import { compounderRoute } from "../../../../routes/health_center";
 
 function RequiredMedicine() {
-  // eslint-disable-next-line no-unused-vars
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [totalPages, setTotalPages] = useState(1);
   const [activePage, setPage] = useState(1);
   const [requiredMed, setRequired] = useState([]);
+  const printRef = useRef();
 
   const fetchRequired = async (pagenumber) => {
     const token = localStorage.getItem("authToken");
+    setLoading(true);
     try {
       const response = await axios.post(
         compounderRoute,
@@ -30,18 +39,30 @@ function RequiredMedicine() {
           },
         },
       );
-      console.log(response);
-      setRequired(response.data.report_stock_required);
-      setTotalPages(response.data.total_pages_stock_required);
+      setRequired(response.data.report_stock_required || []);
+      setTotalPages(response.data.total_pages_stock_required || 1);
     } catch (err) {
       console.log(err);
     } finally {
       setLoading(false);
     }
   };
+
   const setCurrentPage = async (e) => {
     setPage(e);
     fetchRequired(e);
+  };
+
+  const handlePrint = () => {
+    const printContent = printRef.current.innerHTML;
+    const newWin = window.open("", "_blank");
+    newWin.document.write(
+      `<html><head><title>Print</title></head><body>${printContent}</body></html>`,
+    );
+    newWin.document.close();
+    newWin.focus();
+    newWin.print();
+    newWin.close();
   };
 
   useEffect(() => {
@@ -80,9 +101,7 @@ function RequiredMedicine() {
               type="text"
               placeholder="Search"
               value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-              }}
+              onChange={(e) => setSearch(e.target.value)}
               style={{
                 width: "130%",
                 padding: "10px",
@@ -93,6 +112,7 @@ function RequiredMedicine() {
             />
           </form>
           <button
+            onClick={handlePrint}
             style={{
               padding: "10px 20px",
               backgroundColor: "#15ABFF",
@@ -107,38 +127,54 @@ function RequiredMedicine() {
           </button>
         </div>
 
-        {/* Styled Table */}
-        <Paper shadow="xl" p="xl" withBorder>
-          <Title
-            order={5}
-            style={{
-              textAlign: "center",
-              margin: "0 auto",
-              color: "#15abff",
-            }}
-          >
-            Required Medicines
-          </Title>
-          <br />
-          <Table
-            withTableBorder
-            withColumnBorders
-            highlightOnHover
-            striped
-            horizontalSpacing="md"
-            verticalSpacing="sm"
-            style={{ overflowX: "auto" }}
-          >
-            <thead>
-              <tr style={{ backgroundColor: "#E0F2FE", textAlign: "center" }}>
-                <th>Medicine</th>
-                <th>Available</th>
-                <th>Threshold</th>
-              </tr>
-            </thead>
-            <tbody>{rows}</tbody>
-          </Table>
-        </Paper>
+        <div ref={printRef}>
+          <Paper shadow="xl" p="xl" withBorder>
+            <Title
+              order={5}
+              style={{
+                textAlign: "center",
+                margin: "0 auto",
+                color: "#15abff",
+              }}
+            >
+              Required Medicines
+            </Title>
+            <br />
+
+            {loading ? (
+              <Center my="xl">
+                <Loader size="lg" color="blue" />
+              </Center>
+            ) : requiredMed.length === 0 ? (
+              <Center my="xl">
+                <Text size="lg" color="gray">
+                  No data found.
+                </Text>
+              </Center>
+            ) : (
+              <Table
+                withTableBorder
+                withColumnBorders
+                highlightOnHover
+                striped
+                horizontalSpacing="md"
+                verticalSpacing="sm"
+                style={{ overflowX: "auto" }}
+              >
+                <thead>
+                  <tr
+                    style={{ backgroundColor: "#E0F2FE", textAlign: "center" }}
+                  >
+                    <th>Medicine</th>
+                    <th>Available</th>
+                    <th>Threshold</th>
+                  </tr>
+                </thead>
+                <tbody>{rows}</tbody>
+              </Table>
+            )}
+          </Paper>
+        </div>
 
         <Pagination
           value={activePage}

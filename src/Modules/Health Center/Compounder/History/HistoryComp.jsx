@@ -1,7 +1,6 @@
-/* eslint-disable no-unused-vars */
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { NavLink, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Button,
   Pagination,
@@ -9,6 +8,9 @@ import {
   Table,
   TextInput,
   Title,
+  Loader,
+  Center,
+  Text,
 } from "@mantine/core";
 import { Download } from "@phosphor-icons/react";
 import NavCom from "../NavCom";
@@ -27,6 +29,7 @@ function HistoryCompounder() {
 
   const fetchHistory = async (pagenumber) => {
     const token = localStorage.getItem("authToken");
+    setLoading(true);
     try {
       const response = await axios.post(
         compounderRoute,
@@ -37,7 +40,6 @@ function HistoryCompounder() {
           },
         },
       );
-      console.log(response);
       setHistory(response.data.report);
       setTotalPages(response.data.total_pages);
     } catch (err) {
@@ -46,7 +48,8 @@ function HistoryCompounder() {
       setLoading(false);
     }
   };
-  const setCurrentPage = async (e) => {
+
+  const setCurrentPage = (e) => {
     setPage(e);
     fetchHistory(e);
   };
@@ -110,35 +113,56 @@ function HistoryCompounder() {
           />
         </form>
         <br />
-        <Table
-          withTableBorder
-          withColumnBorders
-          highlightOnHover
-          striped
-          horizontalSpacing="sm"
-          verticalSpacing="sm"
-          style={{ marginBottom: "20px" }}
-        >
-          <Table.Thead>
-            <Table.Tr style={{ textAlign: "center" }}>
-              <Table.Th style={{ textAlign: "center" }}>Patient Id</Table.Th>
-              <Table.Th style={{ textAlign: "center" }}>Treated By</Table.Th>
-              <Table.Th style={{ textAlign: "center" }}>Date</Table.Th>
-              <Table.Th style={{ textAlign: "center" }}>Details</Table.Th>
-              <Table.Th style={{ textAlign: "center" }}>Report</Table.Th>
-              <Table.Th style={{ textAlign: "center" }}>
-                View Prescription
-              </Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>{rows}</Table.Tbody>
-        </Table>
-        <Pagination
-          value={activePage}
-          onChange={setCurrentPage}
-          total={totalPages}
-          style={{ marginTop: "20px", margin: "auto", width: "fit-content" }}
-        />
+
+        {loading ? (
+          <Center style={{ padding: "40px 0" }}>
+            <Loader size="lg" color="#15abff" />
+          </Center>
+        ) : history.length === 0 ? (
+          <Center style={{ padding: "40px 0" }}>
+            <Text>No data found</Text>
+          </Center>
+        ) : (
+          <>
+            <Table
+              withTableBorder
+              withColumnBorders
+              highlightOnHover
+              striped
+              horizontalSpacing="sm"
+              verticalSpacing="sm"
+              style={{ marginBottom: "20px" }}
+            >
+              <Table.Thead>
+                <Table.Tr style={{ textAlign: "center" }}>
+                  <Table.Th style={{ textAlign: "center" }}>
+                    Patient Id
+                  </Table.Th>
+                  <Table.Th style={{ textAlign: "center" }}>
+                    Treated By
+                  </Table.Th>
+                  <Table.Th style={{ textAlign: "center" }}>Date</Table.Th>
+                  <Table.Th style={{ textAlign: "center" }}>Details</Table.Th>
+                  <Table.Th style={{ textAlign: "center" }}>Report</Table.Th>
+                  <Table.Th style={{ textAlign: "center" }}>
+                    View Prescription
+                  </Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>{rows}</Table.Tbody>
+            </Table>
+            <Pagination
+              value={activePage}
+              onChange={setCurrentPage}
+              total={totalPages}
+              style={{
+                marginTop: "20px",
+                margin: "auto",
+                width: "fit-content",
+              }}
+            />
+          </>
+        )}
       </Paper>
     </>
   );
