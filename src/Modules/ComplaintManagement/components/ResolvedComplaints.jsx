@@ -26,7 +26,7 @@ function ResolvedComplaints() {
     const fetchResolvedComplaints = async () => {
       setIsLoading(true);
       try {
-        const response = await getComplaintsByRole("caretaker", token); // Use the API function
+        const response = await getComplaintsByRole("caretaker", token);
         if (response.success) {
           const filteredComplaints = response.data.filter(
             (complaint) => complaint.status === 2,

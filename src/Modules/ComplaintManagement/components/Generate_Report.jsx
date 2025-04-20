@@ -7,6 +7,7 @@ import "../styles/GenerateReport.css";
 import detailIcon from "../../../assets/detail.png";
 import declinedIcon from "../../../assets/declined.png";
 import resolvedIcon from "../../../assets/resolved.png";
+import ComplaintDetails from "./ComplaintDetails";
 
 const complaintTypes = [
   "Electricity",
@@ -54,6 +55,7 @@ const getSeverityColor = (days) => {
 
 function GenerateReport() {
   const [complaintsData, setComplaintsData] = useState([]);
+  const [selectedComplaint, setSelectedComplaint] = useState(null);
   const [filters, setFilters] = useState({
     location: "",
     complaintType: "",
@@ -91,6 +93,14 @@ function GenerateReport() {
     }
     fetchData();
   }, [filters, token]);
+
+  const handleDetailsClick = (complaint) => {
+    setSelectedComplaint(complaint);
+  };
+
+  const handleBackClick = () => {
+    setSelectedComplaint(null);
+  };
 
   // Compute filtered data using useMemo to avoid unnecessary state updates.
   const filteredData = useMemo(() => {
@@ -266,197 +276,216 @@ function GenerateReport() {
         maw="1240px"
         backgroundColor="white"
       >
-        <Flex direction="column">
-          {filteredData.length > 0 ? (
-            filteredData.map((complaint, index) => {
-              const displayedStatus =
-                complaint.status === 2
-                  ? "Resolved"
-                  : complaint.status === 3
-                    ? "Declined"
-                    : "Pending";
-              return (
-                <Paper
-                  key={index}
-                  radius="md"
-                  px="lg"
-                  pt="sm"
-                  pb="xl"
-                  style={{
-                    width: "100%",
-                    margin: "10px 0",
-                  }}
-                  withBorder
-                >
-                  <Flex direction="column" style={{ width: "100%" }}>
-                    <Flex direction="row" justify="space-between">
-                      <Flex direction="row" gap="xs" align="center">
-                        <Text size="14px" style={{ fontWeight: "bold" }}>
-                          Complaint Id: {complaint.id}
-                        </Text>
-                        <Badge
-                          size="lg"
-                          color={
-                            displayedStatus === "Resolved" ? "green" : "blue"
-                          }
-                        >
-                          {complaint.complaint_type}
-                        </Badge>
-                        <Badge
-                          size="lg"
-                          style={{
-                            backgroundColor: getSeverityColor(
-                              calculateDaysElapsed(complaint.complaint_date),
-                            ),
-                            color: "white",
-                          }}
-                        >
-                          {calculateDaysElapsed(complaint.complaint_date)} days
-                        </Badge>
+        {!selectedComplaint ? (
+          <Flex direction="column">
+            {filteredData.length > 0 ? (
+              filteredData.map((complaint, index) => {
+                const displayedStatus =
+                  complaint.status === 2
+                    ? "Resolved"
+                    : complaint.status === 3
+                      ? "Declined"
+                      : "Pending";
+                return (
+                  <Paper
+                    key={index}
+                    radius="md"
+                    px="lg"
+                    pt="sm"
+                    pb="xl"
+                    style={{
+                      width: "100%",
+                      margin: "10px 0",
+                    }}
+                    withBorder
+                  >
+                    <Flex direction="column" style={{ width: "100%" }}>
+                      <Flex direction="row" justify="space-between">
+                        <Flex direction="row" gap="xs" align="center">
+                          <Text size="14px" style={{ fontWeight: "bold" }}>
+                            Complaint Id: {complaint.id}
+                          </Text>
+                          <Badge
+                            size="lg"
+                            color={
+                              displayedStatus === "Resolved" ? "green" : "blue"
+                            }
+                          >
+                            {complaint.complaint_type}
+                          </Badge>
+                          <Badge
+                            size="lg"
+                            style={{
+                              backgroundColor: getSeverityColor(
+                                calculateDaysElapsed(complaint.complaint_date),
+                              ),
+                              color: "white",
+                            }}
+                          >
+                            {calculateDaysElapsed(complaint.complaint_date)}{" "}
+                            days
+                          </Badge>
+                        </Flex>
+                        {displayedStatus === "Resolved" ? (
+                          <img
+                            src={resolvedIcon}
+                            alt="Resolved"
+                            style={{
+                              width: "35px",
+                              borderRadius: "50%",
+                              backgroundColor: "#2BB673",
+                              padding: "10px",
+                            }}
+                          />
+                        ) : displayedStatus === "Declined" ? (
+                          <img
+                            src={declinedIcon}
+                            alt="Declined"
+                            style={{
+                              width: "35px",
+                              borderRadius: "50%",
+                              backgroundColor: "#FF6B6B",
+                              padding: "10px",
+                            }}
+                          />
+                        ) : (
+                          <img
+                            src={detailIcon}
+                            alt="Pending"
+                            style={{
+                              width: "35px",
+                              borderRadius: "50%",
+                              backgroundColor: "#FF6B6B",
+                              padding: "10px",
+                            }}
+                          />
+                        )}
                       </Flex>
-                      {displayedStatus === "Resolved" ? (
-                        <img
-                          src={resolvedIcon}
-                          alt="Resolved"
-                          style={{
-                            width: "35px",
-                            borderRadius: "50%",
-                            backgroundColor: "#2BB673",
-                            padding: "10px",
-                          }}
-                        />
-                      ) : displayedStatus === "Declined" ? (
-                        <img
-                          src={declinedIcon}
-                          alt="Declined"
-                          style={{
-                            width: "35px",
-                            borderRadius: "50%",
-                            backgroundColor: "#FF6B6B",
-                            padding: "10px",
-                          }}
-                        />
-                      ) : (
-                        <img
-                          src={detailIcon}
-                          alt="Pending"
-                          style={{
-                            width: "35px",
-                            borderRadius: "50%",
-                            backgroundColor: "#FF6B6B",
-                            padding: "10px",
-                          }}
-                        />
-                      )}
+                      <Flex direction="column" gap="xs">
+                        <Text size="14px">
+                          <strong>Date:</strong>{" "}
+                          {formatDateTime(complaint.complaint_date)}
+                        </Text>
+                        <Text size="14px">
+                          <strong>Location:</strong>{" "}
+                          {complaint.specific_location}, {complaint.location}
+                        </Text>
+                      </Flex>
+                      <Divider my="md" size="sm" />
+                      <Flex
+                        direction="row"
+                        justify="space-between"
+                        align="center"
+                      >
+                        <Text size="14px">
+                          <strong>Description:</strong> {complaint.details}
+                        </Text>
+                        <Button
+                          variant="outline"
+                          size="xs"
+                          onClick={() => handleDetailsClick(complaint)}
+                        >
+                          Details
+                        </Button>
+                      </Flex>
                     </Flex>
-                    <Flex direction="column" gap="xs">
-                      <Text size="14px">
-                        <strong>Date:</strong>{" "}
-                        {formatDateTime(complaint.complaint_date)}
-                      </Text>
-                      <Text size="14px">
-                        <strong>Location:</strong> {complaint.specific_location}
-                        , {complaint.location}
-                      </Text>
-                    </Flex>
-                    <Divider my="md" size="sm" />
-                    <Flex
-                      direction="row"
-                      justify="space-between"
-                      align="center"
-                    >
-                      <Text size="14px">
-                        <strong>Description:</strong> {complaint.details}
-                      </Text>
-                    </Flex>
-                  </Flex>
-                </Paper>
-              );
-            })
-          ) : (
-            <p>No complaints found.</p>
-          )}
-        </Flex>
+                  </Paper>
+                );
+              })
+            ) : (
+              <p>No complaints found.</p>
+            )}
+          </Flex>
+        ) : (
+          <ComplaintDetails
+            complaintId={selectedComplaint.id}
+            onBack={handleBackClick}
+          />
+        )}
       </Paper>
 
-      <div className="filter-card-container mt-5">
-        <h2>Filters</h2>
-        {(role.includes("SA") ||
-          role.includes("SP") ||
-          role.includes("complaint_admin")) && (
-          <>
-            <div className="filter-label" style={{ fontWeight: "bold" }}>
-              Location
-            </div>
-            <select name="location" onChange={handleFilterChange}>
-              <option value="">Select Location</option>
-              {locations.map((loc) => (
-                <option key={loc} value={loc}>
-                  {loc}
-                </option>
-              ))}
-            </select>
-          </>
-        )}
-        {(role.includes("caretaker") ||
-          role.includes("warden") ||
-          role.includes("complaint_admin")) && (
-          <>
-            <div className="filter-label" style={{ fontWeight: "bold" }}>
-              Complaint Type
-            </div>
-            <select name="complaintType" onChange={handleFilterChange}>
-              <option value="">Select Complaint Type</option>
-              {complaintTypes.map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
-            </select>
-          </>
-        )}
-        <div className="filter-label" style={{ fontWeight: "bold" }}>
-          Status
+      {!selectedComplaint ? (
+        <div className="filter-card-container mt-5">
+          <h2>Filters</h2>
+          {(role.includes("SA") ||
+            role.includes("SP") ||
+            role.includes("complaint_admin")) && (
+            <>
+              <div className="filter-label" style={{ fontWeight: "bold" }}>
+                Location
+              </div>
+              <select name="location" onChange={handleFilterChange}>
+                <option value="">Select Location</option>
+                {locations.map((loc) => (
+                  <option key={loc} value={loc}>
+                    {loc}
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
+          {(role.includes("caretaker") ||
+            role.includes("warden") ||
+            role.includes("complaint_admin")) && (
+            <>
+              <div className="filter-label" style={{ fontWeight: "bold" }}>
+                Complaint Type
+              </div>
+              <select name="complaintType" onChange={handleFilterChange}>
+                <option value="">Select Complaint Type</option>
+                {complaintTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
+          <div className="filter-label" style={{ fontWeight: "bold" }}>
+            Status
+          </div>
+          <select name="status" onChange={handleFilterChange}>
+            <option value="">Select Status</option>
+            <option value="0">Pending</option>
+            <option value="2">Resolved</option>
+            <option value="3">Declined</option>
+          </select>
+          <div className="filter-label" style={{ fontWeight: "bold" }}>
+            Severity
+          </div>
+          <select name="severity" onChange={handleFilterChange}>
+            <option value="">Select Severity</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+          <div className="filter-label" style={{ fontWeight: "bold" }}>
+            From Date
+          </div>
+          <input type="date" name="startDate" onChange={handleFilterChange} />
+          <div className="filter-label" style={{ fontWeight: "bold" }}>
+            To Date
+          </div>
+          <input type="date" name="endDate" onChange={handleFilterChange} />
+          <div className="filter-label" style={{ fontWeight: "bold" }}>
+            Sort By
+          </div>
+          <select name="sortBy" onChange={handleFilterChange}>
+            <option value="">Sort By</option>
+            <option value="mostRecent">Most Recent</option>
+            <option value="mostOlder">Most Older</option>
+            <option value="status">Status</option>
+            <option value="severity">Severity</option>
+          </select>
+          <Flex direction="row-reverse">
+            <Button onClick={downloadCSV} size="xs" variant="outline">
+              Download CSV
+            </Button>
+          </Flex>
         </div>
-        <select name="status" onChange={handleFilterChange}>
-          <option value="">Select Status</option>
-          <option value="0">Pending</option>
-          <option value="2">Resolved</option>
-          <option value="3">Declined</option>
-        </select>
-        <div className="filter-label" style={{ fontWeight: "bold" }}>
-          Severity
-        </div>
-        <select name="severity" onChange={handleFilterChange}>
-          <option value="">Select Severity</option>
-          <option value="high">High</option>
-          <option value="medium">Medium</option>
-          <option value="low">Low</option>
-        </select>
-        <div className="filter-label" style={{ fontWeight: "bold" }}>
-          From Date
-        </div>
-        <input type="date" name="startDate" onChange={handleFilterChange} />
-        <div className="filter-label" style={{ fontWeight: "bold" }}>
-          To Date
-        </div>
-        <input type="date" name="endDate" onChange={handleFilterChange} />
-        <div className="filter-label" style={{ fontWeight: "bold" }}>
-          Sort By
-        </div>
-        <select name="sortBy" onChange={handleFilterChange}>
-          <option value="">Sort By</option>
-          <option value="mostRecent">Most Recent</option>
-          <option value="mostOlder">Most Older</option>
-          <option value="status">Status</option>
-          <option value="severity">Severity</option>
-        </select>
-        <Flex direction="row-reverse">
-          <Button onClick={downloadCSV} size="xs" variant="outline">
-            Download CSV
-          </Button>
-        </Flex>
-      </div>
+      ) : (
+        <div />
+      )}
     </div>
   );
 }
