@@ -229,7 +229,9 @@ export default function App() {
           path="/course-management"
           element={
             <Layout>
-              <CourseManagementPage />
+              <Suspense fallback={<div>Loading .... </div>}>
+                <CourseManagementPage />
+              </Suspense>
             </Layout>
           }
         />
