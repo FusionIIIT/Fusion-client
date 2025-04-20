@@ -11,6 +11,7 @@ import {
   Grid,
   Title,
   Text,
+  Modal,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications"; // Import notifications
 import { lodgeComplaint } from "../routes/api";
@@ -63,8 +64,35 @@ function ComplaintForm() {
     setIsSuccess(false);
   };
 
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!complaintType || complaintType === "") {
+      setErrorMessage("Please select a complaint type.");
+      showNotification({
+        title: "Error",
+        message: "Please select a complaint type.",
+        color: "red",
+      });
+      return;
+    }
+
+    if (!location || location === "") {
+      setErrorMessage("Please select a location.");
+      showNotification({
+        title: "Error",
+        message: "Please select a location.",
+        color: "red",
+      });
+      return;
+    }
+
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmSubmit = async () => {
+    setShowConfirmModal(false);
     setLoading(true);
     setErrorMessage("");
     setIsSuccess(false);
@@ -296,6 +324,28 @@ function ComplaintForm() {
             </Button>
           </Flex>
         </form>
+
+        <Modal
+          opened={showConfirmModal}
+          onClose={() => setShowConfirmModal(false)}
+          title="Confirm Complaint Submission"
+          size="sm"
+        >
+          <Text size="sm" mb="md">
+            Are you sure you want to submit this complaint?
+          </Text>
+          <Flex justify="flex-end" gap="sm">
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmSubmit} loading={loading}>
+              Submit
+            </Button>
+          </Flex>
+        </Modal>
       </Paper>
     </Grid>
   );
