@@ -100,8 +100,64 @@ const CourseRow = memo(
     prevProps.readOnly === nextProps.readOnly
 );
 
+
+const BacklogCourseRow = ({
+  slot,
+  selectedCourseId,
+  selectedPrevRegId,
+  onSelectCourse,
+  onSelectPrevReg,
+  usedCourseIds,
+  usedPrevRegIds
+}) => {
+  return (
+    <tr>
+      <td style={{ border: "1px solid #ccc", padding: "8px" }}>
+        {slot.slot_name}
+      </td>
+      <td style={{ border: "1px solid #ccc", padding: "8px" }}>
+        <select
+          value={selectedCourseId || ""}
+          onChange={(e) => onSelectCourse(slot.sno, e.target.value)}
+        >
+          <option value="">Select Course</option>
+          {slot.course_choices.map((course) => (
+            <option
+              key={course.id}
+              value={course.id}
+              disabled={usedCourseIds.includes(course.id.toString())}
+            >
+              {course.code} - {course.name}
+            </option>
+          ))}
+        </select>
+      </td>
+      <td style={{ border: "1px solid #ccc", padding: "8px" }}>
+        <select
+          value={selectedPrevRegId || ""}
+          onChange={(e) => onSelectPrevReg(slot.sno, e.target.value)}
+        >
+          <option value="">Select Previous Registration</option>
+          {slot.prev_registrations.map((reg) => (
+            <option 
+              key={reg.id} 
+              value={reg.id}
+              disabled={usedPrevRegIds.includes(reg.id.toString())}
+            >
+              {reg.course_id.code} - {reg.course_id.name} - sem - {reg.semester_id?.semester_no}
+            </option>
+          ))}
+        </select>
+      </td>
+    </tr>
+  );
+};
+
 function PreRegistration() {
   const [coursesData, setCoursesData] = useState([]);
+  const [backlogSlots, setBacklogSlots] = useState([]);
+  const [backlogSelections, setBacklogSelections] = useState({});
+  // priorities: { [slotId]: { [courseId]: priorityValue } }
   const [priorities, setPriorities] = useState({});
   const [alreadyRegistered, setAlreadyRegistered] = useState(false);
   const [alertVisible, setAlertVisible] = useState(false);
@@ -136,7 +192,8 @@ function PreRegistration() {
           });
           setPriorities(newPriorities);
         } else {
-          setCoursesData(response.data);
+          setCoursesData(response.data.filter((slot) => slot.slot_type != "Backlog"));
+          setBacklogSlots(response.data.filter((slot) => slot.slot_type === "Backlog"));
         }
       } catch (fetchError) {
         setError(fetchError);
@@ -158,15 +215,45 @@ function PreRegistration() {
     }));
   }, []);
 
+  const handleBacklogCourseChange = (slotId, courseId) => {
+    setBacklogSelections((prev) => ({
+      ...prev,
+      [slotId]: {
+        ...prev[slotId],
+        courseId,
+      },
+    }));
+  };
+  
+  const handleBacklogPrevRegChange = (slotId, prevRegistrationId) => {
+    setBacklogSelections((prev) => ({
+      ...prev,
+      [slotId]: {
+        ...prev[slotId],
+        prevRegistrationId,
+      },
+    }));
+  };
+
   // New logic: form is complete only if every course select has a non-empty value.
-  const isFormComplete = () =>
-    coursesData.every((slot) => {
+  const isFormComplete = () => {
+    const allCoursesValid = coursesData.every((slot) => {
       const slotPriorities = priorities[slot.sno] || {};
       return slot.course_choices.every(
         (course) =>
           slotPriorities[course.id] && slotPriorities[course.id] !== ""
       );
     });
+  
+    const allBacklogsValid = backlogSlots.every((slot) => {
+      const backlog = backlogSelections[slot.sno] || {};
+      const courseSelected = !!backlog.courseId;
+      const prevSelected = !!backlog.prevRegistrationId;
+      return !courseSelected || (courseSelected && prevSelected);
+    });
+  
+    return allCoursesValid && allBacklogsValid;
+  };
 
   const handleRegister = async () => {
     const token = localStorage.getItem("authToken");
@@ -187,10 +274,22 @@ function PreRegistration() {
       });
     });
 
+    const backlogRegistrations = Object.entries(backlogSelections)
+    .filter(([_, { courseId, prevRegistrationId }]) => courseId && prevRegistrationId)
+    .map(([slotId, { courseId, prevRegistrationId }]) => ({
+      slot_id: parseInt(slotId),
+      course_id: parseInt(courseId),
+      prev_registration_id: parseInt(prevRegistrationId),
+      priority: 1,
+    }));
+
     try {
+      console.log("Payload:", registrations);
       const response = await axios.post(
         preCourseRegistrationSubmitRoute,
-        { registrations },
+        { registrations,
+          backlog_registrations: backlogRegistrations,
+         },
         {
           headers: {
             "Content-Type": "application/json",
@@ -226,6 +325,16 @@ function PreRegistration() {
       });
     });
   });
+
+
+
+  const selectedBacklogCourseIds = Object.values(backlogSelections)
+  .map((s) => s.courseId)
+  .filter(Boolean);
+  const usedCourseIds = selectedBacklogCourseIds;
+  const usedPrevRegIds = Object.values(backlogSelections)
+  .map((s) => s.prevRegistrationId)
+  .filter(Boolean);
 
   if (loading)
     return (
@@ -282,6 +391,38 @@ function PreRegistration() {
       </table>
 
       {!alreadyRegistered && (
+        <>
+          {backlogSlots.length > 0 && (
+            <>
+              <Text mt="xl" size="lg" weight={600} color="blue">
+                Backlog Course Registration
+              </Text>
+              <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "1rem" }}>
+                <thead>
+                  <tr>
+                    <th style={{ border: "1px solid #ccc", padding: "8px" }}>Slot</th>
+                    <th style={{ border: "1px solid #ccc", padding: "8px" }}>Select Course</th>
+                    <th style={{ border: "1px solid #ccc", padding: "8px" }}>Select Previous Registration</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {backlogSlots.map((slot) => (
+                    <BacklogCourseRow
+                      key={slot.sno}
+                      slot={slot}
+                      selectedCourseId={backlogSelections[slot.sno]?.courseId || ""}
+                      selectedPrevRegId={backlogSelections[slot.sno]?.prevRegistrationId || ""}
+                      onSelectCourse={handleBacklogCourseChange}
+                      onSelectPrevReg={handleBacklogPrevRegChange}
+                      usedCourseIds={usedCourseIds}
+                      usedPrevRegIds={usedPrevRegIds}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </>
+          )}
+          
         <Button
           mt="md"
           style={{ backgroundColor: "#3B82F6", color: "#fff" }}
@@ -290,6 +431,7 @@ function PreRegistration() {
         >
           Register
         </Button>
+        </>
       )}
 
       {alertVisible && (
