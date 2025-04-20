@@ -125,6 +125,18 @@ function LoginPage() {
             >
               Sign in
             </Button>
+            <Button
+              fullWidth
+              size="md"
+              mt="lg"
+              bg="#fa5400"
+              onClick={() => {
+                window.location.href =
+                  "http://fusion.iiitdmj.ac.in/password-reset/";
+              }}
+            >
+              Forgot Password
+            </Button>
           </form>
         </Paper>
       </Container>
