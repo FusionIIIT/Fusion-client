@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { Paperclip } from "@phosphor-icons/react";
-
 import {
   Button,
   Flex,
@@ -18,12 +17,14 @@ import {
 import { useForm } from "@mantine/form";
 import PropTypes from "prop-types";
 // import { DesignationsContext } from "../helper/designationContext";
+import ConfirmationModal from "../helper/ConfirmationModal";
 import { HandleRequest } from "../handlers/handlers";
 
 function CreateRequest({ setActiveTab }) {
   const role = useSelector((state) => state.user.role);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [confirmationModalOpen, setConfirmationModal] = useState(false);
   // const designations = useContext(DesignationsContext);
   // const designationsList = useMemo(
   //   () =>
@@ -64,14 +65,7 @@ function CreateRequest({ setActiveTab }) {
       >
         <form
           onSubmit={form.onSubmit((values) => {
-            if (form.validate(values))
-              HandleRequest({
-                setIsLoading,
-                setIsSuccess,
-                setActiveTab,
-                role,
-                form,
-              });
+            if (form.validate(values)) setConfirmationModal(true);
           })}
         >
           <Paper
@@ -196,6 +190,23 @@ function CreateRequest({ setActiveTab }) {
               </Button>
             </Flex>
           </Paper>
+          <ConfirmationModal
+            opened={confirmationModalOpen}
+            onClose={() => setConfirmationModal(false)}
+            onConfirm={() => {
+              setConfirmationModal(false);
+
+              form.onSubmit(
+                HandleRequest({
+                  setIsLoading,
+                  setIsSuccess,
+                  setActiveTab,
+                  role,
+                  form,
+                }),
+              )();
+            }}
+          />
         </form>
       </div>
     </Grid>

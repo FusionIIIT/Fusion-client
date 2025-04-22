@@ -1,5 +1,6 @@
 import {
   Alert,
+  Box,
   Button,
   Flex,
   Loader,
@@ -280,6 +281,7 @@ function CompPrescription() {
             color: "white",
             padding: "5px 30px",
           }}
+          className="no-print"
         >
           View Report
         </Button>
@@ -289,10 +291,34 @@ function CompPrescription() {
 
   return (
     <>
-      <CustomBreadcrumbs />
-      <NavPatient />
+      <style>
+        {`
+          @media print {
+            body * {
+              visibility: hidden;
+            }
+            .printable, .printable * {
+              visibility: visible;
+            }
+            .printable {
+              position: absolute;
+              left: 0;
+              top: 0;
+              width: 100%;
+            }
+            .no-print {
+              display: none;
+            }
+          }
+        `}
+      </style>
+
+      <Box className="no-print">
+        <CustomBreadcrumbs />
+        <NavPatient />
+      </Box>
       <br />
-      <Paper shadow="xl" p="xl" withBorder>
+      <Paper shadow="xl" p="xl" withBorder className="printable" bg="white">
         <h1 style={{ textAlign: "center", color: "#15abff" }}>
           {prescrip?.rollNumber}'s Prescription History
         </h1>
@@ -321,9 +347,18 @@ function CompPrescription() {
                 flexDirection: "row",
                 gap: "1rem",
               }}
+              className="no-print"
             >
-              <Radio value="latest" label="Print Latest Follow-up" />
-              <Radio value="whole" label="Print Whole Prescription" />
+              <Radio
+                value="latest"
+                label="Print Latest Follow-up"
+                className="no-print"
+              />
+              <Radio
+                value="whole"
+                label="Print Whole Prescription"
+                className="no-print"
+              />
             </Radio.Group>
           </div>
 
@@ -331,6 +366,7 @@ function CompPrescription() {
             <div style={{ width: "30%" }}>
               <Select
                 value={`Follow-up on ${selectedDate} id ${followid}`}
+                className="no-print"
                 onChange={(value) => {
                   const [_, date, fid] = value.match(
                     /Follow-up on (.+) id (.+)/,
@@ -361,6 +397,7 @@ function CompPrescription() {
               padding: "10px 16px",
               cursor: "pointer",
             }}
+            className="no-print"
             onClick={() => window.print()}
           >
             Print

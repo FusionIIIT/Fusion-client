@@ -13,16 +13,17 @@ import {
 } from "@mantine/core";
 
 import { DesignationsContext } from "../../helper/designationContext";
+import ConfirmationModal from "../../helper/ConfirmationModal";
 import classes from "../../iwd.module.css";
 import { HandleDirectorApproval } from "../../handlers/handlers";
 
 function DirectorApproval({ form, request, handleBackToList }) {
-  console.log("director\n\n");
-
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const role = useSelector((state) => state.user.role);
   const designations = useContext(DesignationsContext);
+  const [fileAction, setFileAction] = useState("approve");
+  const [confirmationModalOpen, setConfirmationModal] = useState(false);
   const designationsList = useMemo(
     () =>
       designations.map(
@@ -34,7 +35,11 @@ function DirectorApproval({ form, request, handleBackToList }) {
   return (
     /* eslint-disable react/jsx-props-no-spreading */
 
-    <form>
+    <form
+      onSubmit={form.onSubmit((values) => {
+        if (form.validate(values)) setConfirmationModal(true);
+      })}
+    >
       <Flex gap="xs">
         <FileInput
           label="Upload your file"
@@ -87,15 +92,8 @@ function DirectorApproval({ form, request, handleBackToList }) {
           }}
           disabled={isLoading || isSuccess}
           onClick={() => {
-            HandleDirectorApproval({
-              form,
-              request,
-              setIsLoading,
-              setIsSuccess,
-              handleBackToList,
-              action: "approve",
-              role,
-            });
+            setConfirmationModal(true);
+            setFileAction("approve");
           }}
         >
           {isLoading ? (
@@ -124,15 +122,8 @@ function DirectorApproval({ form, request, handleBackToList }) {
           }}
           disabled={isLoading || isSuccess}
           onClick={() => {
-            HandleDirectorApproval({
-              form,
-              request,
-              setIsLoading,
-              setIsSuccess,
-              handleBackToList,
-              action: "reject",
-              role,
-            });
+            setConfirmationModal(true);
+            setFileAction("reject");
           }}
         >
           {isLoading ? (
@@ -148,6 +139,25 @@ function DirectorApproval({ form, request, handleBackToList }) {
           )}
         </Button>
       </Flex>
+      <ConfirmationModal
+        opened={confirmationModalOpen}
+        onClose={() => setConfirmationModal(false)}
+        onConfirm={() => {
+          setConfirmationModal(false);
+
+          form.onSubmit(
+            HandleDirectorApproval({
+              form,
+              request,
+              setIsLoading,
+              setIsSuccess,
+              handleBackToList,
+              action: fileAction,
+              role,
+            }),
+          )();
+        }}
+      />
     </form>
     /* eslint-enable react/jsx-props-no-spreading */
   );

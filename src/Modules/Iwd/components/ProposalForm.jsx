@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-globals */
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { useContext, useMemo } from "react";
+import React, { useContext, useMemo, useState } from "react";
 import PropTypes from "prop-types";
 import { useForm } from "@mantine/form";
 import { useSelector } from "react-redux";
@@ -22,9 +22,11 @@ import { useMediaQuery } from "@mantine/hooks";
 import classes from "../iwd.module.css";
 import { DesignationsContext } from "../helper/designationContext";
 import { HandleProposalSubmission } from "../handlers/handlers";
+import ConfirmationModal from "../helper/ConfirmationModal";
 
 function CreateProposalForm({ onBack, request_id, submitter, proposalType }) {
   const [isLoading, setIsLoading] = React.useState(false);
+  const [confirmationModalOpen, setConfirmationModal] = useState(false);
   const [isSuccess, setIsSuccess] = React.useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
   const designations = useContext(DesignationsContext);
@@ -172,13 +174,7 @@ function CreateProposalForm({ onBack, request_id, submitter, proposalType }) {
 
               console.log(payload);
               if (form.validate(values)) {
-                HandleProposalSubmission({
-                  setIsLoading,
-                  setIsSuccess,
-                  submitter,
-                  form,
-                  proposalType,
-                });
+                setConfirmationModal(true);
               }
             })}
           >
@@ -269,6 +265,23 @@ function CreateProposalForm({ onBack, request_id, submitter, proposalType }) {
                 Back
               </Button>
             </Flex>
+            <ConfirmationModal
+              opened={confirmationModalOpen}
+              onClose={() => setConfirmationModal(false)}
+              onConfirm={() => {
+                setConfirmationModal(false);
+
+                form.onSubmit(
+                  HandleProposalSubmission({
+                    setIsLoading,
+                    setIsSuccess,
+                    submitter,
+                    form,
+                    proposalType,
+                  }),
+                )();
+              }}
+            />
           </form>
         </Flex>
       </Paper>

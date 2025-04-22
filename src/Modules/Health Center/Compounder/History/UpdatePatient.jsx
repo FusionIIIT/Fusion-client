@@ -319,6 +319,7 @@ function UpdatePatient() {
       console.log("State Updated:", reportfile);
     }
   }, [reportfile]);
+
   return (
     <>
       <CustomBreadcrumbs />
@@ -422,10 +423,10 @@ function UpdatePatient() {
               <Table.Thead>
                 <Table.Tr>
                   <Table.Th>Medicine</Table.Th>
+                  <Table.Th>Stocks</Table.Th>
                   <Table.Th>Quantity</Table.Th>
                   <Table.Th>No. of Days</Table.Th>
                   <Table.Th>Times per Day</Table.Th>
-                  <Table.Th>Stocks</Table.Th>
                   <Table.Th>Actions</Table.Th>
                 </Table.Tr>
               </Table.Thead>
@@ -433,10 +434,10 @@ function UpdatePatient() {
                 {entries.map((entry, index) => (
                   <Table.Tr key={index}>
                     <Table.Td>{entry.brand_name}</Table.Td>
+                    <Table.Td>{entry.astock}</Table.Td>
                     <Table.Td>{entry.quantity}</Table.Td>
                     <Table.Td>{entry.Days}</Table.Td>
                     <Table.Td>{entry.Times}</Table.Td>
-                    <Table.Td>{entry.astock}</Table.Td>
                     <Table.Td>
                       <Button
                         onClick={() => handleDeleteEntry(index)}
@@ -465,6 +466,16 @@ function UpdatePatient() {
                     </div>
                   </Table.Td>
                   <Table.Td>
+                    <Select
+                      name="stock"
+                      placeholder="--Select--"
+                      value={stock}
+                      onChange={handelstock}
+                      data={selectstock}
+                      required
+                    />
+                  </Table.Td>
+                  <Table.Td>
                     <Input
                       type="number"
                       name="quantity"
@@ -489,16 +500,6 @@ function UpdatePatient() {
                       placeholder="Times per Day"
                       value={timesPerDay}
                       onChange={(e) => setTimesPerDay(e.target.value)}
-                    />
-                  </Table.Td>
-                  <Table.Td>
-                    <Select
-                      name="stock"
-                      placeholder="--Select--"
-                      value={stock}
-                      onChange={handelstock}
-                      data={selectstock}
-                      required
                     />
                   </Table.Td>
                   <Table.Td>

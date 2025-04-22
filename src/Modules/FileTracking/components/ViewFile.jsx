@@ -275,7 +275,7 @@ export default function ViewFile({ onBack, fileID, updateFiles }) {
             {(new Date(file.upload_date).getMonth() + 1)
               .toString()
               .padStart(2, "0")}
-            -#{file.id}: {file?.subject || "File Details"}
+            -#{file.id}
           </Title>
         </Group>
 

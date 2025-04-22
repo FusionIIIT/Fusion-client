@@ -97,6 +97,8 @@ const ProgrammeCurriculumRoutes = lazy(
   () => import("./Modules/Program_curriculum/programmCurriculum"),
 );
 
+const CourseManagementPage = lazy(() => import("./Modules/CourseManagement"));
+
 const theme = createTheme({
   breakpoints: { xs: "30em", sm: "48em", md: "64em", lg: "74em", xl: "90em" },
 });
@@ -122,6 +124,7 @@ export default function App() {
             </Layout>
           }
         />
+
         <Route
           path="/academics"
           element={
@@ -218,6 +221,17 @@ export default function App() {
           element={
             <Layout>
               <InventoryIndex />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/course-management"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <CourseManagementPage />
+              </Suspense>
             </Layout>
           }
         />
