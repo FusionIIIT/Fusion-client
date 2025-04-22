@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Title,
@@ -24,73 +24,6 @@ const columns = [
   { accessorKey: "value", header: "Value" },
   { accessorKey: "description", header: "Description" },
 ];
-
-// const columns = useMemo(
-//   () => [
-//     { accessorKey: "criteria", header: "Criteria" },
-//     { accessorKey: "condition", header: "Condition" },
-//     { accessorKey: "value", header: "Value" },
-//     { accessorKey: "description", header: "Description" },
-//     {
-//       accessorKey: "actions",
-//       header: "Actions",
-//       Cell: ({ row }) => (
-//         <RestrictionsActions
-//           row={row}
-//           onEdit={handleEdit}
-//           onDelete={handleDelete}
-//         />
-//       ),
-//     },
-//   ],
-//   [handleEdit, handleDelete],
-// );
-
-// const RestrictionsActionsCell = ({ row, onEdit, onDelete }) => {
-//   return (
-//     <Group spacing="xs">
-//       <ActionIcon onClick={() => onEdit(row.original)}>
-//         <Pencil size={16} />
-//       </ActionIcon>
-//       <ActionIcon onClick={() => onDelete(row.original.id)} color="red">
-//         <Trash size={16} />
-//       </ActionIcon>
-//     </Group>
-//   );
-// };
-
-// RestrictionsActionsCell.propTypes = {
-//   row: PropTypes.shape({
-//     original: PropTypes.shape({
-//       id: PropTypes.number.isRequired,
-//       criteria: PropTypes.string,
-//       condition: PropTypes.string,
-//       value: PropTypes.string,
-//       description: PropTypes.string,
-//     }).isRequired,
-//   }).isRequired,
-//   onEdit: PropTypes.func.isRequired,
-//   onDelete: PropTypes.func.isRequired,
-// };
-
-// const RestrictionsActions = ({ row, onEdit, onDelete }) => (
-//   <Group spacing="xs">
-//     <ActionIcon onClick={() => onEdit(row.original)}>
-//       <Pencil size={16} />
-//     </ActionIcon>
-//     <ActionIcon onClick={() => onDelete(row.original.id)} color="red">
-//       <Trash size={16} />
-//     </ActionIcon>
-//   </Group>
-// );
-
-// RestrictionsActions.propTypes = {
-//   row: PropTypes.shape({
-//     original: PropTypes.object.isRequired,
-//   }).isRequired,
-//   onEdit: PropTypes.func.isRequired,
-//   onDelete: PropTypes.func.isRequired,
-// };
 
 function RestrictionsTab() {
   const [restrictions, setRestrictions] = useState([]);
@@ -162,15 +95,18 @@ function RestrictionsTab() {
       return condition === "greater_than"
         ? `Students with CGPA > ${values[0]} are not allowed to participate in further drives.`
         : `Students with CGPA < ${values[0]} are not allowed to participate in further drives.`;
-    } else if (criteria === "company") {
+    }
+    if (criteria === "company") {
       return condition === "equal"
         ? `Students placed in ${values.join(", ")} are not allowed to participate in further drives.`
         : `Students not placed in ${values.join(", ")} are not allowed to participate in further drives.`;
-    } else if (criteria === "year") {
+    }
+    if (criteria === "year") {
       return condition === "greater_than"
         ? `Students in year > ${values[0]} are not allowed to participate in further drives.`
         : `Students in year < ${values[0]} are not allowed to participate in further drives.`;
-    } else if (criteria === "ctc") {
+    }
+    if (criteria === "ctc") {
       return condition === "greater_than"
         ? `Students with CTC > ${values[0]} are not allowed to participate in further drives.`
         : `Students with CTC < ${values[0]} are not allowed to participate in further drives.`;
@@ -256,7 +192,7 @@ function RestrictionsTab() {
         },
       });
 
-      setRestrictions((prev) => prev.filter((r) => r.id !== id)); // Remove the deleted restriction
+      setRestrictions((prev) => prev.filter((r) => r.id !== id));
       notifications.show({
         title: "Success",
         message: "Restriction deleted successfully!",
@@ -276,59 +212,12 @@ function RestrictionsTab() {
     setCriteria(restriction.criteria);
     setCondition(restriction.condition);
     setValues(restriction.value.split(", "));
-    setIsModalOpen(true); // Open the modal for editing
+    setIsModalOpen(true);
   };
-
-  // const columns = useMemo(
-  //   () => [
-  //     { accessorKey: "criteria", header: "Criteria" },
-  //     { accessorKey: "condition", header: "Condition" },
-  //     { accessorKey: "value", header: "Value" },
-  //     { accessorKey: "description", header: "Description" },
-  //     {
-  //       accessorKey: "actions",
-  //       header: "Actions",
-  //       Cell: ({ row }) => (
-  //         <Group spacing="xs">
-  //           <ActionIcon onClick={() => handleEdit(row.original)}>
-  //             <Pencil size={16} />
-  //           </ActionIcon>
-  //           <ActionIcon
-  //             onClick={() => handleDelete(row.original.id)}
-  //             color="red"
-  //           >
-  //             <Trash size={16} />
-  //           </ActionIcon>
-  //         </Group>
-  //       ),
-  //     },
-  //   ],
-  //   [],
-  // );
-  // const columns = useMemo(
-  //   () => [
-  //     { accessorKey: "criteria", header: "Criteria" },
-  //     { accessorKey: "condition", header: "Condition" },
-  //     { accessorKey: "value", header: "Value" },
-  //     { accessorKey: "description", header: "Description" },
-  //     {
-  //       accessorKey: "actions",
-  //       header: "Actions",
-  //       Cell: ({ row }) => (
-  //         <RestrictionsActionsCell
-  //           row={row}
-  //           onEdit={handleEdit}
-  //           onDelete={handleDelete}
-  //         />
-  //       ),
-  //     },
-  //   ],
-  //   [handleEdit, handleDelete],
-  // );
 
   const table = useMantineReactTable({
     columns,
-    data: restrictions, // Use the correct data source
+    data: restrictions,
     enableEditing: false,
     getRowId: (row) => row.id,
     enableRowActions: true,
@@ -343,7 +232,7 @@ function RestrictionsTab() {
         {/* Edit Button */}
         <ActionIcon
           color="blue"
-          onClick={() => handleEdit(row.original)} // Call the handleEdit function
+          onClick={() => handleEdit(row.original)}
           title="Edit Restriction"
         >
           <Pencil size={18} />
@@ -352,7 +241,7 @@ function RestrictionsTab() {
         {/* Delete Button */}
         <ActionIcon
           color="red"
-          onClick={() => handleDelete(row.original.id)} // Call the handleDelete function
+          onClick={() => handleDelete(row.original.id)}
           title="Delete Restriction"
         >
           <Trash size={18} />
@@ -452,7 +341,7 @@ function RestrictionsTab() {
             </Grid.Col>
 
             <Grid.Col span={12} mt={4}>
-              <Text size="sm" style={{ marginBottom: 5}}>
+              <Text size="sm" style={{ marginBottom: 5 }}>
                 Rule Preview:
               </Text>
               {criteria && condition && values.length > 0 && (
@@ -460,10 +349,8 @@ function RestrictionsTab() {
               )}
             </Grid.Col>
 
-            <Grid.Col display={'flex'} mt={16}>
-              <Button onClick={handleSubmit} >
-                Submit
-              </Button>
+            <Grid.Col display="flex" mt={16}>
+              <Button onClick={handleSubmit}>Submit</Button>
             </Grid.Col>
           </Grid>
         </Container>
