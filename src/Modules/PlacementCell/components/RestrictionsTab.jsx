@@ -183,28 +183,13 @@ function RestrictionsTab() {
     resetForm();
   };
 
-  const handleDelete = async (id) => {
-    try {
-      const token = localStorage.getItem("authToken");
-      await axios.delete(`${fetchRestrictionsRoute}/${id}`, {
-        headers: {
-          Authorization: `Token ${token}`,
-        },
-      });
-
-      setRestrictions((prev) => prev.filter((r) => r.id !== id));
-      notifications.show({
-        title: "Success",
-        message: "Restriction deleted successfully!",
-        color: "green",
-      });
-    } catch (error) {
-      notifications.show({
-        title: "Error",
-        message: "Failed to delete restriction.",
-        color: "red",
-      });
-    }
+  const handleDelete = (id) => {
+    setRestrictions(restrictions.filter((r) => r.id !== id));
+    notifications.show({
+      title: "Success",
+      message: "Restriction deleted successfully!",
+      color: "green",
+    });
   };
 
   const handleEdit = (restriction) => {

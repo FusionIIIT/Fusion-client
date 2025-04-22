@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   Card,
   Text,
-  Badge,
   Group,
   Button,
   // Image,
@@ -194,7 +193,7 @@ function PlacementScheduleCard({
           autoClose: 3000,
         });
 
-        setIsModalOpen(false);
+        setModalOpened(false);
       } else {
         const errorData = await response.json();
         console.error("Update failed:", errorData);
@@ -232,7 +231,7 @@ function PlacementScheduleCard({
         shadow="sm"
         padding="lg"
         radius="lg"
-        mx={8}
+        m={4}
         withBorder
         style={{ width: 320, position: "relative" }}
       >
@@ -301,6 +300,7 @@ function PlacementScheduleCard({
               </Button>
             ) : (
               <Button
+                disabled={new Date(deadline) > new Date()}
                 variant="light"
                 color="blue"
                 size="xs"

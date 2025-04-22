@@ -9,13 +9,12 @@ import {
   Title,
   Tabs,
 } from "@mantine/core";
-import dayjs from "dayjs";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import { notifications } from "@mantine/notifications";
 import AddPlacementEventForm from "./AddPlacementEventForm";
 import PlacementScheduleCard from "./PlacementScheduleCard";
 import { fetchPlacementScheduleRoute } from "../../../routes/placementCellRoutes";
-import { notifications } from "@mantine/notifications";
 
 const getCookie = (name) => {
   const value = `; ${document.cookie}`;
@@ -126,19 +125,28 @@ function PlacementSchedule() {
     fetchData();
   }, []);
 
-  const today = dayjs();
-
+  // Filter active events
   const activeEvents = placementData.filter((event) => {
-    // const endDateTime = new Date(`${event.schedule}T${event.time}`);
     const startDate = new Date(event.placement_date);
-    return startDate <= new Date();
-    // && endDateTime > new Date()
+    return startDate <= new Date(); // Active if the placement date is today or in the past
   });
 
+  // Filter upcoming events
+  const upcomingEvents = placementData.filter((event) => {
+    const startDate = new Date(event.placement_date);
+    return startDate > new Date(); // Upcoming if the placement date is in the future
+  });
+
+  // Filter closed events
   const closedEvents = placementData.filter((event) => {
     const endDateTime = new Date(`${event.schedule_at}T${event.time}`);
-    return endDateTime <= new Date();
+    return endDateTime <= new Date(); // Closed if the event's end time is in the past
   });
+
+  // const closedEvents = placementData.filter((event) => {
+  //   const endDateTime = new Date(`${event.schedule_at}T${event.time}`);
+  //   return endDateTime <= new Date();
+  // });
 
   const handleAddEvent = () => {
     setIsModalOpen(true);
@@ -175,6 +183,7 @@ function PlacementSchedule() {
         <Tabs defaultValue="active" variant="pills" style={{ marginLeft: 16 }}>
           <Tabs.List>
             <Tabs.Tab value="active">Active</Tabs.Tab>
+            <Tabs.Tab value="upcoming">Upcoming</Tabs.Tab>
             {role === "placement officer" && (
               <Tabs.Tab value="closed">Closed</Tabs.Tab>
             )}
@@ -194,19 +203,35 @@ function PlacementSchedule() {
             )}
           </Tabs.Panel>
 
-          <Tabs.Panel value="closed" pt="md">
-            {closedEvents.length > 0 ? (
+          <Tabs.Panel value="upcoming" pt="md">
+            {upcomingEvents.length > 0 ? (
               <PlacementScheduleGrid
-                data={closedEvents}
+                data={upcomingEvents}
                 itemsPerPage={10}
                 cardsPerRow={2}
               />
             ) : (
               <div style={{ textAlign: "center", marginTop: "20px" }}>
-                No closed placement schedules available.
+                No upcoming placement schedules available.
               </div>
             )}
           </Tabs.Panel>
+
+          {role === "placement officer" && (
+            <Tabs.Panel value="closed" pt="md">
+              {closedEvents.length > 0 ? (
+                <PlacementScheduleGrid
+                  data={closedEvents}
+                  itemsPerPage={10}
+                  cardsPerRow={2}
+                />
+              ) : (
+                <div style={{ textAlign: "center", marginTop: "20px" }}>
+                  No closed placement schedules available.
+                </div>
+              )}
+            </Tabs.Panel>
+          )}
         </Tabs>
       </Container>
       <Modal
