@@ -11,18 +11,18 @@ import {
   Select,
   CheckIcon,
 } from "@mantine/core";
-
+import ConfirmationModal from "../../helper/ConfirmationModal";
 import { DesignationsContext } from "../../helper/designationContext";
 import classes from "../../iwd.module.css";
 import { HandleAdminApproval } from "../../handlers/handlers";
 
 function AdminApproval({ form, request, handleBackToList }) {
-  console.log("In admin approval");
-
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const role = useSelector((state) => state.user.role);
   const designations = useContext(DesignationsContext);
+  const [fileAction, setFileAction] = useState("approve");
+  const [confirmationModalOpen, setConfirmationModal] = useState(false);
   const designationsList = useMemo(
     () =>
       designations.map(
@@ -34,7 +34,11 @@ function AdminApproval({ form, request, handleBackToList }) {
   return (
     /* eslint-disable react/jsx-props-no-spreading */
 
-    <form>
+    <form
+      onSubmit={form.onSubmit((values) => {
+        if (form.validate(values)) setConfirmationModal(true);
+      })}
+    >
       <Flex gap="xs">
         <FileInput
           label="Upload your file"
@@ -87,15 +91,8 @@ function AdminApproval({ form, request, handleBackToList }) {
           }}
           disabled={isLoading || isSuccess}
           onClick={() => {
-            HandleAdminApproval({
-              form,
-              request,
-              setIsLoading,
-              setIsSuccess,
-              handleBackToList,
-              action: "approve",
-              role,
-            });
+            // e.preventDefault();
+            setFileAction("approve");
           }}
         >
           {isLoading ? (
@@ -124,15 +121,8 @@ function AdminApproval({ form, request, handleBackToList }) {
           }}
           disabled={isLoading || isSuccess}
           onClick={() => {
-            HandleAdminApproval({
-              form,
-              request,
-              setIsLoading,
-              setIsSuccess,
-              handleBackToList,
-              action: "reject",
-              role,
-            });
+            // e.preventDefault();
+            setFileAction("reject");
           }}
         >
           {isLoading ? (
@@ -147,6 +137,25 @@ function AdminApproval({ form, request, handleBackToList }) {
             "Reject File"
           )}
         </Button>
+        <ConfirmationModal
+          opened={confirmationModalOpen}
+          onClose={() => setConfirmationModal(false)}
+          onConfirm={() => {
+            setConfirmationModal(false);
+
+            form.onSubmit(
+              HandleAdminApproval({
+                form,
+                request,
+                setIsLoading,
+                setIsSuccess,
+                handleBackToList,
+                action: fileAction,
+                role,
+              }),
+            )();
+          }}
+        />
       </Flex>
     </form>
     /* eslint-enable react/jsx-props-no-spreading */

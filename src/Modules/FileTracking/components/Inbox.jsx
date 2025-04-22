@@ -232,7 +232,7 @@ export default function Inboxfunc() {
               fontSize: "26px",
             }}
           >
-            File Subject
+            {selectedFile.subject}
           </Title>
           <View
             onBack={handleBack}
@@ -280,7 +280,7 @@ export default function Inboxfunc() {
                   </th>
                   {[
                     "File ID",
-                    "Uploader",
+                    "Owner",
                     "Sent By",
                     "Sender's Designation",
                     "Subject",

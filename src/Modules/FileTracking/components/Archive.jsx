@@ -190,7 +190,7 @@ export default function ArchiveFiles() {
               fontSize: "26px",
             }}
           >
-            File Subject
+            {selectedFile.subject}
           </Title>
           <View
             onBack={handleBack}
@@ -236,7 +236,7 @@ export default function ArchiveFiles() {
                   <th style={{ ...tableStyles, width: "8%" }}>Unarchive</th>
                   {[
                     { key: "id", label: "File ID", width: "15%" },
-                    { key: "uploader", label: "Uploader", width: "15%" },
+                    { key: "uploader", label: "Owner", width: "15%" },
                     { key: "subject", label: "Subject", width: "25%" },
                     { key: "upload_date", label: "Date", width: "15%" },
                   ].map(({ key, label, width }) => (

@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { Card, Text, Group } from "@mantine/core";
 import { useHover } from "@mantine/hooks";
 
-const PerformanceCard = ({ IconComponent, title, description, link }) => {
+function PerformanceCard({ IconComponent, title, description, link }) {
   const { hovered, ref } = useHover();
 
   return (
@@ -31,13 +31,16 @@ const PerformanceCard = ({ IconComponent, title, description, link }) => {
       </Group>
     </Card>
   );
-};
+}
 
-// ✅ Add PropTypes validation
 PerformanceCard.propTypes = {
+  /** The icon component to display */
   IconComponent: PropTypes.elementType.isRequired,
+  /** The title text */
   title: PropTypes.string.isRequired,
+  /** The description text */
   description: PropTypes.string.isRequired,
+  /** The link URL */
   link: PropTypes.string.isRequired,
 };
 

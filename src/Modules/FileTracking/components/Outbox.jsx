@@ -162,7 +162,7 @@ export default function Outboxfunc() {
               fontSize: "26px",
             }}
           >
-            File Subject
+            {selectedFile.subject}
           </Title>
           <View
             onBack={handleBack}
@@ -207,7 +207,7 @@ export default function Outboxfunc() {
                 <tr style={{ backgroundColor: "#0000" }}>
                   {[
                     { key: "id", label: "File ID" },
-                    { key: "uploader", label: "Uploader" },
+                    { key: "uploader", label: "Owner" },
                     { key: "sent_to", label: "Sent to" },
                     {
                       key: "receiver_designation",
