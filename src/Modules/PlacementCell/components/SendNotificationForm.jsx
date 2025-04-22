@@ -9,7 +9,7 @@ import {
   Container,
 } from "@mantine/core";
 import axios from "axios";
-import { DatePickerInput, TimeInput } from "@mantine/dates";
+import { DatePickerInput } from "@mantine/dates";
 import { notifications } from "@mantine/notifications";
 import { sendNotificationRoute } from "../../../routes/placementCellRoutes";
 
@@ -93,15 +93,15 @@ function SendNotificationForm() {
           placeholder="Select recipient"
           value={formData.sendTo}
           onChange={(value) => handleChange("sendTo", value)}
-          data={["Student", "All"]} 
+          data={["Student", "All"]}
         />
-        {formData.sendTo === "Student" && ( 
+        {formData.sendTo === "Student" && (
           <TextInput
             label="Student Roll No"
             placeholder="Enter student Roll No"
             value={formData.recipient}
             onChange={(event) =>
-              handleChange("recipient", event.currentTarget.value)
+              handleChange("recipient", event.currentTarget.value.toUpperCase())
             }
             required
           />
@@ -115,11 +115,11 @@ function SendNotificationForm() {
           value={formData.date}
           onChange={(date) => handleChange("date", date)}
         />
-        <TimeInput
+        {/* <TimeInput
           label="Time"
           value={formData.time}
           onChange={(time) => handleChange("time", time)}
-        />
+        /> */}
       </Group>
 
       <TextInput
