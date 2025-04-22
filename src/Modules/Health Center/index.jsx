@@ -3,7 +3,6 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { CompounderRoutes } from "./Routes/CompounderRoutes";
 import { StudentRoutes } from "./Routes/StudentRoutes";
-import Unauthorized from "./Unauthorized";
 
 export function HealthCenter() {
   const role = useSelector((state) => state.user.role);
@@ -15,7 +14,7 @@ export function HealthCenter() {
       case "student" || "Professor":
         return "/healthcenter/patient";
       default:
-        return "/healthcenter/unauthorized";
+        return "/healthcenter/patient";
     }
   };
 
@@ -25,8 +24,6 @@ export function HealthCenter() {
 
       <Route path="compounder/*" element={<CompounderRoutes />} />
       <Route path="student/*" element={<StudentRoutes />} />
-
-      <Route path="unauthorized" element={<Unauthorized />} />
     </Routes>
   );
 }
