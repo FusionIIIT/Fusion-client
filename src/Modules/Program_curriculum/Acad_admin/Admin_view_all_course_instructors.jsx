@@ -108,7 +108,8 @@ function Admin_view_all_course_instructors() {
     { key: "course_name", label: "Course Name" },
     { key: "course_version", label: "Version" },
     { key: "faculty", label: "Instructor" },
-    { key: "year", label: "Year" },
+    { key: "academic_year", label: "Academic Year" },
+    { key: "semester_type", label: "Semester Type" },
   ];
 
   // Add actions column only for acadadmin
@@ -124,7 +125,8 @@ function Admin_view_all_course_instructors() {
         <td style={cellStyle}>
           {element.faculty_first_name} {element.faculty_last_name}
         </td>
-        <td style={cellStyle}>{element.year}</td>
+        <td style={cellStyle}>{element.academic_year}</td>
+        <td style={cellStyle}>{element.semester_type}</td>
       </>
     );
     const actionCell = isAcadAdmin ? (

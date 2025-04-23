@@ -28,3 +28,5 @@ export const generateprereport = `${host}/aims/api/generate_preregistration_repo
 export const searchPreRegistrationRoute = `${host}/academic-procedures/api/acad/search_preregistration/`;
 export const deletePreRegistrationRoute = `${host}/academic-procedures/api/acad/delete_preregistration/`;
 export const allotCoursesRoute = `${host}/academic-procedures/api/acad/allot_courses/`;
+export const getCourseSlotsRoute = `${host}/academic-procedures/api/acad/get_add_course_slots/`;
+export const getCoursesRoute = `${host}/academic-procedures/api/acad/get_add_courses/`;

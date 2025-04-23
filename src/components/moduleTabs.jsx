@@ -37,7 +37,7 @@ function ModuleTabs({ tabs, activeTab, setActiveTab, badges = [] }) {
   };
 
   return (
-    <Flex justify="space-between" align="center">
+    <Flex justify="space-between" align="center" style={{marginBottom: "30px"}}>
       <Flex align="center" gap={{ base: "0.2rem", sm: "0.4rem" }}>
         <Button
           onClick={() => handleTabChange("prev")}

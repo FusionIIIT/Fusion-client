@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
   Select,
-  NumberInput,
   Button,
   Group,
   Text,
@@ -22,30 +21,37 @@ function Admin_edit_course_instructor() {
   const [faculties, setFaculties] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const { id } = useParams(); // Assuming the course instructor ID is passed via URL
+  const { id } = useParams();
 
   const form = useForm({
     initialValues: {
       courseName: "",
       instructor: "",
-      year: 2024,
-      semester: "",
-      runningBatch: false,
+      academicYear: "",
+      semesterType: "",
     },
   });
+
+  const generateAcademicYears = () => {
+    const years = [];
+    const currentYear = new Date().getFullYear();
+    for (let i = currentYear + 1; i >= currentYear - 5; i--) {
+      years.push({
+        label: `${i - 1}-${String(i).slice(2)}`,
+        value: `${i - 1}-${String(i).slice(2)}`,
+      });
+    }
+    return years;
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("authToken");
-        if (!token) {
-          throw new Error("Authentication not found");
-        }
+        if (!token) throw new Error("Authentication not found");
 
-        // Fetch all courses and faculties
         const coursesResponse = await fetchAllCourses();
         const facultiesResponse = await fetchFacultiesData();
-
         const courseList = coursesResponse.map((course) => ({
           id: course.id,
           name: `${course.name} (${course.code})`,
@@ -58,24 +64,20 @@ function Admin_edit_course_instructor() {
         }));
         setFaculties(facultyList);
 
-        // Fetch all course instructor data
         const courseInstructors = await adminFetchCourseInstructorData();
-
-        // Find the specific course instructor by ID
         const courseInstructor = courseInstructors.find(
           (ci) => ci.id === parseInt(id, 10),
         );
 
         if (courseInstructor) {
+          const formattedYear = courseInstructor.academic_year;
           form.setValues({
             courseName: String(courseInstructor.course_id),
-            instructor: courseInstructor.instructor_id,
-            year: courseInstructor.year,
-            semester: String(courseInstructor.semester_no),
-            runningBatch: courseInstructor.runningBatch,
+            instructor: String(courseInstructor.instructor_id),
+            academicYear: formattedYear,
+            semesterType: courseInstructor.semester_type,
           });
         } else {
-          console.error("Course instructor not found");
           alert("Course instructor not found");
           navigate("/programme_curriculum/admin_course_instructor");
         }
@@ -93,6 +95,12 @@ function Admin_edit_course_instructor() {
   const handleSubmit = async (values) => {
     localStorage.setItem("AdminInstructorsCacheChange", "true");
     try {
+      const [startYear] = values.academicYear.split("-");
+      const semesterYear =
+        values.semesterType === "Even Semester"
+          ? parseInt(startYear) + 1
+          : parseInt(startYear);
+
       const response = await fetch(
         `${host}/programme_curriculum/api/admin_update_course_instructor/${id}/`,
         {
@@ -101,20 +109,16 @@ function Admin_edit_course_instructor() {
           body: JSON.stringify({
             course_id: values.courseName,
             instructor_id: values.instructor,
-            year: values.year,
-            semester_no: values.semester,
-            runningBatch: values.runningBatch,
+            year: semesterYear,
+            semester_type: values.semesterType,
           }),
-        },
+        }
       );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
       const result = await response.json();
-      console.log(result);
-      alert(result.message); // "Course Instructor updated successfully!"
+      alert(result.message);
       navigate("/programme_curriculum/admin_course_instructor");
     } catch (error) {
       console.error("Error updating course instructor:", error);
@@ -122,38 +126,16 @@ function Admin_edit_course_instructor() {
     }
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
   const handleCancel = () => {
     navigate("/programme_curriculum/admin_course_instructor");
   };
 
+  if (loading) return <div>Loading...</div>;
+
   return (
-    <div
-      style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
-    >
-      <Container
-        fluid
-        style={{
-          display: "flex",
-          justifyContent: "left",
-          alignItems: "left",
-          width: "100%",
-          margin: "0 0 0 -3.2vw",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: "290vw",
-            width: "100%",
-            display: "flex",
-            gap: "2rem",
-            padding: "2rem",
-            flex: 4,
-          }}
-        >
-          {/* Form Section */}
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <Container fluid style={{ margin: "0 0 0 -3.2vw" }}>
+        <div style={{ maxWidth: "290vw", padding: "2rem", display: "flex", gap: "2rem" }}>
           <div style={{ width: "100%" }}>
             <form
               onSubmit={form.onSubmit(handleSubmit)}
@@ -195,57 +177,36 @@ function Admin_edit_course_instructor() {
                   required
                 />
 
-                <NumberInput
-                  label="Select Year"
-                  defaultValue={2024}
-                  value={form.values.year}
-                  onChange={(value) => form.setFieldValue("year", value)}
+                <Select
+                  label="Select Academic Year"
+                  placeholder="-- Select Academic Year --"
+                  data={generateAcademicYears()}
+                  value={form.values.academicYear}
+                  onChange={(value) => form.setFieldValue("academicYear", value)}
                   required
                 />
 
                 <Select
-                  label="Select Semester Number"
-                  placeholder="-- Select Semester --"
+                  label="Select Semester Type"
+                  placeholder="-- Select Semester Type --"
                   data={[
-                    { value: "1", label: "Semester 1" },
-                    { value: "2", label: "Semester 2" },
-                    { value: "3", label: "Semester 3" },
-                    { value: "4", label: "Semester 4" },
-                    { value: "5", label: "Semester 5" },
-                    { value: "6", label: "Semester 6" },
-                    { value: "7", label: "Semester 7" },
-                    { value: "8", label: "Semester 8" },
+                    { value: "Odd Semester", label: "Odd Semester" },
+                    { value: "Even Semester", label: "Even Semester" },
+                    { value: "Summer Semester", label: "Summer Semester" },
                   ]}
-                  value={form.values.semester}
-                  onChange={(value) => form.setFieldValue("semester", value)}
+                  value={form.values.semesterType}
+                  onChange={(value) => form.setFieldValue("semesterType", value)}
                   required
-                  searchable
                 />
 
                 <Group position="right" mt="lg">
-                  <Button
-                    variant="outline"
-                    className="cancel-btn"
-                    onClick={handleCancel}
-                  >
+                  <Button variant="outline" onClick={handleCancel}>
                     Cancel
                   </Button>
-                  <Button type="submit" className="submit-btn">
-                    Update
-                  </Button>
+                  <Button type="submit">Update</Button>
                 </Group>
               </Stack>
             </form>
-          </div>
-          <div
-            style={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "flex-start",
-            }}
-          >
-            {" "}
           </div>
         </div>
       </Container>
