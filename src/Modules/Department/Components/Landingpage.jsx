@@ -37,13 +37,14 @@ const departments = [
 ];
 
 export default function LandingPage() {
-  const [, setRole] = useState(null);
+  const [role, setRole] = useState(null);
   const [branch, setBranch] = useState(null);
-  const [activeTab, setActiveTab] = useState(null);
+  const [activeTab, setActiveTab] = useState("1"); // Default active tab
   const [loading, setLoading] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [error, setError] = useState(null);
   const tabsListRef = useRef(null);
+
   useEffect(() => {
     const fetchUserDepartment = async () => {
       const token = localStorage.getItem("authToken");
@@ -68,21 +69,29 @@ export default function LandingPage() {
     };
     fetchUserDepartment();
   }, []);
+
   const handleTabChange = (direction) => {
-    const newIndex =
-      direction === "next"
-        ? Math.min(+activeTab + 1, departments.length - 1)
-        : Math.max(+activeTab - 1, 0);
-    setActiveTab(String(newIndex));
-    tabsListRef.current?.scrollBy({
-      left: direction === "next" ? 50 : -50,
-      behavior: "smooth",
-    });
+    if (direction === "next") {
+      // Only allow navigation in the three main tabs (Make, Browse, Feedback)
+      const validTabs = ["0", "1", "2"];
+      const nextTabIndex = validTabs.indexOf(activeTab) + 1;
+      if (nextTabIndex < validTabs.length) {
+        setActiveTab(validTabs[nextTabIndex]);
+      }
+    } else {
+      const validTabs = ["0", "1", "2"];
+      const prevTabIndex = validTabs.indexOf(activeTab) - 1;
+      if (prevTabIndex >= 0) {
+        setActiveTab(validTabs[prevTabIndex]);
+      }
+    }
   };
 
   const renderTabContent = () => (
     <Suspense fallback={<Loader />}>
-      {activeTab === "0" && <MakeAnnouncement />}
+      {activeTab === "0" && role && !role.toLowerCase().includes("student") && (
+        <MakeAnnouncement />
+      )}
       {activeTab === "1" && <BrowseAnnouncements />}
       {activeTab === "2" && <FeedbackForm branch={branch} />}
       {departments.map((dept) =>
@@ -110,7 +119,6 @@ export default function LandingPage() {
           >
             <Title order={2}>Department Portal</Title>
             <Group spacing="sm" style={{ marginLeft: "auto" }}>
-              {}
               <Button
                 onClick={() => handleTabChange("prev")}
                 variant="subtle"
@@ -126,12 +134,14 @@ export default function LandingPage() {
               >
                 <Tabs value={activeTab} onChange={setActiveTab}>
                   <Tabs.List>
-                    <Button
-                      variant={activeTab === "0" ? "filled" : "light"}
-                      onClick={() => setActiveTab("0")}
-                    >
-                      Make Announcement
-                    </Button>
+                    {role && !role.toLowerCase().includes("student") && (
+                      <Button
+                        variant={activeTab === "0" ? "filled" : "light"}
+                        onClick={() => setActiveTab("0")}
+                      >
+                        Make Announcement
+                      </Button>
+                    )}
                     <Button
                       variant={activeTab === "1" ? "filled" : "light"}
                       onClick={() => setActiveTab("1")}
