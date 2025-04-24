@@ -3,8 +3,15 @@ import { Suspense, lazy } from "react";
 import { useSelector } from "react-redux";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
-import { Route, Routes, Navigate, useLocation } from "react-router-dom";
+import {
+  Route,
+  Routes,
+  Navigate,
+  useLocation,
+  useParams,
+} from "react-router-dom";
 import { Notifications } from "@mantine/notifications";
+import { host } from "./routes/globalRoutes";
 import { Layout } from "./components/layout";
 import InventoryIndex from "./Modules/Inventory/components/InventoryIndex";
 import PurchaseRoutes from "./Modules/Purchase/PurchaseRoute.jsx";
@@ -100,7 +107,10 @@ const ProgrammeCurriculumRoutes = lazy(
 const theme = createTheme({
   breakpoints: { xs: "30em", sm: "48em", md: "64em", lg: "74em", xl: "90em" },
 });
-
+function ProfileRouteWithUsername() {
+  const { username } = useParams();
+  return <Profile connectionRoute={`${host}/dep/api/profile/${username}/`} />;
+}
 export default function App() {
   const location = useLocation();
   const role = useSelector((state) => state.user.role);
@@ -228,6 +238,16 @@ export default function App() {
             <Layout>
               <Suspense fallback={<div>Loading .... </div>}>
                 <Profile />
+              </Suspense>
+            </Layout>
+          }
+        />
+        <Route
+          path="/profile/:username"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <ProfileRouteWithUsername />
               </Suspense>
             </Layout>
           }

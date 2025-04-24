@@ -43,18 +43,20 @@ function InfoCard({ data }) {
   );
 }
 
-function Profile() {
+function Profile({ connectionRoute }) {
   const [activeTab, setActiveTab] = useState("0");
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const apiURL = connectionRoute || getProfileDataRoute;
 
   useEffect(() => {
     async function fetchProfile() {
       const token = localStorage.getItem("authToken");
       if (!token) return console.error("No authentication token found!");
       try {
-        const response = await axios.get(getProfileDataRoute, {
+        const response = await axios.get(apiURL, {
           headers: { Authorization: `Token ${token}` },
         });
         setProfileData(response.data);
@@ -66,7 +68,7 @@ function Profile() {
       }
     }
     fetchProfile();
-  }, []);
+  }, [[apiURL]]);
 
   console.log(profileData);
 
@@ -136,5 +138,7 @@ InfoCard.propTypes = {
     }),
   }).isRequired,
 };
-
+Profile.propTypes = {
+  connectionRoute: PropTypes.string,
+};
 export default Profile;
