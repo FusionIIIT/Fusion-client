@@ -1,11 +1,13 @@
 import {
-  Paper,
   Text,
   Badge,
   Stack,
   ScrollArea,
   Loader,
   Container,
+  Box,
+  Card,
+  Group,
 } from "@mantine/core";
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -63,109 +65,81 @@ export default function NoticeBoard() {
   }, []);
 
   return (
-    <Paper
-      shadow="md"
-      p="md"
-      withBorder
-      sx={(theme) => ({
-        position: "fixed",
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        backgroundColor: theme.white,
-        border: `1px solid ${theme.colors.gray[3]}`,
-        borderRadius: theme.radius.md,
-      })}
-    >
-      <Text
-        align="left"
-        mb="xl"
-        size="24px"
-        style={{ color: "#757575", fontWeight: "bold" }}
-      >
-        Hostel Notice Board
-      </Text>
-
-      <ScrollArea style={{ flex: 1, height: "calc(66vh)" }}>
-        {loading ? (
-          <Container
-            py="xl"
-            style={{ display: "flex", justifyContent: "center" }}
-          >
-            <Loader size="lg" />
-          </Container>
-        ) : error ? (
-          <Text align="center" color="red" size="lg">
-            {error}
-          </Text>
-        ) : notices.length === 0 ? (
-          <Empty />
-        ) : (
-          <Stack spacing="md" pb="md">
-            {notices.map((notice) => (
-              <Paper
-                key={notice.id}
-                p="md"
-                withBorder
-                shadow="xs"
-                sx={(theme) => ({
-                  display: "flex",
-                  flexDirection: "column",
-                  backgroundColor:
-                    notice.scope === "global"
-                      ? theme.colors.yellow[0]
-                      : theme.white,
-                  borderColor:
-                    notice.scope === "global"
-                      ? theme.colors.yellow[5]
-                      : theme.colors.gray[3],
-                })}
+    <Container size="md" px="md">
+      <Card shadow="sm" p={0} radius="md" withBorder>
+        <Box p="md" sx={{ height: "70vh" }}>
+          <ScrollArea style={{ height: "100%" }}>
+            {loading ? (
+              <Container
+                py="xl"
+                style={{ display: "flex", justifyContent: "center" }}
               >
-                <Text
-                  size="lg"
-                  weight={notice.scope === "global" ? "bold" : "normal"}
-                >
-                  {notice.head_line}
-                </Text>
-
-                <Text size="md" color="gray" mt="xs">
-                  {notice.content}
-                </Text>
-
-                <Text size="sm" color="dimmed" mt="xs">
-                  {notice.description}
-                </Text>
-
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginTop: "10px",
-                  }}
-                >
-                  <Badge
-                    size="lg"
-                    variant={notice.scope === "global" ? "filled" : "outline"}
-                    color={notice.scope === "global" ? "yellow" : "blue"}
-                    style={{ flex: 1 }}
+                <Loader size="lg" />
+              </Container>
+            ) : error ? (
+              <Text align="center" color="red" size="lg">
+                {error}
+              </Text>
+            ) : notices.length === 0 ? (
+              <Empty />
+            ) : (
+              <Stack spacing="md">
+                {notices.map((notice) => (
+                  <Card
+                    key={notice.id}
+                    p="md"
+                    withBorder
+                    radius="sm"
+                    sx={(theme) => ({
+                      backgroundColor:
+                        notice.scope === "global"
+                          ? theme.fn.rgba(theme.colors.yellow[1], 0.5)
+                          : theme.white,
+                      borderColor:
+                        notice.scope === "global"
+                          ? theme.colors.yellow[4]
+                          : theme.colors.gray[3],
+                    })}
                   >
-                    {notice.hall}
-                  </Badge>
+                    <Text
+                      size="lg"
+                      weight={600}
+                      mb="xs"
+                      color={notice.scope === "global" ? "dark" : "dimmed"}
+                    >
+                      {notice.head_line}
+                    </Text>
 
-                  <div
-                    style={{ flex: 7.5, textAlign: "right", color: "#757575" }}
-                  >
-                    Posted by: {notice.posted_by}
-                  </div>
-                </div>
-              </Paper>
-            ))}
-          </Stack>
-        )}
-      </ScrollArea>
-    </Paper>
+                    <Text size="md" mb="xs">
+                      {notice.content}
+                    </Text>
+
+                    <Text size="sm" color="dimmed" mb="sm">
+                      {notice.description}
+                    </Text>
+
+                    <Group position="apart" mt="md">
+                      <Badge
+                        size="md"
+                        variant={
+                          notice.scope === "global" ? "filled" : "outline"
+                        }
+                        color={notice.scope === "global" ? "yellow" : "blue"}
+                      >
+                        {notice.hall}
+                      </Badge>
+
+                      <Text size="sm" color="dimmed">
+                        Posted by: {notice.posted_by}
+                      </Text>
+                    </Group>
+                  </Card>
+                ))}
+              </Stack>
+            )}
+          </ScrollArea>
+        </Box>
+      </Card>
+    </Container>
   );
 }

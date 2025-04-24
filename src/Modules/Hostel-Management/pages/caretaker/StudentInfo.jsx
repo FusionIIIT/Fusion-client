@@ -86,15 +86,6 @@ export default function StudentInfo() {
         borderRadius: theme.radius.md,
       })}
     >
-      <Text
-        align="left"
-        mb="xl"
-        size="24px"
-        style={{ color: "#757575", fontWeight: "bold" }}
-      >
-        Student Info
-      </Text>
-
       <Group mb="md">
         <Input
           placeholder="Search"

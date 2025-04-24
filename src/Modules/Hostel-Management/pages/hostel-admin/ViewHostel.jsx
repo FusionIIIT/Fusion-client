@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Card, Select, Grid, Text, Paper, Box } from "@mantine/core";
+import { Card, Select, Grid, Text, Box } from "@mantine/core";
 import { viewHostel } from "../../../../routes/hostelManagementRoutes"; // Import your endpoint
 
 export default function ViewHostel() {
@@ -48,27 +48,14 @@ export default function ViewHostel() {
   }
 
   return (
-    <Paper
-      shadow="md"
-      p="md"
-      withBorder
-      sx={(theme) => ({
-        position: "fixed",
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        backgroundColor: theme.white,
-        borderRadius: theme.radius.md,
-      })}
-    >
+    <>
       <Text
-        align="left"
+        align="center"
         mb="xl"
         size="24px"
-        style={{ color: "#757575", fontWeight: "bold" }}
+        style={{ color: "#4299E1", fontWeight: "bold" }}
       >
-        View Hostel
+        Select Hostel
       </Text>
 
       <Card
@@ -91,7 +78,7 @@ export default function ViewHostel() {
           placeholder="Select Hall"
           value={selectedHall}
           onChange={setSelectedHall}
-          mb="md"
+          mb="lg"
           mt="lg"
           styles={{
             input: {
@@ -104,7 +91,7 @@ export default function ViewHostel() {
         {hostel && (
           <Box
             style={{
-              height: "420px",
+              height: "250px",
               overflowY: "auto",
               paddingRight: "12px",
             }}
@@ -162,6 +149,6 @@ export default function ViewHostel() {
           </Box>
         )}
       </Card>
-    </Paper>
+    </>
   );
 }

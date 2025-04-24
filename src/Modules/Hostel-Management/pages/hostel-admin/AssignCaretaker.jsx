@@ -5,23 +5,42 @@ import {
   Select,
   Text,
   Button,
-  Paper,
   Stack,
   Notification,
+  Tabs,
+  Card,
+  Divider,
+  Group,
 } from "@mantine/core";
 
 import {
   getCaretakers,
   assignCaretakers,
-} from "../../../../routes/hostelManagementRoutes"; // API routes for fetching halls and caretakers, and assigning caretakers
+  getWardens,
+  assignWarden,
+} from "../../../../routes/hostelManagementRoutes";
+
+import AddHostel from "./AddHostel";
 
 axios.defaults.withXSRFToken = true;
 
-export default function AssignCaretaker() {
-  const [allHalls, setHalls] = useState([]);
+export default function AssignPersonnel() {
+  const [activeTab, setActiveTab] = useState("caretaker");
+
+  // Caretaker states
+  const [hallsForCaretaker, setHallsForCaretaker] = useState([]);
   const [caretakers, setCaretakers] = useState([]);
-  const [selectedHall, setSelectedHall] = useState(null);
+  const [selectedHallForCaretaker, setSelectedHallForCaretaker] =
+    useState(null);
   const [selectedCaretaker, setSelectedCaretaker] = useState(null);
+
+  // Warden states
+  const [hallsForWarden, setHallsForWarden] = useState([]);
+  const [wardens, setWardens] = useState([]);
+  const [selectedHallForWarden, setSelectedHallForWarden] = useState(null);
+  const [selectedWarden, setSelectedWarden] = useState(null);
+
+  // Shared states
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState({
     opened: false,
@@ -29,15 +48,22 @@ export default function AssignCaretaker() {
     color: "",
   });
 
-  useEffect(() => {
+  const showNotification = (message, color) => {
+    setNotification({
+      opened: true,
+      message,
+      color,
+    });
+  };
+
+  const fetchCaretakerData = () => {
     const token = localStorage.getItem("authToken");
 
     if (!token) {
-      setNotification({
-        opened: true,
-        message: "Authentication token not found. Please login again.",
-        color: "red",
-      });
+      showNotification(
+        "Authentication token not found. Please login again.",
+        "red",
+      );
       return;
     }
 
@@ -49,7 +75,7 @@ export default function AssignCaretaker() {
       })
       .then((response) => {
         const { halls, caretaker_usernames } = response.data;
-        setHalls(
+        setHallsForCaretaker(
           halls.map((hallData) => ({
             value: hallData.hall_id,
             label: hallData.hall_name,
@@ -63,34 +89,82 @@ export default function AssignCaretaker() {
         );
       })
       .catch((error) => {
-        console.error("Error fetching data", error);
-        setNotification({
-          opened: true,
-          message: "Failed to fetch data. Please try again.",
-          color: "red",
-        });
+        console.error("Error fetching caretaker data", error);
+        showNotification(
+          "Failed to fetch caretaker data. Please try again.",
+          "red",
+        );
       });
-  }, []);
+  };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  // Load caretaker data
+  useEffect(() => {
+    if (activeTab === "caretaker") {
+      fetchCaretakerData();
+    }
+  }, [activeTab]);
+
+  const fetchWardenData = () => {
     const token = localStorage.getItem("authToken");
 
     if (!token) {
-      setNotification({
-        opened: true,
-        message: "Authentication token not found. Please login again.",
-        color: "red",
-      });
+      showNotification(
+        "Authentication token not found. Please login again.",
+        "red",
+      );
       return;
     }
 
-    if (!selectedHall || !selectedCaretaker) {
-      setNotification({
-        opened: true,
-        message: "Please select both a hall and a caretaker.",
-        color: "red",
+    axios
+      .get(getWardens, {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      })
+      .then((response) => {
+        const { halls, warden_usernames } = response.data;
+        setHallsForWarden(
+          halls.map((hallData) => ({
+            value: hallData.hall_id,
+            label: hallData.hall_name,
+          })),
+        );
+        setWardens(
+          warden_usernames.map((user) => ({
+            value: user.id_id,
+            label: user.id_id,
+          })),
+        );
+      })
+      .catch((error) => {
+        console.error("Error fetching warden data", error);
+        showNotification(
+          "Failed to fetch warden data. Please try again.",
+          "red",
+        );
       });
+  };
+
+  // Load warden data
+  useEffect(() => {
+    if (activeTab === "warden") {
+      fetchWardenData();
+    }
+  }, [activeTab]);
+
+  const handleAssignCaretaker = () => {
+    const token = localStorage.getItem("authToken");
+
+    if (!token) {
+      showNotification(
+        "Authentication token not found. Please login again.",
+        "red",
+      );
+      return;
+    }
+
+    if (!selectedHallForCaretaker || !selectedCaretaker) {
+      showNotification("Please select both a hall and a caretaker.", "red");
       return;
     }
 
@@ -100,7 +174,7 @@ export default function AssignCaretaker() {
       .post(
         assignCaretakers,
         {
-          hall_id: selectedHall,
+          hall_id: selectedHallForCaretaker,
           caretaker_username: selectedCaretaker,
         },
         {
@@ -109,21 +183,62 @@ export default function AssignCaretaker() {
           },
         },
       )
-      .then((response) => {
-        console.log(response);
-        setNotification({
-          opened: true,
-          message: "Caretaker assigned successfully!",
-          color: "green",
-        });
+      .then(() => {
+        showNotification("Caretaker assigned successfully!", "green");
+        setSelectedHallForCaretaker(null);
+        setSelectedCaretaker(null);
       })
       .catch((error) => {
         console.error("Error assigning caretaker", error);
-        setNotification({
-          opened: true,
-          message: "Failed to assign caretaker. Please try again.",
-          color: "red",
-        });
+        showNotification(
+          "Failed to assign caretaker. Please try again.",
+          "red",
+        );
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
+  const handleAssignWarden = () => {
+    const token = localStorage.getItem("authToken");
+
+    if (!token) {
+      showNotification(
+        "Authentication token not found. Please login again.",
+        "red",
+      );
+      return;
+    }
+
+    if (!selectedHallForWarden || !selectedWarden) {
+      showNotification("Please select both a hall and a warden.", "red");
+      return;
+    }
+
+    setLoading(true);
+
+    axios
+      .post(
+        assignWarden,
+        {
+          hall_id: selectedHallForWarden,
+          warden_username: selectedWarden,
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      )
+      .then(() => {
+        showNotification("Warden assigned successfully!", "green");
+        setSelectedHallForWarden(null);
+        setSelectedWarden(null);
+      })
+      .catch((error) => {
+        console.error("Error assigning warden", error);
+        showNotification("Failed to assign warden. Please try again.", "red");
       })
       .finally(() => {
         setLoading(false);
@@ -131,72 +246,127 @@ export default function AssignCaretaker() {
   };
 
   return (
-    <Paper
-      shadow="md"
-      p="md"
-      withBorder
-      sx={(theme) => ({
-        position: "fixed",
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        backgroundColor: theme.white,
-        border: `1px solid ${theme.colors.gray[3]}`,
-        borderRadius: theme.radius.md,
-      })}
-    >
-      <Stack spacing="lg">
-        <Text
-          align="left"
-          mb="xl"
-          size="24px"
-          style={{ color: "#757575", fontWeight: "bold" }}
-        >
-          Assign Caretaker
-        </Text>
+    <Box p="md" style={{ maxWidth: "800px", margin: "0 auto" }}>
+      <Card shadow="xs" radius="md" p="md" withBorder>
+        <Tabs value={activeTab} onChange={setActiveTab} mb="md">
+          <Tabs.List>
+            <Tabs.Tab value="caretaker" style={{ fontSize: "0.95rem" }}>
+              Assign Caretaker
+            </Tabs.Tab>
+            <Tabs.Tab value="warden" style={{ fontSize: "0.95rem" }}>
+              Assign Warden
+            </Tabs.Tab>
+            <Tabs.Tab value="addHostel" style={{ fontSize: "0.95rem" }}>
+              Add Hostel
+            </Tabs.Tab>
+          </Tabs.List>
+        </Tabs>
 
-        <Box>
-          <Text component="label" size="lg" fw={500}>
-            Hall Id:
-          </Text>
-          <Select
-            placeholder="Select Hall"
-            data={allHalls}
-            value={selectedHall}
-            onChange={setSelectedHall}
-            w="100%"
-            styles={{ root: { marginTop: 5 } }}
-          />
-        </Box>
+        <Divider mb="md" />
 
-        <Box>
-          <Text component="label" size="lg" fw={500}>
-            Caretaker Username:
-          </Text>
-          <Select
-            placeholder="Select Caretaker"
-            data={caretakers}
-            value={selectedCaretaker}
-            onChange={setSelectedCaretaker}
-            w="100%"
-            styles={{ root: { marginTop: 5 } }}
-          />
-        </Box>
-        <Button variant="filled" onClick={handleSubmit} loading={loading}>
-          Assign
-        </Button>
-        {notification.opened && (
-          <Notification
-            title="Notification"
-            color={notification.color}
-            onClose={() => setNotification({ ...notification, opened: false })}
-            style={{ marginTop: "10px" }}
-          >
-            {notification.message}
-          </Notification>
+        {activeTab === "caretaker" && (
+          <Stack spacing="sm">
+            <Box mb="xs">
+              <Text component="label" size="sm" fw={500}>
+                Select Hall:
+              </Text>
+              <Select
+                placeholder="Choose a hall"
+                data={hallsForCaretaker}
+                value={selectedHallForCaretaker}
+                onChange={setSelectedHallForCaretaker}
+                w="100%"
+                size="sm"
+                styles={{ root: { marginTop: 4 } }}
+              />
+            </Box>
+
+            <Box mb="md">
+              <Text component="label" size="sm" fw={500}>
+                Select Caretaker:
+              </Text>
+              <Select
+                placeholder="Choose a caretaker"
+                data={caretakers}
+                value={selectedCaretaker}
+                onChange={setSelectedCaretaker}
+                w="100%"
+                size="sm"
+                styles={{ root: { marginTop: 4 } }}
+              />
+            </Box>
+
+            <Group position="right">
+              <Button
+                variant="filled"
+                onClick={handleAssignCaretaker}
+                loading={loading}
+                size="sm"
+              >
+                Assign Caretaker
+              </Button>
+            </Group>
+          </Stack>
         )}
-      </Stack>
-    </Paper>
+
+        {activeTab === "warden" && (
+          <Stack spacing="sm">
+            <Box mb="xs">
+              <Text component="label" size="sm" fw={500}>
+                Select Hall:
+              </Text>
+              <Select
+                placeholder="Choose a hall"
+                data={hallsForWarden}
+                value={selectedHallForWarden}
+                onChange={setSelectedHallForWarden}
+                w="100%"
+                size="sm"
+                styles={{ root: { marginTop: 4 } }}
+              />
+            </Box>
+
+            <Box mb="md">
+              <Text component="label" size="sm" fw={500}>
+                Select Warden:
+              </Text>
+              <Select
+                placeholder="Choose a warden"
+                data={wardens}
+                value={selectedWarden}
+                onChange={setSelectedWarden}
+                w="100%"
+                size="sm"
+                styles={{ root: { marginTop: 4 } }}
+              />
+            </Box>
+
+            <Group position="right">
+              <Button
+                variant="filled"
+                onClick={handleAssignWarden}
+                loading={loading}
+                size="sm"
+              >
+                Assign Warden
+              </Button>
+            </Group>
+          </Stack>
+        )}
+
+        {activeTab === "addHostel" && <AddHostel />}
+      </Card>
+
+      {notification.opened && (
+        <Notification
+          color={notification.color}
+          onClose={() => setNotification({ ...notification, opened: false })}
+          mt="md"
+          withCloseButton
+        >
+          {notification.message}
+        </Notification>
+      )}
+    </Box>
   );
 }

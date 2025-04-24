@@ -8,6 +8,10 @@ import {
   ScrollArea,
   Loader,
   Container,
+  Card,
+  Box,
+  Tabs,
+  Badge,
 } from "@mantine/core";
 import axios from "axios";
 import LeaveApplicationCard from "../../components/students/LeaveApplicationCard";
@@ -17,6 +21,7 @@ export default function LeaveStatus() {
   const [leaves, setLeaves] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState("active");
 
   const fetchLeaves = async () => {
     const token = localStorage.getItem("authToken");
@@ -56,113 +61,134 @@ export default function LeaveStatus() {
     (leave) => leave.status.toLowerCase() !== "pending",
   );
 
+  const renderLeavesList = (leavesList) => {
+    if (leavesList.length === 0) {
+      return (
+        <Text align="center" color="dimmed" py="xl">
+          No leave requests found in this category.
+        </Text>
+      );
+    }
+
+    return (
+      <Stack spacing="lg">
+        {leavesList.map((leave) => (
+          <Paper withBorder radius="md" p={0} shadow="xs" mb="md">
+            <LeaveApplicationCard
+              key={leave.roll_num + leave.start_date}
+              student_name={leave.student_name}
+              roll_num={leave.roll_num}
+              reason={leave.reason}
+              phone_number={leave.phone_number}
+              start_date={leave.start_date}
+              end_date={leave.end_date}
+              status={leave.status}
+              remark={leave.remark}
+            />
+          </Paper>
+        ))}
+      </Stack>
+    );
+  };
+
   return (
-    <Paper
-      shadow="md"
-      p="md"
-      withBorder
-      sx={(theme) => ({
-        position: "fixed",
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        backgroundColor: theme.white,
-        border: `1px solid ${theme.colors.gray[3]}`,
-        borderRadius: theme.radius.md,
-      })}
-    >
-      <Text
-        align="left"
-        mb="xl"
-        size="24px"
-        style={{ color: "#757575", fontWeight: "bold" }}
-      >
-        Leave Status
-      </Text>
+    <Container size="md" px="md">
+      <Card shadow="sm" radius="md" withBorder>
+        <Box p="lg" sx={{ height: "70vh" }}>
+          <Group position="apart" mb="md">
+            <Group spacing="xs">
+              <Text size="sm" color="dimmed">
+                Sort By:
+              </Text>
+              <Select
+                placeholder="Date"
+                data={[{ value: "date", label: "Date" }]}
+                style={{ width: "100px" }}
+                variant="filled"
+                size="sm"
+              />
+            </Group>
+          </Group>
 
-      <ScrollArea style={{ flex: 1 }}>
-        {loading ? (
-          <Container
-            py="xl"
-            style={{ display: "flex", justifyContent: "center" }}
-          >
-            <Loader size="lg" />
-          </Container>
-        ) : error ? (
-          <Text align="center" color="red" size="lg">
-            {error}
-          </Text>
-        ) : (
-          <Stack spacing="xl">
-            <Stack spacing="md">
-              <Group position="apart" align="center">
-                <Text weight={500} size="xl" color="dimmed">
-                  Active Leave Requests
-                </Text>
-                <Group spacing="xs">
-                  <Text size="sm" color="dimmed">
-                    Sort By:
-                  </Text>
-                  <Select
-                    placeholder="Date"
-                    data={[{ value: "date", label: "Date" }]}
-                    style={{ width: "100px" }}
-                    variant="unstyled"
+          <Tabs value={activeTab} onChange={setActiveTab} radius="md" mb="md">
+            <Tabs.List grow>
+              <Tabs.Tab
+                value="active"
+                rightSection={
+                  <Badge
                     size="sm"
-                  />
-                </Group>
-              </Group>
-              {activeLeaves.map((leave) => (
-                <LeaveApplicationCard
-                  key={leave.roll_num + leave.start_date}
-                  student_name={leave.student_name}
-                  roll_num={leave.roll_num}
-                  reason={leave.reason}
-                  phone_number={leave.phone_number}
-                  start_date={leave.start_date}
-                  end_date={leave.end_date}
-                  status={leave.status}
-                  remark={leave.remark}
-                />
-              ))}
-            </Stack>
+                    variant="filled"
+                    radius="xl"
+                    sx={(theme) => ({
+                      backgroundColor:
+                        activeTab === "active"
+                          ? theme.white
+                          : theme.colors.blue[5],
+                      color:
+                        activeTab === "active"
+                          ? theme.colors.blue[7]
+                          : theme.white,
+                    })}
+                  >
+                    {activeLeaves.length}
+                  </Badge>
+                }
+              >
+                Active Requests
+              </Tabs.Tab>
+              <Tabs.Tab
+                value="past"
+                rightSection={
+                  <Badge
+                    size="sm"
+                    variant="filled"
+                    radius="xl"
+                    sx={(theme) => ({
+                      backgroundColor:
+                        activeTab === "past"
+                          ? theme.white
+                          : theme.colors.blue[5],
+                      color:
+                        activeTab === "past"
+                          ? theme.colors.blue[7]
+                          : theme.white,
+                    })}
+                  >
+                    {pastLeaves.length}
+                  </Badge>
+                }
+              >
+                Past Requests
+              </Tabs.Tab>
+            </Tabs.List>
+          </Tabs>
 
-            <Stack spacing="md">
-              <Group position="apart" align="center">
-                <Text weight={500} size="xl" color="dimmed">
-                  Past Leave Requests
-                </Text>
-                <Group spacing="xs">
-                  <Text size="sm" color="dimmed">
-                    Sort By:
-                  </Text>
-                  <Select
-                    placeholder="Date"
-                    data={[{ value: "date", label: "Date" }]}
-                    style={{ width: "100px" }}
-                    variant="unstyled"
-                    size="sm"
-                  />
-                </Group>
-              </Group>
-              {pastLeaves.map((leave) => (
-                <LeaveApplicationCard
-                  key={leave.roll_num + leave.start_date}
-                  student_name={leave.student_name}
-                  roll_num={leave.roll_num}
-                  reason={leave.reason}
-                  phone_number={leave.phone_number}
-                  start_date={leave.start_date}
-                  end_date={leave.end_date}
-                  status={leave.status}
-                  remark={leave.remark}
-                />
-              ))}
-            </Stack>
-          </Stack>
-        )}
-      </ScrollArea>
-    </Paper>
+          {loading ? (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "50vh",
+              }}
+            >
+              <Loader size="lg" />
+            </Box>
+          ) : error ? (
+            <Text align="center" color="red" size="lg" py="xl">
+              {error}
+            </Text>
+          ) : (
+            <ScrollArea style={{ height: "calc(70vh - 140px)" }}>
+              <Box p="xs">
+                {activeTab === "active"
+                  ? renderLeavesList(activeLeaves)
+                  : renderLeavesList(pastLeaves)}
+              </Box>
+            </ScrollArea>
+          )}
+        </Box>
+      </Card>
+    </Container>
   );
 }

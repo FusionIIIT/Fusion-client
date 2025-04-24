@@ -6,6 +6,8 @@ import {
   Stack,
   Select,
   Text,
+  Box,
+  Divider,
 } from "@mantine/core";
 import { Upload } from "@phosphor-icons/react";
 import { useState, useEffect } from "react";
@@ -33,9 +35,7 @@ export default function UploadAttendanceComponent() {
           },
         });
 
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
+        if (!response.ok) throw new Error("Network response was not ok");
 
         const data = await response.json();
         setHostelsData(data.hostel_details);
@@ -52,21 +52,11 @@ export default function UploadAttendanceComponent() {
     fetchHostels();
   }, []);
 
-  // Get data of the selected hall
   const selectedHallData = hostelsData.find((h) => h.hall_id === selectedHall);
 
-  // Reset batch when hall changes
   useEffect(() => {
     setSelectedBatch("");
   }, [selectedHall]);
-
-  if (loading) {
-    return (
-      <Text align="center" mt="xl">
-        Loading...
-      </Text>
-    );
-  }
 
   const years = Array.from({ length: 10 }, (_, i) => 2025 + i);
   const months = [
@@ -84,27 +74,14 @@ export default function UploadAttendanceComponent() {
     "December",
   ];
 
-  const handleFileChange = (event) => {
-    if (event.target.files && event.target.files[0]) {
-      setFile(event.target.files[0]);
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0]);
     }
   };
 
-  const handleYearChange = (selectedYear) => {
-    setYear(selectedYear);
-  };
-
-  const handleHallChange = (newHallId) => {
-    setSelectedHall(newHallId);
-  };
-
-  const handleBatchChange = (newBatch) => {
-    setSelectedBatch(newBatch);
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     const formData = new FormData();
     formData.append("year", year);
     formData.append("month", month);
@@ -121,11 +98,8 @@ export default function UploadAttendanceComponent() {
         body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error("Upload failed");
-      }
+      if (!response.ok) throw new Error("Upload failed");
 
-      // Clear form after successful upload
       setFile(null);
       setYear(null);
       setMonth(null);
@@ -138,12 +112,27 @@ export default function UploadAttendanceComponent() {
     }
   };
 
+  if (loading) {
+    return (
+      <Text align="center" mt="xl" color="dimmed">
+        Loading...
+      </Text>
+    );
+  }
+
   return (
     <Container size="sm" px="xs">
-      <Paper shadow="sm" p="xl" radius="md" withBorder>
-        <Title order={1} size="h2" mb="xl">
-          Upload Attendance
-        </Title>
+      <Paper shadow="md" p="xl" radius="md" withBorder>
+        <Box ta="center" mb="lg">
+          <Title order={2} color="#4299E1">
+            Upload Attendance
+          </Title>
+          <Text color="dimmed" size="sm" mt={4}>
+            Fill in the details and upload the attendance sheet
+          </Text>
+        </Box>
+
+        <Divider mb="lg" />
 
         <form onSubmit={handleSubmit}>
           <Stack spacing="md">
@@ -151,12 +140,9 @@ export default function UploadAttendanceComponent() {
               label="Year"
               placeholder="Select year"
               data={years.map((yr) => yr.toString())}
-              required
               value={year}
-              onChange={handleYearChange}
-              styles={{
-                label: { fontSize: "1rem", fontWeight: 500 },
-              }}
+              onChange={setYear}
+              required
             />
 
             {year && (
@@ -164,68 +150,68 @@ export default function UploadAttendanceComponent() {
                 label="Month"
                 placeholder="Select month"
                 data={months}
-                required
                 value={month}
-                onChange={(selectedMonth) => setMonth(selectedMonth)}
-                styles={{
-                  label: { fontSize: "1rem", fontWeight: 500 },
-                }}
+                onChange={setMonth}
+                required
               />
             )}
 
             {month && (
               <Select
                 label="Hall"
-                data={hostelsData.map((hostelData) => ({
-                  value: hostelData.hall_id,
-                  label: hostelData.hall_name,
+                data={hostelsData.map((hostel) => ({
+                  value: hostel.hall_id,
+                  label: hostel.hall_name,
                 }))}
+                value={selectedHall}
+                onChange={setSelectedHall}
                 placeholder="Select Hall"
                 required
-                value={selectedHall}
-                onChange={handleHallChange}
-                styles={{
-                  label: { fontSize: "1rem", fontWeight: 500 },
-                }}
               />
             )}
 
-            {selectedHallData && selectedHallData.assigned_batch && (
+            {selectedHallData?.assigned_batch?.length > 0 && (
               <Select
                 label="Batch"
                 placeholder="Select Batch"
-                data={selectedHallData.assigned_batch.map((batch) => ({
-                  value: batch,
-                  label: batch,
+                data={selectedHallData.assigned_batch.map((b) => ({
+                  value: b,
+                  label: b,
                 }))}
-                required
                 value={selectedBatch}
-                onChange={handleBatchChange}
-                styles={{
-                  label: { fontSize: "1rem", fontWeight: 500 },
-                }}
+                onChange={setSelectedBatch}
+                required
               />
             )}
 
-            <Title order={3} size="h4" mt="md">
-              Upload Attendance Document
-            </Title>
+            <Divider
+              my="sm"
+              label="Attach Attendance Document"
+              labelPosition="center"
+            />
 
             <input
               type="file"
               id="file"
-              style={{ display: "none" }}
-              onChange={handleFileChange}
               accept=".pdf,.doc,.docx,.xls,.xlsx"
+              onChange={handleFileChange}
+              style={{ display: "none" }}
             />
 
             <Button
               component="label"
               htmlFor="file"
               variant="filled"
-              color="blue"
+              size="md"
+              color="#4299E1"
               leftIcon={<Upload size={20} />}
               fullWidth
+              styles={{
+                root: {
+                  backgroundColor: "#4299E1",
+                  "&:hover": { backgroundColor: "#3182CE" },
+                },
+              }}
             >
               {file ? file.name : "Attach Document"}
             </Button>
@@ -233,9 +219,15 @@ export default function UploadAttendanceComponent() {
             <Button
               type="submit"
               variant="filled"
-              color="blue"
               fullWidth
-              mt="xl"
+              mt="sm"
+              size="md"
+              styles={{
+                root: {
+                  backgroundColor: "#4299E1",
+                  "&:hover": { backgroundColor: "#3182CE" },
+                },
+              }}
             >
               Submit
             </Button>

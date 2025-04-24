@@ -89,9 +89,9 @@ export default function StudentInfo() {
         align="left"
         mb="xl"
         size="24px"
-        style={{ color: "#757575", fontWeight: "bold" }}
+        style={{ color: "#4299E1", fontWeight: "bold" }}
       >
-        Student Info
+        Hostel Residents
       </Text>
 
       <Group mb="md">

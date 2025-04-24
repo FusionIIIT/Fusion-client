@@ -40,7 +40,7 @@ function StudentInfoCard({
           <Paper p="md" radius="md" withBorder>
             <Group position="apart">
               <Text size="lg" weight={500} color="blue">
-                Student Information
+                Room & Information
               </Text>
             </Group>
           </Paper>

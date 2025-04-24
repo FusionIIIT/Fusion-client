@@ -1,15 +1,16 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Box,
   Button,
-  Grid,
   Group,
   Paper,
   Stack,
   Text,
   TextInput,
   Textarea,
+  Alert,
 } from "@mantine/core";
+import { IconAlertCircle, IconCheck } from "@tabler/icons-react";
 import axios from "axios";
 import { requestLeave } from "../../../../routes/hostelManagementRoutes";
 
@@ -31,11 +32,21 @@ export default function LeaveForm() {
       ...prevState,
       [name]: value,
     }));
+
+    // Clear errors when user starts typing again
+    if (errors[name]) {
+      setErrors((prev) => {
+        const updated = { ...prev };
+        delete updated[name];
+        return updated;
+      });
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSuccessMessage("");
 
     const token = localStorage.getItem("authToken");
     if (!token) {
@@ -63,7 +74,6 @@ export default function LeaveForm() {
         },
       });
 
-      // Check if the response contains a message
       if (response.data.message) {
         setSuccessMessage(response.data.message);
         setErrors({}); // Reset errors
@@ -76,7 +86,6 @@ export default function LeaveForm() {
           endDate: "",
         });
       } else {
-        // Handle unexpected response format
         setErrors({ general: "Unexpected server response." });
       }
     } catch (error) {
@@ -96,89 +105,108 @@ export default function LeaveForm() {
     }
   };
 
+  const getFieldError = (fieldName) => {
+    const mappings = {
+      studentName: "student_name",
+      rollNumber: "roll_num",
+      phoneNumber: "phone_number",
+      startDate: "start_date",
+      endDate: "end_date",
+      reason: "reason",
+    };
+
+    return errors[mappings[fieldName]];
+  };
+
   return (
-    <Paper shadow="md" p="md" withBorder>
-      <Stack spacing="lg">
-        <Text
-          align="left"
-          mb="xl"
-          size="24px"
-          style={{ color: "#757575", fontWeight: "bold" }}
-        >
-          Leave Form
-        </Text>
+    <Paper
+      shadow="xs"
+      p={30}
+      radius="md"
+      withBorder
+      sx={{ maxWidth: 800, margin: "0 auto" }}
+    >
+      <Stack spacing="xl">
+        {successMessage && (
+          <Alert
+            icon={<IconCheck size={16} />}
+            color="teal"
+            title="Success"
+            variant="light"
+          >
+            {successMessage}
+          </Alert>
+        )}
+
+        {errors.general && (
+          <Alert
+            icon={<IconAlertCircle size={16} />}
+            color="red"
+            title="Error"
+            variant="light"
+          >
+            {errors.general}
+          </Alert>
+        )}
 
         <form onSubmit={handleSubmit}>
-          <Stack spacing="md">
-            <Box>
-              <Text component="label" size="lg" fw={500}>
-                Student Name:
-              </Text>
-              <TextInput
-                placeholder="Enter your full name"
-                value={formData.studentName}
-                onChange={(event) =>
-                  handleChange("studentName", event.currentTarget.value)
-                }
-                required
-              />
-              {errors.student_name && (
-                <Text color="red">{errors.student_name}</Text>
-              )}
-            </Box>
+          <Stack spacing={20}>
+            {/* Row 1: Student Name and Roll Number */}
+            <Group grow spacing={20} align="flex-start">
+              <Box>
+                <Text fw={500} mb={8}>
+                  Student Name
+                </Text>
+                <TextInput
+                  placeholder="Enter your full name"
+                  value={formData.studentName}
+                  onChange={(event) =>
+                    handleChange("studentName", event.currentTarget.value)
+                  }
+                  error={getFieldError("studentName")}
+                  required
+                  size="md"
+                />
+              </Box>
 
-            <Box>
-              <Text component="label" size="lg" fw={500}>
-                Roll Number:
-              </Text>
-              <TextInput
-                placeholder="Enter your roll number"
-                value={formData.rollNumber}
-                onChange={(event) =>
-                  handleChange("rollNumber", event.currentTarget.value)
-                }
-                required
-              />
-              {errors.roll_num && <Text color="red">{errors.roll_num}</Text>}
-            </Box>
+              <Box>
+                <Text fw={500} mb={8}>
+                  Roll Number
+                </Text>
+                <TextInput
+                  placeholder="Enter your roll number"
+                  value={formData.rollNumber}
+                  onChange={(event) =>
+                    handleChange("rollNumber", event.currentTarget.value)
+                  }
+                  error={getFieldError("rollNumber")}
+                  required
+                  size="md"
+                />
+              </Box>
+            </Group>
 
-            <Box>
-              <Text component="label" size="lg" fw={500}>
-                Phone Number:
-              </Text>
-              <TextInput
-                placeholder="Enter your phone number"
-                value={formData.phoneNumber}
-                onChange={(event) =>
-                  handleChange("phoneNumber", event.currentTarget.value)
-                }
-                required
-              />
-              {errors.phone_number && (
-                <Text color="red">{errors.phone_number}</Text>
-              )}
-            </Box>
+            {/* Row 2: Phone, Start Date, End Date */}
+            <Group grow spacing={20} align="flex-start">
+              <Box>
+                <Text fw={500} mb={8}>
+                  Phone Number
+                </Text>
+                <TextInput
+                  placeholder="Enter your phone number"
+                  value={formData.phoneNumber}
+                  onChange={(event) =>
+                    handleChange("phoneNumber", event.currentTarget.value)
+                  }
+                  error={getFieldError("phoneNumber")}
+                  required
+                  size="md"
+                />
+              </Box>
 
-            <Box>
-              <Text component="label" size="lg" fw={500}>
-                Reason:
-              </Text>
-              <Textarea
-                placeholder="Please provide a detailed reason for your leave"
-                value={formData.reason}
-                onChange={(event) =>
-                  handleChange("reason", event.currentTarget.value)
-                }
-                minRows={5}
-                required
-              />
-              {errors.reason && <Text color="red">{errors.reason}</Text>}
-            </Box>
-
-            <Grid>
-              <Grid.Col span={6}>
-                <Text component="label" size="lg" fw={500}>
-                  Start Date:
+              <Box>
+                <Text fw={500} mb={8}>
+                  Start Date
                 </Text>
                 <TextInput
                   type="date"
@@ -186,15 +214,16 @@ export default function LeaveForm() {
                   onChange={(e) =>
                     handleChange("startDate", e.currentTarget.value)
                   }
+                  error={getFieldError("startDate")}
                   required
+                  size="md"
+                  rightSection={<Box sx={{ width: 20 }} />}
                 />
-                {errors.start_date && (
-                  <Text color="red">{errors.start_date}</Text>
-                )}
-              </Grid.Col>
-              <Grid.Col span={6}>
-                <Text component="label" size="lg" fw={500}>
-                  End Date:
+              </Box>
+
+              <Box>
+                <Text fw={500} mb={8}>
+                  End Date
                 </Text>
                 <TextInput
                   type="date"
@@ -202,30 +231,50 @@ export default function LeaveForm() {
                   onChange={(e) =>
                     handleChange("endDate", e.currentTarget.value)
                   }
+                  error={getFieldError("endDate")}
                   required
+                  size="md"
+                  rightSection={<Box sx={{ width: 20 }} />}
                 />
-                {errors.end_date && <Text color="red">{errors.end_date}</Text>}
-              </Grid.Col>
-            </Grid>
-
-            <Group position="right" spacing="sm" mt="xl">
-              <Button type="submit" variant="filled" disabled={isSubmitting}>
-                {isSubmitting ? "Submitting..." : "Submit"}
-              </Button>
+              </Box>
             </Group>
+
+            {/* Row 3: Reason for Leave */}
+            <Box>
+              <Text fw={500} mb={8}>
+                Reason for Leave
+              </Text>
+              <Textarea
+                placeholder="Please provide a detailed reason for your leave"
+                value={formData.reason}
+                onChange={(event) =>
+                  handleChange("reason", event.currentTarget.value)
+                }
+                error={getFieldError("reason")}
+                minRows={4}
+                required
+                size="md"
+              />
+            </Box>
+
+            {/* Submit Button */}
+            <Box mt={10}>
+              <Button
+                type="submit"
+                loading={isSubmitting}
+                size="md"
+                fullWidth
+                bg="blue"
+                sx={{
+                  marginTop: 10,
+                  height: 45,
+                }}
+              >
+                Submit Request
+              </Button>
+            </Box>
           </Stack>
         </form>
-
-        {successMessage && (
-          <Text color="green" size="lg" fw="bold">
-            {successMessage}
-          </Text>
-        )}
-        {errors.general && (
-          <Text color="red" size="lg" fw="bold">
-            {errors.general}
-          </Text>
-        )}
       </Stack>
     </Paper>
   );
