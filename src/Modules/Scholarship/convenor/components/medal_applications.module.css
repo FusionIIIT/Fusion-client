@@ -105,3 +105,23 @@
   margin-left: 80%;
   margin-bottom: 2%;
 }
+
+.sortControls {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.sortItem {
+  min-width: 200px;
+}
+
+.exportButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px; /* Adjust spacing as needed */
+  margin-top: 1rem;
+}

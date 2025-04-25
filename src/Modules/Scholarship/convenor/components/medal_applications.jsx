@@ -1,10 +1,12 @@
-/* eslint-disable jsx-a11y/label-has-associated-control */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
-import styles from "./medal_applications.module.css"; // Ensure this file is present with correct styles
+import { Box, Button, Select, Text } from "@mantine/core";
+import { IconDownload } from "@tabler/icons-react";
+import { MantineReactTable, useMantineReactTable } from "mantine-react-table";
+import { mkConfig, generateCsv, download } from "export-to-csv";
 import {
   getDirectorGoldApplicationsRoute,
   getDirectorSilverApplicationsRoute,
@@ -15,322 +17,196 @@ import {
   scholarshipNotification,
 } from "../../../../routes/SPACSRoutes";
 import { host } from "../../../../routes/globalRoutes";
+import styles from "./medal_applications.module.css";
 
-function MedalApplications() {
+const csvConfig = mkConfig({ fieldSeparator: ',', decimalSeparator: '.', useKeysAsHeaders: true });
+
+const MedalApplications = () => {
   const [selectedAward, setSelectedAward] = useState("Director's Silver Medal");
   const [medals, setMedals] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch medals data based on the selected award
   const fetchMedalsData = async () => {
+    setIsLoading(true);
     try {
       const token = localStorage.getItem("authToken");
+      if (!token) throw new Error("No auth token");
 
-      if (!token) {
-        console.log("No authorization token found in localStorage.");
-        setError("No authorization token found.");
-        setIsLoading(false);
-        return;
-      }
+      let apiUrl = getDirectorSilverApplicationsRoute;
+      if (selectedAward === "Director's Gold Medal") apiUrl = getDirectorGoldApplicationsRoute;
+      if (selectedAward === "D&M Proficiency Gold Medal") apiUrl = getProficiencyDMApplicationsRoute;
 
-      let apiUrl = "";
-      // Select the API based on the selected award
-      if (selectedAward === "Director's Silver Medal") {
-        apiUrl = getDirectorSilverApplicationsRoute;
-      } else if (selectedAward === "Director's Gold Medal") {
-        apiUrl = getDirectorGoldApplicationsRoute;
-      } else if (selectedAward === "D&M Proficiency Gold Medal") {
-        apiUrl = getProficiencyDMApplicationsRoute;
-      }
-
-      const response = await axios.get(apiUrl, {
-        headers: {
-          Authorization: `Token ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.data) {
-        const incompleteMedals = response.data.filter(
-          (medal) => medal.status === "INCOMPLETE",
-        );
-        setMedals(incompleteMedals);
-        console.log(incompleteMedals);
-      } else {
-        setError("No data received from the API.");
-      }
-      setIsLoading(false);
+      const { data } = await axios.get(apiUrl, { headers: { Authorization: `Token ${token}` } });
+      const incomplete = data.filter((m) => m.status === 'INCOMPLETE');
+      setMedals(incomplete);
+      setError(null);
     } catch (err) {
-      console.error("Error fetching medals data:", err);
-      setError("Error fetching medals data.");
+      console.error(err);
+      setError('Error loading medals');
+    } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
     fetchMedalsData();
-    console.log(medals);
   }, [selectedAward]);
 
-  const handleNotification = async (recipientId, type) => {
+  // Notification & approval
+  const handleNotification = async (recipient, type) => {
     try {
       const token = localStorage.getItem("authToken");
-
-      if (!token) {
-        console.log("No authorization token found for notification.");
-        return;
-      }
-
-      const response = await axios.post(
+      if (!token) return;
+      await axios.post(
         scholarshipNotification,
-        {
-          recipient: recipientId,
-          type,
-        },
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-            "Content-Type": "application/json",
-          },
-        },
+        { recipient, type },
+        { headers: { Authorization: `Token ${token}` } }
       );
-      if (response.status === 201) {
-        console.log("Notification sent successfully");
-      } else {
-        console.error("Error sending notification:", response);
-      }
     } catch (err) {
-      console.error("Notification error:", err.response || err.message);
+      console.error("Notification error", err);
     }
   };
 
-  const handleApproval = async (medalId, action) => {
+  const handleApproval = async (id, action) => {
     try {
       const token = localStorage.getItem("authToken");
-
-      if (!token) {
-        console.log("No authorization token found in localStorage.");
-        setError("No authorization token found.");
-        return;
-      }
-
-      let apiUrl = "";
-      let payload = {};
-
+      if (!token) throw new Error("No auth token");
+      let apiUrl = updateDirectorSilverStatusRoute;
+      let payload = { id, status: action === 'approved' ? 'ACCEPTED' : 'REJECTED' };
       if (selectedAward === "Director's Gold Medal") {
         apiUrl = updateDirectorGoldStatusRoute;
-        // For Gold Medal, send "accept" or "reject" as action
-        payload = {
-          id: medalId,
-          action: action === "approved" ? "accept" : "reject", // Ensure it's 'accept' or 'reject'
-        };
-      } else if (selectedAward === "Director's Silver Medal") {
-        apiUrl = updateDirectorSilverStatusRoute;
-        // For Silver Medal, send 'ACCEPTED' or 'REJECTED'
-        payload = {
-          id: medalId,
-          status: action === "approved" ? "ACCEPTED" : "REJECTED",
-        };
-      } else if (selectedAward === "D&M Proficiency Gold Medal") {
+        payload = { id, action: action === 'approved' ? 'accept' : 'reject' };
+      }
+      if (selectedAward === 'D&M Proficiency Gold Medal') {
         apiUrl = updateProficiencyDMStatusRoute;
-        payload = {
-          id: medalId,
-          status: action === "approved" ? "ACCEPTED" : "REJECTED",
-        };
+        payload = { id, status: action === 'approved' ? 'ACCEPTED' : 'REJECTED' };
       }
-
-      console.log("Sending payload:", payload); // Log payload for debugging
-
-      const response = await axios.post(apiUrl, payload, {
-        headers: {
-          Authorization: `Token ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.status === 200) {
-        fetchMedalsData(); // Refresh the list of medals
-        setError(null);
-      } else {
-        setError("Error updating status.");
-      }
+      await axios.post(apiUrl, payload, { headers: { Authorization: `Token ${token}` } });
+      fetchMedalsData();
+      setError(null);
     } catch (err) {
-      console.error("Error updating status:", err.response || err.message);
-      setError(
-        `Error updating status: ${err.response ? err.response.data : err.message}`,
-      );
+      console.error(err);
+      setError('Error updating status');
     }
   };
 
   const handleAction = async (id, action, student) => {
     await handleApproval(id, action);
-
-    let notifType = "";
-    if (action === "approved" && selectedAward === "Director's Silver Medal")
-      notifType = "Accept_Silver";
-    else if (
-      action === "rejected" &&
-      selectedAward === "Director's Silver Medal"
-    )
-      notifType = "Reject_Silver";
-    else if (action === "approved" && selectedAward === "Director's Gold Medal")
-      notifType = "Accept_Gold";
-    else if (action === "rejected" && selectedAward === "Director's Gold Medal")
-      notifType = "Reject_Gold";
-    else if (
-      action === "approved" &&
-      selectedAward === "D&M Proficiency Gold Medal"
-    )
-      notifType = "Accept_DM";
-    else if (
-      action === "rejected" &&
-      selectedAward === "D&M Proficiency Gold Medal"
-    )
-      notifType = "Reject_DM";
-
-    await handleNotification(student, notifType); // replace `app.student_id` with correct recipient ID if different
+    let notifType = '';
+    if (action === 'approved' && selectedAward.includes('Silver')) notifType = 'Accept_Silver';
+    if (action === 'rejected' && selectedAward.includes('Silver')) notifType = 'Reject_Silver';
+    if (action === 'approved' && selectedAward.includes('Gold')) notifType = 'Accept_Gold';
+    if (action === 'rejected' && selectedAward.includes('Gold')) notifType = 'Reject_Gold';
+    if (selectedAward === 'D&M Proficiency Gold Medal') notifType = action === 'approved' ? 'Accept_DM' : 'Reject_DM';
+    await handleNotification(student, notifType);
   };
 
+  // CSV Exports
+  const handleExportRows = (rows) => {
+    const csv = generateCsv(csvConfig)(rows.map(r => r.original));
+    download(csvConfig)(csv);
+  };
+  const handleExportAll = () => handleExportRows(medals.map(m => ({ original: m })));
+
+  // Marksheets ZIP
   const handleDownloadAllMarksheets = async () => {
-    if (medals.length === 0) {
-      alert("No medals available to download.");
-      return;
-    }
-
+    if (!medals.length) return alert('No medals to download');
+  
     const zip = new JSZip();
-    const folder = zip.folder("Marksheets");
-
-    // Generate medals data with all fields, using spread operator
-    const medalsData = medals.map((medal, index) => ({
-      ...medal, // Spread all medal fields dynamically
-      Marksheet: `Marksheet_${medal.student}_${index}.pdf`, // Add Marksheet link field
-    }));
-
-    // Generate Excel file
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(medalsData);
-
-    XLSX.utils.book_append_sheet(wb, ws, "Medals");
-
-    // Convert Excel file to Blob and add to ZIP
-    const excelBlob = new Blob(
-      [XLSX.write(wb, { bookType: "xlsx", type: "array" })],
-      {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      },
-    );
-    folder.file("Medals.xlsx", excelBlob);
-
-    // Fetch and add marksheets
-    const fetchPromises = medals.map(async (medal, index) => {
-      if (medal.Marksheet) {
-        const markSheetUrl = `${host}${medal.Marksheet}`;
-        try {
-          const response = await fetch(markSheetUrl);
-          if (!response.ok) throw new Error(`Failed to fetch ${markSheetUrl}`);
-          const blob = await response.blob();
-          folder.file(`Marksheet_${medal.student}_${index}.pdf`, blob);
-        } catch (err) {
-          console.error("Error fetching file:", err);
-        }
+  
+    const token = localStorage.getItem("authToken");
+  
+    // Loop through each medal and fetch the marksheet file
+    await Promise.all(medals.map(async (medal, index) => {
+      try {
+        const url = `${host}${medal.Marksheet}`;
+        const response = await fetch(url, {
+          headers: {
+            Authorization: `Token ${token}`
+          }
+        });
+  
+        if (!response.ok) throw new Error(`Failed to fetch file for ${medal.student}`);
+  
+        const blob = await response.blob();
+        const fileName = `${medal.student}${index}_marksheet.${blob.type.split('/')[1] || 'pdf'}`;
+        zip.file(fileName, blob);
+      } catch (error) {
+        console.error(`Error downloading marksheet for ${medal.student}:`, error);
       }
+    }));
+  
+    // Generate zip and trigger download
+    zip.generateAsync({ type: 'blob' }).then((content) => {
+      saveAs(content, 'All_Marksheets.zip');
     });
-
-    await Promise.all(fetchPromises); // Wait for all files to be added
-
-    // Generate ZIP and trigger download
-    zip.generateAsync({ type: "blob" }).then((content) => {
-      saveAs(content, "All_Marksheets.zip");
-    });
-    alert("ZIP file containing all marksheets and Excel file downloaded!");
   };
+  
+  
+
+  // Table columns
+  const columns = useMemo(() => [
+    { accessorKey: 'student', header: 'Roll No' },
+    { id: 'award', header: 'Award', accessorFn: () => selectedAward },
+    { accessorKey: 'Marksheet', header: 'File', Cell: ({ cell }) => (
+        <a
+          href={`${host}${cell.getValue()}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`${styles.button} ${styles.fileButton}`}>
+          View Marksheet
+        </a>
+      )
+    },
+    { id: 'actions', header: 'Actions', Cell: ({ row }) => (
+        <Box className={styles.exportButtons}>
+          <Button size="xs" color="green" onClick={() => handleAction(row.original.id, 'approved', row.original.student)}>Approve</Button>
+          <Button size="xs" color="red" onClick={() => handleAction(row.original.id, 'rejected', row.original.student)}>Reject</Button>
+        </Box>
+      )
+    },
+  ], [selectedAward]);
+
+  // Table instance
+  const table = useMantineReactTable({
+    columns,
+    data: medals,
+    enableSorting: true,
+    enableRowSelection: true,
+    positionToolbarAlertBanner: 'bottom',
+    renderTopToolbarCustomActions: ({ table }) => (
+      <Box className={styles.exportButtons}>
+        <Button leftIcon={<IconDownload />} onClick={handleExportAll}>Export CSV (All)</Button>
+        <Button
+          leftIcon={<IconDownload />}
+          disabled={!table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()}
+          onClick={() => handleExportRows(table.getSelectedRowModel().rows)}
+        >
+          Export CSV (Selected)
+        </Button>
+        <Button color="gray" leftIcon={<IconDownload />} onClick={handleDownloadAllMarksheets}>
+          Download Marksheets ZIP
+        </Button>
+      </Box>
+    ),
+  });
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>Medal Applications</h2>
-      <button
-        onClick={handleDownloadAllMarksheets}
-        className={styles.exportButton}
-      >
-        Export All
-      </button>
-
-      <div className={styles.awardSelector}>
-        <label htmlFor="award-select">Select Award:</label>
-        <select
-          id="award-select"
-          value={selectedAward}
-          onChange={(e) => setSelectedAward(e.target.value)}
-          className={styles.select}
-        >
-          <option value="Director's Silver Medal">
-            Director's Silver Medal
-          </option>
-          <option value="Director's Gold Medal">Director's Gold Medal</option>
-          <option value="D&M Proficiency Gold Medal">
-            D&M Proficiency Gold Medal
-          </option>
-        </select>
-      </div>
-
-      {isLoading && <p>Loading medals...</p>}
-
-      {!isLoading && !error && medals.length > 0 && (
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Roll No</th>
-              <th>Award</th>
-              <th>File</th>
-              <th>Accept</th>
-              <th>Reject</th>
-            </tr>
-          </thead>
-          <tbody>
-            {medals.map((medal, index) => (
-              <tr key={index}>
-                <td>{medal.student}</td>
-                <td>{selectedAward}</td>
-                <td>
-                  <a
-                    href={`${host}${medal.Marksheet}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`${styles.button} ${styles.fileButton}`}
-                  >
-                    View Marksheet
-                  </a>
-                </td>
-                <td>
-                  <button
-                    className={`${styles.button} ${styles.acceptButton}`}
-                    onClick={() =>
-                      handleAction(medal.id, "approved", medal.student)
-                    }
-                  >
-                    Approve
-                  </button>
-                </td>
-                <td>
-                  <button
-                    className={`${styles.button} ${styles.rejectButton}`}
-                    onClick={() =>
-                      handleAction(medal.id, "rejected", medal.student)
-                    }
-                  >
-                    Reject
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-
-      {!isLoading && !error && medals.length === 0 && <p>No medals found.</p>}
+      <Text size="xl" weight={500} mb="sm">Medal Applications</Text>
+      <Select
+        value={selectedAward}
+        onChange={setSelectedAward}
+        data={[
+          { value: "Director's Silver Medal", label: "Director's Silver Medal" },
+          { value: "Director's Gold Medal", label: "Director's Gold Medal" },
+          { value: 'D&M Proficiency Gold Medal', label: 'D&M Proficiency Gold Medal' },
+        ]}
+      />
+      {isLoading ? <Text>Loading...</Text> : error ? <Text color="red">{error}</Text> : <MantineReactTable table={table} />}
     </div>
   );
-}
+};
 
 export default MedalApplications;

@@ -79,3 +79,40 @@ h2 {
     padding: 8px; /* Reduce padding on smaller screens */
   }
 }
+
+.sortControls {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.sortItem {
+  min-width: 200px;
+}
+
+
+.fileModalContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 0;
+}
+
+.fileLink {
+  color: #1c7ed6;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s ease, text-decoration 0.2s ease;
+  font-size: 1rem;
+}
+
+.fileLink:hover {
+  color: #1864ab;
+  text-decoration: underline;
+}
+

@@ -128,3 +128,10 @@ tr:nth-child(odd) {
   justify-content: space-between;
   width: 100%;
 }
+
+.exportButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px; /* Adjust spacing as needed */
+  margin-top: 1rem;
+}

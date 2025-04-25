@@ -1,348 +1,293 @@
-import React, { useState, useEffect } from "react";
-import { Table, Button } from "@mantine/core";
+import React, { useState, useEffect, useMemo } from "react";
+import {Loader, Text, Button } from "@mantine/core";
+import { Button as MantineButton } from "@mantine/core";
+import { MantineReactTable } from "mantine-react-table";
+import { IconDownload } from '@tabler/icons-react';
+import { mkConfig, generateCsv, download } from "export-to-csv";
 import axios from "axios";
-import * as XLSX from "xlsx";
-import JSZip from "jszip";
-import { saveAs } from "file-saver";
-import styles from "./MCM_applications.module.css";
-import MedalApplications from "./medal_applications";
 import {
   getMCMApplicationsRoute,
   updateMCMStatusRoute,
   scholarshipNotification,
 } from "../../../../routes/SPACSRoutes";
+import styles from "./MCM_applications.module.css";
+import MedalApplications from "./medal_applications";
+import { Modal } from "@mantine/core";
 import { host } from "../../../../routes/globalRoutes";
+
+
+
+
 
 function MCMApplications() {
   const [activeTab, setActiveTab] = useState("MCM");
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [fileModalOpened, setFileModalOpened] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState(null);
 
+  // Fetch applications
   const fetchApplications = async () => {
+    setLoading(true);
     try {
       const token = localStorage.getItem("authToken");
+      if (!token) throw new Error("No auth token");
+
       const response = await fetch(getMCMApplicationsRoute, {
-        headers: {
-          Authorization: `Token ${token}`,
-        },
+        headers: { Authorization: `Token ${token}` },
       });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
       const data = await response.json();
-      if (data) {
-        const incompleteApplications = data.filter(
-          (app) => app.status !== "REJECTED",
-        );
-        setApplications(incompleteApplications);
-        console.log("Fetched scholarship details:", incompleteApplications);
-        setLoading(false);
-      }
-    } catch (error) {
-      console.error("Failed to fetch scholarship details:", error);
+      const incomplete = data.filter((app) => app.status === "INCOMPLETE");
+      console.log(incomplete);
+      setApplications(incomplete);
+      setError(null);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to fetch applications.");
+    } finally {
       setLoading(false);
     }
   };
-  // Fetch scholarship details from the API
+
   useEffect(() => {
     fetchApplications();
   }, []);
 
-  // to send notifications
-  const handleNotification = async (recipientId, type) => {
+  // Notification handler
+  const handleNotification = async (recipient, type) => {
     try {
       const token = localStorage.getItem("authToken");
+      if (!token) return;
 
-      if (!token) {
-        console.log("No authorization token found for notification.");
-        return;
-      }
-
-      const response = await axios.post(
+      const res = await axios.post(
         scholarshipNotification,
-        {
-          recipient: recipientId,
-          type,
-        },
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-            "Content-Type": "application/json",
-          },
-        },
+        { recipient, type },
+        { headers: { Authorization: `Token ${token}` } }
       );
-      if (response.status === 201) {
-        console.log("Notification sent successfully");
-      } else {
-        console.error("Error sending notification:", response);
-      }
-    } catch (error) {
-      console.error("Notification error:", error.response || error.message);
+      if (res.status !== 201) console.error("Notification error:", res);
+    } catch (err) {
+      console.error("Notification error:", err);
     }
   };
 
-  // Handle MCM status update
+  // Approval handler
   const handleApproval = async (id, action) => {
-    try {
-      const token = localStorage.getItem("authToken");
-
-      if (!token) {
-        console.log("No authorization token found in localStorage.");
-        return;
-      }
-
-      const apiUrl = updateMCMStatusRoute;
-      const payload = {
-        id,
-        status:
-          action === "approved"
-            ? "ACCEPTED"
-            : action === "rejected"
-              ? "REJECTED"
-              : "UNDER_REVIEW",
-      };
-
-      console.log("Sending payload:", payload);
-
-      const response = await axios.post(apiUrl, payload, {
-        headers: {
-          Authorization: `Token ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.status === 200) {
-        alert("Status updated successfully");
-        console.log("Status updated successfully");
-        fetchApplications(); // Refresh application list
-      } else {
-        console.error("Error updating status:", response);
-      }
-    } catch (error) {
-      console.error("Error updating status:", error.response || error.message);
-    }
-  };
-
-  const handleAction = async (id, action, student) => {
-    await handleApproval(id, action);
-
-    let notifType = "";
-    if (action === "approved") notifType = "Accept_MCM";
-    else if (action === "rejected") notifType = "Reject_MCM";
-    else if (action === "under_review") notifType = "MCM_UNDER_REVIEW";
-
-    await handleNotification(student, notifType); // replace `app.student_id` with correct recipient ID if different
-  };
-
-  const handleExportInExcel = async () => {
-    if (applications.length === 0) {
-      alert("No applications available to download.");
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      console.error("⛔️ No auth token—cannot approve/reject");
       return;
     }
 
-    // Generate applications data with all fields, using spread operator
-    const applicationsData = applications.map((app, index) => ({
-      ...app,
-      Marksheet: `Marksheet_${app.student}_${index}.pdf`,
-      Aadhar_card: `AadharCard_${app.student}_${index}.pdf`,
-      Affidavit: `Affidavit_${app.student}_${index}.pdf`,
-      Bank_details: `Bank_details_${app.student}_${index}.pdf`,
-      Fee_Receipt: `Fee_Receipt_${app.student}_${index}.pdf`,
-      income_certificate: `Income_certificate_${app.student}_${index}.pdf`,
-    }));
+    const payload = {
+      id,
+      status:
+        action === "approved"
+          ? "ACCEPTED"
+          : action === "rejected"
+            ? "REJECTED"
+            : "UNDER_REVIEW",
+    };
 
-    // Generate Excel file
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(applicationsData);
-    XLSX.utils.book_append_sheet(wb, ws, "applications");
+    console.log("🔼 Sending payload:", payload);
 
-    // Convert Excel file to Blob
-    const excelBlob = new Blob(
-      [XLSX.write(wb, { bookType: "xlsx", type: "array" })],
-      {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      },
-    );
+    try {
+      const res = await axios.post(updateMCMStatusRoute, payload, {
+        headers: { Authorization: `Token ${token}` },
+      });
+      console.log("✅ Response from server:", res.status, res.data);
 
-    const excelUrl = URL.createObjectURL(excelBlob);
-    const link = document.createElement("a");
-    link.href = excelUrl;
-    link.download = "applications.xlsx";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    alert("Excel file containing all application details downloaded!");
-  };
-
-  const handleDownloadFiles = async (app) => {
-    const zip = new JSZip();
-    const folder = zip.folder(`Application_${app.student}`);
-
-    const fileFields = [
-      "Marksheet",
-      "Aadhar",
-      "Affidavit",
-      "Bank_details",
-      "Fee_Receipt",
-      "income_certificate",
-    ];
-
-    const fetchPromises = fileFields.map(async (field, index) => {
-      if (app[field]) {
-        const fileUrl = `${host}${app[field]}`;
-        try {
-          const response = await fetch(fileUrl);
-          if (!response.ok) throw new Error(`Failed to fetch ${fileUrl}`);
-          const blob = await response.blob();
-          folder.file(`${field}_${app.student}_${index}.pdf`, blob);
-        } catch (err) {
-          console.error("Error fetching file:", err);
-        }
+      if (res.status === 200) {
+        fetchApplications(); // this should refetch data
+      } else {
+        console.error("⚠️ Unexpected response:", res);
       }
-    });
-
-    await Promise.all(fetchPromises); // Wait for all files to be added
-
-    // Generate ZIP and trigger download
-    zip.generateAsync({ type: "blob" }).then((content) => {
-      saveAs(content, `Application_${app.student}.zip`);
-    });
-    alert("ZIP file containing all files of the application downloaded!");
+    } catch (err) {
+      console.error("❌ Error during approval POST:", err);
+      if (err.response) {
+        console.error("Response details:", err.response.status, err.response.data);
+      }
+    }
   };
+
+
+  // Combined action
+  const handleAction = async (id, action, student) => {
+    await handleApproval(id, action);
+    let notifType;
+    if (action === "approved") notifType = "Accept_MCM";
+    else if (action === "rejected") notifType = "Reject_MCM";
+    else notifType = "MCM_UNDER_REVIEW";
+    await handleNotification(student, notifType);
+  };
+
+  // CSV export
+  const handleExportAll = () => {
+    if (applications.length === 0) {
+      alert("No applications to export.");
+      return;
+    }
+    const config = mkConfig({
+      fieldSeparator: ",",
+      decimalSeparator: ".",
+      useKeysAsHeaders: true,
+      showLabels: true,
+      showTitle: true,
+      title: "MCM Applications",
+      useBom: true,
+    });
+    const csv = generateCsv(config)(applications);
+    download(config)(csv);
+  };
+
+  // Table columns
+  const columns = useMemo(
+    () => [
+      { accessorKey: "student", header: "Roll No" },
+      { accessorKey: "annual_income", header: "Income" },
+      {
+        accessorKey: "files",
+        header: "Files",
+        Cell: ({ row }) => (
+          <Button size="xs" onClick={() => {
+            setSelectedFiles(row.original);
+            setFileModalOpened(true);
+          }}>
+            View Files
+          </Button>
+        ),
+      },
+      {
+        header: "Actions",
+        id: "actions",
+        Cell: ({ row }) => (
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            <Button
+              color="green"
+              size="xs"
+              onClick={() =>
+                handleAction(row.original.id, "approved", row.original.student)
+              }
+            >
+              Accept
+            </Button>
+            <Button
+              color="red"
+              size="xs"
+              onClick={() =>
+                handleAction(row.original.id, "rejected", row.original.student)
+              }
+            >
+              Reject
+            </Button>
+            <Button
+              color="gray"
+              size="xs"
+              onClick={() =>
+                handleAction(row.original.id, "under_review", row.original.student)
+              }
+            >
+              Under Review
+            </Button>
+          </div>
+        ),
+      },
+    ],
+    []
+  );
 
   return (
     <div className={styles.container}>
-      <div className={styles.whiteBox}>
-        <div className={styles.tabs}>
-          <div
-            role="button"
-            tabIndex={0}
-            className={activeTab === "MCM" ? styles.activeTab : styles.tab}
-            onClick={() => setActiveTab("MCM")}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") setActiveTab("MCM");
-            }}
-            style={{
-              borderBottom: activeTab === "MCM" ? "4px solid #1e90ff" : "none",
-              color: activeTab === "MCM" ? "#1e90ff" : "#000",
-            }}
-          >
-            Merit-cum-Means Scholarship
-          </div>
-          <div
-            role="button"
-            tabIndex={0}
-            className={activeTab === "Medals" ? styles.activeTab : styles.tab}
-            onClick={() => setActiveTab("Medals")}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") setActiveTab("Medals");
-            }}
-            style={{
-              borderBottom:
-                activeTab === "Medals" ? "4px solid #1e90ff" : "none",
-              color: activeTab === "Medals" ? "#1e90ff" : "#000",
-            }}
-          >
-            Convocation Medals
-          </div>
+      <div className={styles.tabs}>
+        <div
+          role="button"
+          tabIndex={0}
+          className={
+            activeTab === "MCM" ? styles.activeTab : styles.tab
+          }
+          onClick={() => setActiveTab("MCM")}
+        >
+          Merit-cum-Means Scholarship
         </div>
-
-        {activeTab === "MCM" && (
-          <>
-            <h2>Merit-cum-Means Scholarship</h2>
-            {loading ? (
-              <p>Loading applications...</p>
-            ) : (
-              <>
-                <button
-                  onClick={handleExportInExcel}
-                  className={styles.exportButton}
-                >
-                  Export All
-                </button>
-                <div className={styles.tableWrapper}>
-                  <Table className={styles.table}>
-                    <thead>
-                      <tr>
-                        <th>Roll</th>
-                        <th>Income</th>
-                        <th>File</th>
-                        <th>Accept</th>
-                        <th>Reject</th>
-                        <th>Under Review</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {applications.map(
-                        (app, index) =>
-                          app.status !== "REJECTED" && (
-                            <tr key={index}>
-                              <td>{app.student}</td>
-                              <td>{app.annual_income}</td>
-                              <td>
-                                <Button
-                                  color="blue"
-                                  onClick={() => handleDownloadFiles(app)}
-                                >
-                                  Files
-                                </Button>
-                              </td>
-                              <td>
-                                <Button
-                                  color="green"
-                                  onClick={() =>
-                                    handleAction(
-                                      app.id,
-                                      "approved",
-                                      app.student,
-                                    )
-                                  }
-                                >
-                                  Accept
-                                </Button>
-                              </td>
-                              <td>
-                                <Button
-                                  color="red"
-                                  onClick={() =>
-                                    handleAction(
-                                      app.id,
-                                      "rejected",
-                                      app.student,
-                                    )
-                                  }
-                                >
-                                  Reject
-                                </Button>
-                              </td>
-                              <td>
-                                <Button
-                                  color="gray"
-                                  onClick={() =>
-                                    handleAction(
-                                      app.id,
-                                      "under_review",
-                                      app.student,
-                                    )
-                                  }
-                                >
-                                  Under Review
-                                </Button>
-                              </td>
-                            </tr>
-                          ),
-                      )}
-                    </tbody>
-                  </Table>
-                </div>
-              </>
-            )}
-          </>
-        )}
-
-        {activeTab === "Medals" && <MedalApplications />}
+        <div
+          role="button"
+          tabIndex={0}
+          className={
+            activeTab === "Medals" ? styles.activeTab : styles.tab
+          }
+          onClick={() => setActiveTab("Medals")}
+        >
+          Convocation Medals
+        </div>
       </div>
+
+      {activeTab === "MCM" && (
+        <>
+          <Text weight={500} size="lg" mb="md">
+            Merit-cum-Means Scholarship
+          </Text>
+          {loading ? (
+            <Loader />
+          ) : error ? (
+            <Text color="red">{error}</Text>
+          ) : (
+            <MantineReactTable
+              columns={columns}
+              data={applications}
+              enableRowSelection
+              enableSorting
+              muiTableBodyCellProps={{
+                onClick: (e) => e.stopPropagation(),
+              }}
+              renderTopToolbarCustomActions={() => (
+                <MantineButton
+                  leftSection={<IconDownload />}
+                  onClick={handleExportAll}
+                >
+                  Export All CSV
+                </MantineButton>
+              )}              
+            />
+          )}
+          <Modal
+            opened={fileModalOpened}
+            onClose={() => setFileModalOpened(false)}
+            title="Uploaded Files"
+            size="lg"
+          >
+            {selectedFiles ? (
+              <div className={styles.fileModalContainer}>
+                {[
+                  ["Aadhar Card", selectedFiles.Aadhar_card],
+                  ["Affidavit", selectedFiles.Affidavit],
+                  ["Bank Details", selectedFiles.Bank_details],
+                  ["Fee Receipt", selectedFiles.Fee_Receipt],
+                  ["Marksheet", selectedFiles.Marksheet],
+                  ["Income Certificate", selectedFiles.income_certificate],
+                ].map(([label, path]) =>
+                  path ? (
+                    <a
+                      className={styles.fileLink}
+                      key={label}
+                      href={`${host}${path}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {label}
+                    </a>
+                  ) : null
+                )}
+              </div>
+            ) : (
+              <Text>No files found.</Text>
+            )}
+          </Modal>
+        </>
+      )}
+
+      {activeTab === "Medals" && <MedalApplications />}
     </div>
   );
 }

@@ -1,5 +1,18 @@
-import React, { useState } from "react";
-import { Table } from "@mantine/core";
+import React, { useState, useMemo } from "react";
+import {
+  Button,
+  Box,
+  Text,
+  Loader,
+  Container,
+  Title,
+} from "@mantine/core";
+import {
+  MantineReactTable,
+  useMantineReactTable,
+} from "mantine-react-table";
+import { IconDownload } from "@tabler/icons-react";
+import { mkConfig, generateCsv, download } from "export-to-csv";
 import styles from "./ScholarshipStatus.module.css";
 import {
   showMcmStatusRoute,
@@ -8,318 +21,199 @@ import {
   showPdmStatusRoute,
 } from "../../../../routes/SPACSRoutes";
 
-function ScholarshipStatus() {
+export default function ScholarshipStatus() {
   const [page, setPage] = useState(1);
   const [showStatus, setShowStatus] = useState(false);
   const [applications, setApplications] = useState([]);
 
-  const navigateToForm = (pageNumber) => {
-    setPage(pageNumber);
-  };
+  // CSV config
+  const csvConfig = useMemo(
+    () =>
+      mkConfig({
+        fieldSeparator: ",",
+        decimalSeparator: ".",
+        useKeysAsHeaders: true,
+        filename: "scholarship_status",
+      }),
+    []
+  );
 
-  const handleSubmit1 = async (event) => {
-    event.preventDefault();
+  // Fetch handler
+  const fetchStatus = async (route) => {
     setShowStatus(true);
-
+    setApplications([]);
     try {
       const token = localStorage.getItem("authToken");
-      const response = await fetch(showMcmStatusRoute, {
+      const res = await fetch(route, {
         method: "POST",
         headers: {
           Authorization: `Token ${token}`,
           "Content-Type": "application/json",
         },
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Received Data:", data);
-        setApplications(data);
-      } else {
-        console.log(`Error: ${response.statusText}`);
-      }
-    } catch (error) {
-      console.error("Error fetching data: ", error);
+      if (!res.ok) throw new Error(res.statusText);
+      const data = await res.json();
+      setApplications(data);
+    } catch (err) {
+      console.error("Fetch error:", err);
     }
   };
 
-  const handleSubmit2 = async (event) => {
-    event.preventDefault();
-    setShowStatus(true);
+  // Columns definition
+  const columns = useMemo(
+    () => [
+      { accessorKey: "id", header: "Application ID", enableSorting: true },
+      { accessorKey: "status", header: "Status", enableSorting: true },
+    ],
+    []
+  );
 
-    try {
-      const token = localStorage.getItem("authToken");
-      const response = await fetch(showGoldStatusRoute, {
-        method: "POST",
-        headers: {
-          Authorization: `Token ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Received Data:", data);
-        setApplications(data);
-      } else {
-        console.log(`Error: ${response.statusText}`);
-      }
-    } catch (error) {
-      console.error("Error fetching data: ", error);
-    }
+  // Export helpers
+  const handleExportAll = () => {
+    const csv = generateCsv(csvConfig)(applications);
+    download(csvConfig)(csv);
+  };
+  const handleExportRows = (rows) => {
+    const data = rows.map((r) => r.original);
+    const csv = generateCsv(csvConfig)(data);
+    download(csvConfig)(csv);
   };
 
-  const handleSubmit3 = async (event) => {
-    event.preventDefault();
-    setShowStatus(true);
+  // Table instance
+  const table = useMantineReactTable({
+    columns,
+    data: applications,
+    enableSorting: true,
+    enableRowSelection: true,
+    paginationDisplayMode: "pages",
+    renderTopToolbarCustomActions: ({ table }) => (
+      <Box className={styles.exportButtons}
+        
+      >
+        <Button
+          leftIcon={<IconDownload />}
+          onClick={handleExportAll}
+          disabled={applications.length === 0}
+        >
+          Export All Data
+        </Button>
+        <Button
+          leftIcon={<IconDownload />}
+          onClick={() => handleExportRows(table.getRowModel().rows)}
+          disabled={table.getRowModel().rows.length === 0}
+        >
+          Export Page Rows
+        </Button>
+        <Button
+          leftIcon={<IconDownload />}
+          onClick={() =>
+            handleExportRows(table.getSelectedRowModel().rows)
+          }
+          disabled={
+            !table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
+          }
+        >
+          Export Selected
+        </Button>
+      </Box>
+    ),
+  });
 
-    try {
-      const token = localStorage.getItem("authToken");
-      const response = await fetch(showSilverStatusRoute, {
-        method: "POST",
-        headers: {
-          Authorization: `Token ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Received Data:", data);
-        setApplications(data);
-      } else {
-        console.log(`Error: ${response.statusText}`);
-      }
-    } catch (error) {
-      console.error("Error fetching data: ", error);
-    }
-  };
-
-  const handleSubmit4 = async (event) => {
-    event.preventDefault();
-    setShowStatus(true);
-
-    try {
-      const token = localStorage.getItem("authToken");
-      const response = await fetch(showPdmStatusRoute, {
-        method: "POST",
-        headers: {
-          Authorization: `Token ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Received Data:", data);
-        setApplications(data);
-      } else {
-        console.log(`Error: ${response.statusText}`);
-      }
-    } catch (error) {
-      console.error("Error fetching data: ", error);
-    }
-  };
-
-  return (
-    <div className={styles.wrapper}>
-      {page === 1 && (
-        <div className={styles.scholarshipContainer}>
-          <div className={styles.sch}>
-            <div className={styles.scholarshipName}>
-              Merit-Cum-Means Scholarship
-            </div>
-            <button
-              className={styles.checkStatusButton}
-              onClick={() => navigateToForm(2)}
-            >
-              Check Status
-            </button>
-          </div>
-
-          <div className={styles.sch}>
-            <div className={styles.scholarshipName}>Director's Gold Medal</div>
-            <button
-              className={styles.checkStatusButton}
-              onClick={() => navigateToForm(3)}
-            >
-              Check Status
-            </button>
-          </div>
-
-          <div className={styles.sch}>
-            <div className={styles.scholarshipName}>
-              Director's Silver Medal
-            </div>
-            <button
-              className={styles.checkStatusButton}
-              onClick={() => navigateToForm(4)}
-            >
-              Check Status
-            </button>
-          </div>
-
-          <div className={styles.sch}>
-            <div className={styles.scholarshipName}>
-              D&M Proficiency Gold Medal
-            </div>
-            <button
-              className={styles.checkStatusButton}
-              onClick={() => navigateToForm(5)}
-            >
-              Check Status
-            </button>
-          </div>
-        </div>
-      )}
-
-      {page === 2 && (
-        <div className={styles.formContainer}>
-          <h3 className={styles.scholarshipName}>
-            Merit-Cum-Means Scholarship
-          </h3>
-          {!showStatus ? (
-            <form className={styles.form} onSubmit={handleSubmit1}>
-              <button type="submit" className={styles.checkStatusButton}>
-                Check Status
-              </button>
-            </form>
-          ) : (
-            <div className={styles.applicationsList}>
-              <h4>Application Status</h4>
-              <div className={styles.tableContainer}>
-                <Table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th>Application ID:</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {applications.map((winner, index) => (
-                      <tr key={index}>
-                        <td>{winner.id}</td>
-                        <td>{winner.status}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
-              {applications.length === 0 && <h3>no application found</h3>}
-            </div>
-          )}
-        </div>
-      )}
-
-      {page === 3 && (
-        <div className={styles.formContainer}>
-          <h3 className={styles.scholarshipName}>Director's Gold Medal</h3>
-          {!showStatus ? (
-            <form className={styles.form} onSubmit={handleSubmit2}>
-              <button type="submit" className={styles.checkStatusButton}>
-                Check Status
-              </button>
-            </form>
-          ) : (
-            <div className={styles.applicationsList}>
-              <h4>Application Status</h4>
-              <div className={styles.tableContainer}>
-                <Table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th>Application ID:</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {applications.map((winner, index) => (
-                      <tr key={index}>
-                        <td>{winner.id}</td>
-                        <td>{winner.status}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
-              {applications.length === 0 && <h3>no application found</h3>}
-            </div>
-          )}
-        </div>
-      )}
-
-      {page === 4 && (
-        <div className={styles.formContainer}>
-          <h3 className={styles.scholarshipName}>Director's Silver Medal</h3>
-          {!showStatus ? (
-            <form className={styles.form} onSubmit={handleSubmit3}>
-              <button type="submit" className={styles.checkStatusButton}>
-                Check Status
-              </button>
-            </form>
-          ) : (
-            <div className={styles.applicationsList}>
-              <h4>Application Status</h4>
-              <div className={styles.tableContainer}>
-                <Table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th>Application ID:</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {applications.map((winner, index) => (
-                      <tr key={index}>
-                        <td>{winner.id}</td>
-                        <td>{winner.status}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
-              {applications.length === 0 && <h3>no application found</h3>}
-            </div>
-          )}
-        </div>
-      )}
-
-      {page === 5 && (
-        <div className={styles.formContainer}>
-          <h3 className={styles.scholarshipName}>D&M Proficiency Gold Medal</h3>
-          {!showStatus ? (
-            <form className={styles.form} onSubmit={handleSubmit4}>
-              <button type="submit" className={styles.checkStatusButton}>
-                Check Status
-              </button>
-            </form>
-          ) : (
-            <div className={styles.applicationsList}>
-              <h4>Application Status</h4>
-              <div className={styles.tableContainer}>
-                <Table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th>Application ID:</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {applications.map((winner, index) => (
-                      <tr key={index}>
-                        <td>{winner.id}</td>
-                        <td>{winner.status}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
-              {applications.length === 0 && <h3>no application found</h3>}
-            </div>
-          )}
-        </div>
+  // Render a scholarship block
+  const renderBlock = (title, route) => (
+    <div className={styles.formContainer}>
+      <Title order={3} className={styles.scholarshipName}>
+        {title}
+      </Title>
+      {!showStatus ? (
+        <Button
+          className={styles.checkStatusButton}
+          onClick={() => fetchStatus(route)}
+        >
+          Check Status
+        </Button>
+      ) : applications.length === 0 ? (
+        <Loader size="lg" />
+      ) : (
+        <MantineReactTable table={table} />
       )}
     </div>
   );
-}
 
-export default ScholarshipStatus;
+  return (
+    <Container className={styles.wrapper}>
+      {page === 1 && (
+        <div className={styles.scholarshipContainer}>
+          <div className={styles.sch}>
+            <Text className={styles.scholarshipName}>
+              Merit-Cum-Means Scholarship
+            </Text>
+            <Button
+              className={styles.checkStatusButton}
+              onClick={() => {
+                setPage(2);
+                setShowStatus(false);
+              }}
+            >
+              Check Status
+            </Button>
+          </div>
+          <div className={styles.sch}>
+            <Text className={styles.scholarshipName}>
+              Director's Gold Medal
+            </Text>
+            <Button
+              className={styles.checkStatusButton}
+              onClick={() => {
+                setPage(3);
+                setShowStatus(false);
+              }}
+            >
+              Check Status
+            </Button>
+          </div>
+          <div className={styles.sch}>
+            <Text className={styles.scholarshipName}>
+              Director's Silver Medal
+            </Text>
+            <Button
+              className={styles.checkStatusButton}
+              onClick={() => {
+                setPage(4);
+                setShowStatus(false);
+              }}
+            >
+              Check Status
+            </Button>
+          </div>
+          <div className={styles.sch}>
+            <Text className={styles.scholarshipName}>
+              D&M Proficiency Gold Medal
+            </Text>
+            <Button
+              className={styles.checkStatusButton}
+              onClick={() => {
+                setPage(5);
+                setShowStatus(false);
+              }}
+            >
+              Check Status
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {page === 2 &&
+        renderBlock("Merit-Cum-Means Scholarship", showMcmStatusRoute)}
+      {page === 3 &&
+        renderBlock("Director's Gold Medal", showGoldStatusRoute)}
+      {page === 4 &&
+        renderBlock("Director's Silver Medal", showSilverStatusRoute)}
+      {page === 5 &&
+        renderBlock(
+          "D&M Proficiency Gold Medal",
+          showPdmStatusRoute
+        )}
+    </Container>
+  );
+}
