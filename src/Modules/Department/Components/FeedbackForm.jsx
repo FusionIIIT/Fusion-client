@@ -1,62 +1,27 @@
 import React, { useState } from "react";
 import axios from "axios";
-import classes from "../styles/Departmentmodule.module.css";
+import {
+  Textarea,
+  Select,
+  Button,
+  Notification,
+  Title,
+  Paper,
+  Stack,
+  Container,
+} from "@mantine/core";
 import { host } from "../../../routes/globalRoutes";
-
-const styles = {
-  formContainer: {
-    width: "100%", // Take the full width of the page
-    padding: "20px",
-    border: "1px solid #ccc",
-    borderRadius: "10px",
-    backgroundColor: "#f9f9f9",
-    margin: "0 auto", // Center horizontally
-  },
-  formGroup: {
-    marginBottom: "15px",
-  },
-  input: {
-    width: "100%",
-    padding: "14px",
-    margin: "5px 0",
-    borderRadius: "4px",
-    border: "1px solid #ccc",
-  },
-  textarea: {
-    width: "100%",
-    padding: "14px",
-    height: "150px",
-    borderRadius: "4px",
-    border: "1px solid #ccc",
-  },
-  button: {
-    width: "100%",
-    padding: "16px",
-    backgroundColor: "#15ABFF",
-    color: "white",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-    fontSize: "20px",
-  },
-  header: {
-    textAlign: "left",
-    fontSize: "24px",
-    fontWeight: "bold",
-    marginBottom: "15px",
-  },
-};
 
 export default function Feedbackform() {
   const [feedback, setFeedback] = useState("");
-  const [rating, setRating] = useState("Poor");
+  const [rating, setRating] = useState("Good");
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   const handleFeedbackChange = (e) => setFeedback(e.target.value);
-  const handleRatingChange = (e) => setRating(e.target.value);
-  const handleDepartmentChange = (e) => setSelectedDepartment(e.target.value);
+  const handleRatingChange = (value) => setRating(value);
+  const handleDepartmentChange = (value) => setSelectedDepartment(value);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -96,75 +61,60 @@ export default function Feedbackform() {
   };
 
   return (
-    <div className={`${classes.flex} ${classes.w_full}`}>
-      <form onSubmit={handleSubmit} style={styles.formContainer}>
-        <div>
-          <h2 style={styles.header}>Department Feedback</h2>
-        </div>
+    <Container size="sm" py="xl">
+      <Paper shadow="md" radius="md" p="xl" withBorder>
+        <Title order={2} mb="md">
+          Department Feedback
+        </Title>
 
         {errorMessage && (
-          <div style={{ color: "red", marginBottom: "15px" }}>
+          <Notification color="red" title="Error" mb="md">
             {errorMessage}
-          </div>
+          </Notification>
         )}
 
-        <div style={styles.formGroup}>
-          <label htmlFor="feedback">
-            Remark:
-            <textarea
+        <form onSubmit={handleSubmit}>
+          <Stack spacing="md">
+            <Textarea
               value={feedback}
               onChange={handleFeedbackChange}
               placeholder="Enter your feedback here..."
-              style={styles.textarea}
-              id="feedback"
+              label="Remark"
               required
+              autosize
+              minRows={3}
             />
-          </label>
-        </div>
 
-        <div style={styles.formGroup}>
-          <label htmlFor="rating">
-            Rating
-            <select
+            <Select
+              label="Rating"
               value={rating}
               onChange={handleRatingChange}
-              style={styles.input}
-              id="rating"
+              data={["Poor", "Good", "Excellent"]}
               required
-            >
-              <option value="Poor">Poor</option>
-              <option value="Good">Good</option>
-              <option value="Excellent">Excellent</option>
-            </select>
-          </label>
-        </div>
+            />
 
-        <div style={styles.formGroup}>
-          <label htmlFor="department">
-            Select Department
-            <select
+            <Select
+              label="Select Department"
               value={selectedDepartment}
               onChange={handleDepartmentChange}
-              style={styles.input}
-              id="department"
+              data={[
+                { value: "CSE", label: "CSE" },
+                { value: "ECE", label: "ECE" },
+                { value: "ME", label: "ME" },
+                { value: "SM", label: "SM" },
+                { value: "BDES", label: "BDES" },
+                { value: "LA", label: "Liberal Arts" },
+                { value: "Natural Science", label: "Natural Science" },
+              ]}
               required
-            >
-              <option value="">Select a department</option>
-              <option value="CSE">CSE</option>
-              <option value="ECE">ECE</option>
-              <option value="ME">ME</option>
-              <option value="SM">SM</option>
-              <option value="BDES">BDES</option>
-              <option value="LA">Liberal Arts</option>
-              <option value="Natural Science">Natural Science</option>
-            </select>
-          </label>
-        </div>
+            />
 
-        <button type="submit" style={styles.button} disabled={loading}>
-          {loading ? "Submitting..." : "Submit Feedback"}
-        </button>
-      </form>
-    </div>
+            <Button type="submit" fullWidth loading={loading} size="md">
+              {loading ? "Submitting..." : "Submit Feedback"}
+            </Button>
+          </Stack>
+        </form>
+      </Paper>
+    </Container>
   );
 }
