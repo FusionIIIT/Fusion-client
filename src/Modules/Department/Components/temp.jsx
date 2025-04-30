@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
@@ -10,7 +11,6 @@ import {
   Paper,
   Notification,
   Group,
-  Center,
   Grid,
   Badge,
   Checkbox,
@@ -18,7 +18,6 @@ import {
 } from "@mantine/core";
 import { IconCheck, IconX, IconPhoto, IconTrash } from "@tabler/icons-react";
 import { host } from "../../../routes/globalRoutes";
-import FacilityGallery from "./FacilityGallery"; // Import FacilityGallery
 
 function GoBackButton({ setIsEditing }) {
   return (
@@ -38,7 +37,6 @@ GoBackButton.propTypes = {
   setIsEditing: PropTypes.func.isRequired,
 };
 
-// eslint-disable-next-line react/prop-types
 export default function EditFacilities({ setIsEditing, branch }) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
@@ -176,8 +174,6 @@ export default function EditFacilities({ setIsEditing, branch }) {
     }
   };
 
-  const [facilityAmount, setFacilityAmount] = useState("");
-
   const handleFacilitySubmit = async (e) => {
     e.preventDefault();
     setFacilityLoading(true);
@@ -187,8 +183,6 @@ export default function EditFacilities({ setIsEditing, branch }) {
     facilityData.append("name", facilityName);
     facilityData.append("branch", branch);
     facilityData.append("location", facilityLocation);
-    facilityData.append("amount", facilityAmount);
-
     if (facilityPictureFile) {
       facilityData.append("picture", facilityPictureFile);
     }
@@ -231,6 +225,7 @@ export default function EditFacilities({ setIsEditing, branch }) {
             {errorMessage}
           </Notification>
         )}
+        {/* Facilities Form */}
         <Divider my="xl" />
         <Grid gutter="md" mt="xl">
           <Grid.Col xs={12} md={5}>
@@ -333,14 +328,8 @@ export default function EditFacilities({ setIsEditing, branch }) {
                   onChange={(e) => setFacilityLocation(e.target.value)}
                   mb="xs"
                 />
-                <TextInput
-                  label="amount"
-                  value={facilityAmount}
-                  onChange={(e) => setFacilityAmount(e.target.value)}
-                  type="number"
-                  min={0}
-                  mb="xs"
-                />
+
+                {/* Mantine FileInput */}
                 <FileInput
                   label="Facility Picture"
                   placeholder="Choose a file"
@@ -352,6 +341,7 @@ export default function EditFacilities({ setIsEditing, branch }) {
                   withPreview
                   clearable
                 />
+
                 <Button
                   type="submit"
                   loading={facilityLoading}
@@ -414,26 +404,17 @@ export default function EditFacilities({ setIsEditing, branch }) {
           })}
         </div>
         {selectedLabs.length > 0 && (
-          <Center>
-            <Button
-              variant="filled"
-              color="red"
-              leftIcon={<IconTrash size={18} />}
-              onClick={handleDeleteLabs}
-              loading={loading}
-              size="md"
-              radius="md"
-            >
-              Delete Selected Labs
-            </Button>
-          </Center>
+          <Button
+            variant="outline"
+            color="red"
+            fullWidth
+            mt="xl"
+            leftIcon={<IconTrash size={16} />}
+            onClick={handleDeleteLabs}
+          >
+            Delete Selected Labs
+          </Button>
         )}
-        {/* Add FacilityGallery below the labs section */}
-        <Divider my="xl" />
-        <Title order={4} mb="md">
-          Manage Facilities
-        </Title>
-        <FacilityGallery branch={branch} /> {/* Pass branch prop here */}
       </Container>
     </div>
   );

@@ -1,15 +1,6 @@
-import React, { useRef, useState, Suspense, lazy } from "react";
-import {
-  Button,
-  Container,
-  Flex,
-  Grid,
-  Tabs,
-  Text,
-  Title,
-  Box,
-} from "@mantine/core";
-import { CaretLeft, CaretRight } from "@phosphor-icons/react"; // Import icons from @phosphor-icons/react
+import React, { useState, Suspense, lazy } from "react";
+import { Button, Flex, Tabs, Text, Title, Box, Paper } from "@mantine/core";
+import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import { useSelector } from "react-redux";
 import PropTypes from "prop-types";
 
@@ -24,7 +15,6 @@ const ViewFeedback = lazy(() => import("./ViewFeedback"));
 
 function DeptTabs({ branch }) {
   const [activeTab, setActiveTab] = useState("0");
-  const tabsListRef = useRef(null);
 
   const role = useSelector((state) => state.user.role);
 
@@ -44,6 +34,7 @@ function DeptTabs({ branch }) {
     "HOD (NS)",
     "deptadmin_ns",
   ].includes(role);
+
   const tabItems = [
     { title: "About Us" },
     { title: "Faculties", id: "2" },
@@ -51,7 +42,6 @@ function DeptTabs({ branch }) {
     { title: "Announcements", id: "4", department: branch },
     { title: "Alumni" },
     { title: "Facilities" },
-    // { title: "Stock" },
   ];
 
   if (isFeedbackAvailable) {
@@ -64,10 +54,6 @@ function DeptTabs({ branch }) {
         ? Math.min(+activeTab + 1, tabItems.length - 1)
         : Math.max(+activeTab - 1, 0);
     setActiveTab(String(newIndex));
-    tabsListRef.current?.scrollBy({
-      left: direction === "next" ? 50 : -50,
-      behavior: "smooth",
-    });
   };
 
   const renderTabContent = () => {
@@ -79,35 +65,50 @@ function DeptTabs({ branch }) {
       4: <Alumnicat />,
       5: <Facilities branch={branch} />,
       6: isFeedbackAvailable ? <ViewFeedback branch={branch} /> : null,
-      // 7: <Stock />,
     };
     return components[activeTab] || null;
   };
 
   return (
-    <Container size="xl" style={{ marginLeft: 0, paddingLeft: 0 }}>
-      <Box mb="xl">
-        <Title order={2} align="left">
-          Welcome to {branch} Department
-        </Title>
-      </Box>
+    <Box px="md" py="xl">
+      <Title order={2} mb="lg" fw={600} c="blue.7">
+        Welcome to {branch} Department
+      </Title>
 
-      <Flex justify="flex-start" align="center" mb="xl">
+      <Flex align="center" gap="xs" mb="md">
         <Button
           onClick={() => handleTabChange("prev")}
-          variant="subtle"
-          p={0}
-          mr="xs"
+          variant="light"
+          size="sm"
+          color="blue"
         >
-          <CaretLeft size={24} />
+          <CaretLeft size={20} />
         </Button>
 
-        <Box style={{ maxWidth: "80%", overflowX: "auto" }} ref={tabsListRef}>
-          <Tabs value={activeTab} onChange={setActiveTab}>
-            <Tabs.List>
+        <Box
+          style={{
+            display: "flex",
+            flexWrap: "nowrap",
+            overflow: "hidden", // Disable scroll and prevent overflow
+          }}
+        >
+          <Tabs
+            value={activeTab}
+            onChange={setActiveTab}
+            color="blue"
+            variant="pills"
+            radius="lg"
+            keepMounted={false}
+            style={{ whiteSpace: "nowrap" }}
+          >
+            <Tabs.List style={{ flexWrap: "nowrap" }}>
               {tabItems.map((item, index) => (
-                <Tabs.Tab value={String(index)} key={index}>
-                  <Text>{item.title}</Text>
+                <Tabs.Tab
+                  value={String(index)}
+                  key={index}
+                  style={{ marginRight: 12, fontWeight: 500 }}
+                >
+                  {item.title}
                 </Tabs.Tab>
               ))}
             </Tabs.List>
@@ -116,27 +117,25 @@ function DeptTabs({ branch }) {
 
         <Button
           onClick={() => handleTabChange("next")}
-          variant="subtle"
-          p={0}
-          ml="xs"
+          variant="light"
+          size="sm"
+          color="blue"
         >
-          <CaretRight size={24} />
+          <CaretRight size={20} />
         </Button>
       </Flex>
 
-      <Grid>
-        <Grid.Col>
-          <Suspense fallback={<Text>Loading...</Text>}>
-            {renderTabContent()}
-          </Suspense>
-        </Grid.Col>
-      </Grid>
-    </Container>
+      <Paper withBorder shadow="sm" radius="md" p="md" w="100%">
+        <Suspense fallback={<Text c="dimmed">Loading content...</Text>}>
+          {renderTabContent()}
+        </Suspense>
+      </Paper>
+    </Box>
   );
 }
-
-export default DeptTabs;
 
 DeptTabs.propTypes = {
   branch: PropTypes.string.isRequired,
 };
+
+export default DeptTabs;

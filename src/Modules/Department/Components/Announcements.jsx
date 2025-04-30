@@ -1,21 +1,26 @@
 import React, { useEffect, useState, Suspense } from "react";
 import PropTypes from "prop-types";
-import { Grid, Paper, Flex, Text, Divider } from "@mantine/core";
+import {
+  Grid,
+  Paper,
+  Flex,
+  Text,
+  Divider,
+  Badge,
+  Title,
+  Box,
+} from "@mantine/core";
 import { host } from "../../../routes/globalRoutes";
 
-// Function to format the date with a period after the month
+// Format date
 function formatDateWithPeriod(dateString) {
-  if (!dateString) return ""; // Check if dateString exists
+  if (!dateString) return "";
   const date = new Date(dateString);
-  if (Number.isNaN(date.getTime())) return dateString; // Check if the date is valid
+  if (Number.isNaN(date.getTime())) return dateString;
 
   const options = { year: "numeric", month: "short", day: "numeric" };
-  let formattedDate = date.toLocaleDateString("en-US", options);
-
-  // Add a period after the abbreviated month
-  formattedDate = formattedDate.replace(/(\w+)\s/, "$1. ");
-
-  return formattedDate;
+  const formattedDate = date.toLocaleDateString("en-US", options);
+  return formattedDate.replace(/(\w+)\s/, "$1. ");
 }
 
 export default function Announcements({ branch }) {
@@ -32,7 +37,6 @@ export default function Announcements({ branch }) {
     })
       .then((response) => response.json())
       .then((data) => {
-        // Format announcement dates
         const formattedData =
           data?.map((announcement) => ({
             ...announcement,
@@ -46,48 +50,58 @@ export default function Announcements({ branch }) {
   }, [authToken, branch]);
 
   return (
-    <Suspense fallback={<p>Loading announcements...</p>}>
-      <Grid>
+    <Suspense fallback={<Text>Loading announcements...</Text>}>
+      <Grid gutter="lg">
+        {" "}
+        {/* Add gutter between grid items */}
         {announcementsData.length > 0 ? (
           announcementsData.map((announcement) => (
             <Grid.Col span={{ base: 12, md: 6 }} key={announcement.id}>
-              <Paper
-                radius="md"
-                px="lg"
-                pt="sm"
-                pb="xl"
-                style={{ borderLeft: "0.6rem solid #15ABFF" }}
-                withBorder
-                maw="1240px"
-              >
-                <Flex justify="space-between">
-                  <Flex direction="column">
-                    <Flex gap="md">
-                      <Text fw={600} size="1.2rem" mb="0.4rem">
-                        {`${branch} Announcements`}
+              <Box mb="md">
+                {" "}
+                {/* Add spacing between cards */}
+                <Paper
+                  shadow="sm"
+                  radius="md"
+                  withBorder
+                  p="md"
+                  style={{
+                    borderLeft: "6px solid #228BE6",
+                    transition: "all 0.2s ease",
+                  }}
+                >
+                  <Flex direction="column" gap="xs">
+                    <Box>
+                      <Title order={5} color="blue.7">
+                        {`${branch} Announcement`}
+                      </Title>
+                      <Text size="xs" color="dimmed">
+                        {announcement.ann_date}
                       </Text>
-                    </Flex>
-                    <Text color="dimmed" size="0.7rem">
-                      {announcement.ann_date}
+                    </Box>
+
+                    <Divider mt="xs" mb="sm" />
+
+                    <Text size="sm" mb="sm">
+                      {announcement.message || "No details available."}
                     </Text>
-                    <Divider my="sm" w="10rem" />
+
+                    <Flex justify="space-between" align="center">
+                      <Badge color="blue" variant="light">
+                        {announcement.maker_id || "Unknown"}
+                      </Badge>
+                    </Flex>
                   </Flex>
-                </Flex>
-                <Flex justify="space-between">
-                  <Text>{announcement.message || "No details available."}</Text>
-                  <Text>
-                    <b>{`by ${announcement.maker_id || "Unknown"}`}</b>
-                  </Text>
-                </Flex>
-                {/* <br/>
-            <Text>
-            <b>File : </b>{`${announcement.upload_announcement || "Unknown"}`}
-            </Text> */}
-              </Paper>
+                </Paper>
+              </Box>
             </Grid.Col>
           ))
         ) : (
-          <Text>No announcements available for this branch.</Text>
+          <Grid.Col span={12}>
+            <Text color="dimmed">
+              No announcements available for this branch.
+            </Text>
+          </Grid.Col>
         )}
       </Grid>
     </Suspense>

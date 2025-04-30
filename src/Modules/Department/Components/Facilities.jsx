@@ -1,66 +1,64 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import axios from "axios"; // Import axios
+import axios from "axios";
 import PropTypes from "prop-types";
+import {
+  Button,
+  Paper,
+  Text,
+  Container,
+  Loader,
+  Box,
+  Grid,
+  Card,
+  Title,
+  Group,
+  Badge,
+  Divider,
+  Center,
+} from "@mantine/core";
+import { IconMapPin, IconUsers, IconBuilding } from "@tabler/icons-react";
+
 import FacilitiesDescriptive from "./FacilitiesDescriptive.jsx";
 import EditFacilities from "./EditFacilities.jsx";
-import SpecialTable from "./SpecialTable.jsx"; // Make sure to keep this import
 import { host } from "../../../routes/globalRoutes/index.jsx";
 
-const columns = [
-  {
-    accessorKey: "name",
-    header: "Name",
-  },
-  {
-    accessorKey: "capacity",
-    header: "Capacity",
-  },
-  {
-    accessorKey: "location",
-    header: "Location",
-  },
-];
-
 function Facilities({ branch }) {
-  const [isEditing, setIsEditing] = useState(false); // State to manage editing
+  const [isEditing, setIsEditing] = useState(false);
+  const [labs, setLabs] = useState([]);
+  const [loading, setLoading] = useState(true);
   const role = useSelector((state) => state.user.role);
-  const [labs, setLabs] = useState([]); // State to store labs data
-  const [setSelectedLabs] = useState([]); // State to store selected labs
 
   useEffect(() => {
-    // Fetch the lab data from the API
     const fetchLabs = async () => {
-      const token = localStorage.getItem("authToken"); // Get the token from local storage
-
+      const token = localStorage.getItem("authToken");
       try {
         const response = await axios.get(`${host}/dep/api/labs/`, {
           headers: {
-            Authorization: `Token ${token}`, // Include the token in the headers
+            Authorization: `Token ${token}`,
           },
         });
-        setLabs(response.data); // Set labs data from the response
+        setLabs(response.data);
       } catch (error) {
         console.error("Error fetching labs:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchLabs(); // Call the function to fetch labs
-  }, []); // Empty dependency array to run once on mount
+    fetchLabs();
+  }, []);
 
-  // Filter labs based on branch
   const filteredLabs = labs.filter((lab) => lab.department === branch);
 
   const handleEditClick = () => {
-    setIsEditing(true); // Set editing mode to true when edit button is clicked
+    setIsEditing(true);
   };
 
-  // Determine if the edit button should be shown based on branch and role
   const isEditButtonVisible = () => {
     const allowedRoles = ["HOD", "admin"];
-    const rolePrefix = role.split(" ")[0]; // Get the prefix of the role, e.g., "HOD" or "admin"
+    const rolePrefix = role.split(" ")[0];
 
-    // Check if the role is allowed for the specific branch
     switch (branch) {
       case "CSE":
         return allowedRoles.includes(rolePrefix) && role.includes("(CSE)");
@@ -80,60 +78,93 @@ function Facilities({ branch }) {
   };
 
   return (
-    <div>
-      {isEditing ? ( // Conditionally render the EditFacilities component
+    <Container size="lg" p="md">
+      {isEditing ? (
         <EditFacilities branch={branch} setIsEditing={setIsEditing} />
       ) : (
-        <>
+        <Box>
           <FacilitiesDescriptive branch={branch} />
-          <div
-            style={{
-              overflowX: "auto", // Enable horizontal scrolling
-              width: "100%", // Ensure the container takes the full width
-              marginTop: "10px", // Add some spacing
-            }}
-          >
-            <SpecialTable
-              title="Labs"
-              columns={columns}
-              data={filteredLabs} // Feed the filtered labs based on the branch
-              rowOptions={["3", "4", "6"]}
-              onRowSelectionChange={setSelectedLabs} // Assuming the SpecialTable accepts this prop
-            />
-          </div>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              alignItems: "center",
-              marginBottom: "10px",
-              marginTop: "10px",
-            }}
-          >
-            {isEditButtonVisible() && ( // Check if the edit button should be visible
-              <button
-                onClick={handleEditClick} // Call handleEditClick on button click
-                style={{
-                  padding: "5px 20px",
-                  backgroundColor: "rgb(21, 171, 255)",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "5px",
-                  cursor: "pointer",
-                }}
+          <Title order={3} mt="md" mb="md" color="blue.7">
+            Department Labs
+          </Title>
+
+          <Paper shadow="sm" p="xl" radius="lg" withBorder>
+            {loading ? (
+              <Center>
+                <Loader size="lg" />
+              </Center>
+            ) : filteredLabs.length === 0 ? (
+              <Text align="center" color="dimmed" size="lg">
+                No labs available for this department.
+              </Text>
+            ) : (
+              <Grid gutter="xl">
+                {filteredLabs.map((lab) => (
+                  <Grid.Col key={lab.id} span={{ base: 12, sm: 6, md: 4 }}>
+                    <Card shadow="md" padding="xl" radius="md" withBorder>
+                      <Group mb="md" align="center" spacing="sm">
+                        <IconBuilding size={28} />
+                        <Text size="lg" weight={600}>
+                          {lab.name}
+                        </Text>
+                      </Group>
+
+                      <Divider my="md" />
+
+                      <Group position="apart" mb="sm">
+                        <Group spacing="xs">
+                          <IconUsers size={20} />
+                          <Text size="md" weight={500}>
+                            Capacity:
+                          </Text>
+                        </Group>
+                        <Badge color="blue" variant="light" size="lg">
+                          {lab.capacity}
+                        </Badge>
+                      </Group>
+
+                      <Group position="apart">
+                        <Group spacing="xs">
+                          <IconMapPin size={20} />
+                          <Text size="md" weight={500}>
+                            Location:
+                          </Text>
+                        </Group>
+                        <Badge color="teal" variant="light" size="lg">
+                          {lab.location}
+                        </Badge>
+                      </Group>
+                    </Card>
+                  </Grid.Col>
+                ))}
+              </Grid>
+            )}
+          </Paper>
+
+          {isEditButtonVisible() && (
+            <Box
+              mt="xl"
+              style={{ display: "flex", justifyContent: "flex-end" }}
+            >
+              <Button
+                onClick={handleEditClick}
+                variant="filled"
+                color="blue"
+                radius="md"
+                size="md"
               >
                 Edit
-              </button>
-            )}
-          </div>
-        </>
+              </Button>
+            </Box>
+          )}
+        </Box>
       )}
-    </div>
+    </Container>
   );
 }
-
-export default Facilities;
 
 Facilities.propTypes = {
   branch: PropTypes.string.isRequired,
 };
+
+export default Facilities;

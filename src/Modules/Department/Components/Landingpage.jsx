@@ -1,3 +1,4 @@
+/* eslint-disable no-return-assign */
 import React, { lazy, Suspense, useRef, useState, useEffect } from "react";
 import {
   Container,
@@ -117,7 +118,25 @@ export default function LandingPage() {
             mb="lg"
             style={{ flexWrap: "nowrap" }}
           >
-            <Title order={2}>Department Portal</Title>
+            {/* Clickable Department Portal Title */}
+            <Title
+              order={2}
+              style={{
+                cursor: "pointer",
+                color: "#1C6FB1", // Blue color for clickable text (blue.7)
+                transition: "color 0.3s ease", // Smooth color transition on hover
+              }}
+              onClick={() => {
+                // Set activeTab to the "About Us" section of the user's department
+                const deptTab = departments.find((d) => d.code === branch)?.id;
+                setActiveTab(deptTab || "3");
+              }} // Only update activeTab, no page refresh
+              onMouseEnter={(e) => (e.target.style.color = "#1C6FB1")} // Darker blue on hover
+              onMouseLeave={(e) => (e.target.style.color = "black")} // Reset to original color on mouse leave
+            >
+              Department Portal
+            </Title>
+
             <Group spacing="sm" style={{ marginLeft: "auto" }}>
               <Button
                 onClick={() => handleTabChange("prev")}
