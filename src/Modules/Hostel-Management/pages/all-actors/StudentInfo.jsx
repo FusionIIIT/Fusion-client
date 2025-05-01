@@ -62,11 +62,12 @@ export default function StudentInfo() {
 
   const filteredStudents = students.filter(
     (student) =>
-      (student.id__user__username
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-        student.room_no.toLowerCase().includes(searchTerm.toLowerCase())) &&
-      (selectedBlock === "All" || student.hall_no === selectedBlock),
+      (student.id__user__username &&
+        student.id__user__username
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())) ||
+      (student.room_no &&
+        student.room_no.toLowerCase().includes(searchTerm.toLowerCase())),
   );
 
   return (
