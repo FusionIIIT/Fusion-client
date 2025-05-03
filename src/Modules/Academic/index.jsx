@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Flex } from "@mantine/core";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import CustomBreadcrumbs from "../../components/Breadcrumbs";
 import ModuleTabs from "../../components/moduleTabs";
@@ -17,10 +17,21 @@ import AllocateCourses from "./AllocateCourses";
 import VerifyStudentRegistration from "./VerifyStudentRegistration";
 import SwayamRegistration from "./SwayamRegistration";
 import AllotCourses from "./AllotCourses";
+import { setActiveTab_ } from "../../redux/moduleslice";
+import { Faculty_TA_Dashboard } from "./Faculty_TA_Dashboard";
+import AcadCourseBacklogMapping from "./AcadCourseBacklogMapping";
+import StudentAddDropReplace from "./StudentAddDropReplace";
+import AdminReplacementDashboard from "./AdminReplacementDashboard";
+import StudentCalendar from "./StudentCalendar";
 
 function AcademicPage() {
   const [activeTab, setActiveTab] = useState("0");
   const role = useSelector((state) => state.user.role);
+  const dispatch = useDispatch();
+
+  useEffect(()=>{
+    dispatch(setActiveTab_(tabItems?tabItems[activeTab].title:""))
+  },[])
 
   let tabItems;
   let tabComponents;
@@ -34,6 +45,8 @@ function AcademicPage() {
       { title: "Allocate Courses" },
       { title: "Verify Student Registration" },
       { title: "Allot Courses" },
+      { title: "Backlog Mapping" },
+      { title: "Replacement Allocation" },
     ];
     tabComponents = [
       StudentCourses,
@@ -43,21 +56,27 @@ function AcademicPage() {
       AllocateCourses,
       VerifyStudentRegistration,
       AllotCourses,
+      AcadCourseBacklogMapping,
+      AdminReplacementDashboard
     ];
   } else if (role === "student") {
     tabItems = [
       { title: "Registered Courses" },
       { title: "Available Courses" },
+      { title: "Academic Calender" },
       { title: "Pre-Registration" },
       { title: "Final-Registration" },
       { title: "Swayam Registration" },
+      { title: "Add / Drop" },
     ];
     tabComponents = [
       RegisteredCourses,
       AvailableCourses,
+      StudentCalendar,
       PreRegistration,
       FinalRegistration,
       SwayamRegistration,
+      StudentAddDropReplace
     ];
   } else if (
     role === "faculty" ||
@@ -65,8 +84,8 @@ function AcademicPage() {
     role === "Assistant Professor" ||
     role === "Professor"
   ) {
-    tabItems = [{ title: "View Roll List" }];
-    tabComponents = [ViewRollList];
+    tabItems = [{ title: "View Roll List"},{title: "TA management"}];
+    tabComponents = [ViewRollList, Faculty_TA_Dashboard];
   } else {
     tabItems = [{ title: "Registered Courses" },];
     tabComponents = [RegisteredCourses];

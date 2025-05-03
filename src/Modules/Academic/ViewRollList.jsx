@@ -1,6 +1,15 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Card, Text, Button, Alert } from "@mantine/core";
+import {
+  Card,
+  Text,
+  Button,
+  Alert,
+  Loader,
+  Center,
+} from "@mantine/core";
+import { showNotification } from "@mantine/notifications";
+import { IconCheck, IconX } from "@tabler/icons-react";
 import FusionTable from "../../components/FusionTable";
 import {
   generatexlsheet,
@@ -10,6 +19,8 @@ import {
 function ViewRollList() {
   const [courses, setCourses] = useState([]);
   const [fetchError, setFetchError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [downloadingCourseId, setDownloadingCourseId] = useState(null);
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -23,11 +34,10 @@ function ViewRollList() {
         const response = await axios.get(academicProceduresFaculty, {
           headers: { Authorization: `Token ${token}` },
         });
-
         setCourses(response.data.assigned_courses || []);
       } catch (error) {
         setFetchError(
-          error.response?.data?.error || "Failed to fetch courses.",
+          error.response?.data?.error || "Failed to fetch courses."
         );
       }
     };
@@ -35,7 +45,12 @@ function ViewRollList() {
     fetchCourses();
   }, []);
 
-  const handleDownloadRollList = async (courseId, courseCode) => {
+  const handleDownloadRollList = async (
+    courseId,
+    courseCode,
+    semesterType,
+    academicYear
+  ) => {
     const token = localStorage.getItem("authToken");
 
     if (!token) {
@@ -44,16 +59,23 @@ function ViewRollList() {
     }
 
     try {
+      setDownloadingCourseId(courseId);
+      setLoading(true);
+
       const response = await axios.post(
         generatexlsheet,
-        { course: courseId },
+        {
+          course: courseId,
+          semester_type: semesterType,
+          academic_year: academicYear,
+        },
         {
           headers: {
             Authorization: `Token ${token}`,
             "Content-Type": "application/json",
           },
           responseType: "blob",
-        },
+        }
       );
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -63,10 +85,21 @@ function ViewRollList() {
       document.body.appendChild(link);
       link.click();
       link.remove();
+
+      showNotification({
+        title: "Success",
+        message: "Roll list downloaded successfully",
+        color: "green",
+      });
     } catch (error) {
-      setFetchError(
-        error.response?.data?.error || "Failed to download roll list.",
-      );
+      showNotification({
+        title: "Download Failed",
+        message: error.response?.data?.error || "Failed to download roll list.",
+        color: "red",
+      });
+    } finally {
+      setLoading(false);
+      setDownloadingCourseId(null);
     }
   };
 
@@ -74,27 +107,40 @@ function ViewRollList() {
     "Course Name",
     "Course Code",
     "Version",
-    "Year",
-    "Semester",
+    "Academic Year",
+    "Semester Type",
     "Action",
   ];
 
   const elements = courses.map((course) => ({
-    "Course Name": course.course_id__name,
-    "Course Code": course.course_id__code,
-    Version: course.course_id__version,
-    Year: course.year,
-    Semester: course.semester_no,
+    "Course Name": course.course_name,
+    "Course Code": course.course_code,
+    Version: course.version,
+    "Academic Year": course.academic_year,
+    "Semester Type": course.semester_type,
     Action: (
       <Button
         onClick={() =>
-          handleDownloadRollList(course.course_id__id, course.course_id__code)
+          handleDownloadRollList(
+            course.course_id,
+            course.course_code,
+            course.semester_type,
+            course.academic_year
+          )
         }
         variant="outline"
         color="blue"
         size="xs"
+        disabled={loading && downloadingCourseId === course.course_id}
+        rightIcon={
+          loading && downloadingCourseId === course.course_id ? (
+            <Loader size="xs" color="blue" />
+          ) : null
+        }
       >
-        Download Roll List
+        {loading && downloadingCourseId === course.course_id
+          ? "Downloading..."
+          : "Download Roll List"}
       </Button>
     ),
   }));
@@ -109,17 +155,23 @@ function ViewRollList() {
       >
         Assigned Courses
       </Text>
-      <div style={{ overflowX: "auto" }}>
-        <FusionTable
-          columnNames={columnNames}
-          elements={elements}
-          width="100%"
-        />
-      </div>
       {fetchError && (
-        <Alert title="Error" color="red" mt="md">
+        <Alert title="Error" color="red" mb="md">
           {fetchError}
         </Alert>
+      )}
+      {loading && courses.length === 0 ? (
+        <Center>
+          <Loader size="lg" />
+        </Center>
+      ) : (
+        <div style={{ overflowX: "auto" }}>
+          <FusionTable
+            columnNames={columnNames}
+            elements={elements}
+            width="100%"
+          />
+        </div>
       )}
     </Card>
   );

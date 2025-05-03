@@ -33,7 +33,8 @@ function RegisteredCourses() {
           Authorization: `Token ${token}`,
         },
       });
-      setCourses(response.data);
+      setCourses(response.data.reg_data);
+      setSemester(String(response.data?.sem_no))
     } catch (fetchError) {
       setError(fetchError);
     } finally {

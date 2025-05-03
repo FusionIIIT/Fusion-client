@@ -14,6 +14,7 @@ import FacultyProfessionalProfile from "./Modules/facultyProfessionalProfile/fac
 import InactivityHandler from "./helper/inactivityhandler";
 import Examination from "./Modules/Examination/examination";
 import ProgrammeCurriculumRoutes from "./Modules/Program_curriculum/programmCurriculum";
+import NotFoundPage from "./components/NotFoundPage";
 
 const theme = createTheme({
   breakpoints: {
@@ -79,6 +80,7 @@ export default function App() {
         <Route path="/accounts/login" element={<LoginPage />} />
         <Route path="/reset-password" element={<ForgotPassword />} />
         <Route path="/examination/*" element={<Examination />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </MantineProvider>
   );

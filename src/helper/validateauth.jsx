@@ -25,11 +25,11 @@ function ValidateAuth() {
     if (!token) {
       console.error("No authentication token found!");
       localStorage.removeItem("authToken");
-      notifications.show({
-        title: "Authentication Error",
-        message: "Token Invalid/Expired! Redirecting to login page.",
-        color: "red",
-      });
+      // notifications.show({
+      //   title: "Authentication Error",
+      //   message: "Token Invalid/Expired! Redirecting to login page.",
+      //   color: "red",
+      // });
       return navigate("/accounts/login");
     }
 

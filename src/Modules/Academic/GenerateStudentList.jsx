@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Card,
   Text,
@@ -7,93 +7,109 @@ import {
   Select,
   Tabs,
   Box,
-  Space,
-  TextInput,
   Loader,
+  Alert,
+  TextInput,
 } from "@mantine/core";
 import axios from "axios";
+import { showNotification } from "@mantine/notifications";
+
 import {
-  generatexlsheet,
-  getAllCourses,
-  batchesRoute,
-  generateprereport,
+  availableCoursesRoute,   // NEW endpoint: GET /api/available-courses/
+  generatexlsheet,         // POST /api/generate-xlsheet/
+  batchesRoute,            // unchanged: for prereg tab
+  generateprereport,       // unchanged: for prereg tab
 } from "../../routes/academicRoutes";
 
-function GenerateStudentList() {
-  const [activeTab, setActiveTab] = useState("rolllist");
+const ACADEMIC_YEARS = [
+  "2021-22",
+  "2022-23",
+  "2023-24",
+  "2024-25",
+];
+
+const SEMESTER_CHOICES = [
+  { value: "Odd Semester", label: "Odd Semester" },
+  { value: "Even Semester", label: "Even Semester" },
+  { value: "Summer Semester", label: "Summer Semester" },
+];
+
+export default function GenerateStudentList() {
+  const [activeTab, setActiveTab]       = useState("rolllist");
+
+  // Roll List states
   const [academicYear, setAcademicYear] = useState("");
-  const [course, setCourse] = useState("");
-  const [batch, setBatch] = useState("");
-  const [semester, setSemester] = useState("");
-  const [batchOptions, setBatchOptions] = useState([]);
+  const [semesterType, setSemesterType] = useState("");
+  const [course, setCourse]             = useState("");
   const [courseOptions, setCourseOptions] = useState([]);
-  const [loading, setLoading] = useState(false); // Add loading state
 
-  useEffect(() => {
-    const getCourses = async () => {
-      setLoading(true); // Start loading
-      const token = localStorage.getItem("authToken"); // Get token from local storage
-      if (!token) {
-        setLoading(false); // Stop loading
-        throw new Error("No token found"); // Handle the case where the token is not available
-      }
+  // Pre-Registration states (unchanged)
+  const [batch, setBatch]               = useState("");
+  const [semester, setSemester]         = useState("");
+  const [batchOptions, setBatchOptions] = useState([]);
 
-      try {
-        const response = await axios.get(getAllCourses, {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
-        });
-        console.log(response.data);
-        setCourseOptions(response.data);
-      } catch (error) {
-        console.error("Error getting all courses:", error);
-      } finally {
-        setLoading(false); // Stop loading
-      }
-    };
-    const fetchBatches = async () => {
-      setLoading(true); // Start loading
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        setLoading(false); // Stop loading
-        return;
-      }
-      try {
-        const response = await axios.get(batchesRoute, {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
-        });
-        console.log("Fetched Batches:", response.data);
-        setBatchOptions(response.data.batches);
-      } catch (fetchError) {
-        console.error(fetchError);
-      } finally {
-        setLoading(false); // Stop loading
-      }
-    };
-    if (activeTab === "rolllist") {
-      getCourses();
-    } else {
-      fetchBatches();
-    }
-  }, [activeTab]);
+  const [loading, setLoading]           = useState(false);
+  const [error, setError]               = useState(null);
 
-  const handleGenerateList = async () => {
-    setLoading(true); // Start loading
-    const token = localStorage.getItem("authToken"); // Get token from local storage
+  // 1) Fetch available courses once year+semester are set
+  const fetchCourses = useCallback(async () => {
+    if (!academicYear || !semesterType) return;
+    setLoading(true);
+    setError(null);
+
+    const token = localStorage.getItem("authToken");
     if (!token) {
-      setLoading(false); // Stop loading
-      throw new Error("No token found"); // Handle the case where the token is not available
+      setError("No auth token");
+      setLoading(false);
+      return;
     }
 
     try {
-      const response = await axios.post(
+      const res = await axios.get(availableCoursesRoute, {
+        params: { academic_year: academicYear, semester_type: semesterType },
+        headers: { Authorization: `Token ${token}` },
+      });
+      // Expect [{ id, code, name }, ...]
+      setCourseOptions(
+        res.data.map(c => ({
+          value: String(c.id),
+          label: `${c.code} - ${c.name}`,
+        }))
+      );
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.detail || err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [academicYear, semesterType]);
+
+  useEffect(() => {
+    if (activeTab === "rolllist") {
+      fetchCourses();
+    }
+  }, [activeTab, fetchCourses]);
+
+  // 2) Generate Roll List Excel
+  const handleGenerateList = async () => {
+    if (!academicYear || !semesterType || !course) {
+      showNotification({
+        title: "Missing fields",
+        message: "Select year, semester & course",
+        color: "yellow",
+      });
+      return;
+    }
+
+    setLoading(true);
+    const token = localStorage.getItem("authToken");
+    try {
+      const res = await axios.post(
         generatexlsheet,
         {
+          academic_year: academicYear,
+          semester_type: semesterType,
           course,
-          batch: academicYear,
         },
         {
           headers: {
@@ -101,222 +117,170 @@ function GenerateStudentList() {
             "Content-Type": "application/json",
           },
           responseType: "blob",
-        },
+        }
       );
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `${course}.xlsx`);
+      link.setAttribute("download", `RollList_${course}.xlsx`);
       document.body.appendChild(link);
       link.click();
       link.remove();
-    } catch (error) {
-      console.error("Error getting roll list:", error);
+    } catch (err) {
+      console.error(err);
+      showNotification({ title: "Error", message: err.message, color: "red" });
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   };
 
-  const generatePreRegistrationReport = async () => {
-    setLoading(true); // Start loading
-    const token = localStorage.getItem("authToken"); // Get token from local storage
-    if (!token) {
-      setLoading(false); // Stop loading
-      throw new Error("No token found"); // Handle the case where the token is not available
-    }
+  // 3) Fetch batches for Pre‐Registration when that tab is active
+  useEffect(() => {
+    if (activeTab !== "preregistration") return;
+    const fetchBatches = async () => {
+      setLoading(true);
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const res = await axios.get(batchesRoute, {
+          headers: { Authorization: `Token ${token}` },
+        });
+        setBatchOptions(
+          res.data.batches.map(b => ({
+            value: String(b.batch_id),
+            label: `${b.name} ${b.discipline} ${b.year}`,
+          }))
+        );
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBatches();
+  }, [activeTab]);
 
+  // 4) Generate Pre-Registration Report (unchanged)
+  const generatePreRegistrationReport = async () => {
+    setLoading(true);
+    const token = localStorage.getItem("authToken");
     try {
-      const response = await axios.post(
+      const res = await axios.post(
         generateprereport,
-        {
-          semester_no: semester,
-          batch_branch: batch,
-        },
+        { semester_no: semester, batch_branch: batch },
         {
           headers: {
             Authorization: `Token ${token}`,
             "Content-Type": "application/json",
           },
           responseType: "blob",
-        },
+        }
       );
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `${batch}-${semester}.xlsx`);
+      link.setAttribute("download", `PreReg_${batch}_${semester}.xlsx`);
       document.body.appendChild(link);
       link.click();
       link.remove();
-    } catch (error) {
-      console.error("Error getting roll list:", error);
+    } catch (err) {
+      console.error(err);
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   };
 
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
-      <Tabs value={activeTab} onChange={(value) => setActiveTab(value)}>
-        <Tabs.List style={{ justifyContent: "center" }}>
-          <Tabs.Tab
-            value="rolllist"
-            style={{
-              fontSize: "16px",
-              padding: "12px 20px",
-              minWidth: "100px",
-            }}
-          >
-            Roll List
-          </Tabs.Tab>
-          <Tabs.Tab
-            value="preregistration"
-            style={{
-              fontSize: "16px",
-              padding: "12px 20px",
-              minWidth: "220px",
-            }}
-          >
-            Pre-Registration Report
-          </Tabs.Tab>
+      <Tabs value={activeTab} onChange={setActiveTab}>
+        <Tabs.List grow>
+          <Tabs.Tab value="rolllist">Roll List</Tabs.Tab>
+          <Tabs.Tab value="preregistration">Pre-Registration</Tabs.Tab>
         </Tabs.List>
 
-        <Tabs.Panel value="rolllist" pt="xs">
-          <Text
-            size="lg"
-            weight={700}
-            mb="md"
-            align="center"
-            style={{ color: "#3B82F6" }}
-          >
-            Student Roll List
+        {/* Roll List Tab */}
+        <Tabs.Panel value="rolllist" pt="md">
+          <Text size="lg" weight={700} align="center" mb="md" color="blue">
+            Generate Student Roll List
           </Text>
 
-          <Group position="center" grow style={{ marginBottom: 16 }}>
-            <TextInput
-              label="Running Year"
-              placeholder="Select year"
-              value={academicYear}
-              onChange={(e) => {
-                setAcademicYear(e.target.value);
-              }}
-              style={{ flex: 1 }}
-            />
-
+          <Group grow mb="md">
             <Select
-              label="This Semester Courses"
-              placeholder="Select course"
-              value={course}
-              onChange={(val) => {
-                setCourse(val);
-              }}
-              data={
-                courseOptions
-                  ? courseOptions.map((cour) => ({
-                      value: cour.id.toString(),
-                      label: `${cour.code} - ${cour.name}`,
-                    }))
-                  : []
-              }
-              searchable
-              style={{ flex: 1 }}
+              label="Academic Year"
+              placeholder="2024-25"
+              data={ACADEMIC_YEARS.map(y => ({ value: y, label: y }))}
+              value={academicYear}
+              onChange={setAcademicYear}
+            />
+            <Select
+              label="Semester Type"
+              placeholder="Odd Semester"
+              data={SEMESTER_CHOICES}
+              value={semesterType}
+              onChange={setSemesterType}
             />
           </Group>
 
-          <Space h="md" />
-
-          {academicYear && course && (
-            <Box>
-              <Button
-                size="sm"
-                radius="sm"
-                onClick={handleGenerateList}
-                style={{
-                  backgroundColor: "#3B82F6",
-                  color: "white",
-                  width: "100%",
-                  marginBottom: "10px",
-                }}
-              >
-                Generate Student List
-              </Button>
-            </Box>
+          {error ? (
+            <Alert color="red">{error}</Alert>
+          ) : (
+            <Select
+              label="Course"
+              placeholder="Select course"
+              data={courseOptions}
+              value={course}
+              onChange={setCourse}
+              searchable
+              mb="md"
+            />
           )}
 
-          <Space h="md" />
+          <Button
+            fullWidth
+            onClick={handleGenerateList}
+            loading={loading}
+            disabled={!academicYear || !semesterType || !course}
+          >
+            Generate Student List
+          </Button>
         </Tabs.Panel>
 
-        <Tabs.Panel value="preregistration" pt="xs">
-          <Text
-            size="lg"
-            weight={700}
-            mb="md"
-            align="center"
-            style={{ color: "#3B82F6" }}
-          >
-            Pre Registration Report
+        {/* Pre-Registration Tab (logic unchanged) */}
+        <Tabs.Panel value="preregistration" pt="md">
+          <Text size="lg" weight={700} align="center" mb="md" color="blue">
+            Pre-Registration Report
           </Text>
 
-          <Group position="center" grow style={{ marginBottom: 16 }}>
+          <Group grow mb="md">
             <TextInput
               label="Semester"
               placeholder="Select Semester"
               value={semester}
-              onChange={(e) => {
-                setSemester(e.target.value);
-              }}
-              style={{ flex: 1 }}
+              onChange={e => setSemester(e.target.value)}
             />
-
             <Select
               label="Batch"
               placeholder="Select Batch"
+              data={batchOptions}
               value={batch}
-              onChange={(val) => {
-                setBatch(val);
-              }}
-              data={
-                batchOptions
-                  ? batchOptions.map((bat) => ({
-                      value: bat.batch_id.toString(),
-                      label: `${bat.name} ${bat.discipline} ${bat.year}`,
-                    }))
-                  : []
-              }
+              onChange={setBatch}
               searchable
-              style={{ flex: 1 }}
             />
           </Group>
-          <Box>
-            <Button
-              size="sm"
-              radius="sm"
-              onClick={generatePreRegistrationReport}
-              style={{
-                backgroundColor: "#3B82F6",
-                color: "white",
-                width: "100%",
-                marginBottom: "10px",
-              }}
-            >
-              Generate Pre Registration Report
-            </Button>
-          </Box>
+
+          <Button
+            fullWidth
+            onClick={generatePreRegistrationReport}
+            loading={loading}
+            disabled={!semester || !batch}
+          >
+            Generate Pre-Registration Report
+          </Button>
         </Tabs.Panel>
       </Tabs>
-      {loading && (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            marginTop: "1rem",
-          }}
-        >
-          <Loader variant="dots" />
-        </div>
-      )}
     </Card>
   );
 }
-
-export default GenerateStudentList;

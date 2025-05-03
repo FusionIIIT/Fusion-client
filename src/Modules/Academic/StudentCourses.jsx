@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   Text,
@@ -7,137 +7,225 @@ import {
   Alert,
   Modal,
   Group,
-  NumberInput,
   Select,
   Loader,
 } from "@mantine/core";
+import { showNotification } from "@mantine/notifications";
 import axios from "axios";
 import FusionTable from "../../components/FusionTable";
 import {
   addStudentCourseRoute,
   dropStudentCourseRoute,
   getStudentCourseRoute,
+  getCourseSlotsRoute,
+  getCoursesRoute,
 } from "../../routes/academicRoutes";
 
-function StudentCourses() {
+export default function StudentCourses() {
   const [rollNo, setRollNo] = useState("");
   const [studentData, setStudentData] = useState(null);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [dropModalOpen, setDropModalOpen] = useState(false);
   const [courseToDrop, setCourseToDrop] = useState(null);
+
+  const [semSlots, setSemSlots] = useState([]);
+  const [slotCourses, setSlotCourses] = useState([]);
+  const [academicYears, setAcademicYears] = useState([]);
+  const [selectedSemester, setSelectedSemester] = useState("1");
+
+  const [course_to_drop_name, setCourseToDropName] = useState("")
+
   const [newCourse, setNewCourse] = useState({
-    course_id: "",
-    courseslot_id: "",
-    semester_no: 0,
-    registration_type: "",
-    working_year: "",
-    old_course: "",
+    semester_id: null,
+    courseslot_id: null,
+    course_id: null,
+    academic_year: null,
+    registration_type: null,
+    old_course: null,
   });
-  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const start = now.getMonth() >= 6 ? year : year - 1;
+    const yrs = [];
+    for (let i = 0; i < 5; i++) {
+      const y1 = start - i,
+        y2 = y1 + 1;
+      yrs.push(`${y1}-${String(y2).slice(-2)}`);
+    }
+    setAcademicYears(yrs);
+  }, []);
+
+  const clearError = () => setError("");
 
   const handleGetCourses = async () => {
+    clearError();
+    setStudentData(null);
+    if (!rollNo) {
+      setError("Enter a roll number");
+      return;
+    }
     const token = localStorage.getItem("authToken");
     if (!token) {
-      setError(new Error("No token found"));
+      setError("Auth token missing");
       return;
     }
     setLoading(true);
     try {
-      const response = await axios.post(
+      const { data } = await axios.post(
         getStudentCourseRoute,
-        {
-          rollno: rollNo,
-        },
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
-        },
+        { rollno: rollNo },
+        { headers: { Authorization: `Token ${token}` } }
       );
-      console.log("Fetched Courses:", response.data);
-      setStudentData(response.data);
-    } catch (fetchError) {
-      setError(fetchError);
+      setStudentData(data);
+    } catch (err) {
+      setError(err.response?.data?.error || err.message || "Fetch failed");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDrop = async (regId) => {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      setError(new Error("No token found"));
-      return;
-    }
-    setLoading(true);
-    try {
-      const response = await axios.post(
-        `${dropStudentCourseRoute}?id=${regId}`,
-        {},
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
-        },
-      );
-      // console.log("Fetched Courses:", response.data);
-      if (response.status === 200) {
-        alert("Course dropped Successfully!");
-        await handleGetCourses();
-      }
-    } catch (fetchError) {
-      setError(fetchError);
-    } finally {
-      setDropModalOpen(false);
-      setLoading(false);
-    }
-  };
-
-  const confirmDrop = (regId) => {
-    setCourseToDrop(regId);
+  const confirmDrop = (rid, name) => {
+    setCourseToDrop(rid);
+    setCourseToDropName(name);
     setDropModalOpen(true);
   };
 
-  const handleAddCourse = async () => {
+  const handleDrop = async () => {
+    clearError();
     const token = localStorage.getItem("authToken");
-    if (!token) {
-      setError(new Error("No token found"));
+    if (!token || courseToDrop == null || !rollNo) {
+      setError("Missing data to drop");
       return;
     }
-    const formData = new FormData();
-    formData.append("course_id", newCourse.course_id);
-    formData.append("courseslot_id", newCourse.courseslot_id);
-    formData.append("registration_type", newCourse.registration_type);
-    formData.append("roll_no", rollNo);
-    formData.append("semester_id", newCourse.semester_no);
-    formData.append("working_year", newCourse.working_year);
-    formData.append("old_course", newCourse.old_course);
     setLoading(true);
     try {
-      const response = await axios.post(addStudentCourseRoute, formData, {
-        headers: {
-          Authorization: `Token ${token}`,
-        },
+      await axios.post(
+        dropStudentCourseRoute,
+        { id: courseToDrop, roll_no: rollNo },
+        { headers: { Authorization: `Token ${token}` } }
+      );
+      showNotification({
+        title: "Course Dropped",
+        message: `course has been dropped successfully`,
+        color: "green",
       });
-      // console.log("Fetched Courses:", response.data);
-      if (response.status === 200) {
-        alert("Course Added Successfully!");
+      setCourseToDropName("");
+      await handleGetCourses();
+    } catch (err) {
+      setError(err.response?.data?.error || err.message || "Drop failed");
+    } finally {
+      setLoading(false);
+      setDropModalOpen(false);
+    }
+  };
+
+  const handleAddCourse = async () => {
+    clearError();
+    const {
+      semester_id,
+      courseslot_id,
+      course_id,
+      academic_year,
+      registration_type,
+      old_course,
+    } = newCourse;
+    if (
+      !semester_id ||
+      !courseslot_id ||
+      !course_id ||
+      !academic_year ||
+      !registration_type
+    ) {
+      setError("Fill all required fields");
+      return;
+    }
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      setError("Auth token missing");
+      return;
+    }
+    const form = new FormData();
+    form.append("roll_no", rollNo);
+    form.append("semester_id", semester_id);
+    form.append("courseslot_id", courseslot_id);
+    form.append("course_id", course_id);
+    form.append("academic_year", academic_year);
+    form.append("registration_type", registration_type);
+    if (old_course) form.append("old_course", old_course);
+    setLoading(true);
+    try {
+      const res = await axios.post(addStudentCourseRoute, form, {
+        headers: { Authorization: `Token ${token}` },
+      });
+      if (res.status === 200) {
+        setNewCourse({
+          semester_id: null,
+          courseslot_id: null,
+          course_id: null,
+          academic_year: null,
+          registration_type: null,
+          old_course: null,
+        });
+        showNotification({
+          title: "Course added",
+          message: `course has been added successfully`,
+          color: "green",
+        });
         await handleGetCourses();
+        setAddModalOpen(false);
       }
-    } catch (fetchError) {
-      setError(fetchError);
+    } catch (err) {
+      setError(err.response?.data?.detail || err.message || "Add failed");
     } finally {
       setLoading(false);
     }
-    setAddModalOpen(false);
   };
 
-  const totalCredits = studentData
-    ? studentData.details.reduce((sum, course) => sum + course.credits, 0)
-    : 0;
+  const handleSemChange = async (semId) => {
+    setNewCourse((p) => ({
+      ...p,
+      semester_id: semId,
+      courseslot_id: null,
+      course_id: null,
+    }));
+    setSlotCourses([]);
+    const token = localStorage.getItem("authToken");
+    try {
+      const { data } = await axios.get(
+        `${getCourseSlotsRoute}?semester_id=${semId}`,
+        { headers: { Authorization: `Token ${token}` } }
+      );
+      setSemSlots(data);
+    } catch {
+      setError("Failed to load slots");
+    }
+  };
 
-  const columnNames = [
+  const handleSlotChange = async (slotId) => {
+    setNewCourse((p) => ({ ...p, courseslot_id: slotId, course_id: null }));
+    const token = localStorage.getItem("authToken");
+    try {
+      const { data } = await axios.get(
+        `${getCoursesRoute}?courseslot_id=${slotId}`,
+        { headers: { Authorization: `Token ${token}` } }
+      );
+      setSlotCourses(data);
+    } catch {
+      setError("Failed to load courses");
+    }
+  };
+
+  const filteredDetails =
+    studentData?.details.filter((c) => String(c.sem) === selectedSemester) ||
+    [];
+  const totalCredits = filteredDetails.reduce((sum, c) => sum + c.credits, 0);
+
+  const columns = [
     "Reg ID",
     "Course Code",
     "Course Name",
@@ -147,236 +235,184 @@ function StudentCourses() {
     "Replaced By",
     "Actions",
   ];
-
-  const mappedCourses = studentData
-    ? studentData.details.map((course) => ({
-        "Reg ID": course.rid,
-        "Course Code": course.course_id,
-        "Course Name": course.course_name,
-        Credits: course.credits,
-        Semester: course.sem,
-        Type: course.registration_type,
-        "Replaced By": course.replaced_by
-          ? `${course?.replaced_by?.course_id.code} - ${course?.replaced_by?.course_id.name} - Sem - ${course?.replaced_by?.semester_id?.semester_no}`
-          : "NA",
-        Actions: (
-          <Button
-            variant="outline"
-            color="red"
-            size="xs"
-            onClick={() => confirmDrop(course.reg_id)}
-          >
-            Drop
-          </Button>
-        ),
-      }))
-    : [];
+  const rows = filteredDetails.map((c) => ({
+    "id":c.id,
+    "Reg ID": c.rid,
+    "Course Code": c.course_id,
+    "Course Name": c.course_name,
+    Credits: c.credits,
+    Semester: c.sem,
+    Type: c.registration_type,
+    "Replaced By": c.replaced_by
+      ? `${c.replaced_by.course_id.code} - ${c.replaced_by.course_id.name}`
+      : "NA",
+    Actions: (
+      <Button
+        size="xs"
+        variant="outline"
+        color="red"
+        onClick={() => confirmDrop(c.id, c.course_name)}
+      >
+        Drop
+      </Button>
+    ),
+  }));
 
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
-      <Text
-        size="lg"
-        weight={700}
-        mb="md"
-        style={{ textAlign: "center", width: "100%", color: "#3B82F6" }}
-      >
-        Registered Courses For Sem-2 AY 2024-25
-      </Text>
-
       <TextInput
-        placeholder="Enter Roll Number"
+        label="Roll Number"
         value={rollNo}
         onChange={(e) => setRollNo(e.target.value)}
-        mb="lg"
-        label="Student Roll Number"
-      />
-      <Button
-        style={{ backgroundColor: "#3B82F6", color: "white" }}
-        onClick={handleGetCourses}
         mb="md"
-      >
-        Fetch Courses
+      />
+      <Button fullWidth onClick={handleGetCourses} mb="md" disabled={loading}>
+        {loading ? <Loader size="xs" /> : "Fetch Courses"}
       </Button>
-
-      {loading ? (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            height: "100%",
-          }}
-        >
-          <Loader variant="dots" />
-        </div>
-      ) : (
+      {error && (
+        <Alert title="Error" color="red" mb="md">
+          {error}
+        </Alert>
+      )}
+      {studentData && (
         <>
-          {error && (
-            <Alert title="Error: No Data" color="red" mt="lg">
-              {error}
-            </Alert>
-          )}
-
-          {studentData && (
-            <>
-              <Text weight={500} mb="lg">
-                Name: {studentData.dict2.firstname} {studentData.dict2.lastname}
-              </Text>
-              <Text weight={500} mb="lg">
-                Roll Number: {studentData.dict2.roll_no}
-              </Text>
-
-              <div style={{ overflowX: "auto" }}>
-                <FusionTable
-                  columnNames={columnNames}
-                  elements={mappedCourses}
-                  width="100%"
-                />
-              </div>
-
-              <Button
-                style={{
-                  backgroundColor: "#4CBB17",
-                  color: "white",
-                }}
-                mt="lg"
-                onClick={() => setAddModalOpen(true)}
-              >
-                Add Course
-              </Button>
-
-              <Text weight={700} mt="lg">
-                Total Credits: {totalCredits}
-              </Text>
-            </>
-          )}
-
-          {/* Add Course Modal */}
-          <Modal
-            opened={addModalOpen}
-            onClose={() => setAddModalOpen(false)}
-            title="Add New Course"
-          >
-            <Select
-              label="Course Slot"
-              placeholder="Enter Course Slot"
-              value={newCourse.courseslot_id}
-              onChange={(value) =>
-                setNewCourse({ ...newCourse, courseslot_id: value })
-              }
-              data={
-                studentData
-                  ? studentData.courseslot_list.map((slot) => ({
-                      value: slot.id.toString(),
-                      label: slot.name,
-                    }))
-                  : []
-              }
-              mb="sm"
-              searchable
-            />
-            <Select
-              label="Course ID"
-              placeholder="Enter Course ID"
-              value={newCourse.course_id}
-              onChange={(value) =>
-                setNewCourse({ ...newCourse, course_id: value })
-              }
-              data={
-                studentData
-                  ? studentData.course_list.map((course) => ({
-                      value: course.id.toString(),
-                      label: `${course.code} - ${course.name} - ${course.credit} credits`,
-                    }))
-                  : []
-              }
-              mb="sm"
-              searchable
-            />
-            <Select
-              label="Semester"
-              placeholder="Enter Semester"
-              value={newCourse.semester_no}
-              onChange={(value) =>
-                setNewCourse({ ...newCourse, semester_no: value })
-              }
-              mb="sm"
-              data={
-                studentData
-                  ? studentData.semester_list.map((sem) => ({
-                      value: sem.id.toString(),
-                      label: `Semester - ${sem.semester_no}`,
-                    }))
-                  : []
-              }
-              searchable
-            />
-            <NumberInput
-              label="Working Year"
-              placeholder="Enter Working Year"
-              value={newCourse.working_year}
-              onChange={(value) =>
-                setNewCourse({ ...newCourse, working_year: value })
-              }
-              mb="sm"
-            />
-            <Select
-              label="Type"
-              placeholder="Select Type"
-              data={["Regular", "Improvement", "Backlog", "Audit"]}
-              value={newCourse.registration_type}
-              onChange={(value) =>
-                setNewCourse({ ...newCourse, registration_type: value })
-              }
-              searchable
-              mb="sm"
-            />
-            <Select
-              label="Replace Course"
-              placeholder="Select the course to replace"
-              data={
-                studentData
-                  ? studentData.details.map((course) => ({
-                      value: course.reg_id.toString(),
-                      label: `${course.course_id} - sem - ${course.sem}`,
-                    }))
-                  : []
-              }
-              value={newCourse.old_course}
-              onChange={(value) =>
-                setNewCourse({ ...newCourse, old_course: value })
-              }
-              searchable
-              mb="sm"
-            />
-            <Group position="right">
-              <Button color="green" onClick={handleAddCourse}>
-                Add
-              </Button>
-            </Group>
-          </Modal>
-
-          <Modal
-            opened={dropModalOpen}
-            onClose={() => setDropModalOpen(false)}
-            title="Confirm Course Drop"
-          >
-            <Text>Are you sure you want to drop this course?</Text>
-            <Text weight={600} mt="sm">
-              This action cannot be undone!
+          <Select
+            label="Choose Semester to View"
+            placeholder="Select semester"
+            data={studentData.semester_list.map((s) => ({
+              value: String(s.semester_no),
+              label: `Semester ${s.semester_no}`,
+            }))}
+            value={selectedSemester}
+            onChange={setSelectedSemester}
+            mb="md"
+          />
+          <Text size="lg" weight={700} mb="sm" align="center" color="blue">
+            Registered Courses
+          </Text>
+          <Text weight={500}>
+            Name: {studentData.dict2.firstname} {studentData.dict2.lastname}
+          </Text>
+          <Text weight={500} mb="md">
+            Roll No: {studentData.dict2.roll_no}
+          </Text>
+          <div style={{ overflowX: "auto" }}>
+            <FusionTable columnNames={columns} elements={rows} width="100%" />
+          </div>
+          {rows.length === 0 && (
+            <Text align="center" color="dimmed" mt="sm">
+              No courses found for Semester {selectedSemester}
             </Text>
-            <Group position="right" mt="lg">
-              <Button variant="outline" onClick={() => setDropModalOpen(false)}>
-                Cancel
-              </Button>
-              <Button color="red" onClick={() => handleDrop(courseToDrop)}>
-                Confirm Drop
-              </Button>
-            </Group>
-          </Modal>
+          )}
+          <Group position="apart" mt="lg">
+            <Button
+              color="green"
+              onClick={() => setAddModalOpen(true)}
+              disabled={loading}
+            >
+              Add Course
+            </Button>
+            <Text weight={700}>Total Credits: {totalCredits}</Text>
+          </Group>
         </>
       )}
+      <Modal
+        opened={addModalOpen}
+        onClose={() => setAddModalOpen(false)}
+        title="Add Course"
+      >
+        <Select
+          label="Semester"
+          placeholder="Select semester"
+          data={studentData?.semester_list.map((s) => ({
+            value: String(s.id),
+            label: `Semester ${s.semester_no}`,
+          }))}
+          value={newCourse.semester_id}
+          onChange={handleSemChange}
+          mb="sm"
+        />
+        <Select
+          label="Course Slot"
+          placeholder="Select slot"
+          data={semSlots.map((s) => ({
+            value: String(s.id),
+            label: s.name,
+          }))}
+          value={newCourse.courseslot_id}
+          onChange={handleSlotChange}
+          mb="sm"
+          disabled={!newCourse.semester_id}
+        />
+        <Select
+          label="Course"
+          placeholder="Select course"
+          data={slotCourses.map((c) => ({
+            value: String(c.id),
+            label: `${c.code} - ${c.name} (${c.credit}cr)`,
+          }))}
+          value={newCourse.course_id}
+          onChange={(v) => setNewCourse((p) => ({ ...p, course_id: v }))}
+          mb="sm"
+          disabled={!newCourse.courseslot_id}
+        />
+        <Select
+          label="Academic Year"
+          placeholder="Select academic year"
+          data={academicYears.map((y) => ({ value: y, label: y }))}
+          value={newCourse.academic_year}
+          onChange={(v) => setNewCourse((p) => ({ ...p, academic_year: v }))}
+          mb="sm"
+        />
+        <Select
+          label="Registration Type"
+          placeholder="Select type"
+          data={["Regular", "Improvement", "Backlog", "Audit"]}
+          value={newCourse.registration_type}
+          onChange={(v) =>
+            setNewCourse((p) => ({ ...p, registration_type: v }))
+          }
+          mb="md"
+        />
+        <Select
+          label="Replace Course"
+          placeholder="Select the course to replace"
+          data={
+            studentData
+              ? studentData.details.map((course) => ({
+                  value: course.reg_id.toString(),
+                  label: `${course.course_id} - sem - ${course.sem}`,
+                }))
+              : []
+          }
+          value={newCourse.old_course}
+          onChange={(value) =>
+            setNewCourse((p) => ({ ...p, old_course: value }))
+          }
+          searchable
+          mb="sm"
+        />
+        <Group position="right">
+          <Button onClick={handleAddCourse} loading={loading}>
+            Add
+          </Button>
+        </Group>
+      </Modal>
+      <Modal
+        opened={dropModalOpen}
+        onClose={() => setDropModalOpen(false)}
+        title="Confirm Drop"
+      >
+        <Text>Are you sure you want to drop {course_to_drop_name}?</Text>
+        <Group position="right" mt="md">
+          <Button variant="outline" onClick={() => setDropModalOpen(false)}>
+            Cancel
+          </Button>
+          <Button color="red" onClick={handleDrop} loading={loading}>
+            Confirm
+          </Button>
+        </Group>
+      </Modal>
     </Card>
   );
 }
-export default StudentCourses;
