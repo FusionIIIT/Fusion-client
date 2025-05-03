@@ -22,7 +22,7 @@ function BreadcrumbTabsFaculty() {
         
         // If storedRole exists and is different (role changed), redirect to first URL
         if (storedRole && storedRole !== role) {
-          navigate(breadcrumbItems[0].url);
+          navigate('/dashboard');
         }
       }
     }
