@@ -141,12 +141,11 @@ function ValidateDean() {
         borderRadius: "15px",
         padding: "0 20px",
         boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.15)",
-        // borderLeft: "10px solid #1E90FF",
         backgroundColor: "white",
         position: "relative"
       }}
     >
-      <LoadingOverlay visible={loading} overlayBlur={2} />
+      <LoadingOverlay visible={loading} />
       
       <Paper p="md">
         <h1>Validate Grades</h1>

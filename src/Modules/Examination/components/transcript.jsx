@@ -24,9 +24,9 @@ function Transcript({ data, semester }) {
       {selectedStudent ? (
         <StudentTranscript student={selectedStudent} semester={semester} onBack={handleBack} />
       ) : (
-        <ScrollArea className="table-container">
+        <>
           {students.length > 0 ? (
-            <Table highlightOnHover className="transcript-table">
+            <Table striped highlightOnHover withBorder captionSide="top" mt="md" className="transcript-table">
               <thead>
                 <tr>
                   <th>Roll Number</th>
@@ -37,8 +37,8 @@ function Transcript({ data, semester }) {
               <tbody>
                 {students.map((student) => (
                   <tr key={student.id_id} className="table-row">
-                    <td className="table-cell tc">
-                      <div className="table-cell-content">{student.id_id}</div>
+                    <td className="table-cell">
+                      {student.id_id}
                     </td>
                     <td className="table-cell">{student.programme}</td>
                     <td className="table-cell">
@@ -64,7 +64,7 @@ function Transcript({ data, semester }) {
           ) : (
             <div className="no-data">No transcript records available.</div>
           )}
-        </ScrollArea>
+        </>
       )}
     </div>
   );
