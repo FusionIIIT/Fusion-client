@@ -38,7 +38,7 @@ function ModuleTabs({ tabs, activeTab, setActiveTab, badges = [] }) {
 
   return (
     <Flex justify="space-between" align="center" style={{marginBottom: "30px"}}>
-      <Flex align="center" gap={{ base: "0.2rem", sm: "0.4rem" }}>
+      <Flex justify="center" align="center" gap={{ base: "0.2rem", sm: "0.4rem" }}>
         <Button
           onClick={() => handleTabChange("prev")}
           variant="default"
@@ -50,8 +50,17 @@ function ModuleTabs({ tabs, activeTab, setActiveTab, badges = [] }) {
             className={classes.fusionCaretCircleIcon}
           />
         </Button>
-        <div className={classes.tabsContainer} ref={tabsListRef}>
-          <Tabs value={activeTab} onChange={(value) => handleTabClick(value)}>
+        <div className={classes.tabsContainer} ref={tabsListRef} style={{maxWidth:'85vw'}}>
+        <Tabs
+          value={activeTab}
+          onChange={(value) => handleTabClick(value)}
+          style={{
+            overflowX: 'auto',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+          }}
+          className="hide-scrollbar"
+        >
             <Tabs.List
               w={{ xxs: "200px", xs: "275px", sm: "100%" }}
               justify="flex-start"

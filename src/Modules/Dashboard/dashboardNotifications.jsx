@@ -26,7 +26,6 @@ import {
   getNotificationsRoute,
 } from "../../routes/dashboardRoutes";
 import ModuleTabs from "../../components/moduleTabs.jsx";
-import { setActiveTab_ } from "../../redux/moduleslice.jsx";
 
 const categories = ["Most Recent", "Tags", "Title"];
 
@@ -101,11 +100,8 @@ function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [read_Loading, setRead_Loading] = useState(-1);
   const dispatch = useDispatch();
-  const tabItems = [{ title: "Notifications" }];
-
-  useEffect(()=>{
-    dispatch(setActiveTab_(tabItems?tabItems[activeTab].title:""))
-  },[])
+  // const tabsListRef = useRef(null);
+  const tabItems = [{ title: "Notifications" }, { title: "Announcements" }];
 
   const notificationBadgeCount = notificationsList.filter(
     (n) => !n.deleted && n.unread,

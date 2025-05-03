@@ -32,7 +32,7 @@ function SwayamRegistration() {
         });
         setCourseSlots(response.data);
       } catch (err) {
-        setError(err);
+        setError(err?.response?.data?.error);
       } finally {
         setLoading(false);
       }

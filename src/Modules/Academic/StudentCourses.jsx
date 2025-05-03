@@ -36,6 +36,8 @@ export default function StudentCourses() {
   const [academicYears, setAcademicYears] = useState([]);
   const [selectedSemester, setSelectedSemester] = useState("1");
 
+  const [course_to_drop_name, setCourseToDropName] = useState("")
+
   const [newCourse, setNewCourse] = useState({
     semester_id: null,
     courseslot_id: null,
@@ -87,8 +89,9 @@ export default function StudentCourses() {
     }
   };
 
-  const confirmDrop = (rid) => {
+  const confirmDrop = (rid, name) => {
     setCourseToDrop(rid);
+    setCourseToDropName(name);
     setDropModalOpen(true);
   };
 
@@ -111,6 +114,7 @@ export default function StudentCourses() {
         message: `course has been dropped successfully`,
         color: "green",
       });
+      setCourseToDropName("");
       await handleGetCourses();
     } catch (err) {
       setError(err.response?.data?.error || err.message || "Drop failed");
@@ -247,7 +251,7 @@ export default function StudentCourses() {
         size="xs"
         variant="outline"
         color="red"
-        onClick={() => confirmDrop(c.id)}
+        onClick={() => confirmDrop(c.id, c.course_name)}
       >
         Drop
       </Button>
@@ -399,7 +403,7 @@ export default function StudentCourses() {
         onClose={() => setDropModalOpen(false)}
         title="Confirm Drop"
       >
-        <Text>Are you sure you want to drop this course?</Text>
+        <Text>Are you sure you want to drop {course_to_drop_name}?</Text>
         <Group position="right" mt="md">
           <Button variant="outline" onClick={() => setDropModalOpen(false)}>
             Cancel
