@@ -132,7 +132,7 @@ function LoginPage() {
               bg="#fa5400"
               onClick={() => {
                 window.location.href =
-                  "http://fusion.iiitdmj.ac.in/password-reset/";
+                  "http://fusion.iiitdmj.ac.in:6310/password-reset/";
               }}
             >
               Forgot Password
