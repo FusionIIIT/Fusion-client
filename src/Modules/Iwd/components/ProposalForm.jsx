@@ -1,9 +1,10 @@
 /* eslint-disable no-restricted-globals */
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { useContext, useMemo } from "react";
+import React, { useContext, useMemo, useState } from "react";
 import PropTypes from "prop-types";
 import { useForm } from "@mantine/form";
 import { useSelector } from "react-redux";
+import Papa from "papaparse";
 import {
   Container,
   Paper,
@@ -22,12 +23,15 @@ import { useMediaQuery } from "@mantine/hooks";
 import classes from "../iwd.module.css";
 import { DesignationsContext } from "../helper/designationContext";
 import { HandleProposalSubmission } from "../handlers/handlers";
+import ConfirmationModal from "../helper/ConfirmationModal";
 
 function CreateProposalForm({ onBack, request_id, submitter, proposalType }) {
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [isSuccess, setIsSuccess] = React.useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [confirmationModalOpen, setConfirmationModal] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
   const designations = useContext(DesignationsContext);
+
   const designationsList = useMemo(
     () =>
       designations.map(
@@ -75,6 +79,51 @@ function CreateProposalForm({ onBack, request_id, submitter, proposalType }) {
       return errors;
     },
   });
+
+  // Handle CSV Upload
+  const handleCSVUpload = (file) => {
+    if (!file) return;
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete(results) {
+        const parsedItems = results.data.map((row) => ({
+          name: row.name || "",
+          description: row.description || "",
+          unit: row.unit || "",
+          price_per_unit: row.price_per_unit || "",
+          quantity: row.quantity || "",
+          docs: null,
+        }));
+
+        form.setFieldValue("items", parsedItems);
+      },
+      error(error) {
+        console.error("CSV parsing error:", error.message);
+        alert(
+          "Failed to parse CSV, Wrong CSV format! CSV file should contain the following columns: name, description, unit, price_per_unit, quantity respectively.",
+        );
+      },
+    });
+  };
+
+  // Handle Template Download
+  const handleDownloadTemplate = () => {
+    const csvContent =
+      "name,description,unit,price_per_unit,quantity\n" +
+      "Item A,Description of Item A,pcs,100,10\n" +
+      "Item B,Description of Item B,kg,200,5";
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "proposal_template.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const fields = form.values.items.map((_, index) => (
     <div key={index} style={{ position: "relative", marginBottom: 20 }}>
@@ -172,13 +221,7 @@ function CreateProposalForm({ onBack, request_id, submitter, proposalType }) {
 
               console.log(payload);
               if (form.validate(values)) {
-                HandleProposalSubmission({
-                  setIsLoading,
-                  setIsSuccess,
-                  submitter,
-                  form,
-                  proposalType,
-                });
+                setConfirmationModal(true);
               }
             })}
           >
@@ -189,6 +232,34 @@ function CreateProposalForm({ onBack, request_id, submitter, proposalType }) {
               {...form.getInputProps("id")}
               disabled
             />
+
+            {/* Download template csv and scrap item and details fro csv */}
+            <Flex justify="space-between" align="flex-end" gap="sm" mt="md">
+              <div style={{ flexGrow: 1 }}>
+                <FileInput
+                  variant="light"
+                  label="Import Items from CSV"
+                  placeholder="Upload CSV file"
+                  accept=".csv"
+                  onChange={handleCSVUpload}
+                  styles={{
+                    input: {
+                      border: "1px solid #ced4da",
+                      borderRadius: "4px",
+                      padding: "8px",
+                    },
+                  }}
+                />
+              </div>
+              <Button
+                variant="light"
+                size="xs"
+                mt="lg"
+                onClick={handleDownloadTemplate}
+              >
+                Download Template
+              </Button>
+            </Flex>
 
             {fields}
 
@@ -269,6 +340,23 @@ function CreateProposalForm({ onBack, request_id, submitter, proposalType }) {
                 Back
               </Button>
             </Flex>
+            <ConfirmationModal
+              opened={confirmationModalOpen}
+              onClose={() => setConfirmationModal(false)}
+              onConfirm={() => {
+                setConfirmationModal(false);
+
+                form.onSubmit(
+                  HandleProposalSubmission({
+                    setIsLoading,
+                    setIsSuccess,
+                    submitter,
+                    form,
+                    proposalType,
+                  }),
+                )();
+              }}
+            />
           </form>
         </Flex>
       </Paper>

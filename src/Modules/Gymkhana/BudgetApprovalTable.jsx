@@ -32,6 +32,8 @@ import {
   rejectBudgetButton,
   modifyBudgetButton,
   reviewDeanBudgetButton,
+  useGetClubPositionData,
+  useGetCurrentLoginnedRoleRelatedClub,
 } from "./BackendLogic/ApiRoutes";
 
 import { BudgetApprovalForm } from "./BudgetForm";
@@ -86,56 +88,68 @@ function BudgetApprovals({ clubName }) {
     refetch: refetchBudget,
   } = useGetUpcomingBudgets(token); // Fetch budgets for the club (implement the API call)
 
+  const { data: CurrentLoginRoleData = [] } =
+    useGetCurrentLoginnedRoleRelatedClub(user.roll_no, token);
+
+  const VisibeClubArray = [];
+  CurrentLoginRoleData.forEach((c) => {
+    VisibeClubArray.push(c.club);
+  });
+
+  const ClubMap = {
+    Tech_Counsellor: ["BitByte", "AFC"],
+    Cultural_Counsellor: ["Jazbaat", "Aavartan"],
+    Sports_Counsellor: ["Badminton Club", "Volleyball Club"],
+  };
+
   const filteredBudgets = useMemo(() => {
     return fetchedBudgets.filter((budget) => {
       if (
-        (budget.status.toLowerCase() === "coordinator" ||
-          budget.status.toLowerCase() === "reject") &&
-        userRole.toLowerCase() === "co-ordinator"
+        budget.status.toLowerCase() === "coordinator" ||
+        budget.status.toLowerCase() === "reject" ||
+        budget.status.toLowerCase() === "accept" ||
+        budget.status.toLowerCase() === "accepted"
       ) {
-        return true;
+        if (
+          userRole.toLowerCase() === "co-ordinator" &&
+          VisibeClubArray.includes(budget.club)
+        )
+          return true;
       }
       if (budget.status.toLowerCase() === "fic") {
         if (
-          userRole.toLowerCase() === "co-ordinator" ||
-          userRole.toLowerCase() === "professor" ||
-          userRole.toLowerCase() === "assistant professor"
-        ) {
-          return true;
-        }
-      }
-      if (budget.status.toLowerCase() === "counsellor") {
-        if (
-          userRole.toLowerCase() === "counsellor" ||
-          userRole.toLowerCase() === "professor" ||
-          userRole.toLowerCase() === "assistant professor" ||
-          userRole.toLowerCase() === "co-ordinator"
-        ) {
-          return true;
-        }
-      }
-      if (budget.status.toLowerCase() === "rereview") {
-        if (
-          userRole.toLowerCase() === "counsellor" ||
-          userRole.toLowerCase() === "professor" ||
-          userRole.toLowerCase() === "assistant professor" ||
-          userRole.toLowerCase() === "co-ordinator" ||
-          userRole.toLowerCase() === "dean_s"
+          userRole.toLowerCase() === "fic" &&
+          VisibeClubArray.includes(budget.club)
         ) {
           return true;
         }
       }
       if (
-        budget.status.toLowerCase() === "dean" ||
-        budget.status.toLowerCase() === "accept"
+        userRole.toLowerCase() === "tech_counsellor" &&
+        (budget.status.toLowerCase() === "counsellor" ||
+          budget.status.toLowerCase() === "rereview")
       ) {
-        if (
-          userRole.toLowerCase() === "dean_s" ||
-          userRole.toLowerCase() === "counsellor" ||
-          userRole.toLowerCase() === "professor" ||
-          userRole.toLowerCase() === "assistant professor" ||
-          userRole.toLowerCase() === "co-ordinator"
-        ) {
+        const allowedClubs = ClubMap.Tech_Counsellor;
+        return allowedClubs.includes(budget.club);
+      }
+      if (
+        userRole.toLowerCase() === "sports_counsellor" &&
+        (budget.status.toLowerCase() === "counsellor" ||
+          budget.status.toLowerCase() === "rereview")
+      ) {
+        const allowedClubs = ClubMap.Sports_Counsellor;
+        return allowedClubs.includes(budget.club);
+      }
+      if (
+        userRole.toLowerCase() === "cultural_counsellor" &&
+        (budget.status.toLowerCase() === "counsellor" ||
+          budget.status.toLowerCase() === "rereview")
+      ) {
+        const allowedClubs = ClubMap.Cultural_Counsellor;
+        return allowedClubs.includes(budget.club);
+      }
+      if (budget.status.toLowerCase() === "dean") {
+        if (userRole.toLowerCase() === "dean_s") {
           return true;
         }
       }
@@ -161,19 +175,81 @@ function BudgetApprovals({ clubName }) {
     setSelectedBudget(null);
   };
 
-  const updateBudgetMutation = useMutation({
-    mutationFn: (updatedBudgetData) => {
-      return axios.put(
-        `${host}/gymkhana/api/update_budget/`,
-        updatedBudgetData,
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
+  const { data: CurrentLogginedRelatedClub = [] } =
+    useGetClubPositionData(token);
+
+  const forwardFile = async ({
+    fileId,
+    receiver,
+    receiverDesignation,
+    remarks,
+    fileExtraJSON = {},
+    files = [],
+  }) => {
+    const formData = new FormData();
+    formData.append("receiver", receiver);
+    formData.append("receiver_designation", receiverDesignation);
+    formData.append("remarks", remarks);
+    formData.append("file_extra_JSON", JSON.stringify(fileExtraJSON));
+
+    files.forEach((file) => {
+      formData.append("files", file); // multiple files support
+    });
+
+    return axios.post(
+      `${host}/filetracking/api/forwardfile/${fileId}/`,
+      formData,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "multipart/form-data",
         },
-      );
+      },
+    );
+  };
+
+  const updateBudgetMutation = useMutation({
+    mutationFn: ({ formData }) => {
+      return axios.put(`${host}/gymkhana/api/update_budget/`, formData, {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      });
     },
-    onSuccess: () => {
+    onSuccess: async (_, variables) => {
+      const { SelectedBudgetFileId: fileId } = variables;
+      console.log(fileId);
+      try {
+        const FICName =
+          CurrentLogginedRelatedClub.find(
+            (c) => c.club === clubName && c.position === "FIC",
+          )?.name || null;
+
+        await forwardFile({
+          fileId,
+          receiver: FICName, // based on clubname & under which fraternity we have filter from relatedClubData
+          receiverDesignation: "Professor",
+          remarks: "Approved by Co-ordinator",
+          fileExtraJSON: {
+            approved_by: "Co-ordinator",
+            approved_on: new Date().toISOString(),
+          },
+          files: [],
+        });
+
+        notifications.show({
+          title: "Co-ordinator Modification",
+          message: <Text fz="sm">File forwarded successfully</Text>,
+          color: "green",
+        });
+      } catch (err) {
+        console.error("File forwarding failed", err);
+        notifications.show({
+          title: "Forwarding Failed",
+          message: <Text fz="sm">Could not forward file</Text>,
+          color: "red",
+        });
+      }
       closeEditModal();
       refetchBudget();
       // You might want to refresh your events data here
@@ -221,17 +297,50 @@ function BudgetApprovals({ clubName }) {
   };
 
   const approveFICMutation = useMutation({
-    mutationFn: (budgetId) => approveFICBudgetButton(budgetId, token),
-    onSuccess: () => {
-      notifications.show({
-        title: "Approved by FIC",
-        message: (
-          <Flex gap="4px">
-            <Text fz="sm">Approved by FIC</Text>
-          </Flex>
-        ),
-        color: "green",
-      });
+    mutationFn: (eventId) => {
+      approveFICBudgetButton(eventId, token);
+    },
+    onSuccess: async (_, variables) => {
+      const { fileId } = variables;
+
+      // const fraternity = Object.keys(ClubMap).find((fra) =>
+      //   ClubMap[fra].includes(clubName),
+      // );
+
+      const fraternity = "Counsellor";
+
+      const CounsellorName =
+        CurrentLogginedRelatedClub.find(
+          (c) => c.club === clubName && c.position === fraternity,
+        )?.name || "simanta";
+
+      try {
+        await forwardFile({
+          fileId,
+          receiver: CounsellorName,
+          receiverDesignation: fraternity,
+          remarks: "Approved by FIC",
+          fileExtraJSON: {
+            approved_by: "FIC",
+            approved_on: new Date().toISOString(),
+          },
+          files: [], // pass File objects if needed
+        });
+
+        notifications.show({
+          title: "FIC Approval",
+          message: <Text fz="sm">File forwarded successfully</Text>,
+          color: "green",
+        });
+      } catch (err) {
+        console.error("File forwarding failed", err);
+        notifications.show({
+          title: "Forwarding Failed",
+          message: <Text fz="sm">Could not forward file</Text>,
+          color: "red",
+        });
+      }
+
       closeViewModal();
       refetchBudget();
     },
@@ -256,17 +365,45 @@ function BudgetApprovals({ clubName }) {
   });
 
   const approveCounsellorMutation = useMutation({
-    mutationFn: (budgetId) => approveCounsellorBudgetButton(budgetId, token),
-    onSuccess: () => {
-      notifications.show({
-        title: "Approved by Counsellor",
-        message: (
-          <Flex gap="4px">
-            <Text fz="sm">Approved by Counsellor</Text>
-          </Flex>
-        ),
-        color: "green",
-      });
+    mutationFn: ({ budgetId }) =>
+      approveCounsellorBudgetButton(budgetId, token),
+    // mutationFn: ({ budgetId }) => console.log('here'),
+    onSuccess: async (_, variables) => {
+      const { fileId } = variables;
+      const fraternity = "Dean_s";
+
+      const deanName =
+        CurrentLogginedRelatedClub.find(
+          (c) => c.club === clubName && c.position === fraternity,
+        )?.name || "mkroy";
+
+      try {
+        await forwardFile({
+          fileId,
+          receiver: deanName,
+          receiverDesignation: fraternity,
+          remarks: "Approved by Counsellor",
+          fileExtraJSON: {
+            approved_by: "Counsellor",
+            approved_on: new Date().toISOString(),
+          },
+          files: [],
+        });
+
+        notifications.show({
+          title: "Counsellor Approval",
+          message: <Text fz="sm">File forwarded successfully</Text>,
+          color: "green",
+        });
+      } catch (err) {
+        console.error("File forwarding failed", err);
+        notifications.show({
+          title: "Forwarding Failed",
+          message: <Text fz="sm">Could not forward file</Text>,
+          color: "red",
+        });
+      }
+
       closeViewModal();
       refetchBudget();
     },
@@ -290,17 +427,48 @@ function BudgetApprovals({ clubName }) {
   });
 
   const reviewDeanMutation = useMutation({
-    mutationFn: (budgetId) => reviewDeanBudgetButton(budgetId, token),
-    onSuccess: () => {
-      notifications.show({
-        title: "Review by Dean",
-        message: (
-          <Flex gap="4px">
-            <Text fz="sm">Review by Dean</Text>
-          </Flex>
-        ),
-        color: "green",
-      });
+    mutationFn: ({ budgetId }) => reviewDeanBudgetButton(budgetId, token),
+    // mutationFn: ({ budgetId }) => console.log('here'),
+    onSuccess: async (_, variables) => {
+      const { fileId } = variables;
+      // const fraternity = Object.keys(ClubMap).find((fra) =>
+      //   ClubMap[fra].includes(clubName),
+      // );
+      console.log(fileId);
+      const fraternity = "Counsellor";
+
+      const counsellorName =
+        CurrentLogginedRelatedClub.find(
+          (c) => c.club === clubName && c.position === fraternity,
+        )?.name || "simanta";
+
+      try {
+        await forwardFile({
+          fileId,
+          receiver: counsellorName,
+          receiverDesignation: fraternity,
+          remarks: "Reviewed by Dean",
+          fileExtraJSON: {
+            approved_by: "Dean",
+            approved_on: new Date().toISOString(),
+          },
+          files: [],
+        });
+
+        notifications.show({
+          title: "Dean Review",
+          message: <Text fz="sm">File forwarded successfully</Text>,
+          color: "green",
+        });
+      } catch (err) {
+        console.error("File forwarding failed", err);
+        notifications.show({
+          title: "Forwarding Failed",
+          message: <Text fz="sm">Could not forward file</Text>,
+          color: "red",
+        });
+      }
+
       closeViewModal();
       refetchBudget();
     },
@@ -325,68 +493,116 @@ function BudgetApprovals({ clubName }) {
 
   const modifyMutation = useMutation({
     mutationFn: (budgetId) => modifyBudgetButton(budgetId, token),
-    onSuccess: () => {
+    onSuccess: async (_, variables) => {
+      const { fileId } = variables;
+      try {
+        const CoordinatorName =
+          CurrentLogginedRelatedClub.find(
+            (c) =>
+              c.club === clubName &&
+              c.position.toLowerCase() === "co-ordinator",
+          )?.name || null;
+
+        await forwardFile({
+          fileId,
+          receiver: CoordinatorName, // based on clubname & under which fraternity we have filter from relatedClubData
+          receiverDesignation: "co-ordinator",
+          remarks: "Modification request to co-ordinator",
+          fileExtraJSON: {
+            approved_by: "Authority",
+            approved_on: new Date().toISOString(),
+          },
+          files: [],
+        });
+
+        notifications.show({
+          title: "Modify",
+          message: <Text fz="sm">File forwarded successfully</Text>,
+          color: "green",
+        });
+      } catch (err) {
+        console.error("File forwarding failed", err);
+        notifications.show({
+          title: "Forwarding Failed",
+          message: <Text fz="sm">Could not forward file</Text>,
+          color: "red",
+        });
+      }
       closeViewModal();
       refetchBudget();
     },
   });
 
-  const handleFICApproveButton = (budgetId) => {
-    approveFICMutation.mutate(budgetId);
+  const handleFICApproveButton = (budgetId, fileId) => {
+    approveFICMutation.mutate({ budgetId, fileId });
   };
-  const handleCounsellorApproveButton = (budgetId) => {
-    approveCounsellorMutation.mutate(budgetId);
+  const handleCounsellorApproveButton = (budgetId, fileId) => {
+    approveCounsellorMutation.mutate({ budgetId, fileId });
   };
   const handleDeanApproveButton = (budgetId) => {
     approveDeanMutation.mutate(budgetId);
   };
 
-  const handleDeanReviewButton = (budgetId) => {
-    reviewDeanMutation.mutate(budgetId);
+  const handleDeanReviewButton = (budgetId, fileId) => {
+    reviewDeanMutation.mutate({ budgetId, fileId });
   };
 
   const handleRejectButton = (budgetId) => {
     rejectMutation.mutate(budgetId);
   };
-  const handleModifyButton = (budgetId) => {
-    modifyMutation.mutate(budgetId);
+  const handleModifyButton = (budgetId, fileId) => {
+    modifyMutation.mutate({ budgetId, fileId });
   };
   const renderRoleBasedActions = useMemo(() => {
     if (!selectedBudget) return null;
 
-    if (
-      selectedBudget.status === "FIC" &&
-      (userRole === "Professor" || userRole === "Assistant Professor")
-    ) {
+    if (selectedBudget.status === "FIC" && userRole === "FIC") {
       return (
         <>
           <Button
             color="blue"
-            onClick={() => handleFICApproveButton(selectedBudget.id)}
+            onClick={() =>
+              handleFICApproveButton(selectedBudget.id, selectedBudget.file_id)
+            }
           >
             FIC Approve
           </Button>
           <Button
             color="red"
-            onClick={() => handleRejectButton(selectedBudget.id)}
+            onClick={() =>
+              handleRejectButton(selectedBudget.id, selectedBudget.file_id)
+            }
           >
             Reject
           </Button>
           <Button
             color="yellow"
-            onClick={() => handleModifyButton(selectedBudget.id)}
+            onClick={() =>
+              handleModifyButton(selectedBudget.id, selectedBudget.file_id)
+            }
           >
             Modify
           </Button>
         </>
       );
     }
-    if (selectedBudget.status === "COUNSELLOR" && userRole === "Counsellor") {
+    if (
+      (selectedBudget.status === "COUNSELLOR" ||
+        selectedBudget.status.toLowerCase() === "rereview") &&
+      (userRole === "Tech_Counsellor" ||
+        userRole === "Sports_Counsellor" ||
+        userRole === "Cultural_Counsellor")
+    ) {
       return (
         <>
           <Button
             color="blue"
-            onClick={() => handleCounsellorApproveButton(selectedBudget.id)}
+            onClick={() =>
+              handleCounsellorApproveButton(
+                selectedBudget.id,
+                selectedBudget.file_id,
+              )
+            }
           >
             Counsellor Approve
           </Button>
@@ -398,7 +614,9 @@ function BudgetApprovals({ clubName }) {
           </Button>
           <Button
             color="yellow"
-            onClick={() => handleModifyButton(selectedBudget.id)}
+            onClick={() =>
+              handleModifyButton(selectedBudget.id, selectedBudget.file_id)
+            }
           >
             Modify
           </Button>
@@ -422,7 +640,9 @@ function BudgetApprovals({ clubName }) {
           </Button>
           <Button
             color="yellow"
-            onClick={() => handleDeanReviewButton(selectedBudget.id)}
+            onClick={() =>
+              handleDeanReviewButton(selectedBudget.id, selectedBudget.file_id)
+            }
           >
             ReReview
           </Button>
@@ -647,19 +867,19 @@ function BudgetApprovals({ clubName }) {
 
               // Add the ID of the event
               formData.append("id", selectedBudget.id);
-
+              const SelectedBudgetFileId = selectedBudget.file_id;
               // Now, submit the formData to the backend using the mutation
-              updateBudgetMutation.mutate(formData);
+              updateBudgetMutation.mutate({ formData, SelectedBudgetFileId });
             }}
             editMode
             disabledFields={[
               "busget_allocated",
               "budget_comment",
               "budget_for",
-              "budget_file",
+              // "budget_file",
               "description",
               "status",
-              "remarks",
+              // "remarks",
             ]}
           />
         )}

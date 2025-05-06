@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useState, useEffect } from "react";
+import React, { lazy, Suspense, useRef, useState, useEffect } from "react";
 import {
   Container,
   Grid,
@@ -6,10 +6,17 @@ import {
   Button,
   Group,
   Title,
+  Box,
+  Tabs,
   Loader,
   Text,
 } from "@mantine/core";
-import { CaretDown, CaretUp } from "@phosphor-icons/react";
+import {
+  CaretDown,
+  CaretUp,
+  CaretLeft,
+  CaretRight,
+} from "@phosphor-icons/react";
 import axios from "axios";
 import { host } from "../../../routes/globalRoutes";
 
@@ -30,13 +37,13 @@ const departments = [
 ];
 
 export default function LandingPage() {
-  const [role, setRole] = useState(null);
+  const [, setRole] = useState(null);
   const [branch, setBranch] = useState(null);
   const [activeTab, setActiveTab] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [error, setError] = useState(null);
-
+  const tabsListRef = useRef(null);
   useEffect(() => {
     const fetchUserDepartment = async () => {
       const token = localStorage.getItem("authToken");
@@ -61,6 +68,17 @@ export default function LandingPage() {
     };
     fetchUserDepartment();
   }, []);
+  const handleTabChange = (direction) => {
+    const newIndex =
+      direction === "next"
+        ? Math.min(+activeTab + 1, departments.length - 1)
+        : Math.max(+activeTab - 1, 0);
+    setActiveTab(String(newIndex));
+    tabsListRef.current?.scrollBy({
+      left: direction === "next" ? 50 : -50,
+      behavior: "smooth",
+    });
+  };
 
   const renderTabContent = () => (
     <Suspense fallback={<Loader />}>
@@ -92,28 +110,53 @@ export default function LandingPage() {
           >
             <Title order={2}>Department Portal</Title>
             <Group spacing="sm" style={{ marginLeft: "auto" }}>
-              {role !== "student" && (
-                <>
-                  <Button
-                    variant={activeTab === "0" ? "filled" : "light"}
-                    onClick={() => setActiveTab("0")}
-                  >
-                    Make Announcement
-                  </Button>
-                  <Button
-                    variant={activeTab === "1" ? "filled" : "light"}
-                    onClick={() => setActiveTab("1")}
-                  >
-                    Browse Announcements
-                  </Button>
-                </>
-              )}
+              {}
               <Button
-                variant={activeTab === "2" ? "filled" : "light"}
-                onClick={() => setActiveTab("2")}
+                onClick={() => handleTabChange("prev")}
+                variant="subtle"
+                p={0}
+                mr="xs"
               >
-                Provide Feedback
+                <CaretLeft size={24} />
               </Button>
+
+              <Box
+                style={{ maxWidth: "80%", overflowX: "auto" }}
+                ref={tabsListRef}
+              >
+                <Tabs value={activeTab} onChange={setActiveTab}>
+                  <Tabs.List>
+                    <Button
+                      variant={activeTab === "0" ? "filled" : "light"}
+                      onClick={() => setActiveTab("0")}
+                    >
+                      Make Announcement
+                    </Button>
+                    <Button
+                      variant={activeTab === "1" ? "filled" : "light"}
+                      onClick={() => setActiveTab("1")}
+                    >
+                      Browse Announcements
+                    </Button>
+                    <Button
+                      variant={activeTab === "2" ? "filled" : "light"}
+                      onClick={() => setActiveTab("2")}
+                    >
+                      Provide Feedback
+                    </Button>
+                  </Tabs.List>
+                </Tabs>
+              </Box>
+
+              <Button
+                onClick={() => handleTabChange("next")}
+                variant="subtle"
+                p={0}
+                ml="xs"
+              >
+                <CaretRight size={24} />
+              </Button>
+
               <Menu position="bottom-end" withinPortal>
                 <Menu.Target>
                   <Button

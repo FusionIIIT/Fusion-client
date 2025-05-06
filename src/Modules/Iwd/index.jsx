@@ -1,13 +1,19 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
-import { Tabs, Button, Flex, Text } from "@mantine/core";
+import { Tabs, Button, Flex, Text, Anchor } from "@mantine/core";
 import RoleBasedFilter from "./helper/roleBasedFilter";
 import classes from "../Dashboard/Dashboard.module.css";
 import CustomBread from "./components/BreadCrumbs";
+import "./components/GlobTable.css";
 
 function IwdPage() {
   const role = useSelector((state) => state.user.role);
+  const accessible = useSelector(
+    (state) => state.user.accessibleModules[role].iwd,
+  );
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("0");
   const [breadcrumbItems, setBreadcrumbItems] = useState([]);
   const tabsListRef = useRef(null);
@@ -15,7 +21,6 @@ function IwdPage() {
   const filteredTabs = useMemo(() => {
     return roleBasedTabs[role] || tabItems;
   }, [role]);
-
   const handleTabChange = (direction) => {
     const newIndex =
       direction === "next"
@@ -36,14 +41,22 @@ function IwdPage() {
       { title: "IWD", href: "/iwd" },
       { title: currentTab.title, href: "#" },
     ].map((item, index) => (
-      <Text key={index} component="a" href={item.href} size="16px" fw={600}>
-        {item.title}
-      </Text>
+      <Anchor
+        key={index}
+        onClick={() => {
+          if (item.href !== "#") {
+            navigate(item.href);
+          }
+        }}
+        c="dark"
+      >
+        <Text style={{ fontWeight: "600" }}>{item.title}</Text>
+      </Anchor>
     ));
 
     setBreadcrumbItems(breadcrumbs);
   }, [activeTab, filteredTabs]);
-  if (!Object.keys(roleBasedTabs).includes(role)) {
+  if (!accessible) {
     return (
       <Flex justify="center" align="center" style={{ height: "100vh" }}>
         <Text color="red" size="lg">

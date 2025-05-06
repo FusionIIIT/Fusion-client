@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   TextInput,
   Button,
   Group,
   Paper,
   Divider,
-  FileInput,
+  Input,
   Grid,
   Autocomplete,
 } from "@mantine/core";
@@ -29,6 +29,7 @@ function AddStock() {
   const [date, setdate] = useState("");
   const [Selected, setSelected] = useState(-1);
   const [submit, setSubmit] = useState(false);
+  const [reportfile, setFile] = useState(null);
 
   const fetchMedicine = async () => {
     const token = localStorage.getItem("authToken");
@@ -75,6 +76,69 @@ function AddStock() {
     });
     if (fl) {
       fetchMedicine();
+    }
+  };
+
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+    console.log("CHANGE");
+    console.log(reportfile);
+  };
+
+  useEffect(() => {
+    if (reportfile) {
+      console.log("State Updated:", reportfile);
+    }
+  }, [reportfile]);
+
+  const handleUpload = async () => {
+    if (!reportfile) return;
+    const token = localStorage.getItem("authToken");
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const base64Data = e.target.result.split(",")[1]; // remove "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,"
+
+      const response = await axios.post(
+        compounderRoute,
+        {
+          add_stock_excel: 1,
+          file_data: base64Data,
+          filename: reportfile.name,
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      console.log(response.data);
+      if (response.data.status === 1) {
+        alert("added stock successfully");
+        window.location.reload();
+      }
+    };
+
+    reader.readAsDataURL(reportfile); // reads as base64
+  };
+
+  const handelgetfile = async () => {
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.post(
+        compounderRoute,
+        { get_file: 1, file_id: -2 },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+          responseType: "blob",
+        },
+      );
+      const blob = response.data;
+      const fileURL = URL.createObjectURL(blob);
+      window.open(fileURL, "_blank");
+    } catch (err) {
+      console.log(err);
     }
   };
 
@@ -130,15 +194,18 @@ function AddStock() {
         </div>
 
         <Group position="center" mt="lg">
-          <FileInput
-            label="Report"
+          <Input
+            type="file"
+            label="add stock using excel"
             id="report"
             placeholder="Choose File"
             mb="lg"
+            accept=".xlsx"
             style={{ width: "30%" }}
+            onChange={handleFileChange}
           />
           <Button
-            type="submit"
+            onClick={handleUpload}
             style={{ backgroundColor: "#15ABFF", color: "white" }}
           >
             Submit
@@ -150,6 +217,7 @@ function AddStock() {
               borderColor: "#15ABFF",
               color: "#15ABFF",
             }}
+            onClick={handelgetfile}
           >
             Download Example
           </Button>

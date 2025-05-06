@@ -25,6 +25,7 @@ import {
 } from "../../routes/visitorsHostelRoutes"; // Add this import
 import UpdateBookingForm from "./updateBooking";
 import CheckoutForm from "./CheckoutForm";
+import ConfirmBookingIn from "./confirmBooking_Incharge";
 // import ForwardBookingForm from "./forwardBooking";
 
 function ViewBooking({ modalOpened, onClose, bookingId, bookingf, onCancel }) {
@@ -47,7 +48,7 @@ function ViewBooking({ modalOpened, onClose, bookingId, bookingf, onCancel }) {
     visitorOrganization: "",
     visitorAddress: "",
   });
-
+  const [confirmModalOpened, setConfirmModalOpened] = useState(false); // New state for ConfirmBookingIn modal
   const [availableRooms, setAvailableRooms] = useState([]);
   // const [forwardModalOpened, setForwardModalOpened] = useState(null);
   const printRef = useRef();
@@ -507,6 +508,30 @@ function ViewBooking({ modalOpened, onClose, bookingId, bookingf, onCancel }) {
               bookingId={formData.id}
             />
           )} */}
+          {role === "VhIncharge" && (
+            <>
+              <Button
+                onClick={() => setConfirmModalOpened(true)} // Open ConfirmBookingIn modal
+                disabled={bookingf.status !== "Forward"}
+                style={{
+                  backgroundColor:
+                    bookingf.status === "Forward" ? "#28a745" : "#d3d3d3",
+                  color: bookingf.status === "Forward" ? "#fff" : "#757575",
+                  cursor:
+                    bookingf.status === "Forward" ? "pointer" : "not-allowed",
+                }}
+              >
+                Confirm
+              </Button>
+              {confirmModalOpened && (
+                <ConfirmBookingIn
+                  forwardmodalOpened={confirmModalOpened}
+                  onClose={() => setConfirmModalOpened(false)} // Close ConfirmBookingIn modal
+                  bookingId={bookingId}
+                />
+              )}
+            </>
+          )}
           {(role === "VhCaretaker" || role === "VhIncharge") && (
             <>
               <Button onClick={handleUpdateButtonClick}>Update Booking</Button>

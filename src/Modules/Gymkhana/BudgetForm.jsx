@@ -8,12 +8,15 @@ import {
   Alert,
   Modal,
   FileInput,
+  Text,
 } from "@mantine/core";
 import PropTypes from "prop-types";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import "./GymkhanaForms.css";
+import { notifications } from "@mantine/notifications";
 import { host } from "../../routes/globalRoutes/index.jsx";
+import { useGetClubPositionData } from "./BackendLogic/ApiRoutes.js";
 
 function BudgetApprovalForm({
   clubName,
@@ -26,7 +29,10 @@ function BudgetApprovalForm({
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [formPreviewData, setFormPreviewData] = useState(null);
+  const { data: CurrentLogginedRelatedClub = [] } =
+    useGetClubPositionData(token);
   // Set up the form with initial values and validation
   const form = useForm({
     initialValues: initialValues || {
@@ -54,7 +60,10 @@ function BudgetApprovalForm({
       budget_file: (value) => (!value ? "You must attach a PDF" : null), // File validation
     },
   });
-
+  const FICName =
+    CurrentLogginedRelatedClub.find(
+      (c) => c.club === clubName && c.position === "FIC",
+    )?.name || null;
   // Mutation setup for submitting the form data via API
   const mutation = useMutation({
     mutationFn: (newBudgetData) => {
@@ -64,25 +73,57 @@ function BudgetApprovalForm({
       formData.append("description", newBudgetData.description);
       formData.append("budget_requested", newBudgetData.budget_requested);
       formData.append("status", newBudgetData.status);
-      formData.append("remarks", newBudgetData.remarks);
+      // formData.append("remarks", newBudgetData.remarks);
       formData.append("club", newBudgetData.club);
-      formData.append("budget_file", newBudgetData.budget_file); // Attach the file
-
-      return axios.put(
-        `${host}/gymkhana/api/new_budget/`, // API URL for the budget submission
-        newBudgetData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data", // For file uploads
-            Authorization: `Token ${token}`, // Auth token
-          },
+      formData.append("budget_file", newBudgetData.budget_file);
+      formData.append("file_id", newBudgetData.file_id);
+      console.log(formData);
+      return axios.put(`${host}/gymkhana/api/new_budget/`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data", // For file uploads
+          Authorization: `Token ${token}`,
         },
-      );
+      });
     },
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       console.log("Successfully submitted budget:", response.data);
       setSuccessMessage("Budget submission successful!");
-      form.reset(); // Optionally reset the form after successful submission
+      // Assume response.data.file_id is returned from the budget API
+      const fileId = response.data.file_id;
+
+      // Prepare forwarding FormData (similar to event form)
+      const forwardFormData = new FormData();
+      forwardFormData.append("receiver", FICName);
+      forwardFormData.append("receiver_designation", "FIC");
+      forwardFormData.append("remarks", "Approved by Co-ordinator");
+      forwardFormData.append(
+        "file_extra_JSON",
+        JSON.stringify({
+          approved_by: "FIC",
+          approved_on: new Date().toISOString(),
+        }),
+      );
+      console.log(forwardFormData);
+      try {
+        await axios.post(
+          `${host}/filetracking/api/forwardfile/${fileId}/`,
+          forwardFormData,
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          },
+        );
+      } catch (forwardErr) {
+        console.error("File forwarding failed", forwardErr);
+        notifications.show({
+          title: "Forwarding Failed",
+          message: <Text fz="sm">Could not forward file</Text>,
+          color: "red",
+        });
+      }
+      form.reset();
     },
     onError: (error) => {
       console.error("Error during budget submission:", error);
@@ -90,19 +131,71 @@ function BudgetApprovalForm({
     },
   });
 
-  const handleSubmit = (values) => {
+  // Budget handleSubmit function with filetracking file creation
+  const handleSubmit = async (values) => {
     if (editMode && onSubmit) {
       onSubmit(values);
       return;
     }
-    const formattedValues = {
-      ...values,
-    };
-    mutation.mutate(formattedValues);
+    try {
+      const fileFormData = new FormData();
+      fileFormData.append("designation", "co-ordinator");
+      fileFormData.append("receiver_username", FICName);
+      fileFormData.append("receiver_designation", "FIC");
+      fileFormData.append("subject", values.budget_for || "budget_for");
+      fileFormData.append("description", values.description || "description");
+      fileFormData.append("src_module", "Gymkhana");
+      // fileFormData.append("remarks", "Created file by Coordinator");
+
+      // Use budget_file instead of event_poster
+      if (values.budget_file) {
+        fileFormData.append("files", values.budget_file);
+      }
+
+      const fileRes = await axios.post(
+        `${host}/filetracking/api/file/`,
+        fileFormData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+
+      const { file_id } = fileRes.data;
+      const formattedValues = {
+        ...values,
+        file_id,
+        budget_allocated: values.budget_allocated
+          ? Number(values.budget_allocated)
+          : null,
+        status: values.status || "COORDINATOR",
+        budget_comment: values.budget_comment || null,
+      };
+      console.log(formattedValues);
+
+      mutation.mutate(formattedValues);
+    } catch (err) {
+      console.error("Error in file creation or form submit:", err);
+      setErrorMessage("Something went wrong. Please try again.");
+    }
   };
+
+  const confirmSubmission = () => {
+    setShowConfirmModal(false);
+    handleSubmit(formPreviewData);
+  };
+
   return (
     <Container>
-      <form onSubmit={form.onSubmit(handleSubmit)} className="club-form">
+      <form
+        onSubmit={form.onSubmit((values) => {
+          setFormPreviewData(values);
+          setShowConfirmModal(true);
+        })}
+        className="club-form"
+      >
         <h2 className="club-header"> {clubName}'s Budget Proposal</h2>
         {/* Success Message */}
         {successMessage && (
@@ -193,6 +286,44 @@ function BudgetApprovalForm({
           </Button>
         </Group>
       </form>
+
+      <Modal
+        opened={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        title="Confirm Budget Submission"
+      >
+        <Text>
+          <strong>Budget For:</strong> {formPreviewData?.budget_for}
+        </Text>
+        <Text>
+          <strong>Description:</strong> {formPreviewData?.description}
+        </Text>
+        <Text>
+          <strong>Requested Amount:</strong> ₹
+          {formPreviewData?.budget_requested}
+        </Text>
+        <Text>
+          <strong>Attached File:</strong>{" "}
+          {formPreviewData?.budget_file?.name || "No file"}
+        </Text>
+        <Text>
+          <strong>Remarks:</strong> {formPreviewData?.remarks}
+        </Text>
+
+        <Group position="apart" mt="md">
+          <Button color="green" onClick={confirmSubmission}>
+            Confirm
+          </Button>
+          <Button
+            color="red"
+            variant="outline"
+            onClick={() => setShowConfirmModal(false)}
+          >
+            Cancel
+          </Button>
+        </Group>
+      </Modal>
+
       <Modal
         opened={isModalOpen}
         onClose={() => setIsModalOpen(false)}

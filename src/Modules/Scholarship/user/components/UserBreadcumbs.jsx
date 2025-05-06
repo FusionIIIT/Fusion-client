@@ -72,8 +72,8 @@ function UserBreadcrumbs() {
                   }
                   style={{
                     padding: "1rem 1.5rem",
-                    color: activeTab === item.key ? "blue" : "black",
-                    transition: "color 0.3s",
+                    color: activeTab === item.key ? "#17ABFF" : "black",
+                    transition: "#17ABFF",
                   }}
                 >
                   <Text size="lg" weight={activeTab === item.key ? 700 : 500}>

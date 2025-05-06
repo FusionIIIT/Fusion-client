@@ -7,7 +7,8 @@ import {
   Badge,
   Text,
   Box,
-  TextInput, // Add TextInput import
+  TextInput,
+  Select, // Add TextInput import
 } from "@mantine/core";
 import PropTypes from "prop-types";
 import { useSelector } from "react-redux";
@@ -47,7 +48,7 @@ function BookingsRequestTable({ bookings }) {
   const handleViewCloseModal = () => {
     setViewModalOpened(null); // Close modal
   };
-
+  const [sortBy, setSortBy] = useState("bookingFrom"); // Default sorting by "Booking From"
   const role = useSelector((state) => state.user.role);
 
   // Filter bookings based on role and status
@@ -70,9 +71,15 @@ function BookingsRequestTable({ bookings }) {
   });
 
   // Sort bookings by "booking from" date in descending order
-  const sortedBookings = searchedBookings.sort(
-    (a, b) => new Date(b.bookingFrom) - new Date(a.bookingFrom),
-  );
+  const sortedBookings = searchedBookings.sort((a, b) => {
+    if (sortBy === "bookingFrom") {
+      return new Date(b.bookingFrom) - new Date(a.bookingFrom);
+    }
+    if (sortBy === "bookingTo") {
+      return new Date(b.bookingTo) - new Date(a.bookingTo);
+    }
+    return 0;
+  });
 
   return (
     <Box p="md" style={{ margin: 10 }}>
@@ -106,12 +113,32 @@ function BookingsRequestTable({ bookings }) {
         </Button>
       </Box>
 
-      <TextInput
-        placeholder="Search by Intender or Booking Status"
-        value={searchTerm}
-        onChange={(event) => setSearchTerm(event.currentTarget.value)}
-        style={{ marginBottom: "1rem" }}
-      />
+      <Box
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "1rem",
+        }}
+      >
+        <TextInput
+          placeholder="Search by Intender or Booking Status"
+          value={searchTerm}
+          onChange={(event) => setSearchTerm(event.currentTarget.value)}
+          style={{ flex: 1, marginRight: "1rem" }} // Adjust spacing
+        />
+
+        <Select
+          placeholder="Sort by"
+          value={sortBy}
+          onChange={(value) => setSortBy(value)}
+          data={[
+            { value: "bookingFrom", label: "Booking From" },
+            { value: "bookingTo", label: "Booking To" },
+          ]}
+          style={{ flex: 1 }} // Adjust spacing
+        />
+      </Box>
 
       {modalOpened && (
         <CombinedBookingForm
@@ -199,7 +226,7 @@ function BookingsRequestTable({ bookings }) {
                     textAlign: "center",
                   }}
                 >
-                  {booking.modifiedCategory}
+                  {booking.category || booking.modifiedCategory}
                   {/* {console.log("BOOKING: ", booking)} */}
                 </td>
                 {role === "VhIncharge" ? (
@@ -220,43 +247,6 @@ function BookingsRequestTable({ bookings }) {
                     textAlign: "center",
                   }}
                 >
-                  {/* {role === "VhCaretaker" && booking.status === "Pending" ? (
-                    <>
-                      <Button
-                        variant="outline"
-                        color="green"
-                        onClick={() => handleForwardButtonClick(booking.id)}
-                      >
-                        Forward
-                      </Button>
-                      {forwardModalOpened === booking.id && (
-                        <ForwardBookingForm
-                          forwardmodalOpened={forwardModalOpened === booking.id}
-                          onClose={handleForwardCloseModal}
-                          onBookingForward={onBookingForward} // Pass the function down
-                          bookingId={booking.id}
-                        />
-                      )}
-                    </>
-                  ) : role === "VhIncharge" && booking.status === "Forward" ? (
-                    <>
-                      <Button
-                        variant="outline"
-                        color="green"
-                        onClick={() => handleForwardButtonClick(booking.id)}
-                      >
-                        Confirm
-                      </Button>
-                      {forwardModalOpened === booking.id && (
-                        <ConfirmBookingIn
-                          forwardmodalOpened={forwardModalOpened === booking.id}
-                          onClose={handleForwardCloseModal}
-                          bookingId={booking.id}
-                          bookingf={booking}
-                        />
-                      )}
-                    </>
-                  ) : ( */}
                   <Badge
                     color={
                       booking.status === "Pending"

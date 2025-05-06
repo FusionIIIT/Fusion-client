@@ -1,7 +1,5 @@
 import {
-  Paper,
   Button,
-  Title,
   Grid,
   Stack,
   Box,
@@ -11,8 +9,17 @@ import {
   ActionIcon,
   Modal,
   TextInput,
+  Container,
+  Card,
+  Divider,
 } from "@mantine/core";
-import { CloudArrowUp, CloudArrowDown, Plus, X } from "@phosphor-icons/react";
+import {
+  IconUpload,
+  IconDownload,
+  IconPlus,
+  IconX,
+  IconRefresh,
+} from "@tabler/icons-react";
 import { useState } from "react";
 import axios from "axios";
 import {
@@ -37,8 +44,6 @@ export default function AssignRoomsComponent() {
       setCurrentBatch("");
       setBatchError("");
       setModalOpen(true);
-
-      // Reset the input value so the same file can be selected again if removed
       event.target.value = null;
     }
   };
@@ -55,7 +60,6 @@ export default function AssignRoomsComponent() {
     ]);
 
     console.log("Added file:", currentFile, "for batch:", currentBatch);
-
     setModalOpen(false);
     setCurrentFile(null);
     setCurrentBatch("");
@@ -84,28 +88,23 @@ export default function AssignRoomsComponent() {
         return;
       }
 
-      // Loop through each file URL and trigger download
       response.data.files.forEach(async (fileUrl, index) => {
         try {
-          // Fetch the actual file as a blob
           const fileResponse = await axios.get(fileUrl, {
             responseType: "blob",
           });
 
-          // Create a blob URL
           const blob = new Blob([fileResponse.data], {
             type: fileResponse.headers["content-type"],
           });
           const url = window.URL.createObjectURL(blob);
 
-          // Create an <a> element and trigger download
           const link = document.createElement("a");
           link.href = url;
           link.setAttribute("download", `Hostel_Allotment_${index + 1}`);
           document.body.appendChild(link);
           link.click();
 
-          // Clean up
           document.body.removeChild(link);
           window.URL.revokeObjectURL(url);
         } catch (err) {
@@ -130,7 +129,6 @@ export default function AssignRoomsComponent() {
     const failedUploads = [];
 
     try {
-      // Process files in parallel using Promise.all
       const uploadPromises = files.map(async (fileObj) => {
         const formData = new FormData();
         formData.append("file", fileObj.file);
@@ -161,13 +159,11 @@ export default function AssignRoomsComponent() {
         }
       });
 
-      // Wait for all uploads to complete
       await Promise.all(uploadPromises);
 
       setUploading(false);
       setFiles([]);
 
-      // Create summary message
       if (successfulUploads.length > 0 && failedUploads.length === 0) {
         alert(`All ${successfulUploads.length} files uploaded successfully!`);
       } else if (successfulUploads.length > 0 && failedUploads.length > 0) {
@@ -182,6 +178,7 @@ export default function AssignRoomsComponent() {
       setUploading(false);
       alert("An error occurred during the upload process. Please try again.");
     }
+
     try {
       setAlloting(true);
       await axios.get(update_student_allotment, {
@@ -208,19 +205,17 @@ export default function AssignRoomsComponent() {
       });
     } catch (error) {
       console.error("Error in updating process:", error);
-      setAlloting(false);
       alert("An error occurred during the updating process. Please try again.");
     } finally {
       setAlloting(false);
     }
   };
 
-  // Helper function to get file type icon/color
   const getFileTypeInfo = (fileName) => {
     const extension = fileName.split(".").pop().toLowerCase();
 
     if (["xls", "xlsx", "csv"].includes(extension)) {
-      return { color: "green", label: "Excel" };
+      return { color: "teal", label: "Excel" };
     }
     if (["pdf"].includes(extension)) {
       return { color: "red", label: "PDF" };
@@ -239,89 +234,57 @@ export default function AssignRoomsComponent() {
   };
 
   return (
-    <Box p="md">
-      <Title order={2} mb="xl" weight={500}>
-        Assign Rooms
-      </Title>
-      <Button
-        variant="filled"
-        size="md"
-        onClick={refreshAllotment}
-        loading={alloting}
-        styles={(theme) => ({
-          root: {
-            backgroundColor: theme.colors.cyan[4],
-            "&:hover": {
-              backgroundColor: theme.colors.cyan[5],
-            },
-            minWidth: "150px",
-            borderRadius: "4px",
-          },
-        })}
-      >
-        Refresh Allotment
-      </Button>
-      <Grid gutter="lg">
-        {/* Upload Card */}
+    <Container size="xl" px="xs">
+      <Group position="apart" mb="lg">
+        <Button
+          variant="light"
+          size="sm"
+          leftIcon={<IconRefresh size={16} />}
+          onClick={refreshAllotment}
+          loading={alloting}
+          color="teal"
+        >
+          Refresh Allotment
+        </Button>
+      </Group>
+
+      <Divider mb="lg" />
+
+      <Grid gutter="md">
         <Grid.Col span={{ base: 12, md: 6 }}>
-          <Paper
-            p="xl"
-            radius="md"
-            sx={{
-              backgroundColor: "#f0f0f0",
-              minHeight: "280px",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Stack spacing="lg" align="center" style={{ width: "100%" }}>
-              <CloudArrowUp size={64} weight="thin" />
-              <Title order={3} weight={400} size="h4">
-                Upload batch sheet
-              </Title>
-
-              <input
-                type="file"
-                id="batchSheet"
-                style={{ display: "none" }}
-                onChange={handleFileSelect}
-                accept=".xlsx,.xls,.csv,.pdf,.doc,.docx,.ppt,.pptx,.txt"
-              />
-
-              <Group position="center" mb="md">
+          <Card shadow="sm" p="lg" radius="md" withBorder>
+            <Card.Section withBorder inheritPadding py="xs">
+              <Group position="apart">
+                <Group>
+                  <IconUpload size={20} stroke={1.5} color="#228be6" />
+                  <Text weight={500}>Upload Allocation Data</Text>
+                </Group>
+                <input
+                  type="file"
+                  id="batchSheet"
+                  style={{ display: "none" }}
+                  onChange={handleFileSelect}
+                  accept=".xlsx,.xls,.csv,.pdf,.doc,.docx,.ppt,.pptx,.txt"
+                />
                 <Button
                   component="label"
                   htmlFor="batchSheet"
-                  variant="outline"
-                  size="md"
-                  leftIcon={<Plus size={20} />}
-                  styles={(theme) => ({
-                    root: {
-                      borderColor: theme.colors.cyan[4],
-                      color: theme.colors.cyan[4],
-                      "&:hover": {
-                        backgroundColor: theme.colors.cyan[0],
-                      },
-                      minWidth: "120px",
-                      borderRadius: "4px",
-                    },
-                  })}
+                  variant="subtle"
+                  size="xs"
+                  leftIcon={<IconPlus size={14} />}
+                  color="blue"
                 >
                   Add File
                 </Button>
               </Group>
+            </Card.Section>
 
-              {/* Selected Files List */}
-              {files.length > 0 && (
-                <Box
-                  sx={{ width: "100%", maxHeight: "200px", overflowY: "auto" }}
-                  mb="md"
-                >
-                  <Text weight={500} mb="xs">
-                    Selected Files:
-                  </Text>
+            {files.length > 0 ? (
+              <Box py="md">
+                <Text size="sm" color="dimmed" mb="sm">
+                  {files.length} file{files.length !== 1 ? "s" : ""} selected
+                </Text>
+                <Box sx={{ height: "180px", overflowY: "auto" }}>
                   <Stack spacing="xs">
                     {files.map((fileObj, index) => {
                       const fileTypeInfo = getFileTypeInfo(fileObj.file.name);
@@ -330,16 +293,26 @@ export default function AssignRoomsComponent() {
                           key={index}
                           position="apart"
                           p="xs"
-                          sx={{ backgroundColor: "#fff", borderRadius: "4px" }}
+                          sx={(theme) => ({
+                            backgroundColor:
+                              theme.colorScheme === "dark"
+                                ? theme.colors.dark[8]
+                                : theme.colors.gray[0],
+                            borderRadius: theme.radius.sm,
+                          })}
                         >
-                          <Group>
-                            <Badge color={fileTypeInfo.color} variant="light">
+                          <Group spacing="xs">
+                            <Badge
+                              color={fileTypeInfo.color}
+                              size="sm"
+                              variant="outline"
+                            >
                               {fileTypeInfo.label}
                             </Badge>
                             <Text
                               size="sm"
                               style={{
-                                maxWidth: "150px",
+                                maxWidth: "120px",
                                 overflow: "hidden",
                                 textOverflow: "ellipsis",
                                 whiteSpace: "nowrap",
@@ -347,108 +320,101 @@ export default function AssignRoomsComponent() {
                             >
                               {fileObj.file.name}
                             </Text>
-                            <Badge color="blue">Batch: {fileObj.batch}</Badge>
+                            <Badge color="blue" size="sm">
+                              {fileObj.batch}
+                            </Badge>
                           </Group>
                           <ActionIcon
                             color="red"
+                            size="sm"
                             variant="subtle"
                             onClick={() => removeFile(index)}
                           >
-                            <X size={16} />
+                            <IconX size={14} />
                           </ActionIcon>
                         </Group>
                       );
                     })}
                   </Stack>
                 </Box>
-              )}
-
-              {files.length > 0 && (
-                <Button
-                  variant="filled"
-                  size="md"
-                  onClick={uploadAllFiles}
-                  loading={uploading}
-                  styles={(theme) => ({
-                    root: {
-                      backgroundColor: theme.colors.cyan[4],
-                      "&:hover": {
-                        backgroundColor: theme.colors.cyan[5],
-                      },
-                      minWidth: "150px",
-                      borderRadius: "4px",
-                    },
-                  })}
-                >
-                  Upload All Files
-                </Button>
-              )}
-            </Stack>
-          </Paper>
+                <Box mt="md">
+                  <Button
+                    fullWidth
+                    variant="filled"
+                    color="blue"
+                    size="sm"
+                    onClick={uploadAllFiles}
+                    loading={uploading}
+                  >
+                    Upload Files
+                  </Button>
+                </Box>
+              </Box>
+            ) : (
+              <Stack align="center" spacing="md" py={50}>
+                <IconUpload size={40} stroke={1} color="#ADB5BD" />
+                <Text color="dimmed" size="sm" align="center">
+                  Drag files here or click the Add File button above
+                </Text>
+              </Stack>
+            )}
+          </Card>
         </Grid.Col>
 
-        {/* Download Card */}
         <Grid.Col span={{ base: 12, md: 6 }}>
-          <Paper
-            p="xl"
-            radius="md"
-            sx={{
-              backgroundColor: "#f0f0f0",
-              minHeight: "280px",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Stack spacing="lg" align="center">
-              <CloudArrowDown size={64} weight="thin" />
-              <Title order={3} weight={400} size="h4">
-                Download batch sheet
-              </Title>
+          <Card shadow="sm" p="lg" radius="md" withBorder>
+            <Card.Section withBorder inheritPadding py="xs">
+              <Group>
+                <IconDownload size={20} stroke={1.5} color="#228be6" />
+                <Text weight={500}>Download Templates</Text>
+              </Group>
+            </Card.Section>
 
+            <Stack align="center" spacing="lg" py={50}>
+              <IconDownload size={40} stroke={1} color="#ADB5BD" />
+              <Text align="center" size="sm" color="dimmed" px="lg">
+                Download the template files for batch allocation
+              </Text>
               <Button
-                variant="filled"
-                size="md"
+                variant="outline"
+                color="blue"
+                leftIcon={<IconDownload size={16} />}
                 onClick={handleDownload}
-                styles={(theme) => ({
-                  root: {
-                    backgroundColor: theme.colors.cyan[4],
-                    "&:hover": {
-                      backgroundColor: theme.colors.cyan[5],
-                    },
-                    minWidth: "120px",
-                    borderRadius: "4px",
-                  },
-                })}
               >
-                Download
+                Download Templates
               </Button>
             </Stack>
-          </Paper>
+          </Card>
         </Grid.Col>
       </Grid>
 
-      {/* Batch Selection Modal */}
       <Modal
         opened={modalOpen}
         onClose={() => setModalOpen(false)}
-        title="Select Batch"
+        title="Select Batch Year"
         centered
-        styles={{
-          title: { fontWeight: 600, fontSize: "1.2rem" },
-        }}
+        size="sm"
+        styles={(theme) => ({
+          title: {
+            fontWeight: 600,
+            color: theme.colors.blue[7],
+          },
+        })}
       >
         <Stack spacing="md">
           {currentFile && (
-            <Group>
-              <Text weight={500}>File:</Text>
-              <Text>{currentFile.name}</Text>
+            <Group spacing="xs">
+              <Text size="sm" weight={500}>
+                Selected file:
+              </Text>
+              <Text size="sm" color="dimmed">
+                {currentFile.name}
+              </Text>
             </Group>
           )}
 
           <TextInput
-            label="Enter Batch Year"
+            label="Batch Year"
             placeholder="e.g., 2023"
             value={currentBatch}
             onChange={(event) => {
@@ -459,14 +425,20 @@ export default function AssignRoomsComponent() {
             error={batchError}
           />
 
-          <Group position="right" mt="md">
-            <Button variant="outline" onClick={() => setModalOpen(false)}>
+          <Group position="right" mt="md" spacing="sm">
+            <Button
+              variant="subtle"
+              onClick={() => setModalOpen(false)}
+              color="gray"
+            >
               Cancel
             </Button>
-            <Button onClick={handleBatchConfirm}>Confirm</Button>
+            <Button onClick={handleBatchConfirm} color="blue">
+              Confirm
+            </Button>
           </Group>
         </Stack>
       </Modal>
-    </Box>
+    </Container>
   );
 }

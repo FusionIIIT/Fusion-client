@@ -23,10 +23,10 @@ function ConvocationMedal() {
           <Paper
             p="-15"
             radius="md"
-            style={{ background: "none", marginTop: "-40px" }}
+            style={{ background: "none", marginTop: "10px" }}
           >
             {/* Instructions Section */}
-            <Title order={2} mb="md">
+            <Title order={2} mb="md" mt="lg">
               Please read below instructions before applying for any of the
               Convocation Medals:
             </Title>

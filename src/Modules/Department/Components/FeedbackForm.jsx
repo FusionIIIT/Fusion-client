@@ -5,12 +5,12 @@ import { host } from "../../../routes/globalRoutes";
 
 const styles = {
   formContainer: {
-    width: "600px",
-    margin: "auto",
+    width: "100%", // Take the full width of the page
     padding: "20px",
     border: "1px solid #ccc",
     borderRadius: "10px",
     backgroundColor: "#f9f9f9",
+    margin: "0 auto", // Center horizontally
   },
   formGroup: {
     marginBottom: "15px",
@@ -49,21 +49,14 @@ const styles = {
 
 export default function Feedbackform() {
   const [feedback, setFeedback] = useState("");
-  const [rating, setRating] = useState("Poor"); // Updated to match the initial option value
+  const [rating, setRating] = useState("Poor");
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const handleFeedbackChange = (e) => {
-    setFeedback(e.target.value);
-  };
 
-  const handleRatingChange = (e) => {
-    setRating(e.target.value);
-  };
-
-  const handleDepartmentChange = (e) => {
-    setSelectedDepartment(e.target.value);
-  };
+  const handleFeedbackChange = (e) => setFeedback(e.target.value);
+  const handleRatingChange = (e) => setRating(e.target.value);
+  const handleDepartmentChange = (e) => setSelectedDepartment(e.target.value);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -80,16 +73,16 @@ export default function Feedbackform() {
     };
 
     try {
-      await axios.post(url, feedbackData, {
+      const response = await axios.post(url, feedbackData, {
         headers: {
           Authorization: `Token ${token}`,
           "Content-Type": "application/json",
         },
       });
 
-      // Reset form fields after submission if needed
+      console.log("Feedback submitted:", response.data);
       setFeedback("");
-      setRating("Poor"); // Reset to default
+      setRating("Poor");
       setSelectedDepartment("");
     } catch (error) {
       const errorResponse = error.response?.data || error.message;
@@ -105,14 +98,8 @@ export default function Feedbackform() {
   return (
     <div className={`${classes.flex} ${classes.w_full}`}>
       <form onSubmit={handleSubmit} style={styles.formContainer}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            height: "auto",
-          }}
-        >
-          <h2>Department Feedback</h2>
+        <div>
+          <h2 style={styles.header}>Department Feedback</h2>
         </div>
 
         {errorMessage && (

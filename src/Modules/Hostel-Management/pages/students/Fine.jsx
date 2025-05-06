@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react";
 import {
-  Paper,
   Text,
   Stack,
   ScrollArea,
   Loader,
   Group,
   Alert,
+  Container,
+  Card,
+  Box,
+  Divider,
 } from "@mantine/core";
 import axios from "axios";
 import FineCard from "../../components/students/FineCard";
@@ -60,17 +63,29 @@ export default function Fines() {
 
   if (loading) {
     return (
-      <Group position="center" style={{ height: "100%" }}>
-        <Loader size="md" />
-      </Group>
+      <Container size="md" px="md" style={{ height: "100%" }}>
+        <Card
+          shadow="sm"
+          p="xl"
+          radius="md"
+          withBorder
+          style={{ height: "100%" }}
+        >
+          <Group position="center" style={{ height: "100%" }}>
+            <Loader size="md" />
+          </Group>
+        </Card>
+      </Container>
     );
   }
 
   if (error) {
     return (
-      <Alert title="Error" color="red">
-        {error}
-      </Alert>
+      <Container size="md" px="md">
+        <Alert title="Error" color="red">
+          {error}
+        </Alert>
+      </Container>
     );
   }
 
@@ -78,84 +93,70 @@ export default function Fines() {
   const pastFines = fines.filter((fine) => fine.status === "Paid");
 
   return (
-    <Paper
-      shadow="md"
-      p="md"
-      withBorder
-      sx={(theme) => ({
-        position: "fixed",
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        backgroundColor: theme.white,
-        border: `1px solid ${theme.colors.gray[3]}`,
-        borderRadius: theme.radius.md,
-      })}
-    >
-      <Group position="apart" style={{ width: "100%" }} mb="xl">
-        <Text
-          align="left"
-          size="24px"
-          style={{ color: "#757575", fontWeight: "bold" }}
-        >
-          My Fines
-        </Text>
-      </Group>
+    <Container size="md" px="md">
+      <Card shadow="sm" p={0} radius="md" withBorder>
+        <Box p="lg" sx={{ height: "70vh" }}>
+          <ScrollArea style={{ height: "100%" }}>
+            <Stack spacing="xl">
+              {/* Active Fines */}
+              <div>
+                <Text weight={500} size="lg" mb="md">
+                  Active Fines
+                </Text>
+                <Stack spacing="md">
+                  {activeFines.length > 0 ? (
+                    activeFines.map((fine) => (
+                      <FineCard
+                        key={fine.fine_id}
+                        fine_id={fine.fine_id}
+                        student_name={fine.student_name}
+                        hall={fine.hall}
+                        amount={fine.amount}
+                        status={fine.status}
+                        reason={fine.reason}
+                        isPastFine={false}
+                      />
+                    ))
+                  ) : (
+                    <Text color="dimmed" align="center" py="md">
+                      No active fines
+                    </Text>
+                  )}
+                </Stack>
+              </div>
 
-      <ScrollArea style={{ flex: 1 }}>
-        <Stack spacing="lg">
-          {/* Active Fines */}
-          <Group position="apart" align="center">
-            <Text weight={500} size="xl">
-              Active Fines
-            </Text>
-          </Group>
-          {activeFines.length > 0 ? (
-            activeFines.map((fine) => (
-              <FineCard
-                key={fine.fine_id}
-                fine_id={fine.fine_id}
-                student_name={fine.student_name}
-                hall={fine.hall}
-                amount={fine.amount}
-                status={fine.status}
-                reason={fine.reason}
-                isPastFine={fine.isPastFine}
-              />
-            ))
-          ) : (
-            <Text color="dimmed" align="center">
-              No active fines
-            </Text>
-          )}
+              <Divider my="md" />
 
-          {/* Past Fines */}
-          <Group position="apart" align="center" mt="xl">
-            <Text weight={500} size="xl">
-              Past Fines History
-            </Text>
-          </Group>
-          {pastFines.length > 0 ? (
-            pastFines.map((fine) => (
-              <FineCard
-                key={fine.fine_id}
-                fine_id={fine.fine_id}
-                student_name={fine.student_name}
-                hall={fine.hall}
-                amount={fine.amount}
-                status={fine.status}
-                reason={fine.reason}
-                isPastFine={fine.isPastFine}
-              />
-            ))
-          ) : (
-            <Text color="dimmed" align="center">
-              No past fines found.
-            </Text>
-          )}
-        </Stack>
-      </ScrollArea>
-    </Paper>
+              {/* Past Fines */}
+              <div>
+                <Text weight={500} size="lg" mb="md">
+                  Past Fines History
+                </Text>
+                <Stack spacing="md">
+                  {pastFines.length > 0 ? (
+                    pastFines.map((fine) => (
+                      <FineCard
+                        key={fine.fine_id}
+                        fine_id={fine.fine_id}
+                        student_name={fine.student_name}
+                        hall={fine.hall}
+                        amount={fine.amount}
+                        status={fine.status}
+                        reason={fine.reason}
+                        isPastFine
+                      />
+                    ))
+                  ) : (
+                    <Text color="dimmed" align="center" py="md">
+                      No past fines found.
+                    </Text>
+                  )}
+                </Stack>
+              </div>
+            </Stack>
+          </ScrollArea>
+        </Box>
+      </Card>
+    </Container>
   );
 }

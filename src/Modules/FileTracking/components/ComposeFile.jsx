@@ -14,8 +14,15 @@ import {
   Autocomplete,
   Grid,
   Modal,
+  Paper,
+  Stack,
 } from "@mantine/core";
-import { Upload, FloppyDisk, Trash } from "@phosphor-icons/react";
+import {
+  Upload,
+  FloppyDisk,
+  PaperPlaneTilt,
+  Trash,
+} from "@phosphor-icons/react";
 import { notifications } from "@mantine/notifications";
 import { useSelector } from "react-redux";
 import axios from "axios";
@@ -31,6 +38,7 @@ axios.defaults.withCredentials = true;
 export default function Compose() {
   const [files, setFiles] = React.useState([]);
   const [usernameSuggestions, setUsernameSuggestions] = React.useState([]);
+  const username = useSelector((state) => state.user.roll_no);
   const [receiver_username, setReceiverUsername] = React.useState("");
   const [receiver_designation, setReceiverDesignation] = React.useState("");
   const [receiver_designations, setReceiverDesignations] = React.useState("");
@@ -44,8 +52,10 @@ export default function Compose() {
   let module = useSelector((state) => state.module.current_module);
   module = module.split(" ").join("").toLowerCase();
   const uploaderRole = useSelector((state) => state.user.role);
-  const [designation, setDesignation] = React.useState(uploaderRole);
-  const options = roles.map((role) => ({ value: role, label: role }));
+  const [designation, setDesignation] = React.useState("");
+  const options = Array.isArray(roles)
+    ? roles.map((role) => ({ value: role, label: role }))
+    : [];
   const receiverRoles = Array.isArray(receiver_designations)
     ? receiver_designations.map((role) => ({
         value: role,
@@ -130,6 +140,10 @@ export default function Compose() {
       }
     }
   };
+  useEffect(() => {
+    setReceiverDesignation("");
+    setReceiverDesignations("");
+  }, [receiver_username]);
   const handleSaveDraft = async () => {
     try {
       const formData = new FormData();
@@ -201,6 +215,7 @@ export default function Compose() {
       formData.append("receiver_username", receiver_username);
       formData.append("receiver_designation", receiver_designation);
       formData.append("src_module", module);
+      formData.append("remarks", remarks);
       const response = await axios.post(`${createFileRoute}`, formData, {
         headers: {
           Authorization: `Token ${token}`,
@@ -338,8 +353,8 @@ export default function Compose() {
             </Button>
           </Group>
         )}
-        <Grid mb="sm" gutter="md" align="flex-start">
-          <Grid.Col span={{ base: 12, sm: 6 }}>
+        <Grid mb="sm" gutter="auto" align="flex-start">
+          <Grid.Col span={{ base: 12, sm: 6, md: 6 }}>
             <Box style={{ height: "100%", width: "98.5%", marginLeft: "8px" }}>
               <Autocomplete
                 label="Send To"
@@ -347,8 +362,9 @@ export default function Compose() {
                 value={receiver_username}
                 data={usernameSuggestions}
                 onChange={(value) => {
-                  setReceiverDesignation("");
-                  setReceiverUsername(value);
+                  setReceiverUsername(value); // update username
+                  setReceiverDesignation(""); // reset designation
+                  setReceiverDesignations("");
                 }}
                 styles={(theme) => ({
                   label: {
@@ -361,19 +377,17 @@ export default function Compose() {
               />
             </Box>
           </Grid.Col>
+
           <Grid.Col span={{ base: 12, sm: 6 }}>
             <Box style={{ height: "100%", width: "99%" }}>
               <Select
+                key={receiver_username}
                 label="Receiver Designation"
                 placeholder="Select designation"
-                onClick={() => {
-                  if (receiverRoles.length === 0) {
-                    fetchRoles();
-                  }
-                }}
                 value={receiver_designation}
                 data={receiverRoles}
                 onChange={(value) => setReceiverDesignation(value)}
+                onClick={() => fetchRoles()}
                 searchable
                 nothingFound="No designations found"
                 styles={(theme) => ({
@@ -388,6 +402,7 @@ export default function Compose() {
             </Box>
           </Grid.Col>
         </Grid>
+
         <Button
           type="submit"
           color="blue"
@@ -405,32 +420,74 @@ export default function Compose() {
       <Modal
         opened={showConfirmModal}
         onClose={() => setShowConfirmModal(false)}
-        title={
-          <Text align="center" weight={600} size="lg">
-            Confirm Submission
-          </Text>
-        }
+        title={null}
+        size="md"
+        radius="md"
+        padding="xl"
         centered
+        overlayProps={{
+          opacity: 0.55,
+          blur: 3,
+        }}
       >
-        <Text weight={600} mb="ls">
-          Do you want to send this file?
-        </Text>
-        <Text mb="ls">Sender: ({designation})</Text>
-        <Text mb="md">
-          Receiver: {receiver_username} ({receiver_designation})
-        </Text>
-        <Group justify="center" gap="xl" style={{ width: "100%" }}>
-          <Button
-            onClick={() => setShowConfirmModal(false)}
-            variant="outline"
-            style={{ width: "120px" }}
-          >
-            Cancel
-          </Button>
-          <Button onClick={finalSubmit} color="blue" style={{ width: "120px" }}>
-            Confirm
-          </Button>
-        </Group>
+        <Stack spacing="xl">
+          <Title order={3} align="center" color="blue">
+            Confirm Submission
+          </Title>
+
+          <Paper withBorder p="md" radius="md" bg="gray.0">
+            <Text fw={600} mb="md">
+              Do you want to send this file?
+            </Text>
+
+            <Card withBorder mb="sm" radius="sm" p="sm">
+              <Group spacing="xs" noWrap>
+                <Text size="sm" c="dimmed">
+                  Sender:
+                </Text>
+                <Text fw={600}>{username}</Text>
+                <Text size="sm" c="dimmed" fs="italic">
+                  [{designation}]
+                </Text>
+              </Group>
+            </Card>
+
+            <Card withBorder radius="sm" p="sm">
+              <Group spacing="xs" noWrap>
+                <Text size="sm" c="dimmed">
+                  Receiver:
+                </Text>
+                <Text fw={600}>{receiver_username}</Text>
+                <Text size="sm" c="dimmed" fs="italic">
+                  [{receiver_designation}]
+                </Text>
+              </Group>
+            </Card>
+          </Paper>
+
+          <Group position="center" spacing="md">
+            <Button
+              onClick={() => setShowConfirmModal(false)}
+              variant="subtle"
+              color="gray"
+              radius="md"
+              size="md"
+              w={130}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={finalSubmit}
+              color="blue"
+              radius="md"
+              size="md"
+              w={130}
+              leftIcon={<PaperPlaneTilt size={16} />}
+            >
+              Confirm
+            </Button>
+          </Group>
+        </Stack>
       </Modal>
     </Card>
   );

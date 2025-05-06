@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
-  Paper,
   Text,
   Input,
   Group,
@@ -13,6 +12,7 @@ import {
   Button,
   Textarea,
   Loader,
+  Box,
 } from "@mantine/core";
 import { MagnifyingGlass } from "@phosphor-icons/react";
 import {
@@ -63,10 +63,12 @@ export default function ImposeFine() {
 
   const filteredStudents = students.filter(
     (student) =>
-      student.id__user__username
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      student.room_no.toLowerCase().includes(searchTerm.toLowerCase()),
+      (student.id__user__username &&
+        student.id__user__username
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())) ||
+      (student.room_no &&
+        student.room_no.toLowerCase().includes(searchTerm.toLowerCase())),
   );
 
   const handleImposeFine = async () => {
@@ -109,125 +111,129 @@ export default function ImposeFine() {
   };
 
   return (
-    <Paper
-      shadow="md"
-      p="md"
-      withBorder
-      sx={(theme) => ({
-        position: "fixed",
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        backgroundColor: theme.white,
-        border: `1px solid ${theme.colors.gray[3]}`,
-        borderRadius: theme.radius.md,
-      })}
-    >
-      <Text
-        align="left"
-        mb="xl"
-        size="24px"
-        style={{ color: "#757575", fontWeight: "bold" }}
-      >
-        Impose Fine
-      </Text>
+    <Container size="md" px="md">
+      <Card shadow="sm" p={0} radius="md" withBorder>
+        <Box p="lg">
+          <Input
+            placeholder="Search by student ID or room number"
+            icon={<MagnifyingGlass size={16} />}
+            mb="lg"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.currentTarget.value)}
+          />
 
-      <Group mb="md">
-        <Input
-          placeholder="Search"
-          icon={<MagnifyingGlass size={16} />}
-          style={{ flex: 1 }}
-          value={searchTerm}
-          onChange={(event) => setSearchTerm(event.currentTarget.value)}
-        />
-      </Group>
-
-      <ScrollArea style={{ flex: 1, height: "calc(60vh)" }}>
-        {loading ? (
-          <Container
-            py="xl"
-            style={{ display: "flex", justifyContent: "center" }}
-          >
-            <Loader size="lg" />
-          </Container>
-        ) : error ? (
-          <Text align="center" color="red" size="lg">
-            {error}
-          </Text>
-        ) : (
-          <Stack spacing="sm">
-            {filteredStudents.map((student, index) => (
-              <Card
-                key={index}
-                padding="sm"
-                withBorder
-                onClick={() => {
-                  setSelectedStudent(student);
-                  setOpened(true);
-                }}
-                sx={(theme) => ({
-                  cursor: "pointer",
-                  "&:hover": {
-                    backgroundColor: theme.colors.gray[0],
-                  },
-                })}
+          <ScrollArea style={{ height: "60vh" }}>
+            {loading ? (
+              <Container
+                py="xl"
+                style={{ display: "flex", justifyContent: "center" }}
               >
-                <Group align="center" spacing="xs">
-                  <Text style={{ flex: 1 }}>{student.id__user__username}</Text>
-                  <Text style={{ flex: 1 }}>{student.programme}</Text>
-                  <Text
-                    size="sm"
-                    style={{
-                      textAlign: "right",
-                      backgroundColor: "#f1f3f5",
-                      padding: "2px 6px",
-                      borderRadius: "4px",
-                    }}
-                  >
-                    Room {student.room_no}
+                <Loader size="lg" />
+              </Container>
+            ) : error ? (
+              <Text align="center" color="red" size="lg">
+                {error}
+              </Text>
+            ) : (
+              <Stack spacing="sm">
+                {filteredStudents.length > 0 ? (
+                  filteredStudents.map((student, index) => (
+                    <Card
+                      key={index}
+                      padding="sm"
+                      withBorder
+                      radius="sm"
+                      onClick={() => {
+                        setSelectedStudent(student);
+                        setOpened(true);
+                      }}
+                      sx={(theme) => ({
+                        cursor: "pointer",
+                        "&:hover": {
+                          backgroundColor: theme.colors.gray[0],
+                        },
+                      })}
+                    >
+                      <Group position="apart">
+                        <Box style={{ width: "66%" }}>
+                          <Text weight={500}>{student.id__user__username}</Text>
+                        </Box>
+                        <Group spacing="md">
+                          <Text color="dimmed" size="sm">
+                            {student.programme}
+                          </Text>
+                          <Text
+                            size="sm"
+                            sx={(theme) => ({
+                              backgroundColor: theme.colors.gray[1],
+                              padding: "3px 10px",
+                              borderRadius: theme.radius.sm,
+                            })}
+                          >
+                            Room {student.room_no}
+                          </Text>
+                        </Group>
+                      </Group>
+                    </Card>
+                  ))
+                ) : (
+                  <Text align="center" color="dimmed" mt="xl">
+                    No students found matching your search criteria.
                   </Text>
-                </Group>
-              </Card>
-            ))}
+                )}
+              </Stack>
+            )}
+          </ScrollArea>
+        </Box>
+      </Card>
+
+      <Modal
+        opened={opened}
+        onClose={() => setOpened(false)}
+        title="Impose Fine"
+        size="md"
+      >
+        {selectedStudent && (
+          <Stack spacing="md">
+            <Card p="md" radius="sm" withBorder>
+              <Group position="apart">
+                <Text size="sm" color="dimmed">
+                  Student ID
+                </Text>
+                <Text weight={500}>{selectedStudent.id__user__username}</Text>
+              </Group>
+              <Group position="apart" mt="xs">
+                <Text size="sm" color="dimmed">
+                  Room
+                </Text>
+                <Text>{selectedStudent.room_no}</Text>
+              </Group>
+            </Card>
+
+            <Input
+              placeholder="Enter amount"
+              value={fineAmount}
+              onChange={(e) => setFineAmount(e.currentTarget.value)}
+              label="Fine Amount"
+            />
+
+            <Textarea
+              placeholder="Enter reason for imposing fine"
+              value={fineReason}
+              onChange={(e) => setFineReason(e.currentTarget.value)}
+              label="Reason"
+              minRows={3}
+            />
+
+            <Group position="right" mt="md">
+              <Button variant="default" onClick={() => setOpened(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleImposeFine}>Impose Fine</Button>
+            </Group>
           </Stack>
         )}
-      </ScrollArea>
-
-      <Modal opened={opened} onClose={() => setOpened(false)} size="md">
-        {selectedStudent && (
-          <Container>
-            <Stack spacing="md">
-              <Paper p="md" radius="md" withBorder>
-                <Group position="apart">
-                  <Text size="lg" weight={500} color="blue">
-                    Name:
-                  </Text>
-                  <Text size="lg">{selectedStudent.id__user__username}</Text>
-                </Group>
-              </Paper>
-
-              <Textarea
-                placeholder="Reason for fine"
-                value={fineReason}
-                onChange={(e) => setFineReason(e.currentTarget.value)}
-                label="Fine Reason"
-              />
-              <Input
-                placeholder="Fine Amount"
-                value={fineAmount}
-                onChange={(e) => setFineAmount(e.currentTarget.value)}
-                label="Fine Amount"
-              />
-              <Group position="right" mt="xl">
-                <Button variant="filled" onClick={handleImposeFine}>
-                  Impose Fine
-                </Button>
-              </Group>
-            </Stack>
-          </Container>
-        )}
       </Modal>
-    </Paper>
+    </Container>
   );
 }

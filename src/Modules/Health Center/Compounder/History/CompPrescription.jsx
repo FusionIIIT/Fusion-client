@@ -23,10 +23,7 @@ import { useForm } from "@mantine/form";
 import axios from "axios";
 import NavCom from "../NavCom";
 import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
-import {
-  compounderRoute,
-  GetfileRoute,
-} from "../../../../routes/health_center";
+import { compounderRoute } from "../../../../routes/health_center";
 
 // function getDummyData(medicineName) {
 //   const dummyDatabase = {
@@ -366,11 +363,25 @@ function CompPrescription() {
     );
   }
 
-  const handelgetfile = (fid) => {
-    console.log("clicked");
-    const url = `${GetfileRoute}${fid}`;
-    console.log(url);
-    window.open(url, "_blank");
+  const handelgetfile = async (fid) => {
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.post(
+        compounderRoute,
+        { get_file: 1, file_id: fid },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+          responseType: "blob",
+        },
+      );
+      const blob = response.data;
+      const fileURL = URL.createObjectURL(blob);
+      window.open(fileURL, "_blank");
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   // const filteredPrescription = prescrip?.prescriptions?.find(
@@ -970,6 +981,7 @@ function CompPrescription() {
                   <Input
                     type="file"
                     name="report"
+                    accept=".pdf"
                     onChange={handleFileChange}
                     style={{
                       width: "100%",

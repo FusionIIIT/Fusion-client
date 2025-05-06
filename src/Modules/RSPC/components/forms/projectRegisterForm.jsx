@@ -15,17 +15,20 @@ import {
   Anchor,
   Alert,
   Divider,
+  Group,
 } from "@mantine/core";
 import { FileText, ThumbsUp, ThumbsDown } from "@phosphor-icons/react";
 import { useForm } from "@mantine/form";
 import axios from "axios";
 import classes from "../../styles/formStyle.module.css";
 import { projectRegisterCommencementRoute } from "../../../../routes/RSPCRoutes";
+import ConfirmationModal from "../../helpers/confirmationModal";
 
 function ProjectRegisterForm({ projectData }) {
   const [file, setFile] = useState(null);
   const [successAlertVisible, setSuccessAlertVisible] = useState(false);
   const [failureAlertVisible, setFailureAlertVisible] = useState(false);
+  const [confirmationModalOpened, setConfirmationModalOpened] = useState(false);
   const navigate = useNavigate();
 
   const form = useForm({
@@ -62,7 +65,7 @@ function ProjectRegisterForm({ projectData }) {
       formData.append("sponsored_agency", values.sponsored_agency);
       formData.append("sanction_date", values.sanction_date);
       formData.append("sanctioned_amount", values.sanctioned_amount);
-      formData.append("status", "HoD Forward");
+      formData.append("status", "Registered");
       if (file) {
         formData.append("file", file);
       }
@@ -94,10 +97,14 @@ function ProjectRegisterForm({ projectData }) {
       }, 2500);
     }
   };
+  const handleFormSubmit = () => {
+    if (form.validate().hasErrors) return;
+    setConfirmationModalOpened(true);
+  };
 
   return (
     <>
-      <form onSubmit={form.onSubmit(handleSubmit)}>
+      <form onSubmit={form.onSubmit(handleFormSubmit)}>
         {projectData &&
         Object.keys(projectData).length > 0 &&
         "pi_id" in projectData ? (
@@ -106,22 +113,18 @@ function ProjectRegisterForm({ projectData }) {
               Register Project
             </Title>
 
-            {projectData.status !== "Registered" ? (
+            {projectData.status === "Submitted" ? (
               <>
                 <Grid gutter="xl">
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Project Title
-                    </Text>
+                    <Text className={classes.fieldLabel}>Project Title</Text>
                     <TextInput
                       placeholder="Enter name of project"
                       {...form.getInputProps("name")}
                     />
                   </Grid.Col>
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Project ID
-                    </Text>
+                    <Text className={classes.fieldLabel}>Project ID</Text>
                     <TextInput
                       value={projectData.pid}
                       readOnly
@@ -135,7 +138,7 @@ function ProjectRegisterForm({ projectData }) {
                   </Grid.Col>
 
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
+                    <Text className={classes.fieldLabel}>
                       Project Investigator
                     </Text>
                     <TextInput
@@ -150,14 +153,14 @@ function ProjectRegisterForm({ projectData }) {
                     />
                   </Grid.Col>
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
+                    <Text className={classes.fieldLabel}>
                       Co-Principal Investigators
                     </Text>
                     {projectData.copis.length > 0 ? (
-                      <ul style={{ paddingLeft: "20px", margin: "5px 0" }}>
+                      <ul style={{ paddingLeft: "20px", margin: "0 0" }}>
                         {projectData.copis.map((copi, index) => (
                           <li key={index}>
-                            <Text size="lg">{copi}</Text>
+                            <Text>{copi}</Text>
                           </li>
                         ))}
                       </ul>
@@ -166,7 +169,7 @@ function ProjectRegisterForm({ projectData }) {
                     )}
                   </Grid.Col>
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
+                    <Text className={classes.fieldLabel}>
                       Project To Be Operated By
                     </Text>
                     <Radio.Group
@@ -179,9 +182,7 @@ function ProjectRegisterForm({ projectData }) {
                   </Grid.Col>
 
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Project Type
-                    </Text>
+                    <Text className={classes.fieldLabel}>Project Type</Text>
                     <Radio.Group
                       {...form.getInputProps("type")}
                       value={form.values.type}
@@ -191,9 +192,7 @@ function ProjectRegisterForm({ projectData }) {
                     </Radio.Group>
                   </Grid.Col>
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Department
-                    </Text>
+                    <Text className={classes.fieldLabel}>Department</Text>
                     <TextInput
                       value={projectData.dept}
                       readOnly
@@ -207,9 +206,7 @@ function ProjectRegisterForm({ projectData }) {
                   </Grid.Col>
 
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Category
-                    </Text>
+                    <Text className={classes.fieldLabel}>Category</Text>
                     <TextInput
                       value={projectData.category}
                       readOnly
@@ -222,7 +219,7 @@ function ProjectRegisterForm({ projectData }) {
                     />
                   </Grid.Col>
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
+                    <Text className={classes.fieldLabel}>
                       Project Sponsor Agency
                     </Text>
                     <TextInput
@@ -232,9 +229,7 @@ function ProjectRegisterForm({ projectData }) {
                   </Grid.Col>
 
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Project Scheme
-                    </Text>
+                    <Text className={classes.fieldLabel}>Project Scheme</Text>
                     <TextInput
                       value={projectData.scheme}
                       readOnly
@@ -246,10 +241,8 @@ function ProjectRegisterForm({ projectData }) {
                       }}
                     />
                   </Grid.Col>
-                  <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Project Abstract
-                    </Text>
+                  <Grid.Col span={12}>
+                    <Text className={classes.fieldLabel}>Project Abstract</Text>
                     <Textarea
                       value={projectData.description}
                       readOnly
@@ -264,27 +257,24 @@ function ProjectRegisterForm({ projectData }) {
 
                   <Grid.Col span={12}>
                     <Divider
-                      my="lg"
-                      label="X X X"
+                      my="sm"
+                      label=""
                       labelPosition="center"
-                      size="md"
+                      size="sm"
                     />
                   </Grid.Col>
 
                   <Grid.Col span={12}>
-                    <Text size="md">
-                      <strong style={{ color: "blue" }}>Note:</strong> If the
-                      project duration has changed considerably from the figure
-                      given below or the sanctioned amount is considerably less
-                      than proposed budget, then please add the project again
-                      fresh with the accurate head-wise budget details and
-                      duration.
+                    <Text>
+                      <strong>Note:</strong> If the project duration has changed
+                      considerably from the figure given below or the sanctioned
+                      amount is considerably less than proposed budget, then
+                      please add the project again fresh with the accurate
+                      head-wise budget details and duration.
                     </Text>
                   </Grid.Col>
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Project Duration
-                    </Text>
+                    <Text className={classes.fieldLabel}>Project Duration</Text>
                     <TextInput
                       value={`${projectData.duration} months`}
                       readOnly
@@ -297,7 +287,7 @@ function ProjectRegisterForm({ projectData }) {
                     />
                   </Grid.Col>
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
+                    <Text className={classes.fieldLabel}>
                       Project Sanction Date{" "}
                       <span style={{ color: "red" }}>*</span>
                     </Text>
@@ -310,11 +300,11 @@ function ProjectRegisterForm({ projectData }) {
                   </Grid.Col>
 
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
+                    <Text className={classes.fieldLabel}>
                       Project Budget Proposed
                     </Text>
                     <TextInput
-                      value={`INR ${projectData.total_budget}`}
+                      value={`₹${projectData.total_budget}`}
                       readOnly
                       styles={{
                         input: {
@@ -325,51 +315,53 @@ function ProjectRegisterForm({ projectData }) {
                     />
                   </Grid.Col>
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Total Amount Sanctioned (in INR){" "}
+                    <Text className={classes.fieldLabel}>
+                      Total Amount Sanctioned (in ₹){" "}
                       <span style={{ color: "red" }}>*</span>
                     </Text>
                     <NumberInput
-                      placeholder="Total budget for project (in INR)"
+                      placeholder="Total budget for project (in ₹)"
                       min={0}
                       {...form.getInputProps("sanctioned_amount")}
                     />
                   </Grid.Col>
 
-                  <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Project Agreement (Sanction Letter, MoU, etc.)
-                    </Text>
-                    <div className={classes.fileInputContainer}>
-                      <Button
-                        variant="outline"
-                        color="#15ABFF"
-                        size="md"
-                        component="label"
-                        className={classes.fileInputButton}
-                        style={{ borderRadius: "8px" }}
-                      >
-                        <FileText size={26} style={{ marginRight: "3px" }} />
-                        Choose File
-                        <input
-                          type="file"
-                          hidden
-                          onChange={(event) =>
-                            setFile(event.currentTarget.files[0])
-                          }
-                        />
-                      </Button>
-                      {file && (
-                        <span className={classes.fileName}>{file.name}</span>
-                      )}
-                    </div>
+                  <Grid.Col span={12}>
+                    <Group position="apart" align="center">
+                      <Text className={classes.fieldLabel}>
+                        Project Agreement (Sanction Letter, MoU, etc.)
+                      </Text>
+                      <div className={classes.fileInputContainer}>
+                        <Button
+                          variant="outline"
+                          color="#15ABFF"
+                          size="xs"
+                          component="label"
+                          className={classes.fileInputButton}
+                          style={{ borderRadius: "8px" }}
+                        >
+                          <FileText size={26} style={{ marginRight: "3px" }} />
+                          Choose File
+                          <input
+                            type="file"
+                            hidden
+                            onChange={(event) =>
+                              setFile(event.currentTarget.files[0])
+                            }
+                          />
+                        </Button>
+                        {file && (
+                          <span className={classes.fileName}>{file.name}</span>
+                        )}
+                      </div>
+                    </Group>
                   </Grid.Col>
 
                   <Grid.Col span={12}>
-                    <Text size="md">
-                      <strong style={{ color: "blue" }}>Note:</strong> Along
-                      with filling this form, please also fill the hard copy of
-                      New Project Registration Form{" "}
+                    <Text>
+                      <strong>Note:</strong> Along with filling this form,
+                      please also fill the hard copy of New Project Registration
+                      Form{" "}
                       <Anchor
                         href="https://www.iiitdmj.ac.in/rspc.iiitdmj.ac.in/DRSPC/PM/1_NPR.doc"
                         style={{ fontSize: "0.85em" }}
@@ -394,17 +386,26 @@ function ProjectRegisterForm({ projectData }) {
                 </div>
               </>
             ) : (
-              <Text color="red" size="xl" weight={700} align="center">
+              <Text color="red" align="center">
                 Project is already registered!
               </Text>
             )}
           </Paper>
         ) : (
-          <Text color="red" size="xl" weight={700} align="center">
+          <Text color="red" align="center">
             Failed to load project details
           </Text>
         )}
       </form>
+
+      <ConfirmationModal
+        opened={confirmationModalOpened}
+        onClose={() => setConfirmationModalOpened(false)}
+        onConfirm={() => {
+          setConfirmationModalOpened(false);
+          form.onSubmit(handleSubmit)();
+        }}
+      />
 
       {(successAlertVisible || failureAlertVisible) && (
         <div className={classes.overlay}>

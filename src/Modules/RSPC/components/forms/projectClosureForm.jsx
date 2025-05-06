@@ -11,17 +11,20 @@ import {
   Text,
   Alert,
   Anchor,
+  Group,
 } from "@mantine/core";
 import { FileText, ThumbsUp, ThumbsDown } from "@phosphor-icons/react";
 import { useForm } from "@mantine/form";
 import axios from "axios";
 import classes from "../../styles/formStyle.module.css";
 import { projectClosureRoute } from "../../../../routes/RSPCRoutes";
+import ConfirmationModal from "../../helpers/confirmationModal";
 
 function ProjectClosureForm({ projectData }) {
   const [file, setFile] = useState(null);
   const [successAlertVisible, setSuccessAlertVisible] = useState(false);
   const [failureAlertVisible, setFailureAlertVisible] = useState(false);
+  const [confirmationModalOpened, setConfirmationModalOpened] = useState(false);
   const navigate = useNavigate();
 
   const form = useForm({
@@ -63,10 +66,14 @@ function ProjectClosureForm({ projectData }) {
       }, 2500);
     }
   };
+  const handleFormSubmit = () => {
+    if (form.validate().hasErrors) return;
+    setConfirmationModalOpened(true);
+  };
 
   return (
     <>
-      <form onSubmit={form.onSubmit(handleSubmit)}>
+      <form onSubmit={form.onSubmit(handleFormSubmit)}>
         {projectData &&
         Object.keys(projectData).length > 0 &&
         "pi_id" in projectData ? (
@@ -80,9 +87,7 @@ function ProjectClosureForm({ projectData }) {
               <>
                 <Grid gutter="xl">
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Project Title
-                    </Text>
+                    <Text className={classes.fieldLabel}>Project Title</Text>
                     <TextInput
                       value={projectData.name}
                       readOnly
@@ -95,9 +100,7 @@ function ProjectClosureForm({ projectData }) {
                     />
                   </Grid.Col>
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Project ID
-                    </Text>
+                    <Text className={classes.fieldLabel}>Project ID</Text>
                     <TextInput
                       value={projectData.pid}
                       readOnly
@@ -111,7 +114,7 @@ function ProjectClosureForm({ projectData }) {
                   </Grid.Col>
 
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
+                    <Text className={classes.fieldLabel}>
                       Project Investigator
                     </Text>
                     <TextInput
@@ -126,11 +129,11 @@ function ProjectClosureForm({ projectData }) {
                     />
                   </Grid.Col>
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
+                    <Text className={classes.fieldLabel}>
                       Total Amount Sanctioned
                     </Text>
                     <TextInput
-                      value={`INR ${projectData.sanctioned_amount}`}
+                      value={`₹${projectData.sanctioned_amount}`}
                       readOnly
                       styles={{
                         input: {
@@ -142,7 +145,7 @@ function ProjectClosureForm({ projectData }) {
                   </Grid.Col>
 
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
+                    <Text className={classes.fieldLabel}>
                       Project Start Date
                     </Text>
                     <TextInput
@@ -159,9 +162,7 @@ function ProjectClosureForm({ projectData }) {
                     />
                   </Grid.Col>
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Project Duration
-                    </Text>
+                    <Text className={classes.fieldLabel}>Project Duration</Text>
                     <TextInput
                       value={`${projectData.duration} months`}
                       readOnly
@@ -175,39 +176,41 @@ function ProjectClosureForm({ projectData }) {
                   </Grid.Col>
 
                   <Grid.Col span={12}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Upload UC/SE <span style={{ color: "red" }}>*</span>{" "}
-                      <Anchor
-                        href="https://www.iiitdmj.ac.in/rspc.iiitdmj.ac.in/DRSPC/PM/5_UC_SE.doc"
-                        style={{ fontSize: "0.85em" }}
-                      >
-                        (Download format here)
-                      </Anchor>
-                    </Text>
-                    <div className={classes.fileInputContainer}>
-                      <Button
-                        variant="outline"
-                        color="#15ABFF"
-                        size="md"
-                        component="label"
-                        className={classes.fileInputButton}
-                        style={{ borderRadius: "8px" }}
-                      >
-                        <FileText size={26} style={{ marginRight: "3px" }} />
-                        Choose File
-                        <input
-                          type="file"
-                          hidden
-                          required
-                          onChange={(event) =>
-                            setFile(event.currentTarget.files[0])
-                          }
-                        />
-                      </Button>
-                      {file && (
-                        <span className={classes.fileName}>{file.name}</span>
-                      )}
-                    </div>
+                    <Group position="apart" align="center">
+                      <Text className={classes.fieldLabel}>
+                        Upload UC/SE <span style={{ color: "red" }}>*</span>{" "}
+                        <Anchor
+                          href="https://www.iiitdmj.ac.in/rspc.iiitdmj.ac.in/DRSPC/PM/5_UC_SE.doc"
+                          style={{ fontSize: "0.85em" }}
+                        >
+                          (Download format here)
+                        </Anchor>
+                      </Text>
+                      <div className={classes.fileInputContainer}>
+                        <Button
+                          variant="outline"
+                          color="#15ABFF"
+                          size="xs"
+                          component="label"
+                          className={classes.fileInputButton}
+                          style={{ borderRadius: "8px" }}
+                        >
+                          <FileText size={26} style={{ marginRight: "3px" }} />
+                          Choose File
+                          <input
+                            type="file"
+                            hidden
+                            required
+                            onChange={(event) =>
+                              setFile(event.currentTarget.files[0])
+                            }
+                          />
+                        </Button>
+                        {file && (
+                          <span className={classes.fileName}>{file.name}</span>
+                        )}
+                      </div>
+                    </Group>
                   </Grid.Col>
                 </Grid>
 
@@ -223,17 +226,26 @@ function ProjectClosureForm({ projectData }) {
                 </div>
               </>
             ) : (
-              <Text color="red" size="xl" weight={700} align="center">
+              <Text color="red" align="center">
                 Project has not yet commenced or is already closed!
               </Text>
             )}
           </Paper>
         ) : (
-          <Text color="red" size="xl" weight={700} align="center">
+          <Text color="red" align="center">
             Failed to load project details
           </Text>
         )}
       </form>
+
+      <ConfirmationModal
+        opened={confirmationModalOpened}
+        onClose={() => setConfirmationModalOpened(false)}
+        onConfirm={() => {
+          setConfirmationModalOpened(false);
+          form.onSubmit(handleSubmit)();
+        }}
+      />
 
       {(successAlertVisible || failureAlertVisible) && (
         <div className={classes.overlay}>

@@ -1,17 +1,27 @@
+import PropTypes from "prop-types";
 import { Breadcrumbs, Text } from "@mantine/core";
+import { useNavigate } from "react-router-dom";
 import { CaretRight } from "@phosphor-icons/react";
-import { useSelector } from "react-redux";
 import classes from "../../Dashboard/Dashboard.module.css";
 
-function CustomRSPCBreadcrumbs() {
-  const currentModule = useSelector((state) => state.module.current_module);
-  const items = [{ title: currentModule }, { title: "Forms" }].map(
-    (item, index) => (
-      <Text key={index} className={classes.fusionText} fw={600}>
-        {item.title}
-      </Text>
-    ),
-  );
+function RSPCBreadcrumbs({ projectTitle }) {
+  const navigate = useNavigate();
+  const items = [
+    <Text
+      className={`${classes.fusionText} ${classes.selectoptions}`}
+      fw={600}
+      onClick={() => navigate("/research")}
+    >
+      Research Projects
+    </Text>,
+  ];
+  if (projectTitle) {
+    items.push(
+      <Text className={classes.fusionText} fw={600}>
+        {projectTitle}
+      </Text>,
+    );
+  }
 
   return (
     <Breadcrumbs
@@ -26,4 +36,7 @@ function CustomRSPCBreadcrumbs() {
   );
 }
 
-export default CustomRSPCBreadcrumbs;
+RSPCBreadcrumbs.propTypes = {
+  projectTitle: PropTypes.string,
+};
+export default RSPCBreadcrumbs;

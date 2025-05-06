@@ -15,6 +15,10 @@ import CustomTable from "./CustomTable";
 import DownloadNewsletter from "./DownloadNewsletter";
 import ReportForm from "./EventReportForm";
 import EventReportTable from "./EventReportTable";
+import YearlyplanButton from "./YearlyplanButton";
+import YearlyplanTable from "./YearlyplanTable";
+import GalleryForm from "./GalleryForm";
+import GalleryView from "./GalleryView";
 
 const RegistrationForm = lazy(() => import("./RegistrationForm"));
 const EventForm = lazy(() => import("./EventForm"));
@@ -36,8 +40,14 @@ function ClubViewComponent({
   const userRole = user.role;
   const [activeclubfeature, setactiveclubfeature] = useState("0"); // Default index as string for ModuleTabs
   const { data: CurrentLogginedRelatedClub = [] } =
-    useGetCurrentLoginnedRoleRelatedClub(user.username, token);
+    useGetCurrentLoginnedRoleRelatedClub(user.roll_no, token);
 
+  const VisibeClubArray = [];
+  CurrentLogginedRelatedClub.forEach((c) => {
+    VisibeClubArray.push(c.club);
+  });
+  console.log(user, CurrentLogginedRelatedClub);
+  console.log(VisibeClubArray);
   // Create a tabs array dynamically based on user role and conditions
   const tabs = [{ title: "About" }];
 
@@ -64,15 +74,30 @@ function ClubViewComponent({
   }
 
   if (userRole === "Dean_s") {
-    tabs.push({ title: "Events Approval" }, { title: "Budget Approval" });
+    tabs.push(
+      { title: "Events Approval" },
+      { title: "Budget Approval" },
+      { title: "YearlyPlanner Table" },
+    );
   }
 
   if (
-    ["FIC", "Counsellor", "Professor"].includes(userRole) &&
+    [
+      "FIC",
+      "Counsellor",
+      "Professor",
+      "Tech_Counsellor",
+      "Sports_Counsellor",
+      "Cultural_Counsellor",
+    ].includes(userRole) &&
     CurrentLogginedRelatedClub.length > 0 &&
-    CurrentLogginedRelatedClub[0].club === clubName
+    VisibeClubArray.includes(clubName)
   ) {
-    tabs.push({ title: "Events Approval" }, { title: "Budget Approval" });
+    tabs.push(
+      { title: "Events Approval" },
+      { title: "Budget Approval" },
+      { title: "YearlyPlanner Table" },
+    );
   }
 
   if (
@@ -88,10 +113,14 @@ function ClubViewComponent({
       { title: "Fest Form" },
       { title: "Upload for Newsletter" },
       { title: "Event Report Form" },
+      { title: "YearlyPlanner Upload" },
+      { title: "YearlyPlanner Table" },
+      { title: "Upload Club Images" },
     );
   }
 
   tabs.push({ title: "Download Newsletter" });
+  tabs.push({ title: "View Gallery" });
 
   if (user.role === "Counsellor") {
     tabs.push({ title: "Event Reports" });
@@ -194,6 +223,30 @@ function ClubViewComponent({
         return (
           <Suspense fallback={<div>Loading Event Reports</div>}>
             <EventReportTable clubName={clubName} />
+          </Suspense>
+        );
+      case "Upload Club Images":
+        return (
+          <Suspense fallback={<div>Loading Form</div>}>
+            <GalleryForm clubName={clubName} />
+          </Suspense>
+        );
+      case "View Gallery":
+        return (
+          <Suspense fallback={<div>Loading Images</div>}>
+            <GalleryView clubName={clubName} />
+          </Suspense>
+        );
+      case "YearlyPlanner Upload":
+        return (
+          <Suspense fallback={<div>Loading Yearly Planner Upload</div>}>
+            <YearlyplanButton clubName={clubName} />
+          </Suspense>
+        );
+      case "YearlyPlanner Table":
+        return (
+          <Suspense fallback={<div>Loading Yearly Planner Upload</div>}>
+            <YearlyplanTable clubName={clubName} />
           </Suspense>
         );
       default:

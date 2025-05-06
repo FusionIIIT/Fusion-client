@@ -198,7 +198,7 @@ export const rejectEventButton = async (eventId, token) => {
 export const modifyEventButton = async (eventId, token) => {
   return axios.put(
     `${host}/gymkhana/api/modify_event/`,
-    { id: eventId },
+    { id: eventId.eventId },
     {
       headers: {
         Authorization: `Token ${token}`,
@@ -256,7 +256,7 @@ export const useGetCommentsBudgetInfo = (budgetId, token) => {
 export const approveFICBudgetButton = async (budgetId, token) => {
   const response = axios.put(
     `${host}/gymkhana/api/fic_approve_budget/`,
-    { id: budgetId },
+    { id: budgetId.budgetId },
     {
       headers: {
         Authorization: `Token ${token}`,
@@ -320,7 +320,7 @@ export const rejectBudgetButton = async (budgetId, token) => {
 export const modifyBudgetButton = async (budgetId, token) => {
   return axios.put(
     `${host}/gymkhana/api/modify_budget/`,
-    { id: budgetId },
+    { id: budgetId.budgetId },
     {
       headers: {
         Authorization: `Token ${token}`,
@@ -351,6 +351,29 @@ export const useGetCurrentLoginnedRoleRelatedClub = (InputName, token) => {
     },
   });
 };
+
+export const useGetClubPositionData = (token) => {
+  return useQuery({
+    queryKey: ["RoleRelatedTocLUB"],
+    queryFn: async () => {
+      try {
+        const { data } = await axios.get(
+          `${host}/gymkhana/api/list_all_club_position/`,
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+          },
+        );
+        return data;
+      } catch (error) {
+        console.error("Error:", error.response?.data || error.message);
+        throw new Error("Failed to fetch data");
+      }
+    },
+  });
+};
+
 export const useGetFests = (token) => {
   return useQuery({
     queryKey: ["FestsData"],
@@ -386,6 +409,133 @@ export const useGetNewsLetterEvent = (roll_no, token) => {
           },
         );
         // console.log("fetched data",data);
+        return data;
+      } catch (error) {
+        console.error("Error:", error.response?.data || error.message);
+        throw new Error("Failed to fetch data");
+      }
+    },
+  });
+};
+
+// API call to download yearly plan template
+export const downloadYearlyPlanTemplate = async (token) => {
+  const response = await axios.get(
+    `${host}/gymkhana/api/download_yearly_plan_template/`,
+    {
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+      responseType: "blob", // To handle file download
+    },
+  );
+  return response.data;
+};
+
+// API call to upload yearly plan Excel
+export const uploadYearlyPlanExcel = async (formData, token) => {
+  const response = await axios.post(
+    `${host}/gymkhana/api/upload_yearly_plan_excel/`,
+    formData,
+    {
+      headers: {
+        Authorization: `Token ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    },
+  );
+  return response.data;
+};
+
+// API call to approve yearly plan by FIC
+export const approveFICYearlyPlan = async (planId, token) => {
+  const response = await axios.put(
+    `${host}/gymkhana/api/fic_approve_yearly_plan/`,
+    { id: planId },
+    {
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    },
+  );
+  return response.data;
+};
+
+// API call to approve yearly plan by Counsellor
+export const approveCounsellorYearlyPlan = async (planId, token) => {
+  const response = await axios.put(
+    `${host}/gymkhana/api/counsellor_approve_yearly_plan/`,
+    { id: planId },
+    {
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    },
+  );
+  return response.data;
+};
+
+// API call to approve yearly plan by Dean
+export const approveDeanYearlyPlan = async (planId, token) => {
+  const response = await axios.put(
+    `${host}/gymkhana/api/dean_approve_yearly_plan/`,
+    { id: planId },
+    {
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    },
+  );
+  return response.data;
+};
+
+// API call to reject yearly plan
+export const rejectYearlyPlan = async (planId, token) => {
+  const response = await axios.put(
+    `${host}/gymkhana/api/reject_yearly_plan/`,
+    { id: planId },
+    {
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    },
+  );
+  return response.data;
+};
+
+// API call to list all yearly plans
+export const ListYearlyPlans = (token) => {
+  return useQuery({
+    queryKey: ["YearlyPlansData"],
+    queryFn: async () => {
+      try {
+        const { data } = await axios.get(`${host}/gymkhana/api/yearly-plans/`, {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        });
+        return data;
+      } catch (error) {
+        console.error("Error:", error.response?.data || error.message);
+        throw new Error("Failed to fetch data");
+      }
+    },
+  });
+};
+
+export const ListClubwiseYearlyPlans = (token) => {
+  return useQuery({
+    queryKey: ["YearlyPlansData"],
+    queryFn: async () => {
+      try {
+        const { data } = await axios.get(
+          `${host}/gymkhana/api/clubwise_yearly_plan/`,
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+          },
+        );
         return data;
       } catch (error) {
         console.error("Error:", error.response?.data || error.message);

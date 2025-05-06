@@ -35,6 +35,8 @@ import {
   approveFICEventButton,
   approveCounsellorEventButton,
   approveDeanEventButton,
+  useGetClubPositionData,
+  useGetCurrentLoginnedRoleRelatedClub,
 } from "./BackendLogic/ApiRoutes";
 
 import { EventsApprovalForm } from "./EventForm";
@@ -67,6 +69,13 @@ function EventApprovals({ clubName }) {
     ],
     [validationErrors],
   );
+  const { data: CurrentLoginRoleData = [] } =
+    useGetCurrentLoginnedRoleRelatedClub(user.roll_no, token);
+
+  const VisibeClubArray = [];
+  CurrentLoginRoleData.forEach((c) => {
+    VisibeClubArray.push(c.club);
+  });
 
   const {
     data: fetchedEvents = [],
@@ -76,52 +85,64 @@ function EventApprovals({ clubName }) {
     refetch: refetchEvents,
   } = useGetUpcomingEvents(token);
 
+  const ClubMap = {
+    Tech_Counsellor: ["BitByte", "AFC"],
+    Cultural_Counsellor: ["Jazbaat", "Aavartan"],
+    Sports_Counsellor: ["Badminton Club", "Volleyball Club"],
+  };
+  console.log(clubName, userRole, VisibeClubArray);
   const filteredEvents = useMemo(() => {
     return fetchedEvents.filter((event) => {
       if (
-        (event.status.toLowerCase() === "coordinator" ||
-          event.status.toLowerCase() === "reject") &&
-        userRole.toLowerCase() === "co-ordinator"
+        event.status.toLowerCase() === "coordinator" ||
+        event.status.toLowerCase() === "reject" ||
+        event.status.toLowerCase() === "accept" ||
+        event.status.toLowerCase() === "accepted"
       ) {
-        return true;
+        if (
+          userRole.toLowerCase() === "co-ordinator" &&
+          VisibeClubArray.includes(event.club)
+        )
+          return true;
       }
       if (event.status.toLowerCase() === "fic") {
         if (
-          userRole.toLowerCase() === "co-ordinator" ||
-          userRole.toLowerCase() === "professor" ||
-          userRole.toLowerCase() === "assistant professor"
-        ) {
-          return true;
-        }
-      }
-      if (event.status.toLowerCase() === "counsellor") {
-        if (
-          userRole.toLowerCase() === "counsellor" ||
-          userRole.toLowerCase() === "professor" ||
-          userRole.toLowerCase() === "assistant professor" ||
-          userRole.toLowerCase() === "co-ordinator"
+          userRole.toLowerCase() === "fic" &&
+          VisibeClubArray.includes(event.club)
         ) {
           return true;
         }
       }
       if (
-        event.status.toLowerCase() === "dean" ||
-        event.status.toLowerCase() === "accept"
+        userRole.toLowerCase() === "tech_counsellor" &&
+        event.status.toLowerCase() === "counsellor"
       ) {
-        if (
-          userRole.toLowerCase() === "dean_s" ||
-          userRole.toLowerCase() === "counsellor" ||
-          userRole.toLowerCase() === "professor" ||
-          userRole.toLowerCase() === "assistant professor" ||
-          userRole.toLowerCase() === "co-ordinator"
-        ) {
+        const allowedClubs = ClubMap.Tech_Counsellor;
+        return allowedClubs.includes(event.club);
+      }
+      if (
+        userRole.toLowerCase() === "sports_counsellor" &&
+        event.status.toLowerCase() === "counsellor"
+      ) {
+        const allowedClubs = ClubMap.Sports_Counsellor;
+        return allowedClubs.includes(event.club);
+      }
+      if (
+        userRole.toLowerCase() === "cultural_counsellor" &&
+        event.status.toLowerCase() === "counsellor"
+      ) {
+        const allowedClubs = ClubMap.Cultural_Counsellor;
+        return allowedClubs.includes(event.club);
+      }
+      if (event.status.toLowerCase() === "dean") {
+        if (userRole.toLowerCase() === "dean_s") {
           return true;
         }
       }
       return false;
     });
   }, [fetchedEvents, userRole]);
-
+  console.log(filteredEvents, fetchedEvents);
   const openViewModal = (event) => {
     setSelectedEvent(event);
   };
@@ -140,15 +161,80 @@ function EventApprovals({ clubName }) {
     setSelectedEvent(null);
   };
 
+  const { data: CurrentLogginedRelatedClub = [] } =
+    useGetClubPositionData(token);
+
+  const forwardFile = async ({
+    fileId,
+    receiver,
+    receiverDesignation,
+    remarks,
+    fileExtraJSON = {},
+    files = [],
+  }) => {
+    const formData = new FormData();
+    formData.append("receiver", receiver);
+    formData.append("receiver_designation", receiverDesignation);
+    formData.append("remarks", remarks);
+    formData.append("file_extra_JSON", JSON.stringify(fileExtraJSON));
+
+    files.forEach((file) => {
+      formData.append("files", file); // multiple files support
+    });
+
+    return axios.post(
+      `${host}/filetracking/api/forwardfile/${fileId}/`,
+      formData,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      },
+    );
+  };
+
   const updateEventMutation = useMutation({
-    mutationFn: (updatedEventData) => {
-      return axios.put(`${host}/gymkhana/api/update_event/`, updatedEventData, {
+    mutationFn: ({ formData }) => {
+      return axios.put(`${host}/gymkhana/api/update_event/`, formData, {
         headers: {
           Authorization: `Token ${token}`,
         },
       });
     },
-    onSuccess: () => {
+    onSuccess: async (_, variables) => {
+      const { SelectedEventFileId: fileId } = variables;
+      try {
+        const FICName =
+          CurrentLogginedRelatedClub.find(
+            (c) => c.club === clubName && c.position === "FIC",
+          )?.name || null;
+
+        await forwardFile({
+          fileId,
+          receiver: FICName, // based on clubname & under which fraternity we have filter from relatedClubData
+          receiverDesignation: "FIC",
+          remarks: "Approved by Co-ordinator",
+          fileExtraJSON: {
+            approved_by: "Co-ordinator",
+            approved_on: new Date().toISOString(),
+          },
+          files: [],
+        });
+
+        notifications.show({
+          title: "Co-ordinator Modification",
+          message: <Text fz="sm">File forwarded successfully</Text>,
+          color: "green",
+        });
+      } catch (err) {
+        console.error("File forwarding failed", err);
+        notifications.show({
+          title: "Forwarding Failed",
+          message: <Text fz="sm">Could not forward file</Text>,
+          color: "red",
+        });
+      }
       closeEditModal();
       refetchEvents();
       // You might want to refresh your events data here
@@ -195,29 +281,98 @@ function EventApprovals({ clubName }) {
       },
     });
   };
-
   const approveFICMutation = useMutation({
-    mutationFn: (eventId) => {
+    mutationFn: ({ eventId }) => {
       approveFICEventButton(eventId, token);
     },
-    onSuccess: () => {
-      notifications.show({
-        title: "Approved by FIC",
-        message: (
-          <Flex gap="4px">
-            <Text fz="sm">Error during posting comment</Text>
-          </Flex>
-        ),
-        color: "green",
-      });
+    onSuccess: async (_, variables) => {
+      const { fileId } = variables;
+      const fraternity = Object.keys(ClubMap).find((fra) =>
+        ClubMap[fra].includes(clubName),
+      );
+
+      // const fraternity = "Counsellor";
+
+      const CounsellorName =
+        CurrentLogginedRelatedClub.find(
+          (c) => c.club === clubName && c.position === fraternity,
+        )?.name || "simanta";
+
+      console.log(CounsellorName, fraternity);
+      try {
+        await forwardFile({
+          fileId,
+          receiver: CounsellorName,
+          receiverDesignation: fraternity,
+          remarks: "Approved by FIC",
+          fileExtraJSON: {
+            approved_by: "FIC",
+            approved_on: new Date().toISOString(),
+          },
+          files: [], // pass File objects if needed
+        });
+
+        notifications.show({
+          title: "FIC Approval",
+          message: <Text fz="sm">File forwarded successfully</Text>,
+          color: "green",
+        });
+      } catch (err) {
+        console.error("File forwarding failed", err);
+        notifications.show({
+          title: "Forwarding Failed",
+          message: <Text fz="sm">Could not forward file</Text>,
+          color: "red",
+        });
+      }
+
       closeViewModal();
       refetchEvents();
     },
   });
 
   const approveCounsellorMutation = useMutation({
-    mutationFn: (eventId) => approveCounsellorEventButton(eventId, token),
-    onSuccess: () => refetchEvents(),
+    mutationFn: ({ eventId }) => approveCounsellorEventButton(eventId, token),
+    onSuccess: async (_, variables) => {
+      const { fileId } = variables;
+
+      const fraternity = "Dean_s";
+
+      const deanName =
+        CurrentLogginedRelatedClub.find(
+          (c) => c.club === clubName && c.position === fraternity,
+        )?.name || "mkroy";
+
+      try {
+        await forwardFile({
+          fileId,
+          receiver: deanName,
+          receiverDesignation: fraternity,
+          remarks: "Approved by Counsellor",
+          fileExtraJSON: {
+            approved_by: "Counsellor",
+            approved_on: new Date().toISOString(),
+          },
+          files: [],
+        });
+
+        notifications.show({
+          title: "Counsellor Approval",
+          message: <Text fz="sm">File forwarded successfully</Text>,
+          color: "green",
+        });
+      } catch (err) {
+        console.error("File forwarding failed", err);
+        notifications.show({
+          title: "Forwarding Failed",
+          message: <Text fz="sm">Could not forward file</Text>,
+          color: "red",
+        });
+      }
+
+      closeViewModal();
+      refetchEvents();
+    },
   });
 
   const approveDeanMutation = useMutation({
@@ -240,7 +395,15 @@ function EventApprovals({ clubName }) {
   const rejectMutation = useMutation({
     mutationFn: (eventId) => rejectEventButton(eventId, token),
     onSuccess: () => {
-      alert("Rejected the event");
+      notifications.show({
+        title: "Rejected the Event",
+        message: (
+          <Flex gap="4px">
+            <Text fz="sm">Rejected the Event</Text>
+          </Flex>
+        ),
+        color: "green",
+      });
       closeViewModal();
       refetchEvents();
     },
@@ -248,18 +411,52 @@ function EventApprovals({ clubName }) {
 
   const modifyMutation = useMutation({
     mutationFn: (eventId) => modifyEventButton(eventId, token),
-    onSuccess: () => {
+    onSuccess: async (_, variables) => {
+      const { fileId } = variables;
+      try {
+        const CoordinatorName =
+          CurrentLogginedRelatedClub.find(
+            (c) =>
+              c.club === clubName &&
+              c.position.toLowerCase() === "co-ordinator",
+          )?.name || null;
+        console.log(CurrentLogginedRelatedClub, CoordinatorName);
+        await forwardFile({
+          fileId,
+          receiver: CoordinatorName, // based on clubname & under which fraternity we have filter from relatedClubData
+          receiverDesignation: "co-ordinator",
+          remarks: "Modification request to co-ordinator",
+          fileExtraJSON: {
+            approved_by: "Authority",
+            approved_on: new Date().toISOString(),
+          },
+          files: [],
+        });
+
+        notifications.show({
+          title: "Modify",
+          message: <Text fz="sm">File forwarded successfully</Text>,
+          color: "green",
+        });
+      } catch (err) {
+        console.error("File forwarding failed", err);
+        notifications.show({
+          title: "Forwarding Failed",
+          message: <Text fz="sm">Could not forward file</Text>,
+          color: "red",
+        });
+      }
       closeViewModal();
       refetchEvents();
     },
   });
 
-  const handleFICApproveButton = (eventId) => {
-    approveFICMutation.mutate(eventId);
+  const handleFICApproveButton = (eventId, fileId) => {
+    approveFICMutation.mutate({ eventId, fileId });
   };
 
-  const handleCounsellorApproveButton = (eventId) => {
-    approveCounsellorMutation.mutate(eventId);
+  const handleCounsellorApproveButton = (eventId, fileId) => {
+    approveCounsellorMutation.mutate({ eventId, fileId });
   };
   const handleDeanApproveButton = (eventId) => {
     approveDeanMutation.mutate(eventId);
@@ -269,21 +466,20 @@ function EventApprovals({ clubName }) {
     rejectMutation.mutate(eventId);
   };
 
-  const handleModifyButton = (eventId) => {
-    modifyMutation.mutate(eventId);
+  const handleModifyButton = (eventId, fileId) => {
+    modifyMutation.mutate({ eventId, fileId });
   };
   const renderRoleBasedActions = useMemo(() => {
     if (!selectedEvent) return null;
 
-    if (
-      selectedEvent.status === "FIC" &&
-      (userRole === "Professor" || userRole === "Assistant Professor")
-    ) {
+    if (selectedEvent.status === "FIC" && userRole === "FIC") {
       return (
         <>
           <Button
             color="blue"
-            onClick={() => handleFICApproveButton(selectedEvent.id)}
+            onClick={() =>
+              handleFICApproveButton(selectedEvent.id, selectedEvent.file_id)
+            }
           >
             FIC Approve
           </Button>
@@ -295,19 +491,31 @@ function EventApprovals({ clubName }) {
           </Button>
           <Button
             color="yellow"
-            onClick={() => handleModifyButton(selectedEvent.id)}
+            onClick={() =>
+              handleModifyButton(selectedEvent.id, selectedEvent.file_id)
+            }
           >
             Modify
           </Button>
         </>
       );
     }
-    if (selectedEvent.status === "COUNSELLOR" && userRole === "Counsellor") {
+    if (
+      (selectedEvent.status === "COUNSELLOR" &&
+        userRole === "Tech_Counsellor") ||
+      userRole === "Sports_Counsellor" ||
+      userRole === "Cultural_Counsellor"
+    ) {
       return (
         <>
           <Button
             color="blue"
-            onClick={() => handleCounsellorApproveButton(selectedEvent.id)}
+            onClick={() =>
+              handleCounsellorApproveButton(
+                selectedEvent.id,
+                selectedEvent.file_id,
+              )
+            }
           >
             Counsellor Approve
           </Button>
@@ -319,7 +527,9 @@ function EventApprovals({ clubName }) {
           </Button>
           <Button
             color="yellow"
-            onClick={() => handleModifyButton(selectedEvent.id)}
+            onClick={() =>
+              handleModifyButton(selectedEvent.id, selectedEvent.file_id)
+            }
           >
             Modify
           </Button>
@@ -570,9 +780,10 @@ function EventApprovals({ clubName }) {
 
               // Add the ID of the event
               formData.append("id", selectedEvent.id);
-
+              console.log(formData, selectedEvent);
+              const SelectedEventFileId = selectedEvent.file_id;
               // Now, submit the formData to the backend using the mutation
-              updateEventMutation.mutate(formData);
+              updateEventMutation.mutate({ formData, SelectedEventFileId });
             }}
             editMode
             disabledFields={[

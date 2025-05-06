@@ -5,7 +5,7 @@ import { CaretRight } from "@phosphor-icons/react";
 import classes from "../../Dashboard/Dashboard.module.css";
 
 // eslint-disable-next-line react/prop-types
-function CustomBread({ breadCrumbs }) {
+export default function CustomBread({ breadCrumbs }) {
   const items = breadCrumbs;
   console.log(items);
 
@@ -21,5 +21,3 @@ function CustomBread({ breadCrumbs }) {
     </Breadcrumbs>
   );
 }
-
-export default CustomBread;

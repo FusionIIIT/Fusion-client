@@ -126,10 +126,20 @@ function Dashboard() {
           headers: { Authorization: `Token ${token}` },
         });
         const { notifications } = data;
-        const notificationsData = notifications.map((item) => ({
-          ...item,
-          data: JSON.parse(item.data.replace(/'/g, '"')),
-        }));
+        const notificationsData = notifications.map((item) => {
+          let parsedData;
+          try {
+            parsedData = JSON.parse(item.data.replace(/'/g, '"'));
+          } catch (err) {
+            console.error("Error parsing notification data:", err);
+            parsedData = {};
+          }
+
+          return {
+            ...item,
+            data: parsedData,
+          };
+        });
 
         setNotificationsList(
           notificationsData.filter(

@@ -59,12 +59,12 @@ function BrowseAnnouncements() {
   return (
     <Container size="xl">
       <Box mb="xl">
-        <Title order={2} align="center">
+        <Title order={2} align="left">
           View Department-wise Announcements
         </Title>
       </Box>
 
-      <Flex justify="center" align="center" mb="xl">
+      <Flex justify="left" align="left" mb="xl">
         <Button
           onClick={() => handleTabChange("prev")}
           variant="subtle"

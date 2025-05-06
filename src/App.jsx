@@ -8,12 +8,14 @@ import { Notifications } from "@mantine/notifications";
 import { Layout } from "./components/layout";
 import InventoryIndex from "./Modules/Inventory/components/InventoryIndex";
 import PurchaseRoutes from "./Modules/Purchase/PurchaseRoute.jsx";
+import PatentRoutes from "./Modules/Patent/routes/PatentRoutes";
 
 // eslint-disable-next-line import/no-unresolved
-import { DesignationsProvider } from "./Modules/Iwd/helper/designationContext";
 import UserBreadcrumbs from "./Modules/Scholarship/user/components/UserBreadcumbs";
 import OtherAcadProcedures from "./Modules/Otheracademic/OtherAcademicProcedures";
 import PendingReqs from "./Modules/Visitors_Hostel/pendingRequests.jsx";
+import { DesignationsProvider } from "./Modules/Iwd/helper/designationContext";
+import { WorkProvider } from "./Modules/Iwd/helper/WorkContext";
 
 const PlacementCellPage = lazy(() => import("./Modules/PlacementCell"));
 const JobApplicationForm = lazy(
@@ -32,6 +34,9 @@ const ConvenorBreadcumbs = lazy(
 );
 const HostelPage = lazy(() => import("./Modules/Hostel-Management/index"));
 const IwdModule = lazy(() => import("./Modules/Iwd/index"));
+const IwdWorkPage = lazy(
+  () => import("./Modules/Iwd/components/managebills/index"),
+);
 
 const Dashboard = lazy(
   () => import("./Modules/Dashboard/dashboardNotifications"),
@@ -97,6 +102,8 @@ const ProgrammeCurriculumRoutes = lazy(
   () => import("./Modules/Program_curriculum/programmCurriculum"),
 );
 
+const CourseManagementPage = lazy(() => import("./Modules/CourseManagement"));
+
 const theme = createTheme({
   breakpoints: { xs: "30em", sm: "48em", md: "64em", lg: "74em", xl: "90em" },
 });
@@ -122,6 +129,7 @@ export default function App() {
             </Layout>
           }
         />
+
         <Route
           path="/academics"
           element={
@@ -218,6 +226,17 @@ export default function App() {
           element={
             <Layout>
               <InventoryIndex />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/course-management"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <CourseManagementPage />
+              </Suspense>
             </Layout>
           }
         />
@@ -406,13 +425,27 @@ export default function App() {
         <Route
           path="/iwd"
           element={
-            <DesignationsProvider>
-              <Layout>
-                <Suspense fallback={<div>Loading .... </div>}>
+            <Suspense fallback={<div>Loading .... </div>}>
+              <DesignationsProvider>
+                <Layout>
                   <IwdModule />
-                </Suspense>
-              </Layout>
-            </DesignationsProvider>
+                </Layout>
+              </DesignationsProvider>
+            </Suspense>
+          }
+        />
+        <Route
+          path="/iwd/work/:id"
+          element={
+            <Suspense fallback={<div>Loading .... </div>}>
+              <DesignationsProvider>
+                <WorkProvider>
+                  <Layout>
+                    <IwdWorkPage />
+                  </Layout>
+                </WorkProvider>
+              </DesignationsProvider>
+            </Suspense>
           }
         />
         <Route
@@ -458,9 +491,18 @@ export default function App() {
             </Layout>
           }
         />
+        <Route
+          path="/department"
+          element={
+            <Layout>
+              <DepartmentPage />
+            </Layout>
+          }
+        />
 
         <Route path="/healthcenter/*" element={<HealthCenter />} />
         <Route path="/purchase/*" element={<PurchaseRoutes />} />
+        <Route path="/patent/*" element={<PatentRoutes />} />
         <Route path="/accounts/login" element={<LoginPage />} />
         <Route path="/reset-password" element={<ForgotPassword />} />
         <Route

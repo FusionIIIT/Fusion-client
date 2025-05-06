@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {
-  Paper,
   Text,
   Badge,
   Stack,
@@ -10,8 +9,11 @@ import {
   Button,
   Modal,
   Group,
-  CloseButton,
+  Card,
+  Box,
+  ActionIcon,
 } from "@mantine/core";
+import { X } from "tabler-icons-react";
 import axios from "axios";
 import CreateNotice from "../../components/warden/CreateNotice";
 import {
@@ -100,122 +102,120 @@ export default function NoticeBoard() {
   };
 
   return (
-    <Paper
-      shadow="md"
-      p="md"
-      withBorder
-      sx={(theme) => ({
-        position: "fixed",
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        backgroundColor: theme.white,
-        border: `1px solid ${theme.colors.gray[3]}`,
-        borderRadius: theme.radius.md,
-      })}
-    >
-      <Group position="apart" mb="xl">
-        <Text size="24px" style={{ color: "#757575", fontWeight: "bold" }}>
-          Hostel Notice Board
-        </Text>
-        <Button onClick={() => setIsCreateNoticeOpen(true)}>
-          Create Notice
-        </Button>
-      </Group>
-
-      <ScrollArea style={{ flex: 1, height: "calc(66vh)" }}>
-        {loading ? (
-          <Container
-            py="xl"
-            style={{ display: "flex", justifyContent: "center" }}
+    <Container size="md" px="md">
+      <Card shadow="sm" p={0} radius="md" withBorder>
+        <Box
+          py="md"
+          px="lg"
+          sx={(theme) => ({
+            backgroundColor: theme.colors.gray[0],
+            borderBottom: `1px solid ${theme.colors.gray[3]}`,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          })}
+        >
+          <Button
+            size="sm"
+            color="blue"
+            onClick={() => setIsCreateNoticeOpen(true)}
           >
-            <Loader size="lg" />
-          </Container>
-        ) : error ? (
-          <Text align="center" color="red" size="lg">
-            {error}
-          </Text>
-        ) : notices.length === 0 ? (
-          <Empty />
-        ) : (
-          <Stack spacing="md" pb="md">
-            {notices.map((notice) => (
-              <Paper
-                key={notice.id}
-                p="md"
-                withBorder
-                shadow="xs"
-                sx={(theme) => ({
-                  display: "flex",
-                  flexDirection: "column",
-                  backgroundColor:
-                    notice.scope === "global"
-                      ? theme.colors.yellow[0]
-                      : theme.white,
-                  borderColor:
-                    notice.scope === "global"
-                      ? theme.colors.yellow[5]
-                      : theme.colors.gray[3],
-                })}
+            Create Notice
+          </Button>
+        </Box>
+
+        <Box p="md" sx={{ height: "70vh" }}>
+          <ScrollArea style={{ height: "100%" }}>
+            {loading ? (
+              <Container
+                py="xl"
+                style={{ display: "flex", justifyContent: "center" }}
               >
-                <Group position="apart" align="flex-start">
-                  <Text
-                    size="lg"
-                    weight={notice.scope === "global" ? "bold" : "normal"}
+                <Loader size="lg" />
+              </Container>
+            ) : error ? (
+              <Text align="center" color="red" size="lg">
+                {error}
+              </Text>
+            ) : notices.length === 0 ? (
+              <Empty />
+            ) : (
+              <Stack spacing="md">
+                {notices.map((notice) => (
+                  <Card
+                    key={notice.id}
+                    p="md"
+                    withBorder
+                    radius="sm"
+                    sx={(theme) => ({
+                      backgroundColor:
+                        notice.scope === "global"
+                          ? theme.fn.rgba(theme.colors.yellow[1], 0.5)
+                          : theme.white,
+                      borderColor:
+                        notice.scope === "global"
+                          ? theme.colors.yellow[4]
+                          : theme.colors.gray[3],
+                      position: "relative",
+                    })}
                   >
-                    {notice.head_line}
-                  </Text>
-                </Group>
+                    <Group position="apart" mb="xs" align="flex-start">
+                      <Text
+                        size="lg"
+                        weight={600}
+                        color={notice.scope === "global" ? "dark" : "dimmed"}
+                        style={{ flex: 1 }}
+                      >
+                        {notice.head_line}
+                      </Text>
+                      <ActionIcon
+                        color="gray"
+                        variant="subtle"
+                        onClick={() => handleDeleteNotice(notice.id)}
+                      >
+                        <X size={16} />
+                      </ActionIcon>
+                    </Group>
 
-                <Text size="md" color="gray" mt="xs">
-                  {notice.content}
-                </Text>
+                    <Text size="md" mb="xs">
+                      {notice.content}
+                    </Text>
 
-                <Text size="sm" color="dimmed" mt="xs">
-                  {notice.description}
-                </Text>
+                    <Text size="sm" color="dimmed" mb="sm">
+                      {notice.description}
+                    </Text>
 
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginTop: "10px",
-                  }}
-                >
-                  <Badge
-                    size="lg"
-                    variant={notice.scope === "global" ? "filled" : "outline"}
-                    color={notice.scope === "global" ? "yellow" : "blue"}
-                    style={{ flex: 1 }}
-                  >
-                    {notice.hall}
-                  </Badge>
+                    <Group position="apart" mt="md">
+                      <Badge
+                        size="md"
+                        variant={
+                          notice.scope === "global" ? "filled" : "outline"
+                        }
+                        color={notice.scope === "global" ? "yellow" : "blue"}
+                      >
+                        {notice.hall}
+                      </Badge>
 
-                  <div
-                    style={{ flex: 7.5, textAlign: "right", color: "#757575" }}
-                  >
-                    Posted by: {notice.posted_by}
-                  </div>
-                  <CloseButton
-                    variant="transparent"
-                    onClick={() => handleDeleteNotice(notice.id)}
-                  />
-                </div>
-              </Paper>
-            ))}
-          </Stack>
-        )}
-      </ScrollArea>
+                      <Text size="sm" color="dimmed">
+                        Posted by: {notice.posted_by}
+                      </Text>
+                    </Group>
+                  </Card>
+                ))}
+              </Stack>
+            )}
+          </ScrollArea>
+        </Box>
+      </Card>
+
       <Modal
         opened={isCreateNoticeOpen}
         onClose={() => setIsCreateNoticeOpen(false)}
+        title="Create New Notice"
         size="lg"
       >
         <CreateNotice onSubmit={handleCreateNoticeSubmit} />
       </Modal>
-    </Paper>
+    </Container>
   );
 }

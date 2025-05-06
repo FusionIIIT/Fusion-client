@@ -1,19 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Select } from "@mantine/core";
+import PropTypes from "prop-types";
 import { search_employees } from "../../../routes/hr/index";
 
-const SearchEmployee = ({ onEmployeeSelect }) => {
+function SearchEmployee({ onEmployeeSelect, initialSearch }) {
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [error, setError] = useState(null);
+  const [searchText, setSearchText] = useState(initialSearch || "");
 
+  const hasAutoSearched = useRef(false);
   const token = localStorage.getItem("authToken");
 
-  const fetchEmployees = async (searchText) => {
-    // Trigger search only if at least 3 characters are entered
-    if (searchText.length < 3) {
-      setSearchResults([]); // Clear previous results
+  const fetchEmployees = async (text) => {
+    if (text.length < 3) {
+      setSearchResults([]);
       return;
     }
 
@@ -26,38 +28,36 @@ const SearchEmployee = ({ onEmployeeSelect }) => {
     setError(null);
 
     try {
-      const response = await fetch(
-        `${search_employees}?search_text=${searchText}`,
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
+      const response = await fetch(`${search_employees}?search_text=${text}`, {
+        headers: {
+          Authorization: `Token ${token}`,
         },
-      );
+      });
+
       if (!response.ok) {
         throw new Error(`Failed to fetch employees: ${response.statusText}`);
       }
+
       const data = await response.json();
 
-      // Group employees by their ID to ensure uniqueness
       const uniqueEmployees = data.employees.reduce((acc, employee) => {
         if (!acc[employee.id]) {
           acc[employee.id] = {
-            value: `${employee.id}-${employee.username}`, // Unique identifier
-            label: `${employee.username}`, // Display only the username
+            value: `${employee.id}-${employee.username}`,
+            label: `${employee.username}`,
             details: employee,
           };
         }
         return acc;
       }, {});
 
-      // Convert the grouped object back to an array
       const formattedResults = Object.values(uniqueEmployees);
-
-      console.log(formattedResults);
       setSearchResults(formattedResults);
+
+      return formattedResults;
     } catch (err) {
       setError("Unable to fetch employees.");
+      return [];
     } finally {
       setLoading(false);
     }
@@ -68,12 +68,29 @@ const SearchEmployee = ({ onEmployeeSelect }) => {
       (result) => result.value === selectedValue,
     );
     setSelectedEmployee(employee?.details || null);
+    console.log(selectedEmployee);
 
-    // Pass selected employee to the parent via the callback
     if (onEmployeeSelect && employee?.details) {
       onEmployeeSelect(employee.details);
     }
   };
+
+  useEffect(() => {
+    const autoSearch = async () => {
+      if (initialSearch && !hasAutoSearched.current) {
+        hasAutoSearched.current = true;
+        setSearchText(initialSearch);
+        console.log(searchText);
+        const results = await fetchEmployees(initialSearch);
+        if (results.length > 0) {
+          const firstEmployee = results[0];
+          setSelectedEmployee(firstEmployee.details);
+          onEmployeeSelect?.(firstEmployee.details);
+        }
+      }
+    };
+    autoSearch();
+  }, [initialSearch, onEmployeeSelect]);
 
   return (
     <div style={{ maxWidth: "400px", marginBottom: "20px" }}>
@@ -83,12 +100,21 @@ const SearchEmployee = ({ onEmployeeSelect }) => {
         searchable
         nothingFound={error || "No employees found"}
         data={searchResults}
-        onSearchChange={fetchEmployees}
+        onSearchChange={(val) => {
+          setSearchText(val);
+          fetchEmployees(val);
+        }}
         onChange={handleEmployeeSelection}
         disabled={loading}
       />
     </div>
   );
+}
+
+// ✅ PropTypes validation
+SearchEmployee.propTypes = {
+  onEmployeeSelect: PropTypes.func,
+  initialSearch: PropTypes.string,
 };
 
 export default SearchEmployee;
