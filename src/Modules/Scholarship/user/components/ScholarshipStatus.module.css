@@ -12,7 +12,7 @@
 
 .underline1 {
   height: 2px;
-  background-color: #17ABFF;
+  background-color: #17abff;
   margin-bottom: 20px;
 }
 
@@ -58,7 +58,8 @@
 
 .select {
   appearance: none;
-  background: url('data:image/svg+xml;utf8,<svg fill="black" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>') no-repeat;
+  background: url('data:image/svg+xml;utf8,<svg fill="black" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>')
+    no-repeat;
   background-position: right 10px top 50%;
   background-size: 20px;
   padding-right: 30px;
@@ -66,7 +67,7 @@
 
 .checkStatusButton {
   align-self: flex-start;
-  background-color: #17ABFF;
+  background-color: #17abff;
   color: white;
   border: none;
   border-radius: 4px;
@@ -82,15 +83,15 @@
 
 /* New CSS for status message */
 .statusMessage {
-  color: #17ABFF; /* Blue color for the status message */
+  color: #17abff; /* Blue color for the status message */
   font-size: 16px;
   margin-top: 20px;
 }
-.status{
-  margin-left: 15%
+.status {
+  margin-left: 15%;
 }
 
-.statuss{
+.statuss {
   background-color: lightblue;
   border: 2px solid #1497e0;
   border-radius: 10px;
@@ -98,22 +99,17 @@
   margin-bottom: 5%;
 }
 
-
-
-
-
 .table {
   border-collapse: collapse;
   border-style: hidden;
   margin-top: 80px;
-  
 }
 .table td {
   border: 2px solid rgb(199, 190, 190);
   padding: 12px;
 }
-.table thead tr th{
-  border: 2px solid  rgb(199, 190, 190);
+.table thead tr th {
+  border: 2px solid rgb(199, 190, 190);
   background-color: white;
 }
 
@@ -121,8 +117,7 @@ tr:nth-child(odd) {
   background-color: rgb(220, 223, 224);
 }
 
-
-.sch{
+.sch {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -132,6 +127,7 @@ tr:nth-child(odd) {
 .exportButtons {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px; /* Adjust spacing as needed */
-  margin-top: 1rem;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
 }

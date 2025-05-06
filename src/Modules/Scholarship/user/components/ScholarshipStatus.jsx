@@ -1,16 +1,6 @@
 import React, { useState, useMemo } from "react";
-import {
-  Button,
-  Box,
-  Text,
-  Loader,
-  Container,
-  Title,
-} from "@mantine/core";
-import {
-  MantineReactTable,
-  useMantineReactTable,
-} from "mantine-react-table";
+import { Button, Box, Text, Loader, Container, Title } from "@mantine/core";
+import { MantineReactTable, useMantineReactTable } from "mantine-react-table";
 import { IconDownload } from "@tabler/icons-react";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import styles from "./ScholarshipStatus.module.css";
@@ -35,7 +25,7 @@ export default function ScholarshipStatus() {
         useKeysAsHeaders: true,
         filename: "scholarship_status",
       }),
-    []
+    [],
   );
 
   // Fetch handler
@@ -65,7 +55,7 @@ export default function ScholarshipStatus() {
       { accessorKey: "id", header: "Application ID", enableSorting: true },
       { accessorKey: "status", header: "Status", enableSorting: true },
     ],
-    []
+    [],
   );
 
   // Export helpers
@@ -87,9 +77,7 @@ export default function ScholarshipStatus() {
     enableRowSelection: true,
     paginationDisplayMode: "pages",
     renderTopToolbarCustomActions: ({ table }) => (
-      <Box className={styles.exportButtons}
-        
-      >
+      <Box className={styles.exportButtons}>
         <Button
           leftIcon={<IconDownload />}
           onClick={handleExportAll}
@@ -106,9 +94,7 @@ export default function ScholarshipStatus() {
         </Button>
         <Button
           leftIcon={<IconDownload />}
-          onClick={() =>
-            handleExportRows(table.getSelectedRowModel().rows)
-          }
+          onClick={() => handleExportRows(table.getSelectedRowModel().rows)}
           disabled={
             !table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
           }
@@ -205,15 +191,11 @@ export default function ScholarshipStatus() {
 
       {page === 2 &&
         renderBlock("Merit-Cum-Means Scholarship", showMcmStatusRoute)}
-      {page === 3 &&
-        renderBlock("Director's Gold Medal", showGoldStatusRoute)}
+      {page === 3 && renderBlock("Director's Gold Medal", showGoldStatusRoute)}
       {page === 4 &&
         renderBlock("Director's Silver Medal", showSilverStatusRoute)}
       {page === 5 &&
-        renderBlock(
-          "D&M Proficiency Gold Medal",
-          showPdmStatusRoute
-        )}
+        renderBlock("D&M Proficiency Gold Medal", showPdmStatusRoute)}
     </Container>
   );
 }
