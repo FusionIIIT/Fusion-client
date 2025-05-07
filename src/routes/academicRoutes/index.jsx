@@ -72,3 +72,5 @@ export const allotReplacementCoursesRoute = `${host}/academic-procedures/api/aca
 
 export const studentDropRegistrationsRoute = `${host}/academic-procedures/api/stu/registrations_drop/`;
 export const studentDropCourseRoute     = `${host}/academic-procedures/api/stu/drop-course/`;
+
+export const StudentSearchRoute     = `${host}/academic-procedures/api/acad/student-search/`;

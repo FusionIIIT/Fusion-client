@@ -23,6 +23,7 @@ import AcadCourseBacklogMapping from "./AcadCourseBacklogMapping";
 import StudentAddDropReplace from "./StudentAddDropReplace";
 import AdminReplacementDashboard from "./AdminReplacementDashboard";
 import StudentCalendar from "./StudentCalendar";
+import AdminStudentDashboard from "./AdminStudentDashboard";
 
 function AcademicPage() {
   const [activeTab, setActiveTab] = useState("0");
@@ -47,6 +48,7 @@ function AcademicPage() {
       { title: "Allot Courses" },
       { title: "Backlog Mapping" },
       { title: "Replacement Allocation" },
+      { title: "Student Dashboard"},
     ];
     tabComponents = [
       StudentCourses,
@@ -57,7 +59,8 @@ function AcademicPage() {
       VerifyStudentRegistration,
       AllotCourses,
       AcadCourseBacklogMapping,
-      AdminReplacementDashboard
+      AdminReplacementDashboard,
+      AdminStudentDashboard
     ];
   } else if (role === "student") {
     tabItems = [

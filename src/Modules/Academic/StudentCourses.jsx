@@ -9,6 +9,7 @@ import {
   Group,
   Select,
   Loader,
+  Stack,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import axios from "axios";
@@ -133,13 +134,15 @@ export default function StudentCourses() {
       academic_year,
       registration_type,
       old_course,
+      semester_type
     } = newCourse;
     if (
       !semester_id ||
       !courseslot_id ||
       !course_id ||
       !academic_year ||
-      !registration_type
+      !registration_type ||
+      !semester_type
     ) {
       setError("Fill all required fields");
       return;
@@ -156,6 +159,7 @@ export default function StudentCourses() {
     form.append("course_id", course_id);
     form.append("academic_year", academic_year);
     form.append("registration_type", registration_type);
+    form.append("semester_type", semester_type);
     if (old_course) form.append("old_course", old_course);
     setLoading(true);
     try {
@@ -170,6 +174,7 @@ export default function StudentCourses() {
           academic_year: null,
           registration_type: null,
           old_course: null,
+          semester_type: null,
         });
         showNotification({
           title: "Course added",
@@ -243,9 +248,20 @@ export default function StudentCourses() {
     Credits: c.credits,
     Semester: c.sem,
     Type: c.registration_type,
-    "Replaced By": c.replaced_by
-      ? `${c.replaced_by.course_id.code} - ${c.replaced_by.course_id.name}`
-      : "NA",
+    "Replaced By":
+    c.replaced_by && c.replaced_by.length > 0 ? (
+      <Stack spacing={2}>
+        {c.replaced_by.map((r, idx) => (
+          <Text key={idx} size="sm">
+            {`${r.course_id.code} - ${r.course_id.name} (Sem ${r.semester_id.semester_no})`}
+          </Text>
+        ))}
+      </Stack>
+    ) : (
+      <Text size="sm" color="dimmed">
+        NA
+      </Text>
+    ),
     Actions: (
       <Button
         size="xs"
@@ -371,6 +387,16 @@ export default function StudentCourses() {
           value={newCourse.registration_type}
           onChange={(v) =>
             setNewCourse((p) => ({ ...p, registration_type: v }))
+          }
+          mb="md"
+        />
+        <Select
+          label="Semester Type"
+          placeholder="Select type"
+          data={["Odd Semester", "Even Semester", "Summer Semester"]}
+          value={newCourse.semester_type}
+          onChange={(v) =>
+            setNewCourse((p) => ({ ...p, semester_type: v }))
           }
           mb="md"
         />
