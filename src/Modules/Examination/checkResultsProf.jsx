@@ -154,7 +154,6 @@ export default function GradesDownloadPage() {
                     </Text>
                     <Group spacing="xs" mt={4}>
                       <Badge color="blue">{course.credit} cr</Badge>
-                      <Badge color="grape">{course.max_seats} seats</Badge>
                       {course.latest_version && <Badge color="green">Latest</Badge>}
                     </Group>
                   </Stack>

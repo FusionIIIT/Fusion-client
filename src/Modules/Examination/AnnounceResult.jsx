@@ -12,8 +12,9 @@ import {
   Select,
   SimpleGrid,
   Stack,
+  TextInput,
 } from "@mantine/core";
-import { IconX } from "@tabler/icons-react";
+import { IconSearch, IconX } from "@tabler/icons-react";
 import { showNotification } from "@mantine/notifications";
 import axios from "axios";
 import { useSelector } from "react-redux";
@@ -31,6 +32,8 @@ export default function AnnounceResult() {
   const [error, setError] = useState(null);
 
   const [formData, setFormData] = useState({ batch: "", semester: "" });
+  const [searchQuery, setSearchQuery] = useState("");
+
   const semesterOptions = Array.from({ length: 8 }, (_, i) => ({
     value: String(i + 1),
     label: `Semester ${i + 1}`,
@@ -64,7 +67,6 @@ export default function AnnounceResult() {
     setFormData((f) => ({ ...f, [field]: value }));
   };
 
-  // Check if we already have an announcement for this batch+semester
   const isDuplicate = announcements.some(
     (a) =>
       String(a.batch?.id) === formData.batch &&
@@ -95,7 +97,6 @@ export default function AnnounceResult() {
       );
 
       const ann = response.data;
-      // If new (201), prepend; if existing (200), update in-place
       if (response.status === 201) {
         setAnnouncements((prev) => [ann, ...prev]);
         showNotification({ title: "Success", message: "Announcement created.", color: "green" });
@@ -137,6 +138,10 @@ export default function AnnounceResult() {
       showNotification({ title: "Error", message: err.message, color: "red" });
     }
   };
+
+  const filteredAnnouncements = announcements.filter((item) =>
+    item.batch?.label?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (loading)
     return (
@@ -195,6 +200,13 @@ export default function AnnounceResult() {
       </Paper>
 
       <Paper shadow="sm" p="md" withBorder>
+        <TextInput
+          placeholder="Search by batch..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.currentTarget.value)}
+          icon={<IconSearch size={16} />}
+          mb="md"
+        />
         <Table highlightOnHover striped>
           <thead>
             <tr>
@@ -205,7 +217,7 @@ export default function AnnounceResult() {
             </tr>
           </thead>
           <tbody>
-            {announcements.map((item) => (
+            {filteredAnnouncements.map((item) => (
               <tr key={item.id}>
                 <td>{item.batch?.label || "N/A"}</td>
                 <td>{item.semester}</td>
