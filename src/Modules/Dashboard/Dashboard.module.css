@@ -47,7 +47,7 @@
 }
 
 .selectoptions:hover {
-  background-color: #15abff10; /* Transparent blue hover background */
+  background-color: #15abff10; 
 }
 
 .tabsContainer {
@@ -61,7 +61,7 @@
   border-color: #228be6 !important;
 }
 
-/* Add new styles for the tabs layout */
+
 .tabsWrapper {
   display: inline-flex;
   align-items: center;
@@ -73,15 +73,14 @@
 
 .tabsScrollArea {
   overflow-x: auto;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
-  max-width: calc(100% - 70px); /* Account for navigation buttons */
-  min-width: 200px;
+  scrollbar-width: none; 
+  -ms-overflow-style: none; 
+  max-width: calc(100% - 70px); 
   white-space: nowrap;
 }
 
 .tabsScrollArea::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none; 
 }
 
 .navigationButton {
@@ -118,7 +117,7 @@
   border-color: #228be6 !important;
 }
 
-/* Responsive styles */
+
 @media (max-width: 1200px) {
   .tabsScrollArea {
     max-width: calc(100% - 80px);
@@ -151,6 +150,11 @@
     gap: 4px;
     padding: 0 2px;
   }
+
+  .notificationActions {
+    margin-top: 10px;
+    justify-content: flex-start;
+  }
 }
 
 @media (max-width: 480px) {
@@ -168,4 +172,26 @@
     width: 18px;
     height: 18px;
   }
+}
+
+
+.notificationItem {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.notificationItem:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.starButton {
+  transition: transform 0.2s ease;
+}
+
+.starButton:hover {
+  transform: scale(1.1);
+}
+
+.starredNotification {
+  background-color: transparent;
 }
