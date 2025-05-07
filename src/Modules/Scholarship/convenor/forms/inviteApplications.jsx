@@ -13,6 +13,9 @@ function InviteApplications() {
     remarks: "",
   });
 
+  // Get today's date in YYYY-MM-DD format for the min attribute
+  const today = new Date().toLocaleDateString("en-CA");
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({
@@ -23,6 +26,12 @@ function InviteApplications() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const confirmed = window.confirm(
+      "Are you sure you want to submit the form?",
+    );
+    if (!confirmed) {
+      return; // User cancelled
+    }
 
     try {
       const token = localStorage.getItem("authToken");
@@ -63,6 +72,7 @@ function InviteApplications() {
               name="award"
               value={formData.award}
               onChange={handleChange}
+              required
             >
               <option value="">Select</option>
               <option value="MCM Scholarship">MCM Scholarship</option>
@@ -85,6 +95,7 @@ function InviteApplications() {
               name="programme"
               value={formData.programme}
               onChange={handleChange}
+              required
             >
               <option value="">Select</option>
               <option value="BTech">BTech</option>
@@ -100,6 +111,7 @@ function InviteApplications() {
               name="batch"
               value={formData.batch}
               onChange={handleChange}
+              required
             >
               <option value="">Select</option>
               <option value="2018">2018</option>
@@ -121,6 +133,8 @@ function InviteApplications() {
               name="startdate"
               value={formData.startdate}
               onChange={handleChange}
+              min={today} // Set min to today's date
+              required
             />
           </div>
           <div className={styles.inputGroup}>
@@ -131,6 +145,8 @@ function InviteApplications() {
               name="enddate"
               value={formData.enddate}
               onChange={handleChange}
+              min={formData.startdate || today} // Set min to start date or today if no start date selected
+              required
             />
           </div>
         </div>
@@ -142,6 +158,7 @@ function InviteApplications() {
             value={formData.remarks}
             onChange={handleChange}
             rows="4"
+            required
           />
         </div>
         <button type="submit" className={styles.submitButton}>

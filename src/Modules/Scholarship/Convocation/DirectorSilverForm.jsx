@@ -9,6 +9,7 @@ import {
   Container,
   Paper,
   Title,
+  NumberInput,
 } from "@mantine/core";
 import { submitSilverRoute } from "../../../routes/SPACSRoutes";
 
@@ -26,9 +27,25 @@ export default function DirectorSilverForm() {
     outside_achievements: "",
   });
 
+  const [grandTotalError, setGrandTotalError] = useState("");
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Validate grand_total when it changes
+    if (name === "grand_total") {
+      if (value === "") {
+        setGrandTotalError("Grand Total is required");
+        // eslint-disable-next-line no-restricted-globals
+      } else if (isNaN(value)) {
+        setGrandTotalError("Must be a valid number");
+      } else if (parseFloat(value) <= 0) {
+        setGrandTotalError("Must be a positive number");
+      } else {
+        setGrandTotalError("");
+      }
+    }
   };
 
   const handleFileChange = (file) => {
@@ -37,6 +54,33 @@ export default function DirectorSilverForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const confirmed = window.confirm(
+      "Are you sure you want to submit the form?",
+    );
+    if (!confirmed) {
+      return; // User cancelled
+    }
+
+    // Validate grand_total before submission
+    if (formData.grand_total === "") {
+      setGrandTotalError("Grand Total is required");
+      return;
+    }
+    // eslint-disable-next-line no-restricted-globals
+    if (isNaN(formData.grand_total)) {
+      setGrandTotalError("Must be a valid number");
+      return;
+    }
+    if (parseFloat(formData.grand_total) <= 0) {
+      setGrandTotalError("Must be a positive number");
+      return;
+    }
+
+    // Validate Marksheet field
+    if (!formData.Marksheet) {
+      alert("Marksheet is required. Please upload a file.");
+      return;
+    }
 
     const formDataToSend = new FormData();
     Object.entries(formData).forEach(([key, value]) => {
@@ -94,6 +138,7 @@ export default function DirectorSilverForm() {
                 value={formData.nearest_policestation}
                 onChange={handleChange}
                 placeholder="Enter Nearest Police Station"
+                required
               />
             </Grid.Col>
             <Grid.Col span={{ base: 12, sm: 6 }}>
@@ -103,16 +148,32 @@ export default function DirectorSilverForm() {
                 value={formData.nearest_railwaystation}
                 onChange={handleChange}
                 placeholder="Enter Nearest Railway Station"
+                required
               />
             </Grid.Col>
             <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
+              <NumberInput
                 label="Grand Total Amount"
                 name="grand_total"
-                type="number"
                 value={formData.grand_total}
-                onChange={handleChange}
+                onChange={(value) => {
+                  setFormData((prev) => ({ ...prev, grand_total: value }));
+                  if (value === "") {
+                    setGrandTotalError("Grand Total is required");
+                    // eslint-disable-next-line no-restricted-globals
+                  } else if (isNaN(value)) {
+                    setGrandTotalError("Must be a valid number");
+                  } else if (parseFloat(value) <= 0) {
+                    setGrandTotalError("Must be a positive number");
+                  } else {
+                    setGrandTotalError("");
+                  }
+                }}
                 placeholder="Enter Grand Total Amount"
+                min={0}
+                step={0.01}
+                error={grandTotalError}
+                required
               />
             </Grid.Col>
             <Grid.Col span={12}>
@@ -123,6 +184,7 @@ export default function DirectorSilverForm() {
                 onChange={handleChange}
                 placeholder="Enter Justification"
                 minRows={3}
+                required
               />
             </Grid.Col>
             <Grid.Col span={12}>
@@ -133,6 +195,7 @@ export default function DirectorSilverForm() {
                 onChange={handleChange}
                 placeholder="Enter Correspondence Address"
                 minRows={3}
+                required
               />
             </Grid.Col>
             <Grid.Col span={12}>
@@ -143,6 +206,7 @@ export default function DirectorSilverForm() {
                 onChange={handleChange}
                 placeholder="Describe Financial Assistance"
                 minRows={3}
+                required
               />
             </Grid.Col>
             <Grid.Col span={12}>
@@ -153,6 +217,7 @@ export default function DirectorSilverForm() {
                 onChange={handleChange}
                 placeholder="Enter Inside Achievements"
                 minRows={3}
+                required
               />
             </Grid.Col>
             <Grid.Col span={12}>
@@ -163,6 +228,7 @@ export default function DirectorSilverForm() {
                 onChange={handleChange}
                 placeholder="Enter Outside Achievements"
                 minRows={3}
+                required
               />
             </Grid.Col>
             <Grid.Col span={12}>

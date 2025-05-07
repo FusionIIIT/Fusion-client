@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+/* eslint-disable no-restricted-globals */
+/* eslint-disable react/jsx-props-no-spreading */
+import React from "react";
 import {
   Button,
   TextInput,
@@ -9,85 +11,116 @@ import {
   Container,
   Paper,
   Title,
+  NumberInput,
 } from "@mantine/core";
+import { useForm } from "@mantine/form";
 import { submitPdmRoute } from "../../../routes/SPACSRoutes";
 
 export default function DMProficiencyForm() {
-  const [formData, setFormData] = useState({
-    award_type: "DMProficiencyform",
-    justification: "",
-    correspondence_address: "",
-    nearest_policestation: "",
-    nearest_railwaystation: "",
-    financial_assistance: "",
-    grand_total: "",
-    title_name: "",
-    no_of_students: "",
-    roll_no1: "",
-    roll_no2: "",
-    roll_no3: "",
-    roll_no4: "",
-    roll_no5: "",
-    brief_description: "",
-    cse_topic: "",
-    ece_topic: "",
-    mech_topic: "",
-    design_topic: "",
-    cse_percentage: "",
-    ece_percentage: "",
-    mech_percentage: "",
-    design_percentage: "",
-    Marksheet: null,
+  const form = useForm({
+    initialValues: {
+      award_type: "DMProficiencyform",
+      justification: "",
+      correspondence_address: "",
+      nearest_policestation: "",
+      nearest_railwaystation: "",
+      financial_assistance: "",
+      grand_total: "",
+      title_name: "",
+      no_of_students: "",
+      roll_no1: "",
+      roll_no2: "",
+      roll_no3: "",
+      roll_no4: "",
+      roll_no5: "",
+      brief_description: "",
+      cse_topic: "",
+      ece_topic: "",
+      mech_topic: "",
+      design_topic: "",
+      cse_percentage: "",
+      ece_percentage: "",
+      mech_percentage: "",
+      design_percentage: "",
+      Marksheet: null,
+    },
+
+    validate: {
+      grand_total: (value) =>
+        !value || isNaN(value) || Number(value) < 0
+          ? "Grand total must be a valid non-negative number"
+          : null,
+      no_of_students: (value) =>
+        !value || isNaN(value) || Number(value) <= 0
+          ? "Number of students must be greater than 0"
+          : null,
+      cse_percentage: (value) =>
+        !value || isNaN(value) || value < 0 || value > 100
+          ? "CSE % must be between 0 and 100"
+          : null,
+      ece_percentage: (value) =>
+        !value || isNaN(value) || value < 0 || value > 100
+          ? "ECE % must be between 0 and 100"
+          : null,
+      mech_percentage: (value) =>
+        !value || isNaN(value) || value < 0 || value > 100
+          ? "Mech % must be between 0 and 100"
+          : null,
+      design_percentage: (value) =>
+        !value || isNaN(value) || value < 0 || value > 100
+          ? "Design % must be between 0 and 100"
+          : null,
+    },
   });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleFileUpload = (file) => {
-    setFormData((prev) => ({ ...prev, Marksheet: file }));
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const formDataToSend = new FormData();
-    Object.keys(formData).forEach((key) => {
-      if (formData[key]) {
-        formDataToSend.append(key, formData[key]);
-      }
-    });
-
-    try {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        alert("User is not authenticated. Please log in.");
-        return;
-      }
-
-      const response = await fetch(submitPdmRoute, {
-        method: "POST",
-        body: formDataToSend,
-        headers: {
-          Authorization: `Token ${token}`,
-        },
+    const confirmed = window.confirm(
+      "Are you sure you want to submit the form?",
+    );
+    if (!confirmed) {
+      return; // User cancelled
+    }
+    // Validate Marksheet field
+    if (!form.Marksheet) {
+      alert("Marksheet is required. Please upload a file.");
+      return;
+    }
+    if (!form.validate().hasErrors) {
+      const formDataToSend = new FormData();
+      Object.entries(form.values).forEach(([key, value]) => {
+        if (value) {
+          formDataToSend.append(key, value);
+        }
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        console.log("Form submitted successfully:", result);
-        alert("Form submitted successfully!");
-      } else {
-        const errorData = await response.json();
-        console.error("Submission failed:", errorData);
-        alert(
-          `Failed to submit the form: ${errorData.detail || response.statusText}`,
-        );
+      try {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+          alert("User is not authenticated. Please log in.");
+          return;
+        }
+
+        const response = await fetch(submitPdmRoute, {
+          method: "POST",
+          body: formDataToSend,
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+          console.log("Form submitted successfully:", data);
+          alert("Form submitted successfully!");
+        } else {
+          console.error("Submission failed:", data);
+          alert(`Failed: ${data.detail || response.statusText}`);
+        }
+      } catch (error) {
+        console.error("Error submitting form:", error);
+        alert("An error occurred while submitting the form.");
       }
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      alert("An error occurred while submitting the form.");
     }
   };
 
@@ -95,137 +128,137 @@ export default function DMProficiencyForm() {
     <Container size="lg">
       <Paper radius="md" padding="sm">
         <Title order={2} mb="lg">
-          DM Proficiency Form
+          DM Proficiency Formmmm
         </Title>
+
         <form onSubmit={handleSubmit}>
           <Grid gutter="lg">
-            {/* Basic Information */}
-
-            {/* Addresses */}
             <Grid.Col span={12}>
               <Textarea
                 label="Justification"
-                name="justification"
-                value={formData.justification}
-                onChange={handleChange}
                 placeholder="Enter Justification"
                 minRows={3}
+                {...form.getInputProps("justification")}
+                required
               />
             </Grid.Col>
+
             <Grid.Col span={12}>
               <Textarea
                 label="Correspondence Address"
-                name="correspondence_address"
-                value={formData.correspondence_address}
-                onChange={handleChange}
                 placeholder="Enter Correspondence Address"
                 minRows={3}
+                {...form.getInputProps("correspondence_address")}
+                required
               />
             </Grid.Col>
+
             <Grid.Col span={{ base: 12, sm: 6 }}>
               <TextInput
                 label="Nearest Police Station"
-                name="nearest_policestation"
-                value={formData.nearest_policestation}
-                onChange={handleChange}
                 placeholder="Enter Nearest Police Station"
+                {...form.getInputProps("nearest_policestation")}
+                required
               />
             </Grid.Col>
+
             <Grid.Col span={{ base: 12, sm: 6 }}>
               <TextInput
                 label="Nearest Railway Station"
-                name="nearest_railwaystation"
-                value={formData.nearest_railwaystation}
-                onChange={handleChange}
                 placeholder="Enter Nearest Railway Station"
+                {...form.getInputProps("nearest_railwaystation")}
+                required
               />
             </Grid.Col>
 
-            {/* Financial Information */}
             <Grid.Col span={{ base: 12, sm: 6 }}>
               <TextInput
                 label="Financial Assistance"
-                name="financial_assistance"
-                value={formData.financial_assistance}
-                onChange={handleChange}
                 placeholder="Enter Financial Assistance"
-              />
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
-                label="Grand Total"
-                name="grand_total"
-                type="number"
-                value={formData.grand_total}
-                onChange={handleChange}
-                placeholder="Enter Grand Total"
+                {...form.getInputProps("financial_assistance")}
+                required
               />
             </Grid.Col>
 
-            {/* Project/Team Information */}
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <NumberInput
+                label="Grand Total"
+                placeholder="Enter Grand Total"
+                value={form.values.grand_total}
+                onChange={(value) => {
+                  form.setFieldValue("grand_total", value);
+                  form.validateField("grand_total");
+                }}
+                error={form.errors.grand_total}
+                required
+              />
+            </Grid.Col>
+
             <Grid.Col span={{ base: 12, sm: 6 }}>
               <TextInput
                 label="Title Name"
-                name="title_name"
-                value={formData.title_name}
-                onChange={handleChange}
                 placeholder="Enter Title Name"
+                {...form.getInputProps("title_name")}
+                required
               />
             </Grid.Col>
+
             <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
+              <NumberInput
                 label="Number of Students"
-                name="no_of_students"
-                type="number"
-                value={formData.no_of_students}
-                onChange={handleChange}
                 placeholder="Enter Number of Students"
+                value={form.values.no_of_students}
+                onChange={(value) => {
+                  form.setFieldValue("no_of_students", value);
+                  form.validateField("no_of_students");
+                }}
+                error={form.errors.no_of_students}
+                required
               />
             </Grid.Col>
+
             {[1, 2, 3, 4, 5].map((num) => (
               <Grid.Col span={{ base: 12, sm: 6 }} key={`roll_no${num}`}>
                 <TextInput
                   label={`Roll No ${num}`}
-                  name={`roll_no${num}`}
-                  value={formData[`roll_no${num}`]}
-                  onChange={handleChange}
                   placeholder={`Enter Roll No ${num}`}
+                  {...form.getInputProps(`roll_no${num}`)}
+                  required
                 />
               </Grid.Col>
             ))}
 
-            {/* Brief Description */}
             <Grid.Col span={12}>
               <Textarea
                 label="Brief Description"
-                name="brief_description"
-                value={formData.brief_description}
-                onChange={handleChange}
                 placeholder="Enter a brief description"
                 minRows={4}
+                {...form.getInputProps("brief_description")}
+                required
               />
             </Grid.Col>
 
-            {/* Disciplines */}
             {["cse", "ece", "mech", "design"].map((field) => (
               <React.Fragment key={field}>
                 <Grid.Col span={{ base: 12, sm: 6 }}>
                   <TextInput
                     label={`${field.toUpperCase()} Topic`}
-                    name={`${field}_topic`}
-                    value={formData[`${field}_topic`]}
-                    onChange={handleChange}
                     placeholder={`Enter ${field.toUpperCase()} Topic`}
+                    {...form.getInputProps(`${field}_topic`)}
+                    required
                   />
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, sm: 6 }}>
-                  <TextInput
+                  <NumberInput
                     label={`${field.toUpperCase()} Percentage`}
-                    name={`${field}_percentage`}
-                    type="number"
-                    value={formData[`${field}_percentage`]}
-                    onChange={handleChange}
                     placeholder={`Enter ${field.toUpperCase()} Percentage`}
+                    value={form.values[`${field}_percentage`]}
+                    onChange={(value) => {
+                      form.setFieldValue(`${field}_percentage`, value);
+                      form.validateField(`${field}_percentage`);
+                    }}
+                    error={form.errors[`${field}_percentage`]}
+                    required
                   />
                 </Grid.Col>
               </React.Fragment>
@@ -233,17 +266,19 @@ export default function DMProficiencyForm() {
 
             {/* File Upload */}
             <Grid.Col span={12}>
-              <FileButton onChange={handleFileUpload} accept="application/pdf">
+              <FileButton
+                onChange={(file) => form.setFieldValue("Marksheet", file)}
+                accept="application/pdf"
+              >
                 {(props) => (
-                  // eslint-disable-next-line react/jsx-props-no-spreading
                   <Button {...props} fullWidth>
                     Upload Marksheet (PDF)
                   </Button>
                 )}
               </FileButton>
-              {formData.Marksheet && formData.Marksheet.name && (
+              {form.values.Marksheet?.name && (
                 <TextInput
-                  value={formData.Marksheet.name}
+                  value={form.values.Marksheet.name}
                   readOnly
                   mt="sm"
                   label="Uploaded File"
