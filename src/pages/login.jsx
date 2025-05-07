@@ -21,6 +21,7 @@ function LoginPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
   useEffect(() => {
     if (localStorage.getItem("authToken")) {
       navigate("/dashboard");
@@ -75,6 +76,10 @@ function LoginPage() {
     }
   };
 
+  const handleForgotPassword = () => {
+    window.location.href = "/reset-password";
+  };
+
   return (
     <Center w="100%">
       <Container w={420} my={100}>
@@ -118,6 +123,7 @@ function LoginPage() {
                 }
               }}
             />
+
             <Button
               fullWidth
               size="md"
@@ -127,6 +133,18 @@ function LoginPage() {
               loading={loading}
             >
               Sign in
+            </Button>
+
+            <Button
+              fullWidth
+              variant="outline"
+              color="blue"
+              size="sm"
+              mt="md"
+              onClick={handleForgotPassword}
+              disabled={loading}
+            >
+              Forgot Password?
             </Button>
           </form>
         </Paper>
