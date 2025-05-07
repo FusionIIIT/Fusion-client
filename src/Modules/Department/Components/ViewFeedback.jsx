@@ -3,6 +3,11 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
 import {
+  IconThumbUp,
+  IconThumbDown,
+  IconMoodNeutral,
+} from "@tabler/icons-react";
+import {
   Container,
   Title,
   Grid,
@@ -15,15 +20,14 @@ import {
   Badge,
   Group,
   Button,
-} from "@mantine/core"; // Mantine UI components
-import { IconThumbUp, IconThumbDown, IconMeh } from "@tabler/icons-react";
+} from "@mantine/core";
 
 export default function ViewFeedback({ branch }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
-  const [summary, setSummary] = useState(""); // To hold the summary
-  const [summaryEmoji, setSummaryEmoji] = useState(""); // To hold the emoji for summary
+  const [summary, setSummary] = useState("");
+  const [summaryEmoji, setSummaryEmoji] = useState("");
   const [progressValues, setProgressValues] = useState([]);
   const authToken = localStorage.getItem("authToken");
 
@@ -38,26 +42,21 @@ export default function ViewFeedback({ branch }) {
             },
           },
         );
-        // Filter feedback based on the branch
+
         const filteredFeedback = response.data.filter(
           (item) => item.department === branch,
         );
         setData(filteredFeedback);
-
-        // Generate summary
         generateSummary(filteredFeedback);
-
-        // Initialize progress bars with zero
         setProgressValues(new Array(filteredFeedback.length).fill(0));
 
-        // Trigger progress bar animation after a short delay
         setTimeout(() => {
           setProgressValues(
             filteredFeedback.map((feedback) =>
               getProgressValue(feedback.rating),
             ),
           );
-        }, 100); // Delay the progress animation slightly
+        }, 100);
       } catch (error) {
         const errorResponse = error.response?.data || error.message;
         setErrorMessage(errorResponse.detail || "Error fetching feedback.");
@@ -71,40 +70,36 @@ export default function ViewFeedback({ branch }) {
   }, [branch, authToken]);
 
   const generateSummary = (feedbackData) => {
-    // Categorize feedback by rating
     const positive = feedbackData.filter(
       (item) => item.rating === "Excellent",
     ).length;
     const good = feedbackData.filter((item) => item.rating === "Good").length;
     const poor = feedbackData.filter((item) => item.rating === "Poor").length;
 
-    // Construct the summary message
     let summaryText = "Feedback Summary: ";
-    let emoji = ""; // Variable to store the emoji
+    let emoji = "";
 
     if (positive > good && positive > poor) {
-      summaryText +=
-        "Most users are happy with this department, with many praising its services.";
-      emoji = "😊"; // Emoji for positive feedback
+      summaryText += "Most users are happy with this department.";
+      emoji = "😊";
     } else if (poor > good && poor > positive) {
       summaryText +=
-        "Some users have expressed concerns about this department, with several highlighting areas for improvement.";
-      emoji = "😞"; // Emoji for poor feedback
+        "Some users have expressed concerns about this department.";
+      emoji = "😞";
     } else {
-      summaryText +=
-        "There is a mix of opinions about this department, with users sharing both positive and negative feedback.";
-      emoji = "😐"; // Emoji for mixed feedback
+      summaryText += "There is a mix of opinions about this department.";
+      emoji = "😐";
     }
 
-    setSummary(summaryText); // Set the summary in state
-    setSummaryEmoji(emoji); // Set the corresponding emoji
+    setSummary(summaryText);
+    setSummaryEmoji(emoji);
   };
 
   const getProgressValue = (rating) => {
     if (rating === "Excellent") return 100;
     if (rating === "Good") return 66;
     if (rating === "Poor") return 33;
-    return 0; // Default fallback if no rating
+    return 0;
   };
 
   if (loading) {
@@ -120,37 +115,37 @@ export default function ViewFeedback({ branch }) {
       size="xl"
       py="xl"
       style={{
-        background: "linear-gradient(to right, #ff6a00, #ee0979)",
-        color: "#fff",
+        background: "#f7f7f7",
+        color: "#333",
+        paddingTop: "40px",
       }}
     >
-      {/* Error Notification */}
       {errorMessage && (
         <Notification
           color="red"
           title="Error"
           mb="md"
           style={{
-            borderRadius: "20px",
+            borderRadius: "12px",
             backgroundColor: "#e74c3c",
-            boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
+            boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
           }}
         >
           {errorMessage}
         </Notification>
       )}
 
-      {/* Title Section */}
       <Grid mb="lg" justify="center">
         <Grid.Col span={12}>
           <Title
             order={1}
             align="center"
             style={{
-              fontWeight: "900",
-              fontSize: "36px",
-              letterSpacing: "2px",
-              textShadow: "2px 2px 4px rgba(0,0,0,0.3)",
+              fontWeight: 700,
+              fontSize: "32px",
+              color: "#2C3E50",
+              letterSpacing: "1px",
+              marginBottom: "20px",
             }}
           >
             Feedback for {branch}
@@ -158,30 +153,32 @@ export default function ViewFeedback({ branch }) {
         </Grid.Col>
       </Grid>
 
-      {/* Special Summary Card */}
       {summary && (
         <Grid mb="lg" justify="center">
           <Grid.Col span={12} sm={8}>
             <Card
-              shadow="xl"
+              shadow="sm"
               padding="lg"
-              radius="xl"
+              radius="md"
               withBorder
               style={{
-                background: "#1f2a44",
-                boxShadow: "0px 10px 20px rgba(0,0,0,0.3)",
+                background: "#fff",
+                boxShadow: "0px 6px 12px rgba(0, 0, 0, 0.1)",
+                borderRadius: "10px",
                 position: "relative",
+                overflow: "hidden",
               }}
             >
               <Group position="center" style={{ marginBottom: "15px" }}>
                 <Text
                   size="lg"
-                  weight={600}
+                  weight={500}
                   align="center"
                   style={{
-                    color: "#ECF0F1",
+                    color: "#333",
                     letterSpacing: "1px",
-                    textShadow: "1px 1px 4px rgba(0, 0, 0, 0.1)",
+                    paddingTop: "20px",
+                    textShadow: "1px 1px 3px rgba(0, 0, 0, 0.1)",
                   }}
                 >
                   {summary} {summaryEmoji}
@@ -206,42 +203,39 @@ export default function ViewFeedback({ branch }) {
         </Grid>
       )}
 
-      {/* Feedback Cards */}
       <Grid gutter="md" justify="center" style={{ paddingTop: "30px" }}>
         {data.map((feedback, index) => (
           <Grid.Col span={12} sm={6} md={4} key={index}>
             <Card
-              shadow="lg"
+              shadow="sm"
               padding="lg"
               radius="md"
               withBorder
               style={{
-                background: "#2C3E50",
+                background: "#fff",
                 transition: "transform 0.3s ease, box-shadow 0.3s ease",
-                borderRadius: "18px",
-                boxShadow: "0 5px 15px rgba(0, 0, 0, 0.2)",
+                borderRadius: "12px",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
                 "&:hover": {
                   transform: "scale(1.05)",
-                  boxShadow: "0 15px 25px rgba(0, 0, 0, 0.3)",
+                  boxShadow: "0 15px 20px rgba(0, 0, 0, 0.15)",
                 },
               }}
             >
               <Stack spacing="sm" align="center">
-                {/* Remark */}
                 <Text
                   weight={500}
-                  size="lg"
+                  size="md"
                   style={{
                     lineHeight: 1.5,
-                    color: "#fff",
+                    color: "#333",
                     fontFamily: "Arial, sans-serif",
-                    fontSize: "18px",
+                    fontSize: "16px",
                   }}
                 >
                   {feedback.remark}
                 </Text>
 
-                {/* Rating - Animated Progress Bar */}
                 <Group position="apart" style={{ width: "100%" }}>
                   <Progress
                     value={progressValues[index]}
@@ -261,13 +255,12 @@ export default function ViewFeedback({ branch }) {
                       borderRadius: "10px",
                     }}
                   />
-                  {/* Rating Icons */}
                   <div style={{ display: "flex", alignItems: "center" }}>
                     {feedback.rating === "Excellent" && (
                       <IconThumbUp size={30} color="teal" />
                     )}
                     {feedback.rating === "Good" && (
-                      <IconMeh size={30} color="yellow" />
+                      <IconMoodNeutral size={30} color="#B8860B" />
                     )}
                     {feedback.rating === "Poor" && (
                       <IconThumbDown size={30} color="red" />
@@ -280,22 +273,17 @@ export default function ViewFeedback({ branch }) {
         ))}
       </Grid>
 
-      {/* Call-to-Action Button */}
-      <Grid justify="center" style={{ marginTop: "40px" }}>
-        <Button
-          size="lg"
-          radius="xl"
-          style={{
-            background: "#ff6a00",
-            color: "#fff",
-            fontWeight: "bold",
-            textTransform: "uppercase",
-            letterSpacing: "1px",
-          }}
-        >
-          Add New Feedback
-        </Button>
-      </Grid>
+      {errorMessage && (
+        <Group position="center" mt="md">
+          <Button
+            variant="outline"
+            color="blue"
+            onClick={() => setLoading(true)}
+          >
+            Retry
+          </Button>
+        </Group>
+      )}
     </Container>
   );
 }
