@@ -40,15 +40,16 @@ function NotificationItem({
   const { module } = notification.data;
 
   return (
-    <Grid.Col span={{ base: 12, md: 6 }} key={notification.id}>
+    <Grid.Col key={notification.id}>
       <Paper
         radius="md"
         px="lg"
+        ml="lg"
         pt="sm"
         pb="xl"
         style={{ borderLeft: "0.6rem solid #15ABFF" }}
         withBorder
-        maw="1240px"
+        maw="85%"
       >
         <Flex justify="space-between">
           <Flex direction="column">

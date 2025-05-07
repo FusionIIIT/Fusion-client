@@ -114,7 +114,9 @@ export default function App() {
   return (
     <MantineProvider theme={theme}>
       <Notifications position="top-center" autoClose={2000} limit={1} />
-      {location.pathname !== "/accounts/login" && <ValidateAuth />}
+      {location.pathname !== ("/accounts/login" && "/reset-password") && (
+        <ValidateAuth />
+      )}
       {location.pathname !== "/accounts/login" && <InactivityHandler />}
 
       <Routes>
