@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Pagination, Paper, Table, Title } from "@mantine/core";
+import {
+  Pagination,
+  Paper,
+  Table,
+  Title,
+  Loader,
+  Center,
+  Text,
+} from "@mantine/core";
 import axios from "axios";
 import NavCom from "../NavCom";
 import ManageStock from "./ManageStocksNav";
@@ -7,7 +15,6 @@ import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
 import { compounderRoute } from "../../../../routes/health_center";
 
 function ViewStock() {
-  // eslint-disable-next-line no-unused-vars
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [totalPages, setTotalPages] = useState(1);
@@ -15,6 +22,7 @@ function ViewStock() {
   const [viewStock, setView] = useState([]);
 
   const fetchStock = async (pagenumber) => {
+    setLoading(true);
     const token = localStorage.getItem("authToken");
     try {
       const response = await axios.post(
@@ -30,7 +38,6 @@ function ViewStock() {
           },
         },
       );
-      console.log(response);
       setView(response.data.report_stock_view);
       setTotalPages(response.data.total_pages_stock_view);
     } catch (err) {
@@ -39,7 +46,8 @@ function ViewStock() {
       setLoading(false);
     }
   };
-  const setCurrentPage = async (e) => {
+
+  const setCurrentPage = (e) => {
     setPage(e);
     fetchStock(e);
   };
@@ -47,15 +55,6 @@ function ViewStock() {
   useEffect(() => {
     fetchStock(1);
   }, []);
-
-  const rows = viewStock.map((item, index) => (
-    <tr key={index}>
-      <td style={{ textAlign: "center" }}>{item.medicine_id}</td>
-      <td style={{ textAlign: "center" }}>{item.supplier}</td>
-      <td style={{ textAlign: "center" }}>{item.Expiry_date}</td>
-      <td style={{ textAlign: "center" }}>{item.quantity}</td>
-    </tr>
-  ));
 
   return (
     <>
@@ -93,7 +92,9 @@ function ViewStock() {
               }}
             />
           </form>
+
           <button
+            onClick={() => window.print()}
             style={{
               padding: "10px 20px",
               backgroundColor: "#15ABFF",
@@ -120,33 +121,80 @@ function ViewStock() {
             Stocks
           </Title>
           <br />
-          <Table
-            withTableBorder
-            withColumnBorders
-            highlightOnHover
-            striped
-            horizontalSpacing="md"
-            verticalSpacing="sm"
-            style={{ overflowX: "auto" }}
-          >
-            <thead>
-              <tr style={{ backgroundColor: "#E0F2FE", textAlign: "center" }}>
-                <th>Medicine</th>
-                <th>Supplier</th>
-                <th>Expiry Date</th>
-                <th>Quantity</th>
-              </tr>
-            </thead>
-            <tbody>{rows}</tbody>
-          </Table>
+
+          {loading ? (
+            <Center style={{ height: "150px" }}>
+              <Loader size="lg" color="blue" />
+            </Center>
+          ) : viewStock.length === 0 ? (
+            <Center style={{ padding: "20px" }}>
+              <Text color="dimmed" size="md">
+                No Data Found
+              </Text>
+            </Center>
+          ) : (
+            <Table
+              withTableBorder
+              withColumnBorders
+              highlightOnHover
+              striped
+              horizontalSpacing="md"
+              verticalSpacing="sm"
+              style={{ overflowX: "auto" }}
+            >
+              <thead>
+                <tr style={{ backgroundColor: "#E0F2FE", textAlign: "center" }}>
+                  <th>Medicine</th>
+                  <th>Supplier</th>
+                  <th>Expiry Date</th>
+                  <th>Quantity</th>
+                </tr>
+              </thead>
+              <tbody>
+                {viewStock.map((item, index) => (
+                  <tr key={index}>
+                    <td style={{ textAlign: "center" }}>{item.medicine_id}</td>
+                    <td style={{ textAlign: "center" }}>{item.supplier}</td>
+                    <td style={{ textAlign: "center" }}>{item.Expiry_date}</td>
+                    <td style={{ textAlign: "center" }}>{item.quantity}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          )}
         </Paper>
-        <Pagination
-          value={activePage}
-          onChange={setCurrentPage}
-          total={totalPages}
-          style={{ marginTop: "20px", margin: "auto", width: "fit-content" }}
-        />
+
+        {!loading && viewStock.length > 0 && (
+          <Pagination
+            value={activePage}
+            onChange={setCurrentPage}
+            total={totalPages}
+            style={{ marginTop: "20px", margin: "auto", width: "fit-content" }}
+          />
+        )}
       </Paper>
+
+      <style>
+        {`
+          @media print {
+            nav,
+            button,
+            form,
+            .mantine-Pagination-root {
+              display: none !important;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+            }
+            th,
+            td {
+              border: 1px solid #000;
+              padding: 8px;
+            }
+          }
+        `}
+      </style>
     </>
   );
 }

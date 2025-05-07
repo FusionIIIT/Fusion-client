@@ -116,15 +116,6 @@ function CreateNotice({ existingAnnouncement }) {
       })}
     >
       <Stack spacing="lg">
-        <Text
-          align="left"
-          mb="xl"
-          size="24px"
-          style={{ color: "#757575", fontWeight: "bold" }}
-        >
-          {existingAnnouncement ? "Edit Announcement" : "Create Announcement"}
-        </Text>
-
         <form onSubmit={handleSubmit}>
           <Stack spacing="md">
             <TextInput

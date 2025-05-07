@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import PropTypes from "prop-types";
 import cx from "clsx";
 import { useState } from "react";
@@ -8,39 +9,61 @@ import {
   Eye,
   FileText,
   PlusCircle,
-  ArrowBendDoubleUpRight,
+  ArrowsDownUp,
+  ArrowUp,
+  ArrowDown,
 } from "@phosphor-icons/react";
 import classes from "../../styles/tableStyle.module.css";
 import ProjectViewModal from "../modals/projectViewModal";
-import ProjectApprovalModal from "../modals/projectApprovalModal";
-import ProjectClosureModal from "../modals/projectClosureModal";
 import { badgeColor } from "../../helpers/badgeColours";
 
 function ProjectTable({ setActiveTab, projectsData }) {
   const [scrolled, setScrolled] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
   const [viewModalOpened, setViewModalOpened] = useState(false);
-  const [projectApprovalModalOpened, setProjectApprovalModalOpened] =
-    useState(false);
-  const [projectClosureModalOpened, setProjectClosureModalOpened] =
-    useState(false);
-
   const role = useSelector((state) => state.user.role);
 
-  const navigate = useNavigate();
-  const handleProjectActionClick = (row) => {
-    if (role.includes("rspc_admin")) {
-      setActiveTab("3");
+  const [sortColumn, setSortColumn] = useState(null);
+  const [sortDirection, setSortDirection] = useState("asc");
+  const sortData = (data, column) => {
+    const sorted = [...data].sort((a, b) => {
+      if (a[column] === null || a[column] === undefined) return 1;
+      if (b[column] === null || b[column] === undefined) return -1;
+
+      const aValue =
+        typeof a[column] === "string" ? a[column].toLowerCase() : a[column];
+      const bValue =
+        typeof b[column] === "string" ? b[column].toLowerCase() : b[column];
+
+      if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+    return sorted;
+  };
+  const handleSort = (column) => {
+    if (sortColumn === column) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
-      const tabIndex = row.status === "OnGoing" ? "2" : "1";
-      navigate("/research/forms", {
-        state: { data: row, initialTab: tabIndex },
-      });
+      setSortColumn(column);
+      setSortDirection("asc");
     }
   };
 
+  const navigate = useNavigate();
+  const handleProjectActionClick = (row) => {
+    let tabIndex = "1";
+    if (role.includes("Professor") || role.includes("SectionHead_RSPC")) {
+      tabIndex =
+        row.status === "OnGoing" ? "1" : row.status === "Completed" ? "2" : "0";
+    }
+    navigate("/research/forms", {
+      state: { data: row, initialTab: tabIndex },
+    });
+  };
+
   const handleProjectAddClick = () => {
-    setActiveTab("3");
+    setActiveTab("1");
   };
 
   const handleViewClick = (row) => {
@@ -48,19 +71,17 @@ function ProjectTable({ setActiveTab, projectsData }) {
     setViewModalOpened(true);
   };
 
-  const handleProjectDecisionClick = (row) => {
-    setSelectedProject(row);
-    if (row.end_approval === "Pending") {
-      setProjectClosureModalOpened(true);
-    } else {
-      setProjectApprovalModalOpened(true);
-    }
-  };
-
-  const rows = projectsData.map((row, index) => (
+  const displayedProjects = sortColumn
+    ? sortData(projectsData, sortColumn)
+    : projectsData;
+  const rows = displayedProjects.map((row, index) => (
     <Table.Tr key={index}>
       <Table.Td className={classes["row-content"]}>
-        <Badge color={badgeColor[row.status]} size="lg">
+        <Badge
+          color={badgeColor[row.status]}
+          size="lg"
+          style={{ minWidth: "110px", color: "#3f3f3f" }}
+        >
           {row.status}
         </Badge>
       </Table.Td>
@@ -69,56 +90,43 @@ function ProjectTable({ setActiveTab, projectsData }) {
       <Table.Td className={classes["row-content"]}>
         {row.sponsored_agency}
       </Table.Td>
-
       <Table.Td className={classes["row-content"]}>
-        {role.includes("HOD") ? (
-          <Button
-            onClick={() => handleProjectDecisionClick(row)}
-            variant="outline"
-            color="#15ABFF"
-            size="xs"
-            disabled={row.status !== "HoD Forward"}
-            style={{ borderRadius: "8px" }}
-          >
-            <ArrowBendDoubleUpRight size={26} style={{ marginRight: "3px" }} />
-            Forward File
-          </Button>
-        ) : role.includes("Professor") ? (
+        {row.sanction_date
+          ? new Date(row.sanction_date).toLocaleDateString()
+          : "---"}
+      </Table.Td>
+      <Table.Td className={classes["row-content"]}>
+        {role.includes("Professor") ? (
           <Button
             onClick={() => handleProjectActionClick(row)}
             variant="outline"
             color="#15ABFF"
             size="xs"
-            disabled={row.status !== "Submitted" && row.status !== "OnGoing"}
-            style={{ borderRadius: "8px" }}
+            style={{ borderRadius: "8px", minWidth: "105px" }}
+            disabled={row.status === "Registered"}
           >
             <FileText size={26} style={{ marginRight: "3px" }} />
-            {row.status === "Submitted" ? "Register Project" : "Forms"}
+            {row.status === "Submitted"
+              ? "Register"
+              : row.status === "OnGoing"
+                ? "Forms"
+                : "Details"}
           </Button>
-        ) : !role.includes("SectionHead_RSPC") ? (
+        ) : role.includes("SectionHead_RSPC") ? (
           <Button
             onClick={() => handleProjectActionClick(row)}
             variant="outline"
             color="#15ABFF"
             size="xs"
-            style={{ borderRadius: "8px" }}
+            style={{ borderRadius: "8px", minWidth: "120px" }}
+            disabled={row.status === "Submitted"}
           >
             <FileText size={26} style={{ marginRight: "3px" }} />
-            Forms
-          </Button>
-        ) : row.status === "RSPC Approval" || row.end_approval === "Pending" ? (
-          <Button
-            onClick={() => handleProjectDecisionClick(row)}
-            variant="outline"
-            color="#15ABFF"
-            size="xs"
-            disabled={
-              row.status !== "RSPC Approval" && row.end_approval !== "Pending"
-            }
-            style={{ borderRadius: "8px" }}
-          >
-            <FileText size={26} style={{ marginRight: "3px" }} />
-            Dean Approval
+            {row.status === "Registered"
+              ? "Commence"
+              : row.status === "OnGoing"
+                ? "Forms"
+                : "Details"}
           </Button>
         ) : (
           <Button
@@ -126,46 +134,14 @@ function ProjectTable({ setActiveTab, projectsData }) {
             variant="outline"
             color="#15ABFF"
             size="xs"
-            disabled={row.status !== "Registered" && row.status !== "OnGoing"}
             style={{ borderRadius: "8px" }}
+            disabled={row.status !== "OnGoing" && row.status !== "Completed"}
           >
             <FileText size={26} style={{ marginRight: "3px" }} />
-            {row.status === "Registered" ? "Commence Project" : "Forms"}
+            Details
           </Button>
         )}
       </Table.Td>
-
-      {/* {role.includes("Professor") && (
-        <Table.Td className={classes["row-content"]}>
-          <Button
-            onClick={() => handleRequestClick(row)}
-            variant="outline"
-            color="#15ABFF"
-            size="xs"
-            disabled={row.status === "Completed"}
-            style={{ borderRadius: "8px" }}
-          >
-            <FileText size={26} style={{ marginRight: "3px" }} />
-            Request
-          </Button>
-        </Table.Td>
-      )}
-
-      {username === rspc_admin && (
-        <Table.Td className={classes["row-content"]}>
-          <Button
-            onClick={() => handleActionClick(row)}
-            variant="outline"
-            color="#15ABFF"
-            size="xs"
-            disabled={row.status === "Completed"}
-            style={{ borderRadius: "8px" }}
-          >
-            <FlagCheckered size={26} style={{ marginRight: "3px" }} />
-            Action
-          </Button>
-        </Table.Td>
-      )} */}
 
       <Table.Td className={classes["row-content"]}>
         <Button
@@ -193,22 +169,124 @@ function ProjectTable({ setActiveTab, projectsData }) {
             className={cx(classes.header, { [classes.scrolled]: scrolled })}
           >
             <Table.Tr>
-              <Table.Th className={classes["header-cell"]}>Status</Table.Th>
-              <Table.Th className={classes["header-cell"]}>
-                Project Name
+              <Table.Th
+                className={classes["header-cell"]}
+                onClick={() => handleSort("status")}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  Status
+                  {sortColumn === "status" ? (
+                    sortDirection === "asc" ? (
+                      <ArrowUp size={16} style={{ marginLeft: "5px" }} />
+                    ) : (
+                      <ArrowDown size={16} style={{ marginLeft: "5px" }} />
+                    )
+                  ) : (
+                    <ArrowsDownUp size={16} style={{ marginLeft: "5px" }} />
+                  )}
+                </div>
               </Table.Th>
-              <Table.Th className={classes["header-cell"]}>Project ID</Table.Th>
-              <Table.Th className={classes["header-cell"]}>
-                Sponsor Agency
+              <Table.Th
+                className={classes["header-cell"]}
+                onClick={() => handleSort("name")}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  Project Name
+                  {sortColumn === "name" ? (
+                    sortDirection === "asc" ? (
+                      <ArrowUp size={16} style={{ marginLeft: "5px" }} />
+                    ) : (
+                      <ArrowDown size={16} style={{ marginLeft: "5px" }} />
+                    )
+                  ) : (
+                    <ArrowsDownUp size={16} style={{ marginLeft: "5px" }} />
+                  )}
+                </div>
+              </Table.Th>
+              <Table.Th
+                className={classes["header-cell"]}
+                onClick={() => handleSort("pid")}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  Project ID
+                  {sortColumn === "pid" ? (
+                    sortDirection === "asc" ? (
+                      <ArrowUp size={16} style={{ marginLeft: "5px" }} />
+                    ) : (
+                      <ArrowDown size={16} style={{ marginLeft: "5px" }} />
+                    )
+                  ) : (
+                    <ArrowsDownUp size={16} style={{ marginLeft: "5px" }} />
+                  )}
+                </div>
+              </Table.Th>
+              <Table.Th
+                className={classes["header-cell"]}
+                onClick={() => handleSort("sponsored_agency")}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  Sponsor Agency
+                  {sortColumn === "sponsored_agency" ? (
+                    sortDirection === "asc" ? (
+                      <ArrowUp size={16} style={{ marginLeft: "5px" }} />
+                    ) : (
+                      <ArrowDown size={16} style={{ marginLeft: "5px" }} />
+                    )
+                  ) : (
+                    <ArrowsDownUp size={16} style={{ marginLeft: "5px" }} />
+                  )}
+                </div>
+              </Table.Th>
+              <Table.Th
+                className={classes["header-cell"]}
+                onClick={() => handleSort("sanction_date")}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  Sanction Date
+                  {sortColumn === "sanction_date" ? (
+                    sortDirection === "asc" ? (
+                      <ArrowUp size={16} style={{ marginLeft: "5px" }} />
+                    ) : (
+                      <ArrowDown size={16} style={{ marginLeft: "5px" }} />
+                    )
+                  ) : (
+                    <ArrowsDownUp size={16} style={{ marginLeft: "5px" }} />
+                  )}
+                </div>
               </Table.Th>
               <Table.Th className={classes["header-cell"]}>
                 Action Centre
               </Table.Th>
-              {/* {role.includes("Professor") && (
-                <Table.Th className={classes["header-cell"]}>
-                  Request Application
-                </Table.Th>
-              )} */}
               <Table.Th className={classes["header-cell"]}>
                 Project Info
               </Table.Th>
@@ -217,7 +295,7 @@ function ProjectTable({ setActiveTab, projectsData }) {
           {projectsData ? (
             <Table.Tbody>{rows}</Table.Tbody>
           ) : (
-            <Text color="red" size="xl" weight={700} align="center">
+            <Text color="red" align="center">
               Unable to load project details
             </Text>
           )}
@@ -239,7 +317,7 @@ function ProjectTable({ setActiveTab, projectsData }) {
             style={{ borderRadius: "8px", padding: "7px 18px" }}
           >
             <PlusCircle size={26} style={{ marginRight: "3px" }} />
-            Add Project
+            New Project Proposal
           </Button>
         </div>
       )}
@@ -247,18 +325,6 @@ function ProjectTable({ setActiveTab, projectsData }) {
         opened={viewModalOpened}
         onClose={() => setViewModalOpened(false)}
         projectData={selectedProject}
-      />
-      <ProjectApprovalModal
-        opened={projectApprovalModalOpened}
-        onClose={() => setProjectApprovalModalOpened(false)}
-        projectData={selectedProject}
-        setActiveTab={setActiveTab}
-      />
-      <ProjectClosureModal
-        opened={projectClosureModalOpened}
-        onClose={() => setProjectClosureModalOpened(false)}
-        projectData={selectedProject}
-        setActiveTab={setActiveTab}
       />
     </div>
   );

@@ -9,15 +9,16 @@ import {
   Title,
   Tabs,
 } from "@mantine/core";
-import dayjs from "dayjs";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import { notifications } from "@mantine/notifications";
 import AddPlacementEventForm from "./AddPlacementEventForm";
 import PlacementScheduleCard from "./PlacementScheduleCard";
 import { fetchPlacementScheduleRoute } from "../../../routes/placementCellRoutes";
 
 const getCookie = (name) => {
   const value = `; ${document.cookie}`;
+
   const parts = value.split(`; ${name}=`);
 
   if (parts.length === 2) return parts.pop().split(";").shift();
@@ -68,7 +69,7 @@ function PlacementScheduleGrid({ data, itemsPerPage, cardsPerRow }) {
         total={Math.ceil(data.length / itemsPerPage)}
         mt="xl"
         position="right"
-        style={{ position: "fixed", bottom: 32 }}
+        // style={{ position: "fixed", bottom: 32 }}
       />
     </Container>
   );
@@ -111,7 +112,12 @@ function PlacementSchedule() {
           "Error details:",
           err.response ? err.response.data : err.message,
         );
-        setError(err.message);
+        setError("Failed to fetch placement schedules.");
+        notifications.show({
+          title: "Error",
+          message: "Failed to fetch placement schedules.",
+          color: "red",
+        });
       } finally {
         setLoading(false);
       }
@@ -120,21 +126,40 @@ function PlacementSchedule() {
     fetchData();
   }, []);
 
-  const today = dayjs();
+  // Filter active events
+  const activeEvents = placementData.filter((event) => {
+    const startDate = new Date(event.placement_date);
+    return startDate <= new Date(); // Active if the placement date is today or in the past
+  });
 
-  const activeEvents = placementData.filter((item) =>
-    dayjs(item.placement_date).isAfter(today, "day"),
-  );
-  const closedEvents = placementData.filter((item) =>
-    dayjs(item.placement_date).isBefore(today, "day"),
-  );
+  // Filter upcoming events
+  const upcomingEvents = placementData.filter((event) => {
+    const startDate = new Date(event.placement_date);
+    return startDate > new Date(); // Upcoming if the placement date is in the future
+  });
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  // Filter closed events
+  const closedEvents = placementData.filter((event) => {
+    const endDateTime = new Date(`${event.schedule_at}T${event.time}`);
+    return endDateTime <= new Date(); // Closed if the event's end time is in the past
+  });
+
+  // const closedEvents = placementData.filter((event) => {
+  //   const endDateTime = new Date(`${event.schedule_at}T${event.time}`);
+  //   return endDateTime <= new Date();
+  // });
 
   const handleAddEvent = () => {
     setIsModalOpen(true);
   };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
   return (
     <>
@@ -159,23 +184,55 @@ function PlacementSchedule() {
         <Tabs defaultValue="active" variant="pills" style={{ marginLeft: 16 }}>
           <Tabs.List>
             <Tabs.Tab value="active">Active</Tabs.Tab>
-            {role !== "student" && <Tabs.Tab value="closed">Closed</Tabs.Tab>}
+            <Tabs.Tab value="upcoming">Upcoming</Tabs.Tab>
+            {role === "placement officer" && (
+              <Tabs.Tab value="closed">Closed</Tabs.Tab>
+            )}
           </Tabs.List>
 
           <Tabs.Panel value="active" pt="md">
-            <PlacementScheduleGrid
-              data={activeEvents}
-              itemsPerPage={10}
-              cardsPerRow={2}
-            />
+            {activeEvents.length > 0 ? (
+              <PlacementScheduleGrid
+                data={activeEvents}
+                itemsPerPage={10}
+                cardsPerRow={2}
+              />
+            ) : (
+              <div style={{ textAlign: "center", marginTop: "20px" }}>
+                No active placement schedules available.
+              </div>
+            )}
           </Tabs.Panel>
-          <Tabs.Panel value="closed" pt="md">
-            <PlacementScheduleGrid
-              data={closedEvents}
-              itemsPerPage={10}
-              cardsPerRow={5}
-            />
+
+          <Tabs.Panel value="upcoming" pt="md">
+            {upcomingEvents.length > 0 ? (
+              <PlacementScheduleGrid
+                data={upcomingEvents}
+                itemsPerPage={10}
+                cardsPerRow={2}
+              />
+            ) : (
+              <div style={{ textAlign: "center", marginTop: "20px" }}>
+                No upcoming placement schedules available.
+              </div>
+            )}
           </Tabs.Panel>
+
+          {role === "placement officer" && (
+            <Tabs.Panel value="closed" pt="md">
+              {closedEvents.length > 0 ? (
+                <PlacementScheduleGrid
+                  data={closedEvents}
+                  itemsPerPage={10}
+                  cardsPerRow={2}
+                />
+              ) : (
+                <div style={{ textAlign: "center", marginTop: "20px" }}>
+                  No closed placement schedules available.
+                </div>
+              )}
+            </Tabs.Panel>
+          )}
         </Tabs>
       </Container>
       <Modal

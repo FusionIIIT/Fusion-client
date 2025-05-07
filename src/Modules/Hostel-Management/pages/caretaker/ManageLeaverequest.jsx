@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   Text,
-  Paper,
   Group,
   Avatar,
   Button,
@@ -12,6 +11,8 @@ import {
   Box,
   Container,
   Loader,
+  Card,
+  Tabs,
 } from "@mantine/core";
 import { CalendarBlank } from "@phosphor-icons/react";
 import axios from "axios";
@@ -103,138 +104,198 @@ export default function ManageLeaveRequest() {
   const renderLeaveRequests = (requests) => {
     if (loading) {
       return (
-        <Container
-          py="xl"
-          style={{ display: "flex", justifyContent: "center" }}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "50vh",
+          }}
         >
           <Loader size="lg" />
-        </Container>
+        </Box>
       );
     }
 
     if (error) {
       return (
-        <Text align="center" color="red" size="lg">
+        <Text align="center" color="red" size="lg" py="xl">
           {error}
         </Text>
       );
     }
 
-    if (requests.length > 0) {
+    if (requests.length === 0) {
       return (
-        <Stack spacing="md" pb="md">
-          {requests.map((request) => (
-            <Paper key={request.id} p="md" withBorder shadow="xs">
-              <Flex
-                align="stretch"
-                justify="space-between"
-                style={{ width: "100%" }}
-              >
-                <Group spacing="md">
-                  <Avatar color="cyan" radius="xl" size="lg">
-                    {request.student_name[0]}
-                  </Avatar>
-                  <div>
-                    <Text weight={500} size="sm" lineClamp={1}>
-                      {request.student_name}
-                    </Text>
-                    <Badge size="sm" variant="outline" color="blue">
-                      {request.roll_num}
-                    </Badge>
-                  </div>
-                </Group>
-
-                <Box
-                  sx={{
-                    flex: 1,
-                    padding: "8px",
-                    borderLeft: "1px solid #ccc",
-                    borderRight: "1px solid #ccc",
-                  }}
-                >
-                  <Text size="sm" weight={500}>
-                    {request.reason}
-                  </Text>
-                </Box>
-
-                <Flex direction="column" style={{ minWidth: "200px" }}>
-                  <Group spacing="xs">
-                    <CalendarBlank size={16} />
-                    <Text size="xs">From: {request.start_date}</Text>
-                  </Group>
-                  <Group spacing="xs">
-                    <CalendarBlank size={16} />
-                    <Text size="xs">To: {request.end_date}</Text>
-                  </Group>
-                  <Group spacing="xs" mt="auto">
-                    {request.status === "pending" ? (
-                      <>
-                        <Button
-                          color="green"
-                          size="xs"
-                          onClick={() =>
-                            handleStatusUpdate(request.id, "approved")
-                          }
-                        >
-                          Accept
-                        </Button>
-                        <Button
-                          color="red"
-                          size="xs"
-                          onClick={() =>
-                            handleStatusUpdate(request.id, "rejected")
-                          }
-                        >
-                          Reject
-                        </Button>
-                      </>
-                    ) : (
-                      <Badge
-                        color={request.status === "approved" ? "green" : "red"}
-                      >
-                        {request.status.charAt(0).toUpperCase() +
-                          request.status.slice(1)}
-                      </Badge>
-                    )}
-                  </Group>
-                </Flex>
-              </Flex>
-            </Paper>
-          ))}
-        </Stack>
+        <Text align="center" color="dimmed" py="xl">
+          No leave requests found in this category.
+        </Text>
       );
     }
+
     return (
-      <Text align="center" size="lg">
-        No leave requests found.
-      </Text>
+      <Stack spacing="md">
+        {requests.map((request) => (
+          <Card key={request.id} p="md" withBorder radius="sm" shadow="xs">
+            <Flex
+              gap="md"
+              align="flex-start"
+              justify="space-between"
+              wrap="wrap"
+            >
+              <Group spacing="md" noWrap style={{ flex: "0 0 220px" }}>
+                <Avatar
+                  color="blue"
+                  radius="xl"
+                  size="md"
+                  sx={(theme) => ({
+                    backgroundColor: theme.fn.rgba(theme.colors.blue[5], 0.2),
+                    color: theme.colors.blue[7],
+                  })}
+                >
+                  {request.student_name[0]}
+                </Avatar>
+                <Box>
+                  <Text weight={600} size="sm" lineClamp={1}>
+                    {request.student_name}
+                  </Text>
+                  <Badge size="sm" variant="outline" color="blue" mt={4}>
+                    {request.roll_num}
+                  </Badge>
+                </Box>
+              </Group>
+
+              <Box sx={{ flex: 1, minWidth: "200px" }}>
+                <Text size="sm" lineClamp={2}>
+                  {request.reason}
+                </Text>
+              </Box>
+
+              <Box sx={{ width: "180px" }}>
+                <Group spacing="xs" mb={6}>
+                  <CalendarBlank size={14} weight="bold" color="#5C7CFA" />
+                  <Text size="xs" color="dimmed">
+                    From:{" "}
+                    <Text component="span" weight={500} color="dark" size="xs">
+                      {request.start_date}
+                    </Text>
+                  </Text>
+                </Group>
+                <Group spacing="xs" mb={8}>
+                  <CalendarBlank size={14} weight="bold" color="#5C7CFA" />
+                  <Text size="xs" color="dimmed">
+                    To:{" "}
+                    <Text component="span" weight={500} color="dark" size="xs">
+                      {request.end_date}
+                    </Text>
+                  </Text>
+                </Group>
+
+                {request.status === "pending" ? (
+                  <Group spacing="xs">
+                    <Button
+                      color="green"
+                      size="xs"
+                      variant="light"
+                      onClick={() => handleStatusUpdate(request.id, "approved")}
+                    >
+                      Accept
+                    </Button>
+                    <Button
+                      color="red"
+                      size="xs"
+                      variant="light"
+                      onClick={() => handleStatusUpdate(request.id, "rejected")}
+                    >
+                      Reject
+                    </Button>
+                  </Group>
+                ) : (
+                  <Badge
+                    color={request.status === "approved" ? "green" : "red"}
+                    variant="filled"
+                  >
+                    {request.status.charAt(0).toUpperCase() +
+                      request.status.slice(1)}
+                  </Badge>
+                )}
+              </Box>
+            </Flex>
+          </Card>
+        ))}
+      </Stack>
     );
   };
 
   return (
-    <Paper shadow="md" p="md" withBorder>
-      <Text size="24px" weight={700} mb="md">
-        Manage Leave Request
-      </Text>
-      <Flex gap="md" mb="md">
-        <Button
-          variant={activeTab === "active" ? "filled" : "outline"}
-          onClick={() => setActiveTab("active")}
-        >
-          Pending Requests ({activeRequests.length})
-        </Button>
-        <Button
-          variant={activeTab === "past" ? "filled" : "outline"}
-          onClick={() => setActiveTab("past")}
-        >
-          Past Requests ({pastRequests.length})
-        </Button>
-      </Flex>
-      <ScrollArea style={{ maxHeight: "66vh" }}>
-        {activeTab === "active"
-          ? renderLeaveRequests(activeRequests)
-          : renderLeaveRequests(pastRequests)}
-      </ScrollArea>
-    </Paper>
+    <Container size="md" px="md">
+      <Card shadow="sm" radius="md" withBorder>
+        <Box p="lg" sx={{ height: "70vh" }}>
+          <Tabs value={activeTab} onChange={setActiveTab} radius="md" mb="md">
+            <Tabs.List grow>
+              <Tabs.Tab
+                value="active"
+                rightSection={
+                  <Badge
+                    size="sm"
+                    variant="filled"
+                    radius="xl"
+                    sx={(theme) => ({
+                      backgroundColor:
+                        activeTab === "active"
+                          ? theme.white
+                          : theme.colors.blue[5],
+                      color:
+                        activeTab === "active"
+                          ? theme.colors.blue[7]
+                          : theme.white,
+                    })}
+                  >
+                    {activeRequests.length}
+                  </Badge>
+                }
+              >
+                Pending Requests
+              </Tabs.Tab>
+              <Tabs.Tab
+                value="past"
+                rightSection={
+                  <Badge
+                    size="sm"
+                    variant="filled"
+                    radius="xl"
+                    sx={(theme) => ({
+                      backgroundColor:
+                        activeTab === "past"
+                          ? theme.white
+                          : theme.colors.blue[5],
+                      color:
+                        activeTab === "past"
+                          ? theme.colors.blue[7]
+                          : theme.white,
+                    })}
+                  >
+                    {pastRequests.length}
+                  </Badge>
+                }
+              >
+                Past Requests
+              </Tabs.Tab>
+            </Tabs.List>
+            <Tabs.Panel value="active" pt="xs">
+              <ScrollArea style={{ height: "calc(70vh - 120px)" }}>
+                <Box p="xs">{renderLeaveRequests(activeRequests)}</Box>
+              </ScrollArea>
+            </Tabs.Panel>
+
+            <Tabs.Panel value="past" pt="xs">
+              <ScrollArea style={{ height: "calc(70vh - 120px)" }}>
+                <Box p="xs">{renderLeaveRequests(pastRequests)}</Box>
+              </ScrollArea>
+            </Tabs.Panel>
+          </Tabs>
+        </Box>
+      </Card>
+    </Container>
   );
 }

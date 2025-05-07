@@ -26,7 +26,7 @@ function AwardsAndScholarshipCatalog() {
   const handleAwardSelect = (award) => {
     setSelectedAward(award);
     setEditMode(false);
-    setUpdatedText(award.catalog); // Load the current text into the textarea
+    setUpdatedText(award.catalog);
   };
 
   const toggleEditMode = () => {
@@ -129,9 +129,7 @@ function AwardsAndScholarshipCatalog() {
             {selectedAward && (
               <>
                 <div className={styles.header}>
-                  <Title order={2} size="26px">
-                    {selectedAward.award_name}
-                  </Title>
+                  <Title order={2}>{selectedAward.award_name}</Title>
                   <Button
                     className={styles.editButton}
                     onClick={editMode ? saveChanges : toggleEditMode}
@@ -143,9 +141,11 @@ function AwardsAndScholarshipCatalog() {
                 <Divider my="sm" />
                 {editMode ? (
                   <Textarea
-                    size="14px"
                     value={updatedText}
                     onChange={handleTextChange}
+                    autosize
+                    minRows={10}
+                    maxRows={20}
                     className={styles.editTextarea}
                   />
                 ) : (

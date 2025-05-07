@@ -1,6 +1,14 @@
 /* eslint-disable no-unused-vars */
-import React, { useEffect, useState } from "react";
-import { Pagination, Paper, Table, Title } from "@mantine/core";
+import React, { useEffect, useState, useRef } from "react";
+import {
+  Pagination,
+  Paper,
+  Table,
+  Title,
+  Loader,
+  Text,
+  Center,
+} from "@mantine/core";
 import axios from "axios";
 import NavCom from "../NavCom";
 import ManageStock from "./ManageStocksNav";
@@ -13,8 +21,10 @@ function ExpiredMedicine() {
   const [totalPages, setTotalPages] = useState(1);
   const [activePage, setPage] = useState(1);
   const [expiredMed, setExpired] = useState([]);
+  const tableRef = useRef();
 
   const fetchMedicine = async (pagenumber) => {
+    setLoading(true);
     const token = localStorage.getItem("authToken");
     try {
       const response = await axios.post(
@@ -30,7 +40,6 @@ function ExpiredMedicine() {
           },
         },
       );
-      console.log(response);
       setExpired(response.data.report_stock_expired);
       setTotalPages(response.data.total_pages_stock_view);
     } catch (err) {
@@ -39,6 +48,7 @@ function ExpiredMedicine() {
       setLoading(false);
     }
   };
+
   const setCurrentPage = async (e) => {
     setPage(e);
     fetchMedicine(e);
@@ -48,14 +58,70 @@ function ExpiredMedicine() {
     fetchMedicine(1);
   }, []);
 
-  const rows = expiredMed.map((item, index) => (
-    <tr key={index}>
-      <td style={{ textAlign: "center" }}>{item.medicine_id}</td>
-      <td style={{ textAlign: "center" }}>{item.supplier}</td>
-      <td style={{ textAlign: "center" }}>{item.Expiry_date}</td>
-      <td style={{ textAlign: "center" }}>{item.quantity}</td>
-    </tr>
-  ));
+  const handlePrint = () => {
+    const printContent = tableRef.current;
+    const printWindow = window.open("", "", "width=800,height=600");
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Print Expired Medicines</title>
+          <style>
+            table {
+              width: 100%;
+              border-collapse: collapse;
+            }
+            th, td {
+              border: 1px solid #ccc;
+              padding: 8px;
+              text-align: center;
+            }
+            th {
+              background-color: #E0F2FE;
+            }
+            body {
+              font-family: Arial, sans-serif;
+              padding: 20px;
+            }
+          </style>
+        </head>
+        <body>
+          <h2 style="text-align:center; color:#15abff;">Expired Medicines List</h2>
+          ${printContent.innerHTML}
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+  };
+
+  const renderTableContent = () => {
+    if (loading) {
+      return (
+        <Center py="xl">
+          <Loader color="blue" size="lg" />
+        </Center>
+      );
+    }
+
+    if (!loading && expiredMed.length === 0) {
+      return (
+        <Center py="xl">
+          <Text size="lg" color="gray">
+            No expired medicines found.
+          </Text>
+        </Center>
+      );
+    }
+
+    return expiredMed.map((item, index) => (
+      <tr key={index}>
+        <td style={{ textAlign: "center" }}>{item.medicine_id}</td>
+        <td style={{ textAlign: "center" }}>{item.supplier}</td>
+        <td style={{ textAlign: "center" }}>{item.Expiry_date}</td>
+        <td style={{ textAlign: "center" }}>{item.quantity}</td>
+      </tr>
+    ));
+  };
 
   return (
     <>
@@ -98,6 +164,7 @@ function ExpiredMedicine() {
             />
           </form>
           <button
+            onClick={handlePrint}
             style={{
               padding: "10px 20px",
               backgroundColor: "#15ABFF",
@@ -123,32 +190,36 @@ function ExpiredMedicine() {
           >
             Medicines Lists
           </Title>
-          <Table
-            withTableBorder
-            withColumnBorders
-            highlightOnHover
-            striped
-            horizontalSpacing="lg"
-            verticalSpacing="sm"
-            style={{ overflowX: "auto" }}
-          >
-            <thead>
-              <tr style={{ backgroundColor: "#E0F2FE", textAlign: "center" }}>
-                <th>Medicine</th>
-                <th>Supplier</th>
-                <th>Expiry Date</th>
-                <th>Quantity</th>
-              </tr>
-            </thead>
-            <tbody>{rows}</tbody>
-          </Table>
+          <div ref={tableRef}>
+            <Table
+              withTableBorder
+              withColumnBorders
+              highlightOnHover
+              striped
+              horizontalSpacing="lg"
+              verticalSpacing="sm"
+              style={{ overflowX: "auto" }}
+            >
+              <thead>
+                <tr style={{ backgroundColor: "#E0F2FE", textAlign: "center" }}>
+                  <th>Medicine</th>
+                  <th>Supplier</th>
+                  <th>Expiry Date</th>
+                  <th>Quantity</th>
+                </tr>
+              </thead>
+              <tbody>{renderTableContent()}</tbody>
+            </Table>
+          </div>
         </Paper>
-        <Pagination
-          value={activePage}
-          onChange={setCurrentPage}
-          total={totalPages}
-          style={{ marginTop: "20px", margin: "auto", width: "fit-content" }}
-        />
+        {!loading && expiredMed.length > 0 && (
+          <Pagination
+            value={activePage}
+            onChange={setCurrentPage}
+            total={totalPages}
+            style={{ marginTop: "20px", margin: "auto", width: "fit-content" }}
+          />
+        )}
       </Paper>
     </>
   );

@@ -12,6 +12,7 @@ import {
   CheckIcon,
 } from "@mantine/core";
 
+import ConfirmationModal from "../../helper/ConfirmationModal";
 import { DesignationsContext } from "../../helper/designationContext";
 import classes from "../../iwd.module.css";
 import { HandleDeanProcessRequest } from "../../handlers/handlers";
@@ -19,6 +20,7 @@ import { HandleDeanProcessRequest } from "../../handlers/handlers";
 function DeanProcess({ form, request, handleBackToList }) {
   console.log("dean\n\n");
   const [isLoading, setIsLoading] = useState(false);
+  const [confirmationModalOpen, setConfirmationModal] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const role = useSelector((state) => state.user.role);
   const designations = useContext(DesignationsContext);
@@ -33,7 +35,11 @@ function DeanProcess({ form, request, handleBackToList }) {
   return (
     /* eslint-disable react/jsx-props-no-spreading */
 
-    <form>
+    <form
+      onSubmit={form.onSubmit((values) => {
+        if (form.validate(values)) setConfirmationModal(true);
+      })}
+    >
       <Flex gap="xs">
         <FileInput
           label="Upload your file"
@@ -86,14 +92,7 @@ function DeanProcess({ form, request, handleBackToList }) {
           }}
           disabled={isLoading || isSuccess}
           onClick={() => {
-            HandleDeanProcessRequest({
-              form,
-              request,
-              setIsLoading,
-              setIsSuccess,
-              handleBackToList,
-              role,
-            });
+            setConfirmationModal(true);
           }}
         >
           {isLoading ? (
@@ -109,6 +108,24 @@ function DeanProcess({ form, request, handleBackToList }) {
           )}
         </Button>
       </Flex>
+      <ConfirmationModal
+        opened={confirmationModalOpen}
+        onClose={() => setConfirmationModal(false)}
+        onConfirm={() => {
+          setConfirmationModal(false);
+
+          form.onSubmit(
+            HandleDeanProcessRequest({
+              form,
+              request,
+              setIsLoading,
+              setIsSuccess,
+              handleBackToList,
+              role,
+            }),
+          )();
+        }}
+      />
     </form>
     /* eslint-enable react/jsx-props-no-spreading */
   );

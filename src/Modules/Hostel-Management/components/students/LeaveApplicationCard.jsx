@@ -1,5 +1,6 @@
 import React from "react";
-import { Box, Text, TextInput, Group, Stack, Badge } from "@mantine/core";
+import { Box, Text, Group, Badge, Flex, Stack } from "@mantine/core";
+import { CalendarBlank, Phone, Notepad } from "@phosphor-icons/react";
 
 const defaultProps = {
   student_name: "",
@@ -53,50 +54,77 @@ export default function LeaveApplicationCard(props = defaultProps) {
         borderRadius: theme.radius.md,
         padding: theme.spacing.md,
         backgroundColor: theme.white,
-        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-        width: "100%",
-        borderWidth: "2px",
+        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
       })}
     >
-      <Stack spacing="md">
-        <Group position="apart" align="center">
-          <Text weight={600} size="lg">
-            {student_name} ({roll_num})
+      <Flex
+        direction={{ base: "column", sm: "row" }}
+        justify="space-between"
+        gap="md"
+      >
+        {/* Left Info Section */}
+        <Stack spacing="xs" style={{ flex: 1 }}>
+          <Group spacing="xs">
+            <Text weight={600} size="sm">
+              {student_name}
+            </Text>
+            <Badge size="xs" variant="outline" color="blue">
+              {roll_num}
+            </Badge>
+          </Group>
+
+          <Text size="sm" color="dimmed" style={{ maxWidth: 600 }}>
+            {reason}
           </Text>
+
+          <Group spacing="xl" align="center" wrap="wrap">
+            <Group spacing={6}>
+              <CalendarBlank size={14} color="#5C7CFA" />
+              <Text size="xs">
+                {start_date} - {end_date}
+              </Text>
+            </Group>
+            <Group spacing={6}>
+              <CalendarBlank size={14} color="#5C7CFA" />
+              <Text size="xs">{getDuration(start_date, end_date)}</Text>
+            </Group>
+            <Group spacing={6}>
+              <Phone size={14} color="#5C7CFA" />
+              <Text size="xs">{phone_number}</Text>
+            </Group>
+          </Group>
+
+          {remark && (
+            <Group spacing={6}>
+              <Notepad size={14} color="#5C7CFA" />
+              <Text size="xs" color="dimmed">
+                Remark:{" "}
+                <Text component="span" weight={500}>
+                  {remark}
+                </Text>
+              </Text>
+            </Group>
+          )}
+        </Stack>
+
+        {/* Right Status Badge */}
+        <Flex
+          direction="column"
+          align="flex-end"
+          justify="space-between"
+          style={{ minWidth: "100px" }}
+        >
           <Badge
             color={getStatusColor(status)}
             variant="filled"
-            size="lg"
-            style={{ minWidth: "100px", textAlign: "center" }}
+            size="sm"
+            radius="sm"
+            sx={{ textAlign: "center", alignSelf: "flex-end" }}
           >
             {status.toUpperCase()}
           </Badge>
-        </Group>
-
-        <Group grow align="flex-start" spacing="md">
-          <TextInput label="Start Date" value={start_date} size="sm" readOnly />
-          <TextInput label="End Date" value={end_date} size="sm" readOnly />
-          <TextInput
-            label="Duration"
-            value={getDuration(start_date, end_date)}
-            size="sm"
-            readOnly
-          />
-        </Group>
-
-        <TextInput label="Reason" value={reason} size="sm" readOnly />
-
-        <TextInput
-          label="Phone Number"
-          value={phone_number}
-          size="sm"
-          readOnly
-        />
-
-        {remark && (
-          <TextInput label="Remark" value={remark} size="sm" readOnly />
-        )}
-      </Stack>
+        </Flex>
+      </Flex>
     </Box>
   );
 }

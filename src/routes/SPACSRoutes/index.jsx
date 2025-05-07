@@ -20,3 +20,5 @@ export const updateDirectorSilverStatusRoute = `${host}/spacs/api/director_silve
 export const updateProficiencyDMStatusRoute = `${host}/spacs/api/dm-proficiency/decsion/`;
 export const inviteApplicationsRoute = `${host}/spacs/release`;
 export const submitMCMApplicationsRoute = `${host}/spacs/mcm_update/`;
+export const scholarshipNotification = `${host}/notifications/api/scholarship_portal_notification/`;
+export const checkApplicationWindow = `${host}/spacs/check-application-window/`;

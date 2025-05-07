@@ -9,6 +9,7 @@ import {
   Divider,
   GridCol,
   Alert,
+  Title,
 } from "@mantine/core";
 import axios from "axios";
 import { ThumbsUp, ThumbsDown, FileText } from "@phosphor-icons/react";
@@ -59,7 +60,7 @@ function JoiningReportAndIDCardApprovalModal({
       setSuccessAlertVisible(true);
       setTimeout(() => {
         setSuccessAlertVisible(false);
-        setActiveTab("1");
+        setActiveTab("0");
         window.location.reload();
       }, 2500);
     } catch (error) {
@@ -77,13 +78,12 @@ function JoiningReportAndIDCardApprovalModal({
         {staffData && Object.keys(staffData).length > 0 ? (
           <>
             <Group position="apart" style={{ marginBottom: 10 }}>
-              <Text size="32px" weight={700}>
-                Approval Of Joining Report And ID Card
-              </Text>
+              <Title order={2}>Approval Of Joining Report And ID Card</Title>
               <Group position="left" style={{ marginTop: "20px" }}>
                 <Button
                   color="green"
                   style={{ borderRadius: "8px" }}
+                  size="xs"
                   onClick={() => handleStaffDecision("approve")}
                 >
                   <ThumbsUp size={26} style={{ marginRight: "3px" }} />
@@ -93,6 +93,7 @@ function JoiningReportAndIDCardApprovalModal({
                   color="red"
                   style={{ borderRadius: "8px" }}
                   onClick={() => handleStaffDecision("reject")}
+                  size="xs"
                   variant="outline"
                 >
                   <ThumbsDown size={26} style={{ marginRight: "3px" }} />
@@ -151,12 +152,7 @@ function JoiningReportAndIDCardApprovalModal({
 
               {/* -------------- */}
               <Grid.Col span={12}>
-                <Divider
-                  my="lg"
-                  label="X X X"
-                  labelPosition="center"
-                  size="md"
-                />
+                <Divider my="sm" label="" labelPosition="center" size="sm" />
               </Grid.Col>
 
               <GridCol span={6}>
@@ -207,12 +203,7 @@ function JoiningReportAndIDCardApprovalModal({
 
               {/* -------------- */}
               <Grid.Col span={12}>
-                <Divider
-                  my="lg"
-                  label="X X X"
-                  labelPosition="center"
-                  size="md"
-                />
+                <Divider my="sm" label="" labelPosition="center" size="sm" />
               </Grid.Col>
               <GridCol span={12}>
                 <Text size="xl">

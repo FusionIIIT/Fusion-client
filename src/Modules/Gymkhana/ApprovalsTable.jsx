@@ -87,8 +87,8 @@ function EventApprovals({ clubName }) {
 
   const ClubMap = {
     Tech_Counsellor: ["BitByte", "AFC"],
-    Cultural_Counsellor: [],
-    Sports_Counsellor: [],
+    Cultural_Counsellor: ["Jazbaat", "Aavartan"],
+    Sports_Counsellor: ["Badminton Club", "Volleyball Club"],
   };
   console.log(clubName, userRole, VisibeClubArray);
   const filteredEvents = useMemo(() => {
@@ -213,7 +213,7 @@ function EventApprovals({ clubName }) {
         await forwardFile({
           fileId,
           receiver: FICName, // based on clubname & under which fraternity we have filter from relatedClubData
-          receiverDesignation: "Professor",
+          receiverDesignation: "FIC",
           remarks: "Approved by Co-ordinator",
           fileExtraJSON: {
             approved_by: "Co-ordinator",

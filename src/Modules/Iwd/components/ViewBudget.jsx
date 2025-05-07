@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Container, Table, Title, Grid, Loader } from "@mantine/core";
 import { GetBudgets } from "../handlers/handlers";
-import "./GlobTable.css";
+// import "./GlobTable.css";
 
 // view budget fxn
 export default function ViewBudget() {

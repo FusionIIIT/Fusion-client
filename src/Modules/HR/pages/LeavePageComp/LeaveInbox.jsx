@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Title, Select, TextInput, Container, Badge } from "@mantine/core";
+import { Title, Select, TextInput, Badge } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
 import { Eye } from "@phosphor-icons/react";
 import LoadingComponent from "../../components/Loading";
@@ -11,30 +11,58 @@ function LeaveInbox() {
   const [inboxData, setInboxData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filtering, setFiltering] = useState(false); // New state for filter loading
   const [selectedStatus, setSelectedStatus] = useState("All");
-  const [selectedType, setSelectedType] = useState("All"); // New state for type filter
+  const [selectedType, setSelectedType] = useState("All");
   const [fromDate, setFromDate] = useState("");
   const navigate = useNavigate();
 
+  const applyFilters = (status, type, date, data = inboxData) => {
+    setFiltering(true);
+    let filtered = data;
+
+    if (status !== "All") {
+      filtered = filtered.filter((item) => item.status === status);
+    }
+
+    if (type !== "All") {
+      filtered = filtered.filter((item) => item.type === type);
+    }
+
+    // Filter by date if fromDate is set
+    if (date) {
+      const selectedDate = new Date(date);
+      filtered = filtered.filter((item) => {
+        const itemDate = new Date(item.date);
+        return itemDate >= selectedDate;
+      });
+    }
+
+    setFilteredData(filtered);
+    setFiltering(false);
+  };
+
   useEffect(() => {
     const fetchInboxData = async () => {
-      console.log("Fetching leave inbox...");
+      setLoading(true);
       const token = localStorage.getItem("authToken");
       if (!token) {
         console.error("No authentication token found!");
+        setLoading(false);
         return;
       }
+
       try {
         const queryParams = new URLSearchParams();
-        if (fromDate) {
-          queryParams.append("date", fromDate);
-        }
+        if (fromDate) queryParams.append("date", fromDate);
+
         const response = await fetch(
           `${get_leave_inbox}?${queryParams.toString()}`,
           {
             headers: { Authorization: `Token ${token}` },
           },
         );
+
         const data = await response.json();
         const combinedData = [
           ...data.leave_inbox.map((item) => ({
@@ -55,13 +83,14 @@ function LeaveInbox() {
         ].sort((a, b) => new Date(b.date) - new Date(a.date));
 
         setInboxData(combinedData);
-        setFilteredData(combinedData);
-        setLoading(false);
+        applyFilters(selectedStatus, selectedType, fromDate, combinedData); // <== call filters after fetch
       } catch (error) {
         console.error("Failed to fetch leave inbox:", error);
+      } finally {
         setLoading(false);
       }
     };
+
     fetchInboxData();
   }, [fromDate]);
 
@@ -118,27 +147,6 @@ function LeaveInbox() {
     applyFilters(selectedStatus, selectedType, event.target.value);
   };
 
-  const applyFilters = (status, type, date) => {
-    let filtered = inboxData;
-
-    // Filter by status
-    if (status !== "All") {
-      filtered = filtered.filter((item) => item.status === status);
-    }
-
-    // Filter by type
-    if (type !== "All") {
-      filtered = filtered.filter((item) => item.type === type);
-    }
-
-    // Filter by date
-    if (date) {
-      filtered = filtered.filter((item) => item.date === date);
-    }
-
-    setFilteredData(filtered);
-  };
-
   const headers = [
     "Type",
     "ID",
@@ -149,10 +157,6 @@ function LeaveInbox() {
     "View",
   ];
 
-  if (loading) {
-    return <LoadingComponent loadingMsg="Fetching Leave Inbox..." />;
-  }
-
   return (
     <div className="app-container">
       <Title
@@ -162,52 +166,92 @@ function LeaveInbox() {
         Leave Inbox
       </Title>
 
-      <div style={{ margin: "20px 15px", display: "flex", gap: "20px" }}>
-        <TextInput
-          label="Filter from Date"
-          type="date"
-          value={fromDate}
-          onChange={handleDateFilterChange}
-          style={{ maxWidth: "300px" }}
-        />
-        <Select
-          label="Filter by Status"
-          placeholder="Select a status"
-          value={selectedStatus}
-          onChange={handleStatusFilterChange}
-          data={[
-            { value: "All", label: "All" },
-            { value: "Pending", label: "Pending" },
-            { value: "Accepted", label: "Accepted" },
-            { value: "Rejected", label: "Rejected" },
-          ]}
-        />
-        <Select
-          label="Filter by Type"
-          placeholder="Select a type"
-          value={selectedType}
-          onChange={handleTypeFilterChange}
-          data={[
-            { value: "All", label: "All" },
-            { value: "Leave Request", label: "Leave Request" },
-            {
-              value: "Academic Responsibility",
-              label: "Academic Responsibility",
-            },
-            {
-              value: "Administrative Responsibility",
-              label: "Administrative Responsibility",
-            },
-          ]}
-        />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          margin: "20px 15px",
+        }}
+      >
+        {/* Filters section */}
+        <div style={{ display: "flex", gap: "20px" }}>
+          <TextInput
+            label="Filter from Date"
+            type="date"
+            value={fromDate}
+            onChange={handleDateFilterChange}
+            style={{ maxWidth: "300px" }}
+          />
+          <Select
+            label="Filter by Status"
+            placeholder="Select a status"
+            value={selectedStatus}
+            onChange={handleStatusFilterChange}
+            data={[
+              { value: "All", label: "All" },
+              { value: "Pending", label: "Pending" },
+              { value: "Accepted", label: "Accepted" },
+              { value: "Rejected", label: "Rejected" },
+            ]}
+          />
+          <Select
+            label="Filter by Type"
+            placeholder="Select a type"
+            value={selectedType}
+            onChange={handleTypeFilterChange}
+            data={[
+              { value: "All", label: "All" },
+              { value: "Leave Request", label: "Leave Request" },
+              {
+                value: "Academic Responsibility",
+                label: "Academic Responsibility",
+              },
+              {
+                value: "Administrative Responsibility",
+                label: "Administrative Responsibility",
+              },
+            ]}
+          />
+        </div>
+
+        {/* Filtered results text section */}
+        <Title order={4} style={{ fontWeight: "400", marginLeft: "auto" }}>
+          {fromDate
+            ? `Filtered results as of ${new Date(fromDate).toLocaleDateString(
+                "en-US",
+                {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                },
+              )}`
+            : `Filtered results as of ${new Date(
+                Date.now() - 365 * 24 * 60 * 60 * 1000,
+              ).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}`}
+        </Title>
       </div>
 
-      {filteredData.length === 0 ? (
+      {(loading || filtering) && (
+        <LoadingComponent
+          loadingMsg={
+            loading ? "Fetching Leave Inbox..." : "Applying filters..."
+          }
+        />
+      )}
+
+      {!loading && !filtering && filteredData.length === 0 && (
         <EmptyTable
           title="No Records Found"
           message="There are no records available."
         />
-      ) : (
+      )}
+
+      {!loading && !filtering && filteredData.length > 0 && (
         <div className="form-table-container">
           <table className="form-table">
             <thead>

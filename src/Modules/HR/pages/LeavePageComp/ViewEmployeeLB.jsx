@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Container,
   Title,
@@ -10,21 +10,22 @@ import {
   TextInput,
   Select,
   Flex,
+  Button,
 } from "@mantine/core";
+import { useNavigate } from "react-router-dom";
 import HrBreadcrumbs from "../../components/HrBreadcrumbs";
 import { admin_get_all_leave_balances } from "../../../../routes/hr";
 
-const ViewEmployeeLB = () => {
+function ViewEmployeeLB() {
+  const navigate = useNavigate();
   const [allEmployees, setAllEmployees] = useState([]);
   const [filteredEmployees, setFilteredEmployees] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("All");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const abbreviationRef = useRef(null);
 
-  // Updated leave types with explicit keys to match API response:
-  // - The "allottedKey" maps to LeavePerYear (e.g., "casual_leave_allotted")
-  // - The "takenKey" maps to LeaveBalance (e.g., "casual_leave_taken")
   const leaveTypes = [
     {
       key: "casual_leave",
@@ -113,7 +114,6 @@ const ViewEmployeeLB = () => {
           throw new Error(errorData.error || "Failed to fetch leave details");
         }
         const data = await response.json();
-        // Transform the received employee leave data
         const mergedData = data.leave_balances.map((emp) => {
           const { employee_id, employee_username, employee_fullname, ...rest } =
             emp;
@@ -169,6 +169,11 @@ const ViewEmployeeLB = () => {
     setFilteredEmployees(filtered);
   }, [searchQuery, departmentFilter, allEmployees]);
 
+  // Handle row click to navigate to employee's leave review page
+  const handleRowClick = (username) => {
+    navigate(`/hr/admin_leave/review_leave_requests?emp=${username}`);
+  };
+
   // Standard table cell styling.
   const headerCellStyle = {
     padding: "8px",
@@ -182,8 +187,12 @@ const ViewEmployeeLB = () => {
     padding: "8px",
     border: "1px solid #ccc",
     textAlign: "left",
+    cursor: "pointer", // Add pointer cursor to indicate clickable rows
   };
 
+  const scrollToAbbreviations = () => {
+    abbreviationRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
   // Breadcrumbs for navigation.
   const exampleItems = [
     { title: "Home", path: "/dashboard" },
@@ -195,23 +204,6 @@ const ViewEmployeeLB = () => {
     },
   ];
 
-  // Abbreviation table styles for smaller text.
-  const abbrHeaderCellStyle = {
-    padding: "4px 8px",
-    border: "1px solid #ccc",
-    textAlign: "left",
-    backgroundColor: "#e9ecef",
-    fontWeight: "bold",
-    fontSize: "0.75rem",
-  };
-
-  const abbrCellStyle = {
-    padding: "4px 8px",
-    border: "1px solid #ccc",
-    textAlign: "left",
-    fontSize: "0.75rem",
-  };
-
   return (
     <>
       <HrBreadcrumbs items={exampleItems} />
@@ -221,60 +213,27 @@ const ViewEmployeeLB = () => {
         </Title>
 
         {/* Top Section: Search/Filter Panel & Abbreviation Chart */}
-        <Flex
-          gap="md"
-          wrap="nowrap"
-          mb="xl"
-          style={{
-            alignItems: "stretch",
-            maxWidth: "1000px",
-            margin: "0 auto",
-          }}
-        >
-          {/* Search/Filter Panel */}
-          <Card withBorder shadow="sm" p="lg" style={{ flex: 1 }}>
-            <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-              <TextInput
-                placeholder="Search by name or username"
-                label="Search Employees"
-                value={searchQuery}
-                onChange={handleSearchChange}
-                mb="md"
-              />
-              <Select
-                label="Filter by Department"
-                placeholder="Select Department"
-                data={["All", ...departmentOptions]}
-                value={departmentFilter}
-                onChange={handleDepartmentChange}
-              />
-            </div>
-          </Card>
 
-          {/* Abbreviation Table */}
-          <Card withBorder shadow="sm" p="lg" style={{ flex: 1 }}>
-            <Title order={5} mb="sm" style={{ fontSize: "1rem" }}>
-              Leave Type Abbreviations
-            </Title>
-            <Table fontSize="xs">
-              <thead>
-                <tr>
-                  <th style={abbrHeaderCellStyle}>Leave Type</th>
-                  <th style={abbrHeaderCellStyle}>Allotted</th>
-                  <th style={abbrHeaderCellStyle}>Taken</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leaveTypes.map((leave) => (
-                  <tr key={leave.key}>
-                    <td style={abbrCellStyle}>{leave.fullName}</td>
-                    <td style={abbrCellStyle}>{`${leave.abbrev} A`}</td>
-                    <td style={abbrCellStyle}>{`${leave.abbrev} T`}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </Card>
+        <Flex gap="md" align="flex-end">
+          <TextInput
+            placeholder="Search by name or username"
+            label="Search Employees"
+            value={searchQuery}
+            onChange={handleSearchChange}
+            style={{ maxWidth: "300px", flex: 1 }}
+          />
+          <Select
+            label="Filter by Department"
+            placeholder="Select Department"
+            data={["All", ...departmentOptions]}
+            value={departmentFilter}
+            onChange={handleDepartmentChange}
+            style={{ maxWidth: "300px", flex: 1 }}
+          />
+          {/* a button to take it to abbreviatio */}
+          <Button variant="outline" onClick={scrollToAbbreviations}>
+            View Abbreviations
+          </Button>
         </Flex>
 
         <Divider mb="xl" />
@@ -326,7 +285,11 @@ const ViewEmployeeLB = () => {
               </thead>
               <tbody>
                 {filteredEmployees.map((emp, index) => (
-                  <tr key={emp.id}>
+                  <tr
+                    key={emp.id}
+                    onClick={() => handleRowClick(emp.username)}
+                    style={{ cursor: "pointer" }} // Make rows look clickable
+                  >
                     <td style={cellStyle}>{index + 1}</td>
                     <td style={cellStyle}>{emp.id}</td>
                     <td style={cellStyle}>{emp.name}</td>
@@ -354,9 +317,83 @@ const ViewEmployeeLB = () => {
         ) : (
           <Text>No employees found.</Text>
         )}
+        <br />
+        <Divider mb="xl" />
+        <Card
+          ref={abbreviationRef}
+          withBorder
+          shadow="sm"
+          p="md"
+          mb="xl"
+          style={{ overflowX: "auto" }}
+        >
+          <Title order={4} mb="sm" style={{ fontSize: "1.1rem" }}>
+            Leave Type Abbreviations
+          </Title>
+          <Table
+            striped
+            highlightOnHover={false}
+            fontSize="sm"
+            verticalSpacing="xs"
+            horizontalSpacing="md"
+          >
+            <thead>
+              <tr>
+                <th
+                  style={{
+                    textAlign: "left",
+                    padding: "12px",
+                    backgroundColor: "#f8f9fa",
+                  }}
+                >
+                  Leave Type
+                </th>
+                <th
+                  style={{
+                    textAlign: "left",
+                    padding: "12px",
+                    backgroundColor: "#f8f9fa",
+                  }}
+                >
+                  Abbreviation
+                </th>
+                <th
+                  style={{
+                    textAlign: "left",
+                    padding: "12px",
+                    backgroundColor: "#f8f9fa",
+                  }}
+                >
+                  Allotted
+                </th>
+                <th
+                  style={{
+                    textAlign: "left",
+                    padding: "12px",
+                    backgroundColor: "#f8f9fa",
+                  }}
+                >
+                  Taken
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {leaveTypes.map((leave) => (
+                <tr key={leave.key}>
+                  <td style={{ padding: "12px" }}>{leave.fullName}</td>
+                  <td style={{ padding: "12px", fontWeight: 600 }}>
+                    {leave.abbrev}
+                  </td>
+                  <td style={{ padding: "12px" }}>{`${leave.abbrev} A`}</td>
+                  <td style={{ padding: "12px" }}>{`${leave.abbrev} T`}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </Card>
       </Container>
     </>
   );
-};
+}
 
 export default ViewEmployeeLB;

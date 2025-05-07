@@ -13,6 +13,7 @@ import {
 } from "@mantine/core";
 
 import { DesignationsContext } from "../../helper/designationContext";
+import ConfirmationModal from "../../helper/ConfirmationModal";
 import classes from "../../iwd.module.css";
 import { ForwardRequest } from "../../handlers/handlers";
 
@@ -20,6 +21,7 @@ function ForwardFile({ form, request, handleBackToList }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const role = useSelector((state) => state.user.role);
+  const [confirmationModalOpen, setConfirmationModal] = useState(false);
   const designations = useContext(DesignationsContext);
   const designationsList = useMemo(
     () =>
@@ -32,7 +34,11 @@ function ForwardFile({ form, request, handleBackToList }) {
   return (
     /* eslint-disable react/jsx-props-no-spreading */
 
-    <form>
+    <form
+      onSubmit={form.onSubmit((values) => {
+        if (form.validate(values)) setConfirmationModal(true);
+      })}
+    >
       <Flex gap="xs">
         <FileInput
           label="Upload your file"
@@ -85,14 +91,7 @@ function ForwardFile({ form, request, handleBackToList }) {
           }}
           disabled={isLoading || isSuccess}
           onClick={() => {
-            ForwardRequest({
-              form,
-              request,
-              setIsLoading,
-              setIsSuccess,
-              handleBackToList,
-              role,
-            });
+            setConfirmationModal(true);
           }}
         >
           {isLoading ? (
@@ -108,6 +107,24 @@ function ForwardFile({ form, request, handleBackToList }) {
           )}
         </Button>
       </Flex>
+      <ConfirmationModal
+        opened={confirmationModalOpen}
+        onClose={() => setConfirmationModal(false)}
+        onConfirm={() => {
+          setConfirmationModal(false);
+
+          form.onSubmit(
+            ForwardRequest({
+              form,
+              request,
+              setIsLoading,
+              setIsSuccess,
+              handleBackToList,
+              role,
+            }),
+          )();
+        }}
+      />
     </form>
     /* eslint-enable react/jsx-props-no-spreading */
   );

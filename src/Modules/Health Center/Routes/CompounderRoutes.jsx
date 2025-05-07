@@ -214,7 +214,7 @@ export function CompounderRoutes() {
         }
       />
       <Route
-        path="/medical-relief/application"
+        path="/medical-relief/inbox/application"
         element={
           <Layout>
             <Application />
@@ -222,7 +222,7 @@ export function CompounderRoutes() {
         }
       />
       <Route
-        path="/medical-relief/application/:id"
+        path="/medical-relief/inbox/application/:id"
         element={
           <Layout>
             <Application />

@@ -8,19 +8,13 @@ import { useEffect, useState, useRef } from "react";
 import { Tabs, Button, Flex, Select, Text } from "@mantine/core";
 import { useSelector } from "react-redux";
 import classes from "./styles/researchProjectsStyle.module.css";
-import CustomBreadcrumbs from "../../components/Breadcrumbs.jsx";
 import ProjectTable from "./components/tables/projectTable.jsx";
-// import RequestTable from "./components/tables/requestTable.jsx";
-// import InboxTable from "./components/tables/inboxTable.jsx";
-// import ProcessedTable from "./components/tables/processedTable.jsx";
 import ProjectAdditionForm from "./components/forms/projectAdditionForm.jsx";
-import Notifications from "./components/notifications.jsx";
-import {
-  fetchProjectsRoute,
-  fetchPIDsRoute,
-} from "../../routes/RSPCRoutes/index.jsx";
-import StaffTable from "./components/tables/staffTable.jsx";
+import { fetchProjectsRoute, fetchPIDsRoute } from "../../routes/RSPCRoutes";
+import InboxTable from "./components/tables/inboxTable.jsx";
 import Appendix from "./components/forms/appendix.jsx";
+import RSPCBreadcrumbs from "./components/RSPCBreadcrumbs.jsx";
+import FilterTable from "./components/tables/filterTable.jsx";
 
 const categories = ["Most Recent", "Ongoing", "Completed", "Terminated"];
 
@@ -28,7 +22,7 @@ function ResearchProjects() {
   const role = useSelector((state) => state.user.role);
   const [PIDs, setPIDs] = useState([]);
   const [projectsData, setProjectsData] = useState([]);
-  const [activeTab, setActiveTab] = useState("1");
+  const [activeTab, setActiveTab] = useState("0");
   const [sortedBy, setSortedBy] = useState("Most Recent");
   const tabsListRef = useRef(null);
 
@@ -78,7 +72,6 @@ function ResearchProjects() {
   }, [PIDs]);
 
   const tabItems = [
-    { title: "Notifications", component: <Notifications /> },
     {
       title: "Projects",
       component: (
@@ -86,36 +79,25 @@ function ResearchProjects() {
       ),
     },
     {
-      title: "Personnel",
-      component: <StaffTable setActiveTab={setActiveTab} />,
+      title: "Inbox And Approvals",
+      component: <InboxTable setActiveTab={setActiveTab} />,
     },
   ];
   if (role.includes("Professor")) {
     tabItems.push({
-      title: "Add Project",
+      title: "New Project Proposal",
       component: <ProjectAdditionForm setActiveTab={setActiveTab} />,
     });
-    // tabItems.push({
-    //   title: "Requests",
-    //   component: <RequestTable username={username} />,
-    // });
+  } else if (!role.includes("HOD")) {
+    tabItems.push({
+      title: "Data Filter",
+      component: <FilterTable />,
+    });
   }
   tabItems.push({
     title: "Form Appendix",
     component: <Appendix />,
   });
-  // else {
-  //   tabItems.push({
-  //     title: "Inbox",
-  //     component: <InboxTable username={username} setActiveTab={setActiveTab} />,
-  //   });
-  // }
-  // if (!role.includes("Professor")) {
-  //   tabItems.push({
-  //     title: "Processed Requests",
-  //     component: <ProcessedTable username={username} />,
-  //   });
-  // }
 
   const handleTabChange = (direction) => {
     const newIndex =
@@ -129,12 +111,9 @@ function ResearchProjects() {
     });
   };
 
-  // const notificationsToDisplay =
-  //   activeTab === "1" ? announcementsList : notificationsList;
-
   return (
     <>
-      <CustomBreadcrumbs />
+      <RSPCBreadcrumbs />
       <Flex justify="space-between" align="center" mt="lg">
         <Flex
           justify="flex-start"

@@ -48,19 +48,21 @@ function CreatedRequests() {
   // const filteredRequests = createdRequestsList.filter(
   //   (request) => statusFilter === "all" || request.status === statusFilter,
   // );
-  const filteredRequests = createdRequestsList.filter((request) => {
-    const matchesStatus = !statusFilter || request.status === statusFilter;
+  const filteredRequests = createdRequestsList
+    .sort((a, b) => new Date(b.creatiion_time) - new Date(a.creatiion_time))
+    .filter((request) => {
+      const matchesStatus = !statusFilter || request.status === statusFilter;
 
-    const query = searchQuery.toLowerCase();
-    const matchesSearch =
-      request.name?.toLowerCase().includes(query) ||
-      request.description?.toLowerCase().includes(query) ||
-      request.status?.toLowerCase().includes(query) ||
-      request.area?.toLowerCase().includes(query) ||
-      request.requestCreatedBy?.toLowerCase().includes(query);
+      const query = searchQuery.toLowerCase();
+      const matchesSearch =
+        request.name?.toLowerCase().includes(query) ||
+        request.description?.toLowerCase().includes(query) ||
+        request.status?.toLowerCase().includes(query) ||
+        request.area?.toLowerCase().includes(query) ||
+        request.requestCreatedBy?.toLowerCase().includes(query);
 
-    return matchesStatus && matchesSearch;
-  });
+      return matchesStatus && matchesSearch;
+    });
   const statusList = [
     { value: "all", label: "All" },
     { value: "Work Completed", label: "Work Completed" },
@@ -153,7 +155,7 @@ function CreatedRequests() {
                       <Title size="lg">ID</Title>
                     </th>
                     <th>
-                      <Title size="lg">Name</Title>
+                      <Title size="lg">Title</Title>
                     </th>
                     <th>
                       <Title size="lg">Description</Title>

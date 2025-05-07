@@ -8,7 +8,6 @@ import {
   Stack,
   Notification,
   Paper,
-  Text,
 } from "@mantine/core";
 import axios from "axios";
 import { addHostelRoute } from "../../../../routes/hostelManagementRoutes"; // Adjust the import path as per your file structure
@@ -107,10 +106,6 @@ function AddHostel() {
     >
       <form onSubmit={handleSubmit}>
         <Stack spacing="md">
-          <Text align="left" size="xl" weight="bold">
-            Add Hostel
-          </Text>
-
           <TextInput
             label="Hall ID"
             value={hallId}

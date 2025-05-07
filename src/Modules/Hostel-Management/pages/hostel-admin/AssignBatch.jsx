@@ -10,13 +10,14 @@ import {
   Notification,
   TextInput,
   Group,
+  FileButton,
+  Container,
 } from "@mantine/core";
 import { Upload } from "@phosphor-icons/react";
-
 import {
   getBatches,
   assign_batch,
-} from "../../../../routes/hostelManagementRoutes"; // API routes for fetching halls and batches, and assigning batches
+} from "../../../../routes/hostelManagementRoutes";
 
 axios.defaults.withXSRFToken = true;
 
@@ -35,13 +36,11 @@ export default function AssignBatch() {
     color: "",
   });
 
-  // Generate array of academic sessions starting from 2024-2025
   const generateAcademicSessions = () => {
     const sessions = [];
     for (let i = 0; i < 10; i += 1) {
       const startYear = 2024 + i;
-      const endYear = startYear + 1;
-      sessions.push(`August ${startYear} - July ${endYear}`);
+      sessions.push(`August ${startYear} - July ${startYear + 1}`);
     }
     return sessions;
   };
@@ -67,17 +66,10 @@ export default function AssignBatch() {
         },
       })
       .then((response) => {
-        console.log(response.data);
         const { halls } = response.data;
-        setHalls(
-          halls.map((hallData) => ({
-            value: hallData.hall_id,
-            label: hallData.hall_name,
-          })),
-        );
+        setHalls(halls.map((h) => ({ value: h.hall_id, label: h.hall_name })));
       })
-      .catch((error) => {
-        console.error("Error fetching data", error);
+      .catch(() => {
         setNotification({
           opened: true,
           message: "Failed to fetch data. Please try again.",
@@ -85,12 +77,6 @@ export default function AssignBatch() {
         });
       });
   }, []);
-
-  const handleFileChange = (event) => {
-    if (event.target.files && event.target.files[0]) {
-      setFile(event.target.files[0]);
-    }
-  };
 
   const handleUpload = async (e) => {
     e.preventDefault();
@@ -125,26 +111,19 @@ export default function AssignBatch() {
     try {
       const response = await fetch(assign_batch, {
         method: "POST",
-        headers: {
-          Authorization: `Token ${token}`,
-        },
+        headers: { Authorization: `Token ${token}` },
         body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error("Upload failed");
-      }
+      if (!response.ok) throw new Error("Upload failed");
 
-      // Clear file after successful upload
       setFile(null);
-
       setNotification({
         opened: true,
         message: "File uploaded successfully!",
         color: "green",
       });
     } catch (error) {
-      console.error("Error uploading file:", error);
       setNotification({
         opened: true,
         message: "Failed to upload file. Please try again.",
@@ -156,120 +135,89 @@ export default function AssignBatch() {
   };
 
   return (
-    <Paper
-      shadow="md"
-      p="md"
-      withBorder
-      sx={(theme) => ({
-        position: "fixed",
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        backgroundColor: theme.white,
-        border: `1px solid ${theme.colors.gray[3]}`,
-        borderRadius: theme.radius.md,
-      })}
-    >
-      <Stack spacing="lg">
-        <Text
-          align="left"
-          mb="xl"
-          size="24px"
-          style={{ color: "#757575", fontWeight: "bold" }}
-        >
-          Assign Batch
-        </Text>
-
-        <Box>
-          <Text component="label" size="lg" fw={500}>
-            Hall Id:
-          </Text>
+    <Container size="sm" py="xl">
+      <Paper withBorder shadow="md" p="lg" radius="md">
+        <Stack spacing="md">
           <Select
+            label="Hall"
             placeholder="Select Hall"
             data={allHall}
             value={selectedHall}
             onChange={setSelectedHall}
-            w="100%"
-            styles={{ root: { marginTop: 5 } }}
+            required
           />
-        </Box>
 
-        <Box>
-          <Text component="label" size="lg" fw={500}>
-            Assigned Batch:
-          </Text>
           <TextInput
+            label="Assigned Batch"
             placeholder="Enter Batch"
             value={batchInput}
-            onChange={(event) => setBatchInput(event.currentTarget.value)}
-            w="100%"
-            styles={{ root: { marginTop: 5 } }}
+            onChange={(e) => setBatchInput(e.currentTarget.value)}
+            required
           />
-        </Box>
 
-        <Box>
-          <Text component="label" size="lg" fw={500}>
-            Academic Session:
-          </Text>
           <Select
+            label="Academic Session"
             placeholder="Select Academic Session"
             data={academicSessions}
             value={academicSession}
             onChange={setAcademicSession}
-            w="100%"
-            styles={{ root: { marginTop: 5 } }}
+            required
           />
-        </Box>
 
-        <Box>
-          <Text component="label" size="lg" fw={500}>
-            Upload Document:
-          </Text>
-          <Group position="center" mt={5}>
-            <input
-              type="file"
-              id="file"
-              style={{ display: "none" }}
-              onChange={handleFileChange}
-              accept=".xls,.xlsx,.csv"
-            />
+          <Box>
+            <Text fw={500} size="sm" mb={5}>
+              Upload Document
+            </Text>
+            <Group spacing="sm">
+              <FileButton onChange={setFile} accept=".xls,.xlsx,.csv">
+                {(props) => (
+                  /* eslint-disable react/jsx-props-no-spreading */
+                  <Button
+                    leftIcon={<Upload size={20} />}
+                    variant="light"
+                    {...props}
+                  >
+                    {file ? file.name : "Choose File"}
+                  </Button>
+                )}
+              </FileButton>
+              {file && (
+                <Button
+                  variant="subtle"
+                  color="red"
+                  onClick={() => setFile(null)}
+                >
+                  Clear
+                </Button>
+              )}
+            </Group>
+          </Box>
+
+          <Group position="right" mt="md">
             <Button
-              component="label"
-              htmlFor="file"
-              variant="outline"
-              color="blue"
-              leftIcon={<Upload size={20} />}
-              fullWidth
+              color="green"
+              loading={loading}
+              onClick={handleUpload}
+              disabled={!file}
             >
-              {file ? file.name : "Attach Document"}
+              Upload Document
             </Button>
           </Group>
-        </Box>
 
-        <Group position="apart">
-          <Button
-            variant="filled"
-            color="green"
-            onClick={handleUpload}
-            loading={loading}
-            disabled={!file}
-          >
-            Upload Document
-          </Button>
-        </Group>
-
-        {notification.opened && (
-          <Notification
-            title="Notification"
-            color={notification.color}
-            onClose={() => setNotification({ ...notification, opened: false })}
-            style={{ marginTop: "10px" }}
-          >
-            {notification.message}
-          </Notification>
-        )}
-      </Stack>
-    </Paper>
+          {notification.opened && (
+            <Notification
+              title="Notification"
+              color={notification.color}
+              onClose={() =>
+                setNotification({ ...notification, opened: false })
+              }
+              mt="md"
+            >
+              {notification.message}
+            </Notification>
+          )}
+        </Stack>
+      </Paper>
+    </Container>
   );
 }

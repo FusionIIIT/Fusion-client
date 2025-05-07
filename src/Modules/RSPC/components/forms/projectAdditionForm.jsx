@@ -18,7 +18,9 @@ import {
 import { User, ThumbsUp, ThumbsDown, Trash } from "@phosphor-icons/react";
 import { useForm } from "@mantine/form";
 import axios from "axios";
+import ConfirmationModal from "../../helpers/confirmationModal";
 import classes from "../../styles/formStyle.module.css";
+
 import {
   fetchProfIDsRoute,
   projectFormSubmissionRoute,
@@ -30,6 +32,7 @@ function ProjectAdditionForm({ setActiveTab }) {
   const [coPIs, setCoPIs] = useState([]);
   const [showCoPISection, setShowCoPISection] = useState(false);
   const [totalBudget, setTotalBudget] = useState(0);
+  const [confirmationModalOpened, setConfirmationModalOpened] = useState(false);
 
   const [profIDs, setProfIDs] = useState([]);
   useEffect(() => {
@@ -80,7 +83,7 @@ function ProjectAdditionForm({ setActiveTab }) {
       sponsored_agency: "",
       scheme: "",
       description: "",
-      duration: 1,
+      duration: 0,
       submission_date: new Date().toISOString().split("T")[0],
       budget: [],
       overhead: "",
@@ -190,7 +193,7 @@ function ProjectAdditionForm({ setActiveTab }) {
       formData.append("overhead", values.overhead);
       formData.append("sanction_date", values.sanction_date);
       formData.append("sanctioned_amount", values.sanctioned_amount);
-      formData.append("status", "HoD Forward");
+      formData.append("status", "Submitted");
       formData.forEach((value, key) => {
         console.log(key, value);
       });
@@ -205,7 +208,7 @@ function ProjectAdditionForm({ setActiveTab }) {
       setSuccessAlertVisible(true);
       setTimeout(() => {
         setSuccessAlertVisible(false);
-        setActiveTab("1");
+        setActiveTab("0");
         window.location.reload();
       }, 2500);
     } catch (error) {
@@ -216,18 +219,22 @@ function ProjectAdditionForm({ setActiveTab }) {
       }, 2500);
     }
   };
+  const handleFormSubmit = () => {
+    if (form.validate().hasErrors) return;
+    setConfirmationModalOpened(true);
+  };
 
   return (
     <>
-      <form onSubmit={form.onSubmit(handleSubmit)}>
+      <form onSubmit={form.onSubmit(handleFormSubmit)}>
         <Paper padding="lg" shadow="s" className={classes.formContainer}>
           <Title order={2} className={classes.formTitle}>
-            Add New Project
+            Add New Project Proposal
           </Title>
 
           <Grid gutter="xl">
             <Grid.Col span={6}>
-              <Text size="lg" weight={500} className={classes.fieldLabel}>
+              <Text className={classes.fieldLabel}>
                 Project Title <span style={{ color: "red" }}>*</span>
               </Text>
               <TextInput
@@ -237,7 +244,7 @@ function ProjectAdditionForm({ setActiveTab }) {
             </Grid.Col>
 
             <Grid.Col span={6}>
-              <Text size="lg" weight={500} className={classes.fieldLabel}>
+              <Text className={classes.fieldLabel}>
                 Project Investigator <span style={{ color: "red" }}>*</span>
               </Text>
               <div
@@ -261,6 +268,7 @@ function ProjectAdditionForm({ setActiveTab }) {
                   onClick={handleAddCoPI}
                   color="cyan"
                   variant="outline"
+                  size="xs"
                   style={{
                     borderRadius: "8px",
                     textAlign: "center",
@@ -275,8 +283,6 @@ function ProjectAdditionForm({ setActiveTab }) {
             {showCoPISection && (
               <Grid.Col span={12}>
                 <Text
-                  size="lg"
-                  weight={500}
                   className={classes.fieldLabel}
                   style={{ textAlign: "center" }}
                 >
@@ -285,11 +291,7 @@ function ProjectAdditionForm({ setActiveTab }) {
                 {coPIs.map((coPI, index) => (
                   <Grid key={index} gutter="sm" align="center">
                     <Grid.Col span={3}>
-                      <Text
-                        size="lg"
-                        weight={500}
-                        className={classes.fieldLabel}
-                      >
+                      <Text className={classes.fieldLabel}>
                         Co-PI Type <span style={{ color: "red" }}>*</span>
                       </Text>
                       <Select
@@ -305,12 +307,8 @@ function ProjectAdditionForm({ setActiveTab }) {
 
                     {coPI.type === "Internal" ? (
                       <Grid.Col span={8}>
-                        <Text
-                          size="lg"
-                          weight={500}
-                          className={classes.fieldLabel}
-                        >
-                          {`Identity of Co-PI ${index + 1}`}
+                        <Text className={classes.fieldLabel}>
+                          {`Identity of Co-PI ${index + 1} `}
                           <span style={{ color: "red" }}>*</span>
                         </Text>
                         <Select
@@ -319,39 +317,31 @@ function ProjectAdditionForm({ setActiveTab }) {
                           onChange={(value) =>
                             handleCoPIChange(index, "copi_id", value)
                           }
+                          required
                           data={profIDs}
                           icon={<User />}
                           searchable
-                          error={!coPI.copi_id && "This field is required"}
                         />
                       </Grid.Col>
                     ) : (
                       <>
                         <Grid.Col span={4}>
-                          <Text
-                            size="lg"
-                            weight={500}
-                            className={classes.fieldLabel}
-                          >
-                            {`Identity of Co-PI ${index + 1}`}
+                          <Text className={classes.fieldLabel}>
+                            {`Identity of Co-PI ${index + 1} `}
                             <span style={{ color: "red" }}>*</span>
                           </Text>
                           <TextInput
                             placeholder="Enter name of external Co-PI"
                             value={coPI.copi_id}
+                            required
                             onChange={(e) =>
                               handleCoPIChange(index, "copi_id", e.target.value)
                             }
-                            error={!coPI.copi_id && "This field is required"}
                           />
                         </Grid.Col>
 
                         <Grid.Col span={4}>
-                          <Text
-                            size="lg"
-                            weight={500}
-                            className={classes.fieldLabel}
-                          >
+                          <Text className={classes.fieldLabel}>
                             External Co-PI Affiliation
                           </Text>
                           <TextInput
@@ -369,17 +359,12 @@ function ProjectAdditionForm({ setActiveTab }) {
                       </>
                     )}
                     <Grid.Col span={1}>
-                      <Text
-                        size="lg"
-                        weight={500}
-                        className={classes.fieldLabel}
-                      >
-                        Remove
-                      </Text>
+                      <Text className={classes.fieldLabel}>Remove</Text>
                       <Button
                         onClick={() => handleRemoveCoPI(index)}
                         color="red"
                         variant="outline"
+                        size="xs"
                         style={{ width: "100%", borderRadius: "8px" }}
                       >
                         {" "}
@@ -392,7 +377,7 @@ function ProjectAdditionForm({ setActiveTab }) {
             )}
 
             <Grid.Col span={6}>
-              <Text size="lg" weight={500} className={classes.fieldLabel}>
+              <Text className={classes.fieldLabel}>
                 Project To Be Operated By{" "}
                 <span style={{ color: "red" }}>*</span>
               </Text>
@@ -404,11 +389,11 @@ function ProjectAdditionForm({ setActiveTab }) {
 
             {/* -------------- */}
             <Grid.Col span={12}>
-              <Divider my="lg" label="X X X" labelPosition="center" size="md" />
+              <Divider my="lg" label="" labelPosition="center" size="md" />
             </Grid.Col>
 
             <Grid.Col span={6}>
-              <Text size="lg" weight={500} className={classes.fieldLabel}>
+              <Text className={classes.fieldLabel}>
                 Project Type <span style={{ color: "red" }}>*</span>
               </Text>
               <Radio.Group {...form.getInputProps("type")}>
@@ -418,7 +403,7 @@ function ProjectAdditionForm({ setActiveTab }) {
             </Grid.Col>
 
             <Grid.Col span={6}>
-              <Text size="lg" weight={500} className={classes.fieldLabel}>
+              <Text className={classes.fieldLabel}>
                 Select Department <span style={{ color: "red" }}>*</span>
               </Text>
               <Select
@@ -439,7 +424,7 @@ function ProjectAdditionForm({ setActiveTab }) {
             </Grid.Col>
 
             <Grid.Col span={6}>
-              <Text size="lg" weight={500} className={classes.fieldLabel}>
+              <Text className={classes.fieldLabel}>
                 Category <span style={{ color: "red" }}>*</span>
               </Text>
               <Radio.Group {...form.getInputProps("category")}>
@@ -451,7 +436,7 @@ function ProjectAdditionForm({ setActiveTab }) {
             </Grid.Col>
 
             <Grid.Col span={6}>
-              <Text size="lg" weight={500} className={classes.fieldLabel}>
+              <Text className={classes.fieldLabel}>
                 Project Sponsor Agency <span style={{ color: "red" }}>*</span>
               </Text>
               <TextInput
@@ -461,9 +446,7 @@ function ProjectAdditionForm({ setActiveTab }) {
             </Grid.Col>
 
             <Grid.Col span={6}>
-              <Text size="lg" weight={500} className={classes.fieldLabel}>
-                Project Scheme
-              </Text>
+              <Text className={classes.fieldLabel}>Project Scheme</Text>
               <TextInput
                 placeholder="Enter name of scheme under which project is received"
                 {...form.getInputProps("scheme")}
@@ -471,9 +454,7 @@ function ProjectAdditionForm({ setActiveTab }) {
             </Grid.Col>
 
             <Grid.Col span={12}>
-              <Text size="lg" weight={500} className={classes.fieldLabel}>
-                Project Abstract
-              </Text>
+              <Text className={classes.fieldLabel}>Project Abstract</Text>
               <Textarea
                 placeholder="Enter detailed description of the project for future record-keeping"
                 {...form.getInputProps("description")}
@@ -482,11 +463,11 @@ function ProjectAdditionForm({ setActiveTab }) {
 
             {/* -------------- */}
             <Grid.Col span={12}>
-              <Divider my="lg" label="X X X" labelPosition="center" size="md" />
+              <Divider my="lg" label="" labelPosition="center" size="md" />
             </Grid.Col>
 
             <Grid.Col span={6}>
-              <Text size="lg" weight={500} className={classes.fieldLabel}>
+              <Text className={classes.fieldLabel}>
                 Project Duration (in months){" "}
                 <span style={{ color: "red" }}>*</span>
               </Text>
@@ -498,7 +479,7 @@ function ProjectAdditionForm({ setActiveTab }) {
             </Grid.Col>
 
             <Grid.Col span={6}>
-              <Text size="lg" weight={500} className={classes.fieldLabel}>
+              <Text className={classes.fieldLabel}>
                 Proposal Submission Date <span style={{ color: "red" }}>*</span>
               </Text>
               <input
@@ -510,8 +491,8 @@ function ProjectAdditionForm({ setActiveTab }) {
             </Grid.Col>
 
             <Grid.Col span={12}>
-              <Text size="lg" weight={500} className={classes.fieldLabel}>
-                Project Budget (in INR) <span style={{ color: "red" }}>*</span>
+              <Text className={classes.fieldLabel}>
+                Project Budget (in ₹) <span style={{ color: "red" }}>*</span>
               </Text>
               <NumberInput
                 value={totalBudget}
@@ -528,26 +509,19 @@ function ProjectAdditionForm({ setActiveTab }) {
 
             {form.values.duration && (
               <Grid.Col key={form.values.duration} span={12}>
-                <Text size="lg" weight={500} className={classes.fieldLabel}>
-                  {" "}
-                  Recurring Expenses{" "}
-                </Text>
+                <Text className={classes.fieldLabel}> Recurring Expenses </Text>
                 {Array.from(
                   { length: Math.ceil((form.values.duration || 0) / 12) },
                   (_, year) => (
                     <React.Fragment key={year}>
-                      <Text
-                        size="lg"
-                        weight={500}
-                        style={{ textAlign: "center" }}
-                      >
+                      <Text style={{ textAlign: "center" }}>
                         {" "}
                         Year {year + 1} Budget{" "}
                       </Text>
-                      <Grid gutter="xl" mb="16px">
+                      <Grid gutter="xl" my="lg">
                         <Grid.Col span={3}>
                           <NumberInput
-                            placeholder="Manpower (in INR)"
+                            placeholder="Manpower (in ₹)"
                             min={0}
                             {...form.getInputProps(`budget.${year}.manpower`)}
                           />
@@ -555,7 +529,7 @@ function ProjectAdditionForm({ setActiveTab }) {
 
                         <Grid.Col span={3}>
                           <NumberInput
-                            placeholder="Travel (in INR)"
+                            placeholder="Travel (in ₹)"
                             min={0}
                             {...form.getInputProps(`budget.${year}.travel`)}
                           />
@@ -563,7 +537,7 @@ function ProjectAdditionForm({ setActiveTab }) {
 
                         <Grid.Col span={3}>
                           <NumberInput
-                            placeholder="Contingency (in INR)"
+                            placeholder="Contingency (in ₹)"
                             min={0}
                             {...form.getInputProps(
                               `budget.${year}.contingency`,
@@ -573,7 +547,7 @@ function ProjectAdditionForm({ setActiveTab }) {
 
                         <Grid.Col span={3}>
                           <NumberInput
-                            placeholder="Consumables (in INR)"
+                            placeholder="Consumables (in ₹)"
                             min={0}
                             {...form.getInputProps(
                               `budget.${year}.consumables`,
@@ -585,7 +559,7 @@ function ProjectAdditionForm({ setActiveTab }) {
                   ),
                 )}
 
-                <Text size="lg" weight={500} className={classes.fieldLabel}>
+                <Text className={classes.fieldLabel}>
                   {" "}
                   Non-Recurring Expenses{" "}
                 </Text>
@@ -593,18 +567,14 @@ function ProjectAdditionForm({ setActiveTab }) {
                   { length: Math.ceil((form.values.duration || 0) / 12) },
                   (_, year) => (
                     <React.Fragment key={year}>
-                      <Text
-                        size="lg"
-                        weight={500}
-                        style={{ textAlign: "center" }}
-                      >
+                      <Text style={{ textAlign: "center" }}>
                         {" "}
                         Year {year + 1} Budget{" "}
                       </Text>
-                      <Grid gutter="xl" mb="16px">
+                      <Grid gutter="xl" my="lg">
                         <Grid.Col span={12}>
                           <NumberInput
-                            placeholder="Equipments (in INR)"
+                            placeholder="Equipments (in ₹)"
                             min={0}
                             {...form.getInputProps(`budget.${year}.equipments`)}
                           />
@@ -614,14 +584,11 @@ function ProjectAdditionForm({ setActiveTab }) {
                   ),
                 )}
 
-                <Text size="lg" weight={500} className={classes.fieldLabel}>
-                  {" "}
-                  Overhead{" "}
-                </Text>
+                <Text className={classes.fieldLabel}>Overhead</Text>
                 <Grid gutter="xl" mb="16px">
                   <Grid.Col span={12}>
                     <NumberInput
-                      placeholder="Overhead Costs (in INR)"
+                      placeholder="Overhead Costs (in ₹)"
                       min={0}
                       {...form.getInputProps("overhead")}
                     />
@@ -643,6 +610,15 @@ function ProjectAdditionForm({ setActiveTab }) {
           </div>
         </Paper>
       </form>
+
+      <ConfirmationModal
+        opened={confirmationModalOpened}
+        onClose={() => setConfirmationModalOpened(false)}
+        onConfirm={() => {
+          setConfirmationModalOpened(false);
+          form.onSubmit(handleSubmit)();
+        }}
+      />
 
       {(successAlertVisible || failureAlertVisible) && (
         <div className={classes.overlay}>

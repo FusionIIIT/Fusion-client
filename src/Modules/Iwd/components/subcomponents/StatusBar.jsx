@@ -35,47 +35,41 @@ export default function StatusBar({ request }) {
   }
 
   const statusBadge = () => {
-    if (request.status === "Pending")
-      return <Badge color="yellow">PENDING</Badge>;
-    if (request.status === "Work Completed")
+    if (request.processed_by_admin === -1)
+      return <Badge color="red">REJECTED</Badge>;
+    if (request.processed_by_director === -1)
       return (
-        <Badge size="xl" color="green">
-          WORK COMPLETED
+        <Badge size="xl" color="red">
+          REJECTED BY DIRECTOR
         </Badge>
       );
-    if (request.status === "Work Order issued")
+    if (request.work_order === 1)
       return (
         <Badge size="xl" color="#1e90ff">
           WORK ORDER ISSUED
         </Badge>
       );
-    if (request.status === "Approved by the director")
+    if (request.processed_by_director === 1)
       return (
         <Badge size="xl" color="green">
           APPROVED
         </Badge>
       );
-    if (request.status === "Approved by the IWD Admin")
-      return (
-        <Badge size="xl" color="#1e90ff">
-          Approved BY THE IWD ADMIN
-        </Badge>
-      );
-    if (request.status === "Rejected by the director")
-      return (
-        <Badge size="xl" color="red">
-          REJECTED BY THE DIRECTOR
-        </Badge>
-      );
-    if (request.status === "Proposal created")
+    if (request.active_proposal !== null)
       return (
         <Badge size="xl" color="#1e90ff">
           PROPOSAL CREATED
         </Badge>
       );
+    if (request.processed_by_admin === 1)
+      return (
+        <Badge size="xl" color="#1e90ff">
+          RECOMMENDED
+        </Badge>
+      );
     return (
-      <Badge size="xl" color="red">
-        REJECTED
+      <Badge size="xl" color="yellow">
+        PENDING
       </Badge>
     );
   };
@@ -126,10 +120,10 @@ export default function StatusBar({ request }) {
               <IconX size={20} />
             )
           }
-          title="Request Approved By IWD Admin"
+          title="Recommended By IWD Admin"
         >
           <Text color="dimmed" size="sm">
-            IWD Admin Approval
+            IWD Admin Recommendation
           </Text>
         </Timeline.Item>
         <Timeline.Item
@@ -142,10 +136,10 @@ export default function StatusBar({ request }) {
               <IconX size={20} />
             )
           }
-          title="active proposal"
+          title="Proposal Created"
         >
           <Text color="dimmed" size="sm">
-            Proposal Created
+            Proposal is Active
           </Text>
         </Timeline.Item>
         <Timeline.Item
@@ -156,10 +150,10 @@ export default function StatusBar({ request }) {
               <IconClock size={20} />
             )
           }
-          title="Proposal Approved by IWD Admin"
+          title="Proposal Recommended"
         >
           <Text color="dimmed" size="sm">
-            Proposal approved by IWD Admin
+            Proposal Recommended
           </Text>
         </Timeline.Item>
         <Timeline.Item

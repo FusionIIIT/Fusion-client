@@ -106,7 +106,7 @@ function DeptTabs({ branch }) {
                 <Tabs.Tab
                   value={String(index)}
                   key={index}
-                  style={{ marginRight: 12, fontWeight: 500 }}
+                  style={{ marginRight: 12, fontWeight: 600 }}
                 >
                   {item.title}
                 </Tabs.Tab>

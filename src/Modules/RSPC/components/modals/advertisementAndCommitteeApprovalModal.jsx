@@ -9,6 +9,7 @@ import {
   Divider,
   GridCol,
   Alert,
+  Title,
 } from "@mantine/core";
 import axios from "axios";
 import { ThumbsUp, ThumbsDown, FileText } from "@phosphor-icons/react";
@@ -62,7 +63,7 @@ function AdvertisementAndCommitteeApprovalModal({
       setSuccessAlertVisible(true);
       setTimeout(() => {
         setSuccessAlertVisible(false);
-        setActiveTab("1");
+        setActiveTab("0");
         window.location.reload();
       }, 2500);
     } catch (error) {
@@ -76,17 +77,27 @@ function AdvertisementAndCommitteeApprovalModal({
 
   return (
     <>
-      <Modal opened={opened} onClose={onClose} size="xl">
+      <Modal
+        opened={opened}
+        onClose={onClose}
+        size="xl"
+        styles={{
+          content: {
+            borderLeft: "0.7rem solid #15ABFF",
+          },
+        }}
+      >
         {staffData && Object.keys(staffData).length > 0 ? (
           <>
             <Group position="apart" style={{ marginBottom: 10 }}>
-              <Text size="32px" weight={700}>
+              <Title order={2}>
                 Approval Of Advertisement And Selection Committee
-              </Text>
+              </Title>
               <Group position="left" style={{ marginTop: "20px" }}>
                 <Button
                   color="green"
                   style={{ borderRadius: "8px" }}
+                  size="xs"
                   onClick={() => handleStaffDecision("approve")}
                 >
                   <ThumbsUp size={26} style={{ marginRight: "3px" }} />
@@ -96,6 +107,7 @@ function AdvertisementAndCommitteeApprovalModal({
                   color="red"
                   style={{ borderRadius: "8px" }}
                   onClick={() => handleStaffDecision("reject")}
+                  size="xs"
                   variant="outline"
                 >
                   <ThumbsDown size={26} style={{ marginRight: "3px" }} />
@@ -106,209 +118,176 @@ function AdvertisementAndCommitteeApprovalModal({
 
             <Grid gutter="xs" style={{ marginBottom: 20 }}>
               <GridCol span={6}>
-                <Text size="xl">
-                  <strong style={{ color: "blue" }}>Project Title:</strong>{" "}
+                <Text>
+                  <span style={{ color: "#A0A0A0" }}>Project Title:</span>{" "}
                   {staffData.project_title}
                 </Text>
               </GridCol>
               <GridCol span={6}>
-                <Text size="xl">
-                  <strong style={{ color: "blue" }}>Project ID:</strong>{" "}
+                <Text>
+                  <span style={{ color: "#A0A0A0" }}>Project ID:</span>{" "}
                   {staffData.pid}
                 </Text>
               </GridCol>
               <GridCol span={6}>
-                <Text size="xl">
-                  <strong style={{ color: "blue" }}>Sponsor Agency:</strong>{" "}
+                <Text>
+                  <span style={{ color: "#A0A0A0" }}>Sponsor Agency:</span>{" "}
                   {staffData.sponsor_agency}
                 </Text>
               </GridCol>
 
               <GridCol span={6}>
-                <Text size="xl">
-                  <strong style={{ color: "blue" }}>
+                <Text>
+                  <span style={{ color: "#A0A0A0" }}>
                     Project Sanction Date:
-                  </strong>{" "}
+                  </span>{" "}
                   {new Date(staffData.sanction_date).toLocaleDateString()}
                 </Text>
               </GridCol>
               <GridCol span={6}>
-                <Text size="xl">
-                  <strong style={{ color: "blue" }}>Project Start Date:</strong>{" "}
+                <Text>
+                  <span style={{ color: "#A0A0A0" }}>Project Start Date:</span>{" "}
                   {new Date(staffData.project_start_date).toLocaleDateString()}
                 </Text>
               </GridCol>
               <GridCol span={6}>
-                <Text size="xl">
-                  <strong style={{ color: "blue" }}>Project duration:</strong>{" "}
+                <Text>
+                  <span style={{ color: "#A0A0A0" }}>Project duration:</span>{" "}
                   {staffData.duration_project} months
                 </Text>
               </GridCol>
 
               {/* -------------- */}
               <Grid.Col span={12}>
-                <Divider
-                  my="lg"
-                  label="X X X"
-                  labelPosition="center"
-                  size="md"
-                />
+                <Divider my="sm" label="" labelPosition="center" size="sm" />
               </Grid.Col>
               <GridCol span={12}>
-                <Text size="xl">
-                  <strong style={{ color: "blue" }}>
+                <Text>
+                  <span style={{ color: "#A0A0A0" }}>
                     Availability Of Sufficient Funds To Accomodate The Required
                     Manpower:
-                  </strong>{" "}
+                  </span>{" "}
                   {staffData.has_funds}
                 </Text>
               </GridCol>
 
               <GridCol span={6}>
-                <Text size="xl">
-                  <strong style={{ color: "blue" }}>
+                <Text>
+                  <span style={{ color: "#A0A0A0" }}>
                     Rank Of Position Advertised:
-                  </strong>{" "}
+                  </span>{" "}
                   {staffData.type}
                 </Text>
               </GridCol>
               <GridCol span={6}>
-                <Text size="xl">
-                  <strong style={{ color: "blue" }}>
+                <Text>
+                  <span style={{ color: "#A0A0A0" }}>
                     Consolidated Salary + Housing Rent Allowance:
-                  </strong>{" "}
-                  {staffData.salary} (in INR)
+                  </span>{" "}
+                  ₹{staffData.salary}
                 </Text>
               </GridCol>
               <GridCol span={6}>
-                <Text size="xl">
-                  <strong style={{ color: "blue" }}>
+                <Text>
+                  <span style={{ color: "#A0A0A0" }}>
                     Appointment Duration:
-                  </strong>{" "}
+                  </span>{" "}
                   {staffData.duration} months
                 </Text>
               </GridCol>
               <GridCol span={6}>
-                <Text size="xl">
-                  <strong style={{ color: "blue" }}>
+                <Text>
+                  <span style={{ color: "#A0A0A0" }}>
                     Eligibility Criteria:
-                  </strong>{" "}
+                  </span>{" "}
                   {staffData.eligibility}
                 </Text>
               </GridCol>
 
               <GridCol span={6}>
-                <Text size="xl">
-                  <strong style={{ color: "blue" }}>
+                <Text>
+                  <span style={{ color: "#A0A0A0" }}>
                     Last Date Of Applying:
-                  </strong>{" "}
+                  </span>{" "}
                   {new Date(staffData.submission_date).toLocaleDateString()}
                 </Text>
               </GridCol>
               <GridCol span={6}>
-                <Text size="xl">
-                  <strong style={{ color: "blue" }}>
+                <Text>
+                  <span style={{ color: "#A0A0A0" }}>
                     Date Of Written Test:
-                  </strong>{" "}
+                  </span>{" "}
                   {new Date(staffData.test_date).toLocaleDateString()}
                 </Text>
               </GridCol>
               <GridCol span={6}>
-                <Text size="xl">
-                  <strong style={{ color: "blue" }}>Interview Date:</strong>{" "}
+                <Text>
+                  <span style={{ color: "#A0A0A0" }}>Interview Date:</span>{" "}
                   {new Date(staffData.interview_date).toLocaleDateString()}
                 </Text>
               </GridCol>
               <GridCol span={6}>
-                <Text size="xl">
-                  <strong style={{ color: "blue" }}>
+                <Text>
+                  <span style={{ color: "#A0A0A0" }}>
                     Mode Of Written Test:
-                  </strong>{" "}
+                  </span>{" "}
                   {staffData.test_mode}
                 </Text>
               </GridCol>
               <GridCol span={6}>
-                <Text size="xl">
-                  <strong style={{ color: "blue" }}>Interview Location:</strong>{" "}
+                <Text>
+                  <span style={{ color: "#A0A0A0" }}>Interview Location:</span>{" "}
                   {staffData.interview_place}
                 </Text>
               </GridCol>
 
               <GridCol span={12}>
-                <Text size="xl">
-                  <strong
-                    style={{
-                      color: "blue",
-                      textAlign: "center",
-                      width: "100%",
-                    }}
-                  >
-                    Signed Advertisement To Be Uploaded On Institute Website
-                  </strong>
-                </Text>
-                {staffData.post_on_website && (
-                  <Button
-                    variant="outline"
-                    color="#15ABFF"
-                    size="md"
-                    className={classes.fileInputButton}
-                    style={{ borderRadius: "8px" }}
-                    component="a"
-                    href={`${host}/${staffData.post_on_website}`} // Directly access the file URL
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <FileText size={26} style={{ marginRight: "3px" }} />
-                    Open Advertisement
-                  </Button>
-                )}
+                <Group position="apart" align="center">
+                  <Text style={{ color: "#A0A0A0" }}>
+                    Signed Advertisement To Be Uploaded On Institute Website:
+                  </Text>
+                  {staffData.post_on_website && (
+                    <Button
+                      variant="outline"
+                      color="#15ABFF"
+                      size="xs"
+                      className={classes.fileInputButton}
+                      style={{ borderRadius: "8px" }}
+                      component="a"
+                      href={`${host}/${staffData.post_on_website}`} // Directly access the file URL
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <FileText size={26} style={{ marginRight: "3px" }} />
+                      Open Advertisement
+                    </Button>
+                  )}
+                </Group>
               </GridCol>
 
               {/* -------------- */}
               <Grid.Col span={12}>
-                <Divider
-                  my="lg"
-                  label="X X X"
-                  labelPosition="center"
-                  size="md"
-                />
+                <Divider my="sm" label="" labelPosition="center" size="sm" />
               </Grid.Col>
 
               <Grid.Col span={12}>
-                <Text size="xl">
-                  <strong
-                    style={{
-                      color: "blue",
-                      textAlign: "center",
-                      width: "100%",
-                    }}
-                  >
-                    Selection Committee Members
-                  </strong>
-                </Text>
+                <Title
+                  order={4}
+                  style={{ textAlign: "center", color: "#A0A0A0" }}
+                >
+                  Selection Committee Members
+                </Title>
 
                 <Text>
-                  <strong
-                    style={{
-                      size: "md",
-                      weight: "500",
-                    }}
-                  >
+                  <span style={{ color: "#A0A0A0" }}>
                     PI (Convener of the Committee):
-                  </strong>{" "}
+                  </span>{" "}
                   {staffData.pi_name}
                 </Text>
                 {Object.entries(staffData.selection_committee).map(
                   ([role, name], index) => (
                     <Text key={index}>
-                      <strong
-                        style={{
-                          size: "md",
-                          weight: "500",
-                        }}
-                      >
-                        {role}:
-                      </strong>{" "}
+                      <span style={{ color: "#A0A0A0" }}>{role}:</span>{" "}
                       {Array.isArray(name) ? name.join(", ") : name}
                     </Text>
                   ),
@@ -317,7 +296,7 @@ function AdvertisementAndCommitteeApprovalModal({
             </Grid>
           </>
         ) : (
-          <Text color="red" size="xl" weight={700} align="center">
+          <Text color="red" align="center">
             Failed to load advertisement and committee details
           </Text>
         )}

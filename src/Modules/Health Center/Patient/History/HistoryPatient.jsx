@@ -7,6 +7,9 @@ import {
   Table,
   TextInput,
   Title,
+  Loader,
+  Center,
+  Text,
 } from "@mantine/core";
 import axios from "axios";
 import NavCom from "../Navigation";
@@ -15,7 +18,6 @@ import { studentRoute } from "../../../../routes/health_center";
 
 function HistoryPatient() {
   const [history, setHistory] = useState([]);
-  // eslint-disable-next-line no-unused-vars
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [totalPages, setTotalPages] = useState(1);
@@ -25,21 +27,25 @@ function HistoryPatient() {
 
   const fetchHistory = async (pagenumber) => {
     const token = localStorage.getItem("authToken");
+    setLoading(true);
     try {
       const response = await axios.post(
         studentRoute,
-        { page: pagenumber, search_patientlog: search, datatype: "patientlog" },
+        {
+          page: pagenumber,
+          search_patientlog: search,
+          datatype: "patientlog",
+        },
         {
           headers: {
             Authorization: `Token ${token}`,
           },
         },
       );
-      console.log(response);
       setHistory(response.data.report);
       setTotalPages(response.data.total_pages);
     } catch (err) {
-      console.log(err);
+      console.error("Error fetching patient history:", err);
     } finally {
       setLoading(false);
     }
@@ -67,7 +73,7 @@ function HistoryPatient() {
       <td style={{ textAlign: "center" }}>
         <Button
           onClick={() => handleViewClick(element.id)}
-          style={{ backgroundColor: "#15abff" }}
+          style={{ backgroundColor: "#15abff", color: "#fff" }}
         >
           View
         </Button>
@@ -80,60 +86,92 @@ function HistoryPatient() {
       <CustomBreadcrumbs />
       <NavCom />
       <br />
-      <Paper shadow="xl" p="xl" withBorder>
+      <Paper
+        shadow="xl"
+        p="xl"
+        withBorder
+        style={{ backgroundColor: "white", borderRadius: "12px" }}
+      >
         <Title
           order={3}
+          align="center"
           style={{
-            textAlign: "center",
-            margin: "0 auto",
+            marginBottom: "20px",
             color: "#15abff",
+            fontWeight: 700,
           }}
         >
-          Prescription
+          Prescription History
         </Title>
-        <br />
-        <form style={{ marginBottom: "10px" }}>
-          <TextInput
-            placeholder="Search"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-          />
-        </form>
-        <Table
-          withTableBorder
-          withColumnBorders
-          highlightOnHover
-          striped
-          horizontalSpacing="sm"
-          verticalSpacing="sm"
-          style={{ borderCollapse: "collapse", border: "1px solid #ccc" }}
-        >
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th style={{ textAlign: "center" }}>Treated By</Table.Th>
-              <Table.Th style={{ textAlign: "center" }}>Date</Table.Th>
-              <Table.Th style={{ textAlign: "center" }}>Details</Table.Th>
-              <Table.Th style={{ textAlign: "center" }}>Report</Table.Th>
-              <Table.Th style={{ textAlign: "center" }}>
-                View Prescription
-              </Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody
-            style={{
-              textAlign: "center",
-              fontSize: "16px",
-            }}
-          >
-            {rows}
-          </Table.Tbody>
-        </Table>
-        <Pagination
-          value={activePage}
-          onChange={setCurrentPage}
-          total={totalPages}
-          style={{ marginTop: "20px", margin: "auto", width: "fit-content" }}
+
+        <TextInput
+          placeholder="Search by doctor, date or details..."
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") fetchHistory(1);
+          }}
+          size="md"
+          mb="md"
         />
+
+        {loading ? (
+          <Center py="xl">
+            <Loader color="#15abff" size="lg" />
+          </Center>
+        ) : history.length > 0 ? (
+          <>
+            <Table
+              withTableBorder
+              withColumnBorders
+              highlightOnHover
+              striped
+              horizontalSpacing="sm"
+              verticalSpacing="sm"
+              style={{
+                borderCollapse: "collapse",
+                border: "1px solid #ccc",
+                backgroundColor: "white",
+              }}
+            >
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th style={{ textAlign: "center" }}>
+                    Treated By
+                  </Table.Th>
+                  <Table.Th style={{ textAlign: "center" }}>Date</Table.Th>
+                  <Table.Th style={{ textAlign: "center" }}>Details</Table.Th>
+                  <Table.Th style={{ textAlign: "center" }}>Report</Table.Th>
+                  <Table.Th style={{ textAlign: "center" }}>
+                    View Prescription
+                  </Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody style={{ fontSize: "15px" }}>{rows}</Table.Tbody>
+            </Table>
+
+            <Pagination
+              value={activePage}
+              onChange={setCurrentPage}
+              total={totalPages}
+              style={{
+                marginTop: "20px",
+                marginLeft: "auto",
+                marginRight: "auto",
+                width: "fit-content",
+              }}
+              color="#15abff"
+              radius="xl"
+              size="md"
+            />
+          </>
+        ) : (
+          <Center style={{ padding: "40px" }}>
+            <Text size="lg" weight={500} color="dimmed">
+              No data found.
+            </Text>
+          </Center>
+        )}
       </Paper>
     </>
   );

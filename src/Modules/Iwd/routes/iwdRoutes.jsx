@@ -14,6 +14,10 @@ export const IWD_ROUTES = {
   WORK_UNDER_PROGRESS: `${host}/iwdModuleV2/api/work-under-progress/`,
   VIEW_PROPOSALS: `${host}/iwdModuleV2/api/get-proposals/`,
   VIEW_ITEMS: `${host}/iwdModuleV2/api/get-items/`,
+  ISSUED_WORK: `${host}/iwdModuleV2/api/issued-work/`,
+  GET_WORK_DATA: `${host}/iwdModuleV2/api/get-work/`,
+  GET_VENDOR_DATA: `${host}/iwdModuleV2/api/get-vendors/`,
+
   // POST
   HANDLE_PROCESS_BILLS: `${host}/iwdModuleV2/api/handle-process-bills/`,
   CREATE_REQUESTS: `${host}/iwdModuleV2/api/create-request/`,
@@ -25,6 +29,7 @@ export const IWD_ROUTES = {
   FORWARD_REQUEST: `${host}/iwdModuleV2/api/forward-request/`,
   AUDIT_DOCUMENT: `${host}/iwdModuleV2/api/audit-document/`,
   CREATE_PROPOSAL: `${host}/iwdModuleV2/api/create-proposal/`,
+  ADD_VENDOR: `${host}/iwdModuleV2/api/add-vendor/`,
   // PATCH
   EDIT_BUDGET: `${host}/iwdModuleV2/api/edit-budget/`,
   MARK_COMPLETED: `${host}/iwdModuleV2/api/work-completed/`,

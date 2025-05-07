@@ -99,7 +99,7 @@ function Viewpath() {
         ) : (
           <table
             style={{
-              width: "80%",
+              width: "100%",
               borderCollapse: "collapse",
               border: "1px solid #ccc",
               textAlign: "center",

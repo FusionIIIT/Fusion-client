@@ -30,9 +30,6 @@ function BrowseApplicationPage() {
           Convocation Medals
         </button>
       </div>
-
-      <hr className={styles.hr} />
-
       {desc === 1 && <ScholarshipForm />}
       {desc === 2 && <ConvocationMedal />}
     </div>

@@ -16,6 +16,7 @@ import {
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { useForm } from "@mantine/form";
+import { showNotification } from "@mantine/notifications";
 import { requestBookingRoute } from "../../routes/visitorsHostelRoutes";
 import { countries } from "./data/countries";
 
@@ -76,6 +77,22 @@ function CombinedBookingForm({ modalOpened, onClose }) {
   const handleSubmit = async (values) => {
     const token = localStorage.getItem("authToken");
     console.log(" Token : ", token);
+
+    const emailRegex =
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?$/;
+
+    if (!emailRegex.test(values.visitor_email)) {
+      form.setFieldError("visitor_email", "Invalid email format");
+
+      // Show notification for invalid email
+      showNotification({
+        title: "Invalid Email",
+        message: "Please enter a valid email address.",
+        color: "red",
+      });
+
+      return; // Stop form submission
+    }
 
     const requestData = {
       intender: values.intender,

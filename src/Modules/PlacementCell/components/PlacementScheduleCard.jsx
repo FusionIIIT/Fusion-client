@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   Card,
   Text,
-  Badge,
   Group,
   Button,
   // Image,
@@ -156,7 +155,6 @@ function PlacementScheduleCard({
   };
 
   const handleSubmit = async (newData) => {
-    console.log(newData);
     const token = localStorage.getItem("authToken");
 
     // const formattedDate = newData.date && format(newData.date, "yyyy-MM-dd");
@@ -195,7 +193,7 @@ function PlacementScheduleCard({
           autoClose: 3000,
         });
 
-        setIsModalOpen(false);
+        setModalOpened(false);
       } else {
         const errorData = await response.json();
         console.error("Update failed:", errorData);
@@ -233,6 +231,7 @@ function PlacementScheduleCard({
         shadow="sm"
         padding="lg"
         radius="lg"
+        m={4}
         withBorder
         style={{ width: 320, position: "relative" }}
       >
@@ -249,42 +248,9 @@ function PlacementScheduleCard({
         <Title order={3} align="left" style={{ marginBottom: "20px" }}>
           {companyName}
         </Title>
-        <Group spacing={5} mt={5}>
-          <MapPin size={16} />
-          <Text size="sm" color="dimmed">
-            {location}
-          </Text>
-        </Group>
-        <Text weight={500} size="md" mt="sm">
-          {position}
-        </Text>
-        <Group mt="xs" spacing="xs">
-          <Badge color="green">{jobType}</Badge>
-          <Group spacing={5}>
-            <Clock size={16} />
-            <Text size="xs" color="dimmed">
-              {deadline}
-            </Text>
-          </Group>
-        </Group>
-
-        {/* Display End Date & Time */}
-        <Group mt="xs" spacing={5}>
-          <Clock size={16} />
-          <Text size="sm" color="dimmed">
-            <strong>End:</strong> {endDateTime}
-          </Text>
-        </Group>
-
-        {/* Display Eligibility Criteria */}
-        <Text size="sm" mt="sm" color="dimmed">
-          <strong>Eligibility:</strong>{" "}
-          {eligibilityCriteria?.join(", ") || "None specified"}
-        </Text>
 
         <Text
           size="sm"
-          mt="sm"
           color="dimmed"
           style={{
             overflow: "hidden",
@@ -294,6 +260,25 @@ function PlacementScheduleCard({
         >
           {description}
         </Text>
+        <Group spacing={5} mt={5}>
+          <MapPin size={16} />
+          <Text size="sm" color="dimmed">
+            {location}
+          </Text>
+        </Group>
+
+        <Text size="sm" color="dimmed" mt={5}>
+          <strong>Position:</strong> {position}
+        </Text>
+
+        <Group mt="xs" spacing={5}>
+          <Clock size={16} />
+          <Text size="sm" color="dimmed">
+            <strong>Start:</strong>{" "}
+            {format(new Date(deadline), "dd MMM yyyy, hh:mm a")}
+          </Text>
+        </Group>
+
         <Group
           position="apart"
           mt="md"
@@ -315,6 +300,7 @@ function PlacementScheduleCard({
               </Button>
             ) : (
               <Button
+                disabled={new Date(deadline) > new Date()}
                 variant="light"
                 color="blue"
                 size="xs"

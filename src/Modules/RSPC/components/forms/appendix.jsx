@@ -38,10 +38,9 @@ function Appendix() {
       <Grid gutter="xl">
         {formsList.map((form, index) => (
           <Grid.Col span={12} key={index}>
-            <Text size="lg" weight={500} className={classes.fieldLabel}>
+            <Text>
               {form.name}{" "}
               <Anchor href={form.link} style={{ fontSize: "0.85em" }}>
-                Download here
                 <DownloadSimple size={26} style={{ marginRight: "3px" }} />
               </Anchor>
             </Text>

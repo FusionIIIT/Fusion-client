@@ -12,6 +12,7 @@ import {
   updateDirectorGoldStatusRoute,
   updateDirectorSilverStatusRoute,
   updateProficiencyDMStatusRoute,
+  scholarshipNotification,
 } from "../../../../routes/SPACSRoutes";
 import { host } from "../../../../routes/globalRoutes";
 
@@ -72,6 +73,38 @@ function MedalApplications() {
     console.log(medals);
   }, [selectedAward]);
 
+  const handleNotification = async (recipientId, type) => {
+    try {
+      const token = localStorage.getItem("authToken");
+
+      if (!token) {
+        console.log("No authorization token found for notification.");
+        return;
+      }
+
+      const response = await axios.post(
+        scholarshipNotification,
+        {
+          recipient: recipientId,
+          type,
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+      if (response.status === 201) {
+        console.log("Notification sent successfully");
+      } else {
+        console.error("Error sending notification:", response);
+      }
+    } catch (err) {
+      console.error("Notification error:", err.response || err.message);
+    }
+  };
+
   const handleApproval = async (medalId, action) => {
     try {
       const token = localStorage.getItem("authToken");
@@ -128,6 +161,35 @@ function MedalApplications() {
         `Error updating status: ${err.response ? err.response.data : err.message}`,
       );
     }
+  };
+
+  const handleAction = async (id, action, student) => {
+    await handleApproval(id, action);
+
+    let notifType = "";
+    if (action === "approved" && selectedAward === "Director's Silver Medal")
+      notifType = "Accept_Silver";
+    else if (
+      action === "rejected" &&
+      selectedAward === "Director's Silver Medal"
+    )
+      notifType = "Reject_Silver";
+    else if (action === "approved" && selectedAward === "Director's Gold Medal")
+      notifType = "Accept_Gold";
+    else if (action === "rejected" && selectedAward === "Director's Gold Medal")
+      notifType = "Reject_Gold";
+    else if (
+      action === "approved" &&
+      selectedAward === "D&M Proficiency Gold Medal"
+    )
+      notifType = "Accept_DM";
+    else if (
+      action === "rejected" &&
+      selectedAward === "D&M Proficiency Gold Medal"
+    )
+      notifType = "Reject_DM";
+
+    await handleNotification(student, notifType); // replace `app.student_id` with correct recipient ID if different
   };
 
   const handleDownloadAllMarksheets = async () => {
@@ -243,7 +305,9 @@ function MedalApplications() {
                 <td>
                   <button
                     className={`${styles.button} ${styles.acceptButton}`}
-                    onClick={() => handleApproval(medal.id, "approved")}
+                    onClick={() =>
+                      handleAction(medal.id, "approved", medal.student)
+                    }
                   >
                     Approve
                   </button>
@@ -251,7 +315,9 @@ function MedalApplications() {
                 <td>
                   <button
                     className={`${styles.button} ${styles.rejectButton}`}
-                    onClick={() => handleApproval(medal.id, "rejected")}
+                    onClick={() =>
+                      handleAction(medal.id, "rejected", medal.student)
+                    }
                   >
                     Reject
                   </button>

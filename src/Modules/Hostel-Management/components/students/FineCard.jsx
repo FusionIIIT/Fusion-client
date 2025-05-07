@@ -1,15 +1,5 @@
 import React from "react";
-import {
-  Paper,
-  Text,
-  Group,
-  Stack,
-  Badge,
-  ThemeIcon,
-  Flex,
-  Divider,
-} from "@mantine/core";
-import { CurrencyInr, User, Buildings, FileText } from "@phosphor-icons/react";
+import { Paper, Text, Group, Badge, Divider } from "@mantine/core";
 
 const defaultProps = {
   fine_id: "",
@@ -18,7 +8,6 @@ const defaultProps = {
   amount: 0,
   status: "Pending",
   reason: "No reason provided",
-  isPastFine: false,
 };
 
 export default function FineCard(props = defaultProps) {
@@ -27,97 +16,65 @@ export default function FineCard(props = defaultProps) {
       case "paid":
         return "green";
       case "pending":
-        return "yellow";
+        return "orange";
       default:
         return "gray";
     }
   };
 
-  const { student_name, hall, amount, status, reason, isPastFine } = {
+  const { student_name, hall, amount, status, reason } = {
     ...defaultProps,
     ...props,
   };
 
   return (
     <Paper
-      radius="md"
+      radius="sm"
       withBorder
-      p="lg"
+      p="md"
       sx={(theme) => ({
-        backgroundColor:
-          theme.colorScheme === "dark" ? theme.colors.dark[8] : theme.white,
-        transition: "transform 0.2s ease, box-shadow 0.2s ease",
-        "&:hover": {
-          transform: "translateY(-5px)",
-          boxShadow: theme.shadows.md,
-        },
+        backgroundColor: theme.white,
+        borderColor: theme.colors.gray[3],
       })}
     >
-      <Stack spacing="md">
-        <Flex justify="space-between" align="center">
-          <Group spacing="xs">
-            <ThemeIcon color="red" size={40} radius="md">
-              <CurrencyInr size={24} weight="bold" />
-            </ThemeIcon>
-            <Text weight={700} size="xl" color="red">
-              ₹{amount.toLocaleString()}
-            </Text>
-          </Group>
-          <Badge
-            color={getStatusColor(status)}
+      <Group position="apart" mb="md">
+        <Group spacing="xs">
+          <Text
+            weight={600}
             size="lg"
-            variant="filled"
-            sx={{
-              textTransform: "uppercase",
-              minWidth: "80px",
-              textAlign: "center",
-            }}
+            color={status === "Pending" ? "red" : "dark"}
           >
-            {status}
-          </Badge>
-        </Flex>
-
-        <Divider />
-
-        <Group grow>
-          <Flex align="center">
-            <ThemeIcon color="blue" size={30} radius="md" mr="xs">
-              <User size={18} weight="bold" />
-            </ThemeIcon>
-            <Text size="sm" weight={500}>
-              {student_name}
-            </Text>
-          </Flex>
-          <Flex align="center">
-            <ThemeIcon color="grape" size={30} radius="md" mr="xs">
-              <Buildings size={18} weight="bold" />
-            </ThemeIcon>
-            <Text size="sm" weight={500}>
-              {hall}
-            </Text>
-          </Flex>
-        </Group>
-
-        <Paper withBorder p="sm" radius="md" bg="gray.0">
-          <Flex align="center" mb="xs">
-            <ThemeIcon color="orange" size={30} radius="md" mr="xs">
-              <FileText size={18} weight="bold" />
-            </ThemeIcon>
-            <Text weight={500} size="sm">
-              Reason
-            </Text>
-          </Flex>
-          <Text size="sm" color="dimmed" style={{ lineHeight: 1.6 }}>
-            {reason}
+            ₹{amount.toLocaleString()}
           </Text>
-        </Paper>
+        </Group>
+        <Badge color={getStatusColor(status)} size="md" variant="light">
+          {status}
+        </Badge>
+      </Group>
 
-        {isPastFine && (
-          <Badge color="red" variant="dot" size="sm">
-            Past Fine
-          </Badge>
-        )}
-      </Stack>
+      <Group grow mb="sm">
+        <div>
+          <Text size="xs" color="dimmed">
+            Student
+          </Text>
+          <Text size="sm">{student_name}</Text>
+        </div>
+        <div>
+          <Text size="xs" color="dimmed">
+            Hall
+          </Text>
+          <Text size="sm">{hall}</Text>
+        </div>
+      </Group>
+
+      <Divider my="xs" />
+
+      <div>
+        <Text size="xs" color="dimmed" mb="xs">
+          Reason
+        </Text>
+        <Text size="sm">{reason}</Text>
+      </div>
     </Paper>
   );
 }

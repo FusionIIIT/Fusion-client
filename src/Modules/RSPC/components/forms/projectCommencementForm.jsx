@@ -14,24 +14,36 @@ import {
   Alert,
   Anchor,
   Divider,
+  Group,
 } from "@mantine/core";
-import { FileText, ThumbsUp, ThumbsDown } from "@phosphor-icons/react";
+import {
+  FileText,
+  ThumbsUp,
+  ThumbsDown,
+  DownloadSimple,
+} from "@phosphor-icons/react";
 import { useForm } from "@mantine/form";
 import axios from "axios";
 import classes from "../../styles/formStyle.module.css";
 import { projectRegisterCommencementRoute } from "../../../../routes/RSPCRoutes";
 import { host } from "../../../../routes/globalRoutes";
+import ConfirmationModal from "../../helpers/confirmationModal";
 
 function ProjectCommencementForm({ projectData }) {
   const [file, setFile] = useState(null);
   const [successAlertVisible, setSuccessAlertVisible] = useState(false);
   const [failureAlertVisible, setFailureAlertVisible] = useState(false);
+  const [confirmationModalOpened, setConfirmationModalOpened] = useState(false);
   const navigate = useNavigate();
 
   const form = useForm({
     initialValues: {
       start_date: new Date().toISOString().split("T")[0],
-      initial_amount: "",
+      initial_amount: 0,
+    },
+    validate: {
+      initial_amount: (value) =>
+        value > 0 ? null : "Initial funding amount must be greater than 0",
     },
   });
 
@@ -76,10 +88,14 @@ function ProjectCommencementForm({ projectData }) {
       }, 2500);
     }
   };
+  const handleFormSubmit = () => {
+    if (form.validate().hasErrors) return;
+    setConfirmationModalOpened(true);
+  };
 
   return (
     <>
-      <form onSubmit={form.onSubmit(handleSubmit)}>
+      <form onSubmit={form.onSubmit(handleFormSubmit)}>
         {projectData &&
         Object.keys(projectData).length > 0 &&
         "pi_id" in projectData ? (
@@ -88,13 +104,11 @@ function ProjectCommencementForm({ projectData }) {
               Commence Project
             </Title>
 
-            {projectData.status !== "OnGoing" ? (
+            {projectData.status === "Registered" ? (
               <>
                 <Grid gutter="xl">
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Project Title
-                    </Text>
+                    <Text className={classes.fieldLabel}>Project Title</Text>
                     <TextInput
                       value={projectData.name}
                       readOnly
@@ -107,9 +121,7 @@ function ProjectCommencementForm({ projectData }) {
                     />
                   </Grid.Col>
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Project ID
-                    </Text>
+                    <Text className={classes.fieldLabel}>Project ID</Text>
                     <TextInput
                       value={projectData.pid}
                       readOnly
@@ -123,7 +135,7 @@ function ProjectCommencementForm({ projectData }) {
                   </Grid.Col>
 
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
+                    <Text className={classes.fieldLabel}>
                       Project Investigator
                     </Text>
                     <TextInput
@@ -138,14 +150,14 @@ function ProjectCommencementForm({ projectData }) {
                     />
                   </Grid.Col>
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
+                    <Text className={classes.fieldLabel}>
                       Co-Principal Investigators
                     </Text>
                     {projectData.copis.length > 0 ? (
-                      <ul style={{ paddingLeft: "20px", margin: "5px 0" }}>
+                      <ul style={{ paddingLeft: "20px", margin: "0 0" }}>
                         {projectData.copis.map((copi, index) => (
                           <li key={index}>
-                            <Text size="lg">{copi}</Text>
+                            <Text>{copi}</Text>
                           </li>
                         ))}
                       </ul>
@@ -154,7 +166,7 @@ function ProjectCommencementForm({ projectData }) {
                     )}
                   </Grid.Col>
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
+                    <Text className={classes.fieldLabel}>
                       Project To Be Operated By
                     </Text>
                     <TextInput
@@ -174,9 +186,7 @@ function ProjectCommencementForm({ projectData }) {
                   </Grid.Col>
 
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Project Type
-                    </Text>
+                    <Text className={classes.fieldLabel}>Project Type</Text>
                     <TextInput
                       value={projectData.type}
                       readOnly
@@ -189,9 +199,7 @@ function ProjectCommencementForm({ projectData }) {
                     />
                   </Grid.Col>
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Department
-                    </Text>
+                    <Text className={classes.fieldLabel}>Department</Text>
                     <TextInput
                       value={projectData.dept}
                       readOnly
@@ -205,9 +213,7 @@ function ProjectCommencementForm({ projectData }) {
                   </Grid.Col>
 
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Category
-                    </Text>
+                    <Text className={classes.fieldLabel}>Category</Text>
                     <TextInput
                       value={projectData.category}
                       readOnly
@@ -220,7 +226,7 @@ function ProjectCommencementForm({ projectData }) {
                     />
                   </Grid.Col>
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
+                    <Text className={classes.fieldLabel}>
                       Project Sponsor Agency
                     </Text>
                     <TextInput
@@ -236,9 +242,7 @@ function ProjectCommencementForm({ projectData }) {
                   </Grid.Col>
 
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Project Scheme
-                    </Text>
+                    <Text className={classes.fieldLabel}>Project Scheme</Text>
                     <TextInput
                       value={projectData.scheme}
                       readOnly
@@ -251,9 +255,7 @@ function ProjectCommencementForm({ projectData }) {
                     />
                   </Grid.Col>
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Project Abstract
-                    </Text>
+                    <Text className={classes.fieldLabel}>Project Abstract</Text>
                     <Textarea
                       value={projectData.description}
                       readOnly
@@ -267,9 +269,7 @@ function ProjectCommencementForm({ projectData }) {
                   </Grid.Col>
 
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Project Duration
-                    </Text>
+                    <Text className={classes.fieldLabel}>Project Duration</Text>
                     <TextInput
                       value={`${projectData.duration} months`}
                       readOnly
@@ -282,11 +282,11 @@ function ProjectCommencementForm({ projectData }) {
                     />
                   </Grid.Col>
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
+                    <Text className={classes.fieldLabel}>
                       Total Amount Sanctioned
                     </Text>
                     <TextInput
-                      value={`INR ${projectData.sanctioned_amount}`}
+                      value={`₹${projectData.sanctioned_amount}`}
                       readOnly
                       styles={{
                         input: {
@@ -298,7 +298,7 @@ function ProjectCommencementForm({ projectData }) {
                   </Grid.Col>
 
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
+                    <Text className={classes.fieldLabel}>
                       Project Sanction Date
                     </Text>
                     <TextInput
@@ -315,47 +315,46 @@ function ProjectCommencementForm({ projectData }) {
                     />
                   </Grid.Col>
 
-                  <Grid.Col span={6}>
-                    <Text size="xl">
-                      <strong
-                        style={{
-                          color: "blue",
-                          textAlign: "center",
-                          width: "100%",
-                        }}
-                      >
+                  <Grid.Col span={12}>
+                    <Group position="apart" align="center">
+                      <Text className={classes.fieldLabel}>
                         Project Agreement (Sanction Letter, MoU, etc.)
-                      </strong>
-                    </Text>
-                    {projectData.file && (
-                      <Button
-                        variant="outline"
-                        color="#15ABFF"
-                        size="md"
-                        className={classes.fileInputButton}
-                        style={{ borderRadius: "8px" }}
-                        component="a"
-                        href={`${host}/${projectData.file}`} // Directly access the file URL
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <FileText size={26} style={{ marginRight: "3px" }} />
-                        Open File
-                      </Button>
-                    )}
+                      </Text>
+                      {projectData.file ? (
+                        <Button
+                          variant="outline"
+                          color="#15ABFF"
+                          size="xs"
+                          className={classes.fileInputButton}
+                          style={{ borderRadius: "8px" }}
+                          component="a"
+                          href={`${host}/${projectData.file}`} // Directly access the file URL
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <DownloadSimple
+                            size={26}
+                            style={{ marginRight: "3px" }}
+                          />
+                          Open File
+                        </Button>
+                      ) : (
+                        <span>No file uploaded</span>
+                      )}
+                    </Group>
                   </Grid.Col>
 
                   <Grid.Col span={12}>
                     <Divider
-                      my="lg"
-                      label="X X X"
+                      my="sm"
+                      label=""
                       labelPosition="center"
-                      size="md"
+                      size="sm"
                     />
                   </Grid.Col>
 
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
+                    <Text className={classes.fieldLabel}>
                       Date Of Receiving First Funding And Commencement Of
                       Project <span style={{ color: "red" }}>*</span>
                     </Text>
@@ -367,50 +366,53 @@ function ProjectCommencementForm({ projectData }) {
                     />
                   </Grid.Col>
                   <Grid.Col span={6}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Amount Received In First Funding (in INR)
+                    <Text className={classes.fieldLabel}>
+                      Amount Received In First Funding (in ₹){" "}
+                      <span style={{ color: "red" }}>*</span>
                     </Text>
                     <NumberInput
-                      placeholder="Initial Funds (in INR)"
+                      placeholder="Initial Funds (in ₹)"
                       min={0}
                       {...form.getInputProps("initial_amount")}
                     />
                   </Grid.Col>
                   <Grid.Col span={12}>
-                    <Text size="lg" weight={500} className={classes.fieldLabel}>
-                      Project Registration Form{" "}
-                      <span style={{ color: "red" }}>*</span>{" "}
-                      <Anchor
-                        href="https://www.iiitdmj.ac.in/rspc.iiitdmj.ac.in/DRSPC/PM/1_NPR.doc"
-                        style={{ fontSize: "0.85em" }}
-                      >
-                        (Download format here)
-                      </Anchor>
-                    </Text>
-                    <div className={classes.fileInputContainer}>
-                      <Button
-                        variant="outline"
-                        color="#15ABFF"
-                        size="md"
-                        component="label"
-                        className={classes.fileInputButton}
-                        style={{ borderRadius: "8px" }}
-                      >
-                        <FileText size={26} style={{ marginRight: "3px" }} />
-                        Choose File
-                        <input
-                          type="file"
-                          hidden
-                          required
-                          onChange={(event) =>
-                            setFile(event.currentTarget.files[0])
-                          }
-                        />
-                      </Button>
-                      {file && (
-                        <span className={classes.fileName}>{file.name}</span>
-                      )}
-                    </div>
+                    <Group position="apart" align="center">
+                      <Text className={classes.fieldLabel}>
+                        Project Registration Form{" "}
+                        <span style={{ color: "red" }}>*</span>{" "}
+                        <Anchor
+                          href="https://www.iiitdmj.ac.in/rspc.iiitdmj.ac.in/DRSPC/PM/1_NPR.doc"
+                          style={{ fontSize: "0.85em" }}
+                        >
+                          (Download format here)
+                        </Anchor>
+                      </Text>
+                      <div className={classes.fileInputContainer}>
+                        <Button
+                          variant="outline"
+                          color="#15ABFF"
+                          size="xs"
+                          component="label"
+                          className={classes.fileInputButton}
+                          style={{ borderRadius: "8px" }}
+                        >
+                          <FileText size={26} style={{ marginRight: "3px" }} />
+                          Choose File
+                          <input
+                            type="file"
+                            hidden
+                            required
+                            onChange={(event) =>
+                              setFile(event.currentTarget.files[0])
+                            }
+                          />
+                        </Button>
+                        {file && (
+                          <span className={classes.fileName}>{file.name}</span>
+                        )}
+                      </div>
+                    </Group>
                   </Grid.Col>
                 </Grid>
 
@@ -426,17 +428,26 @@ function ProjectCommencementForm({ projectData }) {
                 </div>
               </>
             ) : (
-              <Text color="red" size="xl" weight={700} align="center">
+              <Text color="red" align="center">
                 Project has already commenced!
               </Text>
             )}
           </Paper>
         ) : (
-          <Text color="red" size="xl" weight={700} align="center">
+          <Text color="red" align="center">
             Failed to load project details
           </Text>
         )}
       </form>
+
+      <ConfirmationModal
+        opened={confirmationModalOpened}
+        onClose={() => setConfirmationModalOpened(false)}
+        onConfirm={() => {
+          setConfirmationModalOpened(false);
+          form.onSubmit(handleSubmit)();
+        }}
+      />
 
       {(successAlertVisible || failureAlertVisible) && (
         <div className={classes.overlay}>
