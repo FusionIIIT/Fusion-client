@@ -5,6 +5,7 @@ import {
   Select,
   Loader,
   Center,
+  Stack,
 } from "@mantine/core";
 import axios from "axios";
 import FusionTable from "../../components/FusionTable";
@@ -68,6 +69,7 @@ function RegisteredCourses() {
     "Registration Type",
     "Semester",
     "Credits",
+    "Replaced By"
   ];
 
   const mappedCourses = courses.map((course) => ({
@@ -76,6 +78,20 @@ function RegisteredCourses() {
     "Registration Type": course.registration_type || "N/A",
     Semester: course.semester_id?.semester_no || "N/A",
     Credits: course.course_id?.credit || 0,
+    "Replaced By":
+      course.replaced_by && course.replaced_by.length > 0 ? (
+        <Stack spacing={2}>
+          {course.replaced_by.map((r, idx) => (
+            <Text key={idx} size="sm">
+              {`${r.code} - ${r.name} (Sem ${r.semester_no})`}
+            </Text>
+          ))}
+        </Stack>
+      ) : (
+        <Text size="sm">
+          -
+        </Text>
+      ),
   }));
 
   const totalCredits = courses.reduce(
