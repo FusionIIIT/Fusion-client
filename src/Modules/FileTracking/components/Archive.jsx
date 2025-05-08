@@ -225,8 +225,8 @@ export default function ArchiveFiles() {
         <Center style={{ height: "200px" }}>
           <Stack align="center" spacing="xs">
             <FolderNotch size={48} color={theme.colors.gray[5]} />
-            <Text color="dimmed" size="lg">
-              No archived files found
+            <Text c="dimmed" size="lg">
+              No archived files found!
             </Text>
             {searchQuery && (
               <Button

@@ -16,6 +16,7 @@ import {
   Stack,
   ScrollArea,
   useMantineTheme,
+  Center,
 } from "@mantine/core";
 import {
   Eye,
@@ -27,6 +28,7 @@ import {
 import { useSelector } from "react-redux";
 import { useMediaQuery } from "@mantine/hooks";
 import axios from "axios";
+import { ArrowClockwise, FolderNotch } from "phosphor-react";
 import View from "./ViewFile";
 import { outboxRoute } from "../../../routes/filetrackingRoutes";
 
@@ -140,75 +142,95 @@ export default function Outboxfunc() {
   const renderMobileView = () => {
     return (
       <Stack spacing="md">
-        {filteredFiles
-          .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-          .map((file, index) => (
-            <Card
-              key={index}
-              shadow="sm"
-              p="md"
-              radius="md"
-              withBorder
-              style={{ position: "relative" }}
-            >
-              <Badge
-                color="blue"
-                variant="light"
-                size="sm"
-                style={{ position: "absolute", top: 10, right: 10 }}
-              >
-                {generateFileId(file)}
-              </Badge>
-
-              <Text weight={600} size="md" mb={6}>
-                {file.subject}
+        {filteredFiles.length === 0 && (
+          <Center style={{ height: "200px" }}>
+            <Stack align="center" spacing="xs">
+              <FolderNotch size={48} color={theme.colors.gray[5]} />
+              <Text c="dimmed" size="lg">
+                No files in Outbox!
               </Text>
+              {searchQuery && (
+                <Button
+                  variant="subtle"
+                  leftIcon={<ArrowClockwise size={16} />}
+                  onClick={() => setSearchQuery("")}
+                >
+                  Clear search
+                </Button>
+              )}
+            </Stack>
+          </Center>
+        )}
+        {filteredFiles.length > 0 &&
+          filteredFiles
+            .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+            .map((file, index) => (
+              <Card
+                key={index}
+                shadow="sm"
+                p="md"
+                radius="md"
+                withBorder
+                style={{ position: "relative" }}
+              >
+                <Badge
+                  color="blue"
+                  variant="light"
+                  size="sm"
+                  style={{ position: "absolute", top: 10, right: 10 }}
+                >
+                  {generateFileId(file)}
+                </Badge>
 
-              <Group position="apart" mt="xs" mb="xs">
-                <Text size="sm">
-                  <Text span weight={500}>
-                    Currently under:
-                  </Text>{" "}
-                  {file.receiver}
+                <Text weight={600} size="md" mb={6}>
+                  {file.subject}
                 </Text>
-                <Text size="sm" color="dimmed">
-                  {file.receiver_designation}
-                </Text>
-              </Group>
 
-              <Divider my="xs" />
+                <Group position="apart" mt="xs" mb="xs">
+                  <Text size="sm">
+                    <Text span weight={500}>
+                      Currently under:
+                    </Text>{" "}
+                    {file.receiver}
+                  </Text>
+                  <Text size="sm" color="dimmed">
+                    {file.receiver_designation}
+                  </Text>
+                </Group>
 
-              <Group position="apart" mt="xs">
-                <Text size="sm">
-                  <Text span weight={500}>
-                    Created by:
-                  </Text>{" "}
-                  {file.uploader}
-                </Text>
-                <Text size="sm" color="dimmed">
-                  {file.uploader_designation}
-                </Text>
-                <Text size="sm" color="dimmed">
-                  {convertDate(file.upload_date)}
-                </Text>
-              </Group>
+                <Divider my="xs" />
 
-              <Group position="apart" mt="md">
-                <Tooltip label="View File" position="top" withArrow>
-                  <Button
-                    variant="light"
-                    color="blue"
-                    size="xs"
-                    leftIcon={<Eye size="1rem" />}
-                    onClick={() => setSelectedFile(file)}
-                    fullWidth
-                  >
-                    View
-                  </Button>
-                </Tooltip>
-              </Group>
-            </Card>
-          ))}
+                <Group position="apart" mt="xs">
+                  <Text size="sm">
+                    <Text span weight={500}>
+                      Created by:
+                    </Text>{" "}
+                    {file.uploader}
+                  </Text>
+                  <Text size="sm" color="dimmed">
+                    {file.uploader_designation}
+                  </Text>
+                  <Text size="sm" color="dimmed">
+                    {convertDate(file.upload_date)}
+                  </Text>
+                </Group>
+
+                <Group position="apart" mt="md">
+                  <Tooltip label="View File" position="top" withArrow>
+                    <Button
+                      variant="light"
+                      color="blue"
+                      size="xs"
+                      leftIcon={<Eye size="1rem" />}
+                      onClick={() => setSelectedFile(file)}
+                      fullWidth
+                    >
+                      View
+                    </Button>
+                  </Tooltip>
+                </Group>
+              </Card>
+            ))}
       </Stack>
     );
   };
@@ -217,161 +239,181 @@ export default function Outboxfunc() {
   const renderDesktopView = () => {
     return (
       <ScrollArea>
-        <Table
-          highlightOnHover
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            tableLayout: "fixed",
-            fontSize: "14px",
-            minWidth: "900px", // Ensures horizontal scroll on smaller screens
-          }}
-        >
-          <thead
+        {filteredFiles.length > 0 ? (
+          <Table
+            highlightOnHover
             style={{
-              position: "sticky",
-              top: 0,
-              backgroundColor: "#fff",
-              zIndex: 1,
+              width: "100%",
+              borderCollapse: "collapse",
+              tableLayout: "fixed",
+              fontSize: "14px",
+              minWidth: "900px", // Ensures horizontal scroll on smaller screens
             }}
           >
-            <tr style={{ backgroundColor: "#0000" }}>
-              {[
-                { key: "id", label: "File ID" },
-                { key: "currently_under", label: "Currently under" },
-                { key: "subject", label: "Subject" },
-                { key: "upload_date", label: "Date" },
-                { key: "uploader", label: "Created by" },
-              ].map(({ key, label }) => (
+            <thead
+              style={{
+                position: "sticky",
+                top: 0,
+                backgroundColor: "#fff",
+                zIndex: 1,
+              }}
+            >
+              <tr style={{ backgroundColor: "#0000" }}>
+                {[
+                  { key: "id", label: "File ID" },
+                  { key: "currently_under", label: "Currently under" },
+                  { key: "subject", label: "Subject" },
+                  { key: "upload_date", label: "Date" },
+                  { key: "uploader", label: "Created by" },
+                ].map(({ key, label }) => (
+                  <th
+                    key={key}
+                    onClick={() => handleSort(key)}
+                    style={{
+                      cursor: "pointer",
+                      padding: "12px",
+                      width: "15.5%",
+                      border: "1px solid #0000",
+                      alignItems: "center",
+                      gap: "5px",
+                      height: "36px",
+                    }}
+                  >
+                    {label}
+                    {sortConfig.key === key ? (
+                      sortConfig.direction === "asc" ? (
+                        <CaretUp size={16} />
+                      ) : (
+                        <CaretDown size={16} />
+                      )
+                    ) : (
+                      <ArrowsDownUp size={16} opacity={0.6} />
+                    )}
+                  </th>
+                ))}
                 <th
-                  key={key}
-                  onClick={() => handleSort(key)}
                   style={{
-                    cursor: "pointer",
-                    padding: "12px",
-                    width: "15.5%",
-                    border: "1px solid #0000",
-                    alignItems: "center",
-                    gap: "5px",
+                    padding: "6px",
+                    width: "8.5%",
+                    border: "1px solid #ddd",
                     height: "36px",
                   }}
                 >
-                  {label}
-                  {sortConfig.key === key ? (
-                    sortConfig.direction === "asc" ? (
-                      <CaretUp size={16} />
-                    ) : (
-                      <CaretDown size={16} />
-                    )
-                  ) : (
-                    <ArrowsDownUp size={16} opacity={0.6} />
-                  )}
+                  View File
                 </th>
-              ))}
-              <th
-                style={{
-                  padding: "6px",
-                  width: "8.5%",
-                  border: "1px solid #ddd",
-                  height: "36px",
-                }}
-              >
-                View File
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredFiles
-              .slice(
-                (currentPage - 1) * itemsPerPage,
-                currentPage * itemsPerPage,
-              )
-              .map((file, index) => (
-                <tr key={index}>
-                  <td
-                    style={{
-                      padding: "13px",
-                      border: "1px solid #ddd",
-                      textAlign: "center",
-                      height: "36px",
-                    }}
-                  >
-                    {generateFileId(file)}
-                  </td>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredFiles
+                .slice(
+                  (currentPage - 1) * itemsPerPage,
+                  currentPage * itemsPerPage,
+                )
+                .map((file, index) => (
+                  <tr key={index}>
+                    <td
+                      style={{
+                        padding: "13px",
+                        border: "1px solid #ddd",
+                        textAlign: "center",
+                        height: "36px",
+                      }}
+                    >
+                      {generateFileId(file)}
+                    </td>
 
-                  <td
-                    style={{
-                      padding: "6px",
-                      border: "1px solid #ddd",
-                      textAlign: "center",
-                      height: "36px",
-                    }}
-                  >
-                    {file.receiver}[{file.receiver_designation}]
-                  </td>
-                  <td
-                    style={{
-                      padding: "6px",
-                      border: "1px solid #ddd",
-                      textAlign: "center",
-                      height: "36px",
-                    }}
-                  >
-                    {file.subject}
-                  </td>
-                  <td
-                    style={{
-                      padding: "6px",
-                      border: "1px solid #ddd",
-                      textAlign: "center",
-                      height: "36px",
-                    }}
-                  >
-                    {convertDate(file.upload_date)}
-                  </td>
-                  <td
-                    style={{
-                      padding: "6px",
-                      border: "1px solid #ddd",
-                      textAlign: "center",
-                      height: "36px",
-                    }}
-                  >
-                    {file.uploader}[{file.uploader_designation}]
-                  </td>
-                  <td
-                    style={{
-                      padding: "6px",
-                      textAlign: "center",
-                      border: "1px solid #ddd",
-                      height: "36px",
-                    }}
-                  >
-                    <Tooltip label="View File" position="top" withArrow>
-                      <ActionIcon
-                        variant="light"
-                        color="black"
-                        style={{
-                          transition: "background-color 0.3s",
-                          width: "2rem",
-                          height: "2rem",
-                        }}
-                        onClick={() => setSelectedFile(file)}
-                        onMouseEnter={(e) => {
-                          e.target.style.backgroundColor = "#E3F2FD";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.backgroundColor = "transparent";
-                        }}
-                      >
-                        <Eye size="1rem" />
-                      </ActionIcon>
-                    </Tooltip>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </Table>
+                    <td
+                      style={{
+                        padding: "6px",
+                        border: "1px solid #ddd",
+                        textAlign: "center",
+                        height: "36px",
+                      }}
+                    >
+                      {file.receiver}[{file.receiver_designation}]
+                    </td>
+                    <td
+                      style={{
+                        padding: "6px",
+                        border: "1px solid #ddd",
+                        textAlign: "center",
+                        height: "36px",
+                      }}
+                    >
+                      {file.subject}
+                    </td>
+                    <td
+                      style={{
+                        padding: "6px",
+                        border: "1px solid #ddd",
+                        textAlign: "center",
+                        height: "36px",
+                      }}
+                    >
+                      {convertDate(file.upload_date)}
+                    </td>
+                    <td
+                      style={{
+                        padding: "6px",
+                        border: "1px solid #ddd",
+                        textAlign: "center",
+                        height: "36px",
+                      }}
+                    >
+                      {file.uploader}[{file.uploader_designation}]
+                    </td>
+                    <td
+                      style={{
+                        padding: "6px",
+                        textAlign: "center",
+                        border: "1px solid #ddd",
+                        height: "36px",
+                      }}
+                    >
+                      <Tooltip label="View File" position="top" withArrow>
+                        <ActionIcon
+                          variant="light"
+                          color="black"
+                          style={{
+                            transition: "background-color 0.3s",
+                            width: "2rem",
+                            height: "2rem",
+                          }}
+                          onClick={() => setSelectedFile(file)}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = "#E3F2FD";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = "transparent";
+                          }}
+                        >
+                          <Eye size="1rem" />
+                        </ActionIcon>
+                      </Tooltip>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </Table>
+        ) : (
+          <Center style={{ height: "200px" }}>
+            <Stack align="center" spacing="xs">
+              <FolderNotch size={48} color={theme.colors.gray[5]} />
+              <Text c="dimmed" size="lg">
+                No files in Outbox!
+              </Text>
+              {searchQuery && (
+                <Button
+                  variant="subtle"
+                  leftIcon={<ArrowClockwise size={16} />}
+                  onClick={() => setSearchQuery("")}
+                >
+                  Clear search
+                </Button>
+              )}
+            </Stack>
+          </Center>
+        )}
       </ScrollArea>
     );
   };
