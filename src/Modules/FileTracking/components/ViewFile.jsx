@@ -53,6 +53,7 @@ import {
 } from "@phosphor-icons/react";
 import { useSelector } from "react-redux";
 import { useMediaQuery } from "@mantine/hooks";
+import { InfoCircle } from "tabler-icons-react";
 import {
   createFileRoute,
   designationsRoute,
@@ -87,6 +88,8 @@ export default function ViewFile({
   const [selectedForwardFile, setSelectedForwardFile] = useState(null);
   const [fileContent, setFileContent] = useState([]);
   const [remarksOpened, setRemarksOpened] = useState(false);
+  // eslint-disable-next-line no-unused-vars
+  const [descOpened, setDescOpened] = useState(false);
   const [loading, setLoading] = useState(true);
   const [historyExpanded, setHistoryExpanded] = useState(true);
   // New state for view type
@@ -152,7 +155,6 @@ export default function ViewFile({
     setSelectedRemarks(x);
     setOpened(true);
   };
-
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -480,7 +482,7 @@ export default function ViewFile({
           }}
         >
           <thead>
-            <tr>
+            <tr style={{ backgroundColor: "#0000" }}>
               <th
                 style={{
                   padding: "8px",
@@ -679,7 +681,8 @@ export default function ViewFile({
             backgroundColor: "#f8f9fa",
           }}
         >
-          <Group position="apart" mb="xs" noWrap>
+          <Flex justify="space-between" align="center" mb="xs" wrap="nowrap">
+            {/* Left section: File icon + subject + ID */}
             <Group spacing="xs" noWrap>
               <Avatar color="blue" radius="xl">
                 <FileIcon size={20} />
@@ -702,26 +705,28 @@ export default function ViewFile({
               </Box>
             </Group>
 
-            <Badge
-              color={
-                isArchived
-                  ? "orange"
+            {/* Right section: Status badge */}
+            {!loading && (
+              <Badge
+                color={
+                  isArchived
+                    ? "orange"
+                    : current_receiver === currentUser
+                      ? "green"
+                      : "blue"
+                }
+                size="lg"
+                variant="filled"
+                radius="sm"
+              >
+                {isArchived
+                  ? "Archived"
                   : current_receiver === currentUser
-                    ? "green"
-                    : "blue"
-              }
-              size="lg"
-              variant="filled"
-              radius="sm"
-              style={{ display: loading ? "none" : undefined }}
-            >
-              {isArchived
-                ? "Archived"
-                : current_receiver === currentUser
-                  ? "Awaiting Your Action"
-                  : "In Progress"}
-            </Badge>
-          </Group>
+                    ? "Awaiting Your Action"
+                    : "In Progress"}
+              </Badge>
+            )}
+          </Flex>
 
           <Grid mt="md" gutter="md">
             <Grid.Col span={{ base: 12, sm: 6 }}>
@@ -757,7 +762,62 @@ export default function ViewFile({
           </Grid>
 
           <Divider my="md" />
+          <Box>
+            <Group position="apart" mb="xs">
+              <Text weight={500} size="sm">
+                <InfoCircle
+                  size={16}
+                  style={{ marginRight: "5px", verticalAlign: "text-bottom" }}
+                />
+                Description
+              </Text>
+              <Tooltip label="View full description">
+                <ActionIcon
+                  onClick={() => setDescOpened(true)}
+                  size="sm"
+                  radius="xl"
+                  variant="light"
+                  color="blue"
+                >
+                  <Info size={14} />
+                </ActionIcon>
+              </Tooltip>
+            </Group>
 
+            {loading ? (
+              <>
+                <Skeleton height={12} width="90%" radius="xl" mb={8} />
+                <Skeleton height={12} width="85%" radius="xl" mb={8} />
+                <Skeleton height={12} width="80%" radius="xl" />
+              </>
+            ) : (
+              <Paper
+                p="xs"
+                withBorder
+                style={{ backgroundColor: "#fff", cursor: "pointer" }}
+                onClick={() => setDescOpened(true)}
+              >
+                <Text
+                  size="sm"
+                  style={{ whiteSpace: "pre-wrap" }}
+                  lineClamp={3}
+                >
+                  {file.description}
+                </Text>
+                {file.description.length > 300 && (
+                  <Text
+                    size="xs"
+                    c="blue"
+                    mt={5}
+                    onClick={() => setDescOpened(true)}
+                  >
+                    Click to view full description
+                  </Text>
+                )}
+              </Paper>
+            )}
+          </Box>
+          <Divider my="md" />
           <Box>
             <Group position="apart" mb="xs">
               <Text weight={500} size="sm">
@@ -801,7 +861,7 @@ export default function ViewFile({
                   {previewRemarks}
                 </Text>
                 {fileContent.length > 3 && (
-                  <Text size="xs" color="blue" mt={5}>
+                  <Text size="xs" c="blue" mt={5}>
                     Click to view all {fileContent.length} comments
                   </Text>
                 )}
@@ -954,8 +1014,8 @@ export default function ViewFile({
             Forward File
           </Title>
 
-          <Grid mb="md" gutter="md">
-            <Grid.Col span={{ base: 12, sm: 6 }}>
+          <Grid gutter="md" mb="md" align="flex-end">
+            <Grid.Col span={{ base: 11, sm: 6 }}>
               <Autocomplete
                 label="Forward To"
                 placeholder="Enter recipient username"
@@ -967,9 +1027,10 @@ export default function ViewFile({
                 }}
                 icon={<User size={16} />}
                 required
+                size="sm" // Makes label/input padding consistent
               />
             </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6 }}>
+            <Grid.Col span={{ base: 11, sm: 6 }}>
               <Select
                 key={receiver_username}
                 label="Receiver Designation"
@@ -982,17 +1043,17 @@ export default function ViewFile({
                 nothingFound="No designations found"
                 icon={<UserCircle size={16} />}
                 required
+                size="sm" // Match size with Autocomplete
               />
             </Grid.Col>
           </Grid>
 
           <Textarea
             label="Remarks"
-            placeholder="Enter remarks (50 words maximum)"
+            placeholder="Enter remarks (500 letters maximum)"
             value={remarks}
             onChange={(e) => {
-              const words = e.currentTarget.value.trim().split(/\s+/);
-              if (words.length < 50) {
+              if (remarks.length < 500) {
                 setRemarks(e.currentTarget.value);
               }
             }}
@@ -1005,7 +1066,7 @@ export default function ViewFile({
           <Text
             align="right"
             size="sm"
-            color={remarks.split(/\s+/).length >= 45 ? "red" : "dimmed"}
+            c={remarks.split(/\s+/).length >= 45 ? "red" : "dimmed"}
           >
             {remarks.split(/\s+/).length} / 50 words
           </Text>
@@ -1063,6 +1124,28 @@ export default function ViewFile({
 
       {/* Modals */}
 
+      {/* Description Modal */}
+      <Modal
+        opened={descOpened}
+        onClose={() => setDescOpened(false)}
+        title={
+          <Text weight={600}>File Description - {generateFileId(file)}</Text>
+        }
+        size="lg"
+      >
+        <ScrollArea style={{ height: "60vh" }}>
+          <Textarea
+            value={file.description}
+            readOnly
+            autosize
+            style={{
+              backgroundColor: "#f8f9fa",
+              padding: "10px",
+              borderRadius: "8px",
+            }}
+          />
+        </ScrollArea>
+      </Modal>
       {/* Remarks Modal */}
       <Modal
         opened={remarksOpened}

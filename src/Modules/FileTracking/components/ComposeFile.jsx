@@ -15,7 +15,6 @@ import {
   Grid,
   Modal,
   Paper,
-  Stack,
 } from "@mantine/core";
 import {
   Upload,
@@ -26,6 +25,7 @@ import {
 import { notifications } from "@mantine/notifications";
 import { useSelector } from "react-redux";
 import axios from "axios";
+import { ChatCenteredText } from "phosphor-react";
 import {
   designationsRoute,
   createFileRoute,
@@ -301,27 +301,45 @@ export default function Compose() {
         />
         <Textarea
           label="Description"
-          placeholder="Enter description"
+          placeholder="Enter description (2500 letters maximum)"
           mb="sm"
           value={description}
           onChange={(e) => {
-            const words = e.currentTarget.value.trim().split(/\s+/);
-            if (words.length < 100) {
+            if (description.length < 2500) {
               setDescription(e.currentTarget.value);
             }
           }}
           required
         />
-        <Text align="right">{description.split(/\s+/).length} / 100 words</Text>
+        <Text
+          align="right"
+          size="sm"
+          c={description.length >= 200 ? "red" : "dimmed"}
+        >
+          {description.length} / 2500 letters
+        </Text>
 
         <Textarea
           label="Remarks"
-          placeholder="Enter remarks"
-          mb="sm"
+          placeholder="Enter remarks (500 characters maximum)"
           value={remarks}
-          onChange={(e) => setRemarks(e.target.value)}
+          onChange={(e) => {
+            if (remarks.length < 500) {
+              setRemarks(e.currentTarget.value);
+            }
+          }}
+          mb="xs"
+          minRows={3}
           required
+          icon={<ChatCenteredText size={16} />}
         />
+        <Text
+          align="right"
+          size="sm"
+          c={remarks.length >= 450 ? "red" : "dimmed"}
+        >
+          {remarks.length} / 500 letters
+        </Text>
         <Select
           label="Designation"
           placeholder="Sender's Designation"
@@ -420,74 +438,59 @@ export default function Compose() {
       <Modal
         opened={showConfirmModal}
         onClose={() => setShowConfirmModal(false)}
-        title={null}
-        size="md"
-        radius="md"
-        padding="xl"
-        centered
-        overlayProps={{
-          opacity: 0.55,
-          blur: 3,
-        }}
-      >
-        <Stack spacing="xl">
-          <Title order={3} align="center" color="blue">
+        title={
+          <Text align="center" weight={600} size="lg">
             Confirm Submission
-          </Title>
+          </Text>
+        }
+        centered
+        size="md"
+      >
+        <Paper p="md" withBorder mb="md">
+          <Text weight={600} mb="md" size="md">
+            Do you want to send this file?
+          </Text>
 
-          <Paper withBorder p="md" radius="md" bg="gray.0">
-            <Text fw={600} mb="md">
-              Do you want to send this file?
-            </Text>
+          <Grid>
+            <Grid.Col span={5}>
+              <Text weight={500}>Sender:</Text>
+            </Grid.Col>
+            <Grid.Col span={7}>
+              <Text>
+                {username} [{designation}]
+              </Text>
+            </Grid.Col>
 
-            <Card withBorder mb="sm" radius="sm" p="sm">
-              <Group spacing="xs" noWrap>
-                <Text size="sm" c="dimmed">
-                  Sender:
-                </Text>
-                <Text fw={600}>{username}</Text>
-                <Text size="sm" c="dimmed" fs="italic">
-                  [{designation}]
-                </Text>
-              </Group>
-            </Card>
+            <Grid.Col span={5}>
+              <Text weight={500}>Receiver:</Text>
+            </Grid.Col>
+            <Grid.Col span={7}>
+              <Text>
+                {receiver_username} [{receiver_designation}]
+              </Text>
+            </Grid.Col>
+          </Grid>
+        </Paper>
 
-            <Card withBorder radius="sm" p="sm">
-              <Group spacing="xs" noWrap>
-                <Text size="sm" c="dimmed">
-                  Receiver:
-                </Text>
-                <Text fw={600}>{receiver_username}</Text>
-                <Text size="sm" c="dimmed" fs="italic">
-                  [{receiver_designation}]
-                </Text>
-              </Group>
-            </Card>
-          </Paper>
-
-          <Group position="center" spacing="md">
-            <Button
-              onClick={() => setShowConfirmModal(false)}
-              variant="subtle"
-              color="gray"
-              radius="md"
-              size="md"
-              w={130}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={finalSubmit}
-              color="blue"
-              radius="md"
-              size="md"
-              w={130}
-              leftIcon={<PaperPlaneTilt size={16} />}
-            >
-              Confirm
-            </Button>
-          </Group>
-        </Stack>
+        <Group justify="center" gap="xl" style={{ width: "100%" }}>
+          <Button
+            onClick={finalSubmit}
+            color="blue"
+            style={{ width: "120px" }}
+            radius="md"
+            leftIcon={<PaperPlaneTilt size={16} />}
+          >
+            Confirm
+          </Button>
+          <Button
+            onClick={() => setShowConfirmModal(false)}
+            variant="outline"
+            style={{ width: "120px" }}
+            radius="md"
+          >
+            Cancel
+          </Button>
+        </Group>
       </Modal>
     </Card>
   );
