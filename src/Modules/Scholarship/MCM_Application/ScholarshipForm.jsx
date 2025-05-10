@@ -239,6 +239,7 @@ function ScholarshipForm() {
                     placeholder="Enter brother's name"
                     {...form.getInputProps("brother_name")}
                     mt="md"
+                    maxLength={200}
                   />
 
                   <TextInput
@@ -246,6 +247,7 @@ function ScholarshipForm() {
                     placeholder="Enter sister's occupation"
                     mt="md"
                     {...form.getInputProps("sister_occupation")}
+                    maxLength={200}
                   />
                   <NumberInput
                     label="Mother's Annual Income"
@@ -281,6 +283,7 @@ function ScholarshipForm() {
                     placeholder="Enter 2-wheeler description"
                     mt="md"
                     {...form.getInputProps("two_wheeler_desc")}
+                    maxLength={200}
                   />
                   <TextInput
                     label="House"
@@ -288,6 +291,7 @@ function ScholarshipForm() {
                     mt="md"
                     {...form.getInputProps("house")}
                     required
+                    maxLength={200}
                   />
                   <NumberInput
                     label="Plot Area"
@@ -322,6 +326,7 @@ function ScholarshipForm() {
                     mt="md"
                     {...form.getInputProps("college_name")}
                     required
+                    maxLength={200}
                   />
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, sm: 6 }}>
@@ -331,6 +336,7 @@ function ScholarshipForm() {
                     mt="md"
                     {...form.getInputProps("father_occ_desc")}
                     required
+                    maxLength={200}
                   />
 
                   <TextInput
@@ -339,6 +345,7 @@ function ScholarshipForm() {
                     mt="md"
                     {...form.getInputProps("mother_occ_desc")}
                     required
+                    maxLength={200}
                   />
 
                   <TextInput
@@ -346,6 +353,7 @@ function ScholarshipForm() {
                     placeholder="Enter brother's occupation"
                     mt="md"
                     {...form.getInputProps("brother_occupation")}
+                    maxLength={200}
                   />
 
                   <TextInput
@@ -353,6 +361,7 @@ function ScholarshipForm() {
                     placeholder="Enter sister's name"
                     mt="md"
                     {...form.getInputProps("sister_name")}
+                    maxLength={200}
                   />
 
                   <NumberInput
@@ -380,6 +389,7 @@ function ScholarshipForm() {
                     placeholder="Enter vehicle description"
                     mt="md"
                     {...form.getInputProps("four_wheeler_desc")}
+                    maxLength={200}
                   />
 
                   <NumberInput
@@ -398,6 +408,7 @@ function ScholarshipForm() {
                     mt="md"
                     {...form.getInputProps("school_name")}
                     required
+                    maxLength={200}
                   />
 
                   <TextInput
@@ -406,6 +417,7 @@ function ScholarshipForm() {
                     mt="md"
                     {...form.getInputProps("bank_name")}
                     required
+                    maxLength={200}
                   />
 
                   <NumberInput

@@ -78,29 +78,31 @@ export default function ScholarshipStatus() {
     paginationDisplayMode: "pages",
     renderTopToolbarCustomActions: ({ table }) => (
       <Box className={styles.exportButtons}>
-        <Button
-          leftIcon={<IconDownload />}
-          onClick={handleExportAll}
-          disabled={applications.length === 0}
-        >
-          Export All Data
-        </Button>
-        <Button
-          leftIcon={<IconDownload />}
-          onClick={() => handleExportRows(table.getRowModel().rows)}
-          disabled={table.getRowModel().rows.length === 0}
-        >
-          Export Page Rows
-        </Button>
-        <Button
-          leftIcon={<IconDownload />}
-          onClick={() => handleExportRows(table.getSelectedRowModel().rows)}
-          disabled={
-            !table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
-          }
-        >
-          Export Selected
-        </Button>
+        <div className={styles.export}>
+          <Button
+            leftIcon={<IconDownload />}
+            onClick={handleExportAll}
+            disabled={applications.length === 0}
+          >
+            Export All Data
+          </Button>
+          <Button
+            leftIcon={<IconDownload />}
+            onClick={() => handleExportRows(table.getRowModel().rows)}
+            disabled={table.getRowModel().rows.length === 0}
+          >
+            Export Page Rows
+          </Button>
+          <Button
+            leftIcon={<IconDownload />}
+            onClick={() => handleExportRows(table.getSelectedRowModel().rows)}
+            disabled={
+              !table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
+            }
+          >
+            Export Selected
+          </Button>
+        </div>
       </Box>
     ),
   });

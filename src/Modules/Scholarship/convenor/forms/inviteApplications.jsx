@@ -60,107 +60,108 @@ function InviteApplications() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.tabs}>
-        <div className={styles.activeTab}>Invite Applications</div>
-      </div>
+      <div className={styles.header}>Invite Applications</div>
       <form className={styles.form} onSubmit={handleSubmit}>
-        <div className={styles.row}>
-          <div className={styles.inputGroup}>
-            <label htmlFor="award">Type</label>
-            <select
-              id="award"
-              name="award"
-              value={formData.award}
-              onChange={handleChange}
-              required
-            >
-              <option value="">Select</option>
-              <option value="MCM Scholarship">MCM Scholarship</option>
-              <option value="Director's Silver Medal">
-                Director's Silver Medal
-              </option>
-              <option value="Director's Gold Medal">
-                Director's Gold Medal
-              </option>
-              <option value="D&M Proficiency Gold Medal">
-                D&M Proficiency Gold Medal
-              </option>
-              <option value="Notional Prizes">Notional Prizes</option>
-            </select>
-          </div>
-          <div className={styles.inputGroup}>
-            <label htmlFor="programme">Programme</label>
-            <select
-              id="programme"
-              name="programme"
-              value={formData.programme}
-              onChange={handleChange}
-              required
-            >
-              <option value="">Select</option>
-              <option value="BTech">BTech</option>
-              <option value="MTech">MTech</option>
-              <option value="MDes">MDes</option>
-              <option value="PhD">PhD</option>
-            </select>
-          </div>
-          <div className={styles.inputGroup}>
-            <label htmlFor="batch">Batch</label>
-            <select
-              id="batch"
-              name="batch"
-              value={formData.batch}
-              onChange={handleChange}
-              required
-            >
-              <option value="">Select</option>
-              <option value="2018">2018</option>
-              <option value="2019">2019</option>
-              <option value="2020">2020</option>
-              <option value="2021">2021</option>
-              <option value="2022">2022</option>
-              <option value="2023">2023</option>
-              <option value="2024">2024</option>
-            </select>
-          </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Type *</label>
+          <select
+            className={styles.input}
+            name="award"
+            value={formData.award}
+            onChange={handleChange}
+            required
+          >
+            <option value="">Select Type</option>
+            <option value="MCM Scholarship">MCM Scholarship</option>
+            <option value="Director's Silver Medal">
+              Director's Silver Medal
+            </option>
+            <option value="Director's Gold Medal">Director's Gold Medal</option>
+            <option value="D&M Proficiency Gold Medal">
+              D&M Proficiency Gold Medal
+            </option>
+            <option value="Notional Prizes">Notional Prizes</option>
+          </select>
         </div>
-        <div className={styles.row}>
-          <div className={styles.inputGroup}>
-            <label htmlFor="startdate">Start date</label>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Programme *</label>
+          <select
+            className={styles.input}
+            name="programme"
+            value={formData.programme}
+            onChange={handleChange}
+            required
+          >
+            <option value="">Select Programme</option>
+            <option value="BTech">BTech</option>
+            <option value="MTech">MTech</option>
+            <option value="MDes">MDes</option>
+            <option value="PhD">PhD</option>
+          </select>
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Batch *</label>
+          <select
+            className={styles.input}
+            name="batch"
+            value={formData.batch}
+            onChange={handleChange}
+            required
+          >
+            <option value="">Select Batch</option>
+            <option value="2018">2018</option>
+            <option value="2019">2019</option>
+            <option value="2020">2020</option>
+            <option value="2021">2021</option>
+            <option value="2022">2022</option>
+            <option value="2023">2023</option>
+            <option value="2024">2024</option>
+          </select>
+        </div>
+
+        <div className={styles.dateRow}>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Start Date *</label>
             <input
               type="date"
-              id="startdate"
+              className={styles.input}
               name="startdate"
               value={formData.startdate}
               onChange={handleChange}
-              min={today} // Set min to today's date
+              min={today}
               required
             />
           </div>
-          <div className={styles.inputGroup}>
-            <label htmlFor="enddate">End Date</label>
+
+          <div className={styles.formGroup}>
+            <label className={styles.label}>End Date *</label>
             <input
               type="date"
-              id="enddate"
+              className={styles.input}
               name="enddate"
               value={formData.enddate}
               onChange={handleChange}
-              min={formData.startdate || today} // Set min to start date or today if no start date selected
+              min={formData.startdate || today}
               required
             />
           </div>
         </div>
-        <div className={styles.inputGroup}>
-          <label htmlFor="remarks">Remarks:</label>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Remarks *</label>
           <textarea
-            id="remarks"
+            className={styles.textarea}
             name="remarks"
             value={formData.remarks}
             onChange={handleChange}
             rows="4"
+            placeholder="Enter your remarks..."
             required
           />
         </div>
+
         <button type="submit" className={styles.submitButton}>
           Submit
         </button>

@@ -128,7 +128,7 @@ export default function DMProficiencyForm() {
     <Container size="lg">
       <Paper radius="md" padding="sm">
         <Title order={2} mb="lg">
-          DM Proficiency Formmmm
+          DM Proficiency Form
         </Title>
 
         <form onSubmit={handleSubmit}>
@@ -140,6 +140,9 @@ export default function DMProficiencyForm() {
                 minRows={3}
                 {...form.getInputProps("justification")}
                 required
+                maxLength={500}
+                description="Maximum 500 characters"
+                descriptionProps={{ color: "dimmed" }}
               />
             </Grid.Col>
 
@@ -150,6 +153,9 @@ export default function DMProficiencyForm() {
                 minRows={3}
                 {...form.getInputProps("correspondence_address")}
                 required
+                maxLength={500}
+                description="Maximum 500 characters"
+                descriptionProps={{ color: "dimmed" }}
               />
             </Grid.Col>
 
@@ -159,6 +165,9 @@ export default function DMProficiencyForm() {
                 placeholder="Enter Nearest Police Station"
                 {...form.getInputProps("nearest_policestation")}
                 required
+                maxLength={500}
+                description="Maximum 500 characters"
+                descriptionProps={{ color: "dimmed" }}
               />
             </Grid.Col>
 
@@ -168,6 +177,9 @@ export default function DMProficiencyForm() {
                 placeholder="Enter Nearest Railway Station"
                 {...form.getInputProps("nearest_railwaystation")}
                 required
+                maxLength={500}
+                description="Maximum 500 characters"
+                descriptionProps={{ color: "dimmed" }}
               />
             </Grid.Col>
 
@@ -177,6 +189,9 @@ export default function DMProficiencyForm() {
                 placeholder="Enter Financial Assistance"
                 {...form.getInputProps("financial_assistance")}
                 required
+                maxLength={500}
+                description="Maximum 500 characters"
+                descriptionProps={{ color: "dimmed" }}
               />
             </Grid.Col>
 
@@ -191,6 +206,9 @@ export default function DMProficiencyForm() {
                 }}
                 error={form.errors.grand_total}
                 required
+                maxLength={500}
+                description="Maximum 500 characters"
+                descriptionProps={{ color: "dimmed" }}
               />
             </Grid.Col>
 
@@ -200,6 +218,9 @@ export default function DMProficiencyForm() {
                 placeholder="Enter Title Name"
                 {...form.getInputProps("title_name")}
                 required
+                maxLength={500}
+                description="Maximum 500 characters"
+                descriptionProps={{ color: "dimmed" }}
               />
             </Grid.Col>
 
@@ -224,6 +245,7 @@ export default function DMProficiencyForm() {
                   placeholder={`Enter Roll No ${num}`}
                   {...form.getInputProps(`roll_no${num}`)}
                   required
+                  maxLength={10}
                 />
               </Grid.Col>
             ))}
@@ -235,6 +257,9 @@ export default function DMProficiencyForm() {
                 minRows={4}
                 {...form.getInputProps("brief_description")}
                 required
+                maxLength={500}
+                description="Maximum 500 characters"
+                descriptionProps={{ color: "dimmed" }}
               />
             </Grid.Col>
 
@@ -246,6 +271,9 @@ export default function DMProficiencyForm() {
                     placeholder={`Enter ${field.toUpperCase()} Topic`}
                     {...form.getInputProps(`${field}_topic`)}
                     required
+                    maxLength={500}
+                    description="Maximum 500 characters"
+                    descriptionProps={{ color: "dimmed" }}
                   />
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, sm: 6 }}>

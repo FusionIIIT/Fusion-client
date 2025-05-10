@@ -149,6 +149,7 @@ export default function DirectorGoldForm() {
                 onChange={handleChange}
                 placeholder="Enter Nearest Police Station"
                 required
+                maxLength={500}
               />
             </Grid.Col>
             <Grid.Col span={{ base: 12, sm: 6 }}>
@@ -159,6 +160,7 @@ export default function DirectorGoldForm() {
                 onChange={handleChange}
                 placeholder="Enter Nearest Railway Station"
                 required
+                maxLength={500}
               />
             </Grid.Col>
             <Grid.Col span={{ base: 12, sm: 6 }}>
@@ -183,6 +185,9 @@ export default function DirectorGoldForm() {
                 placeholder="Enter Justification"
                 minRows={3}
                 required
+                maxLength={500}
+                description="Maximum 500 characters"
+                descriptionProps={{ color: "dimmed" }}
               />
             </Grid.Col>
             <Grid.Col span={12}>
@@ -194,6 +199,9 @@ export default function DirectorGoldForm() {
                 placeholder="Enter Correspondence Address"
                 minRows={3}
                 required
+                maxLength={500}
+                description="Maximum 500 characters"
+                descriptionProps={{ color: "dimmed" }}
               />
             </Grid.Col>
             <Grid.Col span={12}>
@@ -205,6 +213,9 @@ export default function DirectorGoldForm() {
                 placeholder="Describe Financial Assistance"
                 minRows={3}
                 required
+                maxLength={500}
+                description="Maximum 500 characters"
+                descriptionProps={{ color: "dimmed" }}
               />
             </Grid.Col>
 
@@ -234,6 +245,9 @@ export default function DirectorGoldForm() {
                   placeholder={`Enter ${field.replace(/_/g, " ")}`}
                   minRows={2}
                   required
+                  maxLength={500}
+                  description="Maximum 500 characters"
+                  descriptionProps={{ color: "dimmed" }}
                 />
               </Grid.Col>
             ))}

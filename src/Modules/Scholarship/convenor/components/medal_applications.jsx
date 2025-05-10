@@ -198,7 +198,7 @@ function MedalApplications() {
         id: "actions",
         header: "Actions",
         Cell: ({ row }) => (
-          <Box className={styles.exportButtons}>
+          <Box className={styles.statusButtons}>
             <Button
               size="xs"
               color="green"
@@ -233,12 +233,13 @@ function MedalApplications() {
     positionToolbarAlertBanner: "bottom",
     renderTopToolbarCustomActions: ({ table }) => (
       <Box className={styles.exportButtons}>
-        <Button leftIcon={<IconDownload />} onClick={handleExportAll}>
+        <div className={styles.export}>
+          <Button leftIcon={<IconDownload />} onClick={handleExportAll}>
           Export CSV (All)
         </Button>
         <Button
-          leftIcon={<IconDownload />}
-          disabled={
+          leftIcon={<IconDownload />} 
+          disabled={ 
             !table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
           }
           onClick={() => handleExportRows(table.getSelectedRowModel().rows)}
@@ -252,8 +253,12 @@ function MedalApplications() {
         >
           Download Marksheets ZIP
         </Button>
+        </div>
       </Box>
     ),
+    getRowProps: ({ row }) => ({
+      className: styles.stripedRow,
+    }),
   });
 
   return (

@@ -139,6 +139,7 @@ export default function DirectorSilverForm() {
                 onChange={handleChange}
                 placeholder="Enter Nearest Police Station"
                 required
+                maxLength={500}
               />
             </Grid.Col>
             <Grid.Col span={{ base: 12, sm: 6 }}>
@@ -149,6 +150,7 @@ export default function DirectorSilverForm() {
                 onChange={handleChange}
                 placeholder="Enter Nearest Railway Station"
                 required
+                maxLength={500}
               />
             </Grid.Col>
             <Grid.Col span={{ base: 12, sm: 6 }}>
@@ -185,6 +187,9 @@ export default function DirectorSilverForm() {
                 placeholder="Enter Justification"
                 minRows={3}
                 required
+                maxLength={500}
+                description="Maximum 500 characters"
+                descriptionProps={{ color: "dimmed" }}
               />
             </Grid.Col>
             <Grid.Col span={12}>
@@ -196,6 +201,9 @@ export default function DirectorSilverForm() {
                 placeholder="Enter Correspondence Address"
                 minRows={3}
                 required
+                maxLength={500}
+                description="Maximum 500 characters"
+                descriptionProps={{ color: "dimmed" }}
               />
             </Grid.Col>
             <Grid.Col span={12}>
@@ -207,6 +215,9 @@ export default function DirectorSilverForm() {
                 placeholder="Describe Financial Assistance"
                 minRows={3}
                 required
+                maxLength={500}
+                description="Maximum 500 characters"
+                descriptionProps={{ color: "dimmed" }}
               />
             </Grid.Col>
             <Grid.Col span={12}>
@@ -218,6 +229,9 @@ export default function DirectorSilverForm() {
                 placeholder="Enter Inside Achievements"
                 minRows={3}
                 required
+                maxLength={500}
+                description="Maximum 500 characters"
+                descriptionProps={{ color: "dimmed" }}
               />
             </Grid.Col>
             <Grid.Col span={12}>
@@ -229,6 +243,9 @@ export default function DirectorSilverForm() {
                 placeholder="Enter Outside Achievements"
                 minRows={3}
                 required
+                maxLength={500}
+                description="Maximum 500 characters"
+                descriptionProps={{ color: "dimmed" }}
               />
             </Grid.Col>
             <Grid.Col span={12}>

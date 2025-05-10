@@ -43,7 +43,7 @@ function ConvocationMedal() {
                 uploaded).
               </List.Item>
               <List.Item>
-                (a) Performance on the field – single, group (Main participant
+                (a) Performance on the field - single, group (Main participant
                 or side participant)
               </List.Item>
               <List.Item>

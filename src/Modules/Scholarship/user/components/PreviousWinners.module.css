@@ -41,6 +41,7 @@
   display: flex;
   justify-content: flex-end;
   margin-top: 2%;
+  margin-bottom: 2%;
 }
 
 .submitButton {
@@ -102,7 +103,12 @@ tr:nth-child(odd) {
 
 .exportButtons {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px; /* Adjust spacing as needed */
-  margin-top: 1rem;
+  justify-content: space-between; /* pushes content to the extreme right */
+  width: 100%;
+  margin: 10px; /* optional spacing */
+}
+
+.export{
+  display: flex;
+  gap: 10px;
 }

@@ -252,14 +252,20 @@ function MCMApplications() {
                 onClick: (e) => e.stopPropagation(),
               }}
               renderTopToolbarCustomActions={() => (
-                <MantineButton
-                  leftSection={<IconDownload />}
-                  onClick={handleExportAll}
-                >
-                  Export All CSV
-                </MantineButton>
+                <div className={styles.exportButtonWrapper}>
+                  <MantineButton
+                    leftSection={<IconDownload />}
+                    onClick={handleExportAll}
+                  >
+                    Export All CSV
+                  </MantineButton>
+                </div>
               )}
+              mantineTableBodyRowProps={() => ({
+                className: styles.stripedRow,
+              })}
             />
+
           )}
           <Modal
             opened={fileModalOpened}
