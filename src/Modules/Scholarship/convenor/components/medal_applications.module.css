@@ -64,7 +64,6 @@
 }
 
 .table th {
-  background-color: #f0f0f0;
   font-weight: bold;
   position: sticky;
   top: 0; /* Sticky header */
@@ -121,7 +120,25 @@
 
 .exportButtons {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px; /* Adjust spacing as needed */
-  margin-top: 1rem;
+  justify-content: space-between; /* pushes content to the extreme right */
+  width: 100%;
+  margin: 10px; /* optional spacing */
+}
+
+.stripedRow:nth-child(even) {
+  background-color: #dad7d7;
+}
+
+.stripedRow:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+.export{
+  display: flex;
+  gap: 10px;
+}
+
+.statusButtons{
+  display: flex;
+  gap: 8px;
 }

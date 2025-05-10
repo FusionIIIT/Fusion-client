@@ -112,44 +112,46 @@ function PreviousWinners() {
     positionToolbarAlertBanner: "bottom",
     renderTopToolbarCustomActions: ({ table }) => (
       <Box className={styles.exportButtons}>
-        <Button
-          color="blue"
-          onClick={handleExportAllData}
-          leftIcon={<IconDownload />}
-          className="expbtn"
-        >
-          Export All Data
-        </Button>
-        <Button
-          disabled={table.getPrePaginationRowModel().rows.length === 0}
-          onClick={() =>
-            handleExportRows(table.getPrePaginationRowModel().rows)
-          }
-          leftIcon={<IconDownload />}
-          className="expbtn"
-        >
-          Export All Rows
-        </Button>
-        <Button
-          disabled={table.getRowModel().rows.length === 0}
-          onClick={() => handleExportRows(table.getRowModel().rows)}
-          leftIcon={<IconDownload />}
-          className="expbtn"
-        >
-          Export Page Rows
-        </Button>
-        <Button
-          disabled={
-            !table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
-          }
-          onClick={() =>
-            handleExportRows(table.getSelectedRowModel().rows)
-          }
-          leftIcon={<IconDownload />}
-          className="expbtn"
-        >
-          Export Selected Rows
-        </Button>
+        <div className={styles.export}>
+          <Button
+            color="blue"
+            onClick={handleExportAllData}
+            leftIcon={<IconDownload />}
+            className="expbtn"
+          >
+            Export All Data
+          </Button>
+          <Button
+            disabled={table.getPrePaginationRowModel().rows.length === 0}
+            onClick={() =>
+              handleExportRows(table.getPrePaginationRowModel().rows)
+            }
+            leftIcon={<IconDownload />}
+            className="expbtn"
+          >
+            Export All Rows
+          </Button>
+          <Button
+            disabled={table.getRowModel().rows.length === 0}
+            onClick={() => handleExportRows(table.getRowModel().rows)}
+            leftIcon={<IconDownload />}
+            className="expbtn"
+          >
+            Export Page Rows
+          </Button>
+          <Button
+            disabled={
+              !table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
+            }
+            onClick={() =>
+              handleExportRows(table.getSelectedRowModel().rows)
+            }
+            leftIcon={<IconDownload />}
+            className="expbtn"
+          >
+            Export Selected Rows
+          </Button>
+        </div>
       </Box>
     ),
   });
