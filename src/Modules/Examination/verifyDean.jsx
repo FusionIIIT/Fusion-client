@@ -65,6 +65,7 @@ export default function VerifyDean() {
   const [selectedCourseName,setSelectedCourseName] = useState("");
 
   const [registrations,   setRegistrations]  = useState([]);
+  const [initialRegs,     setInitialRegs]    = useState([]);
   const [gradesStats,     setGradesStats]    = useState([]);
   const [isVerified,      setIsVerified]     = useState(false);
   const [allowResub,      setAllowResub]     = useState(false);
@@ -100,6 +101,7 @@ export default function VerifyDean() {
     setSelectedCourse(null);
     setSelectedCourseName("");
     setRegistrations([]);
+    setInitialRegs([]);
     setGradesStats([]);
     setIsVerified(false);
     setSuccess(null);
@@ -169,6 +171,7 @@ export default function VerifyDean() {
           ...r,
           remarks: r.remarks || "",
         }));
+        setInitialRegs(regs.map((r) => ({ ...r })));
         setRegistrations(regs);
 
         const counts = {};
@@ -196,6 +199,7 @@ export default function VerifyDean() {
   const updateGrade = (id, grade) => {
     const regs = registrations.map((r) => (r.id === id ? { ...r, grade } : r));
     setRegistrations(regs);
+    // update stats
     const counts = {};
     regs.forEach((r) => (counts[r.grade] = (counts[r.grade] || 0) + 1));
     setGradesStats(
@@ -207,7 +211,9 @@ export default function VerifyDean() {
     );
   };
   const updateRemarks = (id, remarks) =>
-    setRegistrations(registrations.map((r) => (r.id === id ? { ...r, remarks } : r)));
+    setRegistrations(
+      registrations.map((r) => (r.id === id ? { ...r, remarks } : r))
+    );
 
   // 5) Verify & download CSV
   const handleVerify = () => {
@@ -245,6 +251,11 @@ export default function VerifyDean() {
       .catch((e) => setError(e.response?.data?.error || "Verification failed"))
       .finally(() => setLoadingSearch(false));
   };
+
+  const changedRows = registrations.filter((r) => {
+    const orig = initialRegs.find((o) => o.id === r.id);
+    return orig && (orig.grade !== r.grade || orig.remarks !== r.remarks);
+  });
 
   const rows = registrations.map((r) => (
     <tr key={r.id}>
@@ -315,12 +326,7 @@ export default function VerifyDean() {
 
         <Button
           onClick={handleSearch}
-          disabled={
-            !selectedYear ||
-            !selectedSemester ||
-            !selectedCourse ||
-            loadingSearch
-          }
+          disabled={!selectedYear || !selectedSemester || !selectedCourse || loadingSearch}
         >
           {loadingSearch ? "Loading…" : "Search"}
         </Button>
@@ -352,8 +358,7 @@ export default function VerifyDean() {
                   dataKey="value"
                   nameKey="name"
                   outerRadius={60}
-                  label={({ name, percent }) =>
-                    `${name}: ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                 >
                   {gradesStats.map((e, i) => (
                     <Cell key={i} fill={e.color} />
@@ -388,7 +393,42 @@ export default function VerifyDean() {
         onClose={() => setConfirmOpen(false)}
         title="Confirm Verification"
       >
-        <Text>This action is not reversible. Proceed?</Text>
+        <Text>This action is not reversible. The following changes will be submitted:</Text>
+        <ScrollArea style={{ maxHeight: 200 }} mt="sm">
+          <Table striped>
+            <thead>
+              <tr>
+                <th>Roll No</th>
+                <th>Field</th>
+                <th>Original</th>
+                <th>New</th>
+              </tr>
+            </thead>
+            <tbody>
+              {changedRows.map((r) => {
+                const orig = initialRegs.find((o) => o.id === r.id);
+                return [
+                  orig.grade !== r.grade && (
+                    <tr key={`grade-${r.id}`}>
+                      <td>{r.roll_no}</td>
+                      <td>Grade</td>
+                      <td>{orig.grade}</td>
+                      <td>{r.grade}</td>
+                    </tr>
+                  ),
+                  orig.remarks !== r.remarks && (
+                    <tr key={`remarks-${r.id}`}>
+                      <td>{r.roll_no}</td>
+                      <td>Remarks</td>
+                      <td>{orig.remarks}</td>
+                      <td>{r.remarks}</td>
+                    </tr>
+                  ),
+                ];
+              })}
+            </tbody>
+          </Table>
+        </ScrollArea>
         <Group position="right" mt="md">
           <Button variant="default" onClick={() => setConfirmOpen(false)}>
             Cancel
