@@ -28,3 +28,5 @@ export const update_result_announcement = `${host}/examination/api/update-announ
 export const create_announcemet = `${host}/examination/api/create-announcement/`;
 export const get_course_reg_academic_years = `${host}/examination/api/unique-course-reg-years/`
 export const get_student_grades_academic_years = `${host}/examination/api/unique-stu-grades-years/`
+
+export const get_result_semesters = `${host}/examination/api/student/result_semesters/`;

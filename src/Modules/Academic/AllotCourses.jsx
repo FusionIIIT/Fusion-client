@@ -1,301 +1,192 @@
-/* eslint-disable jsx-a11y/label-has-associated-control */
 import React, { useState, useEffect } from "react";
 import {
   Card,
   Text,
   Button,
-  Alert,
   LoadingOverlay,
   Select,
   Stack,
   TextInput,
-  Loader,
+  Group,
+  FileButton,
+  Divider,
 } from "@mantine/core";
-import { IconUpload, IconFileSpreadsheet } from "@tabler/icons-react";
+import { showNotification } from "@mantine/notifications";
+import { IconUpload, IconDownload } from "@tabler/icons-react";
 import axios from "axios";
+import * as XLSX from "xlsx";
 import { allotCoursesRoute, batchesRoute } from "../../routes/academicRoutes";
 
-function AllotCourses() {
-  // Default hardcoded options for demonstration
-
-  // State for API driven options, falling back to hardcoded defaults
+export default function AllotCourses() {
   const [programmeOptions, setProgrammeOptions] = useState([]);
-
   const [selectedFile, setSelectedFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [programme, setProgramme] = useState("");
   const [semester, setSemester] = useState("");
-  const [workingYear, setWorkingYear] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false); // Add loading state
+  const [semesterType, setSemesterType] = useState("");
+  const [academicYear, setAcademicYear] = useState("");
+  const [academicYearOptions, setAcademicYearOptions] = useState([]);
 
-  // useEffect to fetch options from API. Replace the URLs with your actual endpoints.
   useEffect(() => {
-    const fetchOptions = async () => {
-      setLoading(true); // Start loading
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        setError(new Error("No token found"));
-        setLoading(false); // Stop loading
-        return;
-      }
-      try {
-        const response = await axios.get(batchesRoute, {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
-        });
-        console.log("Fetched Batches:", response.data);
-        setProgrammeOptions(response.data.batches);
-      } catch (fetchError) {
-        setError(fetchError.message);
-      } finally {
-        setLoading(false); // Stop loading
-      }
-    };
-
-    fetchOptions();
+    const now = new Date();
+    const y = now.getFullYear();
+    const start = y - 3;
+    const yrs = [];
+    for (let i = 0; i <= 6; i++) {
+      const y1 = start + i;
+      const y2 = y1 + 1;
+      yrs.push({ value: `${y1}-${String(y2).slice(-2)}`, label: `${y1}-${String(y2).slice(-2)}` });
+    }
+    setAcademicYearOptions(yrs);
   }, []);
 
-  const handleFileSelect = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-      setShowSuccess(false);
+  useEffect(() => {
+    setLoading(true);
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      showNotification({ title: "Error", message: "No auth token", color: "red" });
+      setLoading(false);
+      return;
     }
+    axios.get(batchesRoute, { headers: { Authorization: `Token ${token}` } })
+      .then((res) => {
+        setProgrammeOptions(
+          res.data.batches.map((bat) => ({
+            value: bat.batch_id.toString(),
+            label: `${bat.name} ${bat.discipline} ${bat.year}`,
+          }))
+        );
+      })
+      .catch((err) => {
+        showNotification({ title: "Error fetching batches", message: err.message, color: "red" });
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const downloadTemplate = () => {
+    const rows = [
+      { RollNo: "220101001", CourseSlot: "Slot A", CourseCode: "CSE101", CourseName: "Data Structures" },
+      { RollNo: "220101002", CourseSlot: "Slot B", CourseCode: "CSE102", CourseName: "Algorithms" },
+    ];
+    const ws = XLSX.utils.json_to_sheet(rows, {
+      header: ["RollNo", "CourseSlot", "CourseCode", "CourseName"],
+    });
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Template");
+  
+    XLSX.writeFile(wb, "allotment_template.xls", { bookType: "xls" });
   };
 
-  const handleUpload = async () => {
-    // Check if all dropdown fields have been filled
-    if (!programme || !semester || !workingYear) {
-      alert("Please fill out all dropdown fields before uploading.");
+  const isFormValid = selectedFile && programme && semester && semesterType && academicYear;
+
+  const handleUpload = () => {
+    if (!isFormValid) {
+      showNotification({ title: "Incomplete", message: "Please fill all fields and select a file", color: "yellow" });
       return;
     }
     setIsUploading(true);
-    setLoading(true); // Start loading
+    setLoading(true);
     const token = localStorage.getItem("authToken");
-    if (!token) {
-      setError(new Error("No token found"));
-      return;
-    }
     const formData = new FormData();
     formData.append("allotedCourses", selectedFile);
     formData.append("batch", programme);
     formData.append("semester", semester);
-    formData.append("working_year", workingYear);
-    try {
-      const response = await axios.post(allotCoursesRoute, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Token ${token}`,
-        },
-      });
-      console.log(response);
-      setShowSuccess(true);
-      setSelectedFile(null);
-    } catch (fetchError) {
-      console.error(fetchError);
-      if (fetchError.response) {
-        // If a response is available, set the error based on the response from the server
-        setError(
-          fetchError.response.data.error ||
-            fetchError.response.data.message ||
-            "An error occurred",
-        );
-      } else {
-        // If no response is available, it's a network error or client-side error
-        setError(fetchError.message);
+    formData.append("semester_type", semesterType);
+    formData.append("academic_year", academicYear);
+  
+    axios.post(allotCoursesRoute, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Token ${token}`,
+      },
+    })
+      .then(() =>
+        showNotification({ title: "Success", message: "Courses allotted successfully", color: "green" })
+      )
+      .catch((err) => {
+        const msg = err.response?.data?.error || err.response?.data?.message || err.message;
+        showNotification({ title: "Error", message: msg || "Upload failed", color: "red" });
+      })
+      .finally(() => {
+        setIsUploading(false);
+        setLoading(false);
         setSelectedFile(null);
-      }
-    } finally {
-      setIsUploading(false);
-      setLoading(false); // Stop loading
-      setSelectedFile(null);
-    }
+        setProgramme("");
+        setSemester("");
+        setSemesterType("");
+        setAcademicYear("");
+      });
   };
 
-  // Validate that all required fields are selected
-  const isFormValid = selectedFile && programme && semester && workingYear;
-
   return (
-    <Card shadow="sm" p="lg" radius="md" withBorder>
-      <Text
-        size="lg"
-        weight={700}
-        mb="md"
-        style={{ textAlign: "center", width: "100%", color: "#3B82F6" }}
-      >
+    <Card>
+      <LoadingOverlay visible={loading} overlayBlur={3} />
+      <Text size="2xl" weight={700} align="center" mb="md">
         Allot Student Courses
       </Text>
+      <Button leftIcon={<IconDownload />} variant="light" onClick={downloadTemplate}>
+          Download Template
+      </Button>
+      <Group position="apart" mb="md">
+        <Text size="sm" color="dimmed">Format: RollNo | CourseSlot | CourseCode | CourseName</Text>
+      </Group>
+      <Divider mb="lg" />
 
-      <div style={{ marginBottom: "0.5rem" }}>
-        <Text
-          size="md"
-          weight={700}
-          style={{ color: "#003366", marginBottom: "6px" }}
-        >
-          Note: Provide the data in Excel Sheet in following format:
-        </Text>
-        <Text size="sm" color="dimmed" style={{ marginBottom: "10px" }}>
-          RollNo | CourseSlot Name | CourseCode | CourseName
-        </Text>
-        <Text size="md" weight={700} style={{ color: "#000000" }}>
-          <a
-            href="/sample.xlsx"
-            download
-            style={{
-              color: "#3B82F6",
-              textDecoration: "underline",
-            }}
-          >
-            Download the sample excel sheet
-          </a>
-          , fill the data accordingly and then upload the same:
-        </Text>
-      </div>
-
-      {/* Vertical dropdowns */}
-      <Stack spacing="md" mb="xl">
+      <Stack spacing="md" mb="lg">
         <Select
           label="Programme"
-          placeholder="Select Batch"
+          placeholder="Select batch"
+          data={programmeOptions}
           value={programme}
-          onChange={(val) => setProgramme(val)}
-          data={
-            programmeOptions
-              ? programmeOptions.map((bat) => ({
-                  value: bat.batch_id.toString(),
-                  label: `${bat.name} ${bat.discipline} ${bat.year}`,
-                }))
-              : []
-          }
+          onChange={setProgramme}
           searchable
-          style={{ width: 500 }}
+          nothingFound="No programmes"
         />
-        <TextInput
-          label="Semester"
-          placeholder="Select Semester"
-          value={semester}
-          onChange={(e) => setSemester(e.target.value)}
-          style={{ width: 300 }}
-        />
-        <TextInput
-          label="Working Year"
-          placeholder="Select Working Year"
-          value={workingYear}
-          onChange={(e) => setWorkingYear(e.target.value)}
-          style={{ width: 300 }}
+        <Group noWrap>
+          <TextInput
+            label="Semester"
+            placeholder="e.g. 1"
+            value={semester}
+            onChange={(e) => setSemester(e.target.value)}
+            style={{ flex: 1 }}
+          />
+          <Select
+            label="Type"
+            placeholder="Odd / Even"
+            data={[{ value: "Odd Semester", label: "Odd Semester" }, { value: "Even Semester", label: "Even Semester" }, { value: "Summer Semester", label: "Summer Semester" }]}
+            value={semesterType}
+            onChange={setSemesterType}
+            style={{ flex: 1 }}
+          />
+        </Group>
+        <Select
+          label="Academic Year"
+          placeholder="Select year"
+          data={academicYearOptions}
+          value={academicYear}
+          onChange={setAcademicYear}
         />
       </Stack>
 
-      <div
-        style={{
-          border: "2px dashed #ced4da",
-          borderRadius: "8px",
-          padding: "2rem",
-          textAlign: "center",
-          position: "relative",
-          backgroundColor: "#f8f9fa",
-        }}
-      >
-        <LoadingOverlay visible={isUploading} />
-        <input
-          type="file"
-          id="file-upload"
-          accept=".xlsx,.xls,.csv"
-          style={{ display: "none" }}
-          onChange={handleFileSelect}
-        />
-
-        {/* Always show the Choose File button */}
-        <label htmlFor="file-upload">
-          <Button
-            leftIcon={<IconUpload size="1rem" />}
-            variant="outline"
-            component="span"
-            style={{ borderColor: "#3B82F6", color: "#3B82F6" }}
-          >
-            Choose File
-          </Button>
-        </label>
-
-        {selectedFile ? (
-          <>
-            <div style={{ marginTop: "1rem" }}>
-              <IconFileSpreadsheet color="#2b8a3e" size="2.2rem" />
-              <Text size="sm" color="dimmed" mt={4}>
-                {selectedFile.name}
-              </Text>
-            </div>
-            {/* When a file is selected, show the Upload button below */}
-            <Button
-              leftIcon={<IconUpload size="1rem" />}
-              style={{
-                marginTop: "1rem",
-                backgroundColor: "#3B82F6",
-                color: "#fff",
-              }}
-              onClick={handleUpload}
-              disabled={!isFormValid || isUploading}
-            >
-              Upload
-            </Button>
-          </>
-        ) : (
-          <Button
-            leftIcon={<IconUpload size="1rem" />}
-            style={{
-              marginLeft: "1rem",
-              backgroundColor: "#3B82F6",
-              color: "#fff",
-            }}
-            onClick={handleUpload}
-            disabled={!isFormValid || isUploading}
-          >
-            Upload
+      <FileButton onChange={setSelectedFile} accept=".xlsx,.xls">
+        {(props) => (
+          <Button {...props} leftIcon={<IconUpload />} variant="outline" fullWidth mb="md">
+            {selectedFile ? selectedFile.name : "Choose Excel file"}
           </Button>
         )}
-      </div>
+      </FileButton>
 
-      {loading && (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            marginTop: "1rem",
-          }}
-        >
-          <Loader variant="dots" />
-        </div>
-      )}
-
-      {showSuccess && (
-        <Alert
-          mt="xl"
-          title="Upload Successful"
-          color="green"
-          withCloseButton
-          onClose={() => setShowSuccess(false)}
-        >
-          Student courses have been successfully allotted based on the uploaded
-          file.
-        </Alert>
-      )}
-      {error && (
-        <Alert
-          mt="xl"
-          title="Error"
-          color="red"
-          withCloseButton
-          onClose={() => setError("")}
-        >
-          {error}
-        </Alert>
-      )}
+      <Button
+        fullWidth
+        size="md"
+        leftIcon={<IconUpload />}
+        loading={isUploading}
+        onClick={handleUpload}
+        disabled={!isFormValid || isUploading}
+      >
+        {isUploading ? "Uploading..." : "Upload & Allot"}
+      </Button>
     </Card>
   );
 }
-
-export default AllotCourses;

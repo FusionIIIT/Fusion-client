@@ -22,6 +22,21 @@ import {
   getCoursesRoute,
 } from "../../routes/academicRoutes";
 
+const semesterOptions = [
+  { value: JSON.stringify({ no: 1, type: "Odd Semester" }), label: "Semester 1 (Odd)" },
+  { value: JSON.stringify({ no: 2, type: "Even Semester" }), label: "Semester 2 (Even)" },
+  { value: JSON.stringify({ no: 2, type: "Summer Semester" }), label: "Summer Term 1" },
+  { value: JSON.stringify({ no: 3, type: "Odd Semester" }), label: "Semester 3 (Odd)" },
+  { value: JSON.stringify({ no: 4, type: "Even Semester" }), label: "Semester 4 (Even)" },
+  { value: JSON.stringify({ no: 4, type: "Summer Semester" }), label: "Summer Term 2" },
+  { value: JSON.stringify({ no: 5, type: "Odd Semester" }), label: "Semester 5 (Odd)" },
+  { value: JSON.stringify({ no: 6, type: "Even Semester" }), label: "Semester 6 (Even)" },
+  { value: JSON.stringify({ no: 6, type: "Summer Semester" }), label: "Summer Term 3" },
+  { value: JSON.stringify({ no: 7, type: "Odd Semester" }), label: "Semester 7 (Odd)" },
+  { value: JSON.stringify({ no: 8, type: "Even Semester" }), label: "Semester 8 (Even)" },
+  { value: JSON.stringify({ no: 8, type: "Summer Semester" }), label: "Summer Term 4" },
+];
+
 export default function StudentCourses() {
   const [rollNo, setRollNo] = useState("");
   const [studentData, setStudentData] = useState(null);
@@ -31,13 +46,16 @@ export default function StudentCourses() {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [dropModalOpen, setDropModalOpen] = useState(false);
   const [courseToDrop, setCourseToDrop] = useState(null);
+  const [courseToDropName, setCourseToDropName] = useState("");
 
   const [semSlots, setSemSlots] = useState([]);
   const [slotCourses, setSlotCourses] = useState([]);
   const [academicYears, setAcademicYears] = useState([]);
-  const [selectedSemester, setSelectedSemester] = useState("1");
 
-  const [course_to_drop_name, setCourseToDropName] = useState("")
+  // store selected semester as an object { no, type }
+  const [selectedSemester, setSelectedSemester] = useState(
+    JSON.parse(semesterOptions[0].value)
+  );
 
   const [newCourse, setNewCourse] = useState({
     semester_id: null,
@@ -46,9 +64,11 @@ export default function StudentCourses() {
     academic_year: null,
     registration_type: null,
     old_course: null,
+    semester_type: null,
   });
 
   useEffect(() => {
+    // build last 5 academic years array
     const now = new Date();
     const year = now.getFullYear();
     const start = now.getMonth() >= 6 ? year : year - 1;
@@ -66,15 +86,10 @@ export default function StudentCourses() {
   const handleGetCourses = async () => {
     clearError();
     setStudentData(null);
-    if (!rollNo) {
-      setError("Enter a roll number");
-      return;
-    }
+    if (!rollNo) return setError("Enter a roll number");
     const token = localStorage.getItem("authToken");
-    if (!token) {
-      setError("Auth token missing");
-      return;
-    }
+    if (!token) return setError("Auth token missing");
+
     setLoading(true);
     try {
       const { data } = await axios.post(
@@ -99,10 +114,9 @@ export default function StudentCourses() {
   const handleDrop = async () => {
     clearError();
     const token = localStorage.getItem("authToken");
-    if (!token || courseToDrop == null || !rollNo) {
-      setError("Missing data to drop");
-      return;
-    }
+    if (!token || courseToDrop == null || !rollNo)
+      return setError("Missing data to drop");
+
     setLoading(true);
     try {
       await axios.post(
@@ -112,10 +126,9 @@ export default function StudentCourses() {
       );
       showNotification({
         title: "Course Dropped",
-        message: `course has been dropped successfully`,
+        message: "Course has been dropped successfully",
         color: "green",
       });
-      setCourseToDropName("");
       await handleGetCourses();
     } catch (err) {
       setError(err.response?.data?.error || err.message || "Drop failed");
@@ -134,7 +147,7 @@ export default function StudentCourses() {
       academic_year,
       registration_type,
       old_course,
-      semester_type
+      semester_type,
     } = newCourse;
     if (
       !semester_id ||
@@ -144,14 +157,11 @@ export default function StudentCourses() {
       !registration_type ||
       !semester_type
     ) {
-      setError("Fill all required fields");
-      return;
+      return setError("Fill all required fields");
     }
     const token = localStorage.getItem("authToken");
-    if (!token) {
-      setError("Auth token missing");
-      return;
-    }
+    if (!token) return setError("Auth token missing");
+
     const form = new FormData();
     form.append("roll_no", rollNo);
     form.append("semester_id", semester_id);
@@ -161,6 +171,7 @@ export default function StudentCourses() {
     form.append("registration_type", registration_type);
     form.append("semester_type", semester_type);
     if (old_course) form.append("old_course", old_course);
+
     setLoading(true);
     try {
       const res = await axios.post(addStudentCourseRoute, form, {
@@ -177,8 +188,8 @@ export default function StudentCourses() {
           semester_type: null,
         });
         showNotification({
-          title: "Course added",
-          message: `course has been added successfully`,
+          title: "Course Added",
+          message: "Course has been added successfully",
           color: "green",
         });
         await handleGetCourses();
@@ -225,9 +236,13 @@ export default function StudentCourses() {
     }
   };
 
+  // filter by both semester number and type
   const filteredDetails =
-    studentData?.details.filter((c) => String(c.sem) === selectedSemester) ||
-    [];
+    studentData?.details.filter(
+      (c) =>
+        c.sem === selectedSemester.no &&
+        c.semester_type === selectedSemester.type
+    ) || [];
   const totalCredits = filteredDetails.reduce((sum, c) => sum + c.credits, 0);
 
   const columns = [
@@ -241,7 +256,7 @@ export default function StudentCourses() {
     "Actions",
   ];
   const rows = filteredDetails.map((c) => ({
-    "id":c.id,
+    id: c.id,
     "Reg ID": c.rid,
     "Course Code": c.course_id,
     "Course Name": c.course_name,
@@ -249,19 +264,19 @@ export default function StudentCourses() {
     Semester: c.sem,
     Type: c.registration_type,
     "Replaced By":
-    c.replaced_by && c.replaced_by.length > 0 ? (
-      <Stack spacing={2}>
-        {c.replaced_by.map((r, idx) => (
-          <Text key={idx} size="sm">
-            {`${r.course_id.code} - ${r.course_id.name} (Sem ${r.semester_id.semester_no})`}
-          </Text>
-        ))}
-      </Stack>
-    ) : (
-      <Text size="sm" color="dimmed">
-        NA
-      </Text>
-    ),
+      c.replaced_by && c.replaced_by.length > 0 ? (
+        <Stack spacing={2}>
+          {c.replaced_by.map((r, idx) => (
+            <Text key={idx} size="sm">
+              {`${r.course_id.code} - ${r.course_id.name} (Sem ${r.semester_id.semester_no})`}
+            </Text>
+          ))}
+        </Stack>
+      ) : (
+        <Text size="sm" color="dimmed">
+          NA
+        </Text>
+      ),
     Actions: (
       <Button
         size="xs"
@@ -285,24 +300,26 @@ export default function StudentCourses() {
       <Button fullWidth onClick={handleGetCourses} mb="md" disabled={loading}>
         {loading ? <Loader size="xs" /> : "Fetch Courses"}
       </Button>
+
       {error && (
         <Alert title="Error" color="red" mb="md">
           {error}
         </Alert>
       )}
+
       {studentData && (
         <>
           <Select
             label="Choose Semester to View"
             placeholder="Select semester"
-            data={studentData.semester_list.map((s) => ({
-              value: String(s.semester_no),
-              label: `Semester ${s.semester_no}`,
-            }))}
-            value={selectedSemester}
-            onChange={setSelectedSemester}
+            data={semesterOptions}
+            value={JSON.stringify(selectedSemester)}
+            onChange={(val) =>
+              setSelectedSemester(val ? JSON.parse(val) : null)
+            }
             mb="md"
           />
+
           <Text size="lg" weight={700} mb="sm" align="center" color="blue">
             Registered Courses
           </Text>
@@ -312,14 +329,16 @@ export default function StudentCourses() {
           <Text weight={500} mb="md">
             Roll No: {studentData.dict2.roll_no}
           </Text>
+
           <div style={{ overflowX: "auto" }}>
             <FusionTable columnNames={columns} elements={rows} width="100%" />
           </div>
           {rows.length === 0 && (
             <Text align="center" color="dimmed" mt="sm">
-              No courses found for Semester {selectedSemester}
+              No courses found for Semester
             </Text>
           )}
+
           <Group position="apart" mt="lg">
             <Button
               color="green"
@@ -332,6 +351,8 @@ export default function StudentCourses() {
           </Group>
         </>
       )}
+
+      {/* Add Course Modal */}
       <Modal
         opened={addModalOpen}
         onClose={() => setAddModalOpen(false)}
@@ -407,7 +428,7 @@ export default function StudentCourses() {
             studentData
               ? studentData.details.map((course) => ({
                   value: course.reg_id.toString(),
-                  label: `${course.course_id} - sem - ${course.sem}`,
+                  label: `${course.course_id} - sem ${course.sem}`,
                 }))
               : []
           }
@@ -424,12 +445,14 @@ export default function StudentCourses() {
           </Button>
         </Group>
       </Modal>
+
+      {/* Confirm Drop Modal */}
       <Modal
         opened={dropModalOpen}
         onClose={() => setDropModalOpen(false)}
         title="Confirm Drop"
       >
-        <Text>Are you sure you want to drop {course_to_drop_name}?</Text>
+        <Text>Are you sure you want to drop {courseToDropName}?</Text>
         <Group position="right" mt="md">
           <Button variant="outline" onClick={() => setDropModalOpen(false)}>
             Cancel
