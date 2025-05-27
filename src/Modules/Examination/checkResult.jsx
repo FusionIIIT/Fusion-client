@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Card,
   Paper,
@@ -15,10 +15,14 @@ import {
   Title,
 } from "@mantine/core";
 import axios from "axios";
-import { check_result } from "./routes/examinationRoutes";
+import { get_result_semesters, check_result } from "./routes/examinationRoutes";
 
 export default function CheckResult() {
-  const [semester, setSemester] = useState(null);
+  // semester picker
+  const [selection, setSelection] = useState(null);
+  const [semesters, setSemesters] = useState([]);
+  
+  // result & UI state
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [courses, setCourses] = useState([]);
@@ -28,24 +32,56 @@ export default function CheckResult() {
   const [tu, setTu] = useState(0);
   const [show, setShow] = useState(false);
 
+  // 1) Fetch semesters on mount
+  useEffect(() => {
+    async function fetchSemesters() {
+      try {
+        const token = localStorage.getItem("authToken");
+        const { data } = await axios.get(get_result_semesters, {
+          headers: { Authorization: `Token ${token}` },
+        });
+        if (data.success) {
+          setSemesters(data.semesters);
+        } else {
+          setError(data.message || "Could not load semesters");
+        }
+      } catch (err) {
+        console.error(err);
+        setError("Failed to fetch semesters");
+      }
+    }
+    fetchSemesters();
+  }, []);
+
+  // 2) Build Select options
+  const semesterOptions = useMemo(
+    () =>
+      semesters.map(({ semester_no, semester_type, label }) => ({
+        value: JSON.stringify({ no: semester_no, type: semester_type }),
+        label,
+      })),
+    [semesters]
+  );
+
+  // 3) Handle View Result
   const handleSearch = async () => {
-    if (!semester) {
+    if (!selection) {
       setError("Please select a semester.");
       return;
     }
-
     setError("");
     setLoading(true);
     setShow(false);
+
+    const { no: semester_no, type: semester_type } = JSON.parse(selection);
 
     try {
       const token = localStorage.getItem("authToken");
       const { data } = await axios.post(
         check_result,
-        { semester },
+        { semester_no, semester_type },
         { headers: { Authorization: `Token ${token}` } }
       );
-
       if (!data.success) {
         setError(data.message || "Cannot fetch results.");
       } else {
@@ -64,12 +100,14 @@ export default function CheckResult() {
     }
   };
 
-  const rows = courses.map((c, idx) => (
-    <tr key={idx}>
+  // 4) Render rows
+  const rows = courses.map((c, i) => (
+    <tr key={i}>
       <td>{c.coursecode}</td>
       <td>{c.coursename}</td>
       <td>{c.credits}</td>
       <td>{c.grade}</td>
+      <td>{c.points}</td>
     </tr>
   ));
 
@@ -77,7 +115,6 @@ export default function CheckResult() {
     <Card withBorder p="lg" radius="md">
       <Paper p="md">
         <Title order={3} mb="md">Check Result</Title>
-
         {error && <Alert color="red" mb="md">{error}</Alert>}
 
         <Grid>
@@ -85,18 +122,9 @@ export default function CheckResult() {
             <Select
               label="Semester"
               placeholder="Select semester"
-              data={[
-                { value: "1", label: "Semester 1" },
-                { value: "2", label: "Semester 2" },
-                { value: "3", label: "Semester 3" },
-                { value: "4", label: "Semester 4" },
-                { value: "5", label: "Semester 5" },
-                { value: "6", label: "Semester 6" },
-                { value: "7", label: "Semester 7" },
-                { value: "8", label: "Semester 8" },
-              ]}
-              value={semester}
-              onChange={setSemester}
+              data={semesterOptions}
+              value={selection}
+              onChange={setSelection}
               required
             />
           </Grid.Col>
@@ -117,7 +145,9 @@ export default function CheckResult() {
         {show && !loading && (
           <Box mt="xl">
             <Paper p="md" withBorder mb="md">
-              <Title order={4}>Semester {semester}</Title>
+              <Title order={4}>
+                {semesterOptions.find(o => o.value === selection)?.label}
+              </Title>
             </Paper>
 
             <ScrollArea>
@@ -128,6 +158,7 @@ export default function CheckResult() {
                     <th>Course Name</th>
                     <th>Credits</th>
                     <th>Grade</th>
+                    <th>Grade Points</th>
                   </tr>
                 </thead>
                 <tbody>{rows}</tbody>
@@ -135,30 +166,21 @@ export default function CheckResult() {
             </ScrollArea>
 
             <Grid mt="xl">
-              <Grid.Col span={3}>
-                <Paper p="md" withBorder>
-                  <Title order={5}>SPI</Title>
-                  <Text weight={700} size="xl" mt="md">{spi || "N/A"}</Text>
-                </Paper>
-              </Grid.Col>
-              <Grid.Col span={3}>
-                <Paper p="md" withBorder>
-                  <Title order={5}>CPI</Title>
-                  <Text weight={700} size="xl" mt="md">{cpi || "N/A"}</Text>
-                </Paper>
-              </Grid.Col>
-              <Grid.Col span={3}>
-                <Paper p="md" withBorder>
-                  <Title order={5}>SU</Title>
-                  <Text weight={700} size="xl" mt="md">{su || "N/A"}</Text>
-                </Paper>
-              </Grid.Col>
-              <Grid.Col span={3}>
-                <Paper p="md" withBorder>
-                  <Title order={5}>TU</Title>
-                  <Text weight={700} size="xl" mt="md">{tu || "N/A"}</Text>
-                </Paper>
-              </Grid.Col>
+              {[
+                { label: "SPI", value: spi },
+                { label: "CPI", value: cpi },
+                { label: "SU",  value: su  },
+                { label: "TU",  value: tu  },
+              ].map((stat, i) => (
+                <Grid.Col span={3} key={i}>
+                  <Paper p="md" withBorder>
+                    <Title order={5}>{stat.label}</Title>
+                    <Text weight={700} size="xl" mt="md">
+                      {stat.value ?? "N/A"}
+                    </Text>
+                  </Paper>
+                </Grid.Col>
+              ))}
             </Grid>
           </Box>
         )}

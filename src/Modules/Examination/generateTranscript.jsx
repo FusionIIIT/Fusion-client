@@ -10,7 +10,6 @@ import {
   SimpleGrid,
   LoadingOverlay,
 } from "@mantine/core";
-import { FileText, FileArrowDown } from "@phosphor-icons/react";
 import axios from "axios";
 import Transcript from "./components/transcript.jsx";
 import {
@@ -19,12 +18,12 @@ import {
 } from "./routes/examinationRoutes.jsx";
 import { useSelector } from "react-redux";
 
-function GenerateTranscript() {
+export default function GenerateTranscript() {
   const userRole = useSelector((state) => state.user.role);
   const [formData, setFormData] = useState({
     programme: "",
     batch: "",
-    semester: "",
+    semester: null,         // now stores JSON string e.g. '{"no":1,"type":"Odd Semester"}'
     specialization: "",
   });
   const [formOptions, setFormOptions] = useState({
@@ -38,7 +37,23 @@ function GenerateTranscript() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Fetch form options from the API on mount.
+  // same semesterOptions as in CheckResult
+  const semesterOptions = [
+    { value: JSON.stringify({ no: 1, type: "Odd Semester" }), label: "Semester 1" },
+    { value: JSON.stringify({ no: 2, type: "Even Semester" }), label: "Semester 2" },
+    { value: JSON.stringify({ no: 2, type: "Summer Semester" }), label: "Summer 1" },
+    { value: JSON.stringify({ no: 3, type: "Odd Semester" }), label: "Semester 3" },
+    { value: JSON.stringify({ no: 4, type: "Even Semester" }), label: "Semester 4" },
+    { value: JSON.stringify({ no: 4, type: "Summer Semester" }), label: "Summer 2" },
+    { value: JSON.stringify({ no: 5, type: "Odd Semester" }), label: "Semester 5" },
+    { value: JSON.stringify({ no: 6, type: "Even Semester" }), label: "Semester 6" },
+    { value: JSON.stringify({ no: 6, type: "Summer Semester" }), label: "Summer 3" },
+    { value: JSON.stringify({ no: 7, type: "Odd Semester" }), label: "Semester 7" },
+    { value: JSON.stringify({ no: 8, type: "Even Semester" }), label: "Semester 8" },
+    { value: JSON.stringify({ no: 9, type: "Summer Semester" }), label: "Summer 4" },
+  ];
+
+  // Fetch form options
   useEffect(() => {
     const fetchFormOptions = async () => {
       const token = localStorage.getItem("authToken");
@@ -53,36 +68,21 @@ function GenerateTranscript() {
           headers: { Authorization: `Token ${token}` },
         });
 
-        // Transform API results into Select option format.
         const uniqueProgramme = [...new Set(data.programmes || [])];
-        // Use the full batch objects from the API.
         const batches = data.batches || [];
         const uniqueSpecializations = [
           ...new Set((data.specializations || []).map((spec) => spec.trim())),
         ];
 
         setFormOptions({
-          programme: uniqueProgramme.map((prog) => ({
-            value: prog,
-            label: prog,
-          })),
-          batches: batches.map((batch) => ({
-            value: batch.id.toString(),
-            label: batch.label,
-          })),
-          // Generate semesters 1 through 8.
-          semesters: Array.from({ length: 8 }, (_, i) => ({
-            value: (i + 1).toString(),
-            label: `Semester ${i + 1}`,
-          })),
-          specializations: uniqueSpecializations.map((spec) => ({
-            value: spec,
-            label: spec,
-          })),
+          programme: uniqueProgramme.map((prog) => ({ value: prog, label: prog })),
+          batches: batches.map((batch) => ({ value: batch.id.toString(), label: batch.label })),
+          semesters: semesterOptions,
+          specializations: uniqueSpecializations.map((spec) => ({ value: spec, label: spec })),
         });
       } catch (e) {
         setError("Error fetching form options: " + e.message);
-        console.error("Error fetching form options:", e);
+        console.error(e);
       } finally {
         setLoading(false);
       }
@@ -92,12 +92,10 @@ function GenerateTranscript() {
   }, [userRole]);
 
   const handleChange = (field) => (value) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      [field]:
-        field === "batch" || field === "semester" ? parseInt(value) : value,
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
     }));
-    // Hide transcript on any change.
     setShowTranscript(false);
   };
 
@@ -108,19 +106,30 @@ function GenerateTranscript() {
       setError("No authentication token found!");
       return;
     }
+    if (!formData.semester) {
+      setError("Please select a semester.");
+      return;
+    }
+
+    const { no: semester_no, type: semester_type } = JSON.parse(formData.semester);
+
     try {
       setLoading(true);
-      // Combine role and form values.
-      const requestData = { Role: userRole, ...formData };
+      const requestData = {
+        Role: userRole,
+        ...formData,
+        semester: semester_no,
+        semester_type,
+      };
       const { data } = await axios.post(generate_transcript_form, requestData, {
         headers: { Authorization: `Token ${token}` },
       });
       setTranscriptData(data);
       setShowTranscript(true);
       setError(null);
-    } catch (error) {
-      setError("Error generating transcript: " + error.message);
-      console.error("Error generating transcript:", error);
+    } catch (err) {
+      setError("Error generating transcript: " + err.message);
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -132,13 +141,21 @@ function GenerateTranscript() {
       setError("No authentication token found!");
       return;
     }
+    if (!formData.semester) {
+      setError("Please select a semester.");
+      return;
+    }
+
+    const { no: semester_no, type: semester_type } = JSON.parse(formData.semester);
+
     try {
       setLoading(true);
       const requestData = {
         Role: userRole,
-        semester: formData.semester,
-        specialization: formData.specialization,
         batch: formData.batch,
+        semester: semester_no,
+        semester_type,
+        specialization: formData.specialization,
       };
       const response = await axios.post(generate_result, requestData, {
         headers: { Authorization: `Token ${token}` },
@@ -149,15 +166,15 @@ function GenerateTranscript() {
       link.href = url;
       link.setAttribute(
         "download",
-        `transcript_${formData.batch}_sem${formData.semester}.xlsx`
+        `transcript_${formData.batch}_sem${semester_no}.xlsx`
       );
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       setError(null);
-    } catch (error) {
-      setError("Error downloading CSV transcript: " + error.message);
-      console.error("Download error:", error);
+    } catch (err) {
+      setError("Error downloading CSV transcript: " + err.message);
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -204,7 +221,7 @@ function GenerateTranscript() {
                     label="Semester"
                     placeholder="Select Semester"
                     data={formOptions.semesters}
-                    value={formData.semester?.toString()}
+                    value={formData.semester}
                     onChange={handleChange("semester")}
                     radius="sm"
                   />
@@ -225,7 +242,6 @@ function GenerateTranscript() {
                   type="submit"
                   size="md"
                   radius="sm"
-                  loading={loading}
                 >
                   Generate Transcript
                 </Button>
@@ -234,7 +250,6 @@ function GenerateTranscript() {
                   radius="sm"
                   color="green"
                   onClick={handleDownloadCSV}
-                  loading={loading}
                 >
                   Download CSV Transcript
                 </Button>
@@ -245,12 +260,10 @@ function GenerateTranscript() {
 
         {showTranscript && (
           <Paper shadow="sm" radius="sm" p="md" withBorder>
-            <Transcript data={transcriptData} semester={formData.semester} />
+            <Transcript data={transcriptData} semester={(JSON.parse(formData.semester))} />
           </Paper>
         )}
       </Stack>
     </Card>
   );
 }
-
-export default GenerateTranscript;

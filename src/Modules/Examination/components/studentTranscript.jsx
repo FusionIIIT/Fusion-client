@@ -50,7 +50,7 @@ function StudentTranscript({ student, semester, onBack }) {
         {
           Role: userRole,
           student: student.id_id,
-          semester,
+          semester : JSON.stringify(semester),
         },
         { headers: { Authorization: `Token ${token}` } }
       )
@@ -66,7 +66,7 @@ function StudentTranscript({ student, semester, onBack }) {
     doc.setFontSize(12);
     doc.text(`Student ID: ${student?.id_id || "N/A"}`, 14, 30);
     doc.text(`Name: ${transcriptData?.name || "Student"}`, 14, 40);
-    doc.text(`Semester: ${semester || "N/A"}`, 14, 50);
+    doc.text(`Semester: ${semester?.no || "N/A"}`, 14, 50);
     doc.text(`SPI: ${transcriptData?.spi || "N/A"}`, 14, 60);
     doc.text(`CPI: ${transcriptData?.cpi || "N/A"}`, 14, 70);
 
@@ -174,7 +174,7 @@ function StudentTranscript({ student, semester, onBack }) {
             <Text weight={500}>Name: {transcriptData?.name || "N/A"}</Text>
           </Grid.Col>
           <Grid.Col span={6} style={{ textAlign: "right" }}>
-            <Text weight={500}>Semester: {semester || "N/A"}</Text>
+            <Text weight={500}>Semester: {semester.no || "N/A"}</Text>
           </Grid.Col>
         </Grid>
       </Box>
@@ -186,6 +186,7 @@ function StudentTranscript({ student, semester, onBack }) {
             <th>Course Name</th>
             <th>Credits</th>
             <th>Grade</th>
+            <th>Grade Points</th>
           </tr>
         </thead>
         <tbody>
@@ -195,28 +196,28 @@ function StudentTranscript({ student, semester, onBack }) {
               <td>{course.course_name}</td>
               <td>{course.credit || ""}</td>
               <td>{course.grade}</td>
+              <td>{course.points}</td>
             </tr>
           ))}
         </tbody>
       </Table>
       <Divider my="md" />
-      <Grid>
-        <Grid.Col span={6}>
-          <Paper p="md" withBorder>
-            <Title order={4}>SPI</Title>
-            <Text weight={700} size="xl" mt="md">
-              {transcriptData.spi || "N/A"}
-            </Text>
-          </Paper>
-        </Grid.Col>
-        <Grid.Col span={6}>
-          <Paper p="md" withBorder>
-            <Title order={4}>CPI</Title>
-            <Text weight={700} size="xl" mt="md">
-              {transcriptData.cpi || "N/A"}
-            </Text>
-          </Paper>
-        </Grid.Col>
+      <Grid mt="xl">
+        {[
+          { label: "SPI", value: transcriptData.spi },
+          { label: "CPI", value: transcriptData.cpi },
+          { label: "SU",  value: transcriptData.su  },
+          { label: "TU",  value: transcriptData.tu  },
+        ].map((stat, i) => (
+          <Grid.Col span={3} key={i}>
+            <Paper p="md" withBorder>
+              <Title order={5}>{stat.label}</Title>
+              <Text weight={700} size="xl" mt="md">
+                {stat.value ?? "N/A"}
+              </Text>
+            </Paper>
+          </Grid.Col>
+        ))}
       </Grid>
       <Divider my="md" />
       <Group position="right">
