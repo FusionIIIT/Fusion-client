@@ -37,7 +37,8 @@ export const getCourseSlotsRoute = `${host}/academic-procedures/api/acad/get_add
 export const getCoursesRoute = `${host}/academic-procedures/api/acad/get_add_courses/`;
 export const replacement_excel = `${host}/academic-procedures/api/upload-excel_relacement/`;
 export const editStudentCourseRoute = "/academic-procedures/api/editcourseadmin/";
-export const getSingleCourseRoute   = "/academic-procedures/api/studentcourse/";  
+export const getSingleCourseRoute   = "/academic-procedures/api/studentcourse/";
+export const semesterOptionsRoute = `${host}/academic-procedures/api/stu/course_reg/semesters/` 
 
 // HOD
 export const HOD_STUDENTS_URL       = `${host}/academic-procedures/api/hod/students/?role=hod`;
