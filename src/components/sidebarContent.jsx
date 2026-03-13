@@ -66,6 +66,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
     "other_academics",
     "hr",
     "course_management",
+    "online_cms",
     "patent_management",
   ];
 
@@ -81,6 +82,12 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       id: "course_registration",
       icon: <AcademicsIcon size={18} />,
       url: "/academics",
+    },
+    {
+      label: "Online CMS",
+      id: "online_cms",
+      icon: <CourseManagementIcon size={18} />,
+      url: "/online-cms",
     },
     {
       label: "Program & Curriculum",
@@ -231,7 +238,10 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
 
   useEffect(() => {
     const filterModules = Modules.filter(
-      (module) => accessibleModules[module.id] || module.id === "home",
+      (module) =>
+        accessibleModules[module.id] ||
+        module.id === "home" ||
+        module.id === "online_cms",
     );
     setFilteredModules(filterModules);
   }, [accessibleModules]);

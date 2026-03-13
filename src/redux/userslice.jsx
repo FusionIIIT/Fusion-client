@@ -8,6 +8,7 @@ const userSlice = createSlice({
     roll_no: "",
     roles: ["Guest-User"],
     role: "Guest-User",
+    isStaff: false,
     accessibleModules: {}, // Format---> {role: {module: true}}
     currentAccessibleModules: {}, // Format---> {module: true}
     totalNotifications: 0,
@@ -27,6 +28,9 @@ const userSlice = createSlice({
     },
     setRole: (state, action) => {
       state.role = action.payload;
+    },
+    setIsStaff: (state, action) => {
+      state.isStaff = Boolean(action.payload);
     },
     setAccessibleModules: (state, action) => {
       state.accessibleModules = action.payload;
@@ -53,6 +57,7 @@ export const {
   setRollNo,
   setRoles,
   setRole,
+  setIsStaff,
   setAccessibleModules,
   setCurrentAccessibleModules,
   setTotalNotifications,

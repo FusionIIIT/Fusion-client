@@ -8,6 +8,7 @@ import {
   setRollNo,
   setRoles,
   setRole,
+  setIsStaff,
   setAccessibleModules,
   setCurrentAccessibleModules,
   clearUserName,
@@ -43,6 +44,7 @@ function ValidateAuth() {
         designation_info = [],
         accessible_modules = [],
         last_selected_role,
+        is_staff,
         roll_no,
       } = data;
 
@@ -51,6 +53,7 @@ function ValidateAuth() {
       dispatch(setUserName(name));
       dispatch(setRollNo(roll_no));
       dispatch(setRoles(designation_info));
+      dispatch(setIsStaff(Boolean(is_staff)));
 
       const selectedRole = last_selected_role || designation_info[0] || null;
       if (selectedRole) dispatch(setRole(selectedRole));

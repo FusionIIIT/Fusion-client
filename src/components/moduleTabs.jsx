@@ -12,7 +12,7 @@ function ModuleTabs({ tabs, activeTab, setActiveTab, badges = [] }) {
   const tabsListRef = useRef(null);
   const tabsListContainerRef = useRef(null);
   const dispatch = useDispatch();
-  console.log(isMobile);
+
   const handleTabChange = (direction) => {
     const currentIndex = parseInt(activeTab, 10);
     const newIndex =
@@ -20,20 +20,30 @@ function ModuleTabs({ tabs, activeTab, setActiveTab, badges = [] }) {
         ? Math.min(currentIndex + 1, tabs.length - 1)
         : Math.max(currentIndex - 1, 0);
     setActiveTab(String(newIndex));
-    dispatch(setActiveTab_(tabs[newIndex].title));
-    tabsListRef.current.scrollBy({
-      left: direction === "next" ? 50 : -50,
-      behavior: "smooth",
-    });
-    tabsListContainerRef.current.scrollBy({
-      left: direction === "next" ? 50 : -50,
-      behavior: "smooth",
-    });
+    if (tabs[newIndex]?.title) dispatch(setActiveTab_(tabs[newIndex].title));
+
+    if (tabsListRef.current) {
+      tabsListRef.current.scrollBy({
+        left: direction === "next" ? 50 : -50,
+        behavior: "smooth",
+      });
+    }
+    if (tabsListContainerRef.current) {
+      tabsListContainerRef.current.scrollBy({
+        left: direction === "next" ? 50 : -50,
+        behavior: "smooth",
+      });
+    }
   };
 
-  const handleTabClick = (index) => {
+  const handleTabClick = (value) => {
+    if (value === null || value === undefined) return;
+
+    const index = Number.parseInt(String(value), 10);
+    if (Number.isNaN(index) || !tabs[index]) return;
+
     setActiveTab(String(index));
-    dispatch(setActiveTab_(tabs[index].title));
+    if (tabs[index]?.title) dispatch(setActiveTab_(tabs[index].title));
   };
 
   return (
@@ -51,7 +61,7 @@ function ModuleTabs({ tabs, activeTab, setActiveTab, badges = [] }) {
           />
         </Button>
         <div className={classes.tabsContainer} ref={tabsListRef}>
-          <Tabs value={activeTab} onChange={(value) => handleTabClick(value)}>
+          <Tabs value={activeTab} onChange={handleTabClick}>
             <Tabs.List
               w={{ xxs: "200px", xs: "275px", sm: "100%" }}
               justify="flex-start"

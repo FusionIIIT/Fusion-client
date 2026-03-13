@@ -5,10 +5,15 @@ import { Provider } from "react-redux";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { store } from "./redux/store";
 import App from "./App";
+import { runOcmsSmokeFlow } from "./Modules/online_cms/services/onlineCmsService";
 
 import "./index.css";
 
 const queryClient = new QueryClient();
+
+if (import.meta.env.DEV) {
+  window.runOcmsSmokeFlow = runOcmsSmokeFlow;
+}
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>

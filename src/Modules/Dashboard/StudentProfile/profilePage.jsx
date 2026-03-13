@@ -75,7 +75,7 @@ function Profile({ connectionRoute }) {
       }
     }
     fetchProfile();
-  }, [[apiURL]]);
+  }, [apiURL]);
 
   console.log(profileData);
 
