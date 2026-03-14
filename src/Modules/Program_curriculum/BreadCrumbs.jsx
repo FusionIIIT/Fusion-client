@@ -5,6 +5,7 @@ import { CaretRight } from "@phosphor-icons/react";
 
 const basePages = [
   "admin_courses",
+  "admin_theses",
   "admin_batches",
   "acad_view_all_programme",
   "acad_view_all_working_curriculums",
@@ -45,6 +46,7 @@ const pageNameMappings = {
   acad_discipline_view: "Discipline",
   admin_batches: "Batches",
   admin_courses: "Courses",
+  admin_theses: "Theses",
   admin_course_instructor: "Course Instructor",
   acad_view: "Programme-Details",
   admin_edit_curriculum_form: "Edit Curriculum Form",

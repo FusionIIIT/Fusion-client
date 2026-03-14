@@ -21,6 +21,7 @@ import {
 const PROGRAMME_TYPE_CHOICES = [
   { value: "UG", label: "Undergraduate (UG)" },
   { value: "PG", label: "Postgraduate (PG)" },
+  { value: "PHD", label: "PhD" },
   { value: "All", label: "All Programmes" },
 ];
 

@@ -119,3 +119,64 @@ export const listStudentsPromoteRoute = `${host}/academic-procedures/api/acad/pr
 export const applyPromoteRoute = `${host}/academic-procedures/api/acad/promote/apply/`;
 
 export const courseRegistrationReceiptRoute = `${host}/academic-procedures/course_reg_receipt/`;
+
+// ============================================================================
+// PhD-SPECIFIC ROUTES (Added for PhD student management)
+// ============================================================================
+
+// PhD Thesis Registration
+export const studentThesisRoute         = `${host}/academic-procedures/api/stu/thesis/`;
+export const studentThesisDownloadRoute = `${host}/academic-procedures/api/stu/thesis/download/`;
+export const facultyListRoute           = `${host}/academic-procedures/api/faculty/`;
+
+// PhD Thesis Enrollment (semester-level registration)
+export const studentThesisEnrollmentRoute  = `${host}/academic-procedures/api/stu/thesis-enrollment/`;
+export const adminThesisEnrollmentListRoute = `${host}/academic-procedures/api/acadadmin/thesis-enrollments/`;
+export const adminVerifyEnrollmentsRoute    = `${host}/academic-procedures/api/acadadmin/thesis-enrollments/verify/`;
+export const adminRejectEnrollmentsRoute    = `${host}/academic-procedures/api/acadadmin/thesis-enrollments/reject/`;
+
+// PhD Thesis Evaluation (block-based S/X grades)
+export const supervisorThesisGradesRoute      = `${host}/academic-procedures/api/supervisor/thesis-grades/`;
+export const supervisorSubmitThesisGradeRoute = `${host}/academic-procedures/api/supervisor/thesis-grade/submit/`;
+export const adminThesisGradesListRoute       = `${host}/academic-procedures/api/acadadmin/thesis-grades/`;
+export const adminVerifyThesisGradesRoute     = `${host}/academic-procedures/api/acadadmin/thesis-grades/verify/`;
+export const adminAnnounceThesisGradesRoute   = `${host}/academic-procedures/api/acadadmin/thesis-grades/announce/`;
+
+// Supervisor
+export const supervisorDashboardRoute   = `${host}/academic-procedures/api/supervisor/dashboard/`;
+export const supervisorReviewRoute      = (id) => `${host}/academic-procedures/api/supervisor/thesis/${id}/review/`;
+
+// HOD
+export const hodDashboardRoute          = `${host}/academic-procedures/api/hod/dashboard/`;
+export const hodReviewRoute             = (id) => `${host}/academic-procedures/api/hod/thesis/${id}/review/`;
+
+// Dean
+export const deanDashboardRoute         = `${host}/academic-procedures/api/dean/dashboard/`;
+export const deanReviewRoute            = (id) => `${host}/academic-procedures/api/dean/thesis/${id}/review/`;
+export const deanGeneratePdfRoute       = (id) => `${host}/academic-procedures/api/dean/thesis/${id}/generate/`;
+
+// PhD Seminar 
+export const studentSeminarListRoute    = `${host}/academic-procedures/api/seminar-reports/`;
+export const studentSeminarCreateRoute  = id => `${host}/academic-procedures/api/seminar-reports/create/${id}/`;
+export const studentSeminarDetailRoute  = id => `${host}/academic-procedures/api/seminar-reports/${id}/`;
+
+export const rpcSeminarListRoute        = `${host}/academic-procedures/api/seminar-reports/list/`;
+export const rpcDetailRoute             = id => `${host}/academic-procedures/api/seminar-reports/${id}/rpc-detail/`;
+export const rpcSeminarDetailRoute      = id => `${host}/academic-procedures/api/seminar-reports/${id}/rpc-detail/`;
+export const rpcConsentRoute            = id => `${host}/academic-procedures/api/seminar-reports/${id}/rpc-consent/`;
+export const rpcSeminarConsentRoute     = id => `${host}/academic-procedures/api/seminar-reports/${id}/rpc-consent/`;
+export const rpcFinalizeRoute           = id => `${host}/academic-procedures/api/seminar-reports/${id}/rpc-finalize/`;
+export const rpcSeminarFinalizeRoute    = id => `${host}/academic-procedures/api/seminar-reports/${id}/rpc-finalize/`;
+
+// PhD Thesis Submission
+export const thesisSubmitRoute                        = `${host}/academic-procedures/api/thesis/submit/`;
+export const supervisorThesisDashboardRoute           = `${host}/academic-procedures/api/thesis/supervisor-dashboard/`;
+export const supervisorDashboardRouteThesisSubmission = `${host}/academic-procedures/api/thesis/supervisor-dashboard/`;
+export const supervisorSubmissionDetailRoute          = id => `${host}/academic-procedures/api/thesis/submission-detail/${id}/`;
+export const supervisorAssignRoute                    = `${host}/academic-procedures/api/thesis/supervisor-assign/`;
+export const directorDashboardRoute                   = `${host}/academic-procedures/api/thesis/director-dashboard/`;
+export const directorApproveRoute                     = `${host}/academic-procedures/api/thesis/director-approve/`;
+
+// External Reviewer (token-based)
+export const invitationActionRoute     = (token, action) => `${host}/academic-procedures/api/invitation/${token}/${action}/`;
+export const reviewDetailRoute         = token => `${host}/academic-procedures/api/review/${token}/`;

@@ -123,8 +123,8 @@ function AllocateCourses() {
         data={[
           { value: "UG", label: "Undergraduate (UG)" },
           { value: "PG", label: "Postgraduate (PG)" },
+          { value: "PHD", label: "PhD" },
         ]}
-        readOnly
         mb="lg"
       />
       <TextInput
