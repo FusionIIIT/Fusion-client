@@ -62,7 +62,7 @@ function Viewpath() {
         },
       );
       console.log(response);
-      setSchedule(response.data.schedule);
+      setSchedule(response.data.schedule || []);
     } catch (err) {
       console.log(err);
     } finally {

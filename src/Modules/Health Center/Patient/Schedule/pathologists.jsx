@@ -15,7 +15,7 @@ import { IconPhone, IconStethoscope } from "@tabler/icons-react";
 import NavCom from "../Navigation";
 import Changenav from "./schedulePath";
 import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
-import { compounderRoute } from "../../../../routes/health_center";
+import { studentRoute } from "../../../../routes/health_center";
 
 export default function PathDoc() {
   const [pathologists, setPathologists] = useState([]);
@@ -31,7 +31,7 @@ export default function PathDoc() {
     const token = localStorage.getItem("authToken");
     try {
       const response = await axios.post(
-        compounderRoute,
+        studentRoute,
         { get_pathologists: 1 },
         {
           headers: {
