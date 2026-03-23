@@ -15,6 +15,7 @@ import InactivityHandler from "./helper/inactivityhandler";
 import Examination from "./Modules/Examination/examination";
 import Database from "./Modules/Database/database";
 import ProgrammeCurriculumRoutes from "./Modules/Program_curriculum/programmCurriculum";
+import OtherAcadProcedures from "./Modules/Otheracademic/OtherAcademicProcedures";
 import NotFoundPage from "./components/NotFoundPage";
 
 const theme = createTheme({
@@ -82,6 +83,14 @@ export default function App() {
         <Route path="/reset-password" element={<ForgotPassword />} />
         <Route path="/examination/*" element={<Examination />} />
         <Route path="/database/*" element={<Database />} />
+        <Route
+          path="/other-academics"
+          element={
+            <Layout>
+              <OtherAcadProcedures />
+            </Layout>
+          }
+        />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </MantineProvider>

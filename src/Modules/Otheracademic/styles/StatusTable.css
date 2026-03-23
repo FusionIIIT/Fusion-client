@@ -1,0 +1,67 @@
+/* Status Table Styles */
+
+.status-table-container {
+  margin-top: 50px;
+  padding: 20px;
+}
+
+.status-table-title {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.status-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.status-table th {
+  border-right: 1px solid white;
+  border-left: 1px solid #ddd;
+  text-align: center;
+  padding: 12px;
+  background-color: #4a90a4;
+  color: white;
+}
+
+.status-table td {
+  border: 1px solid #ddd;
+  text-align: center;
+  padding: 10px;
+}
+
+.status-approved {
+  color: green;
+  font-weight: bold;
+}
+
+.status-rejected {
+  color: red;
+  font-weight: bold;
+}
+
+.status-pending {
+  color: orange;
+  font-weight: bold;
+}
+
+.empty-message {
+  text-align: center;
+  color: #666;
+  padding: 40px;
+  font-style: italic;
+}
+
+.loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.error-message {
+  text-align: center;
+  color: red;
+  padding: 20px;
+}

@@ -1,0 +1,63 @@
+/* Approval Table Styles */
+
+.approval-table-container {
+  margin-top: 50px;
+  padding: 20px;
+}
+
+.approval-table-title {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.approval-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.approval-table th {
+  border-right: 1px solid white;
+  text-align: center;
+  padding: 12px;
+  background-color: #4a90a4;
+  color: white;
+}
+
+.approval-table td {
+  border: 1px solid #ddd;
+  text-align: center;
+  padding: 10px;
+}
+
+.toggle-container {
+  display: flex;
+  justify-content: space-evenly;
+  gap: 10px;
+}
+
+.view-form-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  color: #007bff;
+  padding: 5px 10px;
+}
+
+.view-form-btn:hover {
+  color: #0056b3;
+}
+
+.loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.error-message {
+  text-align: center;
+  color: red;
+  padding: 20px;
+}

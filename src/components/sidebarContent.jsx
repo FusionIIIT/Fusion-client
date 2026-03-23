@@ -168,7 +168,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "Other Academic Procedure",
       id: "other_academics",
       icon: <OtherAcademicIcon size={18} />,
-      url: "/",
+      url: "/other-academics",
     },
   ];
 
