@@ -1,6 +1,7 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { Layout } from "../../../components/layout";
+import CompounderDashboard from "../Compounder/CompounderDashboard";
 import HistoryCompounder from "../Compounder/History/HistoryComp";
 import UpdatePatient from "../Compounder/History/UpdatePatient";
 import CompPrescription from "../Compounder/History/CompPrescription";
@@ -29,6 +30,14 @@ import RequiredMedicine from "../Compounder/Stocks/RequiredMedicine";
 export function CompounderRoutes() {
   return (
     <Routes>
+      <Route
+        path="/"
+        element={
+          <Layout>
+            <CompounderDashboard />
+          </Layout>
+        }
+      />
       <Route
         path="/patient-log/history"
         element={

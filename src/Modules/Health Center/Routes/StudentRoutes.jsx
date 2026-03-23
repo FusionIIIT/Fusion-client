@@ -1,6 +1,7 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { Layout } from "../../../components/layout";
+import StudentDashboard from "../Patient/StudentDashboard";
 import HistoryPatient from "../Patient/History/HistoryPatient";
 import Prescription from "../Patient/History/Prescription";
 import Feedback from "../Patient/Feedback/feedback";
@@ -15,6 +16,14 @@ import PathDoc from "../Patient/Schedule/pathologists";
 export function StudentRoutes() {
   return (
     <Routes>
+      <Route
+        path="/"
+        element={
+          <Layout>
+            <StudentDashboard />
+          </Layout>
+        }
+      />
       <Route
         path="/history"
         element={
