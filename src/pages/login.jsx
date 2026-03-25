@@ -9,11 +9,11 @@ import {
 } from "@mantine/core";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { notifications } from "@mantine/notifications";
 import { useDispatch } from "react-redux";
 import { setName } from "../redux/userslice";
-import { loginRoute } from "../routes/globalRoutes";
+import api from "../helper/api";
+import { tokenStorage } from "../helper/tokenStorage";
 
 function LoginPage() {
   const [username, setUsername] = useState("");
@@ -23,7 +23,8 @@ function LoginPage() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (localStorage.getItem("authToken")) {
+    // If user already has an access token, navigate away from login
+    if (localStorage.getItem("access")) {
       navigate("/dashboard");
     }
   }, [navigate]);
@@ -34,7 +35,7 @@ function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await axios.post(loginRoute, {
+      const response = await api.post("/api/auth/login/", {
         username,
         password,
       });
@@ -46,15 +47,18 @@ function LoginPage() {
           message: "You have been successfully logged in.",
           color: "green",
         });
-        const { token } = response.data;
 
-        localStorage.setItem("authToken", token);
+        tokenStorage.setTokens({
+          access: response.data.access,
+          refresh: response.data.refresh,
+        });
+
         navigate("/dashboard");
       }
     } catch (err) {
       console.error("Login error:", err);
 
-      if (err.response?.status === 400) {
+      if (err.response?.status === 400 || err.response?.status === 401) {
         notifications.show({
           title: "Login Failed",
           message:

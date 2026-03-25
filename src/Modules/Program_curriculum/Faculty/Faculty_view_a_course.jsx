@@ -1,10 +1,12 @@
 import { Button, Card, Grid, Table, Text } from "@mantine/core";
 import React from "react";
+import useDefaultCourseCode from "../../../helper/useDefaultCourseCode";
 
 function CourseDetail() {
+  const defaultCourseCode = useDefaultCourseCode();
   const courseDetails = {
     createdBy: "atul",
-    code: "CS101",
+    code: defaultCourseCode,
     name: "Introduction to Computer Science",
     version: "1.0",
     contactHours: {

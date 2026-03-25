@@ -28,7 +28,7 @@ import {
 import { useSelector } from "react-redux";
 import { useMediaQuery } from "@mantine/hooks";
 import axios from "axios";
-import { ArrowClockwise, FolderNotch } from "phosphor-react";
+import { ArrowClockwise, Folder } from "phosphor-react";
 import View from "./ViewFile";
 import { outboxRoute } from "../../../routes/filetrackingRoutes";
 
@@ -145,7 +145,7 @@ export default function Outboxfunc() {
         {filteredFiles.length === 0 && (
           <Center style={{ height: "200px" }}>
             <Stack align="center" spacing="xs">
-              <FolderNotch size={48} color={theme.colors.gray[5]} />
+              <Folder size={48} color={theme.colors.gray[5]} />
               <Text c="dimmed" size="lg">
                 No files in Outbox!
               </Text>
@@ -398,7 +398,7 @@ export default function Outboxfunc() {
         ) : (
           <Center style={{ height: "200px" }}>
             <Stack align="center" spacing="xs">
-              <FolderNotch size={48} color={theme.colors.gray[5]} />
+              <Folder size={48} color={theme.colors.gray[5]} />
               <Text c="dimmed" size="lg">
                 No files in Outbox!
               </Text>

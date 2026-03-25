@@ -23,9 +23,10 @@ import { notifications } from "@mantine/notifications";
 import { setRole, setCurrentAccessibleModules } from "../redux/userslice";
 import classes from "../Modules/Dashboard/Dashboard.module.css";
 import avatarImage from "../assets/avatar.png";
-import { setPfNo } from "../redux/pfNoSlice";
 
 import { logoutRoute, updateRoleRoute } from "../routes/dashboardRoutes";
+import api from "../helper/api";
+import { tokenStorage } from "../helper/tokenStorage";
 
 function Header({ opened, toggleSidebar }) {
   const [popoverOpened, setPopoverOpened] = useState(false);
@@ -75,30 +76,26 @@ function Header({ opened, toggleSidebar }) {
     }
   };
   const handleLogout = async () => {
-    const token = localStorage.getItem("authToken");
-
     try {
-      await axios.post(
-        logoutRoute,
-        {},
-        {
-          // 3 hours got wasted just because of an empty brackets :)
-          headers: {
-            Authorization: `Token ${token}`,
-            "Content-Type": "application/json",
-          },
-        },
-      );
-
-      if (localStorage.getItem("pfNo") != null) {
-        dispatch(setPfNo(null));
+      console.log("Logout initiated...");
+      // Wrap the API call so its failure doesn't block the rest
+      try {
+        await api.post(logoutRoute, {});
+      } catch (err) {
+        console.warn("Backend logout warning:", err);
       }
+      // Forcefully clear every known auth artifact to prevent stale sessions
+      localStorage.removeItem("pfNo");
       localStorage.removeItem("authToken");
-      navigate("/accounts/login");
-      // queryclient.invalidateQueries();
-      console.log("User logged out successfully");
+      tokenStorage.clear();
+
+      // Clear Redux state by enforcing a hard reload
+      window.location.href = "/login";
     } catch (err) {
-      console.error("Logout error:", err);
+      console.error("Critical Logout error:", err);
+      // Failsafe clear and reload
+      localStorage.clear();
+      window.location.href = "/login";
     }
   };
 

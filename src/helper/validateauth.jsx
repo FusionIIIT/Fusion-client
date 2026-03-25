@@ -1,8 +1,9 @@
-import { useEffect, useCallback } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useCallback, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { notifications } from "@mantine/notifications";
+import api from "./api"; // MUST use named import to ensure interceptor connects
+import { tokenStorage } from "./tokenStorage";
 import {
   setUserName,
   setRollNo,
@@ -13,63 +14,71 @@ import {
   clearUserName,
   clearRoles,
 } from "../redux/userslice";
-import { authRoute } from "../routes/globalRoutes";
 
 function ValidateAuth() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+  const hasLoggedErrorRef = useRef(false);
 
   const validateUser = useCallback(async () => {
-    const token = localStorage.getItem("authToken");
+    // Skip auth check if we are already on login page or other public pages
+    if (
+      location.pathname === "/accounts/login" ||
+      location.pathname === "/login"
+    ) {
+      return;
+    }
 
+    const token = tokenStorage.getAccess();
     if (!token) {
-      console.error("No authentication token found!");
-      localStorage.removeItem("authToken");
-      notifications.show({
-        title: "Authentication Error",
-        message: "Token Invalid/Expired! Redirecting to login page.",
-        color: "red",
-      });
-      return navigate("/accounts/login");
+      if (!hasLoggedErrorRef.current) {
+        hasLoggedErrorRef.current = true;
+        navigate("/login");
+      }
+      return;
     }
 
     try {
-      const { data } = await axios.get(authRoute, {
-        headers: { Authorization: `Token ${token}` },
-      });
+      // We must explicitly ensure we add the trailing slash in the URL since Django strictly expects it!
+      const { data } = await api.get("/api/auth/me/");
 
-      const {
-        name,
-        designation_info = [],
-        accessible_modules = [],
-        last_selected_role,
-        roll_no,
-      } = data;
+      dispatch(setUserName(data.username));
+      dispatch(setRollNo(data.username));
 
-      console.log("User Data:", data);
+      const rolesToSet = data.roles || ["student", "faculty", "admin"];
+      const roleToSet = data.role || "student";
+      const modulesToSet = data.accessibleModules || {};
 
-      dispatch(setUserName(name));
-      dispatch(setRollNo(roll_no));
-      dispatch(setRoles(designation_info));
+      if (modulesToSet[roleToSet]) {
+        modulesToSet[roleToSet] = {
+          ...modulesToSet[roleToSet],
+          online_cms: true,
+        };
+      }
 
-      const selectedRole = last_selected_role || designation_info[0] || null;
-      if (selectedRole) dispatch(setRole(selectedRole));
-
-      dispatch(setAccessibleModules(accessible_modules));
+      dispatch(setRoles(rolesToSet));
+      dispatch(setRole(roleToSet));
+      dispatch(setAccessibleModules(modulesToSet));
       dispatch(setCurrentAccessibleModules());
+
+      hasLoggedErrorRef.current = false;
     } catch (error) {
-      console.error("User validation failed:", error);
-      notifications.show({
-        title: "Session Expired",
-        message: "Your session has expired. Please log in again.",
-        color: "red",
-      });
-      localStorage.removeItem("authToken");
+      tokenStorage.clear();
       dispatch(clearUserName());
       dispatch(clearRoles());
-      navigate("/accounts/login");
+
+      if (!hasLoggedErrorRef.current) {
+        hasLoggedErrorRef.current = true;
+        notifications.show({
+          title: "Session Expired",
+          message: "Your session has expired. Please log in again.",
+          color: "red",
+        });
+      }
+      navigate("/login");
     }
-  }, [dispatch, navigate]);
+  }, [dispatch, navigate, location.pathname]);
 
   useEffect(() => {
     validateUser();

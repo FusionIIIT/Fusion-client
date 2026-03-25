@@ -3,17 +3,9 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 
-import {
-  Button,
-  Box,
-  Card,
-  Table,
-  Text,
-  Group,
-  Select,
-  Textarea,
-} from "@mantine/core";
+import { Button, Box, Card, Table, Text, Group } from "@mantine/core";
 import { fetchFacultyViewInwardFilesData } from "../api/api";
+import useDefaultCourseCode from "../../../helper/useDefaultCourseCode";
 
 // CSS styles as JS objects
 const pageStyle = {
@@ -78,6 +70,47 @@ function ViewInward() {
   const [viewfileData, setViewFileData] = useState([]); // State to hold the fetched data
   const [viewcourseData, setViewCourseData] = useState([]); // State to hold the fetched data
   const [activeTab, setActiveTab] = useState("notesheet"); // State to track the active tab
+  const defaultCourseCode = useDefaultCourseCode();
+
+  const [noteData, setNoteData] = useState({
+    createdBy: "",
+    fileId: "",
+    subject: "",
+    description: "",
+    sentBy: "",
+    receivedBy: "",
+    remarks: "",
+    uploader: "",
+    uploaderDesignation: "",
+  });
+
+  const [courseDetails, setcourseDetails] = useState({
+    code: "",
+    name: "Introduction to Computer Science",
+    // version: "1.0",
+    contactHours: {
+      lecture: "3hrs",
+      tutorial: "1hr",
+      lab: "2hrs",
+      discussion: "1hr",
+      project: "1hr",
+    },
+    credits: "3",
+    // prerequisites: 'None',
+    prerequisites: { Info: "none", Courses: "none" },
+    syllabus: `Introduction to Computer Science, Programming Fundamentals, Data Structures, Algorithms, Basic OOP Concepts.`,
+    evaluationSchema: {
+      quiz1: "5%",
+      midSem: "25%",
+      quiz2: "5%",
+      endSem: "40%",
+      project: "10%",
+      labEvaluation: "10%",
+      attendance: "5%",
+    },
+    references: "Book1, Book2",
+  });
+
   console.log(viewfileData, viewcourseData);
   useEffect(() => {
     const fetchData = async (uname, des) => {
@@ -147,61 +180,6 @@ function ViewInward() {
     };
     fetchData(username, role);
   }, [id, username, role]);
-  // State to hold the note data
-
-  const [noteData, setNoteData] = useState({
-    createdBy: "",
-    fileId: "",
-    subject: "",
-    description: "",
-    sentBy: "",
-    receivedBy: "",
-    remarks: "",
-    uploader: "",
-    uploaderDesignation: "",
-  });
-  const [discipline, setDiscipline] = useState(""); // State for discipline selection
-
-  // Temporary Data for File 1
-  const file1Data = {
-    createdBy: "atul - Professor",
-    fileId: "3",
-    subject: "Dynamic Subject",
-    description: "This is a dynamically fetched description.",
-    sentBy: "atul - Professor Aug. 1, 2024, 12:18 p.m.",
-    receivedBy: "vkjain - HOD (CSE)",
-    remarks: "Dynamically fetched remarks.",
-    uploader: "vkjain",
-    uploaderDesignation: "HOD (CSE)",
-  };
-
-  // Temporary Data for File 2
-  const [courseDetails, setcourseDetails] = useState({
-    code: "CS101",
-    name: "Introduction to Computer Science",
-    // version: "1.0",
-    contactHours: {
-      lecture: "3hrs",
-      tutorial: "1hr",
-      lab: "2hrs",
-      discussion: "1hr",
-      project: "1hr",
-    },
-    credits: "3",
-    // prerequisites: 'None',
-    prerequisites: { Info: "none", Courses: "none" },
-    syllabus: `Introduction to Computer Science, Programming Fundamentals, Data Structures, Algorithms, Basic OOP Concepts.`,
-    evaluationSchema: {
-      quiz1: "5%",
-      midSem: "25%",
-      quiz2: "5%",
-      endSem: "40%",
-      project: "10%",
-      labEvaluation: "10%",
-      attendance: "5%",
-    },
-    references: "Book1, Book2",
-  });
 
   // Effect to set noteData when the active tab changes
   useEffect(() => {
@@ -210,11 +188,10 @@ function ViewInward() {
     }
   }, [activeTab]);
 
-  const disciplinesData = [
-    { value: "CS", label: "Computer Science" },
-    { value: "IT", label: "Information Technology" },
-    // Add more disciplines as needed
-  ];
+  useEffect(() => {
+    if (!defaultCourseCode) return;
+    setcourseDetails((prev) => ({ ...prev, code: defaultCourseCode }));
+  }, [defaultCourseCode]);
 
   return (
     <Box style={pageStyle}>
