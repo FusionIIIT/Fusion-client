@@ -1,7 +1,7 @@
 import React from "react";
-import { Container, Title, Text, Button } from "@mantine/core";
+import { Container, Title, Text } from "@mantine/core";
 import { Dots } from "./Dots";
-import classes from "./HeroBanner.module.css";
+import classes from "../../styles/HeroBanner.module.css";
 
 export function HeroBanner() {
   return (

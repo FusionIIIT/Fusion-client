@@ -1,11 +1,12 @@
 import React from "react";
 import { Title } from "@mantine/core";
+import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import { Eye, MapPin } from "@phosphor-icons/react";
-import "./Table.css"; // Ensure this path is correct
+import "../../styles/Table.css"; // Ensure this path is correct
 import { EmptyTable } from "./EmptyTable";
 
-const ArchiveTable = ({ title, data, formType = undefined }) => {
+function ArchiveTable({ title, data, formType = undefined }) {
   const navigate = useNavigate();
 
   const headers = ["FileID", "User", "Designation", "Date", "View", "Track"];
@@ -45,7 +46,7 @@ const ArchiveTable = ({ title, data, formType = undefined }) => {
       >
         {title}
       </Title>
-      {data.length == 0 && (
+      {data.length === 0 && (
         <EmptyTable
           title="No new Archive requests found!"
           message="There is no new Archive request available. Please check back later."
@@ -66,39 +67,44 @@ const ArchiveTable = ({ title, data, formType = undefined }) => {
             <tbody>
               {data.map((item, index) => (
                 <tr className="table-row" key={index}>
-                  {console.log(item.id)}
                   <td>{item.id}</td>
                   <td>{item.uploader}</td>
                   <td>{item.designation}</td>
                   <td>{item.upload_date}</td>
                   <td>
-                    <span
+                    <button
+                      type="button"
                       className="text-link"
                       onClick={() => handleViewClick(item.id)}
                     >
                       <Eye size={20} />
                       View
-                    </span>
+                    </button>
                   </td>
                   <td>
-                    <span
+                    <button
+                      type="button"
                       className="text-link"
                       onClick={() => handleTrackClick(item.id)}
                     >
                       <MapPin size={20} />
                       Track
-                    </span>
+                    </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      ) : (
-        <></>
-      )}
+      ) : null}
     </div>
   );
-};
+}
 
 export default ArchiveTable;
+
+ArchiveTable.propTypes = {
+  title: PropTypes.string.isRequired,
+  data: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+  formType: PropTypes.string,
+};

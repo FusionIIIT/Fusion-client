@@ -14,25 +14,24 @@ import {
 } from "@mantine/core";
 import { useNavigate, useParams } from "react-router-dom";
 import { CheckCircle, XCircle, PaperPlaneRight } from "@phosphor-icons/react";
-import HrBreadcrumbs from "../../components/HrBreadcrumbs";
-import LoadingComponent from "../../components/Loading";
+import HrBreadcrumbs from "../../components/common/HrBreadcrumbs";
+import LoadingComponent from "../../components/common/Loading";
 import { EmptyTable } from "../../components/tables/EmptyTable";
-import SearchAndSelectUser from "../../components/SearchAndSelectUser";
+import SearchAndSelectUser from "../../components/common/SearchAndSelectUser";
 import {
-  get_leave_form_by_id,
-  handle_leave_file,
-  download_leave_form_pdf,
-} from "../../../../routes/hr";
+  getLeaveFormById,
+  handleLeaveFileAction,
+  downloadLeavePdf,
+} from "../../services/api";
 // import "./LeaveFileHandle.css";
 
-const LeaveFileHandle = () => {
+function LeaveFileHandle() {
   const { id } = useParams();
   const [fetchedformData, setFetchedFormData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [action, setAction] = useState(null); // "accept", "reject", or "forward"
   const [forwardToUser, setForwardToUser] = useState(null); // Selected user for forwarding
-  const [forwardToDesignation, setForwardToDesignation] = useState(""); // Designation for forwarding [Not used in the API call
   const [fileRemarks, setFileRemarks] = useState(""); // Remarks for the action
   const [submitting, setSubmitting] = useState(false); // Loading state for submission
   const navigate = useNavigate();
@@ -46,30 +45,12 @@ const LeaveFileHandle = () => {
 
   useEffect(() => {
     const fetchFormData = async () => {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        console.error("No authentication token found!");
-        setError("Authentication token is missing.");
-        setLoading(false);
-        return;
-      }
-
       try {
-        const response = await fetch(`${get_leave_form_by_id}/${id}`, {
-          headers: { Authorization: `Token ${token}` },
-        });
-
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-
-        const data = await response.json();
-        setFetchedFormData(data.leave_form); // Assuming the API returns data in a `leave_form` key
-        console.log("Fetched form data:", data.leave_form);
-        setLoading(false);
-      } catch (error) {
-        console.error("Failed to fetch form data:", error);
-        setError("Failed to fetch form data. Please try again.");
+        const data = await getLeaveFormById(id);
+        setFetchedFormData(data.leave_form);
+      } catch (err) {
+        setError("Failed to fetch form data.");
+      } finally {
         setLoading(false);
       }
     };
@@ -88,38 +69,18 @@ const LeaveFileHandle = () => {
       return;
     }
 
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      setError("Authentication token is missing.");
-      return;
-    }
-
     setSubmitting(true);
 
     try {
-      const response = await fetch(`${handle_leave_file}/${id}/`, {
-        method: "POST",
-        headers: {
-          Authorization: `Token ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          action, // "accept", "reject", or "forward"
-          forwardTo: forwardToUser?.id, // User ID for forwarding
-          forwardToDesignation: forwardToUser?.designation, // Designation for forwarding
-          fileRemarks, // Remarks for the action
-        }),
+      const result = await handleLeaveFileAction(id, {
+        action,
+        forwardTo: forwardToUser?.id,
+        forwardToDesignation: forwardToUser?.designation,
+        fileRemarks,
       });
 
-      if (!response.ok) {
-        alert(
-          result.message || "Failed to handle leave action. Please try again.",
-        );
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const result = await response.json();
       alert(result.message || "Action completed successfully.");
+
       setFetchedFormData((prev) => ({
         ...prev,
         status:
@@ -129,40 +90,34 @@ const LeaveFileHandle = () => {
               ? "Rejected"
               : "Forwarded",
       }));
-    } catch (error) {
-      console.error("Failed to handle leave action:", error);
+    } catch (err) {
+      console.error("Failed to handle leave action:", err);
       alert("You are not authorized to perform this action.");
       setError("Failed to handle leave action. Please try again.");
     } finally {
       setSubmitting(false);
     }
   };
-  const handleDownloadPdf = async () => {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      console.error("No authentication token found!");
-      return;
-    }
+
+  const handleDownloadPdf = async (event) => {
+    event?.preventDefault();
 
     try {
-      const response = await fetch(`${download_leave_form_pdf}/${id}`, {
-        headers: { Authorization: `Token ${token}` },
-      });
-
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-
-      const blob = await response.blob();
+      const blob = await downloadLeavePdf(id);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = fetchedformData.attachedPdfName;
+      a.download = fetchedformData?.attachedPdfName || "leave.pdf";
+      document.body.appendChild(a);
       a.click();
-    } catch (error) {
-      console.error("Failed to download PDF:", error);
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Failed to download PDF:", err);
+      setError("Failed to download PDF. Please try again.");
     }
   };
+
   if (loading) {
     return <LoadingComponent />;
   }
@@ -179,6 +134,11 @@ const LeaveFileHandle = () => {
   return (
     <>
       <HrBreadcrumbs items={exampleItems} />
+      {error && (
+        <Text color="red" mb="md">
+          {error}
+        </Text>
+      )}
       {/* Title */}
       <Box
         style={{
@@ -651,7 +611,7 @@ const LeaveFileHandle = () => {
               <Text>
                 <strong>Attached PDF:</strong>{" "}
                 {fetchedformData.attachedPdfName ? (
-                  <Anchor onClick={(e) => handleDownloadPdf(e)} download>
+                  <Anchor component="button" onClick={handleDownloadPdf}>
                     {fetchedformData.attachedPdfName}
                   </Anchor>
                 ) : (
@@ -738,6 +698,6 @@ const LeaveFileHandle = () => {
       </Box>
     </>
   );
-};
+}
 
 export default LeaveFileHandle;

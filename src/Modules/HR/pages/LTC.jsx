@@ -1,14 +1,20 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Tabs, Button, Flex, Text, Loader, Container } from "@mantine/core";
 import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
-import { useNavigate, useLocation } from "react-router-dom"; // Import these hooks
+import {
+  useNavigate,
+  useLocation,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom"; // Import these hooks
 
-import classes from "./LTCPage.module.css";
-import LTCForm from "./LTCPageComp/LTCForm";
+import classes from "../styles/LTCPage.module.css";
+import LTCForm from "../components/forms/LTCForm";
 import LTCRequests from "./LTCPageComp/LTCRequests";
 import LTCInbox from "./LTCPageComp/LTCInbox";
 import LTCArchive from "./LTCPageComp/LTCArchive";
-import HrBreadcrumbs from "../components/HrBreadcrumbs";
+import HrBreadcrumbs from "../components/common/HrBreadcrumbs";
 
 // Define paths for each tab
 const tabItems = [
@@ -25,7 +31,7 @@ function LTC() {
   const navigate = useNavigate(); // Initialize navigate
   const location = useLocation(); // Initialize location
 
-  //scroll to top on page load
+  // scroll to top on page load
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -134,10 +140,13 @@ function LTC() {
         </Container>
       ) : (
         <div className="fullWidthGrid">
-          {activeTab === "0" && <LTCForm />}
-          {activeTab === "1" && <LTCRequests />}
-          {activeTab === "2" && <LTCInbox />}
-          {activeTab === "3" && <LTCArchive />}
+          <Routes>
+            <Route path="ltcform" element={<LTCForm />} />
+            <Route path="ltcrequests" element={<LTCRequests />} />
+            <Route path="ltcinbox" element={<LTCInbox />} />
+            <Route path="ltcarchive" element={<LTCArchive />} />
+            <Route path="*" element={<Navigate to="ltcform" replace />} />
+          </Routes>
         </div>
       )}
     </>

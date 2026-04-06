@@ -1,10 +1,11 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import { Breadcrumbs as MantineBreadcrumbs, Anchor } from "@mantine/core";
 import { CaretRight } from "@phosphor-icons/react";
-import classes from "./HrBreadcrumbs.module.css";
+import classes from "../../styles/HrBreadcrumbs.module.css";
 
-const HrBreadcrumbs = ({ items }) => {
+function HrBreadcrumbs({ items }) {
   const navigate = useNavigate();
 
   const handleClick = (path) => {
@@ -27,6 +28,15 @@ const HrBreadcrumbs = ({ items }) => {
       ))}
     </MantineBreadcrumbs>
   );
-};
+}
 
 export default HrBreadcrumbs;
+
+HrBreadcrumbs.propTypes = {
+  items: PropTypes.arrayOf(
+    PropTypes.shape({
+      title: PropTypes.string.isRequired,
+      path: PropTypes.string.isRequired,
+    }),
+  ).isRequired,
+};

@@ -1,16 +1,15 @@
-export const fetchData = () => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const headers = [
-        "Form Id",
-        "User",
-        "Designation",
-        "Date",
-        "View",
-        "Track",
-      ];
+import { fetchInboxData } from "../../../services/api";
 
-      const requestData = [
+export const fetchData = async () => {
+  try {
+    const data = await fetchInboxData();
+    return data;
+  } catch (error) {
+    console.error("Failed to fetch data:", error);
+    // Fallback to mock if needed
+    return {
+      headers: ["Form Id", "User", "Designation", "Date", "View", "Track"],
+      requestData: [
         {
           formId: "101202",
           user: "Atul Gupta",
@@ -35,9 +34,8 @@ export const fetchData = () => {
           designation: "Professor",
           date: "29 October 2024",
         },
-      ];
-
-      const inboxData = [
+      ],
+      inboxData: [
         {
           formId: "101204",
           user: "Rajesh Kumar",
@@ -56,9 +54,8 @@ export const fetchData = () => {
           designation: "Professor",
           date: "29 October 2024",
         },
-      ];
-
-      const archiveData = [
+      ],
+      archiveData: [
         {
           formId: "101206",
           user: "Suresh Yadav",
@@ -71,23 +68,7 @@ export const fetchData = () => {
           designation: "Professor",
           date: "05 October 2024",
         },
-      ];
-      const formData = [
-        {
-          formId: "101202",
-          user: "Atul Gupta",
-          designation: "Professor",
-          date: "12 October 2024",
-        },
-        {
-          formId: "101203",
-          user: "Atul Gupta",
-          designation: "Professor",
-          date: "29 October 2024",
-        },
-      ];
-
-      resolve({ headers, requestData, inboxData, archiveData });
-    }, 100);
-  });
+      ],
+    };
+  }
 };

@@ -1,7 +1,8 @@
 import React from "react";
 import { Loader, Center, Text } from "@mantine/core";
+import PropTypes from "prop-types";
 
-const LoadingComponent = ({ loadingMsg = "fetching data..." }) => {
+function LoadingComponent({ loadingMsg = "fetching data..." }) {
   return (
     <Center
       style={{ height: "50vh", flexDirection: "column", textAlign: "center" }}
@@ -16,6 +17,10 @@ const LoadingComponent = ({ loadingMsg = "fetching data..." }) => {
       </Text>
     </Center>
   );
-};
+}
 
 export default LoadingComponent;
+
+LoadingComponent.propTypes = {
+  loadingMsg: PropTypes.string,
+};

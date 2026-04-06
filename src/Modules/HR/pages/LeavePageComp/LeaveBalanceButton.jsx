@@ -1,38 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Button, ScrollArea, Loader } from "@mantine/core";
 import { ListChecks } from "@phosphor-icons/react";
-import { get_leave_balance } from "../../../../routes/hr";
+import { getLeaveBalance } from "../../services/api";
 
-const LeaveBalanceButton = () => {
+function LeaveBalanceButton() {
   const [opened, setOpened] = useState(false);
   const [leaveBalance, setLeaveBalance] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const fetchLeaveBalance = async () => {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      console.error("No authentication token found!");
-      setError("Authentication token is missing.");
-      setLoading(false);
-      return;
-    }
-
     setLoading(true);
     setError(null);
+
     try {
-      const response = await fetch(get_leave_balance, {
-        headers: { Authorization: `Token ${token}` },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error fetching leave balance: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      setLeaveBalance(data.leave_balance); // Extract 'leave_balance' object from response
+      const data = await getLeaveBalance();
+      setLeaveBalance(data.leave_balance);
     } catch (err) {
-      console.error(err.message);
+      console.error(err);
       setError("Failed to fetch leave balance.");
     } finally {
       setLoading(false);
@@ -63,6 +48,7 @@ const LeaveBalanceButton = () => {
           Show Leave Balance
         </Button>
       </div>
+
       <Modal
         opened={opened}
         onClose={() => setOpened(false)}
@@ -96,10 +82,7 @@ const LeaveBalanceButton = () => {
           </div>
         ) : leaveBalance ? (
           <ScrollArea>
-            <div
-              className="form-table-container"
-              style={{ margin: " 0 auto " }}
-            >
+            <div className="form-table-container" style={{ margin: "0 auto" }}>
               <table className="form-table">
                 <thead>
                   <tr>
@@ -110,12 +93,8 @@ const LeaveBalanceButton = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {Object.entries(leaveBalance).map(([key, value], index) => (
-                    <tr
-                      className="table-row"
-                      key={key}
-                      style={{ cursor: "pointer" }}
-                    >
+                  {Object.entries(leaveBalance).map(([key, value]) => (
+                    <tr key={key}>
                       <td style={{ textTransform: "capitalize" }}>
                         {key.replace(/_/g, " ")}
                       </td>
@@ -143,6 +122,6 @@ const LeaveBalanceButton = () => {
       </Modal>
     </>
   );
-};
+}
 
 export default LeaveBalanceButton;

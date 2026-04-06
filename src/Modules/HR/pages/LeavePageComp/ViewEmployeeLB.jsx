@@ -13,8 +13,8 @@ import {
   Button,
 } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
-import HrBreadcrumbs from "../../components/HrBreadcrumbs";
-import { admin_get_all_leave_balances } from "../../../../routes/hr";
+import HrBreadcrumbs from "../../components/common/HrBreadcrumbs";
+import { getAllEmployeeLeaveBalances } from "../../services/api";
 
 function ViewEmployeeLB() {
   const navigate = useNavigate();
@@ -95,28 +95,16 @@ function ViewEmployeeLB() {
   // Fetch employee/leave details from the API.
   useEffect(() => {
     const fetchEmployeesAndLeaveData = async () => {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        setError("Authentication token is missing.");
-        return;
-      }
       setLoading(true);
+      setError(null);
+
       try {
-        const response = await fetch(admin_get_all_leave_balances, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Token ${token}`,
-          },
-        });
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "Failed to fetch leave details");
-        }
-        const data = await response.json();
+        const data = await getAllEmployeeLeaveBalances();
+
         const mergedData = data.leave_balances.map((emp) => {
           const { employee_id, employee_username, employee_fullname, ...rest } =
             emp;
+
           return {
             id: employee_id,
             username: employee_username,
@@ -124,14 +112,17 @@ function ViewEmployeeLB() {
             ...rest,
           };
         });
+
         setAllEmployees(mergedData);
         setFilteredEmployees(mergedData);
       } catch (err) {
-        setError(err.message);
+        console.error(err);
+        setError(err.message || "Failed to fetch leave details");
       } finally {
         setLoading(false);
       }
     };
+
     fetchEmployeesAndLeaveData();
   }, []);
 

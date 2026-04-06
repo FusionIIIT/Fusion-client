@@ -1,10 +1,11 @@
 // src/Modules/HR/components/FormComponent/FormTable.jsx
 import React from "react";
+import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom"; // Use for navigation
-import "./FormTable.css";
+import "../../../styles/FormTable.css";
 import { Eye, MapPin } from "@phosphor-icons/react";
 
-const FormTable = ({ headers, data }) => {
+function FormTable({ headers, data }) {
   const navigate = useNavigate(); // React Router navigation hook
 
   const handleViewClick = (view) => {
@@ -32,13 +33,14 @@ const FormTable = ({ headers, data }) => {
               <td>{item.designation}</td>
               <td>{item.submissionDate}</td>
               <td>
-                <span
+                <button
+                  type="button"
                   className="text-link"
                   onClick={() => handleViewClick(item.view)}
                 >
                   <Eye size={20} />
                   View
-                </span>
+                </button>
               </td>
               <td>
                 <span className="text-link">
@@ -52,6 +54,11 @@ const FormTable = ({ headers, data }) => {
       </table>
     </div>
   );
-};
+}
 
 export default FormTable;
+
+FormTable.propTypes = {
+  headers: PropTypes.arrayOf(PropTypes.string).isRequired,
+  data: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+};

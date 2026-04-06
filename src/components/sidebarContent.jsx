@@ -132,7 +132,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "Human Resource",
       id: "hr",
       icon: <HumanResourceIcon size={18} />,
-      url: "/",
+      url: "/hr",
     },
     {
       label: "Examination",
@@ -140,7 +140,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       icon: <ExamIcon size={18} />,
       url: "/examination",
     },
-        {
+    {
       label: "Database",
       id: "database",
       icon: <DatabaseIcon size={18} />,
@@ -193,11 +193,24 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const filterModules = Modules.filter(
-      (module) => accessibleModules[module.id] || module.id === "home",
-    );
+    const facultyRoles = [
+      "faculty",
+      "Professor",
+      "Associate Professor",
+      "Assistant Professor",
+    ];
+    const isFaculty =
+      role &&
+      (facultyRoles.includes(role) || role.toLowerCase().includes("faculty"));
+
+    const filterModules = Modules.filter((module) => {
+      if (module.id === "home") return true;
+      if (module.id === "hr" && isFaculty) return true;
+      return accessibleModules[module.id];
+    });
+
     setFilteredModules(filterModules);
-  }, [accessibleModules]);
+  }, [accessibleModules, role]);
 
   const handleModuleClick = (item) => {
     setSelected(item.label);

@@ -1,6 +1,7 @@
 import React from "react";
+import PropTypes from "prop-types";
 
-export function Dots({ size = 185, radius = 2.5, ...others }) {
+export function Dots({ size = 185, radius = 2.5, className, style }) {
   return (
     <svg
       aria-hidden
@@ -9,7 +10,8 @@ export function Dots({ size = 185, radius = 2.5, ...others }) {
       viewBox="0 0 185 185"
       width={size}
       height={size}
-      {...others}
+      className={className}
+      style={style}
     >
       <rect width="5" height="5" rx={radius} />
       <rect width="5" height="5" x="60" rx={radius} />
@@ -114,3 +116,10 @@ export function Dots({ size = 185, radius = 2.5, ...others }) {
     </svg>
   );
 }
+
+Dots.propTypes = {
+  size: PropTypes.number,
+  radius: PropTypes.number,
+  className: PropTypes.string,
+  style: PropTypes.shape({}),
+};

@@ -9,25 +9,37 @@ import {
   Divider,
   Anchor,
   Table,
-  SimpleGrid,
 } from "@mantine/core";
 import { useNavigate, useParams } from "react-router-dom";
-import HrBreadcrumbs from "../../components/HrBreadcrumbs";
-import LoadingComponent from "../../components/Loading";
+import HrBreadcrumbs from "../../components/common/HrBreadcrumbs";
+import LoadingComponent from "../../components/common/Loading";
 import { EmptyTable } from "../../components/tables/EmptyTable";
-import {
-  get_leave_form_by_id,
-  download_leave_form_pdf,
-} from "../../../../routes/hr";
-import "./LeaveFormView.css";
+import { getLeaveFormById, downloadLeavePdf } from "../../services/api";
+import useFetchData from "../../hooks/useFetchData";
+import "../../styles/LeaveFormView.css";
 
-const LeaveFormView = () => {
+function LeaveFormView() {
   const { id } = useParams();
-  const [fetchedformData, setFetchedFormData] = useState(null);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const admin = new URLSearchParams(window.location.search).get("admin");
   const [exampleItems, setExampleItems] = useState([]);
+
+  // ✅ FETCH USING HOOK
+  const { data, loading } = useFetchData(() => getLeaveFormById(id), [id]);
+
+  // ✅ Adjust data (same logic as your original)
+  const fetchedformData = data
+    ? {
+        ...data.leave_form,
+        academicResponsibilityStatus: data.leave_form.academicResponsibility
+          ? data.leave_form.academicResponsibilityStatus
+          : "Accepted",
+        administrativeResponsibilityStatus: data.leave_form
+          .administrativeResponsibility
+          ? data.leave_form.administrativeResponsibilityStatus
+          : "Accepted",
+      }
+    : null;
 
   useEffect(() => {
     if (admin) {
@@ -49,70 +61,16 @@ const LeaveFormView = () => {
         { title: "View Form", path: `/hr/leave/view/${id}` },
       ]);
     }
-  }, [admin]);
+  }, [admin, id]);
 
-  useEffect(() => {
-    const fetchFormData = async () => {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        console.error("No authentication token found!");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const response = await fetch(`${get_leave_form_by_id}/${id}`, {
-          headers: { Authorization: `Token ${token}` },
-        });
-
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-
-        const data = await response.json();
-        // Adjust status for null responsibilities
-        const adjustedData = {
-          ...data.leave_form,
-          academicResponsibilityStatus: data.leave_form.academicResponsibility
-            ? data.leave_form.academicResponsibilityStatus
-            : "Accepted",
-          administrativeResponsibilityStatus: data.leave_form
-            .administrativeResponsibility
-            ? data.leave_form.administrativeResponsibilityStatus
-            : "Accepted",
-        };
-        setFetchedFormData(adjustedData);
-        setLoading(false);
-      } catch (error) {
-        console.error("Failed to fetch form data:", error);
-        setLoading(false);
-      }
-    };
-
-    fetchFormData();
-  }, [id]);
-
+  // ✅ Refactored PDF download
   const handleDownloadPdf = async () => {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      console.error("No authentication token found!");
-      return;
-    }
-
     try {
-      const response = await fetch(`${download_leave_form_pdf}/${id}`, {
-        headers: { Authorization: `Token ${token}` },
-      });
-
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-
-      const blob = await response.blob();
+      const blob = await downloadLeavePdf(id);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = fetchedformData.attachedPdfName;
+      a.download = fetchedformData?.attachedPdfName || "file.pdf";
       a.click();
     } catch (error) {
       console.error("Failed to download PDF:", error);
@@ -650,6 +608,6 @@ const LeaveFormView = () => {
       </Box>
     </>
   );
-};
+}
 
 export default LeaveFormView;

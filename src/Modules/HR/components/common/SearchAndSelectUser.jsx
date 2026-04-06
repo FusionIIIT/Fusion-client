@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { Select } from "@mantine/core";
-import { search_employees } from "../../../routes/hr/index";
+import PropTypes from "prop-types";
+import { search_employees } from "../../../../routes/hr/index";
 
-const SearchAndSelectUser = ({ onUserSelect }) => {
+function SearchAndSelectUser({ onUserSelect }) {
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
   const [error, setError] = useState(null);
 
   const token = localStorage.getItem("authToken");
@@ -57,8 +57,6 @@ const SearchAndSelectUser = ({ onUserSelect }) => {
 
   const handleUserSelection = (selectedValue) => {
     const user = searchResults.find((result) => result.value === selectedValue);
-    setSelectedUser(user?.details || null);
-
     // Pass selected user to the parent via the callback
     if (onUserSelect && user?.details) {
       onUserSelect(user.details);
@@ -79,6 +77,10 @@ const SearchAndSelectUser = ({ onUserSelect }) => {
       />
     </div>
   );
-};
+}
 
 export default SearchAndSelectUser;
+
+SearchAndSelectUser.propTypes = {
+  onUserSelect: PropTypes.func,
+};

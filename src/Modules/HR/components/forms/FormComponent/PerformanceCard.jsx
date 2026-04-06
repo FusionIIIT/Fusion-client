@@ -3,7 +3,7 @@ import { Card, Text, Group, Divider, Button } from "@mantine/core";
 import { Link } from "react-router-dom";
 import { ArrowRight, CaretRight } from "@phosphor-icons/react";
 import PropTypes from "prop-types";
-import classes from "./PerformanceCard.module.css";
+import classes from "../../../styles/PerformanceCard.module.css";
 
 function PerformanceCard({ IconComponent, title, description, link }) {
   return (

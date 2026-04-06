@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Title } from "@mantine/core";
+import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom"; // Use for navigation
-import { Eye, MapPin } from "@phosphor-icons/react";
+import { Eye } from "@phosphor-icons/react";
 
-import "./Table.css"; // Ensure this path is correct
+import "../../styles/Table.css"; // Ensure this path is correct
 import { EmptyTable } from "./EmptyTable";
 
-const RequestsTable = ({ title, data }) => {
+function RequestsTable({ title, data }) {
   const navigate = useNavigate();
   // header contains the column names id name designation submissionDate view track
   const headers = ["ID", "Name", "Designation", "Submission Date", "View"];
@@ -23,7 +24,7 @@ const RequestsTable = ({ title, data }) => {
       >
         {title}
       </Title>
-      {data.length == 0 && (
+      {data.length === 0 && (
         <EmptyTable
           title="No new requests found!"
           message="There is no new request available. Please check back later."
@@ -49,13 +50,14 @@ const RequestsTable = ({ title, data }) => {
                   <td>{item.designation}</td>
                   <td>{item.submissionDate}</td>
                   <td>
-                    <span
+                    <button
+                      type="button"
                       className="text-link"
                       onClick={() => handleViewClick(item.id)}
                     >
                       <Eye size={20} />
                       View
-                    </span>
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -63,10 +65,15 @@ const RequestsTable = ({ title, data }) => {
           </table>
         </div>
       ) : (
-        <div className="loading-spinner"></div>
+        <div className="loading-spinner" />
       )}
     </div>
   );
-};
+}
 
 export default RequestsTable;
+
+RequestsTable.propTypes = {
+  title: PropTypes.string.isRequired,
+  data: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+};

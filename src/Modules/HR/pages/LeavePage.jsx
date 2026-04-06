@@ -2,13 +2,12 @@ import React, { useEffect, useState, useRef } from "react";
 import { Tabs, Button, Flex, Text, Loader, Container } from "@mantine/core";
 import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
 import { useNavigate, useLocation } from "react-router-dom";
-import CustomBreadcrumbs from "../../../components/Breadcrumbs"; // Your breadcrumbs component
-import classes from "./LeavePage.module.css"; // Add your styles here
+import classes from "../styles/LeavePage.module.css";
 import LeaveForm from "./LeavePageComp/LeaveForm";
 // import LeaveArchive from "./LeavePageComp/LeaveArchive";
 import LeaveInbox from "./LeavePageComp/LeaveInbox";
 import LeaveRequests from "./LeavePageComp/LeaveRequests";
-import HrBreadcrumbs from "../components/HrBreadcrumbs";
+import HrBreadcrumbs from "../components/common/HrBreadcrumbs";
 import LeaveBalanceButton from "./LeavePageComp/LeaveBalanceButton";
 
 const tabItems = [
@@ -25,7 +24,7 @@ function Leave() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  //scroll to top on page load
+  // scroll to top on page load
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);

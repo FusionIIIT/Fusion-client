@@ -14,18 +14,8 @@
 // 1.1.3 New course material developed/instructional software developed (should be made available on the web / public domain and may be under GIAN/NPTEL/SWAYAM etc)
 import React, { useState } from "react";
 import { Button } from "@mantine/core";
-import {
-  User,
-  Tag,
-  IdentificationCard,
-  Calendar,
-  ClipboardText,
-  CurrencyDollar,
-  FileText,
-  CheckCircle,
-  PaperPlaneRight,
-} from "@phosphor-icons/react";
-import classes from "./AppraisalForm.module.css";
+import { User, Tag, ClipboardText } from "@phosphor-icons/react";
+import classes from "../../styles/AppraisalForm.module.css";
 
 function AppraisalForm() {
   const [rows, setRows] = useState([
@@ -71,50 +61,50 @@ function AppraisalForm() {
           <div className="grid-col">
             <label className="input-label" htmlFor="name">
               Name
+              <div className="input-wrapper">
+                <User size={20} />
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  placeholder="Name"
+                  className="input"
+                  required
+                />
+              </div>
             </label>
-            <div className="input-wrapper">
-              <User size={20} />
-              <input
-                type="text"
-                id="name"
-                name="name"
-                placeholder="Name"
-                className="input"
-                required
-              />
-            </div>
           </div>
           <div className="grid-col">
             <label className="input-label" htmlFor="designation">
               Designation
+              <div className="input-wrapper">
+                <Tag size={20} />
+                <input
+                  type="text"
+                  id="designation"
+                  name="designation"
+                  placeholder="Designation"
+                  className="input"
+                  required
+                />
+              </div>
             </label>
-            <div className="input-wrapper">
-              <Tag size={20} />
-              <input
-                type="text"
-                id="designation"
-                name="designation"
-                placeholder="Designation"
-                className="input"
-                required
-              />
-            </div>
           </div>
           <div className="grid-col">
             <label className="input-label" htmlFor="discipline">
               Discipline
+              <div className="input-wrapper">
+                <Tag size={20} />
+                <input
+                  type="text"
+                  id="discipline"
+                  name="discipline"
+                  placeholder="Discipline"
+                  className="input"
+                  required
+                />
+              </div>
             </label>
-            <div className="input-wrapper">
-              <Tag size={20} />
-              <input
-                type="text"
-                id="discipline"
-                name="discipline"
-                placeholder="Discipline"
-                className="input"
-                required
-              />
-            </div>
           </div>
         </div>
         {/* Section 2: Specific field of knowledge, Current Research Interests */}
@@ -122,34 +112,34 @@ function AppraisalForm() {
           <div className="grid-col">
             <label className="input-label" htmlFor="knowledge">
               Specific field of knowledge
+              <div className="input-wrapper">
+                <ClipboardText size={20} />
+                <input
+                  type="text"
+                  id="knowledge"
+                  name="knowledge"
+                  placeholder="Specific field of knowledge"
+                  className="input"
+                  required
+                />
+              </div>
             </label>
-            <div className="input-wrapper">
-              <ClipboardText size={20} />
-              <input
-                type="text"
-                id="knowledge"
-                name="knowledge"
-                placeholder="Specific field of knowledge"
-                className="input"
-                required
-              />
-            </div>
           </div>
           <div className="grid-col">
             <label className="input-label" htmlFor="researchInterests">
               Current Research Interests
+              <div className="input-wrapper">
+                <ClipboardText size={20} />
+                <input
+                  type="text"
+                  id="researchInterests"
+                  name="researchInterests"
+                  placeholder="Current Research Interests"
+                  className="input"
+                  required
+                />
+              </div>
             </label>
-            <div className="input-wrapper">
-              <ClipboardText size={20} />
-              <input
-                type="text"
-                id="researchInterests"
-                name="researchInterests"
-                placeholder="Current Research Interests"
-                className="input"
-                required
-              />
-            </div>
           </div>
         </div>
         {/* Section 3: Instruction Element */}
@@ -176,19 +166,19 @@ function AppraisalForm() {
             <div className="grid-col">
               <label className="input-label" htmlFor={`semester_${index}`}>
                 Semester
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    id={`semester_${index}`}
+                    name="semester"
+                    placeholder="Semester"
+                    value={row.semester}
+                    onChange={(e) => handleChange(index, e)}
+                    className="input"
+                    required
+                  />
+                </div>
               </label>
-              <div className="input-wrapper">
-                <input
-                  type="text"
-                  id={`semester_${index}`}
-                  name="semester"
-                  placeholder="Semester"
-                  value={row.semester}
-                  onChange={(e) => handleChange(index, e)}
-                  className="input"
-                  required
-                />
-              </div>
             </div>
             <div className="grid-col">
               <label
@@ -196,70 +186,70 @@ function AppraisalForm() {
                 htmlFor={`courseNameNumber_${index}`}
               >
                 Course Name and Number
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    id={`courseNameNumber_${index}`}
+                    name="courseNameNumber"
+                    placeholder="Course Name and Number"
+                    value={row.courseNameNumber}
+                    onChange={(e) => handleChange(index, e)}
+                    className="input"
+                    required
+                  />
+                </div>
               </label>
-              <div className="input-wrapper">
-                <input
-                  type="text"
-                  id={`courseNameNumber_${index}`}
-                  name="courseNameNumber"
-                  placeholder="Course Name and Number"
-                  value={row.courseNameNumber}
-                  onChange={(e) => handleChange(index, e)}
-                  className="input"
-                  required
-                />
-              </div>
             </div>
             <div className="grid-col">
               <label className="input-label" htmlFor={`lectureHrs_${index}`}>
                 Lecture Hrs/wk
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    id={`lectureHrs_${index}`}
+                    name="lectureHrs"
+                    placeholder="Lecture Hrs/wk"
+                    value={row.lectureHrs}
+                    onChange={(e) => handleChange(index, e)}
+                    className="input"
+                    required
+                  />
+                </div>
               </label>
-              <div className="input-wrapper">
-                <input
-                  type="text"
-                  id={`lectureHrs_${index}`}
-                  name="lectureHrs"
-                  placeholder="Lecture Hrs/wk"
-                  value={row.lectureHrs}
-                  onChange={(e) => handleChange(index, e)}
-                  className="input"
-                  required
-                />
-              </div>
             </div>
             <div className="grid-col">
               <label className="input-label" htmlFor={`tutorialHrs_${index}`}>
                 Tutorial Hrs/wk
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    id={`tutorialHrs_${index}`}
+                    name="tutorialHrs"
+                    placeholder="Tutorial Hrs/wk"
+                    value={row.tutorialHrs}
+                    onChange={(e) => handleChange(index, e)}
+                    className="input"
+                    required
+                  />
+                </div>
               </label>
-              <div className="input-wrapper">
-                <input
-                  type="text"
-                  id={`tutorialHrs_${index}`}
-                  name="tutorialHrs"
-                  placeholder="Tutorial Hrs/wk"
-                  value={row.tutorialHrs}
-                  onChange={(e) => handleChange(index, e)}
-                  className="input"
-                  required
-                />
-              </div>
             </div>
             <div className="grid-col">
               <label className="input-label" htmlFor={`labHrs_${index}`}>
                 Lab Hrs/wk
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    id={`labHrs_${index}`}
+                    name="labHrs"
+                    placeholder="Lab Hrs/wk"
+                    value={row.labHrs}
+                    onChange={(e) => handleChange(index, e)}
+                    className="input"
+                    required
+                  />
+                </div>
               </label>
-              <div className="input-wrapper">
-                <input
-                  type="text"
-                  id={`labHrs_${index}`}
-                  name="labHrs"
-                  placeholder="Lab Hrs/wk"
-                  value={row.labHrs}
-                  onChange={(e) => handleChange(index, e)}
-                  className="input"
-                  required
-                />
-              </div>
             </div>
             <div className="grid-col">
               <label
@@ -267,36 +257,36 @@ function AppraisalForm() {
                 htmlFor={`registeredStudents_${index}`}
               >
                 No of Registered Students
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    id={`registeredStudents_${index}`}
+                    name="registeredStudents"
+                    placeholder="No of Registered Students"
+                    value={row.registeredStudents}
+                    onChange={(e) => handleChange(index, e)}
+                    className="input"
+                    required
+                  />
+                </div>
               </label>
-              <div className="input-wrapper">
-                <input
-                  type="text"
-                  id={`registeredStudents_${index}`}
-                  name="registeredStudents"
-                  placeholder="No of Registered Students"
-                  value={row.registeredStudents}
-                  onChange={(e) => handleChange(index, e)}
-                  className="input"
-                  required
-                />
-              </div>
             </div>
             <div className="grid-col">
               <label className="input-label" htmlFor={`coInstructor_${index}`}>
                 Co-Instructor/ Instructor In charge (if any)
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    id={`coInstructor_${index}`}
+                    name="coInstructor"
+                    placeholder="Co-Instructor/ Instructor In charge (if any)"
+                    value={row.coInstructor}
+                    onChange={(e) => handleChange(index, e)}
+                    className="input"
+                    required
+                  />
+                </div>
               </label>
-              <div className="input-wrapper">
-                <input
-                  type="text"
-                  id={`coInstructor_${index}`}
-                  name="coInstructor"
-                  placeholder="Co-Instructor/ Instructor In charge (if any)"
-                  value={row.coInstructor}
-                  onChange={(e) => handleChange(index, e)}
-                  className="input"
-                  required
-                />
-              </div>
             </div>
           </div>
         ))}
@@ -312,47 +302,47 @@ function AppraisalForm() {
           <div className="grid-col">
             <label className="input-label" htmlFor="newCourseName">
               Course Name and Number
+              <div className="input-wrapper">
+                <input
+                  type="text"
+                  id="newCourseName"
+                  name="newCourseName"
+                  placeholder="Course Name and Number"
+                  className="input"
+                  required
+                />
+              </div>
             </label>
-            <div className="input-wrapper">
-              <input
-                type="text"
-                id="newCourseName"
-                name="newCourseName"
-                placeholder="Course Name and Number"
-                className="input"
-                required
-              />
-            </div>
           </div>
           <div className="grid-col">
             <label className="input-label" htmlFor="courseLevel">
               UG/PG
+              <div className="input-wrapper">
+                <input
+                  type="text"
+                  id="courseLevel"
+                  name="courseLevel"
+                  placeholder="UG/PG"
+                  className="input"
+                  required
+                />
+              </div>
             </label>
-            <div className="input-wrapper">
-              <input
-                type="text"
-                id="courseLevel"
-                name="courseLevel"
-                placeholder="UG/PG"
-                className="input"
-                required
-              />
-            </div>
           </div>
           <div className="grid-col">
             <label className="input-label" htmlFor="firstOffering">
               Year and Semester of first offering
+              <div className="input-wrapper">
+                <input
+                  type="text"
+                  id="firstOffering"
+                  name="firstOffering"
+                  placeholder="Year and Semester of first offering"
+                  className="input"
+                  required
+                />
+              </div>
             </label>
-            <div className="input-wrapper">
-              <input
-                type="text"
-                id="firstOffering"
-                name="firstOffering"
-                placeholder="Year and Semester of first offering"
-                className="input"
-                required
-              />
-            </div>
           </div>
         </div>
         <div className="section-subsubtitle">
@@ -366,32 +356,32 @@ function AppraisalForm() {
           <div className="grid-col">
             <label className="input-label" htmlFor="courseMaterial">
               Course Material
+              <div className="input-wrapper">
+                <input
+                  type="text"
+                  id="courseMaterial"
+                  name="courseMaterial"
+                  placeholder="Course Material"
+                  className="input"
+                  required
+                />
+              </div>
             </label>
-            <div className="input-wrapper">
-              <input
-                type="text"
-                id="courseMaterial"
-                name="courseMaterial"
-                placeholder="Course Material"
-                className="input"
-                required
-              />
-            </div>
           </div>
           <div className="grid-col">
             <label className="input-label" htmlFor="softwareDeveloped">
               Instructional Software Developed
+              <div className="input-wrapper">
+                <input
+                  type="text"
+                  id="softwareDeveloped"
+                  name="softwareDeveloped"
+                  placeholder="Instructional Software Developed"
+                  className="input"
+                  required
+                />
+              </div>
             </label>
-            <div className="input-wrapper">
-              <input
-                type="text"
-                id="softwareDeveloped"
-                name="softwareDeveloped"
-                placeholder="Instructional Software Developed"
-                className="input"
-                required
-              />
-            </div>
           </div>
         </div>
         {/* Footer */}
