@@ -102,7 +102,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "Complaint System",
       id: "complaint_management",
       icon: <ComplaintIcon size={18} />,
-      url: "/",
+      url: "/complaint",
     },
     {
       label: "Placement Cell",
@@ -140,7 +140,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       icon: <ExamIcon size={18} />,
       url: "/examination",
     },
-        {
+    {
       label: "Database",
       id: "database",
       icon: <DatabaseIcon size={18} />,
@@ -194,7 +194,10 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
 
   useEffect(() => {
     const filterModules = Modules.filter(
-      (module) => accessibleModules[module.id] || module.id === "home",
+      (module) =>
+        accessibleModules[module.id] ||
+        module.id === "home" ||
+        module.id === "complaint_management",
     );
     setFilteredModules(filterModules);
   }, [accessibleModules]);
