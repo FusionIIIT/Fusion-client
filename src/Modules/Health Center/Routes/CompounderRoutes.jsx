@@ -5,6 +5,7 @@ import CompounderDashboard from "../Compounder/CompounderDashboard";
 import HistoryCompounder from "../Compounder/History/HistoryComp";
 import UpdatePatient from "../Compounder/History/UpdatePatient";
 import CompPrescription from "../Compounder/History/CompPrescription";
+import CompounderPrescriptionPage from "../pages/CompounderPrescriptionPage";
 import Viewdoctor from "../Compounder/Schedule/viewdoctor";
 import Editdoctor from "../Compounder/Schedule/editdoctor";
 import Viewpath from "../Compounder/Schedule/viewpath";
@@ -26,6 +27,9 @@ import EditThreshold from "../Compounder/Stocks/EditThreshold";
 import ExpiredMedicine from "../Compounder/Stocks/ExpiredMedicine";
 import ViewStock from "../Compounder/Stocks/ViewStock";
 import RequiredMedicine from "../Compounder/Stocks/RequiredMedicine";
+import PathologistManagementPage from "../pages/PathologistManagementPage";
+import AnnouncementsPage from "../pages/AnnouncementsPage";
+import FollowupPrescriptionPage from "../pages/FollowupPrescriptionPage";
 
 export function CompounderRoutes() {
   return (
@@ -59,6 +63,22 @@ export function CompounderRoutes() {
         element={
           <Layout>
             <CompPrescription />
+          </Layout>
+        }
+      />
+      <Route
+        path="/prescriptions"
+        element={
+          <Layout>
+            <CompounderPrescriptionPage />
+          </Layout>
+        }
+      />
+      <Route
+        path="/prescription/:id/followup"
+        element={
+          <Layout>
+            <FollowupPrescriptionPage />
           </Layout>
         }
       />
@@ -203,6 +223,22 @@ export function CompounderRoutes() {
         element={
           <Layout>
             <CompAnnounements />
+          </Layout>
+        }
+      />
+      <Route
+        path="/announcements/v2"
+        element={
+          <Layout>
+            <AnnouncementsPage />
+          </Layout>
+        }
+      />
+      <Route
+        path="/pathologists/manage"
+        element={
+          <Layout>
+            <PathologistManagementPage />
           </Layout>
         }
       />

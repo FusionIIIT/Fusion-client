@@ -6,7 +6,7 @@ import { Check, X } from "@phosphor-icons/react";
 import NavCom from "../NavCom";
 import ScheduleNavBar from "./schedulePath";
 import { compounderRoute } from "../../../../routes/health_center";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
 
 function Editdoctor() {
   const [doctorName, setDoctorName] = useState("");

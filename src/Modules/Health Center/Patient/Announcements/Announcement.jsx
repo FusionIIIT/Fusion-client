@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Paper, Table, Title, Loader, Text, Box } from "@mantine/core";
-import axios from "axios";
-import { studentRoute } from "../../../../routes/health_center";
 import NavPatient from "../Navigation";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
+import { getAnnouncementsApi } from "../../services/api";
 
 function Announcement() {
   const [announcements, setAnnouncements] = useState([]);
@@ -11,19 +10,10 @@ function Announcement() {
 
   useEffect(() => {
     const get_announcement = async () => {
-      const token = localStorage.getItem("authToken");
       setLoading(true);
       try {
-        const response = await axios.post(
-          studentRoute,
-          { get_annoucements: 1 },
-          {
-            headers: {
-              Authorization: `Token ${token}`,
-            },
-          },
-        );
-        setAnnouncements(response.data.announcements || []);
+        const response = await getAnnouncementsApi();
+        setAnnouncements(response.data || []);
       } catch (err) {
         console.log(err);
       } finally {

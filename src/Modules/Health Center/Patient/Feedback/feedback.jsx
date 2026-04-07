@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Button, Textarea, Title, Center, Box, Paper } from "@mantine/core";
 import axios from "axios";
 import Navigation from "../Navigation";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
 import { studentRoute } from "../../../../routes/health_center";
 
 function Feedback() {

@@ -22,7 +22,7 @@ import { useParams } from "react-router-dom";
 import { useForm } from "@mantine/form";
 import axios from "axios";
 import NavCom from "../NavCom";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
 import { compounderRoute } from "../../../../routes/health_center";
 
 // function getDummyData(medicineName) {

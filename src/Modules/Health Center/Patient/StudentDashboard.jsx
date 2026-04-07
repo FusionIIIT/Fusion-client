@@ -9,7 +9,13 @@ import {
   Button,
   Group,
 } from "@mantine/core";
-import { Calendar, Heart, FileText, Megaphone } from "@phosphor-icons/react";
+import {
+  Calendar,
+  Heart,
+  FileText,
+  IdentificationCard,
+  Megaphone,
+} from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 
 export default function StudentDashboard() {
@@ -27,6 +33,12 @@ export default function StudentDashboard() {
       title: "Medical History",
       description: "View your prescriptions and medical records",
       action: () => navigate("/healthcenter/student/history"),
+    },
+    {
+      icon: <IdentificationCard size={32} weight="duotone" color="#15abff" />,
+      title: "Medical Profile",
+      description: "Update allergies, chronic conditions, and emergency contact",
+      action: () => navigate("/healthcenter/student/medical-profile"),
     },
     {
       icon: <Heart size={32} weight="duotone" color="#15abff" />,
@@ -56,7 +68,7 @@ export default function StudentDashboard() {
 
         <Grid gutter="lg">
           {cards.map((card, idx) => (
-            <Grid.Col key={idx} span={{ base: 12, sm: 6, md: 3 }}>
+            <Grid.Col key={idx} span={{ base: 12, sm: 6, md: 4 }}>
               <Card
                 shadow="sm"
                 padding="lg"

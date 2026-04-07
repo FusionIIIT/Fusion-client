@@ -12,6 +12,7 @@ import Apply from "../Patient/Medical Relief/Apply";
 import Approval from "../Patient/Medical Relief/Approval";
 import DoctorPath from "../Patient/Schedule/docpath";
 import PathDoc from "../Patient/Schedule/pathologists";
+import MedicalProfile from "../Patient/Medical Profile/MedicalProfile";
 
 export function StudentRoutes() {
   return (
@@ -101,6 +102,14 @@ export function StudentRoutes() {
         element={
           <Layout>
             <Approval />
+          </Layout>
+        }
+      />
+      <Route
+        path="/medical-profile"
+        element={
+          <Layout>
+            <MedicalProfile />
           </Layout>
         }
       />

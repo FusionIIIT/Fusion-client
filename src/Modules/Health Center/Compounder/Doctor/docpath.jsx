@@ -15,7 +15,7 @@ import { IconPrinter, IconPhone, IconStethoscope } from "@tabler/icons-react";
 import axios from "axios";
 import NavCom from "../NavCom";
 import Changenav from "./changenav";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
 import { compounderRoute } from "../../../../routes/health_center";
 import Adddoctor from "./adddoctor";
 

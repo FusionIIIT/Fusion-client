@@ -18,7 +18,7 @@ import { Check, X } from "@phosphor-icons/react";
 import axios from "axios";
 import NavCom from "../NavCom";
 import HistoryNavBar from "./historyPath";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
 import { compounderRoute } from "../../../../routes/health_center";
 
 function getDummyData(medicineName) {

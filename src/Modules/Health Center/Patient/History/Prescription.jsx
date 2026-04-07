@@ -16,7 +16,7 @@ import { useEffect, useState } from "react";
 import { Check, X } from "@phosphor-icons/react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
 import { studentRoute } from "../../../../routes/health_center";
 import NavPatient from "../Navigation";
 

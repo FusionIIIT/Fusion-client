@@ -13,7 +13,7 @@ import {
 } from "@mantine/core";
 import axios from "axios";
 import NavCom from "../Navigation";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
 import { studentRoute } from "../../../../routes/health_center";
 
 function HistoryPatient() {

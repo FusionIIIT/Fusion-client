@@ -11,11 +11,10 @@ import {
   Box,
   Divider,
 } from "@mantine/core";
-import axios from "axios";
-import { compounderRoute } from "../../../../routes/health_center";
 import NavCom from "../NavCom";
 import AnnounceNavBar from "./announPath";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
+import { getAnnouncementsApi } from "../../services/api";
 
 function Record() {
   const [test, StateTest] = useState({ announcements: [] });
@@ -23,19 +22,10 @@ function Record() {
 
   useEffect(() => {
     const get_announcement = async () => {
-      const token = localStorage.getItem("authToken");
       try {
         setLoading(true);
-        const response = await axios.post(
-          compounderRoute,
-          { get_annoucements: 1 },
-          {
-            headers: {
-              Authorization: `Token ${token}`,
-            },
-          },
-        );
-        StateTest(response.data);
+        const response = await getAnnouncementsApi();
+        StateTest({ announcements: response.data || [] });
       } catch (err) {
         console.log(err);
       } finally {

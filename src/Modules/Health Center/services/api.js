@@ -11,7 +11,7 @@ import axios from "axios";
 
 // Get API host from environment variable
 const API_HOST = import.meta.env.VITE_API_HOST || "http://localhost:8000";
-const BASE_URL = `${API_HOST}/healthcenter/api`;
+const BASE_URL = `${API_HOST}/healthcenter/api/v1`;
 
 // Get auth token from localStorage
 const getAuthToken = () => localStorage.getItem("authToken");
@@ -420,6 +420,151 @@ export const updatePatient = async (userId, patientData) => {
     { update_patient: 1, user_id: userId, ...patientData },
     { headers: { Authorization: `Token ${token}` } },
   );
+};
+
+// Assignment 7 REST endpoints
+export const createPrescriptionApi = async (data) => {
+  const token = getAuthToken();
+  return axios.post(`${BASE_URL}/prescriptions/`, data, {
+    headers: { Authorization: `Token ${token}` },
+  });
+};
+
+export const getPrescriptionsApi = async () => {
+  const token = getAuthToken();
+  return axios.get(`${BASE_URL}/prescriptions/`, {
+    headers: { Authorization: `Token ${token}` },
+  });
+};
+
+export const respondToComplaint = async (complaintId, feedback) => {
+  const token = getAuthToken();
+  return axios.patch(
+    `${BASE_URL}/complaints/${complaintId}/respond/`,
+    { feedback },
+    { headers: { Authorization: `Token ${token}` } },
+  );
+};
+
+export const getDoctorScheduleApi = async (doctorId) => {
+  const token = getAuthToken();
+  return axios.get(`${BASE_URL}/doctors/${doctorId}/schedule/`, {
+    headers: { Authorization: `Token ${token}` },
+  });
+};
+
+export const fetchRequiredMedicinesApi = async () => {
+  const token = getAuthToken();
+  return axios.get(`${BASE_URL}/medicines/required/`, {
+    headers: { Authorization: `Token ${token}` },
+  });
+};
+
+export const createFollowupPrescriptionApi = async (prescriptionId, data) => {
+  const token = getAuthToken();
+  return axios.post(`${BASE_URL}/prescriptions/${prescriptionId}/followup/`, data, {
+    headers: { Authorization: `Token ${token}` },
+  });
+};
+
+export const getAnnouncementsApi = async () => {
+  const token = getAuthToken();
+  return axios.get(`${BASE_URL}/announcements/`, {
+    headers: { Authorization: `Token ${token}` },
+  });
+};
+
+export const createAnnouncementApi = async (data) => {
+  const token = getAuthToken();
+  return axios.post(`${BASE_URL}/announcements/`, data, {
+    headers: { Authorization: `Token ${token}` },
+  });
+};
+
+export const createMedicalReliefApi = async (data) => {
+  const token = getAuthToken();
+  return axios.post(`${BASE_URL}/medical-relief/`, data, {
+    headers: { Authorization: `Token ${token}` },
+  });
+};
+
+export const reviewMedicalReliefApi = async (reliefId, statusValue) => {
+  const token = getAuthToken();
+  return axios.patch(
+    `${BASE_URL}/medical-relief/${reliefId}/review/`,
+    { status: statusValue },
+    { headers: { Authorization: `Token ${token}` } },
+  );
+};
+
+export const createMedicalProfileApi = async (data) => {
+  const token = getAuthToken();
+  return axios.post(`${BASE_URL}/medical-profile/`, data, {
+    headers: { Authorization: `Token ${token}` },
+  });
+};
+
+export const updateMedicalProfileApi = async (data) => {
+  const token = getAuthToken();
+  return axios.put(`${BASE_URL}/medical-profile/`, data, {
+    headers: { Authorization: `Token ${token}` },
+  });
+};
+
+export const getMedicalProfileApi = async () => {
+  const token = getAuthToken();
+  return axios.get(`${BASE_URL}/medical-profile/`, {
+    headers: { Authorization: `Token ${token}` },
+  });
+};
+
+export const getPathologistsApi = async () => {
+  const token = getAuthToken();
+  return axios.get(`${BASE_URL}/pathologists/`, {
+    headers: { Authorization: `Token ${token}` },
+  });
+};
+
+export const addPathologistApi = async (data) => {
+  const token = getAuthToken();
+  return axios.post(`${BASE_URL}/pathologists/`, data, {
+    headers: { Authorization: `Token ${token}` },
+  });
+};
+
+export const addPathologistScheduleApi = async (data) => {
+  const token = getAuthToken();
+  return axios.post(`${BASE_URL}/pathologist-schedules/`, data, {
+    headers: { Authorization: `Token ${token}` },
+  });
+};
+
+export const getPathologistSchedulesApi = async () => {
+  const token = getAuthToken();
+  return axios.get(`${BASE_URL}/pathologist-schedules/list/`, {
+    headers: { Authorization: `Token ${token}` },
+  });
+};
+
+export const createMedicineApi = async (data) => {
+  const token = getAuthToken();
+  return axios.post(`${BASE_URL}/medicines/`, data, {
+    headers: { Authorization: `Token ${token}` },
+  });
+};
+
+export const createStockEntryApi = async (data) => {
+  const token = getAuthToken();
+  return axios.post(`${BASE_URL}/stock-entries/`, data, {
+    headers: { Authorization: `Token ${token}` },
+  });
+};
+
+export const searchPatientsApi = async (query = "") => {
+  const token = getAuthToken();
+  return axios.get(`${BASE_URL}/patients/?search=${encodeURIComponent(query)}`, {
+    headers: { Authorization: `Token ${token}` },
+  });
 };
 
 /**

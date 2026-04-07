@@ -12,7 +12,7 @@ import axios from "axios";
 import { DownloadSimple } from "@phosphor-icons/react";
 import NavCom from "../NavCom";
 import ManageStock from "./ManageStocksNav";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
 import { compounderRoute } from "../../../../routes/health_center";
 
 function AddMedicine() {

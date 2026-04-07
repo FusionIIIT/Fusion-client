@@ -14,7 +14,7 @@ import axios from "axios";
 import { IconPhone, IconStethoscope } from "@tabler/icons-react";
 import NavCom from "../Navigation";
 import Changenav from "./schedulePath";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
 import { studentRoute } from "../../../../routes/health_center";
 
 export default function PathDoc() {

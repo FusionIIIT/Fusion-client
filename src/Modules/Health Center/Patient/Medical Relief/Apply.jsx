@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import axios from "axios";
-import { useSelector } from "react-redux";
 import {
   Button,
   FileInput,
@@ -12,8 +10,8 @@ import {
 } from "@mantine/core";
 import Navigation from "../Navigation";
 import MedicalNavBar from "./medicalPath";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
-import { studentRoute } from "../../../../routes/health_center";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
+import { createMedicalReliefApi } from "../../services/api";
 
 function Apply() {
   const [send_file, setFile] = useState(null);
@@ -22,7 +20,6 @@ function Apply() {
   const [errors, setErrors] = useState({});
   // eslint-disable-next-line no-unused-vars
   const [isSubmitting, setSubmitting] = useState(false);
-  const role = useSelector((state) => state.user.role);
   const validate = () => {
     const newErrors = {};
     if (!desc.trim()) newErrors.description = "Description is required";
@@ -41,24 +38,10 @@ function Apply() {
     formData.append("description", desc);
     formData.append("medical_relief_submit", 1);
 
-    const token = localStorage.getItem("authToken");
     try {
-      const response = await axios.post(
-        studentRoute,
-        {
-          description: desc,
-          designation: "pkumar",
-          selected_role: role,
-          // file: send_file,
-          medical_relief_submit: 1,
-        },
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
-        },
-      );
-      console.log(response.data);
+      await createMedicalReliefApi({
+        description: desc,
+      });
       alert("File forwarded successfully");
     } catch (err) {
       console.log(err);
