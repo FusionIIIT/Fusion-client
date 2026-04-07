@@ -77,6 +77,26 @@ function LeaveForm() {
       return;
     }
 
+    if (formData.leaveEndDate < formData.leaveStartDate) {
+      alert(
+        "Leave end date must be greater than or equal to leave start date.",
+      );
+      setActiveSubmit(true);
+      return;
+    }
+
+    if (
+      formData.stationLeaveStartDate &&
+      formData.stationLeaveEndDate &&
+      formData.stationLeaveEndDate < formData.stationLeaveStartDate
+    ) {
+      alert(
+        "Station leave end date must be greater than or equal to station leave start date.",
+      );
+      setActiveSubmit(true);
+      return;
+    }
+
     const finalFormData = new FormData();
 
     finalFormData.append("name", details.name);

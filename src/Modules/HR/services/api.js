@@ -174,10 +174,13 @@ export const getLeaveFormById = async (id) => {
 };
 
 export const downloadLeavePdf = async (id) => {
-  const resp = await fetch(`/api/hr/leave/pdf/${id}`, {
+  const resp = await fetch(`/hr2/leave/pdf/${id}/`, {
     headers: authHeaders(),
   });
-  return resp.blob(); // important
+  if (!resp.ok) {
+    throw new Error((await resp.text()) || resp.statusText);
+  }
+  return resp.blob();
 };
 
 export const getAdminLeaveRequests = async (userId, date = "") => {

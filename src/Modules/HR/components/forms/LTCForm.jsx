@@ -89,6 +89,18 @@ function LtcForm({ onSubmit }) {
 
   const handleSubmit = (event) => {
     event.preventDefault();
+
+    if (
+      formData.dateTo &&
+      formData.dateFrom &&
+      formData.dateTo < formData.dateFrom
+    ) {
+      alert(
+        "Leave duration end date must be greater than or equal to start date.",
+      );
+      return;
+    }
+
     onSubmit({ ...formData, visitingPlace, childrenFields, dependentsFields });
     // Reset form
     setFormData({

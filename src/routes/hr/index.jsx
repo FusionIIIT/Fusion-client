@@ -15,7 +15,8 @@ export const submit_leave_form = `${host}/hr2/api/submit_leave_form`;
 export const get_leave_form_by_id = `${host}/hr2/api/get_leave_form_by_id`;
 export const handle_leave_academic_responsibility = `${host}/hr2/api/handle_leave_academic_responsibility`;
 export const handle_leave_administrative_responsibility = `${host}/hr2/api/handle_leave_administrative_responsibility`;
-export const download_leave_form_pdf = `${host}/hr2/api/download_leave_form_pdf`;
+export const download_leave_form_pdf = (formId) =>
+  `${host}/hr2/leave/pdf/${formId}/`;
 export const get_leave_inbox = `${host}/hr2/api/get_leave_inbox`;
 export const handle_leave_file = `${host}/hr2/api/handle_leave_file`;
 
