@@ -15,6 +15,7 @@ import InactivityHandler from "./helper/inactivityhandler";
 import Examination from "./Modules/Examination/examination";
 import Database from "./Modules/Database/database";
 import ProgrammeCurriculumRoutes from "./Modules/Program_curriculum/programmCurriculum";
+import NotificationView from "./routes/notificationRoutes";
 import NotFoundPage from "./components/NotFoundPage";
 
 const theme = createTheme({
@@ -43,6 +44,14 @@ export default function App() {
           element={
             <Layout>
               <Dashboard />
+            </Layout>
+          }
+        />
+        <Route
+          path="/dashboard/notifications"
+          element={
+            <Layout>
+              <NotificationView />
             </Layout>
           }
         />
