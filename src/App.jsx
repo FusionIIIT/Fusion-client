@@ -17,6 +17,7 @@ import Database from "./Modules/Database/database";
 import ProgrammeCurriculumRoutes from "./Modules/Program_curriculum/programmCurriculum";
 import OtherAcadProcedures from "./Modules/Otheracademic/OtherAcademicProcedures";
 import NotFoundPage from "./components/NotFoundPage";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const theme = createTheme({
   breakpoints: {
@@ -50,25 +51,40 @@ export default function App() {
         <Route
           path="/academics"
           element={
-            <Layout>
-              <AcademicPage />
-            </Layout>
+            <ProtectedRoute
+              requiredRoles={["acadadmin", "student", "Professor", "Assistant Professor"]}
+              element={
+                <Layout>
+                  <AcademicPage />
+                </Layout>
+              }
+            />
           }
         />
         <Route
           path="/profile"
           element={
-            <Layout>
-              <Profile />
-            </Layout>
+            <ProtectedRoute
+              requiredRoles={["acadadmin", "student", "Professor", "Assistant Professor"]}
+              element={
+                <Layout>
+                  <Profile />
+                </Layout>
+              }
+            />
           }
         />
         <Route
           path="/facultyprofessionalprofile/*"
           element={
-            <Layout>
-              <FacultyProfessionalProfile />
-            </Layout>
+            <ProtectedRoute
+              requiredRoles={["Professor", "Assistant Professor", "Associate Professor"]}
+              element={
+                <Layout>
+                  <FacultyProfessionalProfile />
+                </Layout>
+              }
+            />
           }
         />
         <Route
@@ -86,9 +102,14 @@ export default function App() {
         <Route
           path="/other-academics"
           element={
-            <Layout>
-              <OtherAcadProcedures />
-            </Layout>
+            <ProtectedRoute
+              requiredRoles={["acadadmin", "student", "Professor", "Assistant Professor"]}
+              element={
+                <Layout>
+                  <OtherAcadProcedures />
+                </Layout>
+              }
+            />
           }
         />
         <Route path="*" element={<NotFoundPage />} />
