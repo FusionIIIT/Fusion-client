@@ -25,9 +25,9 @@ import {
 } from "./utils/excelExportUtils";
 import { host } from "../../routes/globalRoutes";
 
-const students_grade_info_api = `${host}/database/api/students-grade-info/`;
+const unregistered_students_api = `${host}/database/api/unregistered-by-batch/`;
 
-export default function StudentsGradeInfo() {
+export default function UnregisteredStudents() {
   const [searchParams] = useSearchParams();
   const category = searchParams.get("category") || "ug";
 
@@ -56,7 +56,6 @@ export default function StudentsGradeInfo() {
   ];
 
   const [batch, setBatch] = useState(null);
-  const [programmeType, setProgrammeType] = useState("UG");
   const [studentData, setStudentData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -65,72 +64,24 @@ export default function StudentsGradeInfo() {
   const [exportPreviewOpen, setExportPreviewOpen] = useState(false);
   const [searchRollNo, setSearchRollNo] = useState("");
   const [filterSemester, setFilterSemester] = useState(null);
-  const [filterDiscipline, setFilterDiscipline] = useState(null);
-  const [searchCourse, setSearchCourse] = useState(null);
-  const [courseOptions, setCourseOptions] = useState([]);
-  const [disciplineOptions, setDisciplineOptions] = useState([]);
-
-  // Set programme type based on category from URL
-  useEffect(() => {
-    const categoryMap = {
-      ug: "UG",
-      pg: "PG",
-      phd: "PHD",
-    };
-    const mappedType = categoryMap[category] || "UG";
-    setProgrammeType(mappedType);
-  }, [category]);
+  const [semesterRange, setSemesterRange] = useState([]);
 
   // Reset all data when category changes
   useEffect(() => {
     setBatch(null);
     setStudentData([]);
     setFilteredData([]);
-    setCourseOptions([]);
-    setDisciplineOptions([]);
+    setSemesterRange([]);
     setSearchRollNo("");
     setFilterSemester(null);
-    setFilterDiscipline(null);
-    setSearchCourse(null);
     setShowData(false);
     setError(null);
   }, [category]);
 
-  // --- Compute stats live from filteredData ---
+  // Compute stats live from filteredData
   const totalStudents = new Set(filteredData.map((d) => d.roll_no)).size;
-  const totalCourses = new Set(filteredData.map((d) => d.course_code)).size;
-  const seen = new Set();
-  const regularCreditSum = filteredData.reduce((sum, d) => {
-    const g = d.grade?.toUpperCase();
-    if (!seen.has(d.course_code) && g && g !== "CD" && g !== "NOT SUBMITTED") {
-      seen.add(d.course_code);
-      return sum + (parseFloat(d.credit) || 0);
-    }
-    return sum;
-  }, 0);
-  const backlogImprovementEntries = filteredData.filter(
-    (d) =>
-      d.registration_type?.toLowerCase() === "backlog" ||
-      d.registration_type?.toLowerCase() === "improvement",
-  );
-  const backlogImprovementCount = backlogImprovementEntries.length;
-  const seenBacklog = new Set();
-  const backlogImprovementCreditSum = backlogImprovementEntries.reduce(
-    (sum, d) => {
-      const g = d.grade?.toUpperCase();
-      if (
-        !seenBacklog.has(d.course_code) &&
-        g &&
-        g !== "CD" &&
-        g !== "NOT SUBMITTED"
-      ) {
-        seenBacklog.add(d.course_code);
-        return sum + (parseFloat(d.credit) || 0);
-      }
-      return sum;
-    },
-    0,
-  );
+  const totalSemesterRange = semesterRange.length;
+  const unregisteredCount = filteredData.length;
 
   const handleViewData = async () => {
     if (!batch) {
@@ -154,21 +105,15 @@ export default function StudentsGradeInfo() {
         return;
       }
 
-      // Use export=true to fetch ALL records with no row limit
-      const params = new URLSearchParams();
-      params.append("batch_id", batch);
-      params.append("programme_type", programmeType);
-      params.append("export", "true");
-
       const response = await axios.get(
-        `${students_grade_info_api}?${params.toString()}`,
+        `${unregistered_students_api}?batch_id=${batch}`,
         { headers: { Authorization: `Token ${token}` } },
       );
 
       const { data } = response;
 
       if (!data.success) {
-        setError(data.error || "Failed to fetch student grade data.");
+        setError(data.error || "Failed to fetch unregistered student data.");
         setStudentData([]);
         setFilteredData([]);
         setShowData(true);
@@ -180,7 +125,8 @@ export default function StudentsGradeInfo() {
 
       if (!studentsArray || studentsArray.length === 0) {
         setError(
-          data.message || "No student data found for the selected batch.",
+          data.message ||
+            "No unregistered students found for the selected batch.",
         );
         setStudentData([]);
         setFilteredData([]);
@@ -191,37 +137,14 @@ export default function StudentsGradeInfo() {
 
       const processedData = studentsArray.map((student) => ({
         roll_no: student.roll_no || "N/A",
-        discipline: student.discipline || "N/A",
+        student_name: student.student_name || "N/A",
         semester_no: student.semester_no || "N/A",
-        course_code: student.course_code || "N/A",
-        course_name: student.course_name || "N/A",
-        credit: student.credit || "N/A",
-        grade: student.grade || "Not Submitted",
-        registration_type: student.registration_type || "N/A",
+        batch: student.batch || "N/A",
       }));
 
-      // Build course dropdown from loaded data
-      const uniqueCourses = [
-        ...new Set(processedData.map((item) => item.course_code)),
-      ]
-        .filter((code) => code !== "N/A")
-        .sort()
-        .map((code) => {
-          const course = processedData.find(
-            (item) => item.course_code === code,
-          );
-          return { value: code, label: `${code} - ${course.course_name}` };
-        });
-      setCourseOptions(uniqueCourses);
-
-      // Build discipline (specialization) dropdown from loaded data
-      const uniqueDisciplines = [
-        ...new Set(processedData.map((item) => item.discipline)),
-      ]
-        .filter((d) => d !== "N/A")
-        .sort()
-        .map((d) => ({ value: d, label: d }));
-      setDisciplineOptions(uniqueDisciplines);
+      // Use semester_range for display stats only
+      const semesterList = data.semester_range || [];
+      setSemesterRange(semesterList);
 
       setStudentData(processedData);
       setFilteredData(processedData);
@@ -229,7 +152,7 @@ export default function StudentsGradeInfo() {
 
       showNotification({
         title: "Success",
-        message: `Loaded ${processedData.length} student grade records successfully.`,
+        message: `Loaded ${processedData.length} unregistered student records successfully.`,
         color: "green",
       });
     } catch (err) {
@@ -246,12 +169,6 @@ export default function StudentsGradeInfo() {
   const handleFilter = () => {
     let filtered = [...studentData];
 
-    if (filterDiscipline) {
-      filtered = filtered.filter(
-        (item) => item.discipline === filterDiscipline,
-      );
-    }
-
     if (filterSemester) {
       // Extract semester number from value like "1_Odd Semester"
       const semesterNum = filterSemester.split("_")[0];
@@ -266,18 +183,13 @@ export default function StudentsGradeInfo() {
       );
     }
 
-    if (searchCourse) {
-      filtered = filtered.filter((item) => item.course_code === searchCourse);
-    }
-
     const sorted = [...filtered].sort((a, b) => {
       const rc = a.roll_no.localeCompare(b.roll_no, undefined, {
         numeric: true,
       });
       if (rc !== 0) return rc;
       const sc = Number(a.semester_no) - Number(b.semester_no);
-      if (sc !== 0) return sc;
-      return a.course_code.localeCompare(b.course_code);
+      return sc;
     });
 
     setFilteredData(sorted);
@@ -293,9 +205,7 @@ export default function StudentsGradeInfo() {
 
   const handleResetFilter = () => {
     setFilterSemester(null);
-    setFilterDiscipline(null);
     setSearchRollNo("");
-    setSearchCourse(null);
     setFilteredData(studentData);
   };
 
@@ -316,41 +226,19 @@ export default function StudentsGradeInfo() {
         return;
       }
 
-      const headers = [
-        "Roll No",
-        "Discipline",
-        "Semester No",
-        "Course Code",
-        "Course Name",
-        "Credit",
-        "Grade",
-        "Registration Type",
-      ];
+      const headers = ["Roll No", "Student Name", "Semester", "Batch"];
 
       const rows = dataToExport.map((item) => [
         item.roll_no,
-        item.discipline,
+        item.student_name,
         item.semester_no,
-        item.course_code,
-        item.course_name,
-        item.credit,
-        item.grade,
-        item.registration_type,
+        item.batch,
       ]);
 
-      const columnWidths = [
-        { wch: 10 },
-        { wch: 10 },
-        { wch: 8 },
-        { wch: 10 },
-        { wch: 16 },
-        { wch: 6 },
-        { wch: 10 },
-        { wch: 10 },
-      ];
+      const columnWidths = [{ wch: 12 }, { wch: 25 }, { wch: 10 }, { wch: 8 }];
 
       const wb = createStyledWorkbook(headers, rows, columnWidths);
-      downloadExcelFile(wb, `Students_Grade_Info_Batch_${batch}`, () =>
+      downloadExcelFile(wb, `Unregistered_Students_Batch_${batch}`, () =>
         setExportPreviewOpen(false),
       );
     } catch (err) {
@@ -366,40 +254,20 @@ export default function StudentsGradeInfo() {
   const handleReset = () => {
     setBatch(null);
     setFilterSemester(null);
-    setFilterDiscipline(null);
     setSearchRollNo("");
-    setSearchCourse(null);
-    setCourseOptions([]);
-    setDisciplineOptions([]);
+    setSemesterRange([]);
     setStudentData([]);
     setFilteredData([]);
     setShowData(false);
     setError(null);
   };
 
-  // Show blank for PG and PhD (not implemented yet)
-  if (category !== "ug") {
-    return (
-      <Container size="xl" py="xl">
-        <Card shadow="sm" padding="lg" radius="md" withBorder>
-          <Title order={2} mb="xl">
-            Student Grade Info BatchWise
-          </Title>
-          <Alert color="gray" title="Coming Soon">
-            This feature is not yet available for {category.toUpperCase()}{" "}
-            students.
-          </Alert>
-        </Card>
-      </Container>
-    );
-  }
-
   return (
     <Container size="xl" py="xl">
       <Card shadow="sm" padding="lg" radius="md" withBorder>
         <LoadingOverlay visible={loading} />
         <Title order={2} mb="xl">
-          Student Grade Information BatchWise
+          Unregistered Students BatchWise
         </Title>
 
         {error && (
@@ -436,7 +304,7 @@ export default function StudentsGradeInfo() {
                 disabled={loading}
                 mt="xl"
               >
-                View Student Grades for Batch {batch}
+                View Unregistered Students for Batch {batch}
               </Button>
             ) : null}
           </>
@@ -448,7 +316,9 @@ export default function StudentsGradeInfo() {
               style={{ backgroundColor: "#e7f5ff", borderRadius: "4px" }}
             >
               <Text size="sm">
-                <strong>Batch:</strong> {batch} | <strong>All Semesters</strong>
+                <strong>Batch:</strong> {batch} |{" "}
+                <strong>Semester Range:</strong> 1 to{" "}
+                {semesterRange.length || 0}
               </Text>
             </Box>
 
@@ -463,32 +333,12 @@ export default function StudentsGradeInfo() {
                   clearable
                   mb="md"
                 />
-                <Select
-                  label="Filter by Specialization"
-                  placeholder="All Specializations"
-                  data={disciplineOptions}
-                  value={filterDiscipline}
-                  onChange={setFilterDiscipline}
-                  clearable
-                  mb="md"
-                />
                 <TextInput
                   label="Filter by Roll No"
                   placeholder="Enter roll number"
                   value={searchRollNo}
                   onChange={(e) => setSearchRollNo(e.target.value)}
                   mb="md"
-                />
-                <Select
-                  label="Filter by Course"
-                  placeholder="All Courses"
-                  data={courseOptions}
-                  value={searchCourse}
-                  onChange={setSearchCourse}
-                  searchable
-                  clearable
-                  nothingFoundMessage="No courses found"
-                  mb="lg"
                 />
 
                 <Grid mb="lg" align="center">
@@ -553,10 +403,10 @@ export default function StudentsGradeInfo() {
                       >
                         <Group position="apart" align="center" spacing="md">
                           <Text size="sm" weight={500} color="#2b8a3e">
-                            Total Courses
+                            Semester Range
                           </Text>
                           <Text size="lg" weight={700} color="#2f9e44">
-                            {totalCourses}
+                            1 to {totalSemesterRange}
                           </Text>
                         </Group>
                       </Box>
@@ -571,46 +421,10 @@ export default function StudentsGradeInfo() {
                       >
                         <Group position="apart" align="center" spacing="md">
                           <Text size="sm" weight={500} color="#e67700">
-                            Total Credit Sum
+                            Unregistered Count
                           </Text>
                           <Text size="lg" weight={700} color="#f08c00">
-                            {regularCreditSum.toLocaleString()}
-                          </Text>
-                        </Group>
-                      </Box>
-                      <Box
-                        px="lg"
-                        py="sm"
-                        style={{
-                          backgroundColor: "#ffe0e0",
-                          borderRadius: "6px",
-                          border: "1px solid #ff9999",
-                        }}
-                      >
-                        <Group position="apart" align="center" spacing="md">
-                          <Text size="sm" weight={500} color="#c92a2a">
-                            Backlog/Improvement Count
-                          </Text>
-                          <Text size="lg" weight={700} color="#d63031">
-                            {backlogImprovementCount}
-                          </Text>
-                        </Group>
-                      </Box>
-                      <Box
-                        px="lg"
-                        py="sm"
-                        style={{
-                          backgroundColor: "#ffe0e0",
-                          borderRadius: "6px",
-                          border: "1px solid #ff9999",
-                        }}
-                      >
-                        <Group position="apart" align="center" spacing="md">
-                          <Text size="sm" weight={500} color="#c92a2a">
-                            Backlog/Improvement Credit Sum
-                          </Text>
-                          <Text size="lg" weight={700} color="#d63031">
-                            {backlogImprovementCreditSum.toLocaleString()}
+                            {unregisteredCount}
                           </Text>
                         </Group>
                       </Box>
@@ -624,40 +438,30 @@ export default function StudentsGradeInfo() {
                       <tr>
                         <th>S.No.</th>
                         <th>Roll No</th>
-                        <th>Discipline</th>
+                        <th>Student Name</th>
                         <th>Semester</th>
-                        <th>Course Code</th>
-                        <th>Course Name</th>
-                        <th>Credit</th>
-                        <th>Grade</th>
-                        <th>Registration Type</th>
+                        <th>Batch</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredData && filteredData.length > 0 ? (
                         filteredData.map((item, index) => (
                           <tr
-                            key={`${item.roll_no}-${item.course_code}-${index}`}
+                            key={`${item.roll_no}-${item.semester_no}-${index}`}
                           >
                             <td>{index + 1}</td>
                             <td>
                               <strong>{item.roll_no}</strong>
                             </td>
-                            <td>{item.discipline}</td>
+                            <td>{item.student_name}</td>
                             <td>{item.semester_no}</td>
-                            <td>{item.course_code}</td>
-                            <td>{item.course_name}</td>
-                            <td>{item.credit}</td>
-                            <td>
-                              <strong>{item.grade}</strong>
-                            </td>
-                            <td>{item.registration_type}</td>
+                            <td>{item.batch}</td>
                           </tr>
                         ))
                       ) : (
                         <tr>
                           <td
-                            colSpan="9"
+                            colSpan="5"
                             style={{ textAlign: "center", padding: "20px" }}
                           >
                             <Text color="dimmed">
@@ -687,13 +491,9 @@ export default function StudentsGradeInfo() {
                         <tr>
                           <th>S.No.</th>
                           <th>Roll No</th>
-                          <th>Discipline</th>
+                          <th>Student Name</th>
                           <th>Sem</th>
-                          <th>Course Code</th>
-                          <th>Course Name</th>
-                          <th>Credit</th>
-                          <th>Grade</th>
-                          <th>Type</th>
+                          <th>Batch</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -704,19 +504,13 @@ export default function StudentsGradeInfo() {
                           .slice(0, 20)
                           .map((row, idx) => (
                             <tr
-                              key={`${row.roll_no}-${row.course_code}-${idx}`}
+                              key={`${row.roll_no}-${row.semester_no}-${idx}`}
                             >
                               <td>{idx + 1}</td>
                               <td>{row.roll_no}</td>
-                              <td>{row.discipline}</td>
+                              <td>{row.student_name}</td>
                               <td>{row.semester_no}</td>
-                              <td>{row.course_code}</td>
-                              <td>{row.course_name}</td>
-                              <td>{row.credit}</td>
-                              <td>
-                                <strong>{row.grade}</strong>
-                              </td>
-                              <td>{row.registration_type}</td>
+                              <td>{row.batch}</td>
                             </tr>
                           ))}
                       </tbody>
@@ -742,7 +536,7 @@ export default function StudentsGradeInfo() {
             ) : (
               <Box p="xl">
                 <Text size="lg" color="dimmed" mb="lg">
-                  No data found for the selected criteria.
+                  No unregistered students found for the selected criteria.
                 </Text>
                 <Button
                   variant="outline"

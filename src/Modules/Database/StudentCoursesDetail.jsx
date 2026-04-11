@@ -22,7 +22,6 @@ import { Download } from "@phosphor-icons/react";
 import {
   createStyledWorkbook,
   downloadExcelFile,
-  sanitizeFilename,
 } from "./utils/excelExportUtils";
 import { host } from "../../routes/globalRoutes";
 
@@ -32,12 +31,6 @@ const student_courses_detail_api = `${host}/database/api/student-courses-detail/
 export default function StudentCoursesDetail() {
   const [searchParams] = useSearchParams();
   const category = searchParams.get("category") || "ug";
-
-  const programmeTypes = [
-    { value: "UG", label: "UG (Undergraduate)" },
-    { value: "PG", label: "PG (Postgraduate)" },
-    { value: "PHD", label: "PhD (Doctor of Philosophy)" },
-  ];
 
   // Generate dynamic batch options: 2021 to current year
   const currentYear = new Date().getFullYear();
@@ -66,7 +59,6 @@ export default function StudentCoursesDetail() {
 
   const [batch, setBatch] = useState(null);
   const [programmeType, setProgrammeType] = useState("UG");
-  const [semesterNo, setSemesterNo] = useState("");
   const [studentData, setStudentData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -76,7 +68,7 @@ export default function StudentCoursesDetail() {
   const [searchRollNo, setSearchRollNo] = useState("");
   const [searchCourse, setSearchCourse] = useState(null);
   const [filterSemester, setFilterSemester] = useState(null);
-  const [filterDiscipline, setFilterDiscipline] = useState(null); 
+  const [filterDiscipline, setFilterDiscipline] = useState(null);
   const [courseOptions, setCourseOptions] = useState([]);
   const [disciplineOptions, setDisciplineOptions] = useState([]);
 
@@ -131,7 +123,7 @@ export default function StudentCoursesDetail() {
         `${student_courses_detail_api}?${params.toString()}`,
         {
           headers: { Authorization: `Token ${token}` },
-        }
+        },
       );
 
       const { data } = response;
@@ -150,7 +142,9 @@ export default function StudentCoursesDetail() {
       const studentsArray = data.data || [];
 
       if (!studentsArray || studentsArray.length === 0) {
-        setError(data.message || "No student data found for the selected criteria.");
+        setError(
+          data.message || "No student data found for the selected criteria.",
+        );
         setStudentData([]);
         setFilteredData([]);
         setShowData(true);
@@ -158,16 +152,15 @@ export default function StudentCoursesDetail() {
         return;
       }
 
-      
       const processedData = studentsArray.map((student) => {
         const semesterNo = student.semester || student.semester_no || "N/A";
         const semesterType = student.semester_type || "";
-        
 
-        const semesterKey = semesterNo !== "N/A" && semesterType 
-          ? `${semesterNo}_${semesterType}`
-          : semesterNo;
-        
+        const semesterKey =
+          semesterNo !== "N/A" && semesterType
+            ? `${semesterNo}_${semesterType}`
+            : semesterNo;
+
         return {
           roll_no: student.roll_no || "N/A",
           discipline: student.discipline || "N/A",
@@ -181,23 +174,28 @@ export default function StudentCoursesDetail() {
         };
       });
 
-   
-      const uniqueCourses = [...new Set(processedData.map(item => item.course_code))]
-        .filter(code => code !== "N/A")
+      const uniqueCourses = [
+        ...new Set(processedData.map((item) => item.course_code)),
+      ]
+        .filter((code) => code !== "N/A")
         .sort()
-        .map(code => {
-          const course = processedData.find(item => item.course_code === code);
+        .map((code) => {
+          const course = processedData.find(
+            (item) => item.course_code === code,
+          );
           return {
             value: code,
-            label: `${code} - ${course.course_name}`
+            label: `${code} - ${course.course_name}`,
           };
         });
       setCourseOptions(uniqueCourses);
 
-      const uniqueDisciplines = [...new Set(processedData.map(item => item.discipline))]
-        .filter(d => d !== "N/A")
+      const uniqueDisciplines = [
+        ...new Set(processedData.map((item) => item.discipline)),
+      ]
+        .filter((d) => d !== "N/A")
         .sort()
-        .map(d => ({ value: d, label: d }));
+        .map((d) => ({ value: d, label: d }));
       setDisciplineOptions(uniqueDisciplines);
 
       // Data is already sorted by backend (roll_no, then course_code)
@@ -224,31 +222,32 @@ export default function StudentCoursesDetail() {
     let filtered = [...studentData]; // Create a copy to avoid mutation
 
     if (filterDiscipline) {
-      filtered = filtered.filter((item) => item.discipline === filterDiscipline);
+      filtered = filtered.filter(
+        (item) => item.discipline === filterDiscipline,
+      );
     }
 
     if (filterSemester) {
       filtered = filtered.filter((item) => {
-
         return item.semester === filterSemester;
       });
     }
 
     if (searchRollNo) {
       filtered = filtered.filter((item) =>
-        item.roll_no.toLowerCase().includes(searchRollNo.toLowerCase().trim())
+        item.roll_no.toLowerCase().includes(searchRollNo.toLowerCase().trim()),
       );
     }
 
     if (searchCourse) {
-      filtered = filtered.filter(
-        (item) => item.course_code === searchCourse
-      );
+      filtered = filtered.filter((item) => item.course_code === searchCourse);
     }
 
     // Sort by roll number, then by semester number, then by course code
     const sortedFiltered = [...filtered].sort((a, b) => {
-      const rollCompare = a.roll_no.localeCompare(b.roll_no, undefined, { numeric: true });
+      const rollCompare = a.roll_no.localeCompare(b.roll_no, undefined, {
+        numeric: true,
+      });
       if (rollCompare !== 0) return rollCompare;
       const semesterCompare = Number(a.semester_no) - Number(b.semester_no);
       if (semesterCompare !== 0) return semesterCompare;
@@ -256,7 +255,7 @@ export default function StudentCoursesDetail() {
     });
 
     setFilteredData(sortedFiltered);
-    
+
     // Show notification if no results
     if (sortedFiltered.length === 0) {
       showNotification({
@@ -295,7 +294,8 @@ export default function StudentCoursesDetail() {
       const headers = [
         "Roll No",
         "Discipline",
-        "Semester",
+        "Semester No",
+        "Semester Type",
         "Course Code",
         "Course Name",
         "Credit",
@@ -305,6 +305,7 @@ export default function StudentCoursesDetail() {
         item.roll_no,
         item.discipline,
         item.semester_no,
+        item.semester_type,
         item.course_code,
         item.course_name,
         item.credit,
@@ -315,6 +316,7 @@ export default function StudentCoursesDetail() {
         { wch: 10 },
         { wch: 10 },
         { wch: 10 },
+        { wch: 14 },
         { wch: 10 },
         { wch: 20 },
         { wch: 8 },
@@ -322,7 +324,9 @@ export default function StudentCoursesDetail() {
       ];
 
       const wb = createStyledWorkbook(headers, rows, columnWidths);
-      downloadExcelFile(wb, `Student_Courses_Detail_Batch_${batch}`, () => setExportPreviewOpen(false));
+      downloadExcelFile(wb, `Student_Courses_Detail_Batch_${batch}`, () =>
+        setExportPreviewOpen(false),
+      );
     } catch (err) {
       console.error("Export error:", err);
       showNotification({
@@ -335,7 +339,6 @@ export default function StudentCoursesDetail() {
 
   const handleReset = () => {
     setBatch(null);
-    setSemesterNo("");
     setFilterSemester(null);
     setFilterDiscipline(null);
     setSearchRollNo("");
@@ -364,8 +367,10 @@ export default function StudentCoursesDetail() {
     return t === "backlog" || t === "improvement";
   });
   const backlogImprovementCount = backlogImprovementEntries.length;
-  const backlogImprovementCreditSum = backlogImprovementEntries
-    .reduce((sum, item) => sum + (parseFloat(item.credit) || 0), 0);
+  const backlogImprovementCreditSum = backlogImprovementEntries.reduce(
+    (sum, item) => sum + (parseFloat(item.credit) || 0),
+    0,
+  );
 
   // Show blank for PG and PhD (not implemented yet)
   if (category !== "ug") {
@@ -376,7 +381,8 @@ export default function StudentCoursesDetail() {
             Student Course Detail BatchWise
           </Title>
           <Alert color="gray" title="Coming Soon">
-            This feature is not yet available for {category.toUpperCase()} students.
+            This feature is not yet available for {category.toUpperCase()}{" "}
+            students.
           </Alert>
         </Card>
       </Container>
@@ -551,8 +557,9 @@ export default function StudentCoursesDetail() {
                           </Text>
                           <Text size="lg" weight={700} color="#2f9e44">
                             {
-                              new Set(filteredData.map((item) => item.course_code))
-                                .size
+                              new Set(
+                                filteredData.map((item) => item.course_code),
+                              ).size
                             }
                           </Text>
                         </Group>
@@ -622,7 +629,8 @@ export default function StudentCoursesDetail() {
                         <th>S.No.</th>
                         <th>Roll No</th>
                         <th>Discipline</th>
-                        <th>Semester</th>
+                        <th>Semester No</th>
+                        <th>Semester Type</th>
                         <th>Course Code</th>
                         <th>Course Name</th>
                         <th>Credit</th>
@@ -632,13 +640,16 @@ export default function StudentCoursesDetail() {
                     <tbody>
                       {filteredData && filteredData.length > 0 ? (
                         filteredData.map((item, index) => (
-                          <tr key={`${item.roll_no}-${item.course_code}-${index}`}>
+                          <tr
+                            key={`${item.roll_no}-${item.course_code}-${index}`}
+                          >
                             <td>{index + 1}</td>
                             <td>
                               <strong>{item.roll_no}</strong>
                             </td>
                             <td>{item.discipline}</td>
                             <td>{item.semester_no}</td>
+                            <td>{item.semester_type}</td>
                             <td>{item.course_code}</td>
                             <td>{item.course_name}</td>
                             <td>{item.credit}</td>
@@ -647,8 +658,13 @@ export default function StudentCoursesDetail() {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan="8" style={{ textAlign: "center", padding: "20px" }}>
-                            <Text color="dimmed">No records found matching the filter criteria.</Text>
+                          <td
+                            colSpan="8"
+                            style={{ textAlign: "center", padding: "20px" }}
+                          >
+                            <Text color="dimmed">
+                              No records found matching the filter criteria.
+                            </Text>
                           </td>
                         </tr>
                       )}
@@ -664,8 +680,8 @@ export default function StudentCoursesDetail() {
                   centered
                 >
                   <Text size="sm" mb="sm" c="dimmed">
-                    You are about to export the data shown below. Review the preview
-                    and click Export to download the file.
+                    You are about to export the data shown below. Review the
+                    preview and click Export to download the file.
                   </Text>
                   <Box style={{ maxHeight: 360, overflowY: "auto" }}>
                     <Table striped highlightOnHover withTableBorder>
@@ -674,7 +690,8 @@ export default function StudentCoursesDetail() {
                           <th>S.No.</th>
                           <th>Roll No</th>
                           <th>Discipline</th>
-                          <th>Semester</th>
+                          <th>Semester No</th>
+                          <th>Semester Type</th>
                           <th>Course Code</th>
                           <th>Course Name</th>
                           <th>Credit</th>
@@ -682,14 +699,20 @@ export default function StudentCoursesDetail() {
                         </tr>
                       </thead>
                       <tbody>
-                        {(filteredData && filteredData.length ? filteredData : studentData)
+                        {(filteredData && filteredData.length
+                          ? filteredData
+                          : studentData
+                        )
                           .slice(0, 20)
                           .map((row, idx) => (
-                            <tr key={`${row.roll_no}-${row.course_code}-${idx}`}>
+                            <tr
+                              key={`${row.roll_no}-${row.course_code}-${idx}`}
+                            >
                               <td>{idx + 1}</td>
                               <td>{row.roll_no}</td>
                               <td>{row.discipline}</td>
                               <td>{row.semester_no}</td>
+                              <td>{row.semester_type}</td>
                               <td>{row.course_code}</td>
                               <td>{row.course_name}</td>
                               <td>{row.credit}</td>
@@ -700,10 +723,17 @@ export default function StudentCoursesDetail() {
                     </Table>
                   </Box>
                   <Group mt="md" position="right">
-                    <Button variant="default" onClick={() => setExportPreviewOpen(false)}>
+                    <Button
+                      variant="default"
+                      onClick={() => setExportPreviewOpen(false)}
+                    >
                       Cancel
                     </Button>
-                    <Button leftSection={<Download size={18} />} color="green" onClick={handleDownloadData}>
+                    <Button
+                      leftSection={<Download size={18} />}
+                      color="green"
+                      onClick={handleDownloadData}
+                    >
                       Export Excel
                     </Button>
                   </Group>
