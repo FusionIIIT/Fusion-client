@@ -36,24 +36,6 @@ export default function Nav() {
     }
   };
 
-  const activeLinkStyle = {
-    backgroundColor: "#15abff13",
-    color: "#15abff",
-    borderBottom: "2px solid #15abff",
-    borderBottomLeftRadius: "4px",
-    borderBottomRightRadius: "4px",
-  };
-
-  const defaultLinkStyle = {
-    textDecoration: "none",
-    padding: "10px 15px",
-    color: "black",
-    display: "block",
-    width: "100%",
-    textAlign: "center",
-    borderBottom: "2px solid #e0e0e0",
-  };
-
   const categoryButtonStyle = (isActive) => ({
     padding: "8px 16px",
     marginRight: "10px",
@@ -71,7 +53,7 @@ export default function Nav() {
       title: "Course-wise Student Count",
       path: "/database/view",
       roles: ["acadadmin"],
-      categories: ["ug", "pg", "phd"],
+      categories: ["ug", "pg"],
     },
     {
       title: "Student Course Detail BatchWise",
@@ -85,16 +67,25 @@ export default function Nav() {
       roles: ["acadadmin"],
       categories: ["ug"],
     },
+    {
+      title: "Unregistered Students BatchWise",
+      path: "/database/unregistered-students",
+      roles: ["acadadmin"],
+      categories: ["ug"],
+    },
   ];
 
   const filteredTabs = tabItems.filter(
-    (tab) => tab.roles.includes(userRole) && tab.categories.includes(activeCategory)
+    (tab) =>
+      tab.roles.includes(userRole) && tab.categories.includes(activeCategory),
   );
 
   return (
     <div style={{ marginBottom: "30px" }}>
       {/* Category buttons */}
-      <div style={{ display: "flex", alignItems: "center", marginBottom: "12px" }}>
+      <div
+        style={{ display: "flex", alignItems: "center", marginBottom: "12px" }}
+      >
         <button
           style={categoryButtonStyle(activeCategory === "ug")}
           onClick={() => handleCategoryChange("ug")}
@@ -119,12 +110,17 @@ export default function Nav() {
 
       {/* Sub-tabs shown for available category-specific views */}
       {filteredTabs.length > 0 && (
-        <div style={{ display: "flex", alignItems: "center", height: "5vh" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <button
-            style={{ background: "transparent", border: "none", cursor: "pointer" }}
+            style={{
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+            }}
             onClick={scrollLeft}
           >
-            <CaretCircleLeft size={25} />
+            <CaretCircleLeft size={24} />
           </button>
           <div
             style={{
@@ -134,35 +130,63 @@ export default function Nav() {
               scrollbarWidth: "none",
               msOverflowStyle: "none",
               flexWrap: "nowrap",
+              flex: 1,
+              position: "relative",
+              paddingBottom: "8px",
             }}
             ref={scrollContainerRef}
           >
             {filteredTabs.map((tab, index) => (
               <div
                 key={index}
-                style={{ display: "flex", alignItems: "center", padding: "0" }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "0",
+                  whiteSpace: "nowrap",
+                }}
               >
                 <NavLink
                   to={`${tab.path}?category=${activeCategory}`}
                   style={({ isActive }) => ({
-                    ...defaultLinkStyle,
-                    ...(isActive ? activeLinkStyle : {}),
+                    textDecoration: "none",
+                    padding: "10px 15px",
+                    color: isActive ? "#15abff" : "black",
+                    display: "block",
+                    fontSize: "14px",
+                    borderBottom: isActive ? "3px solid #15abff" : "none",
+                    fontWeight: isActive ? "600" : "400",
+                    transition: "all 0.2s ease",
                   })}
                 >
                   {tab.title}
                 </NavLink>
               </div>
             ))}
+            <div
+              style={{
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: "2px",
+                backgroundColor: "#e0e0e0",
+              }}
+            />
           </div>
           <button
-            style={{ background: "transparent", border: "none", cursor: "pointer" }}
+            style={{
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+            }}
             onClick={scrollRight}
           >
-            <CaretCircleRight size={25} />
+            <CaretCircleRight size={24} />
           </button>
         </div>
       )}
     </div>
   );
 }
-

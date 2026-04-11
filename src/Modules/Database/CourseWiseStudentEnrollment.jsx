@@ -21,7 +21,6 @@ import { Download } from "@phosphor-icons/react";
 import {
   createStyledWorkbook,
   downloadExcelFile,
-  sanitizeFilename,
 } from "./utils/excelExportUtils";
 import { host } from "../../routes/globalRoutes";
 
@@ -37,11 +36,6 @@ export default function CourseWiseStudentEnrollment() {
     { value: "Odd Semester", label: "Odd Semester" },
     { value: "Even Semester", label: "Even Semester" },
     { value: "Summer Semester", label: "Summer Semester" },
-  ];
-  const programmeTypes = [
-    { value: "UG", label: "UG (Undergraduate)" },
-    { value: "PG", label: "PG (Postgraduate)" },
-    { value: "PHD", label: "PhD (Doctor of Philosophy)" },
   ];
 
   const [year, setYear] = useState("");
@@ -75,7 +69,6 @@ export default function CourseWiseStudentEnrollment() {
     setProgrammeType(mappedType);
   }, [category]);
 
- 
   useEffect(() => {
     setYear("");
     setSemesterType("");
@@ -112,7 +105,7 @@ export default function CourseWiseStudentEnrollment() {
           years.map((y) => ({
             value: y,
             label: y,
-          }))
+          })),
         );
       } catch {
         setError("Failed to load academic years.");
@@ -149,15 +142,15 @@ export default function CourseWiseStudentEnrollment() {
           `${course_student_count_api}?${params.toString()}`,
           {
             headers: { Authorization: `Token ${token}` },
-          }
+          },
         );
 
         if (data && data.courses && data.courses.length > 0) {
           // Deduplicate courses by code
           const uniqueCourses = Array.from(
-            new Map(data.courses.map((c) => [c.code, c])).values()
+            new Map(data.courses.map((c) => [c.code, c])).values(),
           );
-          
+
           const courseOpts = [
             { value: "", label: "All Courses" },
             ...uniqueCourses.map((c) => ({
@@ -182,7 +175,9 @@ export default function CourseWiseStudentEnrollment() {
 
   const handleViewDatabase = async () => {
     if (!year || !semesterType || !programmeType) {
-      setError("Please select academic year, semester type, and programme type.");
+      setError(
+        "Please select academic year, semester type, and programme type.",
+      );
       return;
     }
 
@@ -197,23 +192,20 @@ export default function CourseWiseStudentEnrollment() {
         return;
       }
 
-  
       const params = new URLSearchParams();
       params.append("session", year);
       params.append("semester_type", semesterType);
       params.append("programme_type", programmeType);
-      
-     
+
       if (courseFilter) {
         params.append("code", courseFilter);
       }
 
-     
       const { data } = await axios.get(
         `${course_student_count_api}?${params.toString()}`,
         {
           headers: { Authorization: `Token ${token}` },
-        }
+        },
       );
 
       // Ensure we have courses data
@@ -244,13 +236,10 @@ export default function CourseWiseStudentEnrollment() {
         })
         .sort((a, b) => a.course_code.localeCompare(b.course_code));
 
-   
-
-     
       const uniqueSummary = Array.from(
-        new Map(summary.map((c) => [c.course_code, c])).values()
+        new Map(summary.map((c) => [c.course_code, c])).values(),
       );
-      
+
       const courseOpts = [
         { value: "All", label: "All Courses" },
         ...uniqueSummary.map((c) => ({
@@ -259,8 +248,8 @@ export default function CourseWiseStudentEnrollment() {
         })),
       ];
       setCourseOptions(courseOpts);
-      setDatabaseData(summary);
-      setFilteredData(summary);
+      setDatabaseData(uniqueSummary);
+      setFilteredData(uniqueSummary);
       setSelectedCourse("All");
       setShowData(true);
       showNotification({
@@ -281,29 +270,62 @@ export default function CourseWiseStudentEnrollment() {
 
   const handleDownloadDatabase = () => {
     try {
-      const isStudentExport = selectedCourse && selectedCourse !== "All" && filteredStudents.length > 0;
+      const isStudentExport =
+        selectedCourse &&
+        selectedCourse !== "All" &&
+        filteredStudents.length > 0;
 
-      let headers, rows, filename, columnWidths;
+      let headers;
+      let rows;
+      let filename;
+      let columnWidths;
 
       if (isStudentExport) {
-        headers = ["Roll No", "Discipline", "Course Code", "Course Name", "Credit"];
-        rows = filteredStudents.map((s) => [s.roll_no, s.discipline, s.course_code, s.course_name, s.credit]);
+        headers = [
+          "Roll No",
+          "Discipline",
+          "Course Code",
+          "Course Name",
+          "Credit",
+        ];
+        rows = filteredStudents.map((s) => [
+          s.roll_no,
+          s.discipline,
+          s.course_code,
+          s.course_name,
+          s.credit,
+        ]);
         filename = `Students_${selectedCourse}_${new Date().getFullYear()}_${semesterType.replace(/ /g, "_")}`;
         columnWidths = [
-          { wch: 12 },  // Roll No
-          { wch: 12 },  // Discipline
-          { wch: 12 },  // Course Code
-          { wch: 25 },  // Course Name
-          { wch: 8 },   // Credit
+          { wch: 12 }, // Roll No
+          { wch: 12 }, // Discipline
+          { wch: 12 }, // Course Code
+          { wch: 25 }, // Course Name
+          { wch: 8 }, // Credit
         ];
       } else {
-        const dataToExport = filteredData && filteredData.length ? filteredData : databaseData;
+        const dataToExport =
+          filteredData && filteredData.length ? filteredData : databaseData;
         if (!dataToExport || dataToExport.length === 0) {
           setError("No data to download.");
           return;
         }
-        headers = ["Academic Year", "Semester Type", "Course Code", "Course Name", "Credit", "Student Count"];
-        rows = dataToExport.map((item) => [item.academic_year, item.semester_type, item.course_code, item.course_name, item.credit, item.student_count]);
+        headers = [
+          "Academic Year",
+          "Semester Type",
+          "Course Code",
+          "Course Name",
+          "Credit",
+          "Student Count",
+        ];
+        rows = dataToExport.map((item) => [
+          item.academic_year,
+          item.semester_type,
+          item.course_code,
+          item.course_name,
+          item.credit,
+          item.student_count,
+        ]);
         filename = `CourseWise_Student_Summary_${year}_${semesterType.replace(/ /g, "_")}`;
         columnWidths = [
           { wch: 12 },
@@ -319,7 +341,11 @@ export default function CourseWiseStudentEnrollment() {
       downloadExcelFile(wb, filename, () => setExportPreviewOpen(false));
     } catch (err) {
       console.error("Export error:", err);
-      showNotification({ title: "Export Failed", message: err.message || "Failed to export data.", color: "red" });
+      showNotification({
+        title: "Export Failed",
+        message: err.message || "Failed to export data.",
+        color: "red",
+      });
     }
   };
 
@@ -335,7 +361,9 @@ export default function CourseWiseStudentEnrollment() {
       return;
     }
 
-    setFilteredData(databaseData.filter((item) => item.course_code === courseCode));
+    setFilteredData(
+      databaseData.filter((item) => item.course_code === courseCode),
+    );
 
     setLoadingStudents(true);
     try {
@@ -348,15 +376,28 @@ export default function CourseWiseStudentEnrollment() {
         });
         return;
       }
-      const params = new URLSearchParams({ session: year, semester_type: semesterType, course_code: courseCode, programme_type: programmeType });
-      const { data } = await axios.get(`${course_students_api}?${params.toString()}`, {
-        headers: { Authorization: `Token ${token}` },
+      const params = new URLSearchParams({
+        session: year,
+        semester_type: semesterType,
+        course_code: courseCode,
+        programme_type: programmeType,
       });
+      const { data } = await axios.get(
+        `${course_students_api}?${params.toString()}`,
+        {
+          headers: { Authorization: `Token ${token}` },
+        },
+      );
       const students = data.students || [];
       setCourseStudents(students);
       setFilteredStudents(students);
-      const disciplines = ["All", ...new Set(students.map((s) => s.discipline).filter(Boolean))];
-      setSpecializationOptions(disciplines.map((d) => ({ value: d, label: d })));
+      const disciplines = [
+        "All",
+        ...new Set(students.map((s) => s.discipline).filter(Boolean)),
+      ];
+      setSpecializationOptions(
+        disciplines.map((d) => ({ value: d, label: d })),
+      );
     } catch (err) {
       console.error("Error fetching course students:", err);
       showNotification({
@@ -404,7 +445,18 @@ export default function CourseWiseStudentEnrollment() {
 
   // Block access for PhD (component not available)
   if (category === "phd") {
-    return null;
+    return (
+      <Container size="xl" py="xl">
+        <Card shadow="sm" padding="lg" radius="md" withBorder>
+          <Title order={2} mb="xl">
+            Course-wise Student Count
+          </Title>
+          <Alert color="gray" title="Coming Soon">
+            This feature is not yet available for PhD students.
+          </Alert>
+        </Card>
+      </Container>
+    );
   }
 
   return (
@@ -412,7 +464,7 @@ export default function CourseWiseStudentEnrollment() {
       <Card shadow="sm" padding="lg" radius="md" withBorder>
         <LoadingOverlay visible={loading} />
         <Title order={2} mb="xl">
-         Course-wise Student Count
+          Course-wise Student Count
         </Title>
 
         {error && (
@@ -454,7 +506,9 @@ export default function CourseWiseStudentEnrollment() {
                   data={courseFilterOptions}
                   value={courseFilter}
                   onChange={setCourseFilter}
-                  disabled={loadingCourses || !year || !semesterType || !programmeType}
+                  disabled={
+                    loadingCourses || !year || !semesterType || !programmeType
+                  }
                   searchable
                   clearable
                 />
@@ -483,8 +537,9 @@ export default function CourseWiseStudentEnrollment() {
               style={{ backgroundColor: "#e7f5ff", borderRadius: "4px" }}
             >
               <Text size="sm">
-                <strong>Academic Year:</strong> {year} | <strong>Semester:</strong>{" "}
-                {semesterType} | <strong>Programme:</strong> {programmeType}
+                <strong>Academic Year:</strong> {year} |{" "}
+                <strong>Semester:</strong> {semesterType} |{" "}
+                <strong>Programme:</strong> {programmeType}
               </Text>
             </Box>
 
@@ -501,17 +556,19 @@ export default function CourseWiseStudentEnrollment() {
                   mb="lg"
                 />
 
-                {selectedCourse && selectedCourse !== "All" && specializationOptions.length > 0 && (
-                  <Select
-                    label="Filter by Specialization"
-                    placeholder="Select specialization"
-                    data={specializationOptions}
-                    value={selectedSpecialization}
-                    onChange={handleSpecializationFilter}
-                    disabled={loadingStudents}
-                    mb="lg"
-                  />
-                )}
+                {selectedCourse &&
+                  selectedCourse !== "All" &&
+                  specializationOptions.length > 0 && (
+                    <Select
+                      label="Filter by Specialization"
+                      placeholder="Select specialization"
+                      data={specializationOptions}
+                      value={selectedSpecialization}
+                      onChange={handleSpecializationFilter}
+                      disabled={loadingStudents}
+                      mb="lg"
+                    />
+                  )}
 
                 <Grid mb="lg" align="center">
                   <Grid.Col xs={12} md={5}>
@@ -572,7 +629,10 @@ export default function CourseWiseStudentEnrollment() {
                           <Text size="lg" weight={700} color="#1971c2">
                             {selectedCourse && selectedCourse !== "All"
                               ? filteredStudents.length
-                              : filteredData.reduce((acc, item) => acc + item.student_count, 0)}
+                              : filteredData.reduce(
+                                  (acc, item) => acc + item.student_count,
+                                  0,
+                                )}
                           </Text>
                         </Group>
                       </Box>
@@ -606,9 +666,13 @@ export default function CourseWiseStudentEnrollment() {
                     <tbody>
                       {selectedCourse && selectedCourse !== "All"
                         ? filteredStudents.map((item, index) => (
-                            <tr key={`${item.roll_no}-${item.course_code}-${index}`}>
+                            <tr
+                              key={`${item.roll_no}-${item.course_code}-${index}`}
+                            >
                               <td>{index + 1}</td>
-                              <td><strong>{item.roll_no}</strong></td>
+                              <td>
+                                <strong>{item.roll_no}</strong>
+                              </td>
                               <td>{item.discipline}</td>
                               <td>{item.course_code}</td>
                               <td>{item.course_name}</td>
@@ -618,10 +682,14 @@ export default function CourseWiseStudentEnrollment() {
                         : filteredData.map((item, index) => (
                             <tr key={`${item.course_code}-${index}`}>
                               <td>{index + 1}</td>
-                              <td><strong>{item.course_code}</strong></td>
+                              <td>
+                                <strong>{item.course_code}</strong>
+                              </td>
                               <td>{item.course_name}</td>
                               <td>{item.credit}</td>
-                              <td><strong>{item.student_count}</strong></td>
+                              <td>
+                                <strong>{item.student_count}</strong>
+                              </td>
                             </tr>
                           ))}
                     </tbody>
@@ -636,15 +704,17 @@ export default function CourseWiseStudentEnrollment() {
                   centered
                 >
                   <Text size="sm" mb="sm" c="dimmed">
-                    You are about to export the data shown below. Review the preview
-                    and click Export to download the file.
+                    You are about to export the data shown below. Review the
+                    preview and click Export to download the file.
                   </Text>
-                  <Box style={{ maxHeight: 360, overflowY: 'auto' }}>
+                  <Box style={{ maxHeight: 360, overflowY: "auto" }}>
                     <Table striped highlightOnHover withTableBorder>
                       <thead>
                         <tr>
                           <th>S.No.</th>
-                          {selectedCourse && selectedCourse !== "All" && filteredStudents.length > 0 ? (
+                          {selectedCourse &&
+                          selectedCourse !== "All" &&
+                          filteredStudents.length > 0 ? (
                             <>
                               <th>Roll No</th>
                               <th>Discipline</th>
@@ -663,9 +733,13 @@ export default function CourseWiseStudentEnrollment() {
                         </tr>
                       </thead>
                       <tbody>
-                        {selectedCourse && selectedCourse !== "All" && filteredStudents.length > 0
+                        {selectedCourse &&
+                        selectedCourse !== "All" &&
+                        filteredStudents.length > 0
                           ? filteredStudents.slice(0, 20).map((row, idx) => (
-                              <tr key={`${row.roll_no}-${row.course_code}-${idx}`}>
+                              <tr
+                                key={`${row.roll_no}-${row.course_code}-${idx}`}
+                              >
                                 <td>{idx + 1}</td>
                                 <td>{row.roll_no}</td>
                                 <td>{row.discipline}</td>
@@ -674,7 +748,10 @@ export default function CourseWiseStudentEnrollment() {
                                 <td>{row.credit}</td>
                               </tr>
                             ))
-                          : (filteredData && filteredData.length ? filteredData : databaseData)
+                          : (filteredData && filteredData.length
+                              ? filteredData
+                              : databaseData
+                            )
                               .slice(0, 20)
                               .map((row, idx) => (
                                 <tr key={`${row.course_code}-${idx}`}>
@@ -689,10 +766,17 @@ export default function CourseWiseStudentEnrollment() {
                     </Table>
                   </Box>
                   <Group mt="md" position="right">
-                    <Button variant="default" onClick={() => setExportPreviewOpen(false)}>
+                    <Button
+                      variant="default"
+                      onClick={() => setExportPreviewOpen(false)}
+                    >
                       Cancel
                     </Button>
-                    <Button leftSection={<Download size={18} />} color="green" onClick={handleDownloadDatabase}>
+                    <Button
+                      leftSection={<Download size={18} />}
+                      color="green"
+                      onClick={handleDownloadDatabase}
+                    >
                       Export Excel
                     </Button>
                   </Group>

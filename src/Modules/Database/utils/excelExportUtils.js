@@ -30,13 +30,13 @@ export const createStyledWorkbook = (headers, rows, columnWidths = []) => {
 
   // Add borders and styling to all cells
   const range = XLSX.utils.decode_range(ws["!ref"]);
-  for (let row = range.s.r; row <= range.e.r; row++) {
-    for (let col = range.s.c; col <= range.e.c; col++) {
+  for (let row = range.s.r; row <= range.e.r; row += 1) {
+    for (let col = range.s.c; col <= range.e.c; col += 1) {
       const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
       if (!ws[cellAddress]) ws[cellAddress] = { v: "", t: "s" };
 
       ws[cellAddress].s = {
-        border: border,
+        border,
         alignment: { horizontal: "center", vertical: "center", wrapText: true },
         ...(row === 0 && {
           fill: { fgColor: { rgb: "D3D3D3" } },

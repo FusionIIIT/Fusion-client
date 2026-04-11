@@ -2,9 +2,11 @@ import { Breadcrumbs, Text } from "@mantine/core";
 import { CaretRight } from "@phosphor-icons/react";
 import { Link, useLocation } from "react-router-dom";
 
-
 const breadcrumbMap = {
   "/database/view": "Course-wise Student Enrollment",
+  "/database/student-courses": "Student Course Detail",
+  "/database/students-grade": "Student Grade Info",
+  "/database/unregistered-students": "Unregistered Students",
 };
 
 function CustomBreadDatabase() {
