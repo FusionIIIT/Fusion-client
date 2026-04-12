@@ -23,37 +23,19 @@ import {
   createStyledWorkbook,
   downloadExcelFile,
 } from "./utils/excelExportUtils";
-import { host } from "../../routes/globalRoutes";
-
-const students_grade_info_api = `${host}/database/api/students-grade-info/`;
+import {
+  DATABASE_APIS,
+  CATEGORY_MAP,
+  generateBatchOptions,
+  SEMESTER_OPTIONS_STATIC,
+} from "./constants/databaseConstants";
 
 export default function StudentsGradeInfo() {
   const [searchParams] = useSearchParams();
   const category = searchParams.get("category") || "ug";
 
-  const currentYear = new Date().getFullYear();
-  const batchOptions = Array.from({ length: currentYear - 2020 }, (_, i) => {
-    const year = 2021 + i;
-    return { value: String(year), label: String(year) };
-  });
-
-  const semesterOptions = [
-    { value: "1_Odd Semester", label: "Semester 1" },
-    { value: "2_Even Semester", label: "Semester 2" },
-    { value: "2_Summer Semester", label: "Summer Semester 1" },
-    { value: "3_Odd Semester", label: "Semester 3" },
-    { value: "4_Even Semester", label: "Semester 4" },
-    { value: "4_Summer Semester", label: "Summer Semester 2" },
-    { value: "5_Odd Semester", label: "Semester 5" },
-    { value: "6_Even Semester", label: "Semester 6" },
-    { value: "6_Summer Semester", label: "Summer Semester 3" },
-    { value: "7_Odd Semester", label: "Semester 7" },
-    { value: "8_Even Semester", label: "Semester 8" },
-    { value: "9_Odd Semester", label: "Semester 9" },
-    { value: "10_Even Semester", label: "Semester 10" },
-    { value: "11_Odd Semester", label: "Semester 11" },
-    { value: "12_Even Semester", label: "Semester 12" },
-  ];
+  const batchOptions = generateBatchOptions();
+  const semesterOptions = SEMESTER_OPTIONS_STATIC;
 
   const [batch, setBatch] = useState(null);
   const [programmeType, setProgrammeType] = useState("UG");
@@ -70,18 +52,11 @@ export default function StudentsGradeInfo() {
   const [courseOptions, setCourseOptions] = useState([]);
   const [disciplineOptions, setDisciplineOptions] = useState([]);
 
-  // Set programme type based on category from URL
   useEffect(() => {
-    const categoryMap = {
-      ug: "UG",
-      pg: "PG",
-      phd: "PHD",
-    };
-    const mappedType = categoryMap[category] || "UG";
+    const mappedType = CATEGORY_MAP[category] || "UG";
     setProgrammeType(mappedType);
   }, [category]);
 
-  // Reset all data when category changes
   useEffect(() => {
     setBatch(null);
     setStudentData([]);
@@ -161,7 +136,7 @@ export default function StudentsGradeInfo() {
       params.append("export", "true");
 
       const response = await axios.get(
-        `${students_grade_info_api}?${params.toString()}`,
+        `${DATABASE_APIS.STUDENT_GRADES}?${params.toString()}`,
         { headers: { Authorization: `Token ${token}` } },
       );
 
@@ -200,7 +175,6 @@ export default function StudentsGradeInfo() {
         registration_type: student.registration_type || "N/A",
       }));
 
-      // Build course dropdown from loaded data
       const uniqueCourses = [
         ...new Set(processedData.map((item) => item.course_code)),
       ]
@@ -214,7 +188,6 @@ export default function StudentsGradeInfo() {
         });
       setCourseOptions(uniqueCourses);
 
-      // Build discipline (specialization) dropdown from loaded data
       const uniqueDisciplines = [
         ...new Set(processedData.map((item) => item.discipline)),
       ]

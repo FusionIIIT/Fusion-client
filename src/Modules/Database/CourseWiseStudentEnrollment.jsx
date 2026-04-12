@@ -22,11 +22,7 @@ import {
   createStyledWorkbook,
   downloadExcelFile,
 } from "./utils/excelExportUtils";
-import { host } from "../../routes/globalRoutes";
-
-// API endpoint for course student count
-const course_student_count_api = `${host}/database/api/course-student-count/`;
-const course_students_api = `${host}/database/api/course-students/`;
+import { DATABASE_APIS, CATEGORY_MAP } from "./constants/databaseConstants";
 
 export default function CourseWiseStudentEnrollment() {
   const [searchParams] = useSearchParams();
@@ -60,12 +56,7 @@ export default function CourseWiseStudentEnrollment() {
   const [loadingStudents, setLoadingStudents] = useState(false);
 
   useEffect(() => {
-    const categoryMap = {
-      ug: "UG",
-      pg: "PG",
-      phd: "PHD",
-    };
-    const mappedType = categoryMap[category] || "UG";
+    const mappedType = CATEGORY_MAP[category] || "UG";
     setProgrammeType(mappedType);
   }, [category]);
 
@@ -86,13 +77,11 @@ export default function CourseWiseStudentEnrollment() {
     setError(null);
   }, [category]);
 
-  // Fetch academic years on component mount
   useEffect(() => {
     async function fetchAcademicYears() {
       setLoading(true);
       setError("");
       try {
-        // Generate academic years from 2021-22 to current academic year
         // Academic year resets in July (month 6 in 0-indexed)
         const currentYear = new Date().getFullYear();
         const currentMonth = new Date().getMonth();
@@ -116,7 +105,6 @@ export default function CourseWiseStudentEnrollment() {
     fetchAcademicYears();
   }, []);
 
-  // Fetch available courses when year, semester, and programme are selected
   useEffect(() => {
     if (!year || !semesterType || !programmeType) {
       setCourseFilterOptions([]);
@@ -139,7 +127,7 @@ export default function CourseWiseStudentEnrollment() {
         params.append("programme_type", programmeType);
 
         const { data } = await axios.get(
-          `${course_student_count_api}?${params.toString()}`,
+          `${DATABASE_APIS.COURSE_COUNT}?${params.toString()}`,
           {
             headers: { Authorization: `Token ${token}` },
           },
@@ -202,13 +190,12 @@ export default function CourseWiseStudentEnrollment() {
       }
 
       const { data } = await axios.get(
-        `${course_student_count_api}?${params.toString()}`,
+        `${DATABASE_APIS.COURSE_COUNT}?${params.toString()}`,
         {
           headers: { Authorization: `Token ${token}` },
         },
       );
 
-      // Ensure we have courses data
       if (!data || !data.courses || data.courses.length === 0) {
         setError("No courses found for the selected criteria.");
         setDatabaseData([]);
@@ -217,7 +204,6 @@ export default function CourseWiseStudentEnrollment() {
         return;
       }
 
-      // Process and sort the courses data
       const summary = data.courses
         .map((c) => {
           const count =
@@ -383,7 +369,7 @@ export default function CourseWiseStudentEnrollment() {
         programme_type: programmeType,
       });
       const { data } = await axios.get(
-        `${course_students_api}?${params.toString()}`,
+        `${DATABASE_APIS.COURSE_STUDENTS}?${params.toString()}`,
         {
           headers: { Authorization: `Token ${token}` },
         },
@@ -420,15 +406,9 @@ export default function CourseWiseStudentEnrollment() {
   };
 
   const handleReset = () => {
-    const categoryMap = {
-      ug: "UG",
-      pg: "PG",
-      phd: "PHD",
-    };
-
     setYear("");
     setSemesterType("");
-    setProgrammeType(categoryMap[category] || "UG");
+    setProgrammeType(CATEGORY_MAP[category] || "UG");
     setCourseFilter("");
     setSelectedCourse("All");
     setDatabaseData([]);

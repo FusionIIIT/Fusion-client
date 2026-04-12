@@ -6,6 +6,9 @@ import { useSelector } from "react-redux";
 export default function Nav() {
   const scrollContainerRef = useRef(null);
   const userRole = useSelector((state) => state.user.role);
+  const currentAccessibleModules = useSelector(
+    (state) => state.user.currentAccessibleModules || {},
+  );
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -75,9 +78,12 @@ export default function Nav() {
     },
   ];
 
+  // Filter tabs by role AND database module access
   const filteredTabs = tabItems.filter(
     (tab) =>
-      tab.roles.includes(userRole) && tab.categories.includes(activeCategory),
+      tab.roles.includes(userRole) &&
+      tab.categories.includes(activeCategory) &&
+      currentAccessibleModules.database === true, // ADDED: Check module access
   );
 
   return (

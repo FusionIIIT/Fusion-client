@@ -23,37 +23,18 @@ import {
   createStyledWorkbook,
   downloadExcelFile,
 } from "./utils/excelExportUtils";
-import { host } from "../../routes/globalRoutes";
-
-const unregistered_students_api = `${host}/database/api/unregistered-by-batch/`;
+import {
+  DATABASE_APIS,
+  generateBatchOptions,
+  SEMESTER_OPTIONS_STATIC,
+} from "./constants/databaseConstants";
 
 export default function UnregisteredStudents() {
   const [searchParams] = useSearchParams();
   const category = searchParams.get("category") || "ug";
 
-  const currentYear = new Date().getFullYear();
-  const batchOptions = Array.from({ length: currentYear - 2020 }, (_, i) => {
-    const year = 2021 + i;
-    return { value: String(year), label: String(year) };
-  });
-
-  const semesterOptions = [
-    { value: "1_Odd Semester", label: "Semester 1" },
-    { value: "2_Even Semester", label: "Semester 2" },
-    { value: "2_Summer Semester", label: "Summer Semester 1" },
-    { value: "3_Odd Semester", label: "Semester 3" },
-    { value: "4_Even Semester", label: "Semester 4" },
-    { value: "4_Summer Semester", label: "Summer Semester 2" },
-    { value: "5_Odd Semester", label: "Semester 5" },
-    { value: "6_Even Semester", label: "Semester 6" },
-    { value: "6_Summer Semester", label: "Summer Semester 3" },
-    { value: "7_Odd Semester", label: "Semester 7" },
-    { value: "8_Even Semester", label: "Semester 8" },
-    { value: "9_Odd Semester", label: "Semester 9" },
-    { value: "10_Even Semester", label: "Semester 10" },
-    { value: "11_Odd Semester", label: "Semester 11" },
-    { value: "12_Even Semester", label: "Semester 12" },
-  ];
+  const batchOptions = generateBatchOptions();
+  const semesterOptions = SEMESTER_OPTIONS_STATIC;
 
   const [batch, setBatch] = useState(null);
   const [studentData, setStudentData] = useState([]);
@@ -66,7 +47,6 @@ export default function UnregisteredStudents() {
   const [filterSemester, setFilterSemester] = useState(null);
   const [semesterRange, setSemesterRange] = useState([]);
 
-  // Reset all data when category changes
   useEffect(() => {
     setBatch(null);
     setStudentData([]);
@@ -106,7 +86,7 @@ export default function UnregisteredStudents() {
       }
 
       const response = await axios.get(
-        `${unregistered_students_api}?batch_id=${batch}`,
+        `${DATABASE_APIS.UNREGISTERED}?batch_id=${batch}`,
         { headers: { Authorization: `Token ${token}` } },
       );
 
