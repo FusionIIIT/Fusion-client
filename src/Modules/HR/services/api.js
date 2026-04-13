@@ -352,3 +352,16 @@ export const submitAppraisalForm = async (formData) => {
   });
   return handleResponse(resp);
 };
+
+export const getOutbox = async (fromDate = "") => {
+  const host = window.location.origin;
+  let url = `${host}/hr2/api/getOutbox/`;
+  if (fromDate) {
+    url += `?from_date=${fromDate}`;
+  }
+  const resp = await fetch(url, {
+    headers: authHeaders(),
+  });
+  const data = await handleResponse(resp);
+  return data;
+};

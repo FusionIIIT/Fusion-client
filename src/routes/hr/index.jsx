@@ -54,3 +54,6 @@ export const get_cpda_claim_archive = `${host}/hr2/api/get_cpda_claim_archive`;
 export const get_appraisal_requests = `${host}/hr2/api/get_appraisal_requests`;
 export const get_appraisal_inbox = `${host}/hr2/api/get_appraisal_inbox`;
 export const get_appraisal_archive = `${host}/hr2/api/get_appraisal_archive`;
+
+// Outbox routes
+export const get_outbox = `${host}/hr2/api/getOutbox/`;
