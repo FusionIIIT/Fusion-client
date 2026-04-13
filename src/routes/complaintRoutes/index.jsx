@@ -9,4 +9,7 @@ export const complaintApiRoutes = {
   detail: (id) => `${COMPLAINT_API_BASE}/user/detail/${id}/`,
   update: (id) => `${COMPLAINT_API_BASE}/updatecomplain/${id}`,
   remove: (id) => `${COMPLAINT_API_BASE}/removecomplain/${id}`,
+  history: (id) => `${COMPLAINT_API_BASE}/history/${id}/`,
+  verify: (id) => `${COMPLAINT_API_BASE}/verify/${id}/`,
+  reopen: (id) => `${COMPLAINT_API_BASE}/reopen/${id}/`,
 };

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Button, Container, Paper, Text, Title } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import PropTypes from "prop-types";
@@ -8,10 +9,16 @@ import ComplaintFormModal from "./ComplaintFormModal";
 import ComplaintDetailModal from "./ComplaintDetailModal";
 import ResolutionModal from "./ResolutionModal";
 import EscalationModal from "./EscalationModal";
+import ResolutionVerificationModal from "./ResolutionVerificationModal";
+import ReopenRequestModal from "./ReopenRequestModal";
+import ComplaintNotificationsPanel from "./ComplaintNotificationsPanel";
 import { fetchComplaintDetail, fetchComplaints } from "../selectors";
 import {
   createComplaint,
+  caretakerAction,
   deleteComplaint,
+  reopenComplaint,
+  verifyComplaint,
   updateComplaint,
   escalateComplaint,
 } from "../services";
@@ -32,7 +39,16 @@ const getApiErrorMessage = (error) => {
 };
 
 export default function ComplaintManager({ defaultMode }) {
-  const tabItems = [{ title: "Complaints" }, { title: "Create Complaint" }];
+  const location = useLocation();
+  const queryTab = new URLSearchParams(location.search).get("tab");
+  const defaultTab =
+    queryTab === "notifications" ? "2" : defaultMode === "create" ? "1" : "0";
+
+  const tabItems = [
+    { title: "Complaints" },
+    { title: "Create Complaint" },
+    { title: "Notifications" },
+  ];
   const role = useSelector((state) => state.user.role || "");
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -45,15 +61,32 @@ export default function ComplaintManager({ defaultMode }) {
   const [resolutionTarget, setResolutionTarget] = useState(null);
   const [escalationOpen, setEscalationOpen] = useState(false);
   const [escalationTarget, setEscalationTarget] = useState(null);
-  const [activeTab, setActiveTab] = useState(
-    defaultMode === "create" ? "1" : "0",
-  );
+  const [verificationOpen, setVerificationOpen] = useState(false);
+  const [verificationTarget, setVerificationTarget] = useState(null);
+  const [verificationDecision, setVerificationDecision] = useState("approve");
+  const [reopenOpen, setReopenOpen] = useState(false);
+  const [reopenTarget, setReopenTarget] = useState(null);
+  const [activeTab, setActiveTab] = useState(defaultTab);
   const normalizedRole = String(role).toLowerCase();
   const canChangeStatus =
     normalizedRole.includes("caretaker") ||
     normalizedRole.includes("supervisor") ||
     normalizedRole.includes("convener") ||
     normalizedRole.includes("admin");
+  const isCaretakerRole = normalizedRole.includes("caretaker");
+  const canReviewResolution =
+    normalizedRole.includes("student") ||
+    normalizedRole.includes("faculty") ||
+    normalizedRole.includes("staff") ||
+    normalizedRole.includes("supervisor") ||
+    normalizedRole.includes("convener") ||
+    normalizedRole.includes("admin");
+  const canSubmitComplaint =
+    (normalizedRole.includes("student") ||
+      normalizedRole.includes("faculty") ||
+      normalizedRole.includes("staff")) &&
+    !canChangeStatus;
+  const isComplainantReadOnly = canSubmitComplaint;
 
   const loadComplaints = async () => {
     setLoading(true);
@@ -73,17 +106,48 @@ export default function ComplaintManager({ defaultMode }) {
 
   useEffect(() => {
     loadComplaints();
+
+    const pollId = setInterval(() => {
+      loadComplaints();
+    }, 30000);
+
+    return () => clearInterval(pollId);
   }, []);
 
   useEffect(() => {
     if (activeTab === "1") {
+      if (!canSubmitComplaint) {
+        notifications.show({
+          color: "yellow",
+          title: "Submission access restricted",
+          message:
+            "Complaint submission is available only for student/faculty/staff complainant roles.",
+        });
+        setActiveTab("0");
+        return;
+      }
       setSelected(null);
       setFormMode("create");
       setFormOpen(true);
     }
-  }, [activeTab]);
+  }, [activeTab, canSubmitComplaint]);
+
+  useEffect(() => {
+    const incomingTab = new URLSearchParams(location.search).get("tab");
+    if (incomingTab === "notifications") {
+      setActiveTab("2");
+    }
+  }, [location.search]);
 
   const openCreate = () => {
+    if (!canSubmitComplaint) {
+      notifications.show({
+        color: "yellow",
+        title: "Submission access restricted",
+        message: "You do not have access to create complaints from this panel.",
+      });
+      return;
+    }
     setSelected(null);
     setFormMode("create");
     setFormOpen(true);
@@ -132,15 +196,17 @@ export default function ComplaintManager({ defaultMode }) {
   const handleResolve = async (payload) => {
     setLoading(true);
     try {
-      await updateComplaint(resolutionTarget.id, {
-        ...resolutionTarget,
+      await caretakerAction(resolutionTarget.id, {
         status: payload.status,
         remarks: payload.remarks,
+        progress_notes: payload.progress_notes,
+        estimated_resolution_time: payload.estimated_resolution_time,
+        progress_attachment: payload.progress_attachment,
       });
       notifications.show({
         color: "green",
         title: "Success",
-        message: `Complaint status updated to ${["Pending", "In Progress", "Completed"][payload.status]}`,
+        message: `Complaint status updated to ${["Pending", "In Progress", "Resolved", "Closed"][payload.status] || payload.status}`,
       });
       setResolutionOpen(false);
       setResolutionTarget(null);
@@ -181,6 +247,57 @@ export default function ComplaintManager({ defaultMode }) {
     }
   };
 
+  const handleVerify = async (payload) => {
+    setLoading(true);
+    try {
+      await verifyComplaint(verificationTarget.id, payload);
+      const isApproved = payload.verification_decision === "approve";
+      notifications.show({
+        color: "green",
+        title: isApproved ? "Verified" : "Rejected",
+        message: isApproved
+          ? "Complaint verified and closed"
+          : "Complaint resolution rejected and reopened",
+      });
+      setVerificationOpen(false);
+      setVerificationTarget(null);
+      setDetailOpen(false);
+      await loadComplaints();
+    } catch (error) {
+      notifications.show({
+        color: "red",
+        title: "Verification failed",
+        message: getApiErrorMessage(error),
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReopen = async (payload) => {
+    setLoading(true);
+    try {
+      await reopenComplaint(reopenTarget.id, payload);
+      notifications.show({
+        color: "green",
+        title: "Reopen requested",
+        message: "Your reopen request was submitted",
+      });
+      setReopenOpen(false);
+      setReopenTarget(null);
+      setDetailOpen(false);
+      await loadComplaints();
+    } catch (error) {
+      notifications.show({
+        color: "red",
+        title: "Reopen request failed",
+        message: getApiErrorMessage(error),
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (payload) => {
     setLoading(true);
     try {
@@ -190,11 +307,11 @@ export default function ComplaintManager({ defaultMode }) {
       }
 
       if (formMode === "create") {
-        await createComplaint(safePayload);
+        const createdComplaint = await createComplaint(safePayload);
         notifications.show({
           color: "green",
           title: "Created",
-          message: "Complaint created",
+          message: `Complaint created${createdComplaint?.complaint_ref ? `: ${createdComplaint.complaint_ref}` : ""}`,
         });
       } else {
         await updateComplaint(selected.id, { ...selected, ...safePayload });
@@ -228,38 +345,46 @@ export default function ComplaintManager({ defaultMode }) {
           activeTab={activeTab}
           setActiveTab={setActiveTab}
         />
-        <div className={classes.headerBlock}>
-          <div>
-            <Title order={2} className={classes.title}>
-              Complaint Management
-            </Title>
-            <Text className={classes.subtitle}>
-              Manage your complaints with the same Fusion dashboard workflow.
-            </Text>
-          </div>
-          <div className={classes.actions}>
-            <Button
-              variant="default"
-              onClick={loadComplaints}
-              loading={loading}
-            >
-              Refresh
-            </Button>
-            {!canChangeStatus && (
-              <Button onClick={openCreate}>New Complaint</Button>
-            )}
-          </div>
-        </div>
+        {activeTab !== "2" && (
+          <>
+            <div className={classes.headerBlock}>
+              <div>
+                <Title order={2} className={classes.title}>
+                  Complaint Management
+                </Title>
+                <Text className={classes.subtitle}>
+                  Manage your complaints with the same Fusion dashboard
+                  workflow.
+                </Text>
+              </div>
+              <div className={classes.actions}>
+                <Button
+                  variant="default"
+                  onClick={loadComplaints}
+                  loading={loading}
+                >
+                  Refresh
+                </Button>
+                {canSubmitComplaint && (
+                  <Button onClick={openCreate}>New Complaint</Button>
+                )}
+              </div>
+            </div>
 
-        <Paper className={classes.tablePanel} withBorder>
-          <ComplaintTable
-            complaints={complaints}
-            onView={handleView}
-            onEdit={openEdit}
-            onDelete={handleDelete}
-            isCaretaker={canChangeStatus}
-          />
-        </Paper>
+            <Paper className={classes.tablePanel} withBorder>
+              <ComplaintTable
+                complaints={complaints}
+                onView={handleView}
+                onEdit={openEdit}
+                onDelete={handleDelete}
+                isCaretaker={canChangeStatus}
+                readOnly={isComplainantReadOnly}
+              />
+            </Paper>
+          </>
+        )}
+
+        {activeTab === "2" && <ComplaintNotificationsPanel role={role} />}
 
         <ComplaintFormModal
           opened={formOpen}
@@ -278,7 +403,9 @@ export default function ComplaintManager({ defaultMode }) {
           opened={detailOpen}
           onClose={() => setDetailOpen(false)}
           detail={detailData}
-          canResolve={canChangeStatus}
+          canResolve={isCaretakerRole}
+          canVerify={canReviewResolution}
+          canRequestReopen={canReviewResolution}
           onResolve={(complaint) => {
             setResolutionTarget(complaint);
             setResolutionOpen(true);
@@ -286,6 +413,20 @@ export default function ComplaintManager({ defaultMode }) {
           onEscalate={(complaint) => {
             setEscalationTarget(complaint);
             setEscalationOpen(true);
+          }}
+          onVerifyApprove={(complaint) => {
+            setVerificationTarget(detailData?.complaint_details || complaint);
+            setVerificationDecision("approve");
+            setVerificationOpen(true);
+          }}
+          onVerifyReject={(complaint) => {
+            setVerificationTarget(detailData?.complaint_details || complaint);
+            setVerificationDecision("reject");
+            setVerificationOpen(true);
+          }}
+          onRequestReopen={(complaint) => {
+            setReopenTarget(detailData?.complaint_details || complaint);
+            setReopenOpen(true);
           }}
         />
 
@@ -308,6 +449,37 @@ export default function ComplaintManager({ defaultMode }) {
           }}
           complaint={escalationTarget}
           onEscalate={handleEscalate}
+          isLoading={loading}
+        />
+
+        <ResolutionVerificationModal
+          opened={verificationOpen}
+          onClose={() => {
+            setVerificationOpen(false);
+            setVerificationTarget(null);
+          }}
+          complaint={verificationTarget}
+          defaultDecision={verificationDecision}
+          verificationSource={
+            normalizedRole.includes("supervisor") ||
+            normalizedRole.includes("convener") ||
+            normalizedRole.includes("admin")
+              ? "supervisor"
+              : "complainant"
+          }
+          onVerify={handleVerify}
+          isLoading={loading}
+        />
+
+        <ReopenRequestModal
+          opened={reopenOpen}
+          onClose={() => {
+            setReopenOpen(false);
+            setReopenTarget(null);
+          }}
+          complaint={reopenTarget}
+          reopenDeadline={reopenTarget?.reopen_allowed_until || ""}
+          onRequestReopen={handleReopen}
           isLoading={loading}
         />
       </Container>

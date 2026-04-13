@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { User, SignOut, Bell, UserSwitch } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -24,10 +24,17 @@ import classes from "../Modules/Dashboard/Dashboard.module.css";
 import avatarImage from "../assets/avatar.png";
 import { setPfNo } from "../redux/pfNoSlice";
 
-import { logoutRoute, updateRoleRoute } from "../routes/dashboardRoutes";
+import {
+  logoutRoute,
+  updateRoleRoute,
+  getNotificationsRoute,
+} from "../routes/dashboardRoutes";
+import { complaintModuleRoute } from "../routes/globalRoutes";
+import { normalizeNotification } from "../Modules/NotificationCenter/utils";
 
 function Header({ opened, toggleSidebar }) {
   const [popoverOpened, setPopoverOpened] = useState(false);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
   const username = useSelector((state) => state.user.username);
   const roles = useSelector((state) => state.user.roles);
   const role = useSelector((state) => state.user.role);
@@ -65,7 +72,7 @@ function Header({ opened, toggleSidebar }) {
       console.log(response.data.message);
       dispatch(setRole(newRole));
       dispatch(setCurrentAccessibleModules());
-      navigate('/dashboard')
+      navigate("/dashboard");
     } catch (error) {
       console.error("Error updating last selected role:", error.response.data);
     }
@@ -97,6 +104,45 @@ function Header({ opened, toggleSidebar }) {
       console.error("Logout error:", err);
     }
   };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadNotificationCount = async () => {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        return;
+      }
+
+      try {
+        const { data } = await axios.get(getNotificationsRoute, {
+          headers: { Authorization: `Token ${token}` },
+        });
+
+        const count = (data?.notifications || [])
+          .map(normalizeNotification)
+          .filter(
+            (notification) => !notification.deleted && notification.unread,
+          ).length;
+
+        if (isMounted) {
+          setUnreadNotificationCount(count);
+        }
+      } catch (error) {
+        if (isMounted) {
+          setUnreadNotificationCount(0);
+        }
+      }
+    };
+
+    loadNotificationCount();
+    const intervalId = setInterval(loadNotificationCount, 60000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
+  }, [role]);
 
   return (
     <Flex
@@ -141,8 +187,20 @@ function Header({ opened, toggleSidebar }) {
             onChange={handleRoleChange}
             placeholder="Role"
           />
-          <Indicator>
-            <Bell color="orange" size="32px" cursor="pointer" />
+          <Indicator
+            label={unreadNotificationCount > 0 ? unreadNotificationCount : null}
+            size={16}
+            color="red"
+            disabled={unreadNotificationCount <= 0}
+          >
+            <Bell
+              color="orange"
+              size="32px"
+              cursor="pointer"
+              onClick={() =>
+                navigate(`${complaintModuleRoute}?tab=notifications`)
+              }
+            />
           </Indicator>
           <Popover
             opened={popoverOpened}
