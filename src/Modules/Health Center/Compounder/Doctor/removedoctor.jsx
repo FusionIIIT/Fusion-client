@@ -58,7 +58,10 @@ export default function Removedoctor() {
         },
       );
       console.log(response);
-      alert("Doctor Removed Successfully");
+      if (response?.data?.status === 1) {
+        alert("Doctor Removed Successfully");
+        window.location.reload();
+      }
     } catch (err) {
       console.log(err);
     }

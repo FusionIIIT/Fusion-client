@@ -53,7 +53,10 @@ export default function Removepath() {
         },
       );
       console.log(response);
-      alert("Pathologist Removed Successfully");
+      if (response?.data?.status === 1) {
+        alert("Pathologist Removed Successfully");
+        window.location.reload();
+      }
     } catch (err) {
       console.log(err);
     }

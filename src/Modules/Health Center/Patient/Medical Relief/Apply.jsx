@@ -15,7 +15,7 @@ import { createMedicalReliefApi } from "../../services/api";
 
 function Apply() {
   const [send_file, setFile] = useState(null);
-  const [recipient, setRecipient] = useState("Compounder(Pkumar)");
+  const [recipient, setRecipient] = useState("Compounder");
   const [desc, setDescription] = useState("");
   const [errors, setErrors] = useState({});
   // eslint-disable-next-line no-unused-vars
@@ -32,17 +32,15 @@ function Apply() {
 
     if (!validate()) return;
 
-    const formData = new FormData();
-    if (send_file) formData.append("file", send_file);
-    formData.append("recipient", recipient);
-    formData.append("description", desc);
-    formData.append("medical_relief_submit", 1);
-
     try {
       await createMedicalReliefApi({
         description: desc,
+        recipient,
+        file: send_file,
       });
       alert("File forwarded successfully");
+      setDescription("");
+      setFile(null);
     } catch (err) {
       console.log(err);
     }
@@ -64,8 +62,8 @@ function Apply() {
               label="Upload file"
               placeholder="Choose file"
               value={send_file}
-              onChange={(e) => {
-                setFile(e.target.files[0]);
+              onChange={(file) => {
+                setFile(file);
               }}
               error={errors.file}
             />

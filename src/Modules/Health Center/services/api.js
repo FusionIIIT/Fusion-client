@@ -483,6 +483,19 @@ export const createAnnouncementApi = async (data) => {
 
 export const createMedicalReliefApi = async (data) => {
   const token = getAuthToken();
+  if (data?.file) {
+    const formData = new FormData();
+    formData.append("description", data.description || "");
+    formData.append("file", data.file);
+
+    return axios.post(`${BASE_URL}/medical-relief/`, formData, {
+      headers: {
+        Authorization: `Token ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  }
+
   return axios.post(`${BASE_URL}/medical-relief/`, data, {
     headers: { Authorization: `Token ${token}` },
   });

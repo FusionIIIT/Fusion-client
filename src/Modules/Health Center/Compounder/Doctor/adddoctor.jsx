@@ -38,7 +38,10 @@ export default function Adddoctor() {
         },
       );
       console.log(response);
-      alert("Doctor added successfully");
+      if (response?.data?.status === 1) {
+        alert("Doctor added successfully");
+        window.location.reload();
+      }
     } catch (err) {
       console.log(err);
     }
