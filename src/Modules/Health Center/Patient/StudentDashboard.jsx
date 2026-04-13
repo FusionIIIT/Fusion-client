@@ -23,16 +23,28 @@ export default function StudentDashboard() {
 
   const cards = [
     {
+      icon: <FileText size={32} weight="duotone" color="#15abff" />,
+      title: "History",
+      description: "View your prescriptions and medical records",
+      action: () => navigate("/healthcenter/student/history"),
+    },
+    {
+      icon: <Megaphone size={32} weight="duotone" color="#15abff" />,
+      title: "Feedback",
+      description: "Share your feedback about health center services",
+      action: () => navigate("/healthcenter/student/feedback"),
+    },
+    {
       icon: <Calendar size={32} weight="duotone" color="#15abff" />,
-      title: "View Schedule",
+      title: "Schedule",
       description: "Check doctor and pathologist availability",
       action: () => navigate("/healthcenter/student/schedule"),
     },
     {
-      icon: <FileText size={32} weight="duotone" color="#15abff" />,
-      title: "Medical History",
-      description: "View your prescriptions and medical records",
-      action: () => navigate("/healthcenter/student/history"),
+      icon: <Megaphone size={32} weight="duotone" color="#15abff" />,
+      title: "Announcements",
+      description: "View latest announcements from health center",
+      action: () => navigate("/healthcenter/student/announcements"),
     },
     {
       icon: <IdentificationCard size={32} weight="duotone" color="#15abff" />,
@@ -45,12 +57,6 @@ export default function StudentDashboard() {
       title: "Medical Relief",
       description: "Apply for financial medical assistance",
       action: () => navigate("/healthcenter/student/medical-relief"),
-    },
-    {
-      icon: <Megaphone size={32} weight="duotone" color="#15abff" />,
-      title: "Feedback",
-      description: "Share your feedback about health center services",
-      action: () => navigate("/healthcenter/student/feedback"),
     },
   ];
 

@@ -15,6 +15,7 @@ import {
   ClipboardText,
   Calendar,
   Megaphone,
+  Heart,
 } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 
@@ -24,39 +25,45 @@ export default function CompounderDashboard() {
   const cards = [
     {
       icon: <Users size={32} weight="duotone" color="#15abff" />,
-      title: "Patient Records",
+      title: "Patient Log",
       description: "Manage patient medical records and history",
       action: () => navigate("/healthcenter/compounder/patient-log/history"),
     },
     {
       icon: <Package size={32} weight="duotone" color="#15abff" />,
-      title: "Medicine Stock",
+      title: "Manage Stock",
       description: "Manage inventory and track medicine stock",
       action: () => navigate("/healthcenter/compounder/manage-stock"),
     },
     {
-      icon: <ClipboardText size={32} weight="duotone" color="#15abff" />,
-      title: "Prescriptions",
-      description: "View and manage patient prescriptions",
-      action: () => navigate("/healthcenter/compounder/patient-log/history"),
-    },
-    {
       icon: <Calendar size={32} weight="duotone" color="#15abff" />,
-      title: "Doctor Schedule",
+      title: "Schedule",
       description: "Manage doctor and pathologist schedules",
       action: () => navigate("/healthcenter/compounder/schedule"),
     },
     {
       icon: <Users size={32} weight="duotone" color="#15abff" />,
-      title: "Medical Staff",
+      title: "Doctor/Pathologists",
       description: "Add and manage doctors and pathologists",
-      action: () => navigate("/healthcenter/compounder/doctor"),
+      action: () => navigate("/healthcenter/compounder/docpath"),
+    },
+    {
+      icon: <ClipboardText size={32} weight="duotone" color="#15abff" />,
+      title: "Feedback",
+      description: "Review and respond to patient feedback",
+      action: () => navigate("/healthcenter/compounder/feedback"),
     },
     {
       icon: <Megaphone size={32} weight="duotone" color="#15abff" />,
-      title: "Announcements",
+      title: "Make Announcements",
       description: "Publish health center announcements",
-      action: () => navigate("/healthcenter/compounder/announcements"),
+      action: () => navigate("/healthcenter/compounder/announcement"),
+    },
+    {
+      icon: <Heart size={32} weight="duotone" color="#15abff" />,
+      title: "Medical Relief",
+      description: "Review and process medical relief applications",
+      action: () => navigate("/healthcenter/compounder/medical-relief/inbox"),
     },
   ];
 
