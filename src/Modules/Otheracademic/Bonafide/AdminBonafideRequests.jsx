@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Table, Paper, Switch, Button, Modal, Text } from "@mantine/core";
+import { Table, Paper, Switch, Button, Modal, Text, Textarea, Group } from "@mantine/core";
 import axios from "axios";
 import {
   Fetch_Pending_Bonafide_Request,
@@ -11,6 +11,10 @@ function ApproveBonafide() {
   const [status, setStatus] = useState([]);
   const [opened, setOpened] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [selectedIndex, setSelectedIndex] = useState(null);
+  const [remarksOpened, setRemarksOpened] = useState(false);
+  const [rejectionRemarks, setRejectionRemarks] = useState("");
+  const [remarksAction, setRemarksAction] = useState(null); // "approve" or "reject"
 
   const authToken = localStorage.getItem("authToken");
 
@@ -87,8 +91,9 @@ function ApproveBonafide() {
       const response = await axios.post(
         Update_Bonafide_Status,
         {
-          approvedBonafides: approvedBonafides.map((bonafide) => bonafide.id), // Sending only the ids
-          rejectedBonafides: rejectedBonafides.map((bonafide) => bonafide.id), // Sending only the ids
+          approvedRequests: approvedBonafides.map((bonafide) => bonafide.id),
+          rejectedRequests: rejectedBonafides.map((bonafide) => bonafide.id),
+          remarks: rejectionRemarks, // Include rejection remarks
         },
         {
           headers: {
@@ -97,11 +102,48 @@ function ApproveBonafide() {
         },
       );
       console.log("Status updated successfully:", response.data);
+      setRejectionRemarks(""); // Clear remarks after submission
     } catch (error) {
       console.error("Error updating Bonafide status:", error);
     }
 
     fetchPendingBonafides();
+  };
+
+  const handleRejectClick = (index) => {
+    if (!status[index]?.rejectCheck) {
+      setStatus((prevStatus) =>
+        prevStatus.map((item, i) => {
+          if (i === index) {
+            return { ...item, rejectCheck: true, approveCheck: false };
+          }
+          return item;
+        }),
+      );
+    }
+    // Open remarks modal for rejection
+    setSelectedIndex(index);
+    setRemarksAction("reject");
+    setRemarksOpened(true);
+  };
+
+  const handleApproveClick = (index) => {
+    if (!status[index]?.approveCheck) {
+      setStatus((prevStatus) =>
+        prevStatus.map((item, i) => {
+          if (i === index) {
+            return { ...item, approveCheck: true, rejectCheck: false };
+          }
+          return item;
+        }),
+      );
+    }
+  };
+
+  const handleRemarksSubmit = () => {
+    // Remarks are stored in rejectionRemarks state
+    setRemarksOpened(false);
+    // The remarks will be sent with handleSubmit
   };
 
   return (
@@ -194,12 +236,15 @@ function ApproveBonafide() {
                         <Switch
                           label="Reject"
                           checked={status[index]?.rejectCheck}
-                          onChange={(event) =>
+                          onChange={(event) => {
                             handleToggle(index, {
                               type: "reject",
                               value: event.currentTarget.checked,
-                            })
-                          }
+                            });
+                            if (event.currentTarget.checked) {
+                              handleRejectClick(index);
+                            }
+                          }}
                         />
                       </div>
                     ) : (
@@ -265,29 +310,27 @@ function ApproveBonafide() {
       </Paper>
 
       <Modal
-        opened={opened}
-        onClose={() => setOpened(false)}
-        title={<Text style={{ fontSize: "25px" }}>Student Form Details</Text>}
+        opened={remarksOpened}
+        onClose={() => setRemarksOpened(false)}
+        title={<Text style={{ fontSize: "20px" }}>Rejection Remarks</Text>}
         centered
-        overlaycolor="rgba(0, 0, 0, 0.6)"
-        overlayblur={3}
-        size="lg"
+        size="md"
       >
-        {selectedStudent && (
-          <div>
-            <Text>
-              <strong>Purpose:</strong> {selectedStudent.details.purpose}
-            </Text>
-            <Text>
-              <strong>Academic Year:</strong> {new Date().getFullYear()}
-            </Text>
-            <Text>
-              <strong>Date of Application:</strong>{" "}
-              {selectedStudent.details.dateOfApplication}
-            </Text>
-            {/* Add other details as necessary */}
-          </div>
-        )}
+        <Textarea
+          placeholder="Enter remarks for rejection..."
+          label="Remarks (Optional)"
+          minRows={4}
+          value={rejectionRemarks}
+          onChange={(e) => setRejectionRemarks(e.currentTarget.value)}
+        />
+        <Group position="right" mt="md">
+          <Button variant="light" onClick={() => setRemarksOpened(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleRemarksSubmit}>
+            Confirm
+          </Button>
+        </Group>
       </Modal>
     </>
   );
