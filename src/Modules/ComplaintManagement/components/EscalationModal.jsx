@@ -28,9 +28,17 @@ export default function EscalationModal({
   isLoading = false,
 }) {
   const [reason, setReason] = useState("");
+  const [error, setError] = useState("");
 
   const handleEscalate = async () => {
-    await onEscalate({ escalation_reason: reason });
+    const trimmedReason = reason.trim();
+    if (!trimmedReason) {
+      setError("Escalation justification is required.");
+      return;
+    }
+
+    setError("");
+    await onEscalate({ escalation_reason: trimmedReason });
     setReason("");
   };
 
@@ -62,12 +70,18 @@ export default function EscalationModal({
             minRows={3}
             maxRows={5}
             value={reason}
-            onChange={(e) => setReason(e.currentTarget.value)}
+            onChange={(e) => {
+              setReason(e.currentTarget.value);
+              if (error && e.currentTarget.value.trim()) {
+                setError("");
+              }
+            }}
             maxLength={300}
             disabled={isLoading}
+            error={error}
           />
           <Text size="xs" c="dimmed" mt="xs">
-            {reason.length}/300 characters
+            {reason.trim().length}/300 characters. Justification is required.
           </Text>
         </div>
 
@@ -100,7 +114,7 @@ export default function EscalationModal({
             color="blue"
             onClick={handleEscalate}
             loading={isLoading}
-            disabled={!reason.trim()}
+            disabled={isLoading || !reason.trim()}
           >
             Escalate to Supervisor
           </Button>

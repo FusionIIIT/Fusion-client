@@ -10,13 +10,14 @@ import {
   Select,
   Alert,
   Divider,
+  TextInput,
 } from "@mantine/core";
 import { IconAlertCircle } from "@tabler/icons-react";
 
 const STATUS_OPTIONS = [
   { value: "0", label: "Pending" },
   { value: "1", label: "In Progress" },
-  { value: "2", label: "Completed" },
+  { value: "2", label: "Resolved" },
 ];
 
 export default function ResolutionModal({
@@ -28,19 +29,28 @@ export default function ResolutionModal({
 }) {
   const [newStatus, setNewStatus] = useState(null);
   const [remarks, setRemarks] = useState("");
+  const [estimatedResolutionTime, setEstimatedResolutionTime] = useState("");
+  const [progressAttachment, setProgressAttachment] = useState(null);
 
   const handleResolve = () => {
     onResolve({
       status: Number(newStatus),
       remarks,
+      progress_notes: remarks,
+      estimated_resolution_time: estimatedResolutionTime || null,
+      progress_attachment: progressAttachment,
     });
     setNewStatus(null);
     setRemarks("");
+    setEstimatedResolutionTime("");
+    setProgressAttachment(null);
   };
 
   const handleClose = () => {
     setNewStatus(null);
     setRemarks("");
+    setEstimatedResolutionTime("");
+    setProgressAttachment(null);
     onClose();
   };
 
@@ -102,6 +112,36 @@ export default function ResolutionModal({
           </Text>
         </div>
 
+        <div>
+          <Text fw={500} mb="xs" size="sm">
+            Estimated Resolution Time (optional)
+          </Text>
+          <TextInput
+            type="datetime-local"
+            value={estimatedResolutionTime}
+            onChange={(e) => setEstimatedResolutionTime(e.currentTarget.value)}
+            disabled={isLoading}
+          />
+        </div>
+
+        <div>
+          <Text fw={500} mb="xs" size="sm">
+            Progress Attachment (optional)
+          </Text>
+          <input
+            type="file"
+            onChange={(e) =>
+              setProgressAttachment(e.currentTarget.files?.[0] || null)
+            }
+            disabled={isLoading}
+          />
+          {progressAttachment && (
+            <Text size="xs" c="dimmed" mt="xs">
+              Selected: {progressAttachment.name}
+            </Text>
+          )}
+        </div>
+
         <Group justify="flex-end" mt="lg">
           <Button variant="default" onClick={handleClose} disabled={isLoading}>
             Cancel
@@ -112,7 +152,7 @@ export default function ResolutionModal({
             loading={isLoading}
             disabled={!newStatus || !remarks.trim()}
           >
-            Update Status
+            Save Progress Update
           </Button>
         </Group>
       </Stack>
