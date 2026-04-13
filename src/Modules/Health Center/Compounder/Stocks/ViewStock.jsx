@@ -38,8 +38,13 @@ function ViewStock() {
           },
         },
       );
-      setView(response.data.report_stock_view);
-      setTotalPages(response.data.total_pages_stock_view);
+      const report = Array.isArray(response?.data?.report_stock_view)
+        ? response.data.report_stock_view
+        : [];
+      const pages = Number(response?.data?.total_pages_stock_view);
+
+      setView(report);
+      setTotalPages(Number.isFinite(pages) && pages > 0 ? pages : 1);
     } catch (err) {
       console.log(err);
     } finally {

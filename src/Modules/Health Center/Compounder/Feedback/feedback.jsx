@@ -23,7 +23,10 @@ function FeedbackTable() {
           },
         },
       );
-      setFeedbackData(response.data);
+      const complaints = Array.isArray(response?.data?.complaints)
+        ? response.data.complaints
+        : [];
+      setFeedbackData({ complaints });
       setError(null);
     } catch (err) {
       console.error("Error fetching feedback:", err);

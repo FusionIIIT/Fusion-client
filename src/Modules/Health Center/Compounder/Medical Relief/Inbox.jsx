@@ -25,8 +25,10 @@ function Inbox() {
           },
         },
       );
-      console.log(response.data);
-      setMedical(response.data.relief);
+      const relief = Array.isArray(response?.data?.relief)
+        ? response.data.relief
+        : [];
+      setMedical(relief);
     } catch (err) {
       console.log(err);
     } finally {
