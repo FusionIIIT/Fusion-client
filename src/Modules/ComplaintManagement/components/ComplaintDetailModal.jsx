@@ -107,11 +107,13 @@ export default function ComplaintDetailModal({
   canResolve = false,
   canVerify = false,
   canRequestReopen = false,
+  canSubmitFeedback = false,
   onResolve = () => {},
   onEscalate = () => {},
   onVerifyApprove = () => {},
   onVerifyReject = () => {},
   onRequestReopen = () => {},
+  onSubmitFeedback = () => {},
 }) {
   const handleResolveClick = () => {
     onResolve(detail?.complaint_details);
@@ -140,6 +142,10 @@ export default function ComplaintDetailModal({
     canRequestReopen &&
     [2, 3].includes(status) &&
     detail?.complaint_details?.reopen_window_open;
+  const canShowFeedbackAction =
+    canSubmitFeedback &&
+    status === 3 &&
+    !String(detail?.complaint_details?.feedback || "").trim();
 
   return (
     <Modal
@@ -461,6 +467,25 @@ export default function ComplaintDetailModal({
               </Button>
             </Group>
           )}
+
+          {canShowFeedbackAction && (
+            <Group
+              justify="flex-end"
+              mt="md"
+              pt="md"
+              style={{ borderTop: "1px solid #e0e0e0" }}
+            >
+              <Button variant="default" onClick={onClose}>
+                Close
+              </Button>
+              <Button
+                color="teal"
+                onClick={() => onSubmitFeedback(detail?.complaint_details)}
+              >
+                Submit Feedback
+              </Button>
+            </Group>
+          )}
         </Stack>
       )}
     </Modal>
@@ -499,11 +524,13 @@ ComplaintDetailModal.propTypes = {
   canResolve: PropTypes.bool,
   canVerify: PropTypes.bool,
   canRequestReopen: PropTypes.bool,
+  canSubmitFeedback: PropTypes.bool,
   onResolve: PropTypes.func,
   onEscalate: PropTypes.func,
   onVerifyApprove: PropTypes.func,
   onVerifyReject: PropTypes.func,
   onRequestReopen: PropTypes.func,
+  onSubmitFeedback: PropTypes.func,
 };
 
 ComplaintDetailModal.defaultProps = {
@@ -511,9 +538,11 @@ ComplaintDetailModal.defaultProps = {
   canResolve: false,
   canVerify: false,
   canRequestReopen: false,
+  canSubmitFeedback: false,
   onResolve: () => {},
   onEscalate: () => {},
   onVerifyApprove: () => {},
   onVerifyReject: () => {},
   onRequestReopen: () => {},
+  onSubmitFeedback: () => {},
 };

@@ -1,5 +1,10 @@
 import complaintApi from "./api";
 
+export const fetchWorkers = async () => {
+  const response = await complaintApi.get("/workers");
+  return response.data?.workers || [];
+};
+
 const buildComplaintFormData = (payload) => {
   const formData = new FormData();
   const fields = [
@@ -17,6 +22,7 @@ const buildComplaintFormData = (payload) => {
     "reopen_requested",
     "progress_notes",
     "estimated_resolution_time",
+    "is_draft",
   ];
 
   fields.forEach((field) => {
@@ -48,6 +54,14 @@ export const createComplaint = async (payload) => {
   return response.data;
 };
 
+export const submitDraftComplaint = async (id, payload = {}) => {
+  const response = await complaintApi.post(
+    `/submitdraft/${id}`,
+    buildComplaintFormData(payload),
+  );
+  return response.data;
+};
+
 export const updateComplaint = async (id, payload) => {
   const response = await complaintApi.put(
     `/updatecomplain/${id}`,
@@ -73,6 +87,11 @@ export const verifyComplaint = async (id, payload) => {
   return response.data;
 };
 
+export const submitComplaintFeedback = async (id, payload) => {
+  const response = await complaintApi.post(`/feedback/${id}`, payload);
+  return response.data;
+};
+
 export const reopenComplaint = async (id, payload) => {
   const response = await complaintApi.post(`/reopen/${id}`, payload);
   return response.data;
@@ -83,5 +102,22 @@ export const caretakerAction = async (id, payload) => {
     `/caretaker-action/${id}`,
     buildComplaintFormData(payload),
   );
+  return response.data;
+};
+
+export const bulkComplaintAction = async (payload) => {
+  const response = await complaintApi.post("/bulk-action", payload);
+  return response.data;
+};
+
+export const fetchComplaintAnalyticsReport = async (filters = {}) => {
+  const response = await complaintApi.get("/report-analytics", {
+    params: {
+      date_from: filters.date_from || "",
+      date_to: filters.date_to || "",
+      category: filters.category || "",
+      location: filters.location || "",
+    },
+  });
   return response.data;
 };

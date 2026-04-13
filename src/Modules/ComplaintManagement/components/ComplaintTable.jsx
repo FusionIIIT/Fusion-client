@@ -21,8 +21,9 @@ const STATUS_LABELS = new Map([
 export default function ComplaintTable({
   complaints,
   onView,
-  onEdit,
-  onDelete,
+  onEdit = () => {},
+  onDelete = () => {},
+  onSubmitDraft = () => {},
   isCaretaker = false,
   readOnly = false,
 }) {
@@ -65,9 +66,11 @@ export default function ComplaintTable({
                 </Table.Td>
                 <Table.Td>{item.location}</Table.Td>
                 <Table.Td>
-                  {item.status_label ||
-                    STATUS_LABELS.get(Number(item.status)) ||
-                    item.status}
+                  {item.is_draft
+                    ? "Draft"
+                    : item.status_label ||
+                      STATUS_LABELS.get(Number(item.status)) ||
+                      item.status}
                 </Table.Td>
                 <Table.Td>
                   {item.sla_deadline
@@ -93,6 +96,16 @@ export default function ComplaintTable({
                     </Button>
                     {!isCaretaker && !readOnly && (
                       <>
+                        {item.is_draft && (
+                          <Button
+                            size="xs"
+                            color="teal"
+                            variant="light"
+                            onClick={() => onSubmitDraft(item)}
+                          >
+                            Submit Draft
+                          </Button>
+                        )}
                         <Button
                           size="xs"
                           variant="default"
@@ -138,8 +151,9 @@ ComplaintTable.propTypes = {
     }),
   ).isRequired,
   onView: PropTypes.func.isRequired,
-  onEdit: PropTypes.func.isRequired,
-  onDelete: PropTypes.func.isRequired,
+  onEdit: PropTypes.func,
+  onDelete: PropTypes.func,
+  onSubmitDraft: PropTypes.func,
   isCaretaker: PropTypes.bool,
   readOnly: PropTypes.bool,
 };

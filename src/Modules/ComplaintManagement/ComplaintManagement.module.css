@@ -36,6 +36,22 @@
   padding: 0.75rem;
 }
 
+.oversightHeader,
+.reportHeader {
+  background: #ffffff;
+  border: 1px solid #d7e9ff;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(46, 105, 167, 0.06);
+  padding: 1rem;
+}
+
+.summaryCard {
+  background: linear-gradient(180deg, #fbfdff 0%, #ffffff 100%);
+  border: 1px solid #dcecff;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(46, 105, 167, 0.04);
+}
+
 .notificationPanel {
   background: #ffffff;
   border: 1px solid #d7e9ff;
@@ -66,6 +82,13 @@
 .notificationCardRead {
   background: #ffffff;
   border-left: 4px solid #c7d8ea;
+}
+
+.reportToolbar {
+  background: #f8fbff;
+  border: 1px solid #dcecff;
+  border-radius: 10px;
+  padding: 0.75rem;
 }
 
 @media (max-width: 768px) {
