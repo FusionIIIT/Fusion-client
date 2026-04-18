@@ -1,12 +1,18 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import TrackTable from "../../components/tables/TrackTable";
 import { getLtcTrack } from "../../services/api";
-import LoadingSpinner from "../../components/common/LoadingSpinner";
-import useFetchData from "../../hooks/useFetchData";
+import LoadingComponent from "../../components/common/Loading";
+
+const STATUS_LABELS = {
+  submitted: "Submitted — with approver",
+  hr_approved: "Approved by HR",
+  hr_rejected: "Rejected by HR",
+  with_accountant: "With Accountant",
+};
 
 function LtcTrack() {
-  const { id } = useParams(); // ✅ FIXED (was missing)
+  const { id } = useParams();
 
   const currentPath = window.location.pathname;
 
@@ -17,13 +23,46 @@ function LtcTrack() {
     { title: "Track", path: currentPath },
   ];
 
-  const { data, loading, error } = useFetchData(() => getLtcTrack(id), [id]);
+  const [trackData, setTrackData] = useState([]);
+  const [workflowStatusDisplay, setWorkflowStatusDisplay] = useState("");
+  const [workflowHistory, setWorkflowHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  if (loading) return <LoadingSpinner />;
-  if (error) return <div>Error: {error}</div>;
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await getLtcTrack(id);
+        if (cancelled) return;
+        setTrackData(data.file_history ?? []);
+        const ws = data.workflow_status;
+        setWorkflowStatusDisplay((ws && STATUS_LABELS[ws]) || ws || "");
+        setWorkflowHistory(data.workflow_history ?? []);
+      } catch (e) {
+        if (!cancelled) {
+          setTrackData([]);
+          setWorkflowStatusDisplay("");
+          setWorkflowHistory([]);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  if (loading) return <LoadingComponent />;
 
   return (
-    <TrackTable title="Track File" exampleItems={exampleItems} data={data} />
+    <TrackTable
+      title="LTC Track"
+      exampleItems={exampleItems}
+      data={trackData}
+      workflowStatusDisplay={workflowStatusDisplay}
+      workflowHistory={workflowHistory}
+    />
   );
 }
 

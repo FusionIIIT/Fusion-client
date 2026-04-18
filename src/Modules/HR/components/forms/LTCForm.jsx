@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Select } from "@mantine/core";
+import { Button, Select, Text } from "@mantine/core";
 import PropTypes from "prop-types";
 import {
   User,
@@ -57,11 +57,14 @@ function LtcForm({ onSubmit }) {
     date: "",
     previousLTCDate: "",
     phoneNumber: "",
-    username: "",
-    designationFooter: "",
+    username: "hr_admin",
+    designationFooter: "HR Admin",
   });
 
-  const [verifiedReceiver, setVerifiedReceiver] = useState(false);
+  /** HR Admin preset is verified by default; "other" requires Verify. */
+  const [verifiedReceiver, setVerifiedReceiver] = useState(true);
+  /** Preset HR Admin vs custom approver (username + verify). */
+  const [approverMode, setApproverMode] = useState("hr_admin");
 
   const [numChildren, setNumChildren] = useState(1);
   const [childrenFields, setChildrenFields] = useState([{ name: "", age: "" }]);
@@ -78,6 +81,26 @@ function LtcForm({ onSubmit }) {
       setVerifiedReceiver(false);
     }
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleApproverModeChange = (value) => {
+    const mode = value || "hr_admin";
+    setApproverMode(mode);
+    if (mode === "hr_admin") {
+      setFormData((prev) => ({
+        ...prev,
+        username: "hr_admin",
+        designationFooter: "HR Admin",
+      }));
+      setVerifiedReceiver(true);
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        username: "",
+        designationFooter: "",
+      }));
+      setVerifiedReceiver(false);
+    }
   };
 
   const handleCheck = async () => {
@@ -123,7 +146,7 @@ function LtcForm({ onSubmit }) {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    if (!verifiedReceiver) {
+    if (approverMode === "other" && !verifiedReceiver) {
       alert("Please verify the receiver's designation before submitting.");
       return;
     }
@@ -164,8 +187,8 @@ function LtcForm({ onSubmit }) {
       date: "",
       previousLTCDate: "",
       phoneNumber: "",
-      username: "",
-      designationFooter: "",
+      username: approverMode === "hr_admin" ? "hr_admin" : "",
+      designationFooter: approverMode === "hr_admin" ? "HR Admin" : "",
     });
     setChildrenFields([{ name: "", age: "" }]);
     setDependentsFields([{ fullName: "", age: "", reason: "" }]);
@@ -947,52 +970,79 @@ function LtcForm({ onSubmit }) {
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="footer-section">
-          <div className="input-wrapper">
-            <User size={20} />
-            <input
-              type="text"
-              name="username"
-              placeholder="Username"
-              value={formData.username}
-              onChange={handleChange}
-              className="username-input"
-              required
+        {/* Footer — approver routing */}
+        <div className="footer-section" style={{ flexWrap: "wrap", gap: 12 }}>
+          <div style={{ width: "100%", maxWidth: 420, marginBottom: 8 }}>
+            <Select
+              label="Forward application to (approver)"
+              data={[
+                { value: "hr_admin", label: "HR Admin (hr_admin)" },
+                {
+                  value: "other",
+                  label: "Other approver (enter username & verify)",
+                },
+              ]}
+              value={approverMode}
+              onChange={handleApproverModeChange}
             />
           </div>
-          <div className="input-wrapper">
-            <Tag size={20} />
-            <input
-              type="text"
-              name="designationFooter"
-              placeholder="Designation"
-              value={formData.designationFooter}
-              onChange={handleChange}
-              className="designation-input"
-              required
-            />
-          </div>
-          <Button
-            leftIcon={<CheckCircle size={25} />}
-            style={{ marginLeft: "50px", paddingRight: "15px" }}
-            className="button"
-            onClick={handleCheck}
-            type="button"
-          >
-            <CheckCircle size={18} /> &nbsp; Check
-          </Button>
+          {approverMode === "hr_admin" ? (
+            <Text
+              size="sm"
+              color="dimmed"
+              style={{ width: "100%", marginBottom: 8 }}
+            >
+              Submissions are routed to account <strong>hr_admin</strong> with
+              designation <strong>HR Admin</strong> (their LTC Inbox).
+            </Text>
+          ) : (
+            <>
+              <div className="input-wrapper">
+                <User size={20} />
+                <input
+                  type="text"
+                  name="username"
+                  placeholder="Approver username"
+                  value={formData.username}
+                  onChange={handleChange}
+                  className="username-input"
+                  required
+                />
+              </div>
+              <div className="input-wrapper">
+                <Tag size={20} />
+                <input
+                  type="text"
+                  name="designationFooter"
+                  placeholder="Approver designation (exact)"
+                  value={formData.designationFooter}
+                  onChange={handleChange}
+                  className="designation-input"
+                  required
+                />
+              </div>
+              <Button
+                leftIcon={<CheckCircle size={25} />}
+                style={{ marginLeft: "12px", paddingRight: "15px" }}
+                className="button"
+                onClick={handleCheck}
+                type="button"
+              >
+                <CheckCircle size={18} /> &nbsp; Verify approver
+              </Button>
+            </>
+          )}
           <Button
             type="submit"
             rightIcon={<PaperPlaneRight size={20} />}
             style={{
-              marginLeft: "350px",
+              marginLeft: "auto",
               width: "150px",
               paddingRight: "15px",
               borderRadius: "5px",
             }}
             className="button"
-            disabled={!verifiedReceiver}
+            disabled={approverMode === "other" && !verifiedReceiver}
           >
             <FloppyDisk size={20} /> &nbsp; Submit
           </Button>

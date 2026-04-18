@@ -22,6 +22,8 @@ import AdminLeaveRequests from "./pages/LeavePageComp/AdminLeaveRequests";
 // import UpdateLeaveBalance from "./pages/UpdateLeaveBalance";
 import GenericFormView from "./components/forms/GenericFormView";
 import CPDAAdvanceFormView from "./pages/CPDA_ADVANCEPageComp/CPDAAdvanceFormView";
+import LtcFormView from "./pages/LTCPageComp/LtcFormView";
+import AppraisalFormView from "./pages/AppraisalPageComp/AppraisalFormView";
 import * as api from "./services/api";
 
 export default function HR() {
@@ -40,26 +42,8 @@ export default function HR() {
 
       {/* Route for the CPDA Advance View page */}
       <Route path="cpda_adv/view/:id" element={<CPDAAdvanceFormView />} />
-      <Route
-        path="ltc/view/:id"
-        element={
-          <GenericFormView
-            title="LTC Details"
-            fetchFn={api.getLtcForm}
-            breadcrumbPath={{ title: "LTC", path: "/hr/ltc" }}
-          />
-        }
-      />
-      <Route
-        path="appraisal/view/:id"
-        element={
-          <GenericFormView
-            title="Appraisal Details"
-            fetchFn={api.getAppraisalForm}
-            breadcrumbPath={{ title: "Appraisal", path: "/hr/appraisal" }}
-          />
-        }
-      />
+      <Route path="ltc/view/:id" element={<LtcFormView />} />
+      <Route path="appraisal/view/:id" element={<AppraisalFormView />} />
       <Route
         path="cpda_claim/view/:id"
         element={

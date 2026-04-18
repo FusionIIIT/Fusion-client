@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "@mantine/core";
+import { Button, Select, Text } from "@mantine/core";
 import {
   PaperPlaneRight,
   CheckCircle,
@@ -52,9 +52,10 @@ function AppraisalForm() {
   ]);
 
   // ── receiver / footer ──
-  const [receiverUsername, setReceiverUsername] = useState("");
-  const [receiverDesignation, setReceiverDesignation] = useState("");
-  const [verifiedReceiver, setVerifiedReceiver] = useState(false);
+  const [receiverUsername, setReceiverUsername] = useState("hr_admin");
+  const [receiverDesignation, setReceiverDesignation] = useState("HR Admin");
+  const [verifiedReceiver, setVerifiedReceiver] = useState(true);
+  const [approverMode, setApproverMode] = useState("hr_admin");
 
   // ── autofill logged-in user ──
   useEffect(() => {
@@ -107,6 +108,20 @@ function AppraisalForm() {
     ]);
   };
 
+  const handleApproverModeChange = (value) => {
+    const mode = value || "hr_admin";
+    setApproverMode(mode);
+    if (mode === "hr_admin") {
+      setReceiverUsername("hr_admin");
+      setReceiverDesignation("HR Admin");
+      setVerifiedReceiver(true);
+    } else {
+      setReceiverUsername("");
+      setReceiverDesignation("");
+      setVerifiedReceiver(false);
+    }
+  };
+
   const handleCheck = async () => {
     try {
       const token = localStorage.getItem("authToken");
@@ -135,8 +150,8 @@ function AppraisalForm() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!verifiedReceiver) {
-      alert("Please verify the receiver's designation before submitting.");
+    if (approverMode === "other" && !verifiedReceiver) {
+      alert("Please verify the approver before submitting.");
       return;
     }
 
@@ -158,10 +173,12 @@ function AppraisalForm() {
       const result = await submitAppraisalForm(payload);
       console.log("Appraisal form submitted successfully:", result);
       alert("Appraisal form submitted successfully!");
-      setVerifiedReceiver(false);
+      if (approverMode === "other") {
+        setVerifiedReceiver(false);
+      }
     } catch (error) {
       console.error("Error submitting appraisal form:", error);
-      alert("Failed to submit form: " + error.message);
+      alert(`Failed to submit form: ${error.message}`);
     }
   };
 
@@ -464,53 +481,81 @@ function AppraisalForm() {
           </div>
         </div>
 
-        {/* Footer: Receiver + Check + Submit */}
-        <div className="footer-section">
-          <div className="input-wrapper">
-            <User size={20} />
-            <input
-              type="text"
-              name="receiverUsername"
-              placeholder="Receiver Username"
-              value={receiverUsername}
-              onChange={(e) => {
-                setReceiverUsername(e.target.value);
-                setVerifiedReceiver(false);
-              }}
-              className="username-input"
-              required
+        {/* Footer: approver + Submit */}
+        <div className="footer-section" style={{ flexWrap: "wrap", gap: 12 }}>
+          <div style={{ width: "100%", maxWidth: 420, marginBottom: 8 }}>
+            <Select
+              label="Forward application to (approver)"
+              data={[
+                { value: "hr_admin", label: "HR Admin (hr_admin)" },
+                {
+                  value: "other",
+                  label: "Other approver (enter username & verify)",
+                },
+              ]}
+              value={approverMode}
+              onChange={handleApproverModeChange}
             />
           </div>
-          <div className="input-wrapper">
-            <Tag size={20} />
-            <input
-              type="text"
-              name="receiverDesignation"
-              placeholder="Designation"
-              value={receiverDesignation}
-              readOnly
-              className="designation-input"
-            />
-          </div>
-          <Button
-            leftIcon={<CheckCircle size={25} />}
-            style={{ marginLeft: "50px", paddingRight: "15px" }}
-            className="button"
-            onClick={handleCheck}
-          >
-            <CheckCircle size={18} /> &nbsp; Check
-          </Button>
+          {approverMode === "hr_admin" ? (
+            <Text
+              size="sm"
+              color="dimmed"
+              style={{ width: "100%", marginBottom: 8 }}
+            >
+              Submissions go to <strong>hr_admin</strong> as{" "}
+              <strong>HR Admin</strong> (Appraisal Inbox).
+            </Text>
+          ) : (
+            <>
+              <div className="input-wrapper">
+                <User size={20} />
+                <input
+                  type="text"
+                  name="receiverUsername"
+                  placeholder="Approver username"
+                  value={receiverUsername}
+                  onChange={(e) => {
+                    setReceiverUsername(e.target.value);
+                    setVerifiedReceiver(false);
+                  }}
+                  className="username-input"
+                  required
+                />
+              </div>
+              <div className="input-wrapper">
+                <Tag size={20} />
+                <input
+                  type="text"
+                  name="receiverDesignation"
+                  placeholder="Designation (from verify)"
+                  value={receiverDesignation}
+                  readOnly
+                  className="designation-input"
+                />
+              </div>
+              <Button
+                leftIcon={<CheckCircle size={25} />}
+                style={{ marginLeft: "12px", paddingRight: "15px" }}
+                className="button"
+                type="button"
+                onClick={handleCheck}
+              >
+                <CheckCircle size={18} /> &nbsp; Verify approver
+              </Button>
+            </>
+          )}
           <Button
             type="submit"
             rightIcon={<PaperPlaneRight size={20} />}
             style={{
-              marginLeft: "350px",
+              marginLeft: "auto",
               width: "150px",
               paddingRight: "15px",
               borderRadius: "5px",
             }}
             className="button"
-            disabled={!verifiedReceiver}
+            disabled={approverMode === "other" && !verifiedReceiver}
           >
             <PaperPlaneRight size={20} /> &nbsp; Submit
           </Button>

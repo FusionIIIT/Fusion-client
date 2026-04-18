@@ -4,9 +4,17 @@ import LoadingComponent from "../../components/common/Loading";
 import TrackTable from "../../components/tables/TrackTable";
 import { getAppraisalTrack } from "../../services/api";
 
+const STATUS_LABELS = {
+  submitted: "Submitted — awaiting HR",
+  hr_approved: "Approved by HR",
+  hr_rejected: "Rejected by HR",
+};
+
 function AppraisalTrack() {
   const { id } = useParams();
   const [trackData, setTrackData] = useState([]);
+  const [workflowStatusDisplay, setWorkflowStatusDisplay] = useState("");
+  const [workflowHistory, setWorkflowHistory] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const currentPath = window.location.pathname;
@@ -19,18 +27,29 @@ function AppraisalTrack() {
   ];
 
   useEffect(() => {
-    const fetchAppraisalTrack = async () => {
+    let cancelled = false;
+    (async () => {
       try {
         const data = await getAppraisalTrack(id);
-        setTrackData(data || []);
+        if (cancelled) return;
+        setTrackData(data.file_history ?? []);
+        const ws = data.workflow_status;
+        setWorkflowStatusDisplay((ws && STATUS_LABELS[ws]) || ws || "");
+        setWorkflowHistory(data.workflow_history ?? []);
       } catch (error) {
         console.error("Failed to fetch Appraisal Track:", error);
+        if (!cancelled) {
+          setTrackData([]);
+          setWorkflowStatusDisplay("");
+          setWorkflowHistory([]);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
+    })();
+    return () => {
+      cancelled = true;
     };
-
-    fetchAppraisalTrack();
   }, [id]);
 
   if (loading) {
@@ -42,6 +61,8 @@ function AppraisalTrack() {
       title="Appraisal Track"
       data={trackData}
       exampleItems={exampleItems}
+      workflowStatusDisplay={workflowStatusDisplay}
+      workflowHistory={workflowHistory}
     />
   );
 }

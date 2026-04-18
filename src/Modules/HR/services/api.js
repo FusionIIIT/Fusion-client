@@ -127,8 +127,16 @@ export const getLtcTrack = async (id) => {
   const resp = await fetch(`/api/hr/ltc/track/${id}`, {
     headers: authHeaders(),
   });
-  const data = await handleResponse(resp);
-  return data.file_history ?? [];
+  return handleResponse(resp);
+};
+
+export const handleLtcWorkflow = async (fileId, body) => {
+  const resp = await fetch(`/api/hr/ltc/handle/${fileId}/`, {
+    method: "POST",
+    headers: { ...authHeaders(), "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return handleResponse(resp);
 };
 
 export const getLeaveRequests = async () => {
@@ -169,13 +177,16 @@ export const createLeaveForm = async (data) => {
 };
 
 export const createLtcForm = async (formDataArray) => {
-  const resp = await fetch("/hr2/api/ltc/", {
+  const body = Array.isArray(formDataArray)
+    ? { form_data: formDataArray[0], user_info: formDataArray[1] ?? {} }
+    : formDataArray;
+  const resp = await fetch("/api/hr/ltc/create", {
     method: "POST",
     headers: {
       ...authHeaders(),
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(formDataArray),
+    body: JSON.stringify(body),
   });
   return handleResponse(resp);
 };
@@ -366,8 +377,16 @@ export const getAppraisalTrack = async (id) => {
   const resp = await fetch(`/api/hr/appraisal/track/${id}`, {
     headers: authHeaders(),
   });
-  const data = await handleResponse(resp);
-  return data.file_history ?? [];
+  return handleResponse(resp);
+};
+
+export const handleAppraisalWorkflow = async (fileId, body) => {
+  const resp = await fetch(`/api/hr/appraisal/handle/${fileId}/`, {
+    method: "POST",
+    headers: { ...authHeaders(), "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return handleResponse(resp);
 };
 
 export const getAppraisalForm = async (id) => {
@@ -386,13 +405,16 @@ export const getCpdaClaimForm = async (id) => {
 
 // POST
 export const submitAppraisalForm = async (formData) => {
+  const body = Array.isArray(formData)
+    ? { form_data: formData[0], user_info: formData[1] ?? {} }
+    : formData;
   const resp = await fetch("/api/hr/appraisal/submit", {
     method: "POST",
     headers: {
       ...authHeaders(),
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(formData),
+    body: JSON.stringify(body),
   });
   return handleResponse(resp);
 };

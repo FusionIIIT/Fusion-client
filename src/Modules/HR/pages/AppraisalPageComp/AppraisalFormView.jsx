@@ -14,52 +14,31 @@ import LoadingComponent from "../../components/common/Loading";
 import { EmptyTable } from "../../components/tables/EmptyTable";
 import HrBreadcrumbs from "../../components/common/HrBreadcrumbs";
 import {
-  getCpdaAdvForm,
+  getAppraisalForm,
   getMyDetailsHr,
-  handleCpdaAdvanceWorkflow,
+  handleAppraisalWorkflow,
 } from "../../services/api";
 
 const STATUS_LABELS = {
-  submitted: "Submitted (with HOD)",
-  hod_verified: "Verified by HOD — click Forward if still with you",
-  hod_not_verified: "Not verified by HOD",
-  forwarded_to_director: "With Director",
-  director_approved: "Approved — with Accountant",
-  director_rejected: "Rejected by Director",
-  accountant_processed: "Completed by Accountant",
+  submitted: "Submitted — awaiting HR Admin",
+  hr_approved: "Approved by HR",
+  hr_rejected: "Rejected by HR",
 };
 
-function isHodDesignation(d) {
-  return typeof d === "string" && /^HOD \(.+\)$/.test(d.trim());
-}
-
-/** Designation string to send with workflow API (must match filetracking current owner). */
-function pickCpdaWorkflowDesignation(workflowStatus, designations) {
+function pickAppraisalWorkflowDesignation(workflowStatus, designations) {
   const list = (designations || [])
     .map((x) => (x || "").trim())
     .filter(Boolean);
   if (!workflowStatus || list.length === 0) return list[0] || "";
 
-  const hasDir = list.some((x) => x.toLowerCase() === "director");
-  const hasAcct = list.some((x) => x.toLowerCase() === "accountant");
-  const hod = list.find((x) => /^HOD \(.+\)\s*$/.test(x));
-
-  if (workflowStatus === "forwarded_to_director" && hasDir) {
-    return list.find((x) => x.toLowerCase() === "director");
-  }
-  if (workflowStatus === "director_approved" && hasAcct) {
-    return list.find((x) => x.toLowerCase() === "accountant");
-  }
-  if (
-    (workflowStatus === "submitted" || workflowStatus === "hod_verified") &&
-    hod
-  ) {
-    return hod;
+  if (workflowStatus === "submitted") {
+    const hr = list.find((x) => /hr\s*admin/i.test(x));
+    if (hr) return hr;
   }
   return list[0] || "";
 }
 
-function CPDAAdvanceFormView() {
+function AppraisalFormView() {
   const { id: fileId } = useParams();
   const [formData, setFormData] = useState(null);
   const [myDesignations, setMyDesignations] = useState([]);
@@ -71,7 +50,7 @@ function CPDAAdvanceFormView() {
     setLoading(true);
     try {
       const [form, me] = await Promise.all([
-        getCpdaAdvForm(fileId),
+        getAppraisalForm(fileId),
         getMyDetailsHr(),
       ]);
       setFormData(form);
@@ -94,8 +73,8 @@ function CPDAAdvanceFormView() {
   const exampleItems = [
     { title: "Home", path: "/dashboard" },
     { title: "Human Resources", path: "/hr" },
-    { title: "CPDA Adv", path: "/hr/cpda_adv" },
-    { title: "View Form", path: `/hr/cpda_adv/view/${fileId}` },
+    { title: "Appraisal", path: "/hr/appraisal" },
+    { title: "View Form", path: `/hr/appraisal/view/${fileId}` },
   ];
 
   const workflowStatus = formData?.workflow_status;
@@ -103,7 +82,7 @@ function CPDAAdvanceFormView() {
     (workflowStatus && STATUS_LABELS[workflowStatus]) || workflowStatus || "—";
 
   const workflowDesignation = useMemo(
-    () => pickCpdaWorkflowDesignation(workflowStatus, myDesignations),
+    () => pickAppraisalWorkflowDesignation(workflowStatus, myDesignations),
     [workflowStatus, myDesignations],
   );
 
@@ -111,55 +90,31 @@ function CPDAAdvanceFormView() {
     const d = workflowDesignation;
     const w = workflowStatus;
     const out = [];
-    if (isHodDesignation(d) && w === "submitted") {
+    if (/hr\s*admin/i.test(d || "") && w === "submitted") {
       out.push(
         {
-          key: "hod_verify",
-          label: "Verify & forward to Director",
-          action: "hod_verify",
-        },
-        {
-          key: "hod_not_verify",
-          label: "Not verify",
-          action: "hod_not_verify",
-        },
-      );
-    }
-    if (isHodDesignation(d) && w === "hod_verified") {
-      out.push({
-        key: "hod_forward",
-        label: "Forward to Director (legacy / stuck requests)",
-        action: "hod_forward",
-      });
-    }
-    if (d.toLowerCase() === "director" && w === "forwarded_to_director") {
-      out.push(
-        {
-          key: "director_approve",
+          key: "hr_admin_approve",
           label: "Approve",
-          action: "director_approve",
+          action: "hr_admin_approve",
         },
-        { key: "director_reject", label: "Reject", action: "director_reject" },
+        {
+          key: "hr_admin_reject",
+          label: "Reject",
+          action: "hr_admin_reject",
+        },
       );
-    }
-    if (d.toLowerCase() === "accountant" && w === "director_approved") {
-      out.push({
-        key: "accountant_complete",
-        label: "Mark processing complete",
-        action: "accountant_complete",
-      });
     }
     return out;
   }, [workflowDesignation, workflowStatus]);
 
   const runAction = async (action) => {
-    if (action === "director_reject" && !remarks.trim()) {
+    if (action === "hr_admin_reject" && !remarks.trim()) {
       alert("Remarks are required when rejecting.");
       return;
     }
     setSubmitting(true);
     try {
-      await handleCpdaAdvanceWorkflow(fileId, {
+      await handleAppraisalWorkflow(fileId, {
         action,
         designation: workflowDesignation,
         remarks: remarks.trim(),
@@ -193,7 +148,7 @@ function CPDAAdvanceFormView() {
       <HrBreadcrumbs items={exampleItems} />
       <Group position="apart" mt="md" mb="sm">
         <Title order={2} style={{ fontWeight: 500 }}>
-          CPDA Advance Details
+          Appraisal Details
         </Title>
         <Badge size="lg" variant="light" color="blue">
           {statusLabel}
@@ -215,8 +170,8 @@ function CPDAAdvanceFormView() {
             )
           </Text>
           <Textarea
-            label="Remarks (required for Director reject)"
-            placeholder="Optional remarks for this step"
+            label="Remarks (required for reject)"
+            placeholder="Optional remarks for approval"
             minRows={2}
             value={remarks}
             onChange={(e) => setRemarks(e.target.value)}
@@ -227,12 +182,7 @@ function CPDAAdvanceFormView() {
                 key={a.key}
                 loading={submitting}
                 onClick={() => runAction(a.action)}
-                color={
-                  a.action === "hod_not_verify" ||
-                  a.action === "director_reject"
-                    ? "red"
-                    : "blue"
-                }
+                color={a.action === "hr_admin_reject" ? "red" : "blue"}
               >
                 {a.label}
               </Button>
@@ -322,4 +272,4 @@ function CPDAAdvanceFormView() {
   );
 }
 
-export default CPDAAdvanceFormView;
+export default AppraisalFormView;
