@@ -14,43 +14,105 @@ import {
 } from "@phosphor-icons/react";
 import { useDispatch, useSelector } from "react-redux";
 import { updateForm, resetForm } from "../../../../redux/formSlice";
+import { submitCpdaClaimForm } from "../../services/api";
+import { get_my_details, search_employee } from "../../../../routes/hr";
 import "../../styles/CPDA_ClaimForm.css";
 
 function CPDA_ClaimForm() {
   const formData = useSelector((state) => state.form);
   const dispatch = useDispatch();
+  const [verifiedReceiver, setVerifiedReceiver] = React.useState(false);
+
+  const handleCheck = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        console.error("No authentication token found!");
+        return;
+      }
+      if (!formData.username) {
+        alert("Please enter a receiver username first.");
+        return;
+      }
+      const response = await fetch(
+        `${search_employee}?search=${formData.username}`,
+        { headers: { Authorization: `Token ${token}` } },
+      );
+      if (!response.ok) {
+        alert("Receiver not found. Please check the username and try again.");
+        throw new Error("Network response was not ok");
+      }
+      const fetchedReceiverData = await response.json();
+      dispatch(updateForm({
+        designationFooter: fetchedReceiverData.designation || "",
+      }));
+      setVerifiedReceiver(true);
+      alert("Receiver verified successfully!");
+    } catch (error) {
+      console.error("Failed to fetch receiver data:", error);
+    }
+  };
+
+  React.useEffect(() => {
+    const fetchMyDetails = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        if (!token) return;
+        
+        const response = await fetch(get_my_details, {
+          headers: { Authorization: `Token ${token}` },
+        });
+        
+        if (response.ok) {
+          const fetchedData = await response.json();
+          dispatch(updateForm({
+            name: fetchedData.username || "",
+            designation: fetchedData.designation || "",
+          }));
+        }
+      } catch (error) {
+        console.error("Failed to fetch user details:", error);
+      }
+    };
+    fetchMyDetails();
+  }, [dispatch]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-    dispatch(updateForm({ name, value }));
+    dispatch(updateForm({ [name]: value }));
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const authToken = localStorage.getItem("authToken");
+
+    if (!verifiedReceiver) {
+      alert("Please verify the receiver's designation before submitting.");
+      return;
+    }
+
+    const processedData = { ...formData };
+    delete processedData.username;
+    delete processedData.designationFooter;
+
+    const payload = [
+      processedData,
+      {
+        uploader_name: formData.name,
+        uploader_designation: formData.designation,
+        receiver_name: formData.username,
+        receiver_designation: formData.designationFooter,
+      }
+    ];
 
     try {
-      const response = await fetch(
-        "http://127.0.0.1:8000/hr2/api/submit_cpda_reimbursement_form/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Token ${authToken}`,
-          },
-          body: JSON.stringify(formData),
-        },
-      );
-
-      if (response.ok) {
-        const result = await response.json();
-        console.log("Form submitted successfully:", result);
-        dispatch(resetForm());
-      } else {
-        console.error("Error submitting form:", response.statusText);
-      }
+      const result = await submitCpdaClaimForm(payload);
+      console.log("Form submitted successfully:", result);
+      alert("CPDA Claim form submitted successfully!");
+      setVerifiedReceiver(false);
+      dispatch(resetForm());
     } catch (error) {
       console.error("Error submitting form:", error);
+      alert("Failed to submit form: " + error.message);
     }
   };
 
@@ -299,6 +361,7 @@ function CPDA_ClaimForm() {
             leftIcon={<CheckCircle size={25} />}
             style={{ marginLeft: "50px", paddingRight: "15px" }}
             className="button"
+            onClick={handleCheck}
           >
             <CheckCircle size={18} /> &nbsp; Check
           </Button>
@@ -312,6 +375,7 @@ function CPDA_ClaimForm() {
               borderRadius: "5px",
             }}
             className="button"
+            disabled={!verifiedReceiver}
           >
             <PaperPlaneRight size={20} /> &nbsp; Submit
           </Button>
