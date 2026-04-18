@@ -11,7 +11,7 @@ function AppraisalRequests() {
     return <LoadingComponent />;
   }
 
-  return <RequestsTable title="Appraisal Requests" data={data || []} />;
+  return <RequestsTable title="Appraisal Requests" data={data || []} formType="appraisal" />;
 }
 
 export default AppraisalRequests;

@@ -13,15 +13,15 @@ function ArchiveTable({ title, data, formType = undefined }) {
 
   const handleViewClick = (id) => {
     const viewUrlMap = {
-      leave: `/hr/leave/file_handler/${id}?archive=true`,
-      cpda_adv: `/hr/cpda_adv/file_handler/${id}?archive=true`,
-      ltc: `/hr/ltc/file_handler/${id}?archive=true`,
-      cpda_claim: `/hr/cpda_claim/file_handler/${id}?archive=true`,
-      appraisal: `/hr/appraisal/file_handler/${id}?archive=true`,
+      leave: `/hr/leave/file_handler/${id}?archive=true`, // Leave has a file handler
+      cpda_adv: `/hr/cpda_adv/view/${id}`,
+      ltc: `/hr/ltc/view/${id}`,
+      cpda_claim: `/hr/cpda_claim/view/${id}`,
+      appraisal: `/hr/appraisal/view/${id}`,
     };
 
     console.log(viewUrlMap[formType]);
-    navigate(viewUrlMap[formType]); // Default to leaveform if formType is not matched
+    navigate(viewUrlMap[formType] || `/hr/FormView/${formType}_track/${id}`); // Fallback
   };
   const handleTrackClick = (id) => {
     console.log(formType);

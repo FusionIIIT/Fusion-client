@@ -11,7 +11,7 @@ function CPDA_ClaimRequests() {
     return <LoadingComponent />;
   }
 
-  return <RequestsTable title="CPDA Claim Requests" data={data || []} />;
+  return <RequestsTable title="CPDA Claim Requests" data={data || []} formType="cpda_claim" />;
 }
 
 export default CPDA_ClaimRequests;

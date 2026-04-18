@@ -10,7 +10,7 @@ function LtcRequests() {
   if (loading) return <LoadingSpinner />;
   if (error) return <div>Error: {error}</div>;
 
-  return <RequestsTable title="LTC Requests" data={requestData} />;
+  return <RequestsTable title="LTC Requests" data={requestData} formType="ltc" />;
 }
 
 export default LtcRequests;

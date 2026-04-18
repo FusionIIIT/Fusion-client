@@ -51,29 +51,6 @@ function CpdaAdvForm() {
         CPDA Advance Form Details
       </Title>
       <div className="CPDA_ADVANCEForm_container">
-        <Link
-          to={`/hr/FormView/cpda_adv_track/${fetchedformData.file_id}`}
-          style={{
-            display: "inline-block",
-            padding: "10px 20px",
-            backgroundColor: "#007bffcc",
-            color: "#fff",
-            textDecoration: "none",
-            borderRadius: "4px",
-            textAlign: "center",
-            fontWeight: "bold",
-            cursor: "pointer",
-            marginBottom: "20px",
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.backgroundColor = "#007bff";
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.backgroundColor = "#007bffcc";
-          }}
-        >
-          Track Status
-        </Link>
         <form>
           <div className="grid-row">
             <div className="grid-col">

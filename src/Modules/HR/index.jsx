@@ -8,7 +8,7 @@ import Appraisal from "./pages/Appraisel";
 import CpdaClaim from "./pages/CPDA_Claim";
 import FormView from "./pages/FormView";
 import Outbox from "./pages/Outbox";
-import CpdaAdvanceView from "./pages/CPDA_ADVANCEPageComp/CPDA_ADVANCEView";
+// Removed CpdaAdvanceView import since it's replaced by GenericFormView
 import LeaveFormView from "./pages/LeavePageComp/LeaveFormView";
 import LeaveFilehandle from "./pages/LeavePageComp/Leave_file_handle";
 import LeaveHandleResponsibility from "./pages/LeavePageComp/Leave_Handle_Responsibility";
@@ -20,6 +20,8 @@ import OfflineLeaveForm from "./pages/LeavePageComp/OfflineLeaveForm";
 import ViewEmployeeLB from "./pages/LeavePageComp/ViewEmployeeLB";
 import AdminLeaveRequests from "./pages/LeavePageComp/AdminLeaveRequests";
 // import UpdateLeaveBalance from "./pages/UpdateLeaveBalance";
+import GenericFormView from "./components/forms/GenericFormView";
+import * as api from "./services/api";
 
 export default function HR() {
   return (
@@ -36,7 +38,11 @@ export default function HR() {
       <Route path="leave/*" element={<LeavePage />} />
 
       {/* Route for the CPDA Advance View page */}
-      <Route path="cpda_adv/view/:id" element={<CpdaAdvanceView />} />
+      <Route path="cpda_adv/view/:id" element={<GenericFormView title="CPDA Advance Details" fetchFn={api.getCpdaAdvForm} breadcrumbPath={{title: "CPDA Adv", path: "/hr/cpda_adv"}} />} />
+      <Route path="ltc/view/:id" element={<GenericFormView title="LTC Details" fetchFn={api.getLtcForm} breadcrumbPath={{title: "LTC", path: "/hr/ltc"}} />} />
+      <Route path="appraisal/view/:id" element={<GenericFormView title="Appraisal Details" fetchFn={api.getAppraisalForm} breadcrumbPath={{title: "Appraisal", path: "/hr/appraisal"}} />} />
+      <Route path="cpda_claim/view/:id" element={<GenericFormView title="CPDA Claim Details" fetchFn={api.getCpdaClaimForm} breadcrumbPath={{title: "CPDA Claim", path: "/hr/cpda_claim"}} />} />
+      
       <Route path="cpda_adv/*" element={<CpdaAdvance />} />
       <Route path="ltc/*" element={<LTC />} />
       <Route path="appraisal/*" element={<Appraisal />} />

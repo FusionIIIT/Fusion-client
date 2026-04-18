@@ -7,13 +7,20 @@ import { Eye } from "@phosphor-icons/react";
 import "../../styles/Table.css"; // Ensure this path is correct
 import { EmptyTable } from "./EmptyTable";
 
-function RequestsTable({ title, data }) {
+function RequestsTable({ title, data, formType }) {
   const navigate = useNavigate();
   // header contains the column names id name designation submissionDate view track
   const headers = ["ID", "Name", "Designation", "Submission Date", "View"];
 
-  const handleViewClick = (view) => {
-    navigate(`./view/${view}`);
+  const handleViewClick = (id) => {
+    const viewUrlMap = {
+      leave: `/hr/leave/view/${id}`,
+      cpda_adv: `/hr/cpda_adv/view/${id}`,
+      ltc: `/hr/ltc/view/${id}`,
+      cpda_claim: `/hr/cpda_claim/view/${id}`,
+      appraisal: `/hr/appraisal/view/${id}`,
+    };
+    navigate(viewUrlMap[formType] || `./view/${id}`);
   };
 
   return (
@@ -76,4 +83,6 @@ export default RequestsTable;
 RequestsTable.propTypes = {
   title: PropTypes.string.isRequired,
   data: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+  formType: PropTypes.string,
 };
+

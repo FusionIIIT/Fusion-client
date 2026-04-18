@@ -346,6 +346,20 @@ export const getAppraisalTrack = async (id) => {
   return data.file_history ?? [];
 };
 
+export const getAppraisalForm = async (id) => {
+  const resp = await fetch(`/api/hr/appraisal/form/${id}`, {
+    headers: authHeaders(),
+  });
+  return handleResponse(resp);
+};
+
+export const getCpdaClaimForm = async (id) => {
+  const resp = await fetch(`/api/hr/cpda_claim/form/${id}`, {
+    headers: authHeaders(),
+  });
+  return handleResponse(resp);
+};
+
 // POST
 export const submitAppraisalForm = async (formData) => {
   const resp = await fetch("/api/hr/appraisal/submit", {

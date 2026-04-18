@@ -11,7 +11,7 @@ function Cpda_ADVANCERequests() {
     return <LoadingSpinner />;
   }
 
-  return <RequestsTable title="CPDA Adv Requests" data={requestData} />;
+  return <RequestsTable title="CPDA Adv Requests" data={requestData} formType="cpda_adv" />;
 }
 
 export default Cpda_ADVANCERequests;
