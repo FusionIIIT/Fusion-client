@@ -18,6 +18,7 @@ import {
   Phone,
   Users,
 } from "@phosphor-icons/react";
+import { search_employee } from "../../../../routes/hr";
 import "../../styles/LtcForm.css";
 
 function Divider({ thickness = "3px", color = "#ccc", margin = "20px 0" }) {
@@ -60,6 +61,8 @@ function LtcForm({ onSubmit }) {
     designationFooter: "",
   });
 
+  const [verifiedReceiver, setVerifiedReceiver] = useState(false);
+
   const [numChildren, setNumChildren] = useState(1);
   const [childrenFields, setChildrenFields] = useState([{ name: "", age: "" }]);
   const [numDependents, setNumDependents] = useState(1);
@@ -71,7 +74,37 @@ function LtcForm({ onSubmit }) {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
+    if (name === "username") {
+      setVerifiedReceiver(false);
+    }
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleCheck = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        console.error("No authentication token found!");
+        return;
+      }
+      const response = await fetch(
+        `${search_employee}?search=${formData.username}`,
+        { headers: { Authorization: `Token ${token}` } },
+      );
+      if (!response.ok) {
+        alert("Receiver not found. Please check the username and try again.");
+        throw new Error("Network response was not ok");
+      }
+      const fetchedReceiverData = await response.json();
+      setFormData((prev) => ({
+        ...prev,
+        designationFooter: fetchedReceiverData.designation || "",
+      }));
+      setVerifiedReceiver(true);
+      alert("Receiver verified successfully!");
+    } catch (error) {
+      console.error("Failed to fetch receiver data:", error);
+    }
   };
 
   const handleSelectChange = (value, name) => {
@@ -89,6 +122,11 @@ function LtcForm({ onSubmit }) {
 
   const handleSubmit = (event) => {
     event.preventDefault();
+
+    if (!verifiedReceiver) {
+      alert("Please verify the receiver's designation before submitting.");
+      return;
+    }
 
     if (
       formData.dateTo &&
@@ -939,6 +977,8 @@ function LtcForm({ onSubmit }) {
             leftIcon={<CheckCircle size={25} />}
             style={{ marginLeft: "50px", paddingRight: "15px" }}
             className="button"
+            onClick={handleCheck}
+            type="button"
           >
             <CheckCircle size={18} /> &nbsp; Check
           </Button>
@@ -952,6 +992,7 @@ function LtcForm({ onSubmit }) {
               borderRadius: "5px",
             }}
             className="button"
+            disabled={!verifiedReceiver}
           >
             <FloppyDisk size={20} /> &nbsp; Submit
           </Button>

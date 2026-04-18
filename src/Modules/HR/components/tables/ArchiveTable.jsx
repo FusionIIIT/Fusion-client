@@ -68,9 +68,9 @@ function ArchiveTable({ title, data, formType = undefined }) {
               {data.map((item, index) => (
                 <tr className="table-row" key={index}>
                   <td>{item.id}</td>
-                  <td>{item.uploader}</td>
+                  <td>{item.name}</td>
                   <td>{item.designation}</td>
-                  <td>{item.upload_date}</td>
+                  <td>{item.submissionDate}</td>
                   <td>
                     <button
                       type="button"

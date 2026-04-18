@@ -67,9 +67,9 @@ function InboxTable({ title, data, formType }) {
               {data.map((item, index) => (
                 <tr className="table-row" key={index}>
                   <td>{item.id}</td>
-                  <td>{item.sent_by_user}</td>
-                  <td>{item.sent_by_designation}</td>
-                  <td>{item.upload_date}</td>
+                  <td>{item.name}</td>
+                  <td>{item.designation}</td>
+                  <td>{item.submissionDate}</td>
                   <td>
                     <button
                       type="button"

@@ -10,7 +10,7 @@ import {
 } from "react-router-dom"; // Import these hooks
 
 import classes from "../styles/LTCPage.module.css";
-import LTCForm from "../components/forms/LTCForm";
+import LtcFormPage from "./LTCPageComp/LTCFormPage";
 import LTCRequests from "./LTCPageComp/LTCRequests";
 import LTCInbox from "./LTCPageComp/LTCInbox";
 import LTCArchive from "./LTCPageComp/LTCArchive";
@@ -141,7 +141,7 @@ function LTC() {
       ) : (
         <div className="fullWidthGrid">
           <Routes>
-            <Route path="ltcform" element={<LTCForm />} />
+            <Route path="ltcform" element={<LtcFormPage />} />
             <Route path="ltcrequests" element={<LTCRequests />} />
             <Route path="ltcinbox" element={<LTCInbox />} />
             <Route path="ltcarchive" element={<LTCArchive />} />

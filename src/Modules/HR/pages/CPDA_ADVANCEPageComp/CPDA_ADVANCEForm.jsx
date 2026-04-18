@@ -158,7 +158,15 @@ function CPDA_ADVANCEForm() {
               "Content-Type": "application/json",
               Authorization: `Token ${token}`,
             },
-            body: JSON.stringify(processedData),
+            body: JSON.stringify([
+              processedData,
+              {
+                uploader_name: formData.name,
+                uploader_designation: formData.designation,
+                receiver_name: formData.username_reciever,
+                receiver_designation: formData.designation_reciever,
+              },
+            ]),
           },
         );
         if (!response.ok) {

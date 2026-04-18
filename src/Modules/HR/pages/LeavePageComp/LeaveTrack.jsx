@@ -43,7 +43,7 @@ function LeaveTrack() {
     <TrackTable
       title="Leave Track"
       exampleItems={exampleItems}
-      data={data?.file_history || []}
+      data={data || []}
     />
   );
 }

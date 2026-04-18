@@ -42,7 +42,7 @@ export const get_ltc_archive = `${host}/hr2/api/get_ltc_archive`;
 export const get_cpda_adv_requests = `${host}/hr2/api/get_cpda_adv_requests`;
 export const get_cpda_adv_inbox = `${host}/hr2/api/get_cpda_adv_inbox`;
 export const get_cpda_adv_archive = `${host}/hr2/api/get_cpda_adv_archive`;
-export const submit_cpda_adv_form = `${host}/hr2/api/submit_cpda_adv_form`;
+export const submit_cpda_adv_form = `${host}/hr2/api/cpdaadv/`;
 export const view_cpda_adv_form = `${host}/hr2/api/view_cpda_adv_form_data`;
 
 // CPDA Claim routes

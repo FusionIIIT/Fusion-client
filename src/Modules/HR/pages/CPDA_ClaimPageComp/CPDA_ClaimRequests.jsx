@@ -11,12 +11,7 @@ function CPDA_ClaimRequests() {
     return <LoadingComponent />;
   }
 
-  return (
-    <RequestsTable
-      title="CPDA Claim Requests"
-      data={data?.cpda_claim_requests || []}
-    />
-  );
+  return <RequestsTable title="CPDA Claim Requests" data={data || []} />;
 }
 
 export default CPDA_ClaimRequests;

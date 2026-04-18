@@ -14,7 +14,7 @@ function AppraisalInbox() {
   return (
     <InboxTable
       title="Appraisal Inbox"
-      data={data?.appraisal_inbox || []}
+      data={data || []}
       formType="appraisal"
     />
   );

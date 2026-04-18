@@ -95,7 +95,7 @@ function Leave() {
           className={`${classes.fusionTabsContainer} ${classes.limitedWidthTabs}`}
           ref={tabsListRef}
         >
-          <Tabs value={activeTab} onTabChange={handleTabChange}>
+          <Tabs value={activeTab} onChange={handleTabChange}>
             <Tabs.List style={{ display: "flex", flexWrap: "nowrap" }}>
               {tabItems.map((item, index) => (
                 <Tabs.Tab

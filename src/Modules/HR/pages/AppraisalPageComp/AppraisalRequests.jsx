@@ -11,12 +11,7 @@ function AppraisalRequests() {
     return <LoadingComponent />;
   }
 
-  return (
-    <RequestsTable
-      title="Appraisal Requests"
-      data={data?.appraisal_requests || []}
-    />
-  );
+  return <RequestsTable title="Appraisal Requests" data={data || []} />;
 }
 
 export default AppraisalRequests;

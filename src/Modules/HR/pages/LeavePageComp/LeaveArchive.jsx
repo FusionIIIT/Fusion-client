@@ -12,11 +12,7 @@ function LeaveArchive() {
   }
 
   return (
-    <ArchiveTable
-      title="Leave Archive"
-      data={data?.leave_archive || []}
-      formType="leave"
-    />
+    <ArchiveTable title="Leave Archive" data={data || []} formType="leave" />
   );
 }
 

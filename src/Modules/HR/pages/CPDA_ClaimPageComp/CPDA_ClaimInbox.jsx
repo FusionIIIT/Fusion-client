@@ -14,7 +14,7 @@ function CPDA_ClaimInbox() {
   return (
     <InboxTable
       title="CPDA Claim Inbox"
-      data={data?.cpda_claim_inbox || []}
+      data={data || []}
       formType="cpda_claim"
     />
   );

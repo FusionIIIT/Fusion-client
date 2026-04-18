@@ -12,9 +12,12 @@ const handleResponse = async (response) => {
 
 const normalizeInboxRow = (item) => ({
   id: item.id || item.file_id,
-  user: item.sent_by_user || item.user,
-  designation: item.sent_by_designation || item.designation,
-  date: item.upload_date || item.date,
+  user: item.sent_by_user || item.uploader_name || item.user || item.name,
+  name: item.sent_by_user || item.uploader_name || item.user || item.name,
+  designation:
+    item.sent_by_designation || item.designation_name || item.designation,
+  date: item.upload_date || item.date || item.submissionDate,
+  submissionDate: item.upload_date || item.date || item.submissionDate,
 });
 
 export const getCpdaAdvRequests = async () => {
@@ -141,17 +144,20 @@ export const createLeaveForm = async (data) => {
   return handleResponse(resp);
 };
 
-export const createLtcForm = async (formData) => {
-  const resp = await fetch("/api/hr/ltc/create", {
+export const createLtcForm = async (formDataArray) => {
+  const resp = await fetch("/hr2/api/ltc/", {
     method: "POST",
-    headers: authHeaders(),
-    body: formData,
+    headers: {
+      ...authHeaders(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(formDataArray),
   });
   return handleResponse(resp);
 };
 
 export const getFormInitials = async () => {
-  const resp = await fetch("/api/hr/leave/form-initials", {
+  const resp = await fetch("/hr2/leave/form-initials/", {
     headers: authHeaders(),
   });
   return handleResponse(resp);
@@ -232,7 +238,7 @@ export const handleLeaveResponsibility = async (id, action, type) => {
 };
 
 export const getLeaveBalance = async () => {
-  const resp = await fetch("/api/hr/leave/balance", {
+  const resp = await fetch("/hr2/leave/balance/", {
     headers: authHeaders(),
   });
   return handleResponse(resp);

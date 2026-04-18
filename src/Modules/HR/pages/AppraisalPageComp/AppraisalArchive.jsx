@@ -14,7 +14,7 @@ function AppraisalArchive() {
   return (
     <ArchiveTable
       title="Appraisal Archive"
-      data={data?.appraisal_archive || []}
+      data={data || []}
       formType="appraisal"
     />
   );

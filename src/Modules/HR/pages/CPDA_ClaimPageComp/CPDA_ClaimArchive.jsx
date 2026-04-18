@@ -14,7 +14,7 @@ function CPDA_ClaimArchive() {
   return (
     <ArchiveTable
       title="CPDA Claim Archive"
-      data={data?.cpda_claim_archive || []}
+      data={data || []}
       formType="cpda_claim"
     />
   );
