@@ -2,7 +2,7 @@ import React from "react";
 import { Title } from "@mantine/core";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom"; // Use for navigation
-import { Eye } from "@phosphor-icons/react";
+import { Eye, MapPin } from "@phosphor-icons/react";
 
 import "../../styles/Table.css"; // Ensure this path is correct
 import { EmptyTable } from "./EmptyTable";
@@ -10,7 +10,7 @@ import { EmptyTable } from "./EmptyTable";
 function RequestsTable({ title, data, formType }) {
   const navigate = useNavigate();
   // header contains the column names id name designation submissionDate view track
-  const headers = ["ID", "Name", "Designation", "Submission Date", "View"];
+  const headers = ["ID", "Name", "Designation", "Submission Date", "View", "Track"];
 
   const handleViewClick = (id) => {
     const viewUrlMap = {
@@ -21,6 +21,17 @@ function RequestsTable({ title, data, formType }) {
       appraisal: `/hr/appraisal/view/${id}`,
     };
     navigate(viewUrlMap[formType] || `./view/${id}`);
+  };
+
+  const handleTrackClick = (id) => {
+    const trackUrlMap = {
+      leave: `/hr/FormView/leaveform_track/${id}`,
+      cpda_adv: `/hr/FormView/cpda_adv_track/${id}`,
+      ltc: `/hr/FormView/ltc_track/${id}`,
+      cpda_claim: `/hr/FormView/cpda_claim_track/${id}`,
+      appraisal: `/hr/FormView/appraisal_track/${id}`,
+    };
+    navigate(trackUrlMap[formType] || `/hr/FormView/leaveform_track/${id}`); // Fallback
   };
 
   return (
@@ -64,6 +75,16 @@ function RequestsTable({ title, data, formType }) {
                     >
                       <Eye size={20} />
                       View
+                    </button>
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      className="text-link"
+                      onClick={() => handleTrackClick(item.id)}
+                    >
+                      <MapPin size={20} />
+                      Track
                     </button>
                   </td>
                 </tr>

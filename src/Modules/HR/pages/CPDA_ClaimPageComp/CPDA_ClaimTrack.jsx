@@ -22,7 +22,7 @@ function CPDA_ClaimTrack() {
     const fetchCPDAClaimTrack = async () => {
       try {
         const data = await getCpdaClaimTrack(id);
-        setTrackData(data.file_history || []);
+        setTrackData(data || []);
       } catch (error) {
         console.error("Failed to fetch CPDA Claim Track:", error);
       } finally {

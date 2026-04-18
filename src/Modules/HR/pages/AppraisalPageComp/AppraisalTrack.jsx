@@ -1,23 +1,49 @@
-import React from "react";
-import InboxTable from "../../components/tables/InboxTable";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import LoadingComponent from "../../components/common/Loading";
-import useFetchData from "../../hooks/useFetchData";
-import { getAppraisalInbox } from "../../services/api";
+import TrackTable from "../../components/tables/TrackTable";
+import { getAppraisalTrack } from "../../services/api";
 
-function AppraisalInbox() {
-  const { data, loading } = useFetchData(getAppraisalInbox);
+function AppraisalTrack() {
+  const { id } = useParams();
+  const [trackData, setTrackData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const currentPath = window.location.pathname;
+
+  const exampleItems = [
+    { title: "Home", path: "/dashboard" },
+    { title: "Human Resources", path: "/hr" },
+    { title: "Appraisal Management", path: "/hr/appraisal" },
+    { title: "Track", path: `${currentPath}` },
+  ];
+
+  useEffect(() => {
+    const fetchAppraisalTrack = async () => {
+      try {
+        const data = await getAppraisalTrack(id);
+        setTrackData(data || []);
+      } catch (error) {
+        console.error("Failed to fetch Appraisal Track:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAppraisalTrack();
+  }, [id]);
 
   if (loading) {
     return <LoadingComponent />;
   }
 
   return (
-    <InboxTable
-      title="Appraisal Inbox"
-      data={data || []}
-      formType="appraisal"
+    <TrackTable
+      title="Appraisal Track"
+      data={trackData}
+      exampleItems={exampleItems}
     />
   );
 }
 
-export default AppraisalInbox;
+export default AppraisalTrack;

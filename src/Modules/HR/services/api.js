@@ -360,6 +360,7 @@ export const getCpdaClaimForm = async (id) => {
   return handleResponse(resp);
 };
 
+
 // POST
 export const submitAppraisalForm = async (formData) => {
   const resp = await fetch("/api/hr/appraisal/submit", {
