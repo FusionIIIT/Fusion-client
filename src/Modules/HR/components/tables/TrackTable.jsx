@@ -4,7 +4,14 @@ import HrBreadcrumbs from "../common/HrBreadcrumbs";
 import HRDataTable from "./HRDataTable";
 import { formatDateTime } from "../../utils/dateFormatter";
 
-function TrackTable({ title, data, exampleItems = [], loading = false }) {
+function TrackTable({
+  title,
+  data,
+  exampleItems = [],
+  loading = false,
+  workflowStatusDisplay = "",
+  workflowHistory = [],
+}) {
   const columns = [
     { key: "id", label: "Record Id" },
     {
@@ -26,6 +33,44 @@ function TrackTable({ title, data, exampleItems = [], loading = false }) {
   return (
     <>
       <HrBreadcrumbs items={exampleItems} />
+      {(workflowStatusDisplay ||
+        (workflowHistory && workflowHistory.length > 0)) && (
+        <div
+          style={{
+            margin: "16px 15px",
+            padding: 16,
+            background: "#f5f7fa",
+            borderRadius: 8,
+            maxWidth: 960,
+          }}
+        >
+          {workflowStatusDisplay ? (
+            <p style={{ margin: "0 0 8px" }}>
+              <strong>Application status:</strong> {workflowStatusDisplay}
+            </p>
+          ) : null}
+          {workflowHistory.length > 0 ? (
+            <>
+              <p style={{ margin: "8px 0 4px", fontWeight: 600 }}>
+                Workflow steps
+              </p>
+              <ul style={{ margin: 0, paddingLeft: 20 }}>
+                {workflowHistory.map((row, idx) => (
+                  <li
+                    key={`${row.at || ""}-${idx}`}
+                    style={{ marginBottom: 6 }}
+                  >
+                    <strong>{row.status}</strong>
+                    {row.by ? ` — ${row.by}` : ""}
+                    {row.at ? ` — ${row.at}` : ""}
+                    {row.remarks ? ` — ${row.remarks}` : ""}
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : null}
+        </div>
+      )}
       <HRDataTable
         title={title}
         columns={columns}
@@ -49,9 +94,13 @@ TrackTable.propTypes = {
     }),
   ),
   loading: PropTypes.bool,
+  workflowStatusDisplay: PropTypes.string,
+  workflowHistory: PropTypes.arrayOf(PropTypes.shape({})),
 };
 
 TrackTable.defaultProps = {
   exampleItems: [],
   loading: false,
+  workflowStatusDisplay: "",
+  workflowHistory: [],
 };

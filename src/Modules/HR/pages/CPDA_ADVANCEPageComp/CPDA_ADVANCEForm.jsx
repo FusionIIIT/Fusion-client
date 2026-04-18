@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Button } from "@mantine/core";
 import {
   PaperPlaneRight,
-  CheckCircle,
   User,
   Tag,
   IdentificationCard,
@@ -11,11 +10,7 @@ import {
   CurrencyDollar,
   FileText,
 } from "@phosphor-icons/react";
-import {
-  search_employee,
-  get_my_details,
-  submit_cpda_adv_form,
-} from "../../../../routes/hr";
+import { get_my_details } from "../../../../routes/hr";
 import "../../styles/CPDA_ADVANCEForm.css";
 
 function CPDA_ADVANCEForm() {
@@ -30,11 +25,7 @@ function CPDA_ADVANCEForm() {
     balanceAvailable: "",
     advanceAmountPDA: "",
     amountCheckedInPDA: "",
-    username_reciever: "",
-    designation_reciever: "",
   });
-
-  const [verifiedReceiver, setVerifiedReceiver] = useState(false);
 
   useEffect(() => {
     const fetchMyDetails = async () => {
@@ -69,40 +60,8 @@ function CPDA_ADVANCEForm() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleCheck = async () => {
-    try {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        console.error("No authentication token found!");
-        return;
-      }
-      const response = await fetch(
-        `${search_employee}?search=${formData.username_reciever}`,
-        { headers: { Authorization: `Token ${token}` } },
-      );
-      if (!response.ok) {
-        alert("Receiver not found. Please check the username and try again.");
-        throw new Error("Network response was not ok");
-      }
-      const fetchedReceiverData = await response.json();
-      setFormData((prev) => ({
-        ...prev,
-        designation_reciever: fetchedReceiverData.designation || "",
-      }));
-      setVerifiedReceiver(true);
-      alert("Receiver verified successfully!");
-    } catch (error) {
-      console.error("Failed to fetch receiver data:", error);
-    }
-  };
-
   const handleSubmit = (event) => {
     event.preventDefault();
-
-    if (!verifiedReceiver) {
-      alert("Please verify the receiver's designation before submitting.");
-      return;
-    }
 
     const requiredFields = [
       { name: "name", label: "Name" },
@@ -150,33 +109,47 @@ function CPDA_ADVANCEForm() {
           console.error("No authentication token found!");
           return;
         }
-        const response = await fetch(
-          `${submit_cpda_adv_form}/?username_reciever=${formData.username_reciever}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Token ${token}`,
-            },
-            body: JSON.stringify([
-              processedData,
-              {
-                uploader_name: formData.name,
-                uploader_designation: formData.designation,
-                receiver_name: formData.username_reciever,
-                receiver_designation: formData.designation_reciever,
-              },
-            ]),
+        const response = await fetch("/api/hr/cpdaadv/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Token ${token}`,
           },
-        );
+          body: JSON.stringify([
+            processedData,
+            {
+              uploader_designation: formData.designation,
+            },
+          ]),
+        });
         if (!response.ok) {
-          alert("Failed to submit form. Please try again later.");
-          throw new Error("Network response was not ok");
+          const errText = await response.text();
+          let message = errText || `Request failed (${response.status})`;
+          try {
+            const parsed = JSON.parse(errText);
+            if (parsed && typeof parsed === "object") {
+              if (parsed.detail) message = String(parsed.detail);
+              else if (parsed.non_field_errors)
+                message = String(parsed.non_field_errors);
+              else message = JSON.stringify(parsed);
+            }
+          } catch {
+            /* use raw text */
+          }
+          console.error(
+            "CPDA Advance submit failed:",
+            response.status,
+            message,
+          );
+          alert(message);
+          throw new Error(message);
         }
-        alert("CPDA Advance form submitted successfully!");
+        alert(
+          "CPDA Advance submitted. It has been routed to your department HOD for verification.",
+        );
         setFormData({
-          name: "",
-          designation: "",
+          name: formData.name,
+          designation: formData.designation,
           pfNo: "",
           purpose: "",
           amountRequired: "",
@@ -185,10 +158,7 @@ function CPDA_ADVANCEForm() {
           balanceAvailable: "",
           advanceAmountPDA: "",
           amountCheckedInPDA: "",
-          username_reciever: "",
-          designation_reciever: "",
         });
-        setVerifiedReceiver(false);
       } catch (error) {
         console.error("Failed to submit CPDA Advance form:", error);
       }
@@ -199,15 +169,22 @@ function CPDA_ADVANCEForm() {
   return (
     <div className="CPDA_ADVANCEForm_container">
       <form onSubmit={handleSubmit}>
+        <p
+          style={{
+            margin: "0 0 16px 8px",
+            color: "#444",
+            maxWidth: 720,
+            lineHeight: 1.5,
+          }}
+        >
+          Your application is sent automatically to the Head of Department (HOD)
+          for your academic department, based on your profile. Ensure your
+          department and HOD designation (e.g. HOD (CSE)) are configured in the
+          system.
+        </p>
         {/* Row 1: Name and Designation */}
         <div className="grid-row">
           <div className="grid-col">
-            {/*
-              KEY FIX: The strict jsx-a11y rule requires the <input> to be
-              a descendant of its <label> (implicit association), not just a
-              sibling with matching htmlFor/id. All labels below wrap their
-              input-wrapper so the input is inside the label's subtree.
-            */}
             <label className="input-label" htmlFor="name">
               Name
               <div className="input-wrapper">
@@ -407,42 +384,7 @@ function CPDA_ADVANCEForm() {
           </div>
         </div>
 
-        {/* Footer: label wraps the input-wrapper directly for implicit association */}
         <div className="footer-section">
-          <label htmlFor="username_reciever" className="input-wrapper">
-            <User size={20} aria-hidden="true" />
-            <input
-              type="text"
-              id="username_reciever"
-              name="username_reciever"
-              placeholder="Receiver's Username"
-              value={formData.username_reciever}
-              onChange={handleChange}
-              className="username-input"
-              required
-            />
-          </label>
-          <label htmlFor="designation_reciever" className="input-wrapper">
-            <Tag size={20} aria-hidden="true" />
-            <input
-              type="text"
-              id="designation_reciever"
-              name="designation_reciever"
-              placeholder="Designation"
-              value={formData.designation_reciever}
-              className="designation-input"
-              required
-              disabled
-            />
-          </label>
-          <Button
-            leftIcon={<CheckCircle size={25} />}
-            style={{ marginLeft: "50px", paddingRight: "15px" }}
-            className="button"
-            onClick={handleCheck}
-          >
-            <CheckCircle size={18} /> &nbsp; Check
-          </Button>
           <Button
             type="submit"
             rightIcon={<PaperPlaneRight size={20} />}
@@ -453,7 +395,6 @@ function CPDA_ADVANCEForm() {
               borderRadius: "5px",
             }}
             className="button"
-            disabled={!verifiedReceiver}
           >
             <PaperPlaneRight size={20} /> &nbsp; Submit
           </Button>

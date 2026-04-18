@@ -51,6 +51,30 @@ export const getCpdaAdvForm = async (id) => {
   return handleResponse(resp);
 };
 
+/** CPDA Advance track: file routing history plus workflow_status / workflow_history. */
+export const getCpdaAdvTrack = async (id) => {
+  const resp = await fetch(`/api/hr/cpda_adv/track/${id}`, {
+    headers: authHeaders(),
+  });
+  return handleResponse(resp);
+};
+
+export const handleCpdaAdvanceWorkflow = async (fileId, body) => {
+  const resp = await fetch(`/api/hr/cpda_adv/handle/${fileId}/`, {
+    method: "POST",
+    headers: { ...authHeaders(), "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return handleResponse(resp);
+};
+
+export const getMyDetailsHr = async () => {
+  const resp = await fetch("/api/hr/get_my_details/", {
+    headers: authHeaders(),
+  });
+  return handleResponse(resp);
+};
+
 export const getFormTrack = async (id) => {
   const resp = await fetch(`/api/hr/formtrack/${id}`, {
     headers: authHeaders(),
@@ -359,7 +383,6 @@ export const getCpdaClaimForm = async (id) => {
   });
   return handleResponse(resp);
 };
-
 
 // POST
 export const submitAppraisalForm = async (formData) => {
