@@ -9,13 +9,14 @@ import {
 import {
   IconMedal, IconTrophy, IconStar, IconSend, IconUser,
   IconCircleCheck, IconInfoCircle, IconUpload, IconClipboardList,
-  IconChevronRight, IconAlertCircle,
+  IconChevronRight, IconAlertCircle, IconDownload
 } from "@tabler/icons-react";
 import {
   getAwardsStudentProfile,
   getAutoAwards,
   getMyAwardApplications,
   submitAwardApplication,
+  getAwardSettings,
 } from "../services/awardsAPI";
 
 const FUSION_BLUE = "#15abff";
@@ -63,6 +64,7 @@ export default function AwardsStudentDashboard() {
   const [confirmModal, setConfirmModal] = useState(false);
   const [successAlert, setSuccessAlert] = useState("");
   const [errorAlert, setErrorAlert] = useState("");
+  const [deadline, setDeadline] = useState("");
 
   // Form state
   const [formData, setFormData] = useState({});
@@ -73,14 +75,16 @@ export default function AwardsStudentDashboard() {
     (async () => {
       setLoading(true);
       try {
-        const [pRes, aRes, mRes] = await Promise.all([
+        const [pRes, aRes, mRes, sRes] = await Promise.all([
           getAwardsStudentProfile().catch(() => ({ data: {} })),
           getAutoAwards().catch(() => ({ data: [] })),
           getMyAwardApplications().catch(() => ({ data: [] })),
+          getAwardSettings().catch(() => ({ data: {} })),
         ]);
         setProfile(pRes.data);
         setAutoAwards(Array.isArray(aRes.data) ? aRes.data : []);
         setMyApps(Array.isArray(mRes.data) ? mRes.data : []);
+        setDeadline(sRes.data?.application_deadline || "");
       } finally {
         setLoading(false);
       }
@@ -93,11 +97,35 @@ export default function AwardsStudentDashboard() {
     if (existing) setFormData(existing.form_data || {});
     else setFormData({});
   }, [selectedAward, myApps]);
+  const onSubmit = () => {
+    setConfirmModal(true);
+  };
 
-  const onSubmit = async () => {
+  const onConfirmSubmit = async () => {
     setSubmitLoading(true);
+    // Keep submitLoading true until done
     setConfirmModal(false);
     setErrorAlert("");
+    setSuccessAlert("");
+
+    // Client-side validation
+    const fields = ['sop', 'academics', 'technical', 'extra', 'drive_link'];
+    const missing = [];
+    fields.forEach(f => {
+      if (!formData[f]?.trim()) missing.push(f.toUpperCase());
+    });
+
+    if (missing.length > 0) {
+      setErrorAlert(`Please fill the following sections: ${missing.join(", ")}`);
+      setSubmitLoading(false);
+      return;
+    }
+    if (!formData._declaration) {
+      setErrorAlert("You must accept the declaration (checkbox at the bottom) to submit.");
+      setSubmitLoading(false);
+      return;
+    }
+
     try {
       await submitAwardApplication({
         award_type: selectedAward,
@@ -259,38 +287,6 @@ export default function AwardsStudentDashboard() {
   return (
     <Stack gap="xl">
       {/* ── Profile Banner ── */}
-      <Paper
-        withBorder
-        p="xl"
-        radius="lg"
-        style={{
-          background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%)",
-          color: "#fff",
-        }}
-      >
-        <Group justify="space-between" wrap="wrap" gap="md">
-          <Box>
-            <Text size="xs" c="rgba(255,255,255,0.6)" tt="uppercase" fw={600}>
-              Awards Portal — Student View
-            </Text>
-            <Title order={2} c="white" mt={4}>
-              {profile?.name || user?.username}
-            </Title>
-            <Text size="sm" c="rgba(255,255,255,0.75)" mt={2}>
-              {profile?.roll_no} · {profile?.programme} · {profile?.branch}
-            </Text>
-          </Box>
-          <Box ta={{ base: "left", sm: "right" }}>
-            <Text size="xs" c="rgba(255,255,255,0.6)" tt="uppercase">
-              Dynamic CPI
-            </Text>
-            <Text fw={900} size="2.2rem" c={GOLD} lh={1.1}>
-              {cpi.toFixed(2)}
-            </Text>
-            <Text size="xs" c="rgba(255,255,255,0.5)">Calculated from grades</Text>
-          </Box>
-        </Group>
-      </Paper>
 
       {/* ── Main Tabs ── */}
       <Card withBorder radius="md" p={0} shadow="sm">
@@ -308,6 +304,9 @@ export default function AwardsStudentDashboard() {
               </Tabs.Tab>
               <Tabs.Tab value="info" leftSection={<IconInfoCircle size={16} />}>
                 Award Info
+              </Tabs.Tab>
+              <Tabs.Tab value="archives" leftSection={<IconDownload size={16} />}>
+                Public Archives
               </Tabs.Tab>
             </Tabs.List>
           </Box>
@@ -328,6 +327,11 @@ export default function AwardsStudentDashboard() {
             {/* Apply */}
             <Tabs.Panel value="apply">
               <Stack gap="md">
+                {deadline && (
+                  <Alert icon={<IconAlertCircle />} color="red" variant="filled" radius="md">
+                    Application Deadline: <b>{deadline}</b>. No submissions will be accepted after this date.
+                  </Alert>
+                )}
                 {successAlert && <Alert icon={<IconCircleCheck />} color="green" onClose={() => setSuccessAlert("")} withCloseButton>{successAlert}</Alert>}
                 {errorAlert && <Alert icon={<IconAlertCircle />} color="red" onClose={() => setErrorAlert("")} withCloseButton>{errorAlert}</Alert>}
 
@@ -422,6 +426,53 @@ export default function AwardsStudentDashboard() {
               )}
             </Tabs.Panel>
 
+            {/* Public Archives */}
+            <Tabs.Panel value="archives">
+              <Stack gap="md">
+                <Alert icon={<IconInfoCircle />} color="indigo" variant="light" radius="md">
+                  Official lists of previous year medal winners and proficiency prize awardees.
+                </Alert>
+                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                  <Paper withBorder p="lg" radius="md" shadow="xs">
+                    <Group justify="space-between">
+                      <Box>
+                        <Text fw={700}>Medal Awardee List 2024</Text>
+                        <Text size="xs" c="dimmed">Official PDF · Batch 2024</Text>
+                      </Box>
+                      <Button 
+                        component="a" 
+                        href="/downloads/Medal awardee list _2024.pdf" 
+                        download 
+                        variant="light" 
+                        color="blue"
+                        leftSection={<IconDownload size={16} />}
+                      >
+                        Download
+                      </Button>
+                    </Group>
+                  </Paper>
+                  <Paper withBorder p="lg" radius="md" shadow="xs">
+                    <Group justify="space-between">
+                      <Box>
+                        <Text fw={700}>Medal Awardee List 2025</Text>
+                        <Text size="xs" c="dimmed">Official PDF · Batch 2025</Text>
+                      </Box>
+                      <Button 
+                        component="a" 
+                        href="/downloads/Medal awardee list _2025.pdf" 
+                        download 
+                        variant="light" 
+                        color="blue"
+                        leftSection={<IconDownload size={16} />}
+                      >
+                        Download
+                      </Button>
+                    </Group>
+                  </Paper>
+                </SimpleGrid>
+              </Stack>
+            </Tabs.Panel>
+
             {/* Award Info */}
             <Tabs.Panel value="info">
               <Accordion variant="separated" radius="md" defaultValue="cgm">
@@ -484,7 +535,7 @@ export default function AwardsStudentDashboard() {
           <Text size="sm">Please ensure all documents are shared publicly before submitting. Incorrect information may lead to disqualification.</Text>
           <Group justify="flex-end">
             <Button variant="subtle" color="gray" onClick={() => setConfirmModal(false)}>Back</Button>
-            <Button color="blue" onClick={onSubmit}>Confirm & Submit</Button>
+            <Button color="blue" onClick={onConfirmSubmit}>Confirm & Submit</Button>
           </Group>
         </Stack>
       </Modal>

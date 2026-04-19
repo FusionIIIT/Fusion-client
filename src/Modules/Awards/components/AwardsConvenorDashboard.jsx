@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   Stack, Card, Box, Title, Text, Badge, Group,
-  Paper, Loader, Center, SimpleGrid, Table, ScrollArea, Divider,
+  Paper, Loader, Center, SimpleGrid, Table, ScrollArea, Divider, Button,
 } from "@mantine/core";
 import { IconTrophy, IconClipboardList } from "@tabler/icons-react";
 import { getAutoAwards, getAllAwardApplications } from "../services/awardsAPI";
@@ -40,28 +40,6 @@ export default function AwardsConvenorDashboard() {
 
   return (
     <Stack gap="xl">
-      <Paper
-        withBorder p="xl" radius="lg"
-        style={{ background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)" }}
-      >
-        <Group justify="space-between" wrap="wrap" gap="md">
-          <Box>
-            <Text size="xs" c="rgba(255,255,255,0.6)" tt="uppercase" fw={600}>SPACS Convenor — Awards Oversight</Text>
-            <Title order={2} c="white" mt={4}>Awards Summary View</Title>
-          </Box>
-          <SimpleGrid cols={2} spacing="sm">
-            {[
-              { label: "Auto Awards", value: autoAwards.length },
-              { label: "Applications", value: applications.length },
-            ].map((s) => (
-              <Paper key={s.label} px="xl" py="md" radius="md" style={{ background: "rgba(255,255,255,0.1)", textAlign: "center" }}>
-                <Text fw={900} size="xl" c="white">{s.value}</Text>
-                <Text size="xs" c="rgba(255,255,255,0.6)">{s.label}</Text>
-              </Paper>
-            ))}
-          </SimpleGrid>
-        </Group>
-      </Paper>
 
       {/* Auto Awards Summary */}
       <Card withBorder radius="md" p="xl" shadow="sm">
@@ -130,6 +108,39 @@ export default function AwardsConvenorDashboard() {
             </Table>
           </ScrollArea>
         )}
+      </Card>
+
+      {/* Public Award Archives Summary */}
+      <Card withBorder radius="md" p="xl" shadow="sm">
+        <Group mb="lg" gap="xs">
+          <IconTrophy size={22} color="indigo" />
+          <Title order={4}>Public Award Archives</Title>
+        </Group>
+        <Divider mb="lg" />
+        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+          <Paper withBorder p="md" radius="md">
+            <Group justify="space-between">
+              <Box>
+                <Text fw={600}>Medal Awardee List 2024</Text>
+                <Text size="xs" c="dimmed">Verified PDF Report</Text>
+              </Box>
+              <Button component="a" href="/downloads/Medal awardee list _2024.pdf" download size="compact-sm" variant="subtle">
+                Download
+              </Button>
+            </Group>
+          </Paper>
+          <Paper withBorder p="md" radius="md">
+            <Group justify="space-between">
+              <Box>
+                <Text fw={600}>Medal Awardee List 2025</Text>
+                <Text size="xs" c="dimmed">Verified PDF Report</Text>
+              </Box>
+              <Button component="a" href="/downloads/Medal awardee list _2025.pdf" download size="compact-sm" variant="subtle">
+                Download
+              </Button>
+            </Group>
+          </Paper>
+        </SimpleGrid>
       </Card>
     </Stack>
   );

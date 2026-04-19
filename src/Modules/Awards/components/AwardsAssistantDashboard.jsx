@@ -3,12 +3,12 @@ import {
   Stack, Tabs, Card, Box, Title, Text, Badge, Group,
   Button, Paper, ThemeIcon, Loader, Center, Divider,
   Select, Table, ScrollArea, Alert, Modal, SimpleGrid,
-  NumberInput, ActionIcon, Tooltip,
+  NumberInput, ActionIcon, Tooltip, TextInput,
 } from "@mantine/core";
 import {
   IconTrophy, IconMedal, IconDownload, IconRefresh,
   IconClipboardList, IconStar, IconUsers, IconAlertCircle,
-  IconCircleCheck, IconFilter,
+  IconCircleCheck, IconFilter, IconEye,
 } from "@tabler/icons-react";
 import {
   generateAutoAwards,
@@ -16,6 +16,8 @@ import {
   getAllAwardApplications,
   exportAutoAwards,
   exportAwardApplications,
+  getAwardSettings,
+  updateAwardSettings,
 } from "../services/awardsAPI";
 
 const FUSION_BLUE = "#15abff";
@@ -52,22 +54,47 @@ export default function AwardsAssistantDashboard() {
   const [genModal, setGenModal]     = useState(false);
   const [genResult, setGenResult]   = useState(null);
   const [error, setError]           = useState("");
+  const [success, setSuccess]       = useState("");
+
+  const [selectedApp, setSelectedApp] = useState(null);
+  const [deadline, setDeadline]     = useState("");
+  const [deadlineInput, setDeadlineInput] = useState("");
+  const [updatingDeadline, setUpdatingDeadline] = useState(false);
 
   const fetchAll = async () => {
     setLoading(true);
     try {
-      const [aRes, appRes] = await Promise.all([
+      const [aRes, appRes, sRes] = await Promise.all([
         getAutoAwards().catch(() => ({ data: [] })),
         getAllAwardApplications().catch(() => ({ data: [] })),
+        getAwardSettings().catch(() => ({ data: {} })),
       ]);
       setAutoAwards(Array.isArray(aRes.data) ? aRes.data : []);
       setApplications(Array.isArray(appRes.data) ? appRes.data : []);
+      const dl = sRes.data?.application_deadline || "";
+      setDeadline(dl);
+      setDeadlineInput(dl);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => { fetchAll(); }, []);
+
+  const onUpdateDeadline = async () => {
+    setUpdatingDeadline(true);
+    setError("");
+    setSuccess("");
+    try {
+      await updateAwardSettings({ application_deadline: deadlineInput });
+      setDeadline(deadlineInput);
+      setSuccess("Deadline updated successfully!");
+    } catch (e) {
+      setError(e?.response?.data?.error || "Failed to update deadline.");
+    } finally {
+      setUpdatingDeadline(false);
+    }
+  };
 
   const onGenerate = async () => {
     setGenerating(true);
@@ -111,39 +138,44 @@ export default function AwardsAssistantDashboard() {
   return (
     <Stack gap="xl">
       {/* Header */}
-      <Paper
-        withBorder p="xl" radius="lg"
-        style={{
-          background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%)",
-          color: "#fff",
-        }}
-      >
-        <Group justify="space-between" wrap="wrap" gap="md">
-          <Box>
-            <Text size="xs" c="rgba(255,255,255,0.6)" tt="uppercase" fw={600}>
-              SPACS Assistant — Awards Module
-            </Text>
-            <Title order={2} c="white" mt={4}>Awards Control Panel</Title>
-            <Text size="sm" c="rgba(255,255,255,0.7)" mt={2}>
-              Generate academic awards · Manage applications · Export data
-            </Text>
-          </Box>
-          <SimpleGrid cols={2} spacing="sm">
-            <Paper px="xl" py="md" radius="md" style={{ background: "rgba(255,255,255,0.1)", textAlign: "center" }}>
-              <Text fw={900} size="xl" c="white">{autoAwards.length}</Text>
-              <Text size="xs" c="rgba(255,255,255,0.6)">Auto Awards</Text>
-            </Paper>
-            <Paper px="xl" py="md" radius="md" style={{ background: "rgba(255,255,255,0.1)", textAlign: "center" }}>
-              <Text fw={900} size="xl" c="white">{applications.length}</Text>
-              <Text size="xs" c="rgba(255,255,255,0.6)">Applications</Text>
-            </Paper>
-          </SimpleGrid>
-        </Group>
-      </Paper>
 
       {error && (
         <Alert icon={<IconAlertCircle />} color="red" withCloseButton onClose={() => setError("")}>{error}</Alert>
       )}
+      {success && (
+        <Alert icon={<IconCircleCheck />} color="green" withCloseButton onClose={() => setSuccess("")}>{success}</Alert>
+      )}
+
+      {/* Deadline Management */}
+      <Paper withBorder p="lg" radius="md" shadow="sm">
+        <Group justify="space-between">
+          <Box>
+            <Group gap="xs">
+              <IconAlertCircle size={20} color="red" />
+              <Title order={5}>Application Deadline Management</Title>
+            </Group>
+            <Text size="xs" c="dimmed" mt={4}>Current Cut-off: <Badge color="red" variant="light">{deadline}</Badge></Text>
+          </Box>
+          <Group gap="xs">
+            <TextInput
+              placeholder="YYYY-MM-DD HH:MM:SS"
+              value={deadlineInput}
+              onChange={(e) => setDeadlineInput(e.target.value)}
+              size="sm"
+              w={200}
+            />
+            <Button
+              size="sm"
+              color="red"
+              variant="light"
+              loading={updatingDeadline}
+              onClick={onUpdateDeadline}
+            >
+              Update Deadline
+            </Button>
+          </Group>
+        </Group>
+      </Paper>
 
       <Card withBorder radius="md" p={0} shadow="sm">
         <Tabs value={tab} onChange={setTab}>
@@ -154,6 +186,9 @@ export default function AwardsAssistantDashboard() {
               </Tabs.Tab>
               <Tabs.Tab value="applications" leftSection={<IconClipboardList size={16} />}>
                 Applications {applications.length > 0 && <Badge size="xs" ml={4}>{applications.length}</Badge>}
+              </Tabs.Tab>
+              <Tabs.Tab value="archives" leftSection={<IconDownload size={16} />}>
+                Public Archives
               </Tabs.Tab>
             </Tabs.List>
           </Box>
@@ -303,6 +338,7 @@ export default function AwardsAssistantDashboard() {
                           <Table.Th>Branch</Table.Th>
                           <Table.Th>CPI</Table.Th>
                           <Table.Th>Applied At</Table.Th>
+                          <Table.Th>Action</Table.Th>
                         </Table.Tr>
                       </Table.Thead>
                       <Table.Tbody>
@@ -322,12 +358,52 @@ export default function AwardsAssistantDashboard() {
                               </Badge>
                             </Table.Td>
                             <Table.Td><Text size="xs" c="dimmed">{app.created_at}</Text></Table.Td>
+                            <Table.Td>
+                              <Tooltip label="View Full Application">
+                                <ActionIcon variant="light" color="blue" onClick={() => setSelectedApp(app)}>
+                                  <IconEye size={16} />
+                                </ActionIcon>
+                              </Tooltip>
+                            </Table.Td>
                           </Table.Tr>
                         ))}
                       </Table.Tbody>
                     </Table>
                   </ScrollArea>
                 )}
+              </Stack>
+            </Tabs.Panel>
+            
+            {/* Archives Tab */}
+            <Tabs.Panel value="archives">
+              <Stack gap="md">
+                <Alert icon={<IconAlertCircle />} color="indigo" variant="light" radius="md">
+                  Official historical data for medal awardees.
+                </Alert>
+                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                  <Paper withBorder p="lg" radius="md" shadow="xs">
+                    <Group justify="space-between">
+                      <Box>
+                        <Text fw={700}>Medal Awardee List 2024</Text>
+                        <Text size="xs" c="dimmed">Official Release PDF</Text>
+                      </Box>
+                      <Button component="a" href="/downloads/Medal awardee list _2024.pdf" download variant="outline" color="blue" leftSection={<IconDownload size={16} />}>
+                        Download
+                      </Button>
+                    </Group>
+                  </Paper>
+                  <Paper withBorder p="lg" radius="md" shadow="xs">
+                    <Group justify="space-between">
+                      <Box>
+                        <Text fw={700}>Medal Awardee List 2025</Text>
+                        <Text size="xs" c="dimmed">Official Release PDF</Text>
+                      </Box>
+                      <Button component="a" href="/downloads/Medal awardee list _2025.pdf" download variant="outline" color="blue" leftSection={<IconDownload size={16} />}>
+                        Download
+                      </Button>
+                    </Group>
+                  </Paper>
+                </SimpleGrid>
               </Stack>
             </Tabs.Panel>
 
@@ -353,6 +429,59 @@ export default function AwardsAssistantDashboard() {
             <Button fullWidth mt="md" color="blue" leftSection={<IconDownload size={16} />} onClick={() => { onExportAutoAwards(); setGenModal(false); }}>
               Export Now
             </Button>
+          </Stack>
+        )}
+      </Modal>
+
+      {/* Application Details Modal */}
+      <Modal
+        opened={!!selectedApp}
+        onClose={() => setSelectedApp(null)}
+        title={<Group gap="xs"><IconClipboardList color={FUSION_BLUE} /><Text fw={700}>Application Details</Text></Group>}
+        size="lg" radius="lg" centered
+      >
+        {selectedApp && (
+          <Stack gap="md">
+            <Paper withBorder p="md" radius="md" bg="blue.0">
+              <SimpleGrid cols={2}>
+                <Box>
+                  <Text size="xs" c="dimmed">Student Name</Text>
+                  <Text fw={700}>{selectedApp.student_name}</Text>
+                </Box>
+                <Box>
+                  <Text size="xs" c="dimmed">Roll Number</Text>
+                  <Text fw={700}>{selectedApp.roll_no}</Text>
+                </Box>
+                <Box>
+                  <Text size="xs" c="dimmed">Programme / Branch</Text>
+                  <Text fw={600} size="sm">{selectedApp.programme} · {selectedApp.branch}</Text>
+                </Box>
+                <Box>
+                  <Text size="xs" c="dimmed">CPI / Applied At</Text>
+                  <Text fw={600} size="sm">{selectedApp.cpi} · {selectedApp.created_at}</Text>
+                </Box>
+              </SimpleGrid>
+            </Paper>
+
+            <Divider label="Submitted Form Data" labelPosition="center" />
+            
+            <ScrollArea h={400} type="always">
+              <Stack gap="lg" pr="md">
+                {Object.entries(selectedApp.form_data || {}).map(([key, val]) => {
+                  if (['roll_no', 'name', 'programme', 'batch', 'cpi', 'branch', '_declaration'].includes(key)) return null;
+                  return (
+                    <Box key={key}>
+                      <Text size="xs" fw={700} tt="uppercase" c="blue.7">{key.replace(/_/g, " ")}</Text>
+                      <Paper withBorder p="sm" mt={4} radius="sm" bg="gray.0">
+                        <Text size="sm" style={{ whiteSpace: "pre-wrap" }}>{String(val)}</Text>
+                      </Paper>
+                    </Box>
+                  );
+                })}
+              </Stack>
+            </ScrollArea>
+            
+            <Button fullWidth onClick={() => setSelectedApp(null)}>Close</Button>
           </Stack>
         )}
       </Modal>

@@ -45,3 +45,12 @@ export const exportAwardApplications = (award_type) =>
     params: award_type ? { award_type } : {},
     responseType: "blob",
   });
+
+// ── Settings ──────────────────────────────────────────────────────────────────
+export const getAwardSettings = () =>
+  axios.get(`${host}/awards/api/settings/`, { headers: authHeaders() });
+
+export const updateAwardSettings = (payload) =>
+  axios.post(`${host}/awards/api/settings/`, payload, {
+    headers: { ...authHeaders(), "Content-Type": "application/json" },
+  });
