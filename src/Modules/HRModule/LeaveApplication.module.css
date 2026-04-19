@@ -1,0 +1,66 @@
+.page {
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 35%);
+}
+
+.modalOverlay {
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.modalCard {
+  border-radius: 16px;
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.25);
+  border: 1px solid #e2e8f0;
+}
+
+.section {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  background: #f8fafc;
+}
+
+.sectionAlt {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  background: #ffffff;
+}
+
+.modalCard label {
+  color: #334155;
+  font-weight: 600;
+}
+
+.modalCard input,
+.modalCard select,
+.modalCard textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5f5;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: #0f172a;
+  background: #ffffff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.modalCard input:focus,
+.modalCard select:focus,
+.modalCard textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.modalCard h2 {
+  color: #0f172a;
+}
+
+.modalCard p {
+  color: #64748b;
+}
+
+.actionsRow button {
+  border-radius: 10px;
+}
