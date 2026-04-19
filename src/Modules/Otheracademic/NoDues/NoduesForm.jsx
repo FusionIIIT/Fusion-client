@@ -1,243 +1,109 @@
-// Import necessary libraries and components
 import React, { useState } from "react";
-import { TextInput, Button, Grid, Container } from "@mantine/core";
+import {
+  Container,
+  Button,
+  Alert,
+  Text,
+  Group,
+  Paper,
+  Stack,
+} from "@mantine/core";
+import { Warning, CheckCircle } from "@phosphor-icons/react";
+import axios from "axios";
+import { NoDues_Initiate } from "../../../routes/otheracademicRoutes";
 
 function NoduesForm() {
-  // Set up form state
-  const [formData, setFormData] = useState({
-    rollNumber: "",
-    studentName: "",
-    supervisor: "",
-    hostel: "",
-    bank: "",
-    cseOffice: "",
-    designOffice: "",
-    acad: "",
-    eceOffice: "",
-    library: "",
-    meOffice: "",
-    mess: "",
-    physicsOffice: "",
-    disciplineOffice: "",
-  });
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [initiated, setInitiated] = useState(false);
 
-  // Handle input changes
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+  const authToken = localStorage.getItem("authToken");
 
-  // Handle form submission
-  const handleSubmit = () => {
-    console.log("Form data submitted:", formData);
+  const initiateNoDues = async () => {
+    setLoading(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const response = await axios.post(
+        NoDues_Initiate,
+        {},
+        {
+          headers: {
+            Authorization: `Token ${authToken}`,
+          },
+        },
+      );
+
+      setMessage(response.data.message);
+      setInitiated(true);
+      setLoading(false);
+    } catch (err) {
+      setError(
+        err.response?.data?.error || "Failed to initiate No-Dues clearance",
+      );
+      setLoading(false);
+    }
   };
 
   return (
-    <Container
-      size="sm"
-      // span={1200}
-      style={{
-        backgroundColor: "#ffffff",
-        borderRadius: "8px",
-        padding: "20px",
-        width: "1000px", // Increase width
-        maxWidth: "100%",
-        marginTop: "20px",
-      }}
-    >
-      <Grid
-        // span={1200}
-        style={{
-          padding: "0px",
-        }}
-      >
-        {/* Left Column */}
-        <Grid.Col span={{ base: 12, sm: 6 }}>
-          <TextInput
-            label="Student Name"
-            placeholder="Enter your name"
-            value={formData.studentName}
-            onChange={handleChange}
-            name="studentName"
-            radius="md"
-            mb="md"
-            style={{
-              margin: "10px",
-            }}
-          />
-          <TextInput
-            label="PBI/BTP/Thesis Supervisor (Credential)"
-            placeholder="Credential"
-            value={formData.supervisor}
-            onChange={handleChange}
-            name="supervisor"
-            radius="md"
-            mb="md"
-            style={{
-              margin: "10px",
-            }}
-          />
-          <TextInput
-            label="Hostel (Credential)"
-            placeholder="Credential"
-            value={formData.hostel}
-            onChange={handleChange}
-            name="hostel"
-            radius="md"
-            mb="md"
-            style={{
-              margin: "10px",
-            }}
-          />
-          <TextInput
-            label="Bank (Credential)"
-            placeholder="Credential"
-            value={formData.bank}
-            onChange={handleChange}
-            name="bank"
-            radius="md"
-            mb="md"
-            style={{
-              margin: "10px",
-            }}
-          />
-          <TextInput
-            label="CSE Office (Credential)"
-            placeholder="Credential"
-            value={formData.cseOffice}
-            onChange={handleChange}
-            name="cseOffice"
-            radius="md"
-            mb="md"
-            style={{
-              margin: "10px",
-            }}
-          />
-          <TextInput
-            label="Design Office (Credential)"
-            placeholder="Credential"
-            value={formData.designOffice}
-            onChange={handleChange}
-            name="designOffice"
-            radius="md"
-            mb="md"
-            style={{
-              margin: "10px",
-            }}
-          />
-        </Grid.Col>
+    <Container size="sm" py="xl">
+      <Paper p="lg" radius="lg" withBorder shadow="sm">
+        <Stack spacing="lg">
+          <div>
+            <Text fw={700} size="lg">
+              No-Dues Clearance Initiation
+            </Text>
+            <Text c="dimmed" size="sm">
+              Start your no-dues clearance process by clicking the button below.
+              This will initialize your clearance form across all departments.
+            </Text>
+          </div>
 
-        {/* Right Column */}
-        <Grid.Col span={{ base: 12, sm: 6 }}>
-          <TextInput
-            label="Acad (Credential)"
-            placeholder="Credential"
-            value={formData.acad}
-            onChange={handleChange}
-            name="acad"
-            radius="md"
-            mb="md"
-            style={{
-              margin: "10px",
-            }}
-          />
-          <TextInput
-            label="ECE Office (Credential)"
-            placeholder="Credential"
-            value={formData.eceOffice}
-            onChange={handleChange}
-            name="eceOffice"
-            radius="md"
-            mb="md"
-            style={{
-              margin: "10px",
-            }}
-          />
-          <TextInput
-            label="Library (Credential)"
-            placeholder="Credential"
-            value={formData.library}
-            onChange={handleChange}
-            name="library"
-            radius="md"
-            mb="md"
-            style={{
-              margin: "10px",
-            }}
-          />
-          <TextInput
-            label="ME Office (Credential)"
-            placeholder="Credential"
-            value={formData.meOffice}
-            onChange={handleChange}
-            name="meOffice"
-            radius="md"
-            mb="md"
-            style={{
-              margin: "10px",
-            }}
-          />
-          <TextInput
-            label="Mess (Credential)"
-            placeholder="Credential"
-            value={formData.mess}
-            onChange={handleChange}
-            name="mess"
-            radius="md"
-            mb="md"
-            style={{
-              margin: "10px",
-            }}
-          />
-          <TextInput
-            label="Physics Office - NS (Credential)"
-            placeholder="Credential"
-            value={formData.physicsOffice}
-            onChange={handleChange}
-            name="physicsOffice"
-            radius="md"
-            mb="md"
-            style={{
-              margin: "10px",
-            }}
-          />
-          <TextInput
-            label="Discipline Office (Credential)"
-            placeholder="Credential"
-            value={formData.disciplineOffice}
-            onChange={handleChange}
-            name="disciplineOffice"
-            radius="md"
-            mb="md"
-            style={{
-              margin: "10px",
-            }}
-          />
-        </Grid.Col>
-      </Grid>
+          {error && (
+            <Alert icon={<Warning size={16} />} color="red" title="Error">
+              {error}
+            </Alert>
+          )}
 
-      {/* Apply Button */}
+          {message && !error && (
+            <Alert
+              icon={<CheckCircle size={16} />}
+              color="green"
+              title="Success"
+            >
+              {message}
+            </Alert>
+          )}
 
-      <Button
-        radius="md"
-        color="blue"
-        size="xs"
-        style={{
-          marginTop: "20px",
-          marginLeft: "auto",
-          marginRight: "auto",
-          display: "block",
-          width: "3cm",
-          padding: "5px",
-          fontsize: "12px",
-        }}
-        onClick={handleSubmit}
-      >
-        Apply
-      </Button>
+          {initiated && (
+            <Paper p="md" radius="md" withBorder bg="#f0f9ff">
+              <Stack spacing="sm">
+                <Text fw={600}>Next Steps:</Text>
+                <Text size="sm">
+                  1. Visit each department to get clearance verification
+                </Text>
+                <Text size="sm">2. Departments will mark you as cleared</Text>
+                <Text size="sm">
+                  3. Once all departments clear you, download your certificate
+                </Text>
+              </Stack>
+            </Paper>
+          )}
+
+          <Group position="right">
+            <Button
+              onClick={initiateNoDues}
+              loading={loading}
+              disabled={initiated}
+              size="md"
+            >
+              {initiated ? "Initiated" : "Initiate No-Dues Clearance"}
+            </Button>
+          </Group>
+        </Stack>
+      </Paper>
     </Container>
   );
 }

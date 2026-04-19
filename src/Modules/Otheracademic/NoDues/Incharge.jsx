@@ -1,245 +1,337 @@
-import { useState } from "react";
-import { Select, Button, Table } from "@mantine/core";
+import { useState, useEffect, useMemo } from "react";
+import {
+  Select,
+  Button,
+  Table,
+  Container,
+  Stack,
+  Alert,
+  Badge,
+  Group,
+  Text,
+  Paper,
+  Checkbox,
+  Loader,
+  Progress,
+} from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
-import styles from "./Incharge.module.css";
+import axios from "axios";
+import { Warning, CheckCircle } from "@phosphor-icons/react";
+import { useSelector } from "react-redux";
+import {
+  NoDues_Pending,
+  NoDues_Verify,
+} from "../../../routes/otheracademicRoutes";
 
 function Incharge() {
-  const [batch, setBatch] = useState("");
-  const [discipline, setDiscipline] = useState("");
-  const [studentsCleared, setStudentsCleared] = useState([]);
-  const [studentsNotCleared, setStudentsNotCleared] = useState([]);
-  const [selectedCleared, setSelectedCleared] = useState([]);
-  const [selectedNotCleared, setSelectedNotCleared] = useState([]);
+  const [pendingStudents, setPendingStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [verifying, setVerifying] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [department, setDepartment] = useState("");
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [isClear, setIsClear] = useState(false);
 
-  const studentsData = [
-    { name: "Alice", rollNo: "202201", duesCleared: true },
-    { name: "Bob", rollNo: "202202", duesCleared: false },
-    { name: "Charlie", rollNo: "202203", duesCleared: true },
-    { name: "David", rollNo: "202204", duesCleared: false },
-  ];
+  const authToken = localStorage.getItem("authToken");
+  const isAboveMd = useMediaQuery("(min-width: 992px)");
+  const roles = useSelector((state) => state.user.roles);
+  const activeRole = useSelector((state) => state.user.role);
 
-  const handleFetchStudents = () => {
-    const cleared = studentsData.filter((student) => student.duesCleared);
-    const notCleared = studentsData.filter((student) => !student.duesCleared);
-    setStudentsCleared(cleared);
-    setStudentsNotCleared(notCleared);
+  const departmentLabels = {
+    library: "Librarian",
+    mess: "Mess Incharge",
+    hostel: "Hostel Warden",
+    lab_supervisor: "Lab Supervisor",
+    acad_admin: "Acad Admin Finalization",
   };
 
-  const handleSelectAll = (isCleared, e) => {
-    const isChecked = e.target.checked;
-    if (isCleared) {
-      setSelectedCleared(
-        isChecked ? studentsCleared.map((student) => student.rollNo) : [],
+  const normalizeRole = (value) =>
+    String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "_");
+
+  const departmentRoleMap = {
+    librarian: ["library"],
+    mess_incharge: ["mess"],
+    hostel_warden: ["hostel"],
+    lab_supervisor: ["lab_supervisor"],
+    acadadmin: ["acad_admin"],
+  };
+
+  const allowedDepartments = useMemo(() => {
+    const mergedRoles = [...(Array.isArray(roles) ? roles : []), activeRole]
+      .map(normalizeRole)
+      .filter(Boolean);
+
+    const departmentSet = new Set();
+    mergedRoles.forEach((roleName) => {
+      (departmentRoleMap[roleName] || []).forEach((dept) =>
+        departmentSet.add(dept),
       );
-    } else {
-      setSelectedNotCleared(
-        isChecked ? studentsNotCleared.map((student) => student.rollNo) : [],
-      );
+    });
+
+    return Array.from(departmentSet);
+  }, [roles, activeRole]);
+
+  const filteredPendingDepartments = useMemo(() => {
+    const backendAvailableApprovals = selectedStudent?.available_approvals;
+    if (
+      Array.isArray(backendAvailableApprovals) &&
+      backendAvailableApprovals.length > 0
+    ) {
+      return backendAvailableApprovals;
+    }
+
+    const statuses = selectedStudent?.departments || {};
+    const firstFourClear =
+      statuses.librarian === "clear" &&
+      statuses.mess_incharge === "clear" &&
+      statuses.hostel_warden === "clear" &&
+      statuses.lab_supervisor === "clear";
+
+    return allowedDepartments.filter((dept) => {
+      if (dept === "acad_admin" && !firstFourClear) {
+        return false;
+      }
+      return statuses[dept] === "pending";
+    });
+  }, [allowedDepartments, selectedStudent]);
+
+  const fetchPendingStudents = async () => {
+    try {
+      const response = await axios.get(NoDues_Pending, {
+        headers: {
+          Authorization: `Token ${authToken}`,
+        },
+      });
+      setPendingStudents(response.data);
+      setLoading(false);
+    } catch (err) {
+      setError(err.response?.data?.error || "Failed to fetch pending students");
+      setLoading(false);
     }
   };
 
-  const handleClearDues = () => {
-    const clearedStudents = studentsNotCleared.filter((student) =>
-      selectedNotCleared.includes(student.rollNo),
-    );
-    const remainingNotCleared = studentsNotCleared.filter(
-      (student) => !selectedNotCleared.includes(student.rollNo),
-    );
-    setStudentsCleared((prev) => [...prev, ...clearedStudents]);
-    setStudentsNotCleared(remainingNotCleared);
-    setSelectedNotCleared([]);
-  };
+  useEffect(() => {
+    if (department && !filteredPendingDepartments.includes(department)) {
+      setDepartment("");
+    }
+  }, [department, filteredPendingDepartments]);
 
-  const handleRevertDues = () => {
-    const revertedStudents = studentsCleared.filter((student) =>
-      selectedCleared.includes(student.rollNo),
-    );
-    const remainingCleared = studentsCleared.filter(
-      (student) => !selectedCleared.includes(student.rollNo),
-    );
-    setStudentsNotCleared((prev) => [...prev, ...revertedStudents]);
-    setStudentsCleared(remainingCleared);
-    setSelectedCleared([]);
-  };
+  // Fetch pending students on mount and auto-refresh every 5 seconds
+  useEffect(() => {
+    fetchPendingStudents();
+    const interval = setInterval(fetchPendingStudents, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
-  const handleCheckboxChange = (rollNo, isCleared) => {
-    if (isCleared) {
-      setStudentsCleared((prev) =>
-        prev.filter((student) => student.rollNo !== rollNo),
+  const handleVerify = async () => {
+    if (!selectedStudent) {
+      setError("Please select a student");
+      return;
+    }
+
+    if (!department) {
+      setError("Please select a department");
+      return;
+    }
+
+    setVerifying(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const response = await axios.post(
+        NoDues_Verify,
+        {
+          roll_no: selectedStudent.roll_no,
+          department,
+          is_clear: isClear,
+        },
+        {
+          headers: {
+            Authorization: `Token ${authToken}`,
+          },
+        },
       );
-      setStudentsNotCleared((prev) => [
-        ...prev,
-        studentsCleared.find((student) => student.rollNo === rollNo),
-      ]);
-    } else {
-      setStudentsNotCleared((prev) =>
-        prev.filter((student) => student.rollNo !== rollNo),
-      );
-      setStudentsCleared((prev) => [
-        ...prev,
-        studentsNotCleared.find((student) => student.rollNo === rollNo),
-      ]);
+
+      setMessage(response.data.message);
+      setVerifying(false);
+      setSelectedStudent(null);
+      setDepartment("");
+      setIsClear(false);
+
+      // Refresh the list
+      setTimeout(fetchPendingStudents, 1000);
+    } catch (err) {
+      setError(err.response?.data?.error || "Failed to verify clearance");
+      setVerifying(false);
     }
   };
-  const isAboveXs = useMediaQuery("(min-width: 640px)");
+
+  if (loading) {
+    return (
+      <Container size="sm" py="xl">
+        <Loader />
+      </Container>
+    );
+  }
+
+  const rows = pendingStudents.map((student) => (
+    <Table.Tr
+      key={student.roll_no}
+      style={{
+        backgroundColor:
+          selectedStudent?.roll_no === student.roll_no ? "#e7f5ff" : "white",
+        cursor: "pointer",
+      }}
+      onClick={() => setSelectedStudent(student)}
+    >
+      <Table.Td>
+        <Text fw={500}>{student.roll_no}</Text>
+      </Table.Td>
+      <Table.Td>
+        <Text>{student.name}</Text>
+      </Table.Td>
+      <Table.Td>
+        <Group gap="xs">
+          <Progress
+            value={student.progress_percentage}
+            size="sm"
+            style={{ flex: 1 }}
+            color={student.progress_percentage === 100 ? "green" : "blue"}
+          />
+          <Text size="sm">{Math.round(student.progress_percentage)}%</Text>
+        </Group>
+      </Table.Td>
+      <Table.Td>
+        <Badge color={student.progress_percentage === 100 ? "green" : "yellow"}>
+          {student.cleared_count}/{student.total_count}
+        </Badge>
+      </Table.Td>
+    </Table.Tr>
+  ));
 
   return (
-    <div>
-      <div
-        style={{
-          display: isAboveXs ? "flex" : "block",
-          alignItems: isAboveXs ? "flex-end" : "",
-        }}
-      >
-        <Select
-          data={["2021", "2022", "2023", "2024"]}
-          label="Select Batch"
-          value={batch}
-          onChange={setBatch}
-          placeholder="Choose a batch"
-          mr={10}
-          mb={10}
-        />
-        <Select
-          data={["CSE", "ECE", "SM", "ME", "Design"]}
-          label="Select Discipline"
-          value={discipline}
-          onChange={setDiscipline}
-          placeholder="Choose a discipline"
-          mr={10}
-          mb={10}
-        />
-        <Button mb={10} onClick={handleFetchStudents}>
-          Fetch <br />
-          Students
-        </Button>
-      </div>
+    <Container size="lg" py="xl">
+      <Stack spacing="lg">
+        {error && (
+          <Alert icon={<Warning size={16} />} color="red" title="Error">
+            {error}
+          </Alert>
+        )}
 
-      <div className={styles["table-box"]}>
-        <h3>Cleared No Dues</h3>
-        <Button
-          onClick={handleRevertDues}
-          disabled={selectedCleared.length === 0}
-        >
-          Revert Selected to Not Cleared
-        </Button>
-        <Table className={styles["table-container"]} striped highlightOnHover>
-          <thead>
-            <tr>
-              <th>
-                <label>
-                  <input
-                    type="checkbox"
-                    onChange={(e) => handleSelectAll(true, e)}
-                    checked={
-                      selectedCleared.length === studentsCleared.length &&
-                      studentsCleared.length > 0
-                    }
-                  />
-                  Select All Cleared
-                </label>
-              </th>
+        {message && !error && (
+          <Alert icon={<CheckCircle size={16} />} color="green" title="Success">
+            {message}
+          </Alert>
+        )}
 
-              <th>Name</th>
-              <th>Roll No</th>
-              <th>Clear/Unclear</th>
-            </tr>
-          </thead>
-          <tbody>
-            {studentsCleared.map((student, index) => (
-              <tr key={index}>
-                <td>
-                  <input
-                    type="checkbox"
-                    checked={selectedCleared.includes(student.rollNo)}
-                    onChange={() =>
-                      setSelectedCleared((prev) =>
-                        prev.includes(student.rollNo)
-                          ? prev.filter((rollNo) => rollNo !== student.rollNo)
-                          : [...prev, student.rollNo],
-                      )
-                    }
-                    aria-label={`Select ${student.name}`}
-                  />
-                </td>
-                <td>{student.name}</td>
-                <td>{student.rollNo}</td>
-                <td>
-                  <input
-                    type="checkbox"
-                    checked
-                    onChange={() => handleCheckboxChange(student.rollNo, true)}
-                    aria-label={`Mark ${student.name} as not cleared`}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      </div>
+        <Paper p="lg" radius="lg" withBorder shadow="sm">
+          <Stack spacing="md">
+            <div>
+              <Text fw={700} size="lg" mb="sm">
+                Pending No-Dues Clearances
+              </Text>
+              <Text c="dimmed" size="sm">
+                Click on a student to select them, then choose your department
+                and mark as cleared/not cleared
+              </Text>
+            </div>
 
-      <div className={styles["table-box"]}>
-        <h3>Not Cleared No Dues</h3>
-        <Button
-          onClick={handleClearDues}
-          disabled={selectedNotCleared.length === 0}
-        >
-          Clear Selected
-        </Button>
-        <Table className={styles["table-container"]} striped highlightOnHover>
-          <thead>
-            <tr>
-              <th>
-                <label>
-                  <input
-                    type="checkbox"
-                    onChange={(e) => handleSelectAll(false, e)}
-                    checked={
-                      selectedNotCleared.length === studentsNotCleared.length &&
-                      studentsNotCleared.length > 0
-                    }
-                  />
-                  Select All Not Cleared
-                </label>
-              </th>
+            {pendingStudents.length === 0 ? (
+              <Alert color="blue">
+                No pending no-dues clearance requests at the moment
+              </Alert>
+            ) : (
+              <div
+                style={{
+                  overflowX: isAboveMd ? "visible" : "auto",
+                }}
+              >
+                <Table
+                  striped
+                  highlightOnHover
+                  style={{ minWidth: isAboveMd ? "" : "600px" }}
+                >
+                  <Table.Thead>
+                    <Table.Tr>
+                      <Table.Th>Roll No</Table.Th>
+                      <Table.Th>Name</Table.Th>
+                      <Table.Th>Progress</Table.Th>
+                      <Table.Th>Cleared Count</Table.Th>
+                    </Table.Tr>
+                  </Table.Thead>
+                  <Table.Tbody>{rows}</Table.Tbody>
+                </Table>
+              </div>
+            )}
+          </Stack>
+        </Paper>
 
-              <th>Name</th>
-              <th>Roll No</th>
-              <th>Clear/Unclear</th>
-            </tr>
-          </thead>
-          <tbody>
-            {studentsNotCleared.map((student, index) => (
-              <tr key={index}>
-                <td>
-                  <input
-                    type="checkbox"
-                    checked={selectedNotCleared.includes(student.rollNo)}
-                    onChange={() =>
-                      setSelectedNotCleared((prev) =>
-                        prev.includes(student.rollNo)
-                          ? prev.filter((rollNo) => rollNo !== student.rollNo)
-                          : [...prev, student.rollNo],
-                      )
-                    }
-                    aria-label={`Select ${student.name}`}
-                  />
-                </td>
-                <td>{student.name}</td>
-                <td>{student.rollNo}</td>
-                <td>
-                  <input
-                    type="checkbox"
-                    onChange={() => handleCheckboxChange(student.rollNo, false)}
-                    aria-label={`Mark ${student.name} as cleared`}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      </div>
-    </div>
+        {selectedStudent && (
+          <Paper p="lg" radius="lg" withBorder shadow="sm" bg="#f0f9ff">
+            <Stack spacing="md">
+              <div>
+                <Text fw={700} size="lg">
+                  Verify Clearance
+                </Text>
+                <Text c="dimmed">
+                  Student: {selectedStudent.name} ({selectedStudent.roll_no})
+                </Text>
+              </div>
+
+              <Select
+                label="Department"
+                placeholder="Select department"
+                data={filteredPendingDepartments.map((d) => ({
+                  value: d,
+                  label:
+                    departmentLabels[d] || d.replace(/_/g, " ").toUpperCase(),
+                }))}
+                value={department}
+                onChange={(value) => setDepartment(value)}
+                searchable
+                disabled={filteredPendingDepartments.length === 0}
+                description={
+                  filteredPendingDepartments.length === 0
+                    ? "No pending approvals available for your role on this request."
+                    : "Only pending approvals assigned to your role are shown."
+                }
+              />
+
+              <Checkbox
+                label="Is student cleared?"
+                checked={isClear}
+                onChange={(e) => setIsClear(e.currentTarget.checked)}
+              />
+
+              <Group position="right">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSelectedStudent(null);
+                    setDepartment("");
+                    setIsClear(false);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleVerify}
+                  loading={verifying}
+                  disabled={!department}
+                >
+                  Verify Clearance
+                </Button>
+              </Group>
+            </Stack>
+          </Paper>
+        )}
+      </Stack>
+    </Container>
   );
 }
 

@@ -36,3 +36,10 @@ export const Director_fetch = `${host}/otheracademic/api/director-pending-reques
 export const Director_Update = `${host}/otheracademic/api/director-update-status/`;
 export const Dean_fetch = `${host}/otheracademic/api/dean-pending-requests/`;
 export const Dean_Update = `${host}/otheracademic/api/dean-update-status/`;
+// No-Dues Routes
+export const NoDues_Initiate = `${host}/otheracademic/api/no-dues-initiate/`;
+export const NoDues_Status = `${host}/otheracademic/api/no-dues-status/`;
+export const NoDues_Verify = `${host}/otheracademic/api/no-dues-verify/`;
+export const NoDues_Track = `${host}/otheracademic/api/no-dues-track/`;
+export const NoDues_Pending = `${host}/otheracademic/api/no-dues-pending/`;
+export const NoDues_Certificate = `${host}/otheracademic/api/no-dues-certificate/`;
