@@ -140,7 +140,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       icon: <ExamIcon size={18} />,
       url: "/examination",
     },
-        {
+    {
       label: "Database",
       id: "database",
       icon: <DatabaseIcon size={18} />,
@@ -194,10 +194,13 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
 
   useEffect(() => {
     const filterModules = Modules.filter(
-      (module) => accessibleModules[module.id] || module.id === "home",
+      (module) =>
+        accessibleModules[module.id] ||
+        module.id === "home" ||
+        (role === "dept_admin" && module.id === "other_academics"),
     );
     setFilteredModules(filterModules);
-  }, [accessibleModules]);
+  }, [accessibleModules, role]);
 
   const handleModuleClick = (item) => {
     setSelected(item.label);
