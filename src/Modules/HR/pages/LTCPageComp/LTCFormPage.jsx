@@ -56,7 +56,8 @@ function LtcFormPage() {
       alert("Form submitted successfully!");
     } catch (error) {
       console.error(error);
-      alert("Submission failed");
+      const errorMsg = error.response?.data?.detail || error.response?.data?.message || error.message || "Submission failed";
+      alert(`Submission failed: ${errorMsg}`);
     }
   };
 
