@@ -42,6 +42,18 @@ import { setCurrentModule } from "../redux/moduleslice";
 
 function SidebarContent({ isCollapsed, toggleSidebar }) {
   const role = useSelector((state) => state.user.role);
+  const normalizeRole = (value) =>
+    String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "_");
+
+  const noDuesApproverRoles = [
+    "librarian",
+    "mess_incharge",
+    "lab_supervisor",
+    "hostel_warden",
+  ];
 
   const Modules = [
     {
@@ -140,7 +152,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       icon: <ExamIcon size={18} />,
       url: "/examination",
     },
-        {
+    {
       label: "Database",
       id: "database",
       icon: <DatabaseIcon size={18} />,
@@ -194,10 +206,14 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
 
   useEffect(() => {
     const filterModules = Modules.filter(
-      (module) => accessibleModules[module.id] || module.id === "home",
+      (module) =>
+        accessibleModules[module.id] ||
+        module.id === "home" ||
+        (module.id === "other_academics" &&
+          noDuesApproverRoles.includes(normalizeRole(role))),
     );
     setFilteredModules(filterModules);
-  }, [accessibleModules]);
+  }, [accessibleModules, role]);
 
   const handleModuleClick = (item) => {
     setSelected(item.label);
