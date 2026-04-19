@@ -248,17 +248,23 @@ function CPDA_ClaimForm() {
               Purpose
               <div className="input-wrapper">
                 <ClipboardText size={20} />
-                <input
-                  type="text"
+                <select
                   id="purpose"
                   name="purpose"
-                  placeholder="Purpose"
-                  value={formData.purpose}
+                  value={formData.purpose || ""}
                   onChange={handleChange}
-                  className="input"
-                  style={{ width: "60%" }}
+                  className="select"
+                  style={{ width: "60%", border: "none", outline: "none", paddingLeft: "10px", backgroundColor: "transparent", color: "inherit", fontSize: "16px" }}
                   required
-                />
+                >
+                  <option value="" disabled>Select Expense Category</option>
+                  <option value="Books">Books</option>
+                  <option value="Contingency">Contingency</option>
+                  <option value="Conferences/Workshops">Conferences/Workshops</option>
+                  <option value="Software">Software</option>
+                  <option value="Equipment/Hardware">Equipment/Hardware</option>
+                  <option value="Others">Others</option>
+                </select>
               </div>
             </label>
           </div>

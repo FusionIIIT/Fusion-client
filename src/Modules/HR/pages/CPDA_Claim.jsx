@@ -14,6 +14,7 @@ import CPDAClaimRequests from "./CPDA_ClaimPageComp/CPDA_ClaimRequests";
 import CPDAClaimInbox from "./CPDA_ClaimPageComp/CPDA_ClaimInbox";
 import CPDAClaimArchive from "./CPDA_ClaimPageComp/CPDA_ClaimArchive";
 import HrBreadcrumbs from "../components/common/HrBreadcrumbs";
+import CPDABalanceButton from "../components/common/CPDABalanceButton";
 
 // Define paths for each tab
 const tabItems = [
@@ -85,6 +86,7 @@ function CPDA_Claim() {
   return (
     <>
       <HrBreadcrumbs items={exampleItems} />
+      <CPDABalanceButton />
       <Flex justify="flex-start" align="center" mt="lg">
         <Button
           style={{ marginRight: "20px" }}

@@ -20,6 +20,7 @@ import OfflineLeaveForm from "./pages/LeavePageComp/OfflineLeaveForm";
 import ViewEmployeeLB from "./pages/LeavePageComp/ViewEmployeeLB";
 import AdminLeaveRequests from "./pages/LeavePageComp/AdminLeaveRequests";
 // import UpdateLeaveBalance from "./pages/UpdateLeaveBalance";
+import CPDAClaimFormView from "./pages/CPDA_ClaimPageComp/CPDAClaimFormView";
 import GenericFormView from "./components/forms/GenericFormView";
 import CPDAAdvanceFormView from "./pages/CPDA_ADVANCEPageComp/CPDAAdvanceFormView";
 import LtcFormView from "./pages/LTCPageComp/LtcFormView";
@@ -44,16 +45,7 @@ export default function HR() {
       <Route path="cpda_adv/view/:id" element={<CPDAAdvanceFormView />} />
       <Route path="ltc/view/:id" element={<LtcFormView />} />
       <Route path="appraisal/view/:id" element={<AppraisalFormView />} />
-      <Route
-        path="cpda_claim/view/:id"
-        element={
-          <GenericFormView
-            title="CPDA Claim Details"
-            fetchFn={api.getCpdaClaimForm}
-            breadcrumbPath={{ title: "CPDA Claim", path: "/hr/cpda_claim" }}
-          />
-        }
-      />
+      <Route path="cpda_claim/view/:id" element={<CPDAClaimFormView />} />
 
       <Route path="cpda_adv/*" element={<CpdaAdvance />} />
       <Route path="ltc/*" element={<LTC />} />

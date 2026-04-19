@@ -14,6 +14,7 @@ import CpdaAdvanceRequests from "./CPDA_ADVANCEPageComp/Cpda_ADVANCERequests";
 import CpdaAdvanceInbox from "./CPDA_ADVANCEPageComp/Cpda_ADVANCEInbox";
 import CpdaAdvanceArchive from "./CPDA_ADVANCEPageComp/Cpda_ADVANCEArchive";
 import HrBreadcrumbs from "../components/common/HrBreadcrumbs";
+import CPDABalanceButton from "../components/common/CPDABalanceButton";
 
 // Define paths for each tab
 const tabItems = [
@@ -86,6 +87,7 @@ function CPDA_ADVANCE() {
   return (
     <>
       <HrBreadcrumbs items={exampleItems} />
+      <CPDABalanceButton />
 
       <Flex justify="flex-start" align="center" mt="lg">
         <Button
