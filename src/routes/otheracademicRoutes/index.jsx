@@ -6,6 +6,7 @@ export const Bonafide_Form_Submit = `${host}/otheracademic/api/bonafide-form-sub
 export const Fetch_Pending_Bonafide_Request = `${host}/otheracademic/api/admin-bonafide-requests/`;
 export const Update_Bonafide_Status = `${host}/otheracademic/api/admin-updates/`;
 export const Get_Bonafide_Status = `${host}/otheracademic/api/bonafide-status/`;
+export const Upload_Bonafide_Certificate = `${host}/otheracademic/api/bonafide-certificate-upload/`;
 export const Fetch_Pending_Request = `${host}/otheracademic/api/fetch-pending-leaves/`;
 export const Update_Leave_Status = `${host}/otheracademic/api/update-leave-status/`;
 export const Fetch_Pending_Request_TA = `${host}/otheracademic/api/fetch-pending-leaves-ta/`;

@@ -60,6 +60,7 @@ function BonafideFormStatus() {
               <th>Purpose</th>
               <th>Date Applied</th>
               <th>Status</th>
+              <th>Certificate</th>
             </tr>
           </thead>
           <tbody>
@@ -70,6 +71,15 @@ function BonafideFormStatus() {
                 <td>{item.dateApplied}</td>
                 <td className={`status-${item.status.toLowerCase()}`}>
                   {item.status}
+                </td>
+                <td>
+                  {item.status === "Approved" && item.downloadUrl ? (
+                    <a href={item.downloadUrl} target="_blank" rel="noreferrer">
+                      Download
+                    </a>
+                  ) : (
+                    "-"
+                  )}
                 </td>
               </tr>
             ))}
