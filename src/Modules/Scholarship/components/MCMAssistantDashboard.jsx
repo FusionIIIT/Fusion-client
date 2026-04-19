@@ -17,6 +17,7 @@ import {
   Tooltip,
   Divider,
   SimpleGrid,
+  TextInput,
 } from "@mantine/core";
 import {
   IconArrowLeft,
@@ -37,6 +38,8 @@ import {
   getSingleParentApplications,
   updateMCMLinkApplication,
   updateSingleParentApplication,
+  getScholarshipSettings,
+  updateScholarshipSettings
 } from "../services/scholarshipAPI";
 import { STATUS, STATUS_COLORS, STATUS_LABELS, normalizeStatus } from "../constants/status";
 import classes from "../../Dashboard/Dashboard.module.css";
@@ -136,6 +139,10 @@ export default function MCMAssistantDashboard() {
 
   const [actionLoadingId, setActionLoadingId] = useState(null);
 
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [deadlineTerm, setDeadlineTerm] = useState("");
+  const [settingsLoading, setSettingsLoading] = useState(false);
+
   const fetchApplications = async () => {
     if (!selectedType || !selectedBatch) {
       return;
@@ -166,6 +173,35 @@ export default function MCMAssistantDashboard() {
   useEffect(() => {
     fetchApplications();
   }, [selectedType, selectedBatch, statusFilter]);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await getScholarshipSettings();
+        if (res.data?.application_deadline) {
+          setDeadlineTerm(res.data.application_deadline);
+        }
+      } catch (e) { console.error(e); }
+    };
+    fetchSettings();
+  }, []);
+
+  const handleUpdateDeadline = async () => {
+    if (!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(deadlineTerm)) {
+      window.alert("Invalid format! Use YYYY-MM-DD HH:MM:SS");
+      return;
+    }
+    setSettingsLoading(true);
+    try {
+      await updateScholarshipSettings({ application_deadline: deadlineTerm });
+      window.alert("Deadline updated successfully!");
+      setIsSettingsOpen(false);
+    } catch (e) {
+      window.alert(e?.response?.data?.error || "Failed to update deadline.");
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
 
   const activeApplications = useMemo(() => {
     if (selectedType === "MCM") return mcmApplications;
@@ -247,6 +283,7 @@ export default function MCMAssistantDashboard() {
                 <Title order={2} style={{ color: "#1a1a2e" }}>Assistant Dashboard</Title>
                 <Text size="sm" c="dimmed">Batch-wise scholarship verification and merit operations.</Text>
               </Stack>
+              <Button leftSection={<IconCalendar size={18} />} variant="light" color="blue" onClick={() => setIsSettingsOpen(true)}>Manage Deadline</Button>
             </Group>
           </Paper>
 
@@ -570,6 +607,29 @@ export default function MCMAssistantDashboard() {
             >
               Confirm Revert
             </Button>
+          </Group>
+        </Stack>
+      </Modal>
+
+      <Modal opened={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} title={<Text fw={900}>Global Scholarship Settings</Text>} centered radius="lg">
+        <Stack gap="md">
+          <Alert color="blue" icon={<IconAlertCircle size={16} />}>
+            Set a global deadline for all MCM and Single Parent applications.
+          </Alert>
+          <Stack gap={4}>
+            <Text size="sm" fw={700}>Application Deadline</Text>
+            <Stack gap={0}>
+              <TextInput 
+                placeholder="YYYY-MM-DD HH:MM:SS" 
+                value={deadlineTerm} 
+                onChange={(e) => setDeadlineTerm(e.target.value)}
+                description="Format: 2026-05-31 23:59:59"
+              />
+            </Stack>
+          </Stack>
+          <Group justify="flex-end" mt="md">
+            <Button variant="subtle" color="gray" onClick={() => setIsSettingsOpen(false)}>Cancel</Button>
+            <Button color="blue" onClick={handleUpdateDeadline} loading={settingsLoading}>Update Settings</Button>
           </Group>
         </Stack>
       </Modal>

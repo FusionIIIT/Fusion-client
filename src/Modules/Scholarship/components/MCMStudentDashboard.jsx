@@ -49,14 +49,14 @@ import {
   getSingleParentApplications,
   submitSingleParentApplication,
   updateSingleParentApplication,
-  getStudentProfile
+  getStudentProfile,
+  getScholarshipSettings
 } from "../services/scholarshipAPI";
 import { STATUS, STATUS_COLORS, STATUS_LABELS, normalizeStatus } from "../constants/status";
 
 // ─── Constants & Configuration ───────────────────────────────────────────────
 
 const FUSION_BLUE = "#15abff";
-const DEADLINE = "October 28, 2026";
 
 const scholarshipOptions = [
   { id: "mcm", title: "MCM Scholarship", subtitle: "Merit-cum-Means Portal", icon: IconSchool },
@@ -129,6 +129,7 @@ export default function MCMStudentDashboard() {
 
   const [mcmApps, setMcmApps] = useState([]);
   const [spApps, setSpApps] = useState([]);
+  const [dynamicDeadline, setDynamicDeadline] = useState("2026-05-31 23:59:59");
 
   // -- Form States --
   const initialMcm = {
@@ -155,11 +156,14 @@ export default function MCMStudentDashboard() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [mcmRes, spRes, profRes] = await Promise.all([
+      const [mcmRes, spRes, profRes, settingsRes] = await Promise.all([
         getMCMApplications().catch(() => ({ data: [] })),
         getSingleParentApplications().catch(() => ({ data: [] })),
-        getStudentProfile().catch(() => ({ data: {} }))
+        getStudentProfile().catch(() => ({ data: {} })),
+        getScholarshipSettings().catch(() => ({ data: { application_deadline: "2026-05-01 23:59:59" } }))
       ]);
+
+      setDynamicDeadline(settingsRes.data?.application_deadline || "2026-05-01 23:59:59");
 
       const mData = Array.isArray(mcmRes.data) ? mcmRes.data : mcmRes.data?.results || [];
       const sData = Array.isArray(spRes.data) ? spRes.data : spRes.data?.results || [];
@@ -295,6 +299,11 @@ export default function MCMStudentDashboard() {
   const canEditMcm = !latestMcm || normalizeStatus(latestMcm.status) === STATUS.REVERTED;
   const canEditSp = !latestSp || normalizeStatus(latestSp.status) === STATUS.REVERTED;
 
+  const isDeadlinePassed = useMemo(() => {
+    if (!dynamicDeadline) return false;
+    return new Date() > new Date(dynamicDeadline);
+  }, [dynamicDeadline]);
+
   const InputHeader = ({ title, icon: Icon }) => (
     <Group gap="xs" mt="lg" mb="sm">
       <ThemeIcon color="blue" variant="light" size="sm"><Icon size={14} /></ThemeIcon>
@@ -342,6 +351,20 @@ export default function MCMStudentDashboard() {
           <Box p="xl">
             <Tabs.Panel value="apply">
               <Stack gap="md">
+                {dynamicDeadline && (
+                  <Alert 
+                    color={isDeadlinePassed ? "red" : "blue"} 
+                    icon={<IconAlertCircle size={16} />} 
+                    title={isDeadlinePassed ? "Application Window Closed" : "Application Deadline"} 
+                    radius="md"
+                    variant={isDeadlinePassed ? "filled" : "light"}
+                  >
+                    {isDeadlinePassed 
+                      ? `The deadline (${new Date(dynamicDeadline).toLocaleString('en-IN', { dateStyle: 'long', timeStyle: 'short' })}) has passed. No further submissions are allowed.`
+                      : `Please submit your application before the deadline: ${new Date(dynamicDeadline).toLocaleString('en-IN', { dateStyle: 'long', timeStyle: 'short' })}.`
+                    }
+                  </Alert>
+                )}
                 <Box style={{ position: "relative" }}>
                   <LoadingOverlay visible={submitLoading} overlayProps={{ blur: 1 }} />
                   {selectedScholarship === "mcm" ? (
@@ -419,7 +442,17 @@ export default function MCMStudentDashboard() {
                     <Checkbox label="I confirm that all provided details are accurate." checked={selectedScholarship === "mcm" ? mcmForm.declaration_yes === "Yes" : spForm.declaration_yes === "Yes"} onChange={(e) => selectedScholarship === "mcm" ? handleMcmChange("declaration_yes", e.currentTarget.checked ? "Yes" : "No") : handleSpChange("declaration_yes", e.currentTarget.checked ? "Yes" : "No")} disabled={selectedScholarship === "mcm" ? !canEditMcm : !canEditSp} />
                   </Paper>
 
-                  <Button fullWidth size="lg" mt={20} color="blue" leftSection={<IconSend size={20} />} disabled={Object.keys(errors).length > 0 || (selectedScholarship === "mcm" ? !canEditMcm : !canEditSp) || (selectedScholarship === "mcm" ? mcmForm.declaration_yes !== "Yes" : spForm.declaration_yes !== "Yes")} onClick={() => setConfirmModal({ open: true, type: selectedScholarship === "mcm" ? "MCM" : "SP" })}>Submit Secure Application</Button>
+                  <Button 
+                    fullWidth 
+                    size="lg" 
+                    mt={20} 
+                    color={isDeadlinePassed ? "gray" : "blue"}
+                    leftSection={<IconSend size={20} />} 
+                    disabled={isDeadlinePassed || Object.keys(errors).length > 0 || (selectedScholarship === "mcm" ? !canEditMcm : !canEditSp) || (selectedScholarship === "mcm" ? mcmForm.declaration_yes !== "Yes" : spForm.declaration_yes !== "Yes")} 
+                    onClick={() => setConfirmModal({ open: true, type: selectedScholarship === "mcm" ? "MCM" : "SP" })}
+                  >
+                    {isDeadlinePassed ? "Deadline Passed" : "Submit Secure Application"}
+                  </Button>
                 </Box>
               </Stack>
             </Tabs.Panel>
@@ -441,6 +474,16 @@ export default function MCMStudentDashboard() {
 
             <Tabs.Panel value="guidelines">
               <Stack gap="xl">
+                <Paper p="xl" withBorder radius="md" bg="red.0" style={{ borderColor: "#f03e3e" }}>
+                  <Group justify="space-between">
+                    <Stack gap={2}>
+                      <Group gap="xs">
+                        <IconCalendarEvent color="#f03e3e" size={20} />
+                        <Text fw={800} size="lg" style={{ color: "#f03e3e" }}>DEADLINE: {new Date(dynamicDeadline).toLocaleString('en-IN', { dateStyle: 'long', timeStyle: 'short' })}</Text>
+                      </Group>
+                    </Stack>
+                  </Group>
+                </Paper>
                 {selectedScholarship === "mcm" ? (
                   <Accordion variant="separated" radius="md" defaultValue="mcm-scope">
                     <Accordion.Item value="mcm-scope">
@@ -491,17 +534,6 @@ export default function MCMStudentDashboard() {
                     </Accordion.Item>
                   </Accordion>
                 )}
-
-                <Paper p="xl" withBorder radius="md" bg="red.0" style={{ borderColor: "#f03e3e" }}>
-                  <Group justify="space-between">
-                    <Stack gap={2}>
-                      <Group gap="xs">
-                        <IconCalendarEvent color="#f03e3e" size={20} />
-                        <Text fw={800} size="lg" style={{ color: "#f03e3e" }}>DEADLINE: {DEADLINE}</Text>
-                      </Group>
-                    </Stack>
-                  </Group>
-                </Paper>
               </Stack>
             </Tabs.Panel>
 

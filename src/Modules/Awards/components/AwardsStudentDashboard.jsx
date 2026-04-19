@@ -108,11 +108,40 @@ export default function AwardsStudentDashboard() {
     setErrorAlert("");
     setSuccessAlert("");
 
-    // Client-side validation
-    const fields = ['sop', 'academics', 'technical', 'extra', 'drive_link'];
+    // Client-side validation: define required fields for each award type
+    const requiredFields = {
+      IIITDM_PRIZE: [
+        { key: "sop", label: "Statement of Purpose" },
+        { key: "academic_achievements", label: "Academic Achievements" },
+        { key: "technical_achievements", label: "Technical Achievements" },
+        { key: "extracurricular", label: "Extracurricular / Other" },
+        { key: "documents_link", label: "Supporting Documents Link" },
+      ],
+      CULTURAL: [
+        { key: "event_name", label: "Event Name" },
+        { key: "role", label: "Your Role" },
+        { key: "level", label: "Level" },
+        { key: "position", label: "Position" },
+        { key: "description", label: "Description" },
+        { key: "documents_link", label: "Supporting Documents Link" },
+      ],
+      SPORTS: [
+        { key: "sport_name", label: "Sport Name" },
+        { key: "role", label: "Your Role" },
+        { key: "tournament", label: "Tournament" },
+        { key: "level", label: "Level" },
+        { key: "medal", label: "Medal / Position" },
+        { key: "description", label: "Description" },
+        { key: "documents_link", label: "Supporting Documents Link" },
+      ],
+    };
+
     const missing = [];
-    fields.forEach(f => {
-      if (!formData[f]?.trim()) missing.push(f.toUpperCase());
+    (requiredFields[selectedAward] || []).forEach((f) => {
+      const val = formData[f.key];
+      if (!val || !val.toString().trim()) {
+        missing.push(f.label);
+      }
     });
 
     if (missing.length > 0) {
@@ -131,7 +160,7 @@ export default function AwardsStudentDashboard() {
         award_type: selectedAward,
         form_data: formData,
       });
-      setSuccessAlert("Application submitted successfully!");
+      setSuccessAlert(existingApp ? "Application updated successfully!" : "Application submitted successfully!");
       const mRes = await getMyAwardApplications();
       setMyApps(Array.isArray(mRes.data) ? mRes.data : []);
     } catch (e) {
@@ -396,7 +425,7 @@ export default function AwardsStudentDashboard() {
                     disabled={!formData._declaration}
                     onClick={() => setConfirmModal(true)}
                   >
-                    Submit Application
+                    {existingApp ? "Update Application" : "Submit Application"}
                   </Button>
                 </Card>
               </Stack>

@@ -97,3 +97,19 @@ export const getConvenorMcmMeritList = (params = {}) => {
   });
 };
 
+export const getScholarshipSettings = () => {
+  return axios.get(`${host}/scholarships/api/settings/`, {
+    headers: authHeaders()
+  });
+};
+
+export const updateScholarshipSettings = (payload) => {
+  return axios.post(`${host}/scholarships/api/settings/`, payload, {
+    headers: {
+      ...authHeaders(),
+      "Content-Type": "application/json"
+    }
+  });
+};
+
+

@@ -154,7 +154,10 @@ export default function AwardsAssistantDashboard() {
               <IconAlertCircle size={20} color="red" />
               <Title order={5}>Application Deadline Management</Title>
             </Group>
-            <Text size="xs" c="dimmed" mt={4}>Current Cut-off: <Badge color="red" variant="light">{deadline}</Badge></Text>
+            <Group gap={5} mt={4}>
+              <Text size="xs" c="dimmed">Current Cut-off: </Text>
+              <Badge color="red" variant="light" size="xs">{deadline}</Badge>
+            </Group>
           </Box>
           <Group gap="xs">
             <TextInput
