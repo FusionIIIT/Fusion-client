@@ -1,7 +1,7 @@
 import { createTheme, MantineProvider } from "@mantine/core";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
-import { Route, Routes, Navigate, useLocation } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import { Notifications } from "@mantine/notifications";
 import { Layout } from "./components/layout";
 import Dashboard from "./Modules/Dashboard/dashboardNotifications";
@@ -16,6 +16,11 @@ import Examination from "./Modules/Examination/examination";
 import Database from "./Modules/Database/database";
 import ProgrammeCurriculumRoutes from "./Modules/Program_curriculum/programmCurriculum";
 import NotFoundPage from "./components/NotFoundPage";
+
+// Import Scholarship Module
+import Scholarship from "./Modules/Scholarship";
+// Import Awards Module
+import Awards from "./Modules/Awards";
 
 const theme = createTheme({
   breakpoints: {
@@ -37,7 +42,35 @@ export default function App() {
       {location.pathname !== "/accounts/login" && <InactivityHandler />}
 
       <Routes>
-        <Route path="/" element={<Navigate to="/accounts/login" replace />} />
+        {/* Scholarship Module - Accessible via sidebar */}
+        <Route
+          path="/scholarship/*"
+          element={
+            <Layout>
+              <Scholarship />
+            </Layout>
+          }
+        />
+
+        {/* Awards Module - Accessible via sidebar */}
+        <Route
+          path="/awards/*"
+          element={
+            <Layout>
+              <Awards />
+            </Layout>
+          }
+        />
+
+        {/* Default routes */}
+        <Route
+          path="/"
+          element={
+            <Layout>
+              <Dashboard />
+            </Layout>
+          }
+        />
         <Route
           path="/dashboard"
           element={

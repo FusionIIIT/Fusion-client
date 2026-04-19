@@ -15,6 +15,7 @@ import {
   Hospital as HealthIcon,
   FileText as FileTrackingIcon,
   GraduationCap as ScholarshipIcon,
+  Trophy as AwardsIcon,
   Mailbox as ComplaintIcon,
   LetterCircleP as PlacementIcon,
   SquaresFour as DepartmentIcon,
@@ -50,7 +51,6 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       icon: <HomeIcon size={18} />,
       url: "/dashboard",
     },
-    // { label: "Course Management", id:"course_management", icon: <OtherIcon size={18} />, url: "/" },
     {
       label: "Academics",
       id: "course_registration",
@@ -90,12 +90,6 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "File Tracking",
       id: "fts",
       icon: <FileTrackingIcon size={18} />,
-      url: "/",
-    },
-    {
-      label: "Scholarship Portal",
-      id: "spacs",
-      icon: <ScholarshipIcon size={18} />,
       url: "/",
     },
     {
@@ -140,7 +134,19 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       icon: <ExamIcon size={18} />,
       url: "/examination",
     },
-        {
+    {
+      label: "Scholarship Portal",
+      id: "spacs",
+      icon: <ScholarshipIcon size={18} />,
+      url: "/scholarship",
+    },
+    {
+      label: "Awards Portal",
+      id: "awards",
+      icon: <AwardsIcon size={18} />,
+      url: "/awards",
+    },
+    {
       label: "Database",
       id: "database",
       icon: <DatabaseIcon size={18} />,
@@ -194,7 +200,12 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
 
   useEffect(() => {
     const filterModules = Modules.filter(
-      (module) => accessibleModules[module.id] || module.id === "home",
+      (module) => 
+        accessibleModules[module.id] || 
+        module.id === "home" || 
+        module.id === "spacs" || // Always show scholarship portal
+        module.id === "awards" || // Always show awards portal
+        module.id === "examinations" // Always show examinations for reference
     );
     setFilteredModules(filterModules);
   }, [accessibleModules]);

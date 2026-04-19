@@ -69,3 +69,29 @@
 .selectoptions:hover {
   background-color: #15abff10; /* Transparent blue hover background */
 }
+
+/* Scholarship Selection Cards */
+.selectionCard {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid #dee2e6;
+}
+
+.selectionCard:hover {
+  transform: translateY(-5px);
+  border-color: #15abff !important;
+  box-shadow: 0 10px 25px rgba(21, 171, 255, 0.12) !important;
+}
+
+/* Loading Animations */
+.rotate {
+  animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
