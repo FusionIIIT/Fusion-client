@@ -17,7 +17,6 @@ import Database from "./Modules/Database/database";
 import ProgrammeCurriculumRoutes from "./Modules/Program_curriculum/programmCurriculum";
 import OtherAcadProcedures from "./Modules/Otheracademic/OtherAcademicProcedures";
 import NotFoundPage from "./components/NotFoundPage";
-import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const theme = createTheme({
   breakpoints: {
@@ -51,40 +50,25 @@ export default function App() {
         <Route
           path="/academics"
           element={
-            <ProtectedRoute
-              requiredRoles={["acadadmin", "student", "Professor", "Assistant Professor"]}
-              element={
-                <Layout>
-                  <AcademicPage />
-                </Layout>
-              }
-            />
+            <Layout>
+              <AcademicPage />
+            </Layout>
           }
         />
         <Route
           path="/profile"
           element={
-            <ProtectedRoute
-              requiredRoles={["acadadmin", "student", "Professor", "Assistant Professor"]}
-              element={
-                <Layout>
-                  <Profile />
-                </Layout>
-              }
-            />
+            <Layout>
+              <Profile />
+            </Layout>
           }
         />
         <Route
           path="/facultyprofessionalprofile/*"
           element={
-            <ProtectedRoute
-              requiredRoles={["Professor", "Assistant Professor", "Associate Professor"]}
-              element={
-                <Layout>
-                  <FacultyProfessionalProfile />
-                </Layout>
-              }
-            />
+            <Layout>
+              <FacultyProfessionalProfile />
+            </Layout>
           }
         />
         <Route
@@ -102,14 +86,9 @@ export default function App() {
         <Route
           path="/other-academics"
           element={
-            <ProtectedRoute
-              requiredRoles={["acadadmin", "student", "Professor", "Assistant Professor"]}
-              element={
-                <Layout>
-                  <OtherAcadProcedures />
-                </Layout>
-              }
-            />
+            <Layout>
+              <OtherAcadProcedures />
+            </Layout>
           }
         />
         <Route path="*" element={<NotFoundPage />} />
