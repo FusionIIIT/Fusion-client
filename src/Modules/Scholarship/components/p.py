@@ -1,0 +1,1 @@
+﻿import re; text=open("MCMAssistantDashboard.jsx","r",encoding="utf8").read(); text=re.sub(r"await axios\.patch\(.*?,", "await axios.patch(`http://${host}/scholarships/api/mcm-applications/${appId}/`,", text); open("MCMAssistantDashboard.jsx","w",encoding="utf8").write(text)
