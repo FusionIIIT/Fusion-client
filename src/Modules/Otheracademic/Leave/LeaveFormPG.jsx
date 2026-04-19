@@ -35,6 +35,7 @@ function LeaveFormPG(props) {
     academicYear: "",
     dateOfApplication: "",
   });
+  const [submitError, setSubmitError] = useState("");
 
   const handleChange = (field, value) => {
     setFormValues((prev) => ({ ...prev, [field]: value }));
@@ -68,9 +69,7 @@ function LeaveFormPG(props) {
     formData.append("mobile_during_leave", formValues.mobileDuringLeave);
     formData.append("semester", formValues.semester);
     formData.append("academic_year", formValues.academicYear);
-    if (props.setTab) {
-      props.setTab(1);
-    }
+    setSubmitError("");
 
     try {
       const response = await axios.post(Leave_PG_Submit, formData, {
@@ -82,7 +81,14 @@ function LeaveFormPG(props) {
       });
 
       console.log("Form submitted successfully:", response.data);
+      if (props.setTab) {
+        props.setTab(1);
+      }
     } catch (error) {
+      const errMsg =
+        error.response?.data?.error ||
+        "PG leave submission failed. Please verify credentials and try again.";
+      setSubmitError(errMsg);
       console.error(
         "Error submitting the form:",
         error.response?.data || error,
@@ -293,6 +299,11 @@ function LeaveFormPG(props) {
           Submit
         </Button>
       </Center>
+      {submitError && (
+        <Center style={{ marginBottom: "20px", color: "red" }}>
+          <Text size="sm">{submitError}</Text>
+        </Center>
+      )}
     </form>
   );
 }

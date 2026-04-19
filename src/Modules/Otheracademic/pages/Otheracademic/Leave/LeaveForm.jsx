@@ -35,6 +35,7 @@ function LeaveForm(props) {
     academicYear: "",
     dateOfApplication: "",
   });
+  const [submitError, setSubmitError] = useState("");
 
   const handleChange = (field, value) => {
     setFormValues((prev) => ({ ...prev, [field]: value }));
@@ -63,9 +64,7 @@ function LeaveForm(props) {
     formData.append("mobile_during_leave", formValues.mobileDuringLeave);
     formData.append("semester", formValues.semester);
     formData.append("academic_year", formValues.academicYear);
-    if (props.setTab) {
-      props.setTab(1);
-    }
+    setSubmitError("");
 
     try {
       const response = await axios.post(Leave_Form_Submit, formData, {
@@ -76,7 +75,14 @@ function LeaveForm(props) {
       });
 
       console.log("Form submitted successfully:", response.data);
+      if (props.setTab) {
+        props.setTab(1);
+      }
     } catch (error) {
+      const errMsg =
+        error.response?.data?.error ||
+        "Leave submission failed. Please verify credentials and try again.";
+      setSubmitError(errMsg);
       console.error(
         "Error submitting the form:",
         error.response?.data || error,
@@ -264,6 +270,11 @@ function LeaveForm(props) {
           Submit
         </Button>
       </Center>
+      {submitError && (
+        <Center style={{ marginBottom: "20px", color: "red" }}>
+          <Text size="sm">{submitError}</Text>
+        </Center>
+      )}
     </form>
   );
 }
