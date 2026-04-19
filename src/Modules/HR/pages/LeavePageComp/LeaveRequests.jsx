@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Title, Select, TextInput } from "@mantine/core";
+import { Title, Select, TextInput, Button, Group } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
-import { Eye } from "@phosphor-icons/react";
+import { Eye, Footprints } from "@phosphor-icons/react";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import { EmptyTable } from "../../components/tables/EmptyTable";
 import useFetchData from "../../hooks/useFetchData";
@@ -14,57 +14,56 @@ function LeaveRequests() {
   const [selectedDate, setSelectedDate] = useState("");
   const navigate = useNavigate();
 
-  // ✅ Fetch data from service
   const { data: requestData, loading } = useFetchData(
     () => getLeaveRequests(selectedDate),
     [selectedDate],
   );
 
-  // ✅ Sync filtered data when API data changes
   useEffect(() => {
-    if (requestData && requestData.length > 0) {
-      // Sort by latest first
-      const sortedData = [...requestData].sort(
-        (a, b) => new Date(b.submissionDate) - new Date(a.submissionDate),
-      );
+    if (!requestData || requestData.length === 0) {
+      setFilteredData([]);
+      return;
+    }
+    const sortedData = [...requestData].sort(
+      (a, b) => new Date(b.submissionDate) - new Date(a.submissionDate),
+    );
+    if (selectedStatus === "All") {
       setFilteredData(sortedData);
     } else {
-      setFilteredData([]);
+      setFilteredData(
+        sortedData.filter((item) => item.status === selectedStatus),
+      );
     }
-  }, [requestData]);
+  }, [requestData, selectedStatus]);
 
-  // ✅ Navigation
-  const handleViewClick = (view) => {
-    navigate(`./view/${view}`);
+  const handleViewClick = (formId) => {
+    navigate(`/hr/leave/view/${formId}`);
   };
 
-  // ✅ Status color helper
+  const handleTrackClick = (e, fileId) => {
+    e.stopPropagation();
+    if (!fileId) {
+      alert(
+        "Tracking is available after the application is filed. File id was not found — open from Leave Inbox or refresh the list.",
+      );
+      return;
+    }
+    navigate(`/hr/FormView/leaveform_track/${fileId}`);
+  };
+
   const getStatusColor = (status) => {
-    switch (status) {
-      case "Pending":
-        return "#FFD700";
-      case "Accepted":
-        return "#32CD32";
-      case "Rejected":
-        return "#FF0000";
-      default:
-        return "#333";
-    }
+    const s = (status || "").toString();
+    if (s.includes("Rejected")) return "#FF0000";
+    if (s.includes("Approved by HR")) return "#32CD32";
+    if (s.includes("HOD approved")) return "#daa520";
+    if (s.includes("Submitted")) return "#1e90ff";
+    return "#333";
   };
 
-  // ✅ Filter by status
   const handleStatusFilterChange = (value) => {
-    setSelectedStatus(value);
-
-    if (value === "All") {
-      setFilteredData(requestData);
-    } else {
-      const filtered = requestData.filter((item) => item.status === value);
-      setFilteredData(filtered);
-    }
+    setSelectedStatus(value || "All");
   };
 
-  // ✅ Filter by date
   const handleDateFilterChange = (event) => {
     setSelectedDate(event.target.value);
   };
@@ -75,7 +74,7 @@ function LeaveRequests() {
     "Status",
     "Leave Start Date",
     "Leave End Date",
-    "View",
+    "Actions",
   ];
 
   if (loading) {
@@ -91,7 +90,6 @@ function LeaveRequests() {
         Leave Requests
       </Title>
 
-      {/* Filters */}
       <div
         style={{
           margin: "20px 15px",
@@ -115,9 +113,14 @@ function LeaveRequests() {
             onChange={handleStatusFilterChange}
             data={[
               { value: "All", label: "All" },
-              { value: "Pending", label: "Pending" },
-              { value: "Accepted", label: "Accepted" },
-              { value: "Rejected", label: "Rejected" },
+              { value: "Submitted", label: "Submitted" },
+              {
+                value: "HOD approved (pending HR)",
+                label: "HOD approved (pending HR)",
+              },
+              { value: "Rejected by HOD", label: "Rejected by HOD" },
+              { value: "Approved by HR", label: "Approved by HR" },
+              { value: "Rejected by HR", label: "Rejected by HR" },
             ]}
           />
         </div>
@@ -133,7 +136,6 @@ function LeaveRequests() {
         </Title>
       </div>
 
-      {/* Table */}
       {filteredData.length === 0 ? (
         <EmptyTable
           title="No Leave Requests Found"
@@ -154,12 +156,7 @@ function LeaveRequests() {
 
             <tbody>
               {filteredData.map((item, index) => (
-                <tr
-                  key={index}
-                  className="table-row"
-                  onClick={() => handleViewClick(item.id)}
-                  style={{ cursor: "pointer" }}
-                >
+                <tr key={index} className="table-row">
                   <td>{item.id}</td>
                   <td>{item.submissionDate}</td>
                   <td>
@@ -175,9 +172,25 @@ function LeaveRequests() {
                   <td>{item.leaveStartDate}</td>
                   <td>{item.leaveEndDate}</td>
                   <td>
-                    <span className="text-link">
-                      <Eye size={20} /> View
-                    </span>
+                    <Group spacing="xs" noWrap>
+                      <Button
+                        variant="subtle"
+                        size="xs"
+                        leftIcon={<Eye size={16} />}
+                        onClick={() => handleViewClick(item.id)}
+                      >
+                        View
+                      </Button>
+                      <Button
+                        variant="subtle"
+                        size="xs"
+                        color="teal"
+                        leftIcon={<Footprints size={16} />}
+                        onClick={(e) => handleTrackClick(e, item.file_id)}
+                      >
+                        Track
+                      </Button>
+                    </Group>
                   </td>
                 </tr>
               ))}

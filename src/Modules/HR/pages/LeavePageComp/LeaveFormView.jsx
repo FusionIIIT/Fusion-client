@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   Button,
   Title,
@@ -14,7 +14,18 @@ import { useNavigate, useParams } from "react-router-dom";
 import HrBreadcrumbs from "../../components/common/HrBreadcrumbs";
 import LoadingComponent from "../../components/common/Loading";
 import { EmptyTable } from "../../components/tables/EmptyTable";
-import { getLeaveFormById, downloadLeavePdf } from "../../services/api";
+import {
+  getLeaveFormById,
+  downloadLeavePdf,
+  leaveWorkflowDisplayLabel,
+  getEmployeeInitials,
+  getLeaveBalanceForUser,
+} from "../../services/api";
+import {
+  buildLeaveTypesAppliedRows,
+  buildAllLeaveBalanceRows,
+  leaveBalanceDefaultsHint,
+} from "../../utils/leaveBalanceDisplay";
 import useFetchData from "../../hooks/useFetchData";
 import "../../styles/LeaveFormView.css";
 
@@ -23,23 +34,95 @@ function LeaveFormView() {
   const navigate = useNavigate();
   const admin = new URLSearchParams(window.location.search).get("admin");
   const [exampleItems, setExampleItems] = useState([]);
+  const [balanceSummary, setBalanceSummary] = useState(null);
 
   // ✅ FETCH USING HOOK
   const { data, loading } = useFetchData(() => getLeaveFormById(id), [id]);
 
-  // ✅ Adjust data (same logic as your original)
-  const fetchedformData = data
-    ? {
-        ...data.leave_form,
-        academicResponsibilityStatus: data.leave_form.academicResponsibility
-          ? data.leave_form.academicResponsibilityStatus
-          : "Accepted",
-        administrativeResponsibilityStatus: data.leave_form
-          .administrativeResponsibility
-          ? data.leave_form.administrativeResponsibilityStatus
-          : "Accepted",
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!data) {
+        setBalanceSummary(null);
+        return;
       }
+      const raw = data.leave_form || data;
+      const uname = raw.created_by_username;
+      if (uname) {
+        try {
+          const bal = await getLeaveBalanceForUser(uname);
+          if (!cancelled) setBalanceSummary(bal.leave_balance ?? null);
+        } catch {
+          if (!cancelled) setBalanceSummary(null);
+        }
+        return;
+      }
+      if (raw.created_by == null) {
+        setBalanceSummary(null);
+        return;
+      }
+      try {
+        const emp = await getEmployeeInitials(raw.created_by);
+        const bal = await getLeaveBalanceForUser(emp.username);
+        if (!cancelled) setBalanceSummary(bal.leave_balance ?? null);
+      } catch {
+        if (!cancelled) setBalanceSummary(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [data]);
+
+  // ✅ Adjust data (handle both wrapped and direct response)
+  const fetchedformData = data
+    ? (() => {
+        const raw = data.leave_form || data;
+        return {
+          ...raw,
+          name: raw.name || "",
+          designation: raw.designation || "",
+          pfno: raw.pfNo || raw.pfno || "",
+          department: raw.departmentInfo || raw.department || "",
+          submissionDate: raw.submissionDate || "",
+          leaveStartDate: raw.leaveStartDate || "",
+          leaveEndDate: raw.leaveEndDate || "",
+          purpose: raw.purposeOfLeave || raw.purpose || "",
+          remarks: raw.remarks || "",
+          status:
+            raw.workflow_status != null && raw.workflow_status !== ""
+              ? leaveWorkflowDisplayLabel(raw.workflow_status)
+              : raw.approved === true
+                ? "Accepted"
+                : raw.approved === false
+                  ? "Rejected"
+                  : "Pending",
+          file_id: raw.file_id || id,
+          academicResponsibilityStatus: raw.academicResponsibility
+            ? (raw.academicResponsibilityStatus || "Pending")
+            : "Accepted",
+          administrativeResponsibilityStatus: raw.addministrativeResponsibiltyAssigned
+            ? (raw.administrativeResponsibilityStatus || "Pending")
+            : "Accepted",
+          applied_leave_days: raw.applied_leave_days,
+          natureOfLeave: raw.natureOfLeave,
+          leave_balance_category: raw.leave_balance_category,
+          leave_type_name: raw.leave_type_name,
+          application_type: raw.application_type || "Online",
+        };
+      })()
     : null;
+
+  const leaveTypesApplied = useMemo(
+    () =>
+      fetchedformData ? buildLeaveTypesAppliedRows(fetchedformData) : [],
+    [fetchedformData],
+  );
+
+  const leaveBalances = useMemo(
+    () => buildAllLeaveBalanceRows(balanceSummary),
+    [balanceSummary],
+  );
 
   useEffect(() => {
     if (admin) {
@@ -66,7 +149,12 @@ function LeaveFormView() {
   // ✅ Refactored PDF download
   const handleDownloadPdf = async () => {
     try {
-      const blob = await downloadLeavePdf(id);
+      const formPk = fetchedformData?.id;
+      if (!formPk) {
+        console.error("Missing leave form id for PDF download.");
+        return;
+      }
+      const blob = await downloadLeavePdf(formPk);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -89,46 +177,6 @@ function LeaveFormView() {
       </>
     );
   }
-
-  // Leave balances table data
-  const leaveBalances = [
-    { type: "Casual Leave", balance: fetchedformData.casualLeaveBalance },
-    {
-      type: "Special Casual Leave",
-      balance: fetchedformData.special_casual_leaveBalance,
-    },
-    { type: "Earned Leave", balance: fetchedformData.earned_leaveBalance },
-    { type: "Half Pay Leave", balance: fetchedformData.half_pay_leaveBalance },
-    {
-      type: "Maternity Leave",
-      balance: fetchedformData.maternity_leaveBalance,
-    },
-    {
-      type: "Child Care Leave",
-      balance: fetchedformData.child_care_leaveBalance,
-    },
-    {
-      type: "Paternity Leave",
-      balance: fetchedformData.paternity_leaveBalance,
-    },
-  ];
-
-  // Leave types applied data
-  const leaveTypesApplied = [
-    { type: "Casual Leave", applied: fetchedformData.casualLeave },
-    { type: "Vacation Leave", applied: fetchedformData.vacationLeave },
-    { type: "Earned Leave", applied: fetchedformData.earnedLeave },
-    { type: "Commuted Leave", applied: fetchedformData.commutedLeave },
-    {
-      type: "Special Casual Leave",
-      applied: fetchedformData.specialCasualLeave,
-    },
-    { type: "Restricted Holiday", applied: fetchedformData.restrictedHoliday },
-    { type: "Half Pay Leave", applied: fetchedformData.halfPayLeave },
-    { type: "Maternity Leave", applied: fetchedformData.maternityLeave },
-    { type: "Child Care Leave", applied: fetchedformData.childCareLeave },
-    { type: "Paternity Leave", applied: fetchedformData.paternityLeave },
-  ];
 
   return (
     <>
@@ -289,6 +337,11 @@ function LeaveFormView() {
               <Title order={5} mb="sm" style={{ textAlign: "center" }}>
                 Leave Types Applied
               </Title>
+              <Text size="xs" c="dimmed" mb="xs">
+                Days shown for the type selected on this form (from{" "}
+                <strong>applied_leave_days</strong> on the server). All other
+                types are 0 for this request.
+              </Text>
               <Table>
                 <thead>
                   <tr style={{ backgroundColor: "#e9ecef" }}>
@@ -354,6 +407,9 @@ function LeaveFormView() {
               <Title order={5} mb="sm" style={{ textAlign: "center" }}>
                 Leave Balances
               </Title>
+              <Text size="xs" c="dimmed" mb="xs">
+                {leaveBalanceDefaultsHint}
+              </Text>
               <Table>
                 <thead>
                   <tr style={{ backgroundColor: "#e9ecef" }}>
@@ -381,9 +437,13 @@ function LeaveFormView() {
                 </thead>
                 <tbody>
                   {leaveBalances.map((leave, index) => {
-                    const balance = parseFloat(leave.balance) || 0;
-                    const isNegative = balance < 0;
-                    const isPositive = balance > 0;
+                    const numeric =
+                      leave.balance === "—"
+                        ? NaN
+                        : parseFloat(String(leave.balance).replace(/,/g, ""));
+                    const balance = Number.isFinite(numeric) ? numeric : NaN;
+                    const isNegative = Number.isFinite(balance) && balance < 0;
+                    const isPositive = Number.isFinite(balance) && balance > 0;
 
                     return (
                       <tr
@@ -419,7 +479,7 @@ function LeaveFormView() {
                               isNegative || isPositive ? "bold" : "normal",
                           }}
                         >
-                          {leave.balance || "0"}
+                          {leave.balance}
                         </td>
                       </tr>
                     );

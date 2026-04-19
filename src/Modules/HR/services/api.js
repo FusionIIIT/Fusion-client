@@ -1,24 +1,76 @@
 // src/Modules/HR/services/hrApi.js
-const getToken = () => localStorage.getItem("authToken");
+/** DRF Token auth (see globals API login — stores key in localStorage). */
+const getToken = () => {
+  try {
+    const raw =
+      localStorage.getItem("authToken") || localStorage.getItem("token");
+    const t = raw != null ? String(raw).trim() : "";
+    return t || null;
+  } catch {
+    return null;
+  }
+};
+
 const authHeaders = () => {
   const token = getToken();
   return token ? { Authorization: `Token ${token}` } : {};
 };
+
+/** Same-origin + session cookie (DRF SessionAuthentication) when deployed behind one host. */
+const fetchCredentials = "include";
+
 const handleResponse = async (response) => {
-  if (!response.ok)
-    throw new Error((await response.text()) || response.statusText);
+  if (!response.ok) {
+    const text = await response.text();
+    try {
+      const body = JSON.parse(text);
+      if (body && typeof body.detail === "string") {
+        throw new Error(body.detail);
+      }
+    } catch (e) {
+      if (e instanceof SyntaxError) {
+        // not JSON; fall through to generic message
+      } else {
+        throw e;
+      }
+    }
+    throw new Error(text || response.statusText);
+  }
   return response.json();
 };
 
-const normalizeInboxRow = (item) => ({
-  id: item.id || item.file_id,
-  user: item.sent_by_user || item.uploader_name || item.user || item.name,
-  name: item.sent_by_user || item.uploader_name || item.user || item.name,
-  designation:
-    item.sent_by_designation || item.designation_name || item.designation,
-  date: item.upload_date || item.date || item.submissionDate,
-  submissionDate: item.upload_date || item.date || item.submissionDate,
-});
+/** Human-readable status for HR leave workflow (matches ``hr2.workflow.leave_wf``). */
+export const leaveWorkflowDisplayLabel = (wf) => {
+  const key = (wf || "").toString().trim().toLowerCase();
+  const map = {
+    submitted: "Submitted",
+    hod_approved: "HOD approved (pending HR)",
+    hod_rejected: "Rejected by HOD",
+    hr_approved: "Approved by HR",
+    hr_rejected: "Rejected by HR",
+  };
+  return map[key] || wf || "Pending";
+};
+
+const normalizeInboxRow = (item) => {
+  const extra = item.file_extra_JSON || {};
+  const isLeave = extra.type === "Leave" || extra.type === "leave";
+  const wfRaw = extra.workflow_status || item.workflow_status || item.status;
+  const status = isLeave ? leaveWorkflowDisplayLabel(wfRaw) : wfRaw || item.status || "Pending";
+  return {
+    ...item,
+    ...extra,
+    id: item.id || item.file_id,
+    user: item.sent_by_user || item.uploader_name || item.user || item.name,
+    name: item.sent_by_user || item.uploader_name || item.user || item.name,
+    designation:
+      item.sent_by_designation || item.designation_name || item.designation,
+    date: item.upload_date || item.date || item.submissionDate,
+    submissionDate: item.upload_date || item.date || item.submissionDate,
+    status,
+    workflow_status: wfRaw,
+  };
+};
 
 export const getCpdaAdvRequests = async () => {
   const resp = await fetch("/api/hr/cpda_adv/requests", {
@@ -139,16 +191,28 @@ export const handleLtcWorkflow = async (fileId, body) => {
   return handleResponse(resp);
 };
 
-export const getLeaveRequests = async () => {
-  const resp = await fetch("/api/hr/leave/requests", {
-    headers: authHeaders(),
-  });
-  const data = await handleResponse(resp);
-  return (data.leave_requests ?? []).map(normalizeInboxRow);
+export const getLeaveRequests = async (fromDate) => {
+  let url = "/api/hr/leave/my-requests";
+  if (fromDate) {
+    url += `?from_date=${encodeURIComponent(fromDate)}`;
+  }
+  const resp = await fetch(url, { headers: authHeaders() });
+  const rows = await handleResponse(resp);
+  const list = Array.isArray(rows) ? rows : [];
+  return list.map((row) => ({
+    ...row,
+    submissionDate: row.submissionDate || "",
+    status: leaveWorkflowDisplayLabel(row.workflow_status),
+    workflow_status: row.workflow_status,
+  }));
 };
 
-export const getLeaveInbox = async () => {
-  const resp = await fetch("/api/hr/leave/inbox", { headers: authHeaders() });
+export const getLeaveInbox = async (fromDate) => {
+  let url = "/api/hr/leave/inbox";
+  if (fromDate) {
+    url += `?from_date=${encodeURIComponent(fromDate)}`;
+  }
+  const resp = await fetch(url, { headers: authHeaders() });
   const data = await handleResponse(resp);
   return (data.leave_inbox ?? []).map(normalizeInboxRow);
 };
@@ -163,8 +227,13 @@ export const getLeaveTrack = async (id) => {
   const resp = await fetch(`/api/hr/leave/track/${id}`, {
     headers: authHeaders(),
   });
+  return handleResponse(resp);
+};
+
+export const getLeaveTypesForHr = async () => {
+  const resp = await fetch("/api/hr/leave/types", { headers: authHeaders() });
   const data = await handleResponse(resp);
-  return data.file_history ?? [];
+  return data.leave_types ?? [];
 };
 
 export const createLeaveForm = async (data) => {
@@ -194,14 +263,22 @@ export const createLtcForm = async (formDataArray) => {
 export const getFormInitials = async () => {
   const resp = await fetch("/hr2/leave/form-initials/", {
     headers: authHeaders(),
+    credentials: fetchCredentials,
   });
   return handleResponse(resp);
 };
 
 export const submitLeaveForm = async (formData) => {
+  const headers = authHeaders();
+  if (!headers.Authorization) {
+    throw new Error(
+      "You are not signed in (no API token). Open the Fusion login page, sign in, then try again."
+    );
+  }
   const resp = await fetch("/api/hr/leave/submit", {
     method: "POST",
-    headers: authHeaders(),
+    headers,
+    credentials: fetchCredentials,
     body: formData,
   });
   return handleResponse(resp);
@@ -214,8 +291,9 @@ export const getLeaveFormById = async (id) => {
   return handleResponse(resp);
 };
 
-export const downloadLeavePdf = async (id) => {
-  const resp = await fetch(`/hr2/leave/pdf/${id}/`, {
+/** @param formPk Primary key of ``LeaveForm`` (not file-tracking id). */
+export const downloadLeavePdf = async (formPk) => {
+  const resp = await fetch(`/hr2/leave/pdf/${formPk}/`, {
     headers: authHeaders(),
   });
   if (!resp.ok) {
@@ -275,6 +353,19 @@ export const handleLeaveResponsibility = async (id, action, type) => {
 export const getLeaveBalance = async () => {
   const resp = await fetch("/hr2/leave/balance/", {
     headers: authHeaders(),
+    credentials: fetchCredentials,
+  });
+  return handleResponse(resp);
+};
+
+/** Applicant’s HR2 balances (same payload as ``getLeaveBalance``). Uses ``?name=`` for another user (e.g. HOD viewing a file). */
+export const getLeaveBalanceForUser = async (username) => {
+  const q = username
+    ? `?name=${encodeURIComponent(username)}`
+    : "";
+  const resp = await fetch(`/hr2/leave/balance/${q}`, {
+    headers: authHeaders(),
+    credentials: fetchCredentials,
   });
   return handleResponse(resp);
 };

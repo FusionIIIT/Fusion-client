@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Title, Select, TextInput, Badge } from "@mantine/core";
+import { Title, Select, TextInput, Badge, Button, Group } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
-import { Eye } from "@phosphor-icons/react";
+import { Eye, Footprints } from "@phosphor-icons/react";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import { EmptyTable } from "../../components/tables/EmptyTable";
 import useFetchData from "../../hooks/useFetchData";
@@ -49,58 +49,56 @@ function LeaveInbox() {
   }
 
   // ✅ Transform + combine data
-  // ✅ Transform + combine data
   useEffect(() => {
     if (!data) return;
 
+    // data is already a flat array from getLeaveInbox (normalizeInboxRow applied)
+    const leaveItems = Array.isArray(data) ? data : (data.leave_inbox || []);
+
     const combinedData = [
-      ...(data.leave_inbox || []).map((item) => ({
+      ...leaveItems.map((item) => ({
         ...item,
         type: "Leave Request",
-        date: item.upload_date?.split("T")[0],
-      })),
-      ...(data.academic_res_inbox || []).map((item) => ({
-        ...item,
-        type: "Academic Responsibility",
-        date: item.submissionDate,
-      })),
-      ...(data.administrative_res_inbox || []).map((item) => ({
-        ...item,
-        type: "Administrative Responsibility",
-        date: item.submissionDate,
+        date: item.upload_date?.split("T")[0] || item.date,
       })),
     ].sort((a, b) => new Date(b.date) - new Date(a.date));
 
     setInboxData(combinedData);
     applyFilters(selectedStatus, selectedType, fromDate, combinedData);
-  }, [data]);
+  }, [data, fromDate, selectedStatus, selectedType]);
 
   // ✅ Navigation handlers
   const handleLeaveClick = (item) => {
     switch (item.type) {
       case "Academic Responsibility":
-        navigate(`./handle_responsibility/${item.id}?query=academic`);
+        navigate(`/hr/leave/handle_responsibility/${item.id}?query=academic`);
         break;
       case "Administrative Responsibility":
-        navigate(`./handle_responsibility/${item.id}?query=administrative`);
+        navigate(`/hr/leave/handle_responsibility/${item.id}?query=administrative`);
         break;
       default:
-        navigate(`./file_handler/${item.src_object_id}`);
+        navigate(`/hr/leave/file_handler/${item.id}`);
     }
+  };
+
+  const handleTrackInbox = (e, fileId) => {
+    e.stopPropagation();
+    navigate(`/hr/FormView/leaveform_track/${fileId}`);
   };
 
   // ✅ UI helpers
   const getStatusBadge = (status) => {
-    switch (status) {
-      case "Pending":
-        return <Badge color="yellow">Pending</Badge>;
-      case "Accepted":
-        return <Badge color="green">Accepted</Badge>;
-      case "Rejected":
-        return <Badge color="red">Rejected</Badge>;
-      default:
-        return <Badge color="gray">Unknown</Badge>;
+    const s = (status || "").toString();
+    if (s.includes("Rejected")) {
+      return <Badge color="red">{s}</Badge>;
     }
+    if (s.includes("Approved by HR") || s === "Accepted") {
+      return <Badge color="green">{s}</Badge>;
+    }
+    if (s.includes("Submitted") || s.includes("pending HR")) {
+      return <Badge color="yellow">{s}</Badge>;
+    }
+    return <Badge color="gray">{s || "Unknown"}</Badge>;
   };
 
   const getTypeColor = (type) => {
@@ -140,7 +138,7 @@ function LeaveInbox() {
     "Name",
     "Designation",
     "Status",
-    "View",
+    "Actions",
   ];
 
   return (
@@ -162,7 +160,14 @@ function LeaveInbox() {
           label="Status"
           value={selectedStatus}
           onChange={handleStatusFilterChange}
-          data={["All", "Pending", "Accepted", "Rejected"]}
+          data={[
+            "All",
+            "Submitted",
+            "HOD approved (pending HR)",
+            "Rejected by HOD",
+            "Approved by HR",
+            "Rejected by HR",
+          ]}
         />
 
         <Select
@@ -200,7 +205,7 @@ function LeaveInbox() {
 
             <tbody>
               {filteredData.map((item, i) => (
-                <tr key={i} onClick={() => handleLeaveClick(item)}>
+                <tr key={i}>
                   <td style={{ color: getTypeColor(item.type) }}>
                     {item.type}
                   </td>
@@ -209,8 +214,28 @@ function LeaveInbox() {
                   <td>{item.name || item.sent_by_user}</td>
                   <td>{item.designation || item.sent_by_designation}</td>
                   <td>{getStatusBadge(item.status)}</td>
-                  <td>
-                    <Eye size={20} /> View
+                  <td onClick={(e) => e.stopPropagation()}>
+                    <Group spacing="xs" noWrap>
+                      <Button
+                        variant="subtle"
+                        size="xs"
+                        leftIcon={<Eye size={16} />}
+                        onClick={() => handleLeaveClick(item)}
+                      >
+                        Open
+                      </Button>
+                      {item.type === "Leave Request" && (
+                        <Button
+                          variant="subtle"
+                          size="xs"
+                          color="teal"
+                          leftIcon={<Footprints size={16} />}
+                          onClick={(e) => handleTrackInbox(e, item.id)}
+                        >
+                          Track
+                        </Button>
+                      )}
+                    </Group>
                   </td>
                 </tr>
               ))}
