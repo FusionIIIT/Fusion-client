@@ -29,6 +29,7 @@ export const AcadAdmin_Update_Assistantship_Status = `${host}/otheracademic/api/
 export const TA_Supervisor_assistantship_update = `${host}/otheracademic/api/TA-supervisor-assistantship-update/`;
 export const Ths_Supervisor_assistantship_update = `${host}/otheracademic/api/Ths-supervisor-assistantship-update/`;
 export const Get_Assistantship_Status = `${host}/otheracademic/api/get_assistantship_status/`;
+export const Withdraw_Assistantship = `${host}/otheracademic/api/withdraw-assistantship/`;
 export const TA_supervisor_pending_requests = `${host}/otheracademic/api/TA-supervisor-pending-requests/`;
 export const Ths_supervisor_pending_requests = `${host}/otheracademic/api/Ths-supervisor-pending-requests/`;
 export const Director_fetch = `${host}/otheracademic/api/director-pending-requests/`;

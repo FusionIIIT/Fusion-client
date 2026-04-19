@@ -32,7 +32,7 @@ function AssistantshipCombined() {
         </Button>
       </div>
 
-      {tab === 0 ? <AssistantshipForm /> : <AssistantshipStatus />}
+      {tab === 0 ? <AssistantshipForm setTab={setTab} /> : <AssistantshipStatus />}
     </>
   );
 }
