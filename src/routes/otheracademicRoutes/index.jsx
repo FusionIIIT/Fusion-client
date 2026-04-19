@@ -36,6 +36,10 @@ export const Director_fetch = `${host}/otheracademic/api/director-pending-reques
 export const Director_Update = `${host}/otheracademic/api/director-update-status/`;
 export const Dean_fetch = `${host}/otheracademic/api/dean-pending-requests/`;
 export const Dean_Update = `${host}/otheracademic/api/dean-update-status/`;
+export const TA_Assignment_Options = `${host}/otheracademic/api/ta-assignment-options/`;
+export const TA_Assignment_Update = `${host}/otheracademic/api/ta-assignment-update/`;
+export const Faculty_Supervisor_Assignment_Options = `${host}/otheracademic/api/faculty-supervisor-assignment-options/`;
+export const Faculty_Supervisor_Assignment_Update = `${host}/otheracademic/api/faculty-supervisor-assignment-update/`;
 // No-Dues Routes
 export const NoDues_Initiate = `${host}/otheracademic/api/no-dues-initiate/`;
 export const NoDues_Status = `${host}/otheracademic/api/no-dues-status/`;

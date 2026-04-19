@@ -77,7 +77,8 @@ function AssistantshipStatus() {
               <th>Date Applied</th>
               <th>Faculty Supervisor</th>
               <th>Department Admin</th>
-              <th>Disbursement</th>
+              <th>HOD</th>
+              <th>Acad Admin Audit</th>
               <th>Status</th>
               <th>Action</th>
             </tr>
@@ -88,7 +89,8 @@ function AssistantshipStatus() {
                 <td>{item.dateApplied || "N/A"}</td>
                 <td>{item.approvalStages.Faculty_Supervisor}</td>
                 <td>{item.approvalStages.Department_Admin}</td>
-                <td>{item.approvalStages.Stipend_Disbursement}</td>
+                <td>{item.approvalStages.HOD}</td>
+                <td>{item.approvalStages.Acad_Admin_Audit}</td>
                 <td className={`status-${item.status.toLowerCase()}`}>
                   {item.status}
                 </td>

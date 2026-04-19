@@ -22,6 +22,8 @@ import HoDPage from "./Assistantship/Admins/Hod";
 import LeavePGCombined from "./Leave/LeavePGcombined";
 import ThesisSupervisor from "./Assistantship/Admins/ThesisSupervisor";
 import TAsupervisor from "./Assistantship/Admins/TAsupervisor";
+import TAAssignment from "./Assistantship/Admins/TAAssignment";
+import FacultySupervisorAssignment from "./Assistantship/Admins/FacultySupervisorAssignment";
 
 function OtherAcadProcedures() {
   const tabsListRef = useRef(null);
@@ -45,8 +47,8 @@ function OtherAcadProcedures() {
     { title: "Leave Thesis", component: <ApproveLeaveThesis /> }, // 9
 
     { title: "Assistant Request Director", component: <Director /> }, // 10
-    { title: "Assistant Request Dean ", component: <DeanPage /> }, // 11
-    { title: "Assistant Request HOD ", component: <HoDPage /> }, // 12
+    { title: "Assistant Request HOD ", component: <DeanPage /> }, // 11
+    { title: "Assistant Request Dept Admin ", component: <HoDPage /> }, // 12
     { title: "Assistant Request Acadadmin ", component: <AcadAdminPage /> }, // 13
     { title: "Leave PG", component: <LeavePGCombined /> }, // 14
     {
@@ -54,6 +56,11 @@ function OtherAcadProcedures() {
       component: <ThesisSupervisor />,
     }, // 15
     { title: "Assistant Request TASupervisor", component: <TAsupervisor /> }, // 16
+    { title: "TA Assignment", component: <TAAssignment /> }, // 17
+    {
+      title: "Faculty Supervisor Assignment",
+      component: <FacultySupervisorAssignment />,
+    }, // 18
   ];
 
   const normalizeRole = (value) =>
@@ -95,12 +102,16 @@ function OtherAcadProcedures() {
       [3, 4, 7, 13].includes(index),
     );
   } else if (role === "faculty_supervisor") {
+    filteredTabItems = allTabItems.filter((_, index) => [16].includes(index));
+  } else if (role === "thesis_supervisor") {
     filteredTabItems = allTabItems.filter((_, index) => [15].includes(index));
   } else if (role === "dept_admin") {
-    filteredTabItems = allTabItems.filter((_, index) => [11].includes(index));
+    filteredTabItems = allTabItems.filter((_, index) =>
+      [12, 17, 18].includes(index),
+    );
   } else if (role.startsWith("HOD")) {
     filteredTabItems = allTabItems.filter((_, index) =>
-      [6, 12].includes(index),
+      [6, 11].includes(index),
     );
   } else if (canVerifyNoDues) {
     // For professors and others who can verify no dues

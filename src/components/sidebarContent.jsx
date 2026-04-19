@@ -53,6 +53,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
     "mess_incharge",
     "lab_supervisor",
     "hostel_warden",
+    "dept_admin",
   ];
 
   const Modules = [
