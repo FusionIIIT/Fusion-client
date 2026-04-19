@@ -2,21 +2,20 @@ import React, { useState } from "react";
 import axios from "axios";
 import { Assistantship_Form_Submit } from "../../../../routes/otheracademicRoutes";
 
-export default function AssistantshipForm() {
+export default function AssistantshipForm({ setTab }) {
   const [formData, setFormData] = useState({
-    student_name: "John Doe",
-    roll_no: "1234567",
     discipline: "",
     date_from: "",
     date_to: "",
     bank_account_no: "",
     signature: null,
     applicability: "",
-    ta_supervisor: "",
+    ta_supervisor: "23BCS228",
     thesis_supervisor: "",
     date_applied: new Date().toISOString().split("T")[0], // Default to today's date
     hod: "",
   });
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -40,8 +39,6 @@ export default function AssistantshipForm() {
       "signature",
       "applicability",
       "ta_supervisor",
-      "thesis_supervisor",
-      "hod",
     ];
     for (const field of requiredFields) {
       if (!formData[field]) {
@@ -63,15 +60,24 @@ export default function AssistantshipForm() {
     }
 
     try {
+      setSubmitting(true);
       const response = await axios.post(Assistantship_Form_Submit, form, {
         headers: {
           Authorization: `Token ${authToken}`,
         },
       });
       alert(response.data.message || "Form submitted successfully!");
+      if (typeof setTab === "function") {
+        setTab(1);
+      }
     } catch (error) {
       console.error(error);
-      alert("Error submitting the form. Please try again.");
+      const errorMessage =
+        error?.response?.data?.error ||
+        "Error submitting the form. Please try again.";
+      alert(errorMessage);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -213,52 +219,11 @@ export default function AssistantshipForm() {
         />
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "20px",
-        }}
-      >
-        <input
-          type="text"
-          name="ta_supervisor"
-          placeholder="TA Supervisor"
-          value={formData.ta_supervisor}
-          onChange={handleChange}
-          required
-          style={{
-            backgroundColor: "#eff3f4",
-            border: "none",
-            padding: "10px",
-            fontSize: "16px",
-            borderRadius: "5px",
-            color: "#0f1010",
-          }}
-        />
-        <input
-          type="text"
-          name="thesis_supervisor"
-          placeholder="Thesis Supervisor"
-          value={formData.thesis_supervisor}
-          onChange={handleChange}
-          required
-          style={{
-            backgroundColor: "#eff3f4",
-            border: "none",
-            padding: "10px",
-            fontSize: "16px",
-            borderRadius: "5px",
-            color: "#0f1010",
-          }}
-        />
-      </div>
-
       <input
         type="text"
-        name="hod"
-        placeholder="HOD"
-        value={formData.hod}
+        name="ta_supervisor"
+        placeholder="Faculty Supervisor"
+        value={formData.ta_supervisor}
         onChange={handleChange}
         required
         style={{
@@ -286,10 +251,11 @@ export default function AssistantshipForm() {
           display: "block",
           width: "fit-content",
         }}
+        disabled={submitting}
         onMouseOver={(e) => (e.target.style.backgroundColor = "#0056b3")}
         onMouseOut={(e) => (e.target.style.backgroundColor = "#007BFF")}
       >
-        Submit
+        {submitting ? "Submitting..." : "Submit"}
       </button>
     </form>
   );

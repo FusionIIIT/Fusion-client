@@ -72,6 +72,10 @@ function OtherAcadProcedures() {
     filteredTabItems = allTabItems.filter((_, index) =>
       [3, 6, 12].includes(index),
     );
+  } else if (role === "faculty_supervisor") {
+    filteredTabItems = allTabItems.filter((_, index) => [15].includes(index));
+  } else if (role === "dept_admin") {
+    filteredTabItems = allTabItems.filter((_, index) => [11].includes(index));
   } else if (role.startsWith("HOD")) {
     filteredTabItems = allTabItems.filter((_, index) =>
       [5, 11].includes(index),
