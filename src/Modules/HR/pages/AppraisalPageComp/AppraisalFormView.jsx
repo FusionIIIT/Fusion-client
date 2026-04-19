@@ -21,8 +21,11 @@ import {
 
 const STATUS_LABELS = {
   submitted: "Submitted — awaiting HR Admin",
-  hr_approved: "Approved by HR",
-  hr_rejected: "Rejected by HR",
+  forwarded_to_reviewer: "Assigned to Reviewer",
+  reviewer_approved: "Approved by Reviewer",
+  reviewer_rejected: "Rejected by Reviewer",
+  hr_approved: "Approved by HR Admin",
+  hr_rejected: "Rejected by HR Admin",
 };
 
 function pickAppraisalWorkflowDesignation(workflowStatus, designations) {
@@ -34,6 +37,10 @@ function pickAppraisalWorkflowDesignation(workflowStatus, designations) {
   if (workflowStatus === "submitted") {
     const hr = list.find((x) => /hr\s*admin/i.test(x));
     if (hr) return hr;
+  }
+  if (workflowStatus === "forwarded_to_reviewer") {
+    const reviewer = list.find((x) => /hod|director/i.test(x));
+    if (reviewer) return reviewer;
   }
   return list[0] || "";
 }
@@ -90,36 +97,72 @@ function AppraisalFormView() {
     const d = workflowDesignation;
     const w = workflowStatus;
     const out = [];
-    if (/hr\s*admin/i.test(d || "") && w === "submitted") {
+
+    const isHrAdmin = /hr\s*admin/i.test(d || "");
+
+    if (isHrAdmin && w === "submitted") {
       out.push(
         {
-          key: "hr_admin_approve",
-          label: "Approve",
-          action: "hr_admin_approve",
+          key: "assign_reviewer",
+          label: "Assign Reviewer",
+          action: "assign_reviewer",
+          requireReviewer: true,
         },
         {
           key: "hr_admin_reject",
-          label: "Reject",
+          label: "Reject (as Admin)",
           action: "hr_admin_reject",
+        },
+      );
+    } else if (w === "forwarded_to_reviewer") {
+      out.push(
+        {
+          key: "reviewer_approve",
+          label: "Approve (as Reviewer)",
+          action: "reviewer_approve",
+        },
+        {
+          key: "reviewer_reject",
+          label: "Reject (as Reviewer)",
+          action: "reviewer_reject",
         },
       );
     }
     return out;
   }, [workflowDesignation, workflowStatus]);
 
-  const runAction = async (action) => {
-    if (action === "hr_admin_reject" && !remarks.trim()) {
+  const [reviewerUsername, setReviewerUsername] = useState("");
+  const [reviewerDesignation, setReviewerDesignation] = useState("");
+
+  const runAction = async (actionItem) => {
+    const { action, requireReviewer } = actionItem;
+
+    if (action.includes("reject") && !remarks.trim()) {
       alert("Remarks are required when rejecting.");
       return;
     }
+
+    const payload = {
+      action,
+      designation: workflowDesignation,
+      remarks: remarks.trim(),
+    };
+
+    if (requireReviewer) {
+      if (!reviewerUsername.trim() || !reviewerDesignation.trim()) {
+        alert("Reviewer username and designation are required.");
+        return;
+      }
+      payload.reviewer_username = reviewerUsername.trim();
+      payload.reviewer_designation = reviewerDesignation.trim();
+    }
+
     setSubmitting(true);
     try {
-      await handleAppraisalWorkflow(fileId, {
-        action,
-        designation: workflowDesignation,
-        remarks: remarks.trim(),
-      });
+      await handleAppraisalWorkflow(fileId, payload);
       setRemarks("");
+      setReviewerUsername("");
+      setReviewerDesignation("");
       await load();
       alert("Action completed.");
     } catch (err) {
@@ -176,13 +219,33 @@ function AppraisalFormView() {
             value={remarks}
             onChange={(e) => setRemarks(e.target.value)}
           />
+
+          {actions.some((a) => a.requireReviewer) && (
+            <Group grow>
+              <Textarea
+                label="Reviewer Username"
+                placeholder="Exact username (e.g. hod_cse)"
+                minRows={1}
+                value={reviewerUsername}
+                onChange={(e) => setReviewerUsername(e.target.value)}
+              />
+              <Textarea
+                label="Reviewer Designation"
+                placeholder="Exact designation (e.g. HOD (CSE))"
+                minRows={1}
+                value={reviewerDesignation}
+                onChange={(e) => setReviewerDesignation(e.target.value)}
+              />
+            </Group>
+          )}
+
           <Group>
             {actions.map((a) => (
               <Button
                 key={a.key}
                 loading={submitting}
-                onClick={() => runAction(a.action)}
-                color={a.action === "hr_admin_reject" ? "red" : "blue"}
+                onClick={() => runAction(a)}
+                color={a.action.includes("reject") ? "red" : "blue"}
               >
                 {a.label}
               </Button>

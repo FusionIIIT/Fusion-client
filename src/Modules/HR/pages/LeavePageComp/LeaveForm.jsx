@@ -150,7 +150,11 @@ function LeaveForm() {
 
     try {
       await submitLeaveForm(finalFormData);
-      alert("Leave application submitted. It is sent to your HOD for approval.");
+      const isDirector = details.last_selected_role?.toLowerCase() === "director";
+      const successMsg = isDirector
+        ? "Leave application submitted. It is sent for self-sanction."
+        : "Leave application submitted. It is sent to your HOD for approval.";
+      alert(successMsg);
       navigate("/hr/leave/leaverequests");
     } catch (err) {
       const msg =
