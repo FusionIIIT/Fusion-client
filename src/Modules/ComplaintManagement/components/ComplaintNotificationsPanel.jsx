@@ -241,6 +241,9 @@ export default function ComplaintNotificationsPanel({ role }) {
               Notifications are now managed inside Complaint Management so they
               stay in the same Fusion workflow.
             </Text>
+            <Text className={classes.statusNote}>
+              Prioritize unread alerts and open routes directly from this queue.
+            </Text>
           </div>
           <Group gap="xs">
             <Button
@@ -287,7 +290,10 @@ export default function ComplaintNotificationsPanel({ role }) {
       </Paper>
 
       {displayed.length === 0 ? (
-        <Paper className={classes.notificationEmpty} withBorder>
+        <Paper
+          className={`${classes.notificationEmpty} ${classes.moduleCard}`}
+          withBorder
+        >
           <Stack align="center" py="xl" gap="xs">
             <BellSlash size={28} color="#7f8ea5" />
             <Text fw={700}>No notifications in this view</Text>
@@ -311,8 +317,8 @@ export default function ComplaintNotificationsPanel({ role }) {
                 withBorder
                 className={
                   item.unread
-                    ? classes.notificationCardUnread
-                    : classes.notificationCardRead
+                    ? `${classes.notificationCardUnread} ${classes.moduleCard}`
+                    : `${classes.notificationCardRead} ${classes.moduleCard}`
                 }
               >
                 <Stack gap="sm">

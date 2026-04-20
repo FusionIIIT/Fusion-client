@@ -309,6 +309,10 @@ export default function ComplaintMasterDataPanel({ normalizedRole }) {
               Manage workers, caretakers, and supervisors using complaint API
               CRUD endpoints.
             </Text>
+            <Text className={classes.statusNote}>
+              Changes here impact assignment and escalation workflows across the
+              module.
+            </Text>
           </div>
           <Group gap="xs">
             <Button
@@ -325,7 +329,7 @@ export default function ComplaintMasterDataPanel({ normalizedRole }) {
         </Group>
       </Paper>
 
-      <Paper withBorder p="md">
+      <Paper withBorder p="md" className={classes.moduleCard}>
         <Tabs
           value={activeEntity}
           onChange={(value) => setActiveEntity(value || "workers")}

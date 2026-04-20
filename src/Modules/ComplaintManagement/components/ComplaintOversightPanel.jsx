@@ -248,6 +248,9 @@ export default function ComplaintOversightPanel({
               Track overdue, escalated, stalled, and unassigned complaints, then
               take bulk action when a queue needs intervention.
             </Text>
+            <Text className={classes.statusNote}>
+              Use filters and bulk actions to clear high-risk queues faster.
+            </Text>
           </div>
           <Group gap="xs">
             <Button
@@ -336,9 +339,19 @@ export default function ComplaintOversightPanel({
         </Group>
       </Paper>
 
-      <Paper className={classes.tablePanel} withBorder>
-        <ScrollArea>
-          <Table striped highlightOnHover withTableBorder withColumnBorders>
+      <Paper
+        className={`${classes.tablePanel} ${classes.moduleCard}`}
+        withBorder
+      >
+        <ScrollArea className={classes.tableSurface}>
+          <Table
+            striped
+            highlightOnHover
+            withTableBorder
+            withColumnBorders
+            className={classes.tableClean}
+            verticalSpacing="sm"
+          >
             <Table.Thead>
               <Table.Tr>
                 <Table.Th>
@@ -386,14 +399,25 @@ export default function ComplaintOversightPanel({
                     />
                   </Table.Td>
                   <Table.Td>
-                    {complaint.complaint_ref || `#${complaint.id}`}
+                    <Text className={classes.monoRef}>
+                      {complaint.complaint_ref || `#${complaint.id}`}
+                    </Text>
                   </Table.Td>
-                  <Table.Td>{complaint.complaint_type}</Table.Td>
-                  <Table.Td>{complaint.location}</Table.Td>
+                  <Table.Td>
+                    <Text className={classes.cellClamp}>
+                      {complaint.complaint_type}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text className={classes.cellClamp}>
+                      {complaint.location}
+                    </Text>
+                  </Table.Td>
                   <Table.Td>
                     <Badge
                       variant="light"
                       color={isEscalated(complaint) ? "orange" : "blue"}
+                      className={classes.statusBadge}
                     >
                       {STATUS_LABELS.get(Number(complaint.status)) ||
                         complaint.status}
@@ -403,14 +427,21 @@ export default function ComplaintOversightPanel({
                     <Badge
                       variant="light"
                       color={isOverdue(complaint) ? "red" : "green"}
+                      className={classes.statusBadge}
                     >
                       {isOverdue(complaint) ? "Overdue" : "Within SLA"}
                     </Badge>
                   </Table.Td>
                   <Table.Td>
-                    {complaint.assigned_to_name || complaint.worker_id || "-"}
+                    <Text className={classes.cellClamp}>
+                      {complaint.assigned_to_name || complaint.worker_id || "-"}
+                    </Text>
                   </Table.Td>
-                  <Table.Td>{complaint.details}</Table.Td>
+                  <Table.Td>
+                    <Text className={classes.cellClamp}>
+                      {complaint.details}
+                    </Text>
+                  </Table.Td>
                   <Table.Td>
                     <Button
                       size="xs"

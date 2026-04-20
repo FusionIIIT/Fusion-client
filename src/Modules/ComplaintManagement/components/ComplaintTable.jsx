@@ -8,6 +8,7 @@ import {
   Table,
   Text,
 } from "@mantine/core";
+import classes from "../ComplaintManagement.module.css";
 
 const STATUS_LABELS = new Map([
   [0, "Pending"],
@@ -28,9 +29,16 @@ export default function ComplaintTable({
   readOnly = false,
 }) {
   return (
-    <Paper p="md" withBorder radius="md">
-      <ScrollArea>
-        <Table striped highlightOnHover withTableBorder withColumnBorders>
+    <Paper p="md" withBorder radius="md" className={classes.moduleCard}>
+      <ScrollArea className={classes.tableSurface}>
+        <Table
+          striped
+          highlightOnHover
+          withTableBorder
+          withColumnBorders
+          className={classes.tableClean}
+          verticalSpacing="sm"
+        >
           <Table.Thead>
             <Table.Tr>
               <Table.Th>ID</Table.Th>
@@ -59,32 +67,60 @@ export default function ComplaintTable({
             {complaints.map((item) => (
               <Table.Tr key={item.id}>
                 <Table.Td>{item.id}</Table.Td>
-                <Table.Td>{item.complaint_ref || "-"}</Table.Td>
-                <Table.Td>{item.complaint_type}</Table.Td>
                 <Table.Td>
-                  <Badge variant="light">{item.priority || "Standard"}</Badge>
-                </Table.Td>
-                <Table.Td>{item.location}</Table.Td>
-                <Table.Td>
-                  {item.is_draft
-                    ? "Draft"
-                    : item.status_label ||
-                      STATUS_LABELS.get(Number(item.status)) ||
-                      item.status}
+                  <Text className={classes.monoRef}>
+                    {item.complaint_ref || "-"}
+                  </Text>
                 </Table.Td>
                 <Table.Td>
-                  {item.sla_deadline
-                    ? new Date(item.sla_deadline).toLocaleString()
-                    : "-"}
+                  <Text className={classes.cellClamp}>
+                    {item.complaint_type || "-"}
+                  </Text>
                 </Table.Td>
                 <Table.Td>
-                  {item.assigned_to_name ||
-                    item.assigned_to ||
-                    item.worker_id ||
-                    "-"}
+                  <Badge variant="light" className={classes.statusBadge}>
+                    {item.priority || "Standard"}
+                  </Badge>
                 </Table.Td>
-                <Table.Td>{item.remarks || "-"}</Table.Td>
-                <Table.Td>{item.details}</Table.Td>
+                <Table.Td>
+                  <Text className={classes.cellClamp}>
+                    {item.location || "-"}
+                  </Text>
+                </Table.Td>
+                <Table.Td>
+                  <Badge variant="light" className={classes.statusBadge}>
+                    {item.is_draft
+                      ? "Draft"
+                      : item.status_label ||
+                        STATUS_LABELS.get(Number(item.status)) ||
+                        item.status}
+                  </Badge>
+                </Table.Td>
+                <Table.Td>
+                  <Text className={classes.cellClamp}>
+                    {item.sla_deadline
+                      ? new Date(item.sla_deadline).toLocaleString()
+                      : "-"}
+                  </Text>
+                </Table.Td>
+                <Table.Td>
+                  <Text className={classes.cellClamp}>
+                    {item.assigned_to_name ||
+                      item.assigned_to ||
+                      item.worker_id ||
+                      "-"}
+                  </Text>
+                </Table.Td>
+                <Table.Td>
+                  <Text className={classes.cellClamp}>
+                    {item.remarks || "-"}
+                  </Text>
+                </Table.Td>
+                <Table.Td>
+                  <Text className={classes.cellClamp}>
+                    {item.details || "-"}
+                  </Text>
+                </Table.Td>
                 <Table.Td>
                   <Group gap="xs" wrap="nowrap">
                     <Button

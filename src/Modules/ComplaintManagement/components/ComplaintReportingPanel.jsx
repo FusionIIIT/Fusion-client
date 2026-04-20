@@ -64,7 +64,11 @@ const getApiErrorMessage = (error) => {
   return error?.message || "Failed to generate report";
 };
 
-export default function ComplaintReportingPanel({ complaints, onView }) {
+export default function ComplaintReportingPanel({
+  complaints,
+  onView,
+  normalizedRole = "",
+}) {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [category, setCategory] = useState("all");
@@ -235,10 +239,19 @@ export default function ComplaintReportingPanel({ complaints, onView }) {
 
     setIsGenerating(true);
     try {
+      let enforcedCategory = category === "all" ? "" : category;
+      if (
+        category === "all" &&
+        normalizedRole.includes("supervisor") &&
+        complaints.length > 0
+      ) {
+        enforcedCategory = complaints[0].complaint_type;
+      }
+
       const payload = {
         date_from: dateFrom,
         date_to: dateTo,
-        category: category === "all" ? "" : category,
+        category: enforcedCategory,
         location: location === "all" ? "" : location,
       };
       const response = await fetchComplaintAnalyticsReport(payload);
@@ -340,6 +353,10 @@ export default function ComplaintReportingPanel({ complaints, onView }) {
               Filter complaints by date, category, and location, then export the
               current view for review or sharing.
             </Text>
+            <Text className={classes.statusNote}>
+              Generate fresh analytics first, then export in your preferred
+              format.
+            </Text>
           </div>
           <Group gap="xs">
             <Button
@@ -374,7 +391,10 @@ export default function ComplaintReportingPanel({ complaints, onView }) {
       </Paper>
 
       <Group grow align="stretch">
-        <Card withBorder className={classes.summaryCard}>
+        <Card
+          withBorder
+          className={`${classes.summaryCard} ${classes.moduleCard}`}
+        >
           <Text size="xs" c="dimmed">
             Matching Complaints
           </Text>
@@ -382,7 +402,10 @@ export default function ComplaintReportingPanel({ complaints, onView }) {
             {stats.total}
           </Text>
         </Card>
-        <Card withBorder className={classes.summaryCard}>
+        <Card
+          withBorder
+          className={`${classes.summaryCard} ${classes.moduleCard}`}
+        >
           <Text size="xs" c="dimmed">
             Avg Resolution (hrs)
           </Text>
@@ -390,7 +413,10 @@ export default function ComplaintReportingPanel({ complaints, onView }) {
             {reportData.kpis?.avg_resolution_time_hours ?? 0}
           </Text>
         </Card>
-        <Card withBorder className={classes.summaryCard}>
+        <Card
+          withBorder
+          className={`${classes.summaryCard} ${classes.moduleCard}`}
+        >
           <Text size="xs" c="dimmed">
             SLA Compliance
           </Text>
@@ -398,7 +424,10 @@ export default function ComplaintReportingPanel({ complaints, onView }) {
             {reportData.kpis?.sla_compliance_rate ?? 0}%
           </Text>
         </Card>
-        <Card withBorder className={classes.summaryCard}>
+        <Card
+          withBorder
+          className={`${classes.summaryCard} ${classes.moduleCard}`}
+        >
           <Text size="xs" c="dimmed">
             Reopen Rate
           </Text>
@@ -406,7 +435,10 @@ export default function ComplaintReportingPanel({ complaints, onView }) {
             {reportData.kpis?.reopen_rate ?? 0}%
           </Text>
         </Card>
-        <Card withBorder className={classes.summaryCard}>
+        <Card
+          withBorder
+          className={`${classes.summaryCard} ${classes.moduleCard}`}
+        >
           <Text size="xs" c="dimmed">
             Feedback Response
           </Text>
@@ -414,7 +446,10 @@ export default function ComplaintReportingPanel({ complaints, onView }) {
             {reportData.kpis?.feedback_response_rate ?? 0}%
           </Text>
         </Card>
-        <Card withBorder className={classes.summaryCard}>
+        <Card
+          withBorder
+          className={`${classes.summaryCard} ${classes.moduleCard}`}
+        >
           <Text size="xs" c="dimmed">
             Open
           </Text>
@@ -422,7 +457,10 @@ export default function ComplaintReportingPanel({ complaints, onView }) {
             {stats.open}
           </Text>
         </Card>
-        <Card withBorder className={classes.summaryCard}>
+        <Card
+          withBorder
+          className={`${classes.summaryCard} ${classes.moduleCard}`}
+        >
           <Text size="xs" c="dimmed">
             Escalated
           </Text>
@@ -430,7 +468,10 @@ export default function ComplaintReportingPanel({ complaints, onView }) {
             {stats.escalated}
           </Text>
         </Card>
-        <Card withBorder className={classes.summaryCard}>
+        <Card
+          withBorder
+          className={`${classes.summaryCard} ${classes.moduleCard}`}
+        >
           <Text size="xs" c="dimmed">
             Closed
           </Text>
@@ -648,6 +689,11 @@ export default function ComplaintReportingPanel({ complaints, onView }) {
 }
 
 ComplaintReportingPanel.propTypes = {
-  complaints: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+  complaints: PropTypes.arrayOf(
+    PropTypes.shape({
+      complaint_type: PropTypes.string,
+    }),
+  ).isRequired,
   onView: PropTypes.func.isRequired,
+  normalizedRole: PropTypes.string,
 };

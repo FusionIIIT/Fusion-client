@@ -11,6 +11,7 @@ import {
   Text,
 } from "@mantine/core";
 import PropTypes from "prop-types";
+import classes from "../ComplaintManagement.module.css";
 
 const STATUS_LABELS = new Map([
   [0, "Pending"],
@@ -71,14 +72,26 @@ function ComplaintTableRows({
   return items.map((item) => (
     <Table.Tr key={item.id}>
       <Table.Td>{item.id}</Table.Td>
-      <Table.Td>{item.complaint_ref || "-"}</Table.Td>
-      <Table.Td>{item.complaint_type}</Table.Td>
       <Table.Td>
-        <Badge variant="light">{item.priority || "Standard"}</Badge>
+        <Text className={classes.monoRef}>{item.complaint_ref || "-"}</Text>
       </Table.Td>
-      <Table.Td>{item.location}</Table.Td>
       <Table.Td>
-        <Badge color={STATUS_COLORS.get(Number(item.status)) || "gray"}>
+        <Text className={classes.cellClamp}>{item.complaint_type || "-"}</Text>
+      </Table.Td>
+      <Table.Td>
+        <Badge variant="light" className={classes.statusBadge}>
+          {item.priority || "Standard"}
+        </Badge>
+      </Table.Td>
+      <Table.Td>
+        <Text className={classes.cellClamp}>{item.location || "-"}</Text>
+      </Table.Td>
+      <Table.Td>
+        <Badge
+          color={STATUS_COLORS.get(Number(item.status)) || "gray"}
+          variant="light"
+          className={classes.statusBadge}
+        >
           {item.is_draft
             ? "Draft"
             : item.status_label ||
@@ -87,13 +100,23 @@ function ComplaintTableRows({
         </Badge>
       </Table.Td>
       <Table.Td>
-        {item.sla_deadline ? new Date(item.sla_deadline).toLocaleString() : "-"}
+        <Text className={classes.cellClamp}>
+          {item.sla_deadline
+            ? new Date(item.sla_deadline).toLocaleString()
+            : "-"}
+        </Text>
       </Table.Td>
       <Table.Td>
-        {item.assigned_to_name || item.assigned_to || item.worker_id || "-"}
+        <Text className={classes.cellClamp}>
+          {item.assigned_to_name || item.assigned_to || item.worker_id || "-"}
+        </Text>
       </Table.Td>
-      <Table.Td>{item.remarks || "-"}</Table.Td>
-      <Table.Td>{item.details}</Table.Td>
+      <Table.Td>
+        <Text className={classes.cellClamp}>{item.remarks || "-"}</Text>
+      </Table.Td>
+      <Table.Td>
+        <Text className={classes.cellClamp}>{item.details || "-"}</Text>
+      </Table.Td>
       <Table.Td>
         <Group gap="xs" wrap="nowrap">
           <Button size="xs" variant="light" onClick={() => onView(item.id)}>
@@ -217,8 +240,14 @@ export default function ComplaintTableSectioned({
   ];
 
   return (
-    <Paper p="md" withBorder radius="md">
+    <Paper p="md" withBorder radius="md" className={classes.moduleCard}>
       <Stack gap="md">
+        <Group justify="space-between" align="center" wrap="wrap">
+          <Text fw={600}>Complaint Lifecycle Sections</Text>
+          <Text className={classes.statusNote}>
+            Sorted for faster triage and action.
+          </Text>
+        </Group>
         {sections.filter((s) => s.data.length > 0).length === 0 ? (
           <Text ta="center" c="dimmed" py="xl">
             No complaints found.
@@ -240,12 +269,14 @@ export default function ComplaintTableSectioned({
                   </Group>
                 </Accordion.Control>
                 <Accordion.Panel>
-                  <ScrollArea>
+                  <ScrollArea className={classes.tableSurface}>
                     <Table
                       striped
                       highlightOnHover
                       withTableBorder
                       withColumnBorders
+                      className={classes.tableClean}
+                      verticalSpacing="sm"
                     >
                       <Table.Thead>
                         <Table.Tr>

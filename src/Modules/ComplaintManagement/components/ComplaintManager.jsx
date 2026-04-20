@@ -177,6 +177,27 @@ export default function ComplaintManager({ defaultMode }) {
     [complaints],
   );
 
+  const filteredComplaints = useMemo(() => {
+    if (normalizedRole.includes("supervisor")) {
+      const types = [
+        "electricity",
+        "carpenter",
+        "plumber",
+        "garbage",
+        "dustbin",
+        "internet",
+        "other",
+      ];
+      const activeType = types.find((t) => normalizedRole.includes(t));
+      if (activeType) {
+        return complaints.filter(
+          (c) => c.complaint_type?.toLowerCase() === activeType,
+        );
+      }
+    }
+    return complaints;
+  }, [complaints, normalizedRole]);
+
   const loadComplaints = async () => {
     setLoading(true);
     try {
@@ -521,7 +542,7 @@ export default function ComplaintManager({ defaultMode }) {
                   Manage your complaints with the same Fusion dashboard
                   workflow.
                 </Text>
-                <Text size="sm" c="dimmed" mt={4}>
+                <Text className={classes.statusNote} mt={4}>
                   {lastRefreshedAt
                     ? `Last refreshed: ${new Date(lastRefreshedAt).toLocaleString()}`
                     : "Status data will refresh automatically every 30 seconds."}
@@ -560,9 +581,12 @@ export default function ComplaintManager({ defaultMode }) {
               </Alert>
             )}
 
-            <Paper className={classes.tablePanel} withBorder>
+            <Paper
+              className={`${classes.tablePanel} ${classes.moduleCard}`}
+              withBorder
+            >
               <ComplaintTableSectioned
-                complaints={complaints}
+                complaints={filteredComplaints}
                 onView={handleView}
                 onEdit={openEdit}
                 onDelete={handleDelete}
@@ -580,7 +604,7 @@ export default function ComplaintManager({ defaultMode }) {
 
         {activeTab === oversightTabIndex && canSeeOversight && (
           <ComplaintOversightPanel
-            complaints={complaints}
+            complaints={filteredComplaints}
             onView={handleView}
             onRefresh={loadComplaints}
           />
@@ -588,8 +612,9 @@ export default function ComplaintManager({ defaultMode }) {
 
         {activeTab === reportsTabIndex && canSeeOversight && (
           <ComplaintReportingPanel
-            complaints={complaints}
+            complaints={filteredComplaints}
             onView={handleView}
+            normalizedRole={normalizedRole}
           />
         )}
 
