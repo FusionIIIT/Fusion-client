@@ -6,6 +6,12 @@ import {
   Get_Leave_Requests,
   Withdraw_UG_Leave,
 } from "../../../routes/otheracademicRoutes/index";
+import { mediaRoute } from "../../../routes/globalRoutes/index";
+
+const resolveMediaUrl = (url) =>
+  url && url.startsWith("http")
+    ? url
+    : `${mediaRoute}${String(url).replace(/^\/?media\//, "")}`;
 
 function LeaveStatus() {
   // Get roll_no and username from Redux state
@@ -100,7 +106,11 @@ function LeaveStatus() {
                 <td>{item.leaveType}</td>
                 <td>
                   {item.attachment ? (
-                    <a href={item.attachment} target="_blank" rel="noreferrer">
+                    <a
+                      href={resolveMediaUrl(item.attachment)}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
                       View
                     </a>
                   ) : (
