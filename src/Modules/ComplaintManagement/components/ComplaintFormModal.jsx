@@ -70,6 +70,7 @@ export default function ComplaintFormModal({
   canChangeStatus,
   onClose,
   onSubmit,
+  onSaveDraft,
   loading,
 }) {
   const [form, setForm] = useState(initialForm);
@@ -174,6 +175,19 @@ export default function ComplaintFormModal({
     });
   };
 
+  const handleSaveDraft = () => {
+    onSaveDraft({
+      complaint_type: form.complaint_type,
+      location: form.location,
+      specific_location: form.specific_location || "",
+      details: form.details,
+      priority: form.priority,
+      remarks: form.remarks || "",
+      is_draft: true,
+      upload_complaint: attachment,
+    });
+  };
+
   return (
     <Modal
       opened={opened}
@@ -270,6 +284,11 @@ export default function ComplaintFormModal({
           <Button variant="default" onClick={onClose}>
             Cancel
           </Button>
+          {mode === "create" && (
+            <Button variant="light" loading={loading} onClick={handleSaveDraft}>
+              Save Draft
+            </Button>
+          )}
           <Button loading={loading} onClick={handleSubmit}>
             {mode === "create" ? "Create" : "Save"}
           </Button>
@@ -296,11 +315,13 @@ ComplaintFormModal.propTypes = {
   canChangeStatus: PropTypes.bool,
   onClose: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
+  onSaveDraft: PropTypes.func,
   loading: PropTypes.bool,
 };
 
 ComplaintFormModal.defaultProps = {
   initialData: null,
   canChangeStatus: false,
+  onSaveDraft: () => {},
   loading: false,
 };

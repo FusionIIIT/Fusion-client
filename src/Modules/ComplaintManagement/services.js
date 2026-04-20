@@ -1,5 +1,65 @@
 import complaintApi from "./api";
 
+export const fetchWorkers = async () => {
+  const response = await complaintApi.get("/workers");
+  return response.data?.workers || [];
+};
+
+export const createWorker = async (payload) => {
+  const response = await complaintApi.post("/addworker", payload);
+  return response.data;
+};
+
+export const updateWorker = async (id, payload) => {
+  const response = await complaintApi.put(`/updateworker/${id}`, payload);
+  return response.data;
+};
+
+export const deleteWorker = async (id) => {
+  const response = await complaintApi.delete(`/removeworker/${id}`);
+  return response.data;
+};
+
+export const fetchCaretakers = async () => {
+  const response = await complaintApi.get("/caretakers");
+  return response.data?.caretakers || [];
+};
+
+export const createCaretaker = async (payload) => {
+  const response = await complaintApi.post("/addcaretaker", payload);
+  return response.data;
+};
+
+export const updateCaretaker = async (id, payload) => {
+  const response = await complaintApi.put(`/updatecaretaker/${id}`, payload);
+  return response.data;
+};
+
+export const deleteCaretaker = async (id) => {
+  const response = await complaintApi.delete(`/removecaretaker/${id}`);
+  return response.data;
+};
+
+export const fetchSupervisors = async () => {
+  const response = await complaintApi.get("/supervisors");
+  return response.data?.supervisors || [];
+};
+
+export const createSupervisor = async (payload) => {
+  const response = await complaintApi.post("/addsupervisor", payload);
+  return response.data;
+};
+
+export const updateSupervisor = async (id, payload) => {
+  const response = await complaintApi.put(`/updatesupervisor/${id}`, payload);
+  return response.data;
+};
+
+export const deleteSupervisor = async (id) => {
+  const response = await complaintApi.delete(`/removesupervisor/${id}`);
+  return response.data;
+};
+
 const buildComplaintFormData = (payload) => {
   const formData = new FormData();
   const fields = [
@@ -17,6 +77,7 @@ const buildComplaintFormData = (payload) => {
     "reopen_requested",
     "progress_notes",
     "estimated_resolution_time",
+    "is_draft",
   ];
 
   fields.forEach((field) => {
@@ -48,6 +109,14 @@ export const createComplaint = async (payload) => {
   return response.data;
 };
 
+export const submitDraftComplaint = async (id, payload = {}) => {
+  const response = await complaintApi.post(
+    `/submitdraft/${id}`,
+    buildComplaintFormData(payload),
+  );
+  return response.data;
+};
+
 export const updateComplaint = async (id, payload) => {
   const response = await complaintApi.put(
     `/updatecomplain/${id}`,
@@ -73,6 +142,11 @@ export const verifyComplaint = async (id, payload) => {
   return response.data;
 };
 
+export const submitComplaintFeedback = async (id, payload) => {
+  const response = await complaintApi.post(`/feedback/${id}`, payload);
+  return response.data;
+};
+
 export const reopenComplaint = async (id, payload) => {
   const response = await complaintApi.post(`/reopen/${id}`, payload);
   return response.data;
@@ -83,5 +157,22 @@ export const caretakerAction = async (id, payload) => {
     `/caretaker-action/${id}`,
     buildComplaintFormData(payload),
   );
+  return response.data;
+};
+
+export const bulkComplaintAction = async (payload) => {
+  const response = await complaintApi.post("/bulk-action", payload);
+  return response.data;
+};
+
+export const fetchComplaintAnalyticsReport = async (filters = {}) => {
+  const response = await complaintApi.get("/report-analytics", {
+    params: {
+      date_from: filters.date_from || "",
+      date_to: filters.date_to || "",
+      category: filters.category || "",
+      location: filters.location || "",
+    },
+  });
   return response.data;
 };

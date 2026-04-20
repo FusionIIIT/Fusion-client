@@ -1,23 +1,29 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { Button, Container, Paper, Text, Title } from "@mantine/core";
+import { Alert, Button, Container, Paper, Text, Title } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import PropTypes from "prop-types";
 import { useSelector } from "react-redux";
-import ComplaintTable from "./ComplaintTable";
+import ComplaintTableSectioned from "./ComplaintTableSectioned";
 import ComplaintFormModal from "./ComplaintFormModal";
 import ComplaintDetailModal from "./ComplaintDetailModal";
 import ResolutionModal from "./ResolutionModal";
 import EscalationModal from "./EscalationModal";
 import ResolutionVerificationModal from "./ResolutionVerificationModal";
 import ReopenRequestModal from "./ReopenRequestModal";
+import ComplaintFeedbackModal from "./ComplaintFeedbackModal";
 import ComplaintNotificationsPanel from "./ComplaintNotificationsPanel";
+import ComplaintOversightPanel from "./ComplaintOversightPanel";
+import ComplaintReportingPanel from "./ComplaintReportingPanel";
+import ComplaintMasterDataPanel from "./ComplaintMasterDataPanel";
 import { fetchComplaintDetail, fetchComplaints } from "../selectors";
 import {
   createComplaint,
   caretakerAction,
   deleteComplaint,
   reopenComplaint,
+  submitComplaintFeedback,
+  submitDraftComplaint,
   verifyComplaint,
   updateComplaint,
   escalateComplaint,
@@ -41,15 +47,47 @@ const getApiErrorMessage = (error) => {
 export default function ComplaintManager({ defaultMode }) {
   const location = useLocation();
   const queryTab = new URLSearchParams(location.search).get("tab");
-  const defaultTab =
-    queryTab === "notifications" ? "2" : defaultMode === "create" ? "1" : "0";
-
-  const tabItems = [
-    { title: "Complaints" },
-    { title: "Create Complaint" },
-    { title: "Notifications" },
-  ];
   const role = useSelector((state) => state.user.role || "");
+  const normalizedRole = String(role).toLowerCase();
+  const canSeeOversight =
+    normalizedRole.includes("supervisor") ||
+    normalizedRole.includes("admin") ||
+    normalizedRole.includes("convener") ||
+    normalizedRole.includes("superuser");
+  const canSeeMasterData =
+    normalizedRole.includes("caretaker") ||
+    normalizedRole.includes("supervisor") ||
+    normalizedRole.includes("admin") ||
+    normalizedRole.includes("superuser") ||
+    normalizedRole.includes("convener");
+  const tabItems = useMemo(
+    () => [
+      { key: "complaints", title: "Complaints" },
+      { key: "create", title: "Create Complaint" },
+      { key: "notifications", title: "Notifications" },
+      ...(canSeeOversight
+        ? [
+            { key: "oversight", title: "Oversight" },
+            { key: "reports", title: "Reports" },
+          ]
+        : []),
+      ...(canSeeMasterData
+        ? [{ key: "master-data", title: "Master Data" }]
+        : []),
+    ],
+    [canSeeMasterData, canSeeOversight],
+  );
+  const tabKeys = useMemo(() => tabItems.map((tab) => tab.key), [tabItems]);
+  const getTabIndex = useMemo(
+    () => (key) => String(Math.max(tabKeys.indexOf(key), 0)),
+    [tabKeys],
+  );
+  const initialTab =
+    queryTab && tabKeys.includes(queryTab)
+      ? getTabIndex(queryTab)
+      : defaultMode === "create"
+        ? getTabIndex("create")
+        : getTabIndex("complaints");
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(false);
   const [formOpen, setFormOpen] = useState(defaultMode === "create");
@@ -66,14 +104,23 @@ export default function ComplaintManager({ defaultMode }) {
   const [verificationDecision, setVerificationDecision] = useState("approve");
   const [reopenOpen, setReopenOpen] = useState(false);
   const [reopenTarget, setReopenTarget] = useState(null);
-  const [activeTab, setActiveTab] = useState(defaultTab);
-  const normalizedRole = String(role).toLowerCase();
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [feedbackTarget, setFeedbackTarget] = useState(null);
+  const [activeTab, setActiveTab] = useState(initialTab);
+  const [lastRefreshedAt, setLastRefreshedAt] = useState(null);
+  const complaintsTabIndex = getTabIndex("complaints");
+  const createTabIndex = getTabIndex("create");
+  const notificationsTabIndex = getTabIndex("notifications");
+  const oversightTabIndex = getTabIndex("oversight");
+  const reportsTabIndex = getTabIndex("reports");
+  const masterDataTabIndex = getTabIndex("master-data");
   const canChangeStatus =
     normalizedRole.includes("caretaker") ||
     normalizedRole.includes("supervisor") ||
     normalizedRole.includes("convener") ||
     normalizedRole.includes("admin");
   const isCaretakerRole = normalizedRole.includes("caretaker");
+  const isSupervisorRole = normalizedRole.includes("supervisor");
   const canReviewResolution =
     normalizedRole.includes("student") ||
     normalizedRole.includes("faculty") ||
@@ -82,17 +129,60 @@ export default function ComplaintManager({ defaultMode }) {
     normalizedRole.includes("convener") ||
     normalizedRole.includes("admin");
   const canSubmitComplaint =
-    (normalizedRole.includes("student") ||
-      normalizedRole.includes("faculty") ||
-      normalizedRole.includes("staff")) &&
-    !canChangeStatus;
+    normalizedRole.includes("student") ||
+    normalizedRole.includes("faculty") ||
+    normalizedRole.includes("staff");
   const isComplainantReadOnly = canSubmitComplaint;
+  const canSubmitFeedback =
+    normalizedRole.includes("student") ||
+    normalizedRole.includes("faculty") ||
+    normalizedRole.includes("staff");
+  const slaReminderWindowHours = 4;
+  const reminderQueue = useMemo(
+    () =>
+      complaints.filter((complaint) => {
+        if (!complaint?.sla_deadline) {
+          return false;
+        }
+
+        const deadline = new Date(complaint.sla_deadline).getTime();
+        if (!Number.isFinite(deadline)) {
+          return false;
+        }
+
+        const hoursRemaining = (deadline - Date.now()) / (1000 * 60 * 60);
+        const isActive = ![2, 3].includes(Number(complaint.status));
+        return (
+          isActive &&
+          hoursRemaining > 0 &&
+          hoursRemaining <= slaReminderWindowHours
+        );
+      }),
+    [complaints],
+  );
+  const overdueComplaints = useMemo(
+    () =>
+      complaints.filter((complaint) => {
+        if (!complaint?.sla_deadline) {
+          return false;
+        }
+
+        const deadline = new Date(complaint.sla_deadline).getTime();
+        return (
+          Number.isFinite(deadline) &&
+          deadline < Date.now() &&
+          ![2, 3].includes(Number(complaint.status))
+        );
+      }),
+    [complaints],
+  );
 
   const loadComplaints = async () => {
     setLoading(true);
     try {
       const data = await fetchComplaints();
       setComplaints(data);
+      setLastRefreshedAt(new Date().toISOString());
     } catch (error) {
       notifications.show({
         color: "red",
@@ -115,7 +205,13 @@ export default function ComplaintManager({ defaultMode }) {
   }, []);
 
   useEffect(() => {
-    if (activeTab === "1") {
+    if (queryTab && tabKeys.includes(queryTab)) {
+      setActiveTab(getTabIndex(queryTab));
+    }
+  }, [getTabIndex, queryTab, tabKeys]);
+
+  useEffect(() => {
+    if (activeTab === createTabIndex) {
       if (!canSubmitComplaint) {
         notifications.show({
           color: "yellow",
@@ -123,21 +219,14 @@ export default function ComplaintManager({ defaultMode }) {
           message:
             "Complaint submission is available only for student/faculty/staff complainant roles.",
         });
-        setActiveTab("0");
+        setActiveTab(complaintsTabIndex);
         return;
       }
       setSelected(null);
       setFormMode("create");
       setFormOpen(true);
     }
-  }, [activeTab, canSubmitComplaint]);
-
-  useEffect(() => {
-    const incomingTab = new URLSearchParams(location.search).get("tab");
-    if (incomingTab === "notifications") {
-      setActiveTab("2");
-    }
-  }, [location.search]);
+  }, [activeTab, canSubmitComplaint, complaintsTabIndex, createTabIndex]);
 
   const openCreate = () => {
     if (!canSubmitComplaint) {
@@ -151,7 +240,7 @@ export default function ComplaintManager({ defaultMode }) {
     setSelected(null);
     setFormMode("create");
     setFormOpen(true);
-    setActiveTab("1");
+    setActiveTab(createTabIndex);
   };
 
   const openEdit = (item) => {
@@ -323,12 +412,88 @@ export default function ComplaintManager({ defaultMode }) {
       }
       setFormOpen(false);
       setSelected(null);
-      setActiveTab("0");
+      setActiveTab(complaintsTabIndex);
       await loadComplaints();
     } catch (error) {
       notifications.show({
         color: "red",
         title: "Save failed",
+        message: getApiErrorMessage(error),
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveDraft = async (payload) => {
+    setLoading(true);
+    try {
+      const savedDraft = await createComplaint(payload);
+      notifications.show({
+        color: "blue",
+        title: "Draft saved",
+        message: savedDraft?.id
+          ? `Draft #${savedDraft.id} saved successfully`
+          : "Complaint draft saved successfully",
+      });
+      setFormOpen(false);
+      setSelected(null);
+      setActiveTab(complaintsTabIndex);
+      await loadComplaints();
+    } catch (error) {
+      notifications.show({
+        color: "red",
+        title: "Draft save failed",
+        message: getApiErrorMessage(error),
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmitDraft = async (item) => {
+    setLoading(true);
+    try {
+      await submitDraftComplaint(item.id);
+      notifications.show({
+        color: "green",
+        title: "Draft submitted",
+        message: "Draft moved to active complaint workflow",
+      });
+      await loadComplaints();
+    } catch (error) {
+      notifications.show({
+        color: "red",
+        title: "Submit draft failed",
+        message: getApiErrorMessage(error),
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmitFeedback = async (payload) => {
+    setLoading(true);
+    try {
+      await submitComplaintFeedback(feedbackTarget.id, payload);
+      notifications.show({
+        color: "green",
+        title: "Feedback submitted",
+        message: "Thank you for your feedback.",
+      });
+      setFeedbackOpen(false);
+      setFeedbackTarget(null);
+      await loadComplaints();
+      if (detailData?.complaint_details?.id) {
+        const refreshed = await fetchComplaintDetail(
+          detailData.complaint_details.id,
+        );
+        setDetailData(refreshed);
+      }
+    } catch (error) {
+      notifications.show({
+        color: "red",
+        title: "Feedback submit failed",
         message: getApiErrorMessage(error),
       });
     } finally {
@@ -345,7 +510,7 @@ export default function ComplaintManager({ defaultMode }) {
           activeTab={activeTab}
           setActiveTab={setActiveTab}
         />
-        {activeTab !== "2" && (
+        {activeTab === complaintsTabIndex && (
           <>
             <div className={classes.headerBlock}>
               <div>
@@ -355,6 +520,11 @@ export default function ComplaintManager({ defaultMode }) {
                 <Text className={classes.subtitle}>
                   Manage your complaints with the same Fusion dashboard
                   workflow.
+                </Text>
+                <Text size="sm" c="dimmed" mt={4}>
+                  {lastRefreshedAt
+                    ? `Last refreshed: ${new Date(lastRefreshedAt).toLocaleString()}`
+                    : "Status data will refresh automatically every 30 seconds."}
                 </Text>
               </div>
               <div className={classes.actions}>
@@ -371,12 +541,32 @@ export default function ComplaintManager({ defaultMode }) {
               </div>
             </div>
 
+            {(reminderQueue.length > 0 || overdueComplaints.length > 0) && (
+              <Alert
+                color={overdueComplaints.length > 0 ? "red" : "yellow"}
+                title="SLA attention needed"
+                mb="md"
+              >
+                {overdueComplaints.length > 0 && (
+                  <Text size="sm">
+                    {`${overdueComplaints.length} complaint${overdueComplaints.length === 1 ? " is" : "s are"} already past SLA and may require immediate intervention.`}
+                  </Text>
+                )}
+                {reminderQueue.length > 0 && (
+                  <Text size="sm">
+                    {`${reminderQueue.length} complaint${reminderQueue.length === 1 ? " is" : "s are"} approaching the SLA reminder window.`}
+                  </Text>
+                )}
+              </Alert>
+            )}
+
             <Paper className={classes.tablePanel} withBorder>
-              <ComplaintTable
+              <ComplaintTableSectioned
                 complaints={complaints}
                 onView={handleView}
                 onEdit={openEdit}
                 onDelete={handleDelete}
+                onSubmitDraft={handleSubmitDraft}
                 isCaretaker={canChangeStatus}
                 readOnly={isComplainantReadOnly}
               />
@@ -384,7 +574,28 @@ export default function ComplaintManager({ defaultMode }) {
           </>
         )}
 
-        {activeTab === "2" && <ComplaintNotificationsPanel role={role} />}
+        {activeTab === notificationsTabIndex && (
+          <ComplaintNotificationsPanel role={role} />
+        )}
+
+        {activeTab === oversightTabIndex && canSeeOversight && (
+          <ComplaintOversightPanel
+            complaints={complaints}
+            onView={handleView}
+            onRefresh={loadComplaints}
+          />
+        )}
+
+        {activeTab === reportsTabIndex && canSeeOversight && (
+          <ComplaintReportingPanel
+            complaints={complaints}
+            onView={handleView}
+          />
+        )}
+
+        {activeTab === masterDataTabIndex && canSeeMasterData && (
+          <ComplaintMasterDataPanel normalizedRole={normalizedRole} />
+        )}
 
         <ComplaintFormModal
           opened={formOpen}
@@ -393,9 +604,10 @@ export default function ComplaintManager({ defaultMode }) {
           canChangeStatus={canChangeStatus}
           onClose={() => {
             setFormOpen(false);
-            setActiveTab("0");
+            setActiveTab(complaintsTabIndex);
           }}
           onSubmit={handleSubmit}
+          onSaveDraft={handleSaveDraft}
           loading={loading}
         />
 
@@ -404,8 +616,10 @@ export default function ComplaintManager({ defaultMode }) {
           onClose={() => setDetailOpen(false)}
           detail={detailData}
           canResolve={isCaretakerRole}
+          canManageEscalated={isSupervisorRole}
           canVerify={canReviewResolution}
           canRequestReopen={canReviewResolution}
+          canSubmitFeedback={canSubmitFeedback}
           onResolve={(complaint) => {
             setResolutionTarget(complaint);
             setResolutionOpen(true);
@@ -427,6 +641,10 @@ export default function ComplaintManager({ defaultMode }) {
           onRequestReopen={(complaint) => {
             setReopenTarget(detailData?.complaint_details || complaint);
             setReopenOpen(true);
+          }}
+          onSubmitFeedback={(complaint) => {
+            setFeedbackTarget(detailData?.complaint_details || complaint);
+            setFeedbackOpen(true);
           }}
         />
 
@@ -481,6 +699,17 @@ export default function ComplaintManager({ defaultMode }) {
           reopenDeadline={reopenTarget?.reopen_allowed_until || ""}
           onRequestReopen={handleReopen}
           isLoading={loading}
+        />
+
+        <ComplaintFeedbackModal
+          opened={feedbackOpen}
+          onClose={() => {
+            setFeedbackOpen(false);
+            setFeedbackTarget(null);
+          }}
+          complaint={feedbackTarget}
+          onSubmit={handleSubmitFeedback}
+          loading={loading}
         />
       </Container>
     </>
