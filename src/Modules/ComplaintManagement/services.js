@@ -5,6 +5,61 @@ export const fetchWorkers = async () => {
   return response.data?.workers || [];
 };
 
+export const createWorker = async (payload) => {
+  const response = await complaintApi.post("/addworker", payload);
+  return response.data;
+};
+
+export const updateWorker = async (id, payload) => {
+  const response = await complaintApi.put(`/updateworker/${id}`, payload);
+  return response.data;
+};
+
+export const deleteWorker = async (id) => {
+  const response = await complaintApi.delete(`/removeworker/${id}`);
+  return response.data;
+};
+
+export const fetchCaretakers = async () => {
+  const response = await complaintApi.get("/caretakers");
+  return response.data?.caretakers || [];
+};
+
+export const createCaretaker = async (payload) => {
+  const response = await complaintApi.post("/addcaretaker", payload);
+  return response.data;
+};
+
+export const updateCaretaker = async (id, payload) => {
+  const response = await complaintApi.put(`/updatecaretaker/${id}`, payload);
+  return response.data;
+};
+
+export const deleteCaretaker = async (id) => {
+  const response = await complaintApi.delete(`/removecaretaker/${id}`);
+  return response.data;
+};
+
+export const fetchSupervisors = async () => {
+  const response = await complaintApi.get("/supervisors");
+  return response.data?.supervisors || [];
+};
+
+export const createSupervisor = async (payload) => {
+  const response = await complaintApi.post("/addsupervisor", payload);
+  return response.data;
+};
+
+export const updateSupervisor = async (id, payload) => {
+  const response = await complaintApi.put(`/updatesupervisor/${id}`, payload);
+  return response.data;
+};
+
+export const deleteSupervisor = async (id) => {
+  const response = await complaintApi.delete(`/removesupervisor/${id}`);
+  return response.data;
+};
+
 const buildComplaintFormData = (payload) => {
   const formData = new FormData();
   const fields = [

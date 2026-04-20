@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { Button, Container, Paper, Text, Title } from "@mantine/core";
+import { Alert, Button, Container, Paper, Text, Title } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import PropTypes from "prop-types";
 import { useSelector } from "react-redux";
-import ComplaintTable from "./ComplaintTable";
+import ComplaintTableSectioned from "./ComplaintTableSectioned";
 import ComplaintFormModal from "./ComplaintFormModal";
 import ComplaintDetailModal from "./ComplaintDetailModal";
 import ResolutionModal from "./ResolutionModal";
@@ -15,6 +15,7 @@ import ComplaintFeedbackModal from "./ComplaintFeedbackModal";
 import ComplaintNotificationsPanel from "./ComplaintNotificationsPanel";
 import ComplaintOversightPanel from "./ComplaintOversightPanel";
 import ComplaintReportingPanel from "./ComplaintReportingPanel";
+import ComplaintMasterDataPanel from "./ComplaintMasterDataPanel";
 import { fetchComplaintDetail, fetchComplaints } from "../selectors";
 import {
   createComplaint,
@@ -53,6 +54,12 @@ export default function ComplaintManager({ defaultMode }) {
     normalizedRole.includes("admin") ||
     normalizedRole.includes("convener") ||
     normalizedRole.includes("superuser");
+  const canSeeMasterData =
+    normalizedRole.includes("caretaker") ||
+    normalizedRole.includes("supervisor") ||
+    normalizedRole.includes("admin") ||
+    normalizedRole.includes("superuser") ||
+    normalizedRole.includes("convener");
   const tabItems = useMemo(
     () => [
       { key: "complaints", title: "Complaints" },
@@ -64,8 +71,11 @@ export default function ComplaintManager({ defaultMode }) {
             { key: "reports", title: "Reports" },
           ]
         : []),
+      ...(canSeeMasterData
+        ? [{ key: "master-data", title: "Master Data" }]
+        : []),
     ],
-    [canSeeOversight],
+    [canSeeMasterData, canSeeOversight],
   );
   const tabKeys = useMemo(() => tabItems.map((tab) => tab.key), [tabItems]);
   const getTabIndex = useMemo(
@@ -97,17 +107,20 @@ export default function ComplaintManager({ defaultMode }) {
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [feedbackTarget, setFeedbackTarget] = useState(null);
   const [activeTab, setActiveTab] = useState(initialTab);
+  const [lastRefreshedAt, setLastRefreshedAt] = useState(null);
   const complaintsTabIndex = getTabIndex("complaints");
   const createTabIndex = getTabIndex("create");
   const notificationsTabIndex = getTabIndex("notifications");
   const oversightTabIndex = getTabIndex("oversight");
   const reportsTabIndex = getTabIndex("reports");
+  const masterDataTabIndex = getTabIndex("master-data");
   const canChangeStatus =
     normalizedRole.includes("caretaker") ||
     normalizedRole.includes("supervisor") ||
     normalizedRole.includes("convener") ||
     normalizedRole.includes("admin");
   const isCaretakerRole = normalizedRole.includes("caretaker");
+  const isSupervisorRole = normalizedRole.includes("supervisor");
   const canReviewResolution =
     normalizedRole.includes("student") ||
     normalizedRole.includes("faculty") ||
@@ -116,18 +129,60 @@ export default function ComplaintManager({ defaultMode }) {
     normalizedRole.includes("convener") ||
     normalizedRole.includes("admin");
   const canSubmitComplaint =
-    (normalizedRole.includes("student") ||
-      normalizedRole.includes("faculty") ||
-      normalizedRole.includes("staff")) &&
-    !canChangeStatus;
+    normalizedRole.includes("student") ||
+    normalizedRole.includes("faculty") ||
+    normalizedRole.includes("staff");
   const isComplainantReadOnly = canSubmitComplaint;
-  const canSubmitFeedback = canSubmitComplaint;
+  const canSubmitFeedback =
+    normalizedRole.includes("student") ||
+    normalizedRole.includes("faculty") ||
+    normalizedRole.includes("staff");
+  const slaReminderWindowHours = 4;
+  const reminderQueue = useMemo(
+    () =>
+      complaints.filter((complaint) => {
+        if (!complaint?.sla_deadline) {
+          return false;
+        }
+
+        const deadline = new Date(complaint.sla_deadline).getTime();
+        if (!Number.isFinite(deadline)) {
+          return false;
+        }
+
+        const hoursRemaining = (deadline - Date.now()) / (1000 * 60 * 60);
+        const isActive = ![2, 3].includes(Number(complaint.status));
+        return (
+          isActive &&
+          hoursRemaining > 0 &&
+          hoursRemaining <= slaReminderWindowHours
+        );
+      }),
+    [complaints],
+  );
+  const overdueComplaints = useMemo(
+    () =>
+      complaints.filter((complaint) => {
+        if (!complaint?.sla_deadline) {
+          return false;
+        }
+
+        const deadline = new Date(complaint.sla_deadline).getTime();
+        return (
+          Number.isFinite(deadline) &&
+          deadline < Date.now() &&
+          ![2, 3].includes(Number(complaint.status))
+        );
+      }),
+    [complaints],
+  );
 
   const loadComplaints = async () => {
     setLoading(true);
     try {
       const data = await fetchComplaints();
       setComplaints(data);
+      setLastRefreshedAt(new Date().toISOString());
     } catch (error) {
       notifications.show({
         color: "red",
@@ -466,6 +521,11 @@ export default function ComplaintManager({ defaultMode }) {
                   Manage your complaints with the same Fusion dashboard
                   workflow.
                 </Text>
+                <Text size="sm" c="dimmed" mt={4}>
+                  {lastRefreshedAt
+                    ? `Last refreshed: ${new Date(lastRefreshedAt).toLocaleString()}`
+                    : "Status data will refresh automatically every 30 seconds."}
+                </Text>
               </div>
               <div className={classes.actions}>
                 <Button
@@ -481,8 +541,27 @@ export default function ComplaintManager({ defaultMode }) {
               </div>
             </div>
 
+            {(reminderQueue.length > 0 || overdueComplaints.length > 0) && (
+              <Alert
+                color={overdueComplaints.length > 0 ? "red" : "yellow"}
+                title="SLA attention needed"
+                mb="md"
+              >
+                {overdueComplaints.length > 0 && (
+                  <Text size="sm">
+                    {`${overdueComplaints.length} complaint${overdueComplaints.length === 1 ? " is" : "s are"} already past SLA and may require immediate intervention.`}
+                  </Text>
+                )}
+                {reminderQueue.length > 0 && (
+                  <Text size="sm">
+                    {`${reminderQueue.length} complaint${reminderQueue.length === 1 ? " is" : "s are"} approaching the SLA reminder window.`}
+                  </Text>
+                )}
+              </Alert>
+            )}
+
             <Paper className={classes.tablePanel} withBorder>
-              <ComplaintTable
+              <ComplaintTableSectioned
                 complaints={complaints}
                 onView={handleView}
                 onEdit={openEdit}
@@ -514,6 +593,10 @@ export default function ComplaintManager({ defaultMode }) {
           />
         )}
 
+        {activeTab === masterDataTabIndex && canSeeMasterData && (
+          <ComplaintMasterDataPanel normalizedRole={normalizedRole} />
+        )}
+
         <ComplaintFormModal
           opened={formOpen}
           mode={formMode}
@@ -533,6 +616,7 @@ export default function ComplaintManager({ defaultMode }) {
           onClose={() => setDetailOpen(false)}
           detail={detailData}
           canResolve={isCaretakerRole}
+          canManageEscalated={isSupervisorRole}
           canVerify={canReviewResolution}
           canRequestReopen={canReviewResolution}
           canSubmitFeedback={canSubmitFeedback}

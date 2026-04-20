@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
 import {
+  Alert,
   Modal,
   Stack,
   Text,
@@ -81,6 +82,7 @@ const complaintDetailsShape = PropTypes.shape({
   reopen_reason: PropTypes.string,
   reopen_allowed_until: PropTypes.string,
   reopen_window_open: PropTypes.oneOfType([PropTypes.bool, PropTypes.number]),
+  updated_at: PropTypes.string,
   details: PropTypes.string,
   remarks: PropTypes.string,
   feedback: PropTypes.string,
@@ -105,6 +107,7 @@ export default function ComplaintDetailModal({
   onClose,
   detail,
   canResolve = false,
+  canManageEscalated = false,
   canVerify = false,
   canRequestReopen = false,
   canSubmitFeedback = false,
@@ -127,6 +130,7 @@ export default function ComplaintDetailModal({
   const statusLabel = STATUS_LABELS.get(status) || "Unknown";
   const statusColor = STATUS_COLORS.get(status) || "gray";
   const sla = getSlaStatus(detail?.complaint_details?.sla_deadline);
+  const isEscalated = status === 4;
   const assignedWorker =
     detail?.assigned_worker_details?.name ||
     detail?.worker_details?.name ||
@@ -137,6 +141,8 @@ export default function ComplaintDetailModal({
   const verificationStatus =
     detail?.complaint_details?.verification_status_label ||
     detail?.complaint_details?.verification_status;
+  const canShowResolutionActions =
+    canResolve || (canManageEscalated && isEscalated);
   const canShowVerificationActions = canVerify && status === 2;
   const canShowReopenAction =
     canRequestReopen &&
@@ -288,6 +294,14 @@ export default function ComplaintDetailModal({
                 {detail.complaint_details?.complaint_ref ||
                   detail.complaint_details?.id}
               </Text>
+              {detail.complaint_details?.updated_at && (
+                <Text size="sm" c="dimmed">
+                  Last updated:{" "}
+                  {new Date(
+                    detail.complaint_details.updated_at,
+                  ).toLocaleString()}
+                </Text>
+              )}
               {detail.complaint_details?.verification_source && (
                 <Text size="sm" c="dimmed">
                   Verified by: {detail.complaint_details.verification_source}
@@ -410,7 +424,7 @@ export default function ComplaintDetailModal({
           </Card>
 
           {/* Action Buttons */}
-          {canResolve && (
+          {canShowResolutionActions && (
             <Group
               justify="flex-end"
               mt="md"
@@ -420,15 +434,19 @@ export default function ComplaintDetailModal({
               <Button variant="default" onClick={onClose}>
                 Close
               </Button>
-              <Button
-                variant="outline"
-                color="blue"
-                onClick={handleEscalateClick}
-              >
-                Escalate Issue
-              </Button>
+              {canResolve && !isEscalated && (
+                <Button
+                  variant="outline"
+                  color="blue"
+                  onClick={handleEscalateClick}
+                >
+                  Escalate Issue
+                </Button>
+              )}
               <Button color="blue" onClick={handleResolveClick}>
-                Update Status
+                {canManageEscalated && isEscalated
+                  ? "Resolve Escalated Complaint"
+                  : "Update Status"}
               </Button>
             </Group>
           )}
@@ -466,6 +484,13 @@ export default function ComplaintDetailModal({
                 Request Reopen
               </Button>
             </Group>
+          )}
+
+          {canShowFeedbackAction && (
+            <Alert color="teal" title="Feedback requested">
+              This complaint is closed. Please submit feedback so the service
+              team can complete the workflow and analyze the resolution.
+            </Alert>
           )}
 
           {canShowFeedbackAction && (
@@ -522,6 +547,7 @@ ComplaintDetailModal.propTypes = {
     ),
   }),
   canResolve: PropTypes.bool,
+  canManageEscalated: PropTypes.bool,
   canVerify: PropTypes.bool,
   canRequestReopen: PropTypes.bool,
   canSubmitFeedback: PropTypes.bool,
@@ -536,6 +562,7 @@ ComplaintDetailModal.propTypes = {
 ComplaintDetailModal.defaultProps = {
   detail: null,
   canResolve: false,
+  canManageEscalated: false,
   canVerify: false,
   canRequestReopen: false,
   canSubmitFeedback: false,
