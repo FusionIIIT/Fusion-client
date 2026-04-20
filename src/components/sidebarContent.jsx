@@ -30,6 +30,7 @@ import {
   Question as HelpIcon,
   User as ProfileIcon,
   Gear as SettingsIcon,
+  ShieldCheck as AuditorIcon,
   CaretRight,
   CaretLeft,
 } from "@phosphor-icons/react";
@@ -84,7 +85,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "HealthCare Center",
       id: "phc",
       icon: <HealthIcon size={18} />,
-      url: "/",
+      url: "/health-center",
     },
     {
       label: "File Tracking",
@@ -193,7 +194,9 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const filterModules = Modules.filter(
+    let updatedModules = [...Modules];
+    
+    const filterModules = updatedModules.filter(
       (module) => accessibleModules[module.id] || module.id === "home",
     );
     setFilteredModules(filterModules);
