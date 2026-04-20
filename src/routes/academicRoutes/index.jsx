@@ -58,6 +58,13 @@ export const deleteReplacementRequestsRoute = `${host}/academic-procedures/api/a
 // Student search route
 export const StudentSearchRoute = `${host}/academic-procedures/api/acad/student_search/`;
 
+// Faculty PG TA stipend routes
+export const FAC_ASSIGNMENTS_URL = `${host}/academic-procedures/api/faculty/assignments/`;
+export const FAC_PENDING_URL = `${host}/academic-procedures/api/faculty/pending/`;
+export const FAC_APPROVED_URL = `${host}/academic-procedures/api/faculty/approved/`;
+export const FAC_APPROVE_URL = (stipendRequestId) =>
+  `${host}/academic-procedures/api/faculty/approve/${stipendRequestId}/`;
+
 // Feedback routes
 export const adminCoursesRoute = `${host}/academic-procedures/api/feedback/admin_courses/`;
 export const adminAllStatsRoute = `${host}/academic-procedures/api/feedback/admin_all_stats/`;

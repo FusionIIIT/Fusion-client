@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Button, Loader, Paper, Select, Table, Text } from "@mantine/core";
+import { Button, Loader, MultiSelect, Paper, Table, Text } from "@mantine/core";
 import axios from "axios";
 import {
   TA_Assignment_Options,
@@ -19,7 +19,11 @@ function TAAssignment() {
   const [error, setError] = useState("");
 
   const subjectOptions = useMemo(
-    () => subjects.map((subject) => ({ value: String(subject.id), label: subject.label })),
+    () =>
+      subjects.map((subject) => ({
+        value: String(subject.id),
+        label: subject.label,
+      })),
     [subjects],
   );
 
@@ -36,9 +40,9 @@ function TAAssignment() {
 
       const selected = {};
       fetchedStudents.forEach((student) => {
-        selected[student.roll_no] = student.assigned_subject_id
-          ? String(student.assigned_subject_id)
-          : null;
+        selected[student.roll_no] = (student.assigned_subject_ids || []).map(
+          String,
+        );
       });
 
       setStudents(fetchedStudents);
@@ -66,21 +70,29 @@ function TAAssignment() {
     setSelectedByRoll((prev) => ({ ...prev, [rollNo]: value }));
   };
 
+  const arraysEqual = (left = [], right = []) => {
+    if (left.length !== right.length) return false;
+    const leftSorted = [...left].sort();
+    const rightSorted = [...right].sort();
+    return leftSorted.every((value, index) => value === rightSorted[index]);
+  };
+
   const handleSave = async () => {
     setSaving(true);
     setMessage("");
     setError("");
 
     const assignments = students
-      .filter((student) => selectedByRoll[student.roll_no])
-      .filter(
-        (student) =>
-          String(selectedByRoll[student.roll_no]) !==
-          String(initialByRoll[student.roll_no] || ""),
-      )
+      .filter((student) => {
+        const current = selectedByRoll[student.roll_no] || [];
+        const initial = initialByRoll[student.roll_no] || [];
+        return !arraysEqual(current, initial);
+      })
       .map((student) => ({
         roll_no: student.roll_no,
-        subject_id: Number(selectedByRoll[student.roll_no]),
+        subject_ids: (selectedByRoll[student.roll_no] || []).map((subjectId) =>
+          Number(subjectId),
+        ),
       }));
 
     if (!assignments.length) {
@@ -103,7 +115,9 @@ function TAAssignment() {
       );
       await fetchOptions();
     } catch (err) {
-      setError(err?.response?.data?.error || "Failed to update TA assignments.");
+      setError(
+        err?.response?.data?.error || "Failed to update TA assignments.",
+      );
       console.error(err);
     } finally {
       setSaving(false);
@@ -140,12 +154,12 @@ function TAAssignment() {
                 <td>{student.name}</td>
                 <td>{student.programme}</td>
                 <td style={{ minWidth: "340px" }}>
-                  <Select
-                    placeholder="Select subject"
+                  <MultiSelect
+                    placeholder="Select one or more subjects"
                     searchable
                     clearable
                     data={subjectOptions}
-                    value={selectedByRoll[student.roll_no] || null}
+                    value={selectedByRoll[student.roll_no] || []}
                     onChange={(value) =>
                       handleSubjectChange(student.roll_no, value)
                     }
