@@ -96,7 +96,8 @@ export default function ReimbursementDashboard() {
     try {
       setLoading(true);
       const claimsRes = await api.getReimbursementClaims();
-      setClaims(claimsRes.data || []);
+      const data = claimsRes.data;
+      setClaims(Array.isArray(data) ? data : Array.isArray(data?.results) ? data.results : []);
     } catch (error) {
       
       notifications.show({
