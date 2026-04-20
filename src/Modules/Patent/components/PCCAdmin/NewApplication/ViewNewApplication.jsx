@@ -147,6 +147,28 @@ function ViewNewApplication({ applicationId, handleBackToList }) {
   const API_BASE_URL = `${host}/patentsystem`;
   const authToken = localStorage.getItem("authToken");
 
+  const getApiErrorMessage = (err, fallbackMessage) => {
+    const apiData = err?.response?.data;
+
+    if (typeof apiData === "string" && apiData.trim()) {
+      return apiData;
+    }
+
+    if (apiData?.error) {
+      return apiData.error;
+    }
+
+    if (apiData?.message) {
+      return apiData.message;
+    }
+
+    if (apiData?.detail) {
+      return apiData.detail;
+    }
+
+    return err?.message || fallbackMessage;
+  };
+
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -323,7 +345,7 @@ function ViewNewApplication({ applicationId, handleBackToList }) {
     } catch (err) {
       console.error("Error forwarding to director:", err);
       setActionError(
-        `Failed to forward application: ${err.response?.data?.message || err.message}`,
+        `Failed to forward application: ${getApiErrorMessage(err, "Unable to forward application.")}`,
       );
     } finally {
       setActionLoading(false);
@@ -381,7 +403,7 @@ function ViewNewApplication({ applicationId, handleBackToList }) {
     } catch (err) {
       console.error("Error requesting modification:", err);
       setActionError(
-        `Failed to request modification: ${err.response?.data?.message || err.message}`,
+        `Failed to request modification: ${getApiErrorMessage(err, "Unable to request modification.")}`,
       );
     } finally {
       setActionLoading(false);
