@@ -46,7 +46,7 @@ function DirectorCpdaApprovals() {
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-bold">Director CPDA Approvals</h1>
         <p className="text-sm text-slate-500">
-          Review CPDA requests forwarded by the accountant.
+          Review CPDA requests forwarded by HR admin.
         </p>
       </div>
 
@@ -88,7 +88,7 @@ function DirectorCpdaApprovals() {
                       className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white"
                       disabled={actionLoading === adv.id}
                     >
-                      Approve
+                      Send to accountant
                     </button>
                     <button
                       type="button"

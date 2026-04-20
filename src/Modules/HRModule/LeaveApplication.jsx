@@ -25,6 +25,7 @@ function LeaveApplication({ onBack }) {
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [submitError, setSubmitError] = useState("");
   const [submitSuccess, setSubmitSuccess] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const [formData, setFormData] = useState({
     employee_id: "",
     employee_name: "",
@@ -43,8 +44,8 @@ function LeaveApplication({ onBack }) {
     nominee_employee_id: "",
     handover_to: "",
     handover_notes: "",
-    medical_certificate: "",
-    attachment_file: "",
+    medical_certificate: null,
+    attachment_file: null,
   });
 
   const fetchData = async () => {
@@ -81,8 +82,17 @@ function LeaveApplication({ onBack }) {
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    const next = { ...formData, [name]: value };
+    const { name, value, type, files, checked } = e.target;
+    const nextValue =
+      type === "file"
+        ? (files && files[0]) || null
+        : type === "checkbox"
+          ? checked
+          : value;
+    const next = { ...formData, [name]: nextValue };
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => ({ ...prev, [name]: "" }));
+    }
     if (name === "start_date" || name === "end_date") {
       next.total_days = computeTotalDays(next.start_date, next.end_date);
     }
@@ -102,7 +112,6 @@ function LeaveApplication({ onBack }) {
       next.nominee_employee_id = "";
     }
     if (name === "is_half_day") {
-      const { checked } = e.target;
       next.is_half_day = checked;
       if (checked) {
         next.total_days = "0.5";
@@ -120,18 +129,139 @@ function LeaveApplication({ onBack }) {
     }
     setFormData(next);
   };
+
+  const parseServerErrors = (errors) => {
+    if (!errors || typeof errors !== "object") return {};
+    const next = {};
+    Object.entries(errors).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        next[key] = value.join(" ");
+      } else if (typeof value === "string") {
+        next[key] = value;
+      }
+    });
+    return next;
+  };
+
+  const validateLeaveForm = () => {
+    const required = [
+      { key: "employee_id", label: "Employee ID" },
+      { key: "employee_name", label: "Employee Name" },
+      { key: "department", label: "Department" },
+      { key: "designation", label: "Designation" },
+      { key: "leave_type", label: "Leave Type" },
+      { key: "start_date", label: "Start Date" },
+      { key: "end_date", label: "End Date" },
+      { key: "reason", label: "Reason" },
+      { key: "contact_during_leave", label: "Contact during leave" },
+      { key: "address_during_leave", label: "Address during leave" },
+    ];
+    const nextErrors = {};
+    const missing = required
+      .filter((field) => !String(formData[field.key] || "").trim())
+      .map((field) => field.label);
+    required.forEach((field) => {
+      if (!String(formData[field.key] || "").trim()) {
+        nextErrors[field.key] = "This field is required.";
+      }
+    });
+
+    const isClRhLeave = ["Casual", "Restricted"].includes(formData.leave_type);
+    const isStationOnly =
+      isClRhLeave && formData.station_leave === "NOT_REQUIRED";
+    const isVacationLeave = formData.leave_type === "Vacation";
+
+    if (isClRhLeave && !formData.station_leave) {
+      missing.push("Station Leave");
+      nextErrors.station_leave = "Select a station leave option.";
+    }
+
+    if (formData.is_half_day) {
+      if (formData.leave_type !== "Casual") {
+        nextErrors.is_half_day = "Half-day is only for Casual leave.";
+        setSubmitError("Half-day is only allowed for Casual leave.");
+        setFieldErrors(nextErrors);
+        return false;
+      }
+      if (!formData.half_day_slot) {
+        missing.push("Half-day Slot");
+        nextErrors.half_day_slot = "Select AM or PM.";
+      }
+      if (
+        formData.start_date &&
+        formData.end_date &&
+        formData.start_date !== formData.end_date
+      ) {
+        nextErrors.end_date = "Half-day leave must be for a single day.";
+        setSubmitError("Half-day leave must be for a single day.");
+        setFieldErrors(nextErrors);
+        return false;
+      }
+    }
+
+    if (
+      !isStationOnly &&
+      !isVacationLeave &&
+      !String(formData.nominee_employee_id || "").trim()
+    ) {
+      missing.push("Nominee Employee ID");
+      nextErrors.nominee_employee_id = "Nominee Employee ID is required.";
+    }
+
+    if (
+      String(formData.nominee_employee_id || "").trim() &&
+      String(formData.employee_id || "").trim() ===
+        String(formData.nominee_employee_id || "").trim()
+    ) {
+      nextErrors.nominee_employee_id = "Nominee must be different.";
+      setSubmitError("Nominee must be different from the applicant.");
+      setFieldErrors(nextErrors);
+      return false;
+    }
+
+    if (missing.length > 0) {
+      setFieldErrors(nextErrors);
+      setSubmitError(`Please fill required fields: ${missing.join(", ")}`);
+      return false;
+    }
+
+    if (!formData.total_days) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        total_days: "Total days is required.",
+      }));
+      setSubmitError("Total Days is required.");
+      return false;
+    }
+
+    return true;
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitError("");
     setSubmitSuccess("");
+    setFieldErrors({});
+    if (!validateLeaveForm()) {
+      return;
+    }
     try {
       const payload = { ...formData };
       if (!payload.nominee_employee_id) {
         delete payload.nominee_employee_id;
       }
-      await createLeaveApplication(payload);
+      const formPayload = new FormData();
+      Object.entries(payload).forEach(([key, val]) => {
+        if (val === undefined || val === null || val === "") return;
+        if (typeof val === "boolean") {
+          formPayload.append(key, val ? "true" : "false");
+          return;
+        }
+        formPayload.append(key, val);
+      });
+      await createLeaveApplication(formPayload);
       setSubmitSuccess("Your form is submitted.");
       setShowForm(false);
+      setFieldErrors({});
       setFormData({
         employee_id: "",
         employee_name: "",
@@ -150,16 +280,26 @@ function LeaveApplication({ onBack }) {
         nominee_employee_id: "",
         handover_to: "",
         handover_notes: "",
-        medical_certificate: "",
-        attachment_file: "",
+        medical_certificate: null,
+        attachment_file: null,
       });
       fetchData();
     } catch (err) {
       const serverErrors = err?.response?.data;
-      if (serverErrors?.nominee_employee_id) {
-        setSubmitError(serverErrors.nominee_employee_id);
-      } else if (serverErrors) {
-        setSubmitError(JSON.stringify(serverErrors));
+      const parsed = parseServerErrors(serverErrors);
+      const generalError =
+        parsed.error || parsed.detail || parsed.non_field_errors;
+      if (generalError) {
+        setSubmitError(generalError);
+        delete parsed.error;
+        delete parsed.detail;
+        delete parsed.non_field_errors;
+      }
+      if (Object.keys(parsed).length > 0) {
+        setFieldErrors(parsed);
+        if (!generalError) {
+          setSubmitError("Please correct the highlighted fields.");
+        }
       } else {
         setSubmitError(
           "Submission failed. Please check the form fields and try again.",
@@ -243,6 +383,15 @@ function LeaveApplication({ onBack }) {
       window.prompt("New end date (YYYY-MM-DD):", "") || ""
     ).trim();
     if (!newEndDate) return;
+    const parsed = new Date(newEndDate);
+    if (Number.isNaN(parsed.getTime())) {
+      window.alert("New end date must be in YYYY-MM-DD format.");
+      return;
+    }
+    if (app.end_date && newEndDate <= app.end_date) {
+      window.alert("New end date must be after the current end date.");
+      return;
+    }
     const reason = window.prompt("Reason for extension (optional):", "") || "";
     try {
       await requestLeaveExtension(app.id, { new_end_date: newEndDate, reason });
@@ -262,6 +411,17 @@ function LeaveApplication({ onBack }) {
       window.prompt("Resumption date (YYYY-MM-DD):", "") || ""
     ).trim();
     const reason = window.prompt("Resumption remarks (optional):", "") || "";
+    if (resumptionDate) {
+      const parsed = new Date(resumptionDate);
+      if (Number.isNaN(parsed.getTime())) {
+        window.alert("Resumption date must be in YYYY-MM-DD format.");
+        return;
+      }
+      if (app.end_date && resumptionDate <= app.end_date) {
+        window.alert("Resumption date must be after the leave end date.");
+        return;
+      }
+    }
     try {
       await submitLeaveResumption(app.id, {
         resumption_date: resumptionDate,
@@ -637,6 +797,7 @@ function LeaveApplication({ onBack }) {
                     value={formData.employee_id}
                     onChange={handleChange}
                     required
+                    error={fieldErrors.employee_id}
                   />
                   <FormField
                     label="Employee Name"
@@ -644,6 +805,7 @@ function LeaveApplication({ onBack }) {
                     value={formData.employee_name}
                     onChange={handleChange}
                     required
+                    error={fieldErrors.employee_name}
                   />
                   <FormField
                     label="Department"
@@ -651,6 +813,7 @@ function LeaveApplication({ onBack }) {
                     value={formData.department}
                     onChange={handleChange}
                     required
+                    error={fieldErrors.department}
                   />
                   <FormField
                     label="Designation"
@@ -658,6 +821,7 @@ function LeaveApplication({ onBack }) {
                     value={formData.designation}
                     onChange={handleChange}
                     required
+                    error={fieldErrors.designation}
                   />
                 </div>
               </div>
@@ -679,6 +843,7 @@ function LeaveApplication({ onBack }) {
                         value={formData.leave_type}
                         onChange={handleChange}
                         required
+                        aria-invalid={Boolean(fieldErrors.leave_type)}
                       >
                         <option value="" disabled>
                           Select leave type
@@ -690,6 +855,11 @@ function LeaveApplication({ onBack }) {
                         <option value="Vacation">Vacation</option>
                         <option value="Sabbatical">Sabbatical</option>
                       </select>
+                      {fieldErrors.leave_type && (
+                        <p className="mt-1 text-xs text-red-600">
+                          {fieldErrors.leave_type}
+                        </p>
+                      )}
                     </label>
                   </div>
                   {formData.leave_type === "Casual" && (
@@ -723,6 +893,7 @@ function LeaveApplication({ onBack }) {
                           value={formData.station_leave}
                           onChange={handleChange}
                           required
+                          aria-invalid={Boolean(fieldErrors.station_leave)}
                         >
                           <option value="" disabled>
                             Select station leave
@@ -731,6 +902,11 @@ function LeaveApplication({ onBack }) {
                           <option value="WITHOUT">Without Station Leave</option>
                           <option value="NOT_REQUIRED">Not Required</option>
                         </select>
+                        {fieldErrors.station_leave && (
+                          <p className="mt-1 text-xs text-red-600">
+                            {fieldErrors.station_leave}
+                          </p>
+                        )}
                       </label>
                     </div>
                   )}
@@ -747,6 +923,7 @@ function LeaveApplication({ onBack }) {
                           value={formData.half_day_slot}
                           onChange={handleChange}
                           required
+                          aria-invalid={Boolean(fieldErrors.half_day_slot)}
                         >
                           <option value="" disabled>
                             Select slot
@@ -754,6 +931,11 @@ function LeaveApplication({ onBack }) {
                           <option value="AM">AM</option>
                           <option value="PM">PM</option>
                         </select>
+                        {fieldErrors.half_day_slot && (
+                          <p className="mt-1 text-xs text-red-600">
+                            {fieldErrors.half_day_slot}
+                          </p>
+                        )}
                       </label>
                     </div>
                   )}
@@ -765,6 +947,7 @@ function LeaveApplication({ onBack }) {
                     onChange={handleChange}
                     required
                     readOnly
+                    error={fieldErrors.total_days}
                   />
                   <FormField
                     label="Start Date"
@@ -773,6 +956,7 @@ function LeaveApplication({ onBack }) {
                     value={formData.start_date}
                     onChange={handleChange}
                     required
+                    error={fieldErrors.start_date}
                   />
                   <FormField
                     label="End Date"
@@ -781,6 +965,7 @@ function LeaveApplication({ onBack }) {
                     value={formData.end_date}
                     onChange={handleChange}
                     required
+                    error={fieldErrors.end_date}
                   />
                 </div>
                 <TextAreaField
@@ -789,6 +974,7 @@ function LeaveApplication({ onBack }) {
                   value={formData.reason}
                   onChange={handleChange}
                   required
+                  error={fieldErrors.reason}
                 />
               </div>
 
@@ -803,6 +989,7 @@ function LeaveApplication({ onBack }) {
                     value={formData.contact_during_leave}
                     onChange={handleChange}
                     required
+                    error={fieldErrors.contact_during_leave}
                   />
                   <FormField
                     label="Address during leave"
@@ -810,6 +997,7 @@ function LeaveApplication({ onBack }) {
                     value={formData.address_during_leave}
                     onChange={handleChange}
                     required
+                    error={fieldErrors.address_during_leave}
                   />
                   {!(formData.leave_type === "Vacation") &&
                     !(
@@ -826,6 +1014,7 @@ function LeaveApplication({ onBack }) {
                         value={formData.nominee_employee_id}
                         onChange={handleChange}
                         required
+                        error={fieldErrors.nominee_employee_id}
                       />
                     )}
                 </div>
@@ -842,18 +1031,33 @@ function LeaveApplication({ onBack }) {
                   Documents
                 </h3>
                 <div className="grid gap-4 md:grid-cols-2">
-                  <FormField
-                    label="Medical Certificate (reference)"
-                    name="medical_certificate"
-                    value={formData.medical_certificate}
-                    onChange={handleChange}
-                  />
-                  <FormField
-                    label="Attachment File (reference)"
-                    name="attachment_file"
-                    value={formData.attachment_file}
-                    onChange={handleChange}
-                  />
+                  <div className="fusion-field">
+                    <label
+                      htmlFor="medical_certificate"
+                      className="fusion-label"
+                    >
+                      <span className="block">Medical Certificate</span>
+                      <input
+                        id="medical_certificate"
+                        type="file"
+                        name="medical_certificate"
+                        onChange={handleChange}
+                        className="fusion-input"
+                      />
+                    </label>
+                  </div>
+                  <div className="fusion-field">
+                    <label htmlFor="attachment_file" className="fusion-label">
+                      <span className="block">Attachment File</span>
+                      <input
+                        id="attachment_file"
+                        type="file"
+                        name="attachment_file"
+                        onChange={handleChange}
+                        className="fusion-input"
+                      />
+                    </label>
+                  </div>
                 </div>
               </div>
 

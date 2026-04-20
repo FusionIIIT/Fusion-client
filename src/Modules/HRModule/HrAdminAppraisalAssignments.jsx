@@ -1,46 +1,51 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { getAppraisalForms, reviewAppraisalForm } from "./api";
-import StatusBadge from "./components/StatusBadge";
+import { assignAppraisalForm, getAppraisalForms } from "./api";
 import LoadingSpinner from "./components/LoadingSpinner";
+import StatusBadge from "./components/StatusBadge";
 
-function DirectorAppraisalReviews() {
+const ASSIGNMENT_OPTIONS = [
+  { value: "HOD", label: "Assign to HOD" },
+  { value: "DIRECTOR", label: "Assign to Director" },
+];
+
+function HrAdminAppraisalAssignments() {
   const [loading, setLoading] = useState(true);
   const [appraisals, setAppraisals] = useState([]);
   const [actionLoading, setActionLoading] = useState(null);
 
-  useEffect(() => {
-    const fetchAppraisals = async () => {
-      try {
-        const res = await getAppraisalForms();
-        setAppraisals(res?.data ?? []);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAppraisals();
-  }, []);
-
-  const reviewQueue = useMemo(
-    () =>
-      appraisals.filter((item) =>
-        ["PENDING", "REVIEWED"].includes((item.status || "").toUpperCase()),
-      ),
-    [appraisals],
-  );
-
-  const handleDecision = async (appraisalId, action) => {
-    const remarks = window.prompt("Add director remarks (optional):", "") || "";
-    const rating = window.prompt("Rating (optional):", "") || "";
+  const fetchAppraisals = async () => {
     try {
-      setActionLoading(appraisalId);
-      await reviewAppraisalForm(appraisalId, { action, remarks, rating });
       const res = await getAppraisalForms();
       setAppraisals(res?.data ?? []);
     } catch (error) {
       console.error(error);
-      window.alert("Action failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAppraisals();
+  }, []);
+
+  const pendingUnassigned = useMemo(
+    () =>
+      appraisals.filter(
+        (item) =>
+          (item.status || "").toUpperCase() === "PENDING" &&
+          !String(item.assigned_reviewer_role || "").trim(),
+      ),
+    [appraisals],
+  );
+
+  const handleAssign = async (appraisalId, role) => {
+    try {
+      setActionLoading(appraisalId);
+      await assignAppraisalForm(appraisalId, { role });
+      await fetchAppraisals();
+    } catch (error) {
+      console.error(error);
+      window.alert("Assignment failed. Please try again.");
     } finally {
       setActionLoading(null);
     }
@@ -51,9 +56,9 @@ function DirectorAppraisalReviews() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold">Director Appraisal Reviews</h1>
+        <h1 className="text-2xl font-bold">Appraisal Assignment</h1>
         <p className="text-sm text-slate-500">
-          Review appraisals assigned by HR or forwarded by HODs.
+          Assign pending appraisals to HODs or the Director.
         </p>
       </div>
 
@@ -65,14 +70,14 @@ function DirectorAppraisalReviews() {
               <th className="px-4 py-3 font-semibold">Department</th>
               <th className="px-4 py-3 font-semibold">Appraisal Year</th>
               <th className="px-4 py-3 font-semibold">Status</th>
-              <th className="px-4 py-3 font-semibold">Actions</th>
+              <th className="px-4 py-3 font-semibold">Assign</th>
             </tr>
           </thead>
           <tbody>
-            {reviewQueue.map((appraisal) => (
+            {pendingUnassigned.map((appraisal) => (
               <tr key={appraisal.id} className="border-t border-slate-100">
                 <td className="px-4 py-3 text-slate-900">
-                  {appraisal.employee_name || appraisal.employee || "Employee"}
+                  {appraisal.employee_name || "Employee"}
                 </td>
                 <td className="px-4 py-3 text-slate-700">
                   {appraisal.department || "-"}
@@ -85,33 +90,28 @@ function DirectorAppraisalReviews() {
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleDecision(appraisal.id, "approve")}
-                      className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white"
-                      disabled={actionLoading === appraisal.id}
-                    >
-                      Approve
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDecision(appraisal.id, "reject")}
-                      className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white"
-                      disabled={actionLoading === appraisal.id}
-                    >
-                      Reject
-                    </button>
+                    {ASSIGNMENT_OPTIONS.map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white"
+                        onClick={() => handleAssign(appraisal.id, option.value)}
+                        disabled={actionLoading === appraisal.id}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
                   </div>
                 </td>
               </tr>
             ))}
-            {reviewQueue.length === 0 && (
+            {pendingUnassigned.length === 0 && (
               <tr>
                 <td
                   colSpan="5"
                   className="px-4 py-8 text-center text-slate-500"
                 >
-                  No reviewed appraisals right now.
+                  No pending appraisals waiting for assignment.
                 </td>
               </tr>
             )}
@@ -122,4 +122,4 @@ function DirectorAppraisalReviews() {
   );
 }
 
-export default DirectorAppraisalReviews;
+export default HrAdminAppraisalAssignments;

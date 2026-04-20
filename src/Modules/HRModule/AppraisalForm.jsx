@@ -16,6 +16,7 @@ function AppraisalForm({ onBack }) {
   const [showForm, setShowForm] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [submitSuccess, setSubmitSuccess] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const [formData, setFormData] = useState({
     employee_id: "",
     employee_name: "",
@@ -53,22 +54,85 @@ function AppraisalForm({ onBack }) {
   useEffect(() => {
     fetchData();
   }, []);
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  const parseServerErrors = (errors) => {
+    if (!errors || typeof errors !== "object") return {};
+    const next = {};
+    Object.entries(errors).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        next[key] = value.join(" ");
+      } else if (typeof value === "string") {
+        next[key] = value;
+      }
+    });
+    return next;
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitError("");
     setSubmitSuccess("");
+    setFieldErrors({});
     try {
+      const required = [
+        { key: "employee_id", label: "Employee ID" },
+        { key: "employee_name", label: "Employee Name" },
+        { key: "department", label: "Department" },
+        { key: "designation", label: "Designation" },
+        { key: "appraisal_year", label: "Appraisal Year" },
+        { key: "self_summary", label: "Self Summary" },
+        { key: "key_responsibilities", label: "Key Responsibilities" },
+        { key: "achievements", label: "Achievements" },
+        { key: "goals_achieved", label: "Goals Achieved" },
+        { key: "future_goals", label: "Future Goals" },
+      ];
+      const missing = required
+        .filter((field) => !String(formData[field.key] || "").trim())
+        .map((field) => field.label);
+      if (missing.length > 0) {
+        const nextErrors = required.reduce((acc, field) => {
+          if (!String(formData[field.key] || "").trim()) {
+            acc[field.key] = "This field is required.";
+          }
+          return acc;
+        }, {});
+        setFieldErrors(nextErrors);
+        setSubmitError(`Please fill required fields: ${missing.join(", ")}`);
+        return;
+      }
+
       await createAppraisalForm(formData);
       setSubmitSuccess("Your form is submitted.");
       setShowForm(false);
+      setFieldErrors({});
       fetchData();
     } catch (err) {
-      const message = err?.response?.data
-        ? JSON.stringify(err.response.data)
-        : "Submission failed. Please check the form fields and try again.";
-      setSubmitError(message);
+      const serverErrors = err?.response?.data;
+      const parsed = parseServerErrors(serverErrors);
+      const generalError =
+        parsed.error || parsed.detail || parsed.non_field_errors;
+      if (generalError) {
+        setSubmitError(generalError);
+        delete parsed.error;
+        delete parsed.detail;
+        delete parsed.non_field_errors;
+      }
+      if (Object.keys(parsed).length > 0) {
+        setFieldErrors(parsed);
+        if (!generalError) {
+          setSubmitError("Please correct the highlighted fields.");
+        }
+      } else {
+        setSubmitError(
+          "Submission failed. Please check the form fields and try again.",
+        );
+      }
     }
   };
 
@@ -199,6 +263,7 @@ function AppraisalForm({ onBack }) {
                     value={formData.employee_id}
                     onChange={handleChange}
                     required
+                    error={fieldErrors.employee_id}
                   />
                   <FormField
                     label="Employee Name"
@@ -206,6 +271,7 @@ function AppraisalForm({ onBack }) {
                     value={formData.employee_name}
                     onChange={handleChange}
                     required
+                    error={fieldErrors.employee_name}
                   />
                   <FormField
                     label="Department"
@@ -213,6 +279,7 @@ function AppraisalForm({ onBack }) {
                     value={formData.department}
                     onChange={handleChange}
                     required
+                    error={fieldErrors.department}
                   />
                   <FormField
                     label="Designation"
@@ -220,6 +287,7 @@ function AppraisalForm({ onBack }) {
                     value={formData.designation}
                     onChange={handleChange}
                     required
+                    error={fieldErrors.designation}
                   />
                   <FormField
                     label="Appraisal Year"
@@ -227,6 +295,7 @@ function AppraisalForm({ onBack }) {
                     value={formData.appraisal_year}
                     onChange={handleChange}
                     required
+                    error={fieldErrors.appraisal_year}
                   />
                 </div>
               </div>
@@ -241,6 +310,7 @@ function AppraisalForm({ onBack }) {
                   value={formData.self_summary}
                   onChange={handleChange}
                   required
+                  error={fieldErrors.self_summary}
                 />
                 <TextAreaField
                   label="Key Responsibilities"
@@ -248,6 +318,7 @@ function AppraisalForm({ onBack }) {
                   value={formData.key_responsibilities}
                   onChange={handleChange}
                   required
+                  error={fieldErrors.key_responsibilities}
                 />
                 <TextAreaField
                   label="Achievements"
@@ -255,6 +326,7 @@ function AppraisalForm({ onBack }) {
                   value={formData.achievements}
                   onChange={handleChange}
                   required
+                  error={fieldErrors.achievements}
                 />
                 <TextAreaField
                   label="Challenges Faced"
@@ -338,6 +410,7 @@ function AppraisalForm({ onBack }) {
                   value={formData.goals_achieved}
                   onChange={handleChange}
                   required
+                  error={fieldErrors.goals_achieved}
                 />
                 <TextAreaField
                   label="Future Goals"
@@ -345,6 +418,7 @@ function AppraisalForm({ onBack }) {
                   value={formData.future_goals}
                   onChange={handleChange}
                   required
+                  error={fieldErrors.future_goals}
                 />
                 <FormField
                   label="Supporting Documents (reference)"

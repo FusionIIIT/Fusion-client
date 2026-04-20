@@ -16,7 +16,7 @@ function HR2Module() {
   const isPrivilegedRole = /hod|director|registrar|accountant|hr/i.test(
     role || "",
   );
-  const hideFinanceTabs = /registrar|accountant|hr/i.test(role || "");
+  const hideFinanceTabs = false;
   const showNominee = !isPrivilegedRole;
 
   useEffect(() => {

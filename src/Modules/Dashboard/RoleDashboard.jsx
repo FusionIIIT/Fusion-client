@@ -146,6 +146,13 @@ const roleActions = {
   ],
   hr_admin: [
     {
+      key: "hr-appraisal-assign",
+      title: "Assign Appraisals",
+      description: "Route submitted appraisals to HODs or the Director.",
+      cta: "Assign forms",
+      to: "/hr2/hr-admin/appraisal-assignments",
+    },
+    {
       key: "hr-ltc-review",
       title: "LTC Document Check",
       description: "Review LTC submissions and forward to accountant.",
@@ -180,12 +187,15 @@ function RoleDashboard() {
   }, [role]);
 
   const employeeActionsToShow = useMemo(() => {
-    const canSeeAppraisal = ["employee", "hod", "director"].includes(
-      resolvedRole.key,
-    );
-    const hideFinanceActions = ["hr_admin", "accountant", "registrar"].includes(
-      resolvedRole.key,
-    );
+    const canSeeAppraisal = [
+      "employee",
+      "hod",
+      "director",
+      "registrar",
+      "accountant",
+      "hr_admin",
+    ].includes(resolvedRole.key);
+    const hideFinanceActions = false;
     return employeeActions.filter((action) => {
       if (action.key === "appraisal") return canSeeAppraisal;
       if (action.key === "nominee") return resolvedRole.key === "employee";

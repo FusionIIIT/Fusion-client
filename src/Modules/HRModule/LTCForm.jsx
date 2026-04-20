@@ -17,6 +17,7 @@ function LTCForm({ onBack }) {
   const [showForm, setShowForm] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [submitSuccess, setSubmitSuccess] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const [formData, setFormData] = useState({
     employee_id: "",
     employee_name: "",
@@ -58,22 +59,150 @@ function LTCForm({ onBack }) {
   const handleChange = (e) => {
     const val =
       e.target.type === "checkbox" ? e.target.checked : e.target.value;
-    setFormData({ ...formData, [e.target.name]: val });
+    const { name } = e.target;
+    setFormData({ ...formData, [name]: val });
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
+  const parseServerErrors = (errors) => {
+    if (!errors || typeof errors !== "object") return {};
+    const next = {};
+    Object.entries(errors).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        next[key] = value.join(" ");
+      } else if (typeof value === "string") {
+        next[key] = value;
+      }
+    });
+    return next;
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitError("");
     setSubmitSuccess("");
+    setFieldErrors({});
     try {
-      await createLTCApplication(formData);
+      const required = [
+        { key: "employee_id", label: "Employee ID" },
+        { key: "employee_name", label: "Employee Name" },
+        { key: "department", label: "Department" },
+        { key: "designation", label: "Designation" },
+        { key: "ltc_block_year", label: "LTC Block Year" },
+        { key: "travel_start_date", label: "Travel Start Date" },
+        { key: "travel_end_date", label: "Travel End Date" },
+        { key: "destination", label: "Destination" },
+        { key: "purpose_of_travel", label: "Purpose of Travel" },
+        { key: "travel_mode", label: "Travel Mode" },
+        { key: "total_amount_claimed", label: "Total Amount Claimed" },
+        { key: "previous_ltc_used", label: "Previous LTC Used" },
+      ];
+
+      const missing = required
+        .filter((field) => !String(formData[field.key] || "").trim())
+        .map((field) => field.label);
+      if (missing.length > 0) {
+        const nextErrors = required.reduce((acc, field) => {
+          if (!String(formData[field.key] || "").trim()) {
+            acc[field.key] = "This field is required.";
+          }
+          return acc;
+        }, {});
+        setFieldErrors(nextErrors);
+        setSubmitError(`Please fill required fields: ${missing.join(", ")}`);
+        return;
+      }
+
+      if (formData.travel_start_date && formData.travel_end_date) {
+        if (formData.travel_start_date > formData.travel_end_date) {
+          setFieldErrors((prev) => ({
+            ...prev,
+            travel_end_date: "Travel end date must be on or after start date.",
+          }));
+          setSubmitError("Travel end date must be on or after start date.");
+          return;
+        }
+      }
+
+      const numericFields = [
+        "ticket_cost",
+        "accommodation_cost",
+        "other_expenses",
+        "total_amount_claimed",
+      ];
+      const hasInvalidAmount = numericFields.some((key) => {
+        if (String(formData[key] || "").trim()) {
+          const value = Number(formData[key]);
+          if (Number.isNaN(value) || value < 0) {
+            setFieldErrors((prev) => ({
+              ...prev,
+              [key]: "Amount must be a non-negative number.",
+            }));
+            setSubmitError("Amounts must be valid non-negative numbers.");
+            return true;
+          }
+        }
+        return false;
+      });
+      if (hasInvalidAmount) return;
+
+      const prevRaw = String(formData.previous_ltc_used || "")
+        .trim()
+        .toLowerCase();
+      let previousLtcUsed = null;
+      if (prevRaw === "yes" || prevRaw === "true") {
+        previousLtcUsed = true;
+      } else if (prevRaw === "no" || prevRaw === "false") {
+        previousLtcUsed = false;
+      } else {
+        setFieldErrors((prev) => ({
+          ...prev,
+          previous_ltc_used: "Use Yes or No.",
+        }));
+        setSubmitError("Previous LTC Used must be Yes or No.");
+        return;
+      }
+
+      if (previousLtcUsed && !String(formData.last_ltc_date || "").trim()) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          last_ltc_date: "Last LTC Date is required.",
+        }));
+        setSubmitError("Last LTC Date is required when previous LTC was used.");
+        return;
+      }
+
+      const payload = {
+        ...formData,
+        previous_ltc_used: previousLtcUsed,
+      };
+
+      await createLTCApplication(payload);
       setSubmitSuccess("Your form is submitted.");
       setShowForm(false);
+      setFieldErrors({});
       fetchData();
     } catch (err) {
-      const message = err?.response?.data
-        ? JSON.stringify(err.response.data)
-        : "Submission failed. Please check the form fields and try again.";
-      setSubmitError(message);
+      const serverErrors = err?.response?.data;
+      const parsed = parseServerErrors(serverErrors);
+      const generalError =
+        parsed.error || parsed.detail || parsed.non_field_errors;
+      if (generalError) {
+        setSubmitError(generalError);
+        delete parsed.error;
+        delete parsed.detail;
+        delete parsed.non_field_errors;
+      }
+      if (Object.keys(parsed).length > 0) {
+        setFieldErrors(parsed);
+        if (!generalError) {
+          setSubmitError("Please correct the highlighted fields.");
+        }
+      } else {
+        setSubmitError(
+          "Submission failed. Please check the form fields and try again.",
+        );
+      }
     }
   };
 
@@ -93,7 +222,6 @@ function LTCForm({ onBack }) {
       window.alert("Unable to download LTC application.");
     }
   };
-
   const handleWithdraw = async (id) => {
     const confirm = window.confirm("Withdraw this LTC request?");
     if (!confirm) return;
@@ -107,7 +235,6 @@ function LTCForm({ onBack }) {
       window.alert("Unable to withdraw LTC request.");
     }
   };
-
   if (loading) return <LoadingSpinner />;
   return (
     <div className="fusion-page">
@@ -234,6 +361,7 @@ function LTCForm({ onBack }) {
                     value={formData.employee_id}
                     onChange={handleChange}
                     required
+                    error={fieldErrors.employee_id}
                   />
                   <FormField
                     label="Employee Name"
@@ -241,6 +369,7 @@ function LTCForm({ onBack }) {
                     value={formData.employee_name}
                     onChange={handleChange}
                     required
+                    error={fieldErrors.employee_name}
                   />
                   <FormField
                     label="Department"
@@ -248,6 +377,7 @@ function LTCForm({ onBack }) {
                     value={formData.department}
                     onChange={handleChange}
                     required
+                    error={fieldErrors.department}
                   />
                   <FormField
                     label="Designation"
@@ -255,6 +385,7 @@ function LTCForm({ onBack }) {
                     value={formData.designation}
                     onChange={handleChange}
                     required
+                    error={fieldErrors.designation}
                   />
                 </div>
               </div>
@@ -270,6 +401,7 @@ function LTCForm({ onBack }) {
                     value={formData.ltc_block_year}
                     onChange={handleChange}
                     required
+                    error={fieldErrors.ltc_block_year}
                   />
                   <FormField
                     label="Travel Start Date"
@@ -278,6 +410,7 @@ function LTCForm({ onBack }) {
                     value={formData.travel_start_date}
                     onChange={handleChange}
                     required
+                    error={fieldErrors.travel_start_date}
                   />
                   <FormField
                     label="Travel End Date"
@@ -286,6 +419,7 @@ function LTCForm({ onBack }) {
                     value={formData.travel_end_date}
                     onChange={handleChange}
                     required
+                    error={fieldErrors.travel_end_date}
                   />
                   <FormField
                     label="Destination"
@@ -293,6 +427,7 @@ function LTCForm({ onBack }) {
                     value={formData.destination}
                     onChange={handleChange}
                     required
+                    error={fieldErrors.destination}
                   />
                 </div>
                 <TextAreaField
@@ -301,6 +436,7 @@ function LTCForm({ onBack }) {
                   value={formData.purpose_of_travel}
                   onChange={handleChange}
                   required
+                  error={fieldErrors.purpose_of_travel}
                 />
               </div>
 
@@ -333,6 +469,7 @@ function LTCForm({ onBack }) {
                     value={formData.travel_mode}
                     onChange={handleChange}
                     required
+                    error={fieldErrors.travel_mode}
                   />
                   <FormField
                     label="Ticket Number"
@@ -347,6 +484,7 @@ function LTCForm({ onBack }) {
                     step="0.01"
                     value={formData.ticket_cost}
                     onChange={handleChange}
+                    error={fieldErrors.ticket_cost}
                   />
                   <FormField
                     label="Accommodation Cost"
@@ -355,6 +493,7 @@ function LTCForm({ onBack }) {
                     step="0.01"
                     value={formData.accommodation_cost}
                     onChange={handleChange}
+                    error={fieldErrors.accommodation_cost}
                   />
                   <FormField
                     label="Other Expenses"
@@ -363,6 +502,7 @@ function LTCForm({ onBack }) {
                     step="0.01"
                     value={formData.other_expenses}
                     onChange={handleChange}
+                    error={fieldErrors.other_expenses}
                   />
                   <FormField
                     label="Total Amount Claimed"
@@ -372,6 +512,7 @@ function LTCForm({ onBack }) {
                     value={formData.total_amount_claimed}
                     onChange={handleChange}
                     required
+                    error={fieldErrors.total_amount_claimed}
                   />
                 </div>
               </div>
@@ -407,6 +548,7 @@ function LTCForm({ onBack }) {
                     value={formData.previous_ltc_used}
                     onChange={handleChange}
                     required
+                    error={fieldErrors.previous_ltc_used}
                   />
                   <FormField
                     label="Last LTC Date"
@@ -414,6 +556,7 @@ function LTCForm({ onBack }) {
                     type="date"
                     value={formData.last_ltc_date}
                     onChange={handleChange}
+                    error={fieldErrors.last_ltc_date}
                   />
                 </div>
               </div>

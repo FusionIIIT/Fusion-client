@@ -35,8 +35,14 @@ api.interceptors.response.use(
 
 // ==================== LEAVE ====================
 export const getLeaveApplications = () => api.get("/leave-applications/");
-export const createLeaveApplication = (data) =>
-  api.post("/leave-applications/", data);
+export const createLeaveApplication = (data) => {
+  if (data instanceof FormData) {
+    return api.post("/leave-applications/", data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  }
+  return api.post("/leave-applications/", data);
+};
 export const getLeaveApplication = (id) =>
   api.get(`/leave-applications/${id}/`);
 export const updateLeaveApplication = (id, data) =>
@@ -125,3 +131,5 @@ export const downloadAppraisalForm = (id) =>
   api.get(`/appraisal-forms/${id}/download/`, { responseType: "blob" });
 export const reviewAppraisalForm = (id, payload = {}) =>
   api.post(`/appraisal-forms/${id}/review/`, payload);
+export const assignAppraisalForm = (id, payload = {}) =>
+  api.post(`/appraisal-forms/${id}/assign/`, payload);

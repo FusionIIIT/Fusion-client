@@ -36,10 +36,7 @@ function AccountantCpdaReview() {
         if (status !== "FORWARDED") {
           return false;
         }
-        return (
-          ["PENDING", "DIRECTOR_APPROVED"].includes(accountantStatus) ||
-          !accountantStatus
-        );
+        return ["PENDING"].includes(accountantStatus);
       }),
     [advances],
   );
@@ -66,7 +63,7 @@ function AccountantCpdaReview() {
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-bold">Accountant CPDA Review</h1>
         <p className="text-sm text-slate-500">
-          Finalize CPDA advances forwarded by HR.
+          Finalize CPDA advances forwarded by the director.
         </p>
       </div>
 
@@ -102,19 +99,6 @@ function AccountantCpdaReview() {
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex flex-wrap gap-2">
-                    {(adv.accountant_processing_status || "").toUpperCase() !==
-                      "DIRECTOR_APPROVED" && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleDecision(adv.id, "forward-director")
-                        }
-                        className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white"
-                        disabled={actionLoading === adv.id}
-                      >
-                        Send to director
-                      </button>
-                    )}
                     <button
                       type="button"
                       onClick={() => handleDecision(adv.id, "approve")}

@@ -26,6 +26,7 @@ import DirectorCpdaApprovals from "./Modules/HRModule/DirectorCpdaApprovals";
 import RegistrarLeaveApprovals from "./Modules/HRModule/RegistrarLeaveApprovals";
 import HrAdminLtcReview from "./Modules/HRModule/HrAdminLtcReview";
 import HrAdminCpdaReview from "./Modules/HRModule/HrAdminCpdaReview";
+import HrAdminAppraisalAssignments from "./Modules/HRModule/HrAdminAppraisalAssignments";
 import AccountantLtcReview from "./Modules/HRModule/AccountantLtcReview";
 import AccountantCpdaReview from "./Modules/HRModule/AccountantCpdaReview";
 
@@ -197,6 +198,18 @@ export default function App() {
             isDirector ? (
               <Layout>
                 <DirectorCpdaApprovals />
+              </Layout>
+            ) : (
+              <Navigate to="/dashboard" replace />
+            )
+          }
+        />
+        <Route
+          path="/hr2/hr-admin/appraisal-assignments"
+          element={
+            isHrAdmin ? (
+              <Layout>
+                <HrAdminAppraisalAssignments />
               </Layout>
             ) : (
               <Navigate to="/dashboard" replace />

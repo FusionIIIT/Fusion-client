@@ -15,8 +15,10 @@ function FormField({
   disabled = false,
   autoComplete,
   pattern,
+  error,
 }) {
   const inputId = name ? `field-${name}` : undefined;
+  const errorId = error ? `${inputId}-error` : undefined;
   return (
     <div className="fusion-field">
       <label htmlFor={inputId} className="fusion-label">
@@ -38,8 +40,15 @@ function FormField({
         disabled={disabled}
         autoComplete={autoComplete}
         pattern={pattern}
-        className="fusion-input"
+        aria-invalid={Boolean(error)}
+        aria-describedby={errorId}
+        className={`fusion-input${error ? " border-red-300" : ""}`}
       />
+      {error && (
+        <p id={errorId} className="mt-1 text-xs text-red-600">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
@@ -63,6 +72,7 @@ FormField.propTypes = {
   disabled: PropTypes.bool,
   autoComplete: PropTypes.string,
   pattern: PropTypes.string,
+  error: PropTypes.string,
 };
 
 export default FormField;

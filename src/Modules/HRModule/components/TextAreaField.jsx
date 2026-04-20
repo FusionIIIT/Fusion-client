@@ -1,7 +1,15 @@
 import PropTypes from "prop-types";
 
-function TextAreaField({ label, name, value, onChange, required = false }) {
+function TextAreaField({
+  label,
+  name,
+  value,
+  onChange,
+  required = false,
+  error,
+}) {
   const inputId = name ? `field-${name}` : undefined;
+  const errorId = error ? `${inputId}-error` : undefined;
   return (
     <div className="fusion-field">
       <label htmlFor={inputId} className="fusion-label">
@@ -15,8 +23,15 @@ function TextAreaField({ label, name, value, onChange, required = false }) {
         onChange={onChange}
         required={required}
         rows="3"
-        className="fusion-textarea"
+        aria-invalid={Boolean(error)}
+        aria-describedby={errorId}
+        className={`fusion-textarea${error ? " border-red-300" : ""}`}
       />
+      {error && (
+        <p id={errorId} className="mt-1 text-xs text-red-600">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
@@ -27,6 +42,7 @@ TextAreaField.propTypes = {
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   onChange: PropTypes.func.isRequired,
   required: PropTypes.bool,
+  error: PropTypes.string,
 };
 
 export default TextAreaField;

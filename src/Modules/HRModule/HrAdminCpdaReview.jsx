@@ -54,7 +54,7 @@ function HrAdminCpdaReview() {
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-bold">HR Admin CPDA Review</h1>
         <p className="text-sm text-slate-500">
-          Verify CPDA advance requests and forward to accountant.
+          Verify CPDA advance requests and forward to director.
         </p>
       </div>
 
@@ -92,13 +92,11 @@ function HrAdminCpdaReview() {
                   <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
-                      onClick={() =>
-                        handleDecision(adv.id, "forward-accountant")
-                      }
+                      onClick={() => handleDecision(adv.id, "forward-director")}
                       className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white"
                       disabled={actionLoading === adv.id}
                     >
-                      Send to accountant
+                      Send to director
                     </button>
                     <button
                       type="button"

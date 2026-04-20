@@ -9,6 +9,7 @@ function CPDAReimbursement() {
   const [reimbursements, setReimbursements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [formData, setFormData] = useState({
     employee_id: "",
     employee_name: "",
@@ -50,13 +51,61 @@ function CPDAReimbursement() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitError("");
     try {
+      const required = [
+        { key: "employee_id", label: "Employee ID" },
+        { key: "employee_name", label: "Employee Name" },
+        { key: "department", label: "Department" },
+        { key: "designation", label: "Designation" },
+        { key: "event_name", label: "Event Name" },
+        { key: "event_type", label: "Event Type" },
+        { key: "start_date", label: "Start Date" },
+        { key: "end_date", label: "End Date" },
+        { key: "total_amount", label: "Total Amount" },
+        { key: "purpose_of_attending", label: "Purpose of Attending" },
+        { key: "benefits_to_institution", label: "Benefits to Institution" },
+      ];
+      const missing = required
+        .filter((field) => !String(formData[field.key] || "").trim())
+        .map((field) => field.label);
+      if (missing.length > 0) {
+        setSubmitError(`Please fill required fields: ${missing.join(", ")}`);
+        return;
+      }
+
+      if (formData.start_date && formData.end_date) {
+        if (formData.start_date > formData.end_date) {
+          setSubmitError("End date must be on or after start date.");
+          return;
+        }
+      }
+
+      const numericFields = [
+        "registration_fee",
+        "travel_expense",
+        "accommodation_expense",
+        "other_expenses",
+        "total_amount",
+      ];
+      const hasInvalidAmount = numericFields.some((key) => {
+        if (String(formData[key] || "").trim()) {
+          const value = Number(formData[key]);
+          if (Number.isNaN(value) || value < 0) {
+            setSubmitError("Amounts must be valid non-negative numbers.");
+            return true;
+          }
+        }
+        return false;
+      });
+      if (hasInvalidAmount) return;
+
       await createCPDAReimbursement(formData);
       setShowForm(false);
       fetchData();
     } catch (error) {
       console.error(error);
-      window.alert("Submission failed");
+      setSubmitError("Submission failed. Please check the form fields.");
     }
   };
 
@@ -111,6 +160,11 @@ function CPDAReimbursement() {
             <p className="text-sm text-slate-500 mb-4">
               Complete the required fields to submit your CPDA request.
             </p>
+            {submitError && (
+              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {submitError}
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
                 <h3 className="text-sm font-semibold text-slate-700 mb-3">

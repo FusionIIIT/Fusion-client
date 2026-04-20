@@ -25,6 +25,10 @@ function HodAppraisalReviews() {
   const handleDecision = async (appraisalId, action) => {
     const remarks = window.prompt("Add reviewer remarks (optional):", "") || "";
     const rating = window.prompt("Rating (optional):", "") || "";
+    if ((action === "forward" || action === "approve") && !remarks.trim()) {
+      window.alert("Reviewer remarks are required for this action.");
+      return;
+    }
     try {
       setActionLoading(appraisalId);
       await reviewAppraisalForm(appraisalId, { action, remarks, rating });

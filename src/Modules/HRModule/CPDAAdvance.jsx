@@ -17,6 +17,7 @@ function CPDAAdvance({ onBack }) {
   const [showForm, setShowForm] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [submitSuccess, setSubmitSuccess] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const [formData, setFormData] = useState({
     employee_id: "",
     employee_name: "",
@@ -54,22 +55,120 @@ function CPDAAdvance({ onBack }) {
   useEffect(() => {
     fetchData();
   }, []);
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  const parseServerErrors = (errors) => {
+    if (!errors || typeof errors !== "object") return {};
+    const next = {};
+    Object.entries(errors).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        next[key] = value.join(" ");
+      } else if (typeof value === "string") {
+        next[key] = value;
+      }
+    });
+    return next;
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitError("");
     setSubmitSuccess("");
+    setFieldErrors({});
     try {
+      const required = [
+        { key: "employee_id", label: "Employee ID" },
+        { key: "employee_name", label: "Employee Name" },
+        { key: "department", label: "Department" },
+        { key: "designation", label: "Designation" },
+        { key: "event_name", label: "Event Name" },
+        { key: "event_type", label: "Event Type" },
+        { key: "start_date", label: "Start Date" },
+        { key: "end_date", label: "End Date" },
+        { key: "total_amount", label: "Total Amount" },
+        { key: "purpose_of_attending", label: "Purpose of Attending" },
+        { key: "benefits_to_institution", label: "Benefits to Institution" },
+      ];
+      const missing = required
+        .filter((field) => !String(formData[field.key] || "").trim())
+        .map((field) => field.label);
+      if (missing.length > 0) {
+        const nextErrors = required.reduce((acc, field) => {
+          if (!String(formData[field.key] || "").trim()) {
+            acc[field.key] = "This field is required.";
+          }
+          return acc;
+        }, {});
+        setFieldErrors(nextErrors);
+        setSubmitError(`Please fill required fields: ${missing.join(", ")}`);
+        return;
+      }
+
+      if (formData.start_date && formData.end_date) {
+        if (formData.start_date > formData.end_date) {
+          setFieldErrors((prev) => ({
+            ...prev,
+            end_date: "End date must be on or after start date.",
+          }));
+          setSubmitError("End date must be on or after start date.");
+          return;
+        }
+      }
+
+      const numericFields = [
+        "registration_fee",
+        "travel_expense",
+        "accommodation_expense",
+        "other_expenses",
+        "total_amount",
+      ];
+      const hasInvalidAmount = numericFields.some((key) => {
+        if (String(formData[key] || "").trim()) {
+          const value = Number(formData[key]);
+          if (Number.isNaN(value) || value < 0) {
+            setFieldErrors((prev) => ({
+              ...prev,
+              [key]: "Amount must be a non-negative number.",
+            }));
+            setSubmitError("Amounts must be valid non-negative numbers.");
+            return true;
+          }
+        }
+        return false;
+      });
+      if (hasInvalidAmount) return;
+
       await createCPDAAdvance(formData);
       setSubmitSuccess("Your form is submitted.");
       setShowForm(false);
+      setFieldErrors({});
       fetchData();
     } catch (err) {
-      const message = err?.response?.data
-        ? JSON.stringify(err.response.data)
-        : "Submission failed. Please check the form fields and try again.";
-      setSubmitError(message);
+      const serverErrors = err?.response?.data;
+      const parsed = parseServerErrors(serverErrors);
+      const generalError =
+        parsed.error || parsed.detail || parsed.non_field_errors;
+      if (generalError) {
+        setSubmitError(generalError);
+        delete parsed.error;
+        delete parsed.detail;
+        delete parsed.non_field_errors;
+      }
+      if (Object.keys(parsed).length > 0) {
+        setFieldErrors(parsed);
+        if (!generalError) {
+          setSubmitError("Please correct the highlighted fields.");
+        }
+      } else {
+        setSubmitError(
+          "Submission failed. Please check the form fields and try again.",
+        );
+      }
     }
   };
 
@@ -317,6 +416,7 @@ function CPDAAdvance({ onBack }) {
                     step="0.01"
                     value={formData.registration_fee}
                     onChange={handleChange}
+                    error={fieldErrors.registration_fee}
                   />
                   <FormField
                     label="Travel Expense"
@@ -325,6 +425,7 @@ function CPDAAdvance({ onBack }) {
                     step="0.01"
                     value={formData.travel_expense}
                     onChange={handleChange}
+                    error={fieldErrors.travel_expense}
                   />
                   <FormField
                     label="Accommodation Expense"
@@ -333,6 +434,7 @@ function CPDAAdvance({ onBack }) {
                     step="0.01"
                     value={formData.accommodation_expense}
                     onChange={handleChange}
+                    error={fieldErrors.accommodation_expense}
                   />
                   <FormField
                     label="Other Expenses"
@@ -341,6 +443,7 @@ function CPDAAdvance({ onBack }) {
                     step="0.01"
                     value={formData.other_expenses}
                     onChange={handleChange}
+                    error={fieldErrors.other_expenses}
                   />
                   <FormField
                     label="Total Amount"
@@ -350,6 +453,7 @@ function CPDAAdvance({ onBack }) {
                     value={formData.total_amount}
                     onChange={handleChange}
                     required
+                    error={fieldErrors.total_amount}
                   />
                 </div>
               </div>
@@ -364,6 +468,7 @@ function CPDAAdvance({ onBack }) {
                   value={formData.purpose_of_attending}
                   onChange={handleChange}
                   required
+                  error={fieldErrors.purpose_of_attending}
                 />
                 <TextAreaField
                   label="Benefits to Institution"
@@ -371,6 +476,7 @@ function CPDAAdvance({ onBack }) {
                   value={formData.benefits_to_institution}
                   onChange={handleChange}
                   required
+                  error={fieldErrors.benefits_to_institution}
                 />
               </div>
 
