@@ -23,6 +23,12 @@ const STATUS_LABELS = {
   submitted: "Submitted — with approver (e.g. HR Admin)",
   hr_approved: "Approved by HR",
   hr_rejected: "Rejected by HR",
+  forwarded_to_director: "Forwarded to Director",
+  forwarded_to_registrar: "Forwarded to Registrar",
+  director_approved: "Sanctioned by Director",
+  director_rejected: "Rejected by Director",
+  registrar_approved: "Sanctioned by Registrar",
+  registrar_rejected: "Rejected by Registrar",
   with_accountant: "With Accountant",
 };
 
@@ -35,6 +41,14 @@ function pickLtcWorkflowDesignation(workflowStatus, designations) {
   if (workflowStatus === "submitted") {
     const hr = list.find((x) => /hr\s*admin/i.test(x));
     if (hr) return hr;
+  }
+  if (workflowStatus === "forwarded_to_director") {
+    const dir = list.find((x) => /director/i.test(x));
+    if (dir) return dir;
+  }
+  if (workflowStatus === "forwarded_to_registrar") {
+    const reg = list.find((x) => /registrar/i.test(x));
+    if (reg) return reg;
   }
   return list[0] || "";
 }
@@ -95,13 +109,41 @@ function LtcFormView() {
       out.push(
         {
           key: "hr_admin_approve",
-          label: "Approve & forward to Accountant",
+          label: "Approve & forward to Sanctioning Authority/Accountant",
           action: "hr_admin_approve",
         },
         {
           key: "hr_admin_reject",
           label: "Reject",
           action: "hr_admin_reject",
+        },
+      );
+    }
+    if (/director/i.test(d || "") && w === "forwarded_to_director") {
+      out.push(
+        {
+          key: "director_approve",
+          label: "Sanction & forward to Accountant",
+          action: "director_approve",
+        },
+        {
+          key: "director_reject",
+          label: "Reject",
+          action: "director_reject",
+        },
+      );
+    }
+    if (/registrar/i.test(d || "") && w === "forwarded_to_registrar") {
+      out.push(
+        {
+          key: "registrar_approve",
+          label: "Sanction & forward to Accountant",
+          action: "registrar_approve",
+        },
+        {
+          key: "registrar_reject",
+          label: "Reject",
+          action: "registrar_reject",
         },
       );
     }
