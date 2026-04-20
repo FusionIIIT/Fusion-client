@@ -21,6 +21,26 @@ function Editdoctor() {
   const [loading, setLoading] = useState(true);
   const [submit, setSubmit] = useState(false);
 
+  const getErrorMessage = (payload, fallback) => {
+    if (!payload) {
+      return fallback;
+    }
+    if (typeof payload.detail === "string" && payload.detail.trim() !== "") {
+      return payload.detail;
+    }
+    if (payload.errors && typeof payload.errors === "object") {
+      const firstKey = Object.keys(payload.errors)[0];
+      const firstValue = payload.errors[firstKey];
+      if (Array.isArray(firstValue) && firstValue.length > 0) {
+        return String(firstValue[0]);
+      }
+      if (typeof firstValue === "string") {
+        return firstValue;
+      }
+    }
+    return fallback;
+  };
+
   const containerStyle = {
     display: "flex",
     flexDirection: "column",
@@ -135,15 +155,24 @@ function Editdoctor() {
         },
       );
       console.log(response);
+
+      if (response?.data?.status === 1) {
+        setNotification({
+          type: "success",
+          message: "Schedule Added Successfully",
+        });
+        return;
+      }
+
       setNotification({
-        type: "success",
-        message: "Schedule Added Successfully",
+        type: "error",
+        message: getErrorMessage(response?.data, "Unable to add schedule"),
       });
     } catch (err) {
       console.log(err);
       setNotification({
         type: "error",
-        message: err.message,
+        message: getErrorMessage(err?.response?.data, err.message),
       });
     } finally {
       setSubmit(true);
@@ -171,15 +200,24 @@ function Editdoctor() {
         },
       );
       console.log(response);
+
+      if (response?.data?.status === 1) {
+        setNotification({
+          type: "success",
+          message: "Schedule Removed Successfully",
+        });
+        return;
+      }
+
       setNotification({
-        type: "success",
-        message: "Schedule Removed Successfully",
+        type: "error",
+        message: getErrorMessage(response?.data, "Unable to remove schedule"),
       });
     } catch (err) {
       console.log(err);
       setNotification({
         type: "error",
-        message: err.message,
+        message: getErrorMessage(err?.response?.data, err.message),
       });
     } finally {
       setSubmit(true);

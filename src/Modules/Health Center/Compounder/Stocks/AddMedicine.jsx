@@ -25,6 +25,26 @@ function AddMedicine() {
   const [pack, setpack] = useState("");
   const [reportfile, setFile] = useState(null);
 
+  const getErrorMessage = (payload, fallback) => {
+    if (!payload) {
+      return fallback;
+    }
+    if (typeof payload.detail === "string" && payload.detail.trim() !== "") {
+      return payload.detail;
+    }
+    if (payload.errors && typeof payload.errors === "object") {
+      const firstKey = Object.keys(payload.errors)[0];
+      const firstValue = payload.errors[firstKey];
+      if (Array.isArray(firstValue) && firstValue.length > 0) {
+        return String(firstValue[0]);
+      }
+      if (typeof firstValue === "string") {
+        return firstValue;
+      }
+    }
+    return fallback;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -49,9 +69,23 @@ function AddMedicine() {
         },
       );
       console.log(response.data);
-      setSubmit(false);
+
+      if (response?.data?.status === 1) {
+        alert("Medicine added successfully.");
+        setMed("");
+        setthres("");
+        setBrand("");
+        setconstit("");
+        setmanu("");
+        setpack("");
+      } else {
+        alert(getErrorMessage(response?.data, "Unable to add medicine."));
+      }
     } catch (err) {
       console.log(err);
+      alert(getErrorMessage(err?.response?.data, "Unable to add medicine."));
+    } finally {
+      setSubmit(false);
     }
   };
 
@@ -72,29 +106,44 @@ function AddMedicine() {
     const token = localStorage.getItem("authToken");
     const reader = new FileReader();
     reader.onload = async (e) => {
-      const base64Data = e.target.result.split(",")[1]; // remove "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,"
+      const base64Data = e.target.result.split(",")[1];
 
-      const response = await axios.post(
-        compounderRoute,
-        {
-          add_medicine_excel: 1,
-          file_data: base64Data,
-          filename: reportfile.name,
-        },
-        {
-          headers: {
-            Authorization: `Token ${token}`,
+      try {
+        const response = await axios.post(
+          compounderRoute,
+          {
+            add_medicine_excel: 1,
+            file_data: base64Data,
+            filename: reportfile.name,
           },
-        },
-      );
-      console.log(response.data);
-      if (response.data.status === 1) {
-        alert("added medicine successfully");
-        window.location.reload();
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+          },
+        );
+        console.log(response.data);
+
+        if (response?.data?.status === 1) {
+          const created = Number(response?.data?.created || 0);
+          alert(`Medicine upload completed. New medicines added: ${created}`);
+          setFile(null);
+          return;
+        }
+
+        alert(
+          getErrorMessage(
+            response?.data,
+            "Excel upload failed. Please verify the template columns.",
+          ),
+        );
+      } catch (err) {
+        console.log(err);
+        alert(getErrorMessage(err?.response?.data, "Excel upload failed."));
       }
     };
 
-    reader.readAsDataURL(reportfile); // reads as base64
+    reader.readAsDataURL(reportfile);
   };
 
   const handelgetfile = async () => {
@@ -112,9 +161,21 @@ function AddMedicine() {
       );
       const blob = response.data;
       const fileURL = URL.createObjectURL(blob);
-      window.open(fileURL, "_blank");
+      const link = document.createElement("a");
+      link.href = fileURL;
+      link.download = "example_add_medicine.xlsx";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(fileURL);
     } catch (err) {
       console.log(err);
+      alert(
+        getErrorMessage(
+          err?.response?.data,
+          "Unable to download medicine template.",
+        ),
+      );
     }
   };
 

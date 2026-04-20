@@ -23,7 +23,7 @@ function AddStock() {
   const [manuname, setmanu] = useState("");
   const [constit, setConstit] = useState("");
   const [medname, setmedname] = useState("");
-  const [packsize, setpack] = useState(0);
+  const [packsize, setpack] = useState("");
   const [Quantity, setquantity] = useState(0);
   const [Supplier, setsupplier] = useState("");
   const [date, setdate] = useState("");
@@ -31,13 +31,50 @@ function AddStock() {
   const [submit, setSubmit] = useState(false);
   const [reportfile, setFile] = useState(null);
 
-  const fetchMedicine = async () => {
+  const applySelectedMedicine = (item) => {
+    if (!item) {
+      setSelected(-1);
+      setmanu("");
+      setpack("");
+      setConstit("");
+      setmedname("");
+      return;
+    }
+
+    setSelected(item.id);
+    setmanu(item.manufacturer_name || "");
+    setpack(item.pack_size_label || "");
+    setConstit(item.constituents || "");
+    setmedname(item.medicine_name || "");
+  };
+
+  const getErrorMessage = (payload, fallback) => {
+    if (!payload) {
+      return fallback;
+    }
+    if (typeof payload.detail === "string" && payload.detail.trim() !== "") {
+      return payload.detail;
+    }
+    if (payload.errors && typeof payload.errors === "object") {
+      const firstKey = Object.keys(payload.errors)[0];
+      const firstValue = payload.errors[firstKey];
+      if (Array.isArray(firstValue) && firstValue.length > 0) {
+        return String(firstValue[0]);
+      }
+      if (typeof firstValue === "string") {
+        return firstValue;
+      }
+    }
+    return fallback;
+  };
+
+  const fetchMedicine = async (searchText = "") => {
     const token = localStorage.getItem("authToken");
     try {
       const response = await axios.post(
         compounderRoute,
         {
-          medicine_name_for_stock: brand,
+          medicine_name_for_stock: searchText,
           get_stock: 1,
         },
         {
@@ -47,13 +84,12 @@ function AddStock() {
         },
       );
       console.log(response);
-      const arr = [];
-      response.data.sim.forEach((value) => {
-        const tp = `${value.brand_name},${value.id}`;
-        arr.push(tp);
-      });
-      setsimilar(response.data.sim);
-      setbrandnames(arr);
+      const rows = Array.isArray(response?.data?.sim) ? response.data.sim : [];
+      const uniqueBrandNames = [
+        ...new Set(rows.map((value) => value.brand_name).filter(Boolean)),
+      ];
+      setsimilar(rows);
+      setbrandnames(uniqueBrandNames);
     } catch (err) {
       console.log(err);
     }
@@ -62,22 +98,18 @@ function AddStock() {
   const handlebrand = (event) => {
     console.log(event);
     setBrand(event);
-    let fl = 1;
-    similar.forEach((item) => {
-      const tp = `${item.brand_name},${item.id}`;
-      if (tp === event) {
-        fl = 0;
-        setmanu(item.manufacturer_name);
-        setpack(item.pack_size_label);
-        setSelected(item.id);
-        setConstit(item.constituents);
-        setmedname(item.medicine_name);
-      }
-    });
-    if (fl) {
-      fetchMedicine();
-    }
+    const selectedItem = similar.find(
+      (item) =>
+        (item.brand_name || "").toLowerCase() === (event || "").toLowerCase(),
+    );
+
+    applySelectedMedicine(selectedItem || null);
+    fetchMedicine(event);
   };
+
+  useEffect(() => {
+    fetchMedicine("");
+  }, []);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -96,29 +128,44 @@ function AddStock() {
     const token = localStorage.getItem("authToken");
     const reader = new FileReader();
     reader.onload = async (e) => {
-      const base64Data = e.target.result.split(",")[1]; // remove "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,"
+      const base64Data = e.target.result.split(",")[1];
 
-      const response = await axios.post(
-        compounderRoute,
-        {
-          add_stock_excel: 1,
-          file_data: base64Data,
-          filename: reportfile.name,
-        },
-        {
-          headers: {
-            Authorization: `Token ${token}`,
+      try {
+        const response = await axios.post(
+          compounderRoute,
+          {
+            add_stock_excel: 1,
+            file_data: base64Data,
+            filename: reportfile.name,
           },
-        },
-      );
-      console.log(response.data);
-      if (response.data.status === 1) {
-        alert("added stock successfully");
-        window.location.reload();
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+          },
+        );
+        console.log(response.data);
+
+        if (response?.data?.status === 1) {
+          const created = Number(response?.data?.created || 0);
+          alert(`Stock uploaded successfully. Rows added: ${created}`);
+          setFile(null);
+          return;
+        }
+
+        alert(
+          getErrorMessage(
+            response?.data,
+            "Excel upload failed. Please check column names and values.",
+          ),
+        );
+      } catch (err) {
+        console.log(err);
+        alert(getErrorMessage(err?.response?.data, "Excel upload failed."));
       }
     };
 
-    reader.readAsDataURL(reportfile); // reads as base64
+    reader.readAsDataURL(reportfile);
   };
 
   const handelgetfile = async () => {
@@ -136,9 +183,21 @@ function AddStock() {
       );
       const blob = response.data;
       const fileURL = URL.createObjectURL(blob);
-      window.open(fileURL, "_blank");
+      const link = document.createElement("a");
+      link.href = fileURL;
+      link.download = "example_add_stock.xlsx";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(fileURL);
     } catch (err) {
       console.log(err);
+      alert(
+        getErrorMessage(
+          err?.response?.data,
+          "Unable to download stock template.",
+        ),
+      );
     }
   };
 
@@ -165,14 +224,26 @@ function AddStock() {
           },
         );
         console.log(response);
-        if (response.data.status === 1) {
+        if (response?.data?.status === 1) {
           alert("Added Stock");
+          setquantity(0);
+          setsupplier("");
+          setdate("");
+          return;
         }
-        window.location.reload();
+
+        alert(getErrorMessage(response?.data, "Unable to add stock."));
       } catch (err) {
         console.log(err);
+        alert(getErrorMessage(err?.response?.data, "Unable to add stock."));
+      } finally {
+        setSubmit(false);
       }
+      return;
     }
+
+    setSubmit(false);
+    alert("Please select a medicine from suggestions before submitting stock.");
   };
   return (
     <>
@@ -234,6 +305,8 @@ function AddStock() {
               value={brand}
               onChange={handlebrand}
               data={brandnames}
+              onFocus={() => fetchMedicine(brand)}
+              nothingFoundMessage="No matching medicine found"
             />
           </Grid.Col>
 
@@ -279,6 +352,9 @@ function AddStock() {
               id="medicine-name"
               placeholder="Medicine Name"
               value={medname}
+              onChange={(e) => {
+                setmedname(e.target.value);
+              }}
             />
           </Grid.Col>
 
@@ -288,6 +364,9 @@ function AddStock() {
               id="constituents"
               placeholder="Constituents"
               value={constit}
+              onChange={(e) => {
+                setConstit(e.target.value);
+              }}
             />
           </Grid.Col>
 
@@ -297,6 +376,9 @@ function AddStock() {
               id="manufacturer-name"
               placeholder="Manufacturer Name"
               value={manuname}
+              onChange={(e) => {
+                setmanu(e.target.value);
+              }}
             />
           </Grid.Col>
 
@@ -306,6 +388,9 @@ function AddStock() {
               id="pack-size"
               placeholder="Pack Size"
               value={packsize}
+              onChange={(e) => {
+                setpack(e.target.value);
+              }}
             />
           </Grid.Col>
         </Grid>

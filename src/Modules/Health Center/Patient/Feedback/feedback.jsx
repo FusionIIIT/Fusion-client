@@ -37,9 +37,17 @@ function Feedback() {
         },
       );
       console.log(response.data);
-      setIsSubmitting(false);
+      if (response?.data?.status === 1) {
+        alert("Feedback submitted successfully.");
+        setFeedback("");
+      } else {
+        setError(response?.data?.detail || "Unable to submit feedback.");
+      }
     } catch (err) {
       console.log(err);
+      setError(err?.response?.data?.detail || "Unable to submit feedback.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 

@@ -23,6 +23,26 @@ function EditThreshold() {
   const [Thresh, setThresh] = useState(0);
   const [Selected, setSelected] = useState(-1);
 
+  const getErrorMessage = (payload, fallback) => {
+    if (!payload) {
+      return fallback;
+    }
+    if (typeof payload.detail === "string" && payload.detail.trim() !== "") {
+      return payload.detail;
+    }
+    if (payload.errors && typeof payload.errors === "object") {
+      const firstKey = Object.keys(payload.errors)[0];
+      const firstValue = payload.errors[firstKey];
+      if (Array.isArray(firstValue) && firstValue.length > 0) {
+        return String(firstValue[0]);
+      }
+      if (typeof firstValue === "string") {
+        return firstValue;
+      }
+    }
+    return fallback;
+  };
+
   const editThreshold = async () => {
     const token = localStorage.getItem("authToken");
     if (Selected !== -1) {
@@ -37,14 +57,22 @@ function EditThreshold() {
           },
         );
         console.log(response);
-        if (response.data.status === 1) {
+        if (response?.data?.status === 1) {
           alert("Threshold Set");
+          setThresh(Number(editThres));
+          setEditThres("");
+          return;
         }
-        window.location.reload();
+
+        alert(getErrorMessage(response?.data, "Threshold update failed."));
       } catch (err) {
         console.log(err);
+        alert(getErrorMessage(err?.response?.data, "Threshold update failed."));
       }
+      return;
     }
+
+    alert("Please select a medicine before editing threshold.");
   };
 
   const handleeditthres = (event) => {

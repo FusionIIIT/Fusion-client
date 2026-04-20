@@ -21,6 +21,26 @@ function ViewStock() {
   const [activePage, setPage] = useState(1);
   const [viewStock, setView] = useState([]);
 
+  const getErrorMessage = (payload, fallback) => {
+    if (!payload) {
+      return fallback;
+    }
+    if (typeof payload.detail === "string" && payload.detail.trim() !== "") {
+      return payload.detail;
+    }
+    if (payload.errors && typeof payload.errors === "object") {
+      const firstKey = Object.keys(payload.errors)[0];
+      const firstValue = payload.errors[firstKey];
+      if (Array.isArray(firstValue) && firstValue.length > 0) {
+        return String(firstValue[0]);
+      }
+      if (typeof firstValue === "string") {
+        return firstValue;
+      }
+    }
+    return fallback;
+  };
+
   const fetchStock = async (pagenumber) => {
     setLoading(true);
     const token = localStorage.getItem("authToken");
@@ -47,6 +67,11 @@ function ViewStock() {
       setTotalPages(Number.isFinite(pages) && pages > 0 ? pages : 1);
     } catch (err) {
       console.log(err);
+      alert(
+        getErrorMessage(err?.response?.data, "Unable to fetch stock data."),
+      );
+      setView([]);
+      setTotalPages(1);
     } finally {
       setLoading(false);
     }
