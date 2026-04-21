@@ -30,6 +30,9 @@ import RequiredMedicine from "../Compounder/Stocks/RequiredMedicine";
 import PathologistManagementPage from "../pages/PathologistManagementPage";
 import AnnouncementsPage from "../pages/AnnouncementsPage";
 import FollowupPrescriptionPage from "../pages/FollowupPrescriptionPage";
+import CreateRequisition from "../Compounder/Requisitions/CreateRequisition";
+import RequisitionList from "../Compounder/Requisitions/RequisitionList";
+import PendingRequisitions from "../Compounder/Requisitions/PendingRequisitions";
 
 export function CompounderRoutes() {
   return (
@@ -271,6 +274,30 @@ export function CompounderRoutes() {
         element={
           <Layout>
             <Application />
+          </Layout>
+        }
+      />
+      <Route
+        path="/requisitions"
+        element={
+          <Layout>
+            <RequisitionList />
+          </Layout>
+        }
+      />
+      <Route
+        path="/requisitions/create"
+        element={
+          <Layout>
+            <CreateRequisition />
+          </Layout>
+        }
+      />
+      <Route
+        path="/requisitions/pending"
+        element={
+          <Layout>
+            <PendingRequisitions />
           </Layout>
         }
       />

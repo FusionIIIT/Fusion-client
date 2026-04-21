@@ -16,6 +16,7 @@ import {
   Calendar,
   Megaphone,
   Heart,
+  FileText,
 } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 
@@ -64,6 +65,12 @@ export default function CompounderDashboard() {
       title: "Medical Relief",
       description: "Review and process medical relief applications",
       action: () => navigate("/healthcenter/compounder/medical-relief/inbox"),
+    },
+    {
+      icon: <FileText size={32} weight="duotone" color="#15abff" />,
+      title: "Requisitions",
+      description: "Manage medical requisitions and requests",
+      action: () => navigate("/healthcenter/compounder/requisitions"),
     },
   ];
 

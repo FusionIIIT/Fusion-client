@@ -18,6 +18,7 @@ function NavCom() {
     { title: "Feedback", path: "/feedback" },
     { title: "Make Announcements", path: "/announcement" },
     { title: "Medical Relief", path: "/medical-relief/inbox" },
+    { title: "Requisitions", path: "/requisitions" },
   ];
 
   useEffect(() => {

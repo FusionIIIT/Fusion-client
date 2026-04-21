@@ -603,7 +603,43 @@ export const searchPatientsApi = async (query = "") => {
   });
 };
 
+export const fetchStaffRequisitions = async () => {
+  const token = getAuthToken();
+  return axios.get(`${BASE_URL}/requisitions/`, {
+    headers: { Authorization: `Token ${token}` },
+  });
+};
+
+export const createRequisitionApi = async (data) => {
+  const token = getAuthToken();
+  return axios.post(`${BASE_URL}/requisitions/`, data, {
+    headers: { Authorization: `Token ${token}` },
+  });
+};
+
+export const fetchPendingRequisitions = async () => {
+  const token = getAuthToken();
+  return axios.get(`${BASE_URL}/requisitions/pending/`, {
+    headers: { Authorization: `Token ${token}` },
+  });
+};
+
+export const actionRequisitionApi = async (reqId, data) => {
+  const token = getAuthToken();
+  return axios.patch(`${BASE_URL}/requisitions/${reqId}/action/`, data, {
+    headers: { Authorization: `Token ${token}` },
+  });
+};
+
+export const fulfillRequisitionApi = async (reqId) => {
+  const token = getAuthToken();
+  return axios.patch(`${BASE_URL}/requisitions/${reqId}/fulfill/`, {}, {
+    headers: { Authorization: `Token ${token}` },
+  });
+};
+
 /**
  * Export API client for advanced usage if needed
  */
 export { apiClient };
+
