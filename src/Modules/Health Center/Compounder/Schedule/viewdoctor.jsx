@@ -1,10 +1,14 @@
 /* eslint-disable react/prop-types */
 import React, { useEffect, useState } from "react";
-import { Loader, Paper, Title } from "@mantine/core";
-import axios from "axios";
+import { Badge, Button, Group, Loader, Paper, Title } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import NavCom from "../NavCom";
 import ScheduleNavBar from "./schedulePath";
-import { compounderRoute } from "../../../../routes/health_center";
+import {
+  fetchCompounderDoctorSchedule,
+  fetchDoctorAttendance,
+  markDoctorAttendance,
+} from "../../services/api";
 import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
 
 function Dropdown({ doctorName, selectedDay, onDayChange }) {
@@ -41,26 +45,34 @@ function Time({ selectedDay, schedule }) {
 function Viewdoctor() {
   const [selectedDays, setSelectedDays] = useState({});
   const [schedule, setSchedule] = useState([]);
+  const [attendanceByDoctor, setAttendanceByDoctor] = useState({});
+  const [markingDoctorId, setMarkingDoctorId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const todayDate = new Date().toISOString().slice(0, 10);
+
   const handleDayChange = (doctorName, day) => {
     setSelectedDays((prevSelectedDays) => ({
       ...prevSelectedDays,
       [doctorName]: day,
     }));
   };
-  const fetchSchedule = async () => {
-    const token = localStorage.getItem("authToken");
+
+  const fetchAttendance = async () => {
     try {
-      const response = await axios.post(
-        compounderRoute,
-        { get_doctor_schedule: 1 },
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
-        },
-      );
-      console.log(response);
+      const response = await fetchDoctorAttendance(todayDate);
+      const map = {};
+      (response.data || []).forEach((row) => {
+        map[row.doctor_id] = row.is_present;
+      });
+      setAttendanceByDoctor(map);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const fetchSchedule = async () => {
+    try {
+      const response = await fetchCompounderDoctorSchedule();
       setSchedule(response.data.schedule || []);
     } catch (err) {
       console.log(err);
@@ -69,8 +81,51 @@ function Viewdoctor() {
     }
   };
 
+  const handleAttendanceMark = async (doctorId, isPresent) => {
+    if (!doctorId) {
+      notifications.show({
+        title: "Mark Attendance Failed",
+        message: "Doctor ID missing. Refresh and try again.",
+        color: "red",
+      });
+      return;
+    }
+
+    setMarkingDoctorId(doctorId);
+    try {
+      await markDoctorAttendance({
+        doctor_id: doctorId,
+        attendance_date: todayDate,
+        is_present: isPresent,
+      });
+      setAttendanceByDoctor((prev) => ({
+        ...prev,
+        [doctorId]: isPresent,
+      }));
+      notifications.show({
+        title: "Attendance Updated",
+        message: isPresent
+          ? "Doctor marked present for today."
+          : "Doctor marked absent for today.",
+        color: "teal",
+      });
+    } catch (err) {
+      console.log(err);
+      notifications.show({
+        title: "Mark Attendance Failed",
+        message: err?.response?.data?.detail || "Unable to update attendance.",
+        color: "red",
+      });
+    } finally {
+      setMarkingDoctorId(null);
+    }
+  };
+
   useEffect(() => {
-    fetchSchedule();
+    const hydrate = async () => {
+      await Promise.all([fetchSchedule(), fetchAttendance()]);
+    };
+    hydrate();
   }, []);
 
   return (
@@ -118,12 +173,18 @@ function Viewdoctor() {
                 <th style={{ padding: "10px", border: "1px solid #ccc" }}>
                   Time
                 </th>
+                <th style={{ padding: "10px", border: "1px solid #ccc" }}>
+                  Today Status
+                </th>
+                <th style={{ padding: "10px", border: "1px solid #ccc" }}>
+                  Mark Attendance
+                </th>
               </tr>
             </thead>
             <tbody>
               {schedule.map((item, index) => (
                 <tr
-                  key={index}
+                  key={item.id || `${item.name}-${index}`}
                   style={{
                     backgroundColor: index % 2 === 0 ? "#fff" : "#FAFAFA",
                     minHeight: "60px",
@@ -148,6 +209,38 @@ function Viewdoctor() {
                       selectedDay={selectedDays[item.name] || ""}
                       schedule={item.availability}
                     />
+                  </td>
+                  <td style={{ padding: "10px", border: "1px solid #ccc" }}>
+                    {attendanceByDoctor[item.id] === true && (
+                      <Badge color="teal">Present</Badge>
+                    )}
+                    {attendanceByDoctor[item.id] === false && (
+                      <Badge color="red">Absent</Badge>
+                    )}
+                    {attendanceByDoctor[item.id] === undefined && (
+                      <Badge color="gray">Not Marked</Badge>
+                    )}
+                  </td>
+                  <td style={{ padding: "10px", border: "1px solid #ccc" }}>
+                    <Group justify="center" gap="xs">
+                      <Button
+                        size="xs"
+                        color="teal"
+                        loading={markingDoctorId === item.id}
+                        onClick={() => handleAttendanceMark(item.id, true)}
+                      >
+                        Present
+                      </Button>
+                      <Button
+                        size="xs"
+                        color="red"
+                        variant="light"
+                        loading={markingDoctorId === item.id}
+                        onClick={() => handleAttendanceMark(item.id, false)}
+                      >
+                        Absent
+                      </Button>
+                    </Group>
                   </td>
                 </tr>
               ))}

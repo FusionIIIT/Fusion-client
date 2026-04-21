@@ -253,6 +253,29 @@ export const fetchCompounderDoctorSchedule = async () => {
   );
 };
 
+// Get doctor attendance entries for a date (YYYY-MM-DD)
+export const fetchDoctorAttendance = async (date = "") => {
+  const token = getAuthToken();
+  const suffix = date ? `?date=${encodeURIComponent(date)}` : "";
+  return axios.get(`${BASE_URL}/doctor-attendance/${suffix}`, {
+    headers: { Authorization: `Token ${token}` },
+  });
+};
+
+// Mark doctor attendance for a date
+export const markDoctorAttendance = async ({
+  doctor_id,
+  attendance_date,
+  is_present,
+}) => {
+  const token = getAuthToken();
+  return axios.post(
+    `${BASE_URL}/doctor-attendance/`,
+    { doctor_id, attendance_date, is_present },
+    { headers: { Authorization: `Token ${token}` } },
+  );
+};
+
 // Add/update doctor schedule
 export const upsertDoctorSchedule = async (scheduleData) => {
   const token = getAuthToken();
