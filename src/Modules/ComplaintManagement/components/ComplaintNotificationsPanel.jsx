@@ -15,7 +15,6 @@ import {
 import {
   ArrowClockwise,
   ArrowSquareOut,
-  Bell,
   BellSlash,
   CheckCircle,
   MagnifyingGlass,
@@ -228,26 +227,22 @@ export default function ComplaintNotificationsPanel({ role }) {
       <Paper className={classes.notificationPanel} withBorder>
         <Group justify="space-between" align="flex-start" wrap="wrap">
           <div>
-            <Group gap="xs" mb="xs">
-              <Bell size={18} color="#2e5faa" />
-              <Text fw={700} className={classes.title}>
-                Complaint Notifications
+            <Group gap="xs" mb={4}>
+              <Text fw={600} size="lg">
+                Notifications
               </Text>
-              <Badge variant="light" color="blue">
+              <Badge variant="light" color="blue" size="sm">
                 {roleFeedLabel}
               </Badge>
             </Group>
-            <Text className={classes.subtitle}>
-              Notifications are now managed inside Complaint Management so they
-              stay in the same Fusion workflow.
-            </Text>
-            <Text className={classes.statusNote}>
-              Prioritize unread alerts and open routes directly from this queue.
+            <Text size="sm" className={classes.subtitle}>
+              Stay on top of complaint updates, status changes, and alerts.
             </Text>
           </div>
           <Group gap="xs">
             <Button
               variant="default"
+              size="sm"
               leftSection={<ArrowClockwise size={14} />}
               loading={loading}
               onClick={loadNotifications}
@@ -255,6 +250,7 @@ export default function ComplaintNotificationsPanel({ role }) {
               Refresh
             </Button>
             <Button
+              size="sm"
               leftSection={<CheckCircle size={14} />}
               onClick={handleMarkVisibleRead}
               disabled={displayed.every((item) => !item.unread)}
@@ -315,82 +311,71 @@ export default function ComplaintNotificationsPanel({ role }) {
               <Card
                 key={item.id}
                 withBorder
+                padding="sm"
                 className={
                   item.unread
                     ? `${classes.notificationCardUnread} ${classes.moduleCard}`
                     : `${classes.notificationCardRead} ${classes.moduleCard}`
                 }
               >
-                <Stack gap="sm">
-                  <Group
-                    justify="space-between"
-                    align="flex-start"
-                    wrap="nowrap"
-                  >
-                    <div>
-                      <Group gap="xs" mb={4}>
-                        <Badge
-                          color={item.unread ? "blue" : "gray"}
-                          variant="light"
-                        >
-                          {item.unread ? "Unread" : "Read"}
-                        </Badge>
-                        <Badge
-                          variant="light"
-                          color={
-                            category === "Announcement" ? "orange" : "teal"
-                          }
-                        >
-                          {category}
-                        </Badge>
-                      </Group>
-                      <Text fw={700}>{item.verb || "Notification"}</Text>
-                      <Text size="sm" c="dimmed">
-                        {item.description || "No description available."}
+                <Group justify="space-between" align="flex-start" wrap="nowrap">
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <Group gap={6} mb={4}>
+                      <Badge
+                        color={item.unread ? "blue" : "gray"}
+                        variant="light"
+                        size="xs"
+                      >
+                        {item.unread ? "Unread" : "Read"}
+                      </Badge>
+                      <Badge
+                        variant="light"
+                        size="xs"
+                        color={category === "Announcement" ? "orange" : "teal"}
+                      >
+                        {category}
+                      </Badge>
+                      <Text size="xs" c="dimmed">
+                        {formatNotificationTimestamp(item.timestamp)}
                       </Text>
-                    </div>
-                    <Button
-                      variant="subtle"
-                      color="gray"
-                      leftSection={<Trash size={14} />}
-                      onClick={() => handleDelete(item.id)}
-                    >
-                      Delete
-                    </Button>
-                  </Group>
-
-                  <Group justify="space-between" align="center" wrap="wrap">
-                    <Text size="xs" c="dimmed">
-                      {formatNotificationTimestamp(item.timestamp)}
+                    </Group>
+                    <Text fw={600} size="sm">
+                      {item.verb || "Notification"}
                     </Text>
-                    <Group gap="xs">
-                      {route && (
-                        <Button
-                          variant="light"
-                          color="blue"
-                          leftSection={<ArrowSquareOut size={14} />}
-                          onClick={() => handleOpen(item)}
-                        >
-                          Open
-                        </Button>
-                      )}
+                    <Text size="xs" c="dimmed" lineClamp={2}>
+                      {item.description || "No description available."}
+                    </Text>
+                  </div>
+                  <Group gap={6} wrap="nowrap">
+                    {route && (
                       <Button
                         variant="light"
-                        color={item.unread ? "blue" : "gray"}
-                        leftSection={
-                          item.unread ? (
-                            <CheckCircle size={14} />
-                          ) : (
-                            <BellSlash size={14} />
-                          )
-                        }
-                        onClick={() => handleToggleRead(item)}
+                        color="blue"
+                        size="xs"
+                        leftSection={<ArrowSquareOut size={12} />}
+                        onClick={() => handleOpen(item)}
                       >
-                        {item.unread ? "Mark as read" : "Mark unread"}
+                        Open
                       </Button>
-                    </Group>
+                    )}
+                    <Button
+                      variant="light"
+                      color={item.unread ? "blue" : "gray"}
+                      size="xs"
+                      onClick={() => handleToggleRead(item)}
+                    >
+                      {item.unread ? "Read" : "Unread"}
+                    </Button>
+                    <Button
+                      variant="subtle"
+                      color="red"
+                      size="xs"
+                      onClick={() => handleDelete(item.id)}
+                    >
+                      <Trash size={14} />
+                    </Button>
                   </Group>
-                </Stack>
+                </Group>
               </Card>
             );
           })}

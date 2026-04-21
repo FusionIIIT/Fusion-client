@@ -346,21 +346,16 @@ export default function ComplaintReportingPanel({
       <Paper className={classes.reportHeader} withBorder>
         <Group justify="space-between" align="flex-start" wrap="wrap">
           <div>
-            <Text fw={700} className={classes.title}>
-              Reporting
+            <Text fw={600} size="lg">
+              Reporting &amp; Analytics
             </Text>
-            <Text className={classes.subtitle}>
-              Filter complaints by date, category, and location, then export the
-              current view for review or sharing.
-            </Text>
-            <Text className={classes.statusNote}>
-              Generate fresh analytics first, then export in your preferred
-              format.
+            <Text size="sm" className={classes.subtitle}>
+              Generate analytics, filter by date range, and export reports.
             </Text>
           </div>
           <Group gap="xs">
             <Button
-              variant="default"
+              size="sm"
               onClick={handleGenerateReport}
               loading={isGenerating}
             >
@@ -368,23 +363,27 @@ export default function ComplaintReportingPanel({
             </Button>
             <Button
               variant="default"
+              size="sm"
               onClick={handleCsvExport}
               disabled={filteredComplaints.length === 0 || !reportRequested}
             >
-              Export CSV
+              CSV
             </Button>
             <Button
               variant="default"
+              size="sm"
               onClick={handleExcelExport}
               disabled={filteredComplaints.length === 0 || !reportRequested}
             >
-              Export Excel
+              Excel
             </Button>
             <Button
+              variant="default"
+              size="sm"
               onClick={handlePdfExport}
               disabled={filteredComplaints.length === 0 || !reportRequested}
             >
-              Export PDF
+              PDF
             </Button>
           </Group>
         </Group>

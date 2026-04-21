@@ -300,30 +300,30 @@ export default function ComplaintMasterDataPanel({ normalizedRole }) {
   return (
     <Stack gap="md">
       <Paper className={classes.oversightHeader} withBorder>
-        <Group justify="space-between" align="flex-start" wrap="wrap">
+        <Group justify="space-between" align="center" wrap="wrap">
           <div>
-            <Text fw={700} className={classes.title}>
-              Master Data Management
+            <Text fw={600} size="lg">
+              Master Data
             </Text>
-            <Text className={classes.subtitle}>
-              Manage workers, caretakers, and supervisors using complaint API
-              CRUD endpoints.
-            </Text>
-            <Text className={classes.statusNote}>
-              Changes here impact assignment and escalation workflows across the
-              module.
+            <Text size="sm" className={classes.subtitle}>
+              Manage workers, caretakers, and supervisor assignments.
             </Text>
           </div>
           <Group gap="xs">
             <Button
               variant="default"
+              size="sm"
               onClick={loadMasterData}
               loading={loading}
             >
-              Refresh Data
+              Refresh
             </Button>
-            <Badge color={capabilityLabel ? "green" : "yellow"} variant="light">
-              {capabilityLabel ? "Role can manage this tab" : "Read-only role"}
+            <Badge
+              color={capabilityLabel ? "green" : "yellow"}
+              variant="light"
+              size="sm"
+            >
+              {capabilityLabel ? "Can manage" : "Read-only"}
             </Badge>
           </Group>
         </Group>
@@ -356,7 +356,11 @@ export default function ComplaintMasterDataPanel({ normalizedRole }) {
               </Button>
             </Group>
             <ScrollArea>
-              <Table withTableBorder withColumnBorders striped>
+              <Table
+                withTableBorder
+                withColumnBorders
+                className={classes.tableClean}
+              >
                 <Table.Thead>
                   <Table.Tr>
                     <Table.Th>ID</Table.Th>
@@ -417,7 +421,11 @@ export default function ComplaintMasterDataPanel({ normalizedRole }) {
               </Button>
             </Group>
             <ScrollArea>
-              <Table withTableBorder withColumnBorders striped>
+              <Table
+                withTableBorder
+                withColumnBorders
+                className={classes.tableClean}
+              >
                 <Table.Thead>
                   <Table.Tr>
                     <Table.Th>ID</Table.Th>
@@ -478,7 +486,11 @@ export default function ComplaintMasterDataPanel({ normalizedRole }) {
               </Button>
             </Group>
             <ScrollArea>
-              <Table withTableBorder withColumnBorders striped>
+              <Table
+                withTableBorder
+                withColumnBorders
+                className={classes.tableClean}
+              >
                 <Table.Thead>
                   <Table.Tr>
                     <Table.Th>ID</Table.Th>
