@@ -45,8 +45,23 @@ function CommunicationLogs() {
           }),
         ]);
 
-        const ongoingApps = ongoingRes.data.applications || [];
-        const newApps = newRes.data.applications || [];
+        const ongoingData = ongoingRes.data.applications || [];
+        const newData = newRes.data.applications || [];
+
+        const ongoingApps = Array.isArray(ongoingData)
+          ? ongoingData
+          : Object.entries(ongoingData).map(([id, app]) => ({
+              application_id: parseInt(id, 10),
+              ...app,
+            }));
+
+        const newApps = Array.isArray(newData)
+          ? newData
+          : Object.entries(newData).map(([id, app]) => ({
+              application_id: parseInt(id, 10),
+              ...app,
+            }));
+
         const allApps = [...newApps, ...ongoingApps];
 
         // Deduplicate by id
@@ -86,7 +101,12 @@ function CommunicationLogs() {
             headers: { Authorization: `Token ${authToken}` },
           },
         );
-        setLogs(response.data || []);
+
+        let fetchedLogs = response.data || [];
+        if (!Array.isArray(fetchedLogs)) {
+          fetchedLogs = Object.keys(fetchedLogs).map((key) => fetchedLogs[key]);
+        }
+        setLogs(fetchedLogs);
         setError(null);
       } catch (err) {
         console.error("Error fetching communication logs:", err);
@@ -118,7 +138,12 @@ function CommunicationLogs() {
             headers: { Authorization: `Token ${authToken}` },
           },
         );
-        setLogs(response.data || []);
+
+        let fetchedLogs = response.data || [];
+        if (!Array.isArray(fetchedLogs)) {
+          fetchedLogs = Object.keys(fetchedLogs).map((key) => fetchedLogs[key]);
+        }
+        setLogs(fetchedLogs);
       } catch (err) {
         console.error("Error refreshing logs:", err);
       } finally {
@@ -148,7 +173,12 @@ function CommunicationLogs() {
             headers: { Authorization: `Token ${authToken}` },
           },
         );
-        setLogs(response.data || []);
+
+        let fetchedLogs = response.data || [];
+        if (!Array.isArray(fetchedLogs)) {
+          fetchedLogs = Object.keys(fetchedLogs).map((key) => fetchedLogs[key]);
+        }
+        setLogs(fetchedLogs);
       } catch (err) {
         console.error("Error refreshing logs:", err);
       } finally {

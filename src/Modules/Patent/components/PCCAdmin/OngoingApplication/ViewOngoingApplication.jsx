@@ -345,9 +345,13 @@ function ViewOngoingApplication({ applicationId, handleBackToList }) {
       try {
         const response = await axios.get(
           `${API_BASE_URL}/pccAdmin/applications/${applicationId}/budget/`,
-          { headers: { Authorization: `Token ${authToken}` } }
+          { headers: { Authorization: `Token ${authToken}` } },
         );
-        if (response.data && !response.data.error && response.data.budget !== null) {
+        if (
+          response.data &&
+          !response.data.error &&
+          response.data.budget !== null
+        ) {
           const b = response.data;
           setBudgetData({
             filing_cost: b.filing_cost,
@@ -448,7 +452,7 @@ function ViewOngoingApplication({ applicationId, handleBackToList }) {
       await axios.post(
         `${API_BASE_URL}/pccAdmin/applications/new/requestModification/${applicationId}/`,
         { comments: modificationComments },
-        { headers: { Authorization: `Token ${authToken}` } }
+        { headers: { Authorization: `Token ${authToken}` } },
       );
       setRequestModModalOpen(false);
       setStatusUpdateMessage({
@@ -475,13 +479,17 @@ function ViewOngoingApplication({ applicationId, handleBackToList }) {
       const response = await axios.post(
         `${host}/patentsystem/pccAdmin/applications/${applicationId}/budget/`,
         budgetData,
-        { headers: { Authorization: `Token ${localStorage.getItem("authToken")}` } }
+        {
+          headers: {
+            Authorization: `Token ${localStorage.getItem("authToken")}`,
+          },
+        },
       );
       setBudgetModalOpen(false);
       setBudgetStatus(response.data.decision);
       setStatusUpdateMessage({
         type: "success",
-        text: `Budget saved successfully! Decision: ${response.data.decision}`
+        text: `Budget saved successfully! Decision: ${response.data.decision}`,
       });
       setTimeout(() => setStatusUpdateMessage(null), 5000);
     } catch (e) {
@@ -546,7 +554,7 @@ function ViewOngoingApplication({ applicationId, handleBackToList }) {
         try {
           const freshResp = await axios.get(
             `${API_BASE_URL}/pccAdmin/applications/details/${applicationId}/`,
-            { headers: { Authorization: `Token ${authToken}` } }
+            { headers: { Authorization: `Token ${authToken}` } },
           );
           setSelectedApplication(freshResp.data);
         } catch (err) {
@@ -555,7 +563,7 @@ function ViewOngoingApplication({ applicationId, handleBackToList }) {
             status: newStatus,
           });
         }
-        
+
         setStatusUpdateMessage({
           type: "success",
           text: `Status successfully updated to ${newStatus}`,
@@ -695,9 +703,15 @@ function ViewOngoingApplication({ applicationId, handleBackToList }) {
 
   const getNextStatus = () => {
     const currentIndex = getCurrentStatusIndex();
-    return currentIndex >= 0 && currentIndex < statusOptions.length - 1
-      ? statusOptions[currentIndex + 1].value
-      : null;
+    if (currentIndex >= 0 && currentIndex < statusOptions.length - 1) {
+      const nextStat = statusOptions[currentIndex + 1].value;
+      // Prevent auto-moving sequentially into Refused when pressing next on Granted. Auto next logic:
+      if (statusOptions[currentIndex].value === "Patent Published") {
+        return "Patent Granted";
+      }
+      return nextStat;
+    }
+    return null;
   };
 
   const getPreviousStatus = () => {
@@ -1308,7 +1322,8 @@ function ViewOngoingApplication({ applicationId, handleBackToList }) {
                   💰 Budget & Finances
                 </Text>
                 <Text size="sm" color="dimmed">
-                  Propose budget or record financial tracking for this application. {budgetStatus ? `(Status: ${budgetStatus})` : ""}
+                  Propose budget or record financial tracking for this
+                  application. {budgetStatus ? `(Status: ${budgetStatus})` : ""}
                 </Text>
                 <Button
                   variant="outline"
@@ -1421,7 +1436,8 @@ function ViewOngoingApplication({ applicationId, handleBackToList }) {
         }
       >
         <Text size="sm" mb="md" color="dimmed">
-          Send this application back to the applicant for revisions. Please provide clear details on what needs to be changed or amended.
+          Send this application back to the applicant for revisions. Please
+          provide clear details on what needs to be changed or amended.
         </Text>
         <Textarea
           placeholder="Details required for modification..."
@@ -1432,10 +1448,17 @@ function ViewOngoingApplication({ applicationId, handleBackToList }) {
           required
         />
         <Group position="right" mt="md">
-          <Button variant="subtle" onClick={() => setRequestModModalOpen(false)}>
+          <Button
+            variant="subtle"
+            onClick={() => setRequestModModalOpen(false)}
+          >
             Cancel
           </Button>
-          <Button color="red" loading={requestingMod} onClick={handleRequestModification}>
+          <Button
+            color="red"
+            loading={requestingMod}
+            onClick={handleRequestModification}
+          >
             Send to Applicant
           </Button>
         </Group>
@@ -1452,13 +1475,15 @@ function ViewOngoingApplication({ applicationId, handleBackToList }) {
             <NumberInput
               label="Filing Cost (₹)"
               value={budgetData.filing_cost}
-              onChange={(val) => setBudgetData({ ...budgetData, filing_cost: val || 0 })}
+              onChange={(val) =>
+                setBudgetData({ ...budgetData, filing_cost: val || 0 })
+              }
               min={0}
-              parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+              parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
               formatter={(value) =>
                 !Number.isNaN(parseFloat(value))
-                  ? `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                  : ''
+                  ? `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  : ""
               }
             />
           </Grid.Col>
@@ -1466,7 +1491,9 @@ function ViewOngoingApplication({ applicationId, handleBackToList }) {
             <NumberInput
               label="Attorney Fees (₹)"
               value={budgetData.attorney_fees}
-              onChange={(val) => setBudgetData({ ...budgetData, attorney_fees: val || 0 })}
+              onChange={(val) =>
+                setBudgetData({ ...budgetData, attorney_fees: val || 0 })
+              }
               min={0}
             />
           </Grid.Col>
@@ -1474,7 +1501,9 @@ function ViewOngoingApplication({ applicationId, handleBackToList }) {
             <NumberInput
               label="Admin Cost (₹)"
               value={budgetData.administrative_cost}
-              onChange={(val) => setBudgetData({ ...budgetData, administrative_cost: val || 0 })}
+              onChange={(val) =>
+                setBudgetData({ ...budgetData, administrative_cost: val || 0 })
+              }
               min={0}
             />
           </Grid.Col>
@@ -1482,18 +1511,27 @@ function ViewOngoingApplication({ applicationId, handleBackToList }) {
             <Textarea
               label="Remarks / Comments"
               value={budgetData.remarks}
-              onChange={(e) => setBudgetData({ ...budgetData, remarks: e.currentTarget.value })}
+              onChange={(e) =>
+                setBudgetData({ ...budgetData, remarks: e.currentTarget.value })
+              }
               minRows={3}
             />
           </Grid.Col>
         </Grid>
-        
+
         <Group position="right" mt="xl">
-          <Button variant="outline" onClick={() => setBudgetModalOpen(false)}>Cancel</Button>
-          <Button onClick={handleSaveBudget} loading={submittingBudget} color="orange">Submit Budget</Button>
+          <Button variant="outline" onClick={() => setBudgetModalOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSaveBudget}
+            loading={submittingBudget}
+            color="orange"
+          >
+            Submit Budget
+          </Button>
         </Group>
       </Modal>
-
     </Container>
   );
 }

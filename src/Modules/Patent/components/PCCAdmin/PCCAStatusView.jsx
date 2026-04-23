@@ -33,12 +33,44 @@ function PatentProgressBar({ currentStatus, isMobile }) {
   ];
 
   const getStepIndex = (status) => {
-    if (status === "Rejected") return -1;
-    return statuses.findIndex((s) => s === status);
+    switch (status) {
+      case "Submitted":
+      case "Resubmitted":
+        return 0;
+      case "Reviewed by PCC Admin":
+        return 1;
+      case "Forwarded for Director's Review":
+      case "Forwarded to Director":
+      case "Under Review":
+        return 2;
+      case "Director's Approval Received":
+      case "Approved":
+        return 3;
+      case "Patentability Check":
+      case "Patentability Check Started":
+      case "Patentability Check Completed":
+        return 4;
+      case "Search Report Generated":
+      case "Patentability Search Report Generated":
+        return 5;
+      case "Patent Filed":
+      case "Patent Published":
+      case "Patent Granted":
+        return 6;
+      case "Rejected":
+      case "Patent Refused":
+      case "Appeal Rejected":
+        return -1;
+      default: {
+        // Try finding if it loosely matches
+        const idx = statuses.findIndex((s) => s === status);
+        return idx !== -1 ? idx : 0;
+      }
+    }
   };
 
   const currentStep = getStepIndex(currentStatus);
-  const isRejected = currentStatus === "Rejected";
+  const isRejected = currentStep === -1;
 
   return (
     <div className={`progress-container ${isRejected ? "rejected" : ""}`}>
@@ -263,8 +295,8 @@ function PCCAStatusView({ applicationId }) {
 
       <Card className="form-section">
         <Text className="section-title">Applicants</Text>
-          {applicationData.inventors && applicationData.inventors.length > 0 ? (
-            applicationData.inventors.map((applicant, index) => (
+        {applicationData.inventors && applicationData.inventors.length > 0 ? (
+          applicationData.inventors.map((applicant, index) => (
             <div key={index} className="inventor-container">
               <Text className="inventor-title">Applicant {index + 1}</Text>
               <div className="form-field">
@@ -433,31 +465,43 @@ function PCCAStatusView({ applicationId }) {
         <div className="form-field">
           <Text className="field-heading">Target Company:</Text>
           <Text className="field-value">
-            {(Array.isArray(applicationData.section_III) ? applicationData.section_III[0]?.company_name : applicationData.section_III?.company_name) || "—"}
+            {(Array.isArray(applicationData.section_III)
+              ? applicationData.section_III[0]?.company_name
+              : applicationData.section_III?.company_name) || "—"}
           </Text>
         </div>
         <div className="form-field">
           <Text className="field-heading">Contact Person:</Text>
           <Text className="field-value">
-            {(Array.isArray(applicationData.section_III) ? applicationData.section_III[0]?.contact_person : applicationData.section_III?.contact_person) || "—"}
+            {(Array.isArray(applicationData.section_III)
+              ? applicationData.section_III[0]?.contact_person
+              : applicationData.section_III?.contact_person) || "—"}
           </Text>
         </div>
         <div className="form-field">
           <Text className="field-heading">Contact Number:</Text>
           <Text className="field-value">
-            {(Array.isArray(applicationData.section_III) ? applicationData.section_III[0]?.contact_no : applicationData.section_III?.contact_no) || "—"}
+            {(Array.isArray(applicationData.section_III)
+              ? applicationData.section_III[0]?.contact_no
+              : applicationData.section_III?.contact_no) || "—"}
           </Text>
         </div>
         <div className="form-field">
           <Text className="field-heading">Development Stage:</Text>
           <Text className="field-value">
-            {(Array.isArray(applicationData.section_III) ? applicationData.section_III[0]?.development_stage : applicationData.section_III?.development_stage) || "—"}
+            {(Array.isArray(applicationData.section_III)
+              ? applicationData.section_III[0]?.development_stage
+              : applicationData.section_III?.development_stage) || "—"}
           </Text>
         </div>
         <div className="form-field">
           <Text className="field-heading">Form-III:</Text>
           <div className="field-value">
-            {(Array.isArray(applicationData.section_III) ? applicationData.section_III[0]?.form_iii : applicationData.section_III?.form_iii) ? (
+            {(
+              Array.isArray(applicationData.section_III)
+                ? applicationData.section_III[0]?.form_iii
+                : applicationData.section_III?.form_iii
+            ) ? (
               <FileDownloadButton
                 fileUrl={`${host}${Array.isArray(applicationData.section_III) ? applicationData.section_III[0].form_iii : applicationData.section_III.form_iii}`}
                 fileName="Form-III.pdf"
