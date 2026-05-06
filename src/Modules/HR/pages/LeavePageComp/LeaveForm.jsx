@@ -20,6 +20,7 @@ import {
   getLeaveTypesForHr,
   getLeaveBalance,
 } from "../../services/api";
+import SubstituteNomination from "./SubstituteNomination";
 
 function LeaveForm() {
   const [formData, setFormData] = useState({
@@ -31,9 +32,8 @@ function LeaveForm() {
     purpose: "",
     leave_info: "",
     addressDuringLeave: "",
-    academicResponsibility: "",
-    addministrativeResponsibiltyAssigned: "",
   });
+  const [substituteNominations, setSubstituteNominations] = useState([]);
   const [leavePdfFile, setLeavePdfFile] = useState(null);
 
   const today = new Date().toISOString().split("T")[0];
@@ -41,6 +41,7 @@ function LeaveForm() {
 
   const [details, setDetails] = useState({
     name: "",
+    username: "",
     last_selected_role: "",
     pfno: "",
     department: "",
@@ -132,18 +133,11 @@ function LeaveForm() {
     finalFormData.append("purposeOfLeave", (formData.purpose || "").slice(0, 40));
     finalFormData.append("leave_info", formData.leave_info || "");
     finalFormData.append("addressDuringLeave", formData.addressDuringLeave || "");
-    if (formData.academicResponsibility?.trim()) {
-      finalFormData.append(
-        "academicResponsibility",
-        formData.academicResponsibility.trim(),
-      );
+    
+    if (substituteNominations.length > 0) {
+      finalFormData.append("substitute_nominations", JSON.stringify(substituteNominations));
     }
-    if (formData.addministrativeResponsibiltyAssigned?.trim()) {
-      finalFormData.append(
-        "addministrativeResponsibiltyAssigned",
-        formData.addministrativeResponsibiltyAssigned.trim(),
-      );
-    }
+
     if (leavePdfFile) {
       finalFormData.append("leave_pdf_file", leavePdfFile);
     }
@@ -321,28 +315,12 @@ function LeaveForm() {
           </Grid.Col>
         )}
 
-        <Grid.Col span={6}>
-          <TextInput
-            label="Academic responsibility assigned to (optional)"
-            value={formData.academicResponsibility}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                academicResponsibility: e.target.value,
-              })
-            }
-          />
-        </Grid.Col>
-        <Grid.Col span={6}>
-          <TextInput
-            label="Administrative responsibility assigned to (optional)"
-            value={formData.addministrativeResponsibiltyAssigned}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                addministrativeResponsibiltyAssigned: e.target.value,
-              })
-            }
+        <Grid.Col span={12}>
+          <SubstituteNomination
+            nominations={substituteNominations}
+            onNominationsChange={setSubstituteNominations}
+            currentUsername={details.username}
+            disabled={!activeSubmit}
           />
         </Grid.Col>
 

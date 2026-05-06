@@ -7,6 +7,7 @@ import LeaveForm from "./LeavePageComp/LeaveForm";
 // import LeaveArchive from "./LeavePageComp/LeaveArchive";
 import LeaveInbox from "./LeavePageComp/LeaveInbox";
 import LeaveRequests from "./LeavePageComp/LeaveRequests";
+import SubstituteInbox from "./LeavePageComp/SubstituteInbox";
 import HrBreadcrumbs from "../components/common/HrBreadcrumbs";
 import LeaveBalanceButton from "./LeavePageComp/LeaveBalanceButton";
 
@@ -14,6 +15,7 @@ const tabItems = [
   { title: "Leave Form", path: "/hr/leave/leaveform" },
   { title: "Leave Requests", path: "/hr/leave/leaverequests" },
   { title: "Leave Inbox", path: "/hr/leave/leaveinbox" },
+  { title: "Substitute Inbox", path: "/hr/leave/substituteinbox" },
   // { title: "Leave Archive", path: "/hr/leave/leavearchive" },
 ];
 
@@ -135,7 +137,8 @@ function Leave() {
           {activeTab === "0" && <LeaveForm />}
           {activeTab === "1" && <LeaveRequests />}
           {activeTab === "2" && <LeaveInbox />}
-          {/* {activeTab === "3" && <LeaveArchive />} */}
+          {activeTab === "3" && <SubstituteInbox />}
+          {/* {activeTab === "4" && <LeaveArchive />} */}
         </div>
       )}
     </>

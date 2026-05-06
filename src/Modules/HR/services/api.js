@@ -43,6 +43,7 @@ const handleResponse = async (response) => {
 export const leaveWorkflowDisplayLabel = (wf) => {
   const key = (wf || "").toString().trim().toLowerCase();
   const map = {
+    awaiting_substitutes: "Awaiting substitute consent",
     submitted: "Submitted",
     hod_approved: "HOD approved (pending HR)",
     hod_rejected: "Rejected by HOD",
@@ -521,4 +522,44 @@ export const getOutbox = async (fromDate = "") => {
   });
   const data = await handleResponse(resp);
   return data;
+};
+
+// ============================================================
+// Substitute Nomination APIs (HR-UC-004 / HR-UC-005)
+// ============================================================
+
+export const nominateSubstitutes = async (leaveFormId, nominations) => {
+  const resp = await fetch("/api/hr/leave/substitute/nominate", {
+    method: "POST",
+    headers: { ...authHeaders(), "Content-Type": "application/json" },
+    body: JSON.stringify({
+      leave_form_id: leaveFormId,
+      nominations,
+    }),
+  });
+  return handleResponse(resp);
+};
+
+export const getSubstituteInbox = async () => {
+  const resp = await fetch("/api/hr/leave/substitute/inbox", {
+    headers: authHeaders(),
+  });
+  const data = await handleResponse(resp);
+  return data.substitute_inbox ?? [];
+};
+
+export const respondToSubstitute = async (nominationId, action, remarks = "") => {
+  const resp = await fetch(`/api/hr/leave/substitute/respond/${nominationId}/`, {
+    method: "POST",
+    headers: { ...authHeaders(), "Content-Type": "application/json" },
+    body: JSON.stringify({ action, remarks }),
+  });
+  return handleResponse(resp);
+};
+
+export const getSubstituteStatus = async (leaveFormId) => {
+  const resp = await fetch(`/api/hr/leave/substitute/status/${leaveFormId}`, {
+    headers: authHeaders(),
+  });
+  return handleResponse(resp);
 };
