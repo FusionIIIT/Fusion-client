@@ -1,25 +1,67 @@
+/* ──────────────────────────────────────────────────────────
+   Complaint Management – Module Styles
+   Aligned with the Fusion design system (#15abff accent, #F5F7F8 canvas)
+   ────────────────────────────────────────────────────────── */
+
 .page {
-  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 45%, #f7fbff 100%);
-  border: 1px solid #dcecff;
-  border-radius: 12px;
-  padding: 1rem;
+  background: #ffffff;
+  border: 1px solid #e8eef3;
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
 }
+
+/* ── Global Mantine overrides (scoped to .page) ───────── */
+
+.page :global(.mantine-Button-root) {
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: all 0.15s ease;
+}
+
+.page :global(.mantine-Button-root):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(21, 171, 255, 0.18);
+}
+
+.page :global(.mantine-Input-input),
+.page :global(.mantine-Select-input),
+.page :global(.mantine-Textarea-input) {
+  border-radius: 6px;
+  border: 1px solid #d5dce4;
+  background: #ffffff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.page :global(.mantine-Input-input):focus,
+.page :global(.mantine-Select-input):focus,
+.page :global(.mantine-Textarea-input):focus {
+  border-color: #15abff;
+  box-shadow: 0 0 0 3px rgba(21, 171, 255, 0.12);
+}
+
+/* ── Page header ──────────────────────────────────────── */
 
 .headerBlock {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
 
 .title {
-  color: #1c2e45;
-  letter-spacing: 0.2px;
+  color: #1a1a2e;
+  font-weight: 600;
+  font-size: 1.35rem;
+  letter-spacing: -0.01em;
 }
 
 .subtitle {
-  color: #6d7f93;
+  color: #6b7a8d;
+  font-weight: 400;
+  font-size: 0.875rem;
+  margin-top: 2px;
 }
 
 .actions {
@@ -28,72 +70,185 @@
   flex-wrap: wrap;
 }
 
-.tablePanel {
-  background: #ffffff;
-  border: 1px solid #d7e9ff;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(46, 105, 167, 0.06);
-  padding: 0.75rem;
+.statusNote {
+  color: #94a3b8;
+  font-size: 0.8rem;
+  margin-top: 0.35rem;
 }
 
+/* ── Card & panel surfaces ────────────────────────────── */
+
+.tablePanel,
 .oversightHeader,
-.reportHeader {
+.reportHeader,
+.notificationPanel,
+.moduleCard {
   background: #ffffff;
-  border: 1px solid #d7e9ff;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(46, 105, 167, 0.06);
+  border: 1px solid #e8eef3;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   padding: 1rem;
 }
+
+/* ── Summary stat cards ───────────────────────────────── */
 
 .summaryCard {
-  background: linear-gradient(180deg, #fbfdff 0%, #ffffff 100%);
-  border: 1px solid #dcecff;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(46, 105, 167, 0.04);
-}
-
-.notificationPanel {
   background: #ffffff;
-  border: 1px solid #d7e9ff;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(46, 105, 167, 0.06);
-  padding: 1rem;
+  border: 1px solid #e8eef3;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  padding: 1rem 1.25rem;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.notificationToolbar {
-  background: #f8fbff;
-  border: 1px solid #dcecff;
-  border-radius: 10px;
-  padding: 0.75rem;
+.summaryCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #15abff, #6dc8ff);
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
+
+.summaryCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(21, 171, 255, 0.1);
+  border-color: #c4e2f5;
+}
+
+.summaryCard:hover::before {
+  opacity: 1;
+}
+
+/* ── Toolbars ─────────────────────────────────────────── */
+
+.notificationToolbar,
+.reportToolbar {
+  background: #F5F7F8;
+  border: 1px solid #e8eef3;
+  border-radius: 6px;
+  padding: 0.875rem;
+}
+
+/* ── Notification cards ───────────────────────────────── */
 
 .notificationEmpty {
-  background: #ffffff;
-  border: 1px dashed #c8dbef;
-  border-radius: 12px;
-  padding: 1rem;
+  background: #F5F7F8;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 2rem 1rem;
+  text-align: center;
+  color: #6b7a8d;
 }
 
 .notificationCardUnread {
-  background: linear-gradient(180deg, #eef7ff 0%, #ffffff 100%);
-  border-left: 4px solid #2e87dd;
+  background: #f0f9ff;
+  border-left: 3px solid #15abff;
+  transition: background 0.15s ease;
 }
 
 .notificationCardRead {
   background: #ffffff;
-  border-left: 4px solid #c7d8ea;
+  border-left: 3px solid #d5dce4;
+  transition: background 0.15s ease;
 }
 
-.reportToolbar {
-  background: #f8fbff;
-  border: 1px solid #dcecff;
-  border-radius: 10px;
-  padding: 0.75rem;
+.notificationCardUnread:hover {
+  background: #e6f4ff;
 }
+
+.notificationCardRead:hover {
+  background: #F5F7F8;
+}
+
+/* ── Data tables ──────────────────────────────────────── */
+
+.tableSurface {
+  border: 1px solid #e8eef3;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.tableClean :global(thead th) {
+  background: #F5F7F8;
+  color: #3d4f5f;
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  border-bottom: 1px solid #e8eef3;
+  padding: 0.75rem 1rem;
+}
+
+.tableClean :global(tbody td) {
+  vertical-align: middle;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f1f5f8;
+  color: #3d4f5f;
+  font-size: 0.875rem;
+}
+
+.tableClean :global(tbody tr) {
+  transition: background 0.1s ease;
+}
+
+.tableClean :global(tbody tr:hover) {
+  background: #f8fbff;
+}
+
+/* ── Utilities ────────────────────────────────────────── */
+
+.cellClamp {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.monoRef {
+  font-family: 'SFMono-Regular', Menlo, Consolas, 'Courier New', monospace;
+  color: #3d4f5f;
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: #F5F7F8;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #e8eef3;
+}
+
+.statusBadge {
+  font-weight: 600;
+  font-size: 0.75rem;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.pillInfo {
+  background: #15abff12;
+  border: 1px solid #15abff30;
+  color: #0d8ddb;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+/* ── Responsive ───────────────────────────────────────── */
 
 @media (max-width: 768px) {
   .headerBlock {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .cellClamp {
+    max-width: 140px;
   }
 }

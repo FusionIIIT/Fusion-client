@@ -177,6 +177,27 @@ export default function ComplaintManager({ defaultMode }) {
     [complaints],
   );
 
+  const filteredComplaints = useMemo(() => {
+    if (normalizedRole.includes("supervisor")) {
+      const types = [
+        "electricity",
+        "carpenter",
+        "plumber",
+        "garbage",
+        "dustbin",
+        "internet",
+        "other",
+      ];
+      const activeType = types.find((t) => normalizedRole.includes(t));
+      if (activeType) {
+        return complaints.filter(
+          (c) => c.complaint_type?.toLowerCase() === activeType,
+        );
+      }
+    }
+    return complaints;
+  }, [complaints, normalizedRole]);
+
   const loadComplaints = async () => {
     setLoading(true);
     try {
@@ -514,29 +535,31 @@ export default function ComplaintManager({ defaultMode }) {
           <>
             <div className={classes.headerBlock}>
               <div>
-                <Title order={2} className={classes.title}>
+                <Title order={3} className={classes.title}>
                   Complaint Management
                 </Title>
-                <Text className={classes.subtitle}>
-                  Manage your complaints with the same Fusion dashboard
-                  workflow.
+                <Text size="sm" className={classes.subtitle}>
+                  Track, manage, and resolve complaints across the campus.
                 </Text>
-                <Text size="sm" c="dimmed" mt={4}>
-                  {lastRefreshedAt
-                    ? `Last refreshed: ${new Date(lastRefreshedAt).toLocaleString()}`
-                    : "Status data will refresh automatically every 30 seconds."}
-                </Text>
+                {lastRefreshedAt && (
+                  <Text className={classes.statusNote} mt={4}>
+                    Last refreshed: {new Date(lastRefreshedAt).toLocaleString()}
+                  </Text>
+                )}
               </div>
               <div className={classes.actions}>
                 <Button
                   variant="default"
+                  size="sm"
                   onClick={loadComplaints}
                   loading={loading}
                 >
                   Refresh
                 </Button>
                 {canSubmitComplaint && (
-                  <Button onClick={openCreate}>New Complaint</Button>
+                  <Button size="sm" onClick={openCreate}>
+                    New Complaint
+                  </Button>
                 )}
               </div>
             </div>
@@ -560,9 +583,12 @@ export default function ComplaintManager({ defaultMode }) {
               </Alert>
             )}
 
-            <Paper className={classes.tablePanel} withBorder>
+            <Paper
+              className={`${classes.tablePanel} ${classes.moduleCard}`}
+              withBorder
+            >
               <ComplaintTableSectioned
-                complaints={complaints}
+                complaints={filteredComplaints}
                 onView={handleView}
                 onEdit={openEdit}
                 onDelete={handleDelete}
@@ -580,7 +606,7 @@ export default function ComplaintManager({ defaultMode }) {
 
         {activeTab === oversightTabIndex && canSeeOversight && (
           <ComplaintOversightPanel
-            complaints={complaints}
+            complaints={filteredComplaints}
             onView={handleView}
             onRefresh={loadComplaints}
           />
@@ -588,8 +614,9 @@ export default function ComplaintManager({ defaultMode }) {
 
         {activeTab === reportsTabIndex && canSeeOversight && (
           <ComplaintReportingPanel
-            complaints={complaints}
+            complaints={filteredComplaints}
             onView={handleView}
+            normalizedRole={normalizedRole}
           />
         )}
 

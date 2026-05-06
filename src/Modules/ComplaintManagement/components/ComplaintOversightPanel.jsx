@@ -14,7 +14,7 @@ import {
   Text,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { ArrowClockwise, ArrowSquareOut, Funnel } from "@phosphor-icons/react";
+import { ArrowClockwise, ArrowSquareOut } from "@phosphor-icons/react";
 import ComplaintBulkActionModal from "./ComplaintBulkActionModal";
 import { bulkComplaintAction, fetchWorkers } from "../services";
 import classes from "../ComplaintManagement.module.css";
@@ -238,32 +238,31 @@ export default function ComplaintOversightPanel({
       <Paper className={classes.oversightHeader} withBorder>
         <Group justify="space-between" align="flex-start" wrap="wrap">
           <div>
-            <Group gap="xs" mb="xs">
-              <Funnel size={18} color="#2e5faa" />
-              <Text fw={700} className={classes.title}>
-                Oversight Dashboard
-              </Text>
-            </Group>
-            <Text className={classes.subtitle}>
-              Track overdue, escalated, stalled, and unassigned complaints, then
-              take bulk action when a queue needs intervention.
+            <Text fw={600} size="lg">
+              Oversight Dashboard
+            </Text>
+            <Text size="sm" className={classes.subtitle}>
+              Track overdue, escalated, stalled, and unassigned complaints.
             </Text>
           </div>
           <Group gap="xs">
             <Button
               variant="default"
+              size="sm"
               leftSection={<ArrowClockwise size={14} />}
               onClick={onRefresh}
             >
-              Refresh Complaints
+              Refresh
             </Button>
             <Button
               variant="light"
+              size="sm"
               onClick={() => toggleVisibleSelection(!allVisibleSelected)}
             >
               {allVisibleSelected ? "Clear visible" : "Select visible"}
             </Button>
             <Button
+              size="sm"
               onClick={() => openModal("reassign")}
               disabled={selectedIds.length === 0 || loadingWorkers}
             >
@@ -271,6 +270,7 @@ export default function ComplaintOversightPanel({
             </Button>
             <Button
               variant="outline"
+              size="sm"
               onClick={() => openModal("intervene")}
               disabled={selectedIds.length === 0}
             >
@@ -336,9 +336,19 @@ export default function ComplaintOversightPanel({
         </Group>
       </Paper>
 
-      <Paper className={classes.tablePanel} withBorder>
-        <ScrollArea>
-          <Table striped highlightOnHover withTableBorder withColumnBorders>
+      <Paper
+        className={`${classes.tablePanel} ${classes.moduleCard}`}
+        withBorder
+      >
+        <ScrollArea className={classes.tableSurface}>
+          <Table
+            striped
+            highlightOnHover
+            withTableBorder
+            withColumnBorders
+            className={classes.tableClean}
+            verticalSpacing="sm"
+          >
             <Table.Thead>
               <Table.Tr>
                 <Table.Th>
@@ -386,14 +396,25 @@ export default function ComplaintOversightPanel({
                     />
                   </Table.Td>
                   <Table.Td>
-                    {complaint.complaint_ref || `#${complaint.id}`}
+                    <Text className={classes.monoRef}>
+                      {complaint.complaint_ref || `#${complaint.id}`}
+                    </Text>
                   </Table.Td>
-                  <Table.Td>{complaint.complaint_type}</Table.Td>
-                  <Table.Td>{complaint.location}</Table.Td>
+                  <Table.Td>
+                    <Text className={classes.cellClamp}>
+                      {complaint.complaint_type}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text className={classes.cellClamp}>
+                      {complaint.location}
+                    </Text>
+                  </Table.Td>
                   <Table.Td>
                     <Badge
                       variant="light"
                       color={isEscalated(complaint) ? "orange" : "blue"}
+                      className={classes.statusBadge}
                     >
                       {STATUS_LABELS.get(Number(complaint.status)) ||
                         complaint.status}
@@ -403,14 +424,21 @@ export default function ComplaintOversightPanel({
                     <Badge
                       variant="light"
                       color={isOverdue(complaint) ? "red" : "green"}
+                      className={classes.statusBadge}
                     >
                       {isOverdue(complaint) ? "Overdue" : "Within SLA"}
                     </Badge>
                   </Table.Td>
                   <Table.Td>
-                    {complaint.assigned_to_name || complaint.worker_id || "-"}
+                    <Text className={classes.cellClamp}>
+                      {complaint.assigned_to_name || complaint.worker_id || "-"}
+                    </Text>
                   </Table.Td>
-                  <Table.Td>{complaint.details}</Table.Td>
+                  <Table.Td>
+                    <Text className={classes.cellClamp}>
+                      {complaint.details}
+                    </Text>
+                  </Table.Td>
                   <Table.Td>
                     <Button
                       size="xs"
