@@ -51,6 +51,7 @@ function NotificationItem({
             style={{ cursor: "pointer" }}
             onClick={() => onDelete(notification.id)}
             aria-label="Delete notification"
+            disabled={isLoading}
           />
         </Flex>
 

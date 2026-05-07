@@ -68,9 +68,8 @@ export const notificationService = {
    */
   deleteNotification: async (notificationId) => {
     try {
-      const response = await axios.post(
-        notificationDeleteRoute,
-        { id: notificationId },
+      const response = await axios.delete(
+        notificationDeleteRoute.replace("{id}", notificationId),
         getAuthHeaders(),
       );
       return response.data;

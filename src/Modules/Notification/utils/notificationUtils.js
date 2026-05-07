@@ -9,14 +9,18 @@ export const parseNotificationData = (notification) => ({
       : notification.data,
 });
 
+export const isAnnouncementNotification = (notification) =>
+  notification?.data?.flag === "announcement" ||
+  notification?.data?.type === "announcement";
+
 /**
  * Separate notifications into regular notifications and announcements
  */
 export const separateNotifications = (notifications) => {
   const parsed = notifications.map(parseNotificationData);
   return {
-    notifications: parsed.filter((n) => n.data?.flag !== "announcement"),
-    announcements: parsed.filter((n) => n.data?.flag === "announcement"),
+    notifications: parsed.filter((n) => !isAnnouncementNotification(n)),
+    announcements: parsed.filter((n) => isAnnouncementNotification(n)),
   };
 };
 

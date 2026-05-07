@@ -60,9 +60,12 @@ function NotificationsPage() {
 
   const handleDelete = async (notifId) => {
     try {
+      setLoadingId(notifId);
       await deleteNotification(notifId);
     } catch (err) {
       console.error("Failed to delete:", err);
+    } finally {
+      setLoadingId(-1);
     }
   };
 

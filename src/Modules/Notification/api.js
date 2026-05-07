@@ -57,9 +57,8 @@ export const notificationAPI = {
 
   delete: async (notificationId) => {
     try {
-      return await axios.post(
-        notificationDeleteRoute,
-        { id: notificationId },
+      return await axios.delete(
+        notificationDeleteRoute.replace("{id}", notificationId),
         getAuthHeaders(),
       );
     } catch (error) {
@@ -73,6 +72,10 @@ export const notificationAPI = {
  * Utility functions for notification data
  */
 export const notificationUtils = {
+  isAnnouncement: (notification) =>
+    notification?.data?.flag === "announcement" ||
+    notification?.data?.type === "announcement",
+
   parseData: (notification) => ({
     ...notification,
     data:
@@ -84,8 +87,8 @@ export const notificationUtils = {
   separate: (notifications) => {
     const parsed = notifications.map(notificationUtils.parseData);
     return {
-      notifications: parsed.filter((n) => n.data?.flag !== "announcement"),
-      announcements: parsed.filter((n) => n.data?.flag === "announcement"),
+      notifications: parsed.filter((n) => !notificationUtils.isAnnouncement(n)),
+      announcements: parsed.filter((n) => notificationUtils.isAnnouncement(n)),
     };
   },
 

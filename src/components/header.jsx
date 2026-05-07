@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { User, SignOut, Bell, UserSwitch } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -24,13 +24,18 @@ import classes from "../Modules/Dashboard/Dashboard.module.css";
 import avatarImage from "../assets/avatar.png";
 import { setPfNo } from "../redux/pfNoSlice";
 
-import { logoutRoute, updateRoleRoute } from "../routes/dashboardRoutes";
+import {
+  logoutRoute,
+  updateRoleRoute,
+  getNotificationsRoute,
+} from "../routes/dashboardRoutes";
 
 function Header({ opened, toggleSidebar }) {
   const [popoverOpened, setPopoverOpened] = useState(false);
   const username = useSelector((state) => state.user.username);
   const roles = useSelector((state) => state.user.roles);
   const role = useSelector((state) => state.user.role);
+  const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   // const queryclient = useQueryClient();
@@ -65,7 +70,7 @@ function Header({ opened, toggleSidebar }) {
       console.log(response.data.message);
       dispatch(setRole(newRole));
       dispatch(setCurrentAccessibleModules());
-      navigate('/dashboard')
+      navigate("/dashboard");
     } catch (error) {
       console.error("Error updating last selected role:", error.response.data);
     }
@@ -97,6 +102,27 @@ function Header({ opened, toggleSidebar }) {
       console.error("Logout error:", err);
     }
   };
+
+  useEffect(() => {
+    const fetchUnread = async () => {
+      const token = localStorage.getItem("authToken");
+      if (!token) return;
+
+      try {
+        const { data } = await axios.get(getNotificationsRoute, {
+          headers: { Authorization: `Token ${token}` },
+        });
+        const list = data?.notifications || [];
+        setUnreadCount(
+          list.filter((item) => item?.unread && !item?.deleted).length,
+        );
+      } catch (err) {
+        console.error("Failed to fetch unread count:", err);
+      }
+    };
+
+    fetchUnread();
+  }, [role]);
 
   return (
     <Flex
@@ -141,8 +167,17 @@ function Header({ opened, toggleSidebar }) {
             onChange={handleRoleChange}
             placeholder="Role"
           />
-          <Indicator>
-            <Bell color="orange" size="32px" cursor="pointer" />
+          <Indicator
+            disabled={unreadCount === 0}
+            label={unreadCount > 99 ? "99+" : unreadCount}
+            size={18}
+          >
+            <Bell
+              color="orange"
+              size="32px"
+              cursor="pointer"
+              onClick={() => navigate("/dashboard/notifications")}
+            />
           </Indicator>
           <Popover
             opened={popoverOpened}
