@@ -1,19 +1,20 @@
-const ACCESS_KEY = "access";
-const REFRESH_KEY = "refresh";
+const TOKEN_KEY = "authToken";
 
 export const tokenStorage = {
   getAccess() {
-    return localStorage.getItem(ACCESS_KEY);
+    return localStorage.getItem(TOKEN_KEY);
   },
   getRefresh() {
-    return localStorage.getItem(REFRESH_KEY);
+    return localStorage.getItem(TOKEN_KEY); // Return same token for refresh
   },
-  setTokens({ access, refresh }) {
-    if (access) localStorage.setItem(ACCESS_KEY, access);
-    if (refresh) localStorage.setItem(REFRESH_KEY, refresh);
+  setToken(token) {
+    if (token) localStorage.setItem(TOKEN_KEY, token);
+  },
+  setTokens({ access }) {
+    // For backward compatibility, but we now use single token
+    if (access) localStorage.setItem(TOKEN_KEY, access);
   },
   clear() {
-    localStorage.removeItem(ACCESS_KEY);
-    localStorage.removeItem(REFRESH_KEY);
+    localStorage.removeItem(TOKEN_KEY);
   },
 };

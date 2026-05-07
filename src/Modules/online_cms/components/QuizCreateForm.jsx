@@ -10,12 +10,15 @@ export default function QuizCreateForm({ courseCode, data = [], onSubmit }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [startTime, setStartTime] = useState(null);
+  const [duration, setDuration] = useState(DEFAULT_DURATION_MIN);
 
   const canSubmit = useMemo(() => {
     if (!title.trim()) return false;
     if (!startTime) return false;
+    if (!duration || Number.isNaN(Number(duration)) || Number(duration) <= 0)
+      return false;
     return true;
-  }, [title, startTime]);
+  }, [title, startTime, duration]);
 
   if (!courseCode) {
     return (
@@ -36,14 +39,11 @@ export default function QuizCreateForm({ courseCode, data = [], onSubmit }) {
           if (!canSubmit) return;
           if (onSubmit) {
             const start = startTime;
-            const end = new Date(
-              start.getTime() + DEFAULT_DURATION_MIN * 60 * 1000,
-            );
             onSubmit({
               title: title.trim(),
               description: description.trim(),
               start_time: start.toISOString(),
-              end_time: end.toISOString(),
+              duration: Number(duration),
             });
           }
         }}
@@ -72,6 +72,17 @@ export default function QuizCreateForm({ courseCode, data = [], onSubmit }) {
           placeholder="Pick quiz date and time"
           value={startTime}
           onChange={setStartTime}
+          mb="sm"
+          required
+        />
+
+        <TextInput
+          label="Duration (minutes)"
+          type="number"
+          min={1}
+          step={1}
+          value={duration}
+          onChange={(e) => setDuration(Number(e.target.value))}
           mb="sm"
           required
         />

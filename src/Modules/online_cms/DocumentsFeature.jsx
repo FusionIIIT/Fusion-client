@@ -2,7 +2,9 @@
 import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { useParams } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import CustomBreadcrumbs from "../../components/Breadcrumbs";
+import { setCurrentModule, setActiveTab_ } from "../../redux/moduleslice";
 import DocumentsTable from "./components/DocumentsTable";
 import DocumentUploadForm from "./components/DocumentUploadForm";
 import { getDocuments, uploadDocument, deleteDocument } from "./api";
@@ -17,7 +19,13 @@ export default function DocumentsFeature({ courseCode: courseCodeProp }) {
   const courseCode = courseCodeProp || courseCodeParam;
   const [documents, setDocuments] = useState([]);
   const role = useSelector((state) => state.user.role);
+  const dispatch = useDispatch();
   const isFaculty = isFacultyRole(role);
+
+  useEffect(() => {
+    dispatch(setCurrentModule("Course Management"));
+    dispatch(setActiveTab_("Materials"));
+  }, [dispatch]);
 
   const load = () => {
     if (courseCode)
@@ -44,6 +52,7 @@ export default function DocumentsFeature({ courseCode: courseCodeProp }) {
 
   return (
     <div>
+      <CustomBreadcrumbs />
       {isFaculty && <DocumentUploadForm onSubmit={handleUpload} />}
       <DocumentsTable
         documents={documents}

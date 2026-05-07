@@ -34,9 +34,20 @@ export default function AssignmentUploadForm({
     );
   }
 
+  if (options.length === 0) {
+    return (
+      <Paper p="md" shadow="xs">
+        <Text size="xl" mb="md" fw={500}>
+          Submit Assignment
+        </Text>
+        <Text c="dimmed">No assignments available for this course yet.</Text>
+      </Paper>
+    );
+  }
+
   return (
     <Paper p="md" shadow="xs">
-      <Text size="xl" mb="md">
+      <Text size="xl" mb="md" fw={500}>
         Submit Assignment
       </Text>
       <form
@@ -52,13 +63,14 @@ export default function AssignmentUploadForm({
       >
         <Select
           label="Assignment"
-          placeholder={options.length ? "Select assignment" : "No assignments"}
+          placeholder="Select assignment"
           data={options}
           value={assignmentId}
           onChange={setAssignmentId}
           mb="sm"
           searchable
           required
+          clearable
         />
         <TextInput
           label="Submission link"
@@ -67,10 +79,11 @@ export default function AssignmentUploadForm({
           onChange={(e) => setLink(e.target.value)}
           mb="sm"
           required
+          description="Provide a link to your assignment submission"
         />
         <Group mt="md">
-          <Button type="submit" disabled={!canSubmit}>
-            Submit
+          <Button type="submit" disabled={!canSubmit} fullWidth>
+            Submit Assignment
           </Button>
         </Group>
       </form>

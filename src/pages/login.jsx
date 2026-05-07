@@ -24,7 +24,7 @@ function LoginPage() {
 
   useEffect(() => {
     // If user already has an access token, navigate away from login
-    if (localStorage.getItem("access")) {
+    if (localStorage.getItem("authToken")) {
       navigate("/dashboard");
     }
   }, [navigate]);
@@ -48,10 +48,7 @@ function LoginPage() {
           color: "green",
         });
 
-        tokenStorage.setTokens({
-          access: response.data.access,
-          refresh: response.data.refresh,
-        });
+        tokenStorage.setToken(response.data.token);
 
         navigate("/dashboard");
       }

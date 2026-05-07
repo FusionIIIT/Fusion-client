@@ -1,7 +1,9 @@
 /* eslint-disable */
 import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import CustomBreadcrumbs from "../../components/Breadcrumbs";
+import { setCurrentModule, setActiveTab_ } from "../../redux/moduleslice";
 import ForumThreadTable from "./components/ForumThreadTable";
 import ForumQuestionForm from "./components/ForumQuestionForm";
 import {
@@ -19,8 +21,14 @@ const isFacultyRole = (role) => {
 export default function ForumFeature({ courseCode }) {
   const [threads, setThreads] = useState([]);
   const role = useSelector((state) => state.user.role);
+  const dispatch = useDispatch();
   const currentUserId = useSelector((state) => state.user.username || "");
   const isFaculty = isFacultyRole(role);
+
+  useEffect(() => {
+    dispatch(setCurrentModule("Course Management"));
+    dispatch(setActiveTab_("Forum"));
+  }, [dispatch]);
 
   const load = () => {
     if (courseCode) getForum(courseCode).then((data) => setThreads(data || []));
@@ -47,6 +55,7 @@ export default function ForumFeature({ courseCode }) {
 
   return (
     <div>
+      <CustomBreadcrumbs />
       <ForumQuestionForm courseCode={courseCode} onSubmit={handlePost} />
       <ForumThreadTable
         courseCode={courseCode}

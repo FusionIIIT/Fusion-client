@@ -10,12 +10,28 @@ export default function QuizListTable({
   onStart,
   isFaculty,
 }) {
+  const formatDateTime = (value) => {
+    if (!value) return "";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return date.toLocaleString([], {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   const columns = React.useMemo(
     () => [
       { accessorKey: "id", header: "ID" },
       { accessorKey: "title", header: "Title" },
-      { accessorKey: "startTime", header: "Start" },
-      { accessorKey: "endTime", header: "End" },
+      {
+        accessorKey: "startTime",
+        header: "Date & Time",
+        Cell: ({ cell }) => formatDateTime(cell.getValue()),
+      },
       { accessorKey: "duration", header: "Duration (min)" },
     ],
     [],
@@ -29,25 +45,24 @@ export default function QuizListTable({
       <MantineReactTable
         columns={columns}
         data={quizzes}
-        enableRowActions
+        enableRowActions={isFaculty}
+        enableColumnActions={false}
         positionActionsColumn="last"
         renderRowActions={({ row }) => {
           const quiz = row.original;
           return (
             <Group gap="xs">
-              {isFaculty ? (
-                <Button
-                  color="red"
-                  variant="light"
-                  size="xs"
-                  onClick={() => onRemove?.(quiz.id)}
-                >
-                  Remove
-                </Button>
-              ) : (
-                <Button size="xs" onClick={() => onStart?.(quiz)}>
-                  Start
-                </Button>
+              {isFaculty && (
+                <>
+                  <Button
+                    color="red"
+                    variant="light"
+                    size="xs"
+                    onClick={() => onRemove?.(quiz.id)}
+                  >
+                    Remove
+                  </Button>
+                </>
               )}
             </Group>
           );

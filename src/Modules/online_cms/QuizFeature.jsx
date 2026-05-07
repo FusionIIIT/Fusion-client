@@ -1,17 +1,13 @@
 /* eslint-disable */
 import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { Loader, Center, Stack, Alert } from "@mantine/core";
+import CustomBreadcrumbs from "../../components/Breadcrumbs";
+import { setCurrentModule, setActiveTab_ } from "../../redux/moduleslice";
 import QuizCreateForm from "./components/QuizCreateForm";
 import QuizListTable from "./components/QuizListTable";
-import QuizAttemptView from "./components/QuizAttemptView";
-import {
-  getQuizzes,
-  createQuiz,
-  removeQuiz,
-  takeQuiz,
-  submitQuiz,
-} from "./api";
+import { getQuizzes, createQuiz, removeQuiz } from "./api";
 
 const isFacultyRole = (role) => {
   const roleStr = String(role || "");
@@ -20,13 +16,30 @@ const isFacultyRole = (role) => {
 
 export default function QuizFeature({ courseCode }) {
   const role = useSelector((state) => state.user.role);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(setCurrentModule("Course Management"));
+    dispatch(setActiveTab_("Quiz"));
+  }, [dispatch]);
   const isFaculty = isFacultyRole(role);
   const [quizzes, setQuizzes] = useState([]);
-  const [activeQuiz, setActiveQuiz] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const loadQuizzes = () => {
-    if (courseCode)
-      getQuizzes(courseCode).then((data) => setQuizzes(data || []));
+  const loadQuizzes = async () => {
+    if (courseCode) {
+      setLoading(true);
+      try {
+        const data = await getQuizzes(courseCode);
+        setQuizzes(data || []);
+        setError(null);
+      } catch (err) {
+        setError("Failed to load quizzes");
+      } finally {
+        setLoading(false);
+      }
+    }
   };
 
   useEffect(() => {
@@ -34,52 +47,59 @@ export default function QuizFeature({ courseCode }) {
   }, [courseCode, isFaculty]);
 
   const handleCreate = async (data) => {
-    await createQuiz(courseCode, data);
-    loadQuizzes();
-  };
-
-  const handleRemove = async (id) => {
-    await removeQuiz(courseCode, id);
-    loadQuizzes();
-  };
-
-  const handleStartQuiz = async (quiz) => {
-    const data = await takeQuiz(courseCode, quiz.id);
-    if (data) setActiveQuiz(data);
-  };
-
-  const handleSubmitQuiz = async (answers) => {
-    if (!activeQuiz) return;
-    const res = await submitQuiz(courseCode, activeQuiz.id, { answers });
-    setActiveQuiz(null);
-    loadQuizzes();
-    if (res) {
-      alert(`Score: ${res.score} / ${res.totalMarks}`);
+    setLoading(true);
+    try {
+      const result = await createQuiz(courseCode, data);
+      if (result) {
+        setError(null);
+        await loadQuizzes();
+      }
+    } catch (err) {
+      setError("Failed to create quiz");
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (activeQuiz) {
-    return (
-      <QuizAttemptView
-        quiz={activeQuiz}
-        onSubmit={handleSubmitQuiz}
-        onCancel={() => setActiveQuiz(null)}
-      />
-    );
-  }
+  const handleRemove = async (id) => {
+    setLoading(true);
+    try {
+      await removeQuiz(courseCode, id);
+      setError(null);
+      await loadQuizzes();
+    } catch (err) {
+      setError("Failed to delete quiz");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div>
-      {isFaculty && (
-        <QuizCreateForm courseCode={courseCode} onSubmit={handleCreate} />
+    <Stack gap="md">
+      <CustomBreadcrumbs />
+      {error && (
+        <Alert color="red" title="Error">
+          {error}
+        </Alert>
       )}
-      <QuizListTable
-        quizzes={quizzes}
-        onRemove={isFaculty ? handleRemove : undefined}
-        onStart={!isFaculty ? handleStartQuiz : undefined}
-        isFaculty={isFaculty}
-      />
-    </div>
+      {loading && (
+        <Center p="lg">
+          <Loader />
+        </Center>
+      )}
+      {!loading && (
+        <>
+          {isFaculty && (
+            <QuizCreateForm courseCode={courseCode} onSubmit={handleCreate} />
+          )}
+          <QuizListTable
+            quizzes={quizzes}
+            onRemove={isFaculty ? handleRemove : undefined}
+            isFaculty={isFaculty}
+          />
+        </>
+      )}
+    </Stack>
   );
 }
 

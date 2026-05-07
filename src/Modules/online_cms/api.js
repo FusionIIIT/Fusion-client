@@ -4,6 +4,9 @@ import api from "../../helper/api";
 const err = (msg) =>
   notifications.show({ title: "Error", message: msg, color: "red" });
 
+const success = (msg) =>
+  notifications.show({ title: "Success", message: msg, color: "green" });
+
 export const getCourses = async () => {
   try {
     return (await api.get("/ocms/api/courses/")).data;
@@ -30,32 +33,50 @@ export const getAssignments = async (code) => {
 };
 export const addAssignment = async (code, data) => {
   try {
-    return (await api.post(`/ocms/api/${code}/assignments/add/`, data)).data;
-  } catch {
-    err("Failed to add assignment");
+    const result = await api.post(`/ocms/api/${code}/assignments/add/`, data);
+    success("Assignment created successfully!");
+    return result.data;
+  } catch (e) {
+    err(e?.response?.data?.detail || "Failed to add assignment");
+    return null;
   }
 };
 export const uploadAssignment = async (code, data) => {
   try {
-    return (await api.post(`/ocms/api/${code}/assignments/upload/`, data)).data;
+    const result = await api.post(
+      `/ocms/api/${code}/assignments/upload/`,
+      data,
+    );
+    success("Assignment submitted successfully!");
+    return result.data;
   } catch (e) {
     err(e?.response?.data?.detail || "Failed to upload assignment");
+    return null;
   }
 };
 export const gradeAssignment = async (code, pk, data) => {
   try {
-    return (await api.post(`/ocms/api/${code}/assignments/${pk}/grade/`, data))
-      .data;
-  } catch {
-    err("Failed to grade assignment");
+    const result = await api.post(
+      `/ocms/api/${code}/assignments/${pk}/grade/`,
+      data,
+    );
+    success("Assignment graded successfully!");
+    return result.data;
+  } catch (e) {
+    err(e?.response?.data?.detail || "Failed to grade assignment");
+    return null;
   }
 };
 export const deleteAssignment = async (code, pk) => {
   try {
-    return (await api.delete(`/ocms/api/${code}/assignments/${pk}/delete/`))
-      .data;
-  } catch {
-    err("Failed to delete assignment");
+    const result = await api.delete(
+      `/ocms/api/${code}/assignments/${pk}/delete/`,
+    );
+    success("Assignment deleted successfully!");
+    return result.data;
+  } catch (e) {
+    err(e?.response?.data?.detail || "Failed to delete assignment");
+    return null;
   }
 };
 export const getDocuments = async (code) => {
@@ -120,8 +141,9 @@ export const getQuizzes = async (code) => {
 export const createQuiz = async (code, data) => {
   try {
     return (await api.post(`/ocms/api/${code}/quizzes/create/`, data)).data;
-  } catch {
-    err("Failed to create quiz");
+  } catch (e) {
+    err(e?.response?.data?.detail || "Failed to create quiz");
+    return null;
   }
 };
 export const removeQuiz = async (code, quizId) => {
@@ -168,8 +190,9 @@ export const getAttendanceRoster = async (code) => {
 export const submitAttendance = async (code, data) => {
   try {
     return (await api.post(`/ocms/api/${code}/attendance/`, data)).data;
-  } catch {
-    err("Failed to submit attendance");
+  } catch (e) {
+    err(e?.response?.data?.detail || "Failed to submit attendance");
+    return null;
   }
 };
 export const getQuestionBank = async (code) => {

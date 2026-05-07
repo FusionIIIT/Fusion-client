@@ -5,8 +5,9 @@ import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css";
 import "mantine-react-table/styles.css";
 import { Tabs, Container, Group, Select, Text } from "@mantine/core";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import CustomBreadcrumbs from "../../components/Breadcrumbs";
+import { setCurrentModule, setActiveTab_ } from "../../redux/moduleslice";
 
 import CourseList from "./CourseList";
 import AssignmentFeature from "./AssignmentFeature";
@@ -18,9 +19,27 @@ import { getCourses } from "./api";
 
 export default function OnlineCmsPage({ initialCourseCode = null }) {
   const role = useSelector((state) => state.user.role);
+  const dispatch = useDispatch();
 
   const [courses, setCourses] = useState([]);
   const [courseCode, setCourseCode] = useState(null);
+  const [activeTab, setActiveTab] = useState("courses");
+
+  useEffect(() => {
+    dispatch(setCurrentModule("Course Management"));
+  }, [dispatch]);
+
+  useEffect(() => {
+    const tabLabels = {
+      courses: "My Courses",
+      materials: "Materials",
+      assignments: "Assignments",
+      quiz: "Quiz",
+      forum: "Forum",
+      attendance: "Attendance",
+    };
+    dispatch(setActiveTab_(tabLabels[activeTab] || activeTab));
+  }, [dispatch, activeTab]);
 
   useEffect(() => {
     getCourses().then((data) => {
@@ -128,7 +147,7 @@ export default function OnlineCmsPage({ initialCourseCode = null }) {
         {!courseCode && <Text c="dimmed">Select a course to manage.</Text>}
       </Group>
 
-      <Tabs defaultValue="courses">
+      <Tabs value={activeTab} onChange={setActiveTab}>
         <Tabs.List>
           {tabs.map((t) => (
             <Tabs.Tab key={t.value} value={t.value}>

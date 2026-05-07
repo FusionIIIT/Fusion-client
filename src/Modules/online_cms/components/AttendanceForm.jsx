@@ -16,6 +16,7 @@ export default function AttendanceForm({
   courseCode,
   isFaculty,
   roster = [],
+  records = [],
   onSubmit,
 }) {
   const [date, setDate] = useState(new Date());
@@ -39,12 +40,57 @@ export default function AttendanceForm({
   }
 
   if (!isFaculty) {
+    // For students, show a summary of their attendance (supports map or list response)
+    let allRecords = [];
+    if (Array.isArray(records)) {
+      allRecords = records;
+    } else if (records && typeof records === "object") {
+      Object.keys(records).forEach((date) => {
+        const entries = records[date] || [];
+        entries.forEach((r) => {
+          allRecords.push({ date, ...r });
+        });
+      });
+    }
+
+    const totalRecords = allRecords.length;
+    const presentCount = allRecords.filter((r) => r.present).length;
+    const absentCount = totalRecords - presentCount;
+
     return (
       <Paper p="md" shadow="xs">
         <Text size="xl" mb="xs">
-          Attendance
+          Attendance Summary
         </Text>
-        <Text c="dimmed">Your attendance records are shown below.</Text>
+        <Text c="dimmed" mb="md">
+          Your attendance records for this course.
+        </Text>
+        <Group gap="xl">
+          <div>
+            <Text size="lg" fw={500} c="green">
+              {presentCount}
+            </Text>
+            <Text size="sm" c="dimmed">
+              Present
+            </Text>
+          </div>
+          <div>
+            <Text size="lg" fw={500} c="red">
+              {absentCount}
+            </Text>
+            <Text size="sm" c="dimmed">
+              Absent
+            </Text>
+          </div>
+          <div>
+            <Text size="lg" fw={500}>
+              {totalRecords}
+            </Text>
+            <Text size="sm" c="dimmed">
+              Total Days
+            </Text>
+          </div>
+        </Group>
       </Paper>
     );
   }
@@ -54,9 +100,18 @@ export default function AttendanceForm({
       <Text size="xl" mb="md">
         Mark Attendance
       </Text>
+      {(!roster || roster.length === 0) && (
+        <Text c="orange" mb="md">
+          ⚠️ No students found in roster. Please check course enrollment.
+        </Text>
+      )}
       <form
         onSubmit={(e) => {
           e.preventDefault();
+          if (!roster || roster.length === 0) {
+            alert("No students available to mark attendance");
+            return;
+          }
           const attendance = (roster || []).map((s) => ({
             student_id: s.student_id,
             present: Boolean(presentMap[s.student_id]),
@@ -86,21 +141,24 @@ export default function AttendanceForm({
         </Group>
 
         <Stack gap={6}>
-          {(roster || []).map((s) => (
-            <Checkbox
-              key={s.student_id}
-              label={`${s.student_id} — ${s.name}`}
-              checked={Boolean(presentMap[s.student_id])}
-              onChange={(e) =>
-                setPresentMap((p) => ({
-                  ...p,
-                  [s.student_id]: e.currentTarget.checked,
-                }))
-              }
-            />
-          ))}
-          {(!roster || roster.length === 0) && (
-            <Text c="dimmed">No enrolled students found for this course.</Text>
+          {(roster || []).length === 0 ? (
+            <Text c="dimmed" ta="center" py="xl">
+              No students to mark attendance
+            </Text>
+          ) : (
+            (roster || []).map((s) => (
+              <Checkbox
+                key={s.student_id}
+                label={`${s.student_id} — ${s.name}`}
+                checked={Boolean(presentMap[s.student_id])}
+                onChange={(e) =>
+                  setPresentMap((p) => ({
+                    ...p,
+                    [s.student_id]: e.currentTarget.checked,
+                  }))
+                }
+              />
+            ))
           )}
         </Stack>
 
@@ -136,5 +194,6 @@ AttendanceForm.propTypes = {
   courseCode: PropTypes.string,
   isFaculty: PropTypes.bool,
   roster: PropTypes.array,
+  records: PropTypes.object,
   onSubmit: PropTypes.func,
 };

@@ -125,13 +125,18 @@ export default function AssignmentTable({
                                 }
                               />
                               <Button
-                                onClick={() =>
+                                onClick={() => {
+                                  console.log("Save grade clicked", {
+                                    pk: s.id,
+                                    score: Number(draft.score),
+                                    feedback: draft.feedback,
+                                  });
                                   onGrade?.({
                                     pk: s.id,
                                     score: Number(draft.score),
                                     feedback: draft.feedback,
-                                  })
-                                }
+                                  });
+                                }}
                               >
                                 Save grade
                               </Button>

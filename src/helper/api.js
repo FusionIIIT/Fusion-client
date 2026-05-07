@@ -15,52 +15,23 @@ api.interceptors.request.use(
     const token = tokenStorage.getAccess();
     if (token) {
       config.headers = config.headers ?? {};
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = `Token ${token}`;
     }
     return config;
   },
   (error) => Promise.reject(error),
 );
 
-// Response interceptor to handle token refresh
+// Response interceptor to handle authentication errors
 api.interceptors.response.use(
   (response) => {
     return response;
   },
   async (error) => {
-    const originalRequest = error.config;
-
-    // Avoid infinite loops if refresh endpoint itself returns 401
-    if (originalRequest?.url?.includes("/api/token/refresh/")) {
-      return Promise.reject(error);
-    }
-
-    // IF 401 and we haven't retried yet
-    if (error.response?.status === 401 && !originalRequest?._retry) {
-      originalRequest._retry = true;
-
-      try {
-        const refreshToken = tokenStorage.getRefresh();
-        if (!refreshToken) {
-          throw new Error("No refresh token available");
-        }
-
-        // Try to refresh the token
-        const res = await axios.post(`${host}/api/token/refresh/`, {
-          refresh: refreshToken,
-        });
-
-        tokenStorage.setTokens({ access: res.data.access });
-
-        // Explicitly inject the new token for the retry
-        originalRequest.headers = originalRequest.headers ?? {};
-        originalRequest.headers.Authorization = `Bearer ${res.data.access}`;
-        return api(originalRequest);
-      } catch (refreshError) {
-        tokenStorage.clear();
-        window.location.href = "/login";
-        return Promise.reject(refreshError);
-      }
+    // If 401 (Unauthorized), clear tokens and redirect to login
+    if (error.response?.status === 401) {
+      tokenStorage.clear();
+      window.location.href = "/login";
     }
 
     return Promise.reject(error);
