@@ -8,7 +8,7 @@ import { IconTrash, IconCheck } from "@tabler/icons-react";
 import PropTypes from "prop-types";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
-import { useGetClubMembers } from "./BackendLogic/ApiRoutes";
+import { useClubMembers } from "../../hooks/useClubs";
 import { host } from "../../routes/globalRoutes/index.jsx";
 
 function CoordinatorMembers({ clubName }) {
@@ -24,7 +24,7 @@ function CoordinatorMembers({ clubName }) {
   const approvemutation = useMutation({
     mutationFn: (clubMemberId) => {
       return axios.post(
-        `${host}/gymkhana/api/member_approve/`,
+        `${host}/gymkhana/api/members/approve/`,
         { id: clubMemberId },
         {
           headers: {
@@ -51,7 +51,7 @@ function CoordinatorMembers({ clubName }) {
   const rejectMutation = useMutation({
     mutationFn: (clubMemberId) => {
       return axios.post(
-        `${host}/gymkhana/api/member_reject/`,
+        `${host}/gymkhana/api/members/reject/`,
         { id: clubMemberId },
         {
           headers: {

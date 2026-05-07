@@ -19,7 +19,7 @@ import { DateInput, TimeInput } from "@mantine/dates";
 import { useNavigate } from "react-router-dom";
 import { notifications } from "@mantine/notifications";
 import { host, authRoute } from "../../routes/globalRoutes";
-import { useGetNewsLetterEvent } from "./BackendLogic/ApiRoutes";
+import { useCoordinatorEvents } from "../../hooks/useEvents";
 
 export const useCreateNewEvent = (
   token,

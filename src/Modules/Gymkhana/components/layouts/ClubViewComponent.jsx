@@ -2,28 +2,31 @@ import { Box, Group, Stack, Text } from "@mantine/core";
 import { useState, lazy, Suspense } from "react";
 import { useSelector } from "react-redux";
 import PropTypes from "prop-types";
-import ModuleTabs from "../../components/moduleTabs"; // Assuming this is the correct path
+import ModuleTabs from "../../../components/moduleTabs";
 import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css";
 import "mantine-react-table/styles.css";
-import EventApprovalsWithProviders from "./ApprovalsTable";
-import CoordinatorMembersWithProviders from "./CoordinatorMembersTable";
-import BudgetApprovalsWithProviders from "./BudgetApprovalTable";
-import FestForm from "./FestForm";
-import { useGetCurrentLoginnedRoleRelatedClub } from "./BackendLogic/ApiRoutes";
-import CustomTable from "./CustomTable";
-import DownloadNewsletter from "./DownloadNewsletter";
-import ReportForm from "./EventReportForm";
-import EventReportTable from "./EventReportTable";
-import YearlyplanButton from "./YearlyplanButton";
-import YearlyplanTable from "./YearlyplanTable";
-import GalleryForm from "./GalleryForm";
-import GalleryView from "./GalleryView";
 
-const RegistrationForm = lazy(() => import("./RegistrationForm"));
-const EventForm = lazy(() => import("./EventForm"));
-const BudgetForm = lazy(() => import("./BudgetForm"));
-const NewsLetterForm = lazy(() => import("./NewsLetterForm"));
+// Import from new structure
+import EventApprovalsWithProviders from "../tables/EventApprovalsTable";
+import CoordinatorMembersWithProviders from "../tables/CoordinatorMembersTable";
+import BudgetApprovalsWithProviders from "../tables/BudgetApprovalTable";
+import FestForm from "../forms/FestForm";
+import { useCurrentLoginRoleRelatedClub } from "../../hooks/useClubs";
+import DataTable from "../tables/DataTable";
+import DownloadNewsletter from "../common/DownloadNewsletter";
+import ReportForm from "../forms/EventReportForm";
+import EventReportTable from "../tables/EventReportTable";
+import YearlyplanButton from "../forms/YearlyplanButton";
+import YearlyplanTable from "../tables/YearlyplanTable";
+import GalleryForm from "../forms/GalleryForm";
+import GalleryView from "../tables/GalleryView";
+
+// Lazy imports
+const RegistrationForm = lazy(() => import("../forms/RegistrationForm"));
+const EventForm = lazy(() => import("../forms/EventForm"));
+const BudgetForm = lazy(() => import("../forms/BudgetForm"));
+const NewsLetterForm = lazy(() => import("../forms/NewsLetterForm"));
 
 function ClubViewComponent({
   AboutClub,
@@ -38,17 +41,16 @@ function ClubViewComponent({
   const user = useSelector((state) => state.user);
   const token = localStorage.getItem("authToken");
   const userRole = user.role;
-  const [activeclubfeature, setactiveclubfeature] = useState("0"); // Default index as string for ModuleTabs
-  const { data: CurrentLogginedRelatedClub = [] } =
-    useGetCurrentLoginnedRoleRelatedClub(user.roll_no, token);
+  const [activeclubfeature, setactiveclubfeature] = useState("0");
 
-  const VisibeClubArray = [];
+  const { data: CurrentLogginedRelatedClub = [] } =
+    useCurrentLoginRoleRelatedClub(user.roll_no, token);
+
+  const VisibleClubArray = [];
   CurrentLogginedRelatedClub.forEach((c) => {
-    VisibeClubArray.push(c.club);
+    VisibleClubArray.push(c.club);
   });
-  console.log(user, CurrentLogginedRelatedClub);
-  console.log(VisibeClubArray);
-  // Create a tabs array dynamically based on user role and conditions
+
   const tabs = [{ title: "About" }];
 
   if (
@@ -91,7 +93,7 @@ function ClubViewComponent({
       "Cultural_Counsellor",
     ].includes(userRole) &&
     CurrentLogginedRelatedClub.length > 0 &&
-    VisibeClubArray.includes(clubName)
+    VisibleClubArray.includes(clubName)
   ) {
     tabs.push(
       { title: "Events Approval" },
@@ -130,14 +132,20 @@ function ClubViewComponent({
     switch (tabs[parseInt(activeclubfeature, 10)]?.title) {
       case "About":
         return (
-          <Text>
-            {" "}
-            Welcome to {clubName} {AboutClub}{" "}
-          </Text>
+          <div className="gymkhana-section">
+            <Box className="gymkhana-section-body">
+              <Text className="gymkhana-section-title" mb="sm">
+                About {clubName}
+              </Text>
+              <Text className="gymkhana-club-copy">
+                Welcome to {clubName}. {AboutClub}
+              </Text>
+            </Box>
+          </div>
         );
       case "Members":
         return (
-          <CustomTable
+          <DataTable
             data={membersData}
             columns={membersColumns}
             TableName="Members"
@@ -145,18 +153,18 @@ function ClubViewComponent({
         );
       case "Achievements":
         return (
-          <CustomTable
+          <DataTable
             columns={achievementsColumns}
             data={achievementsData}
-            TableName="Acheievements"
+            TableName="Achievements"
           />
         );
       case "Events":
         return (
-          <CustomTable
+          <DataTable
             columns={eventsColumns}
             data={eventsData}
-            TableName="Events2"
+            TableName="Events"
           />
         );
       case "Events Approval":
@@ -186,7 +194,7 @@ function ClubViewComponent({
       case `${clubName} Events`:
         return (
           <Suspense fallback={<div>Loading Table component</div>}>
-            <CustomTable data={eventsData} columns={eventsColumns} />
+            <DataTable data={eventsData} columns={eventsColumns} />
           </Suspense>
         );
       case "Events Approval Form":
@@ -261,18 +269,25 @@ function ClubViewComponent({
   };
 
   return (
-    <Box style={{ height: "100vh" }}>
-      <Group justify="space-between">
-        <Text align="content-start" fw={800} size="40px">
-          {clubName}
-        </Text>
-        <ModuleTabs
-          tabs={tabs}
-          activeTab={activeclubfeature}
-          setActiveTab={setactiveclubfeature}
-        />
-      </Group>
-      <Box mt="20px">{renderActiveContent()}</Box>
+    <Box className="gymkhana-club-shell gymkhana-shell gymkhana-shell--full">
+      <div className="gymkhana-section">
+        <Box className="gymkhana-section-body">
+          <div className="gymkhana-club-header">
+            <Stack gap={4}>
+              <Text className="gymkhana-club-title">{clubName}</Text>
+              <Text className="gymkhana-subtle-text" size="sm">
+                Gymkhana club workspace inside Fusion
+              </Text>
+            </Stack>
+            <ModuleTabs
+              tabs={tabs}
+              activeTab={activeclubfeature}
+              setActiveTab={setactiveclubfeature}
+            />
+          </div>
+        </Box>
+      </div>
+      <Box>{renderActiveContent()}</Box>
     </Box>
   );
 }
@@ -280,43 +295,12 @@ function ClubViewComponent({
 ClubViewComponent.propTypes = {
   clubName: PropTypes.string.isRequired,
   AboutClub: PropTypes.string.isRequired,
-  membersData: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      role: PropTypes.string.isRequired,
-      roleNo: PropTypes.string.isRequired,
-    }),
-  ).isRequired,
-  achievementsData: PropTypes.arrayOf(
-    PropTypes.shape({
-      title: PropTypes.string.isRequired,
-      year: PropTypes.string.isRequired, // Assuming year is a string, e.g., "2022"
-    }),
-  ).isRequired,
-  eventsData: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      date: PropTypes.string.isRequired, // Assuming date is a string in "YYYY-MM-DD" format
-    }),
-  ).isRequired,
-  membersColumns: PropTypes.arrayOf(
-    PropTypes.shape({
-      accessorKey: PropTypes.string.isRequired,
-      header: PropTypes.string.isRequired,
-    }),
-  ).isRequired,
-  achievementsColumns: PropTypes.arrayOf(
-    PropTypes.shape({
-      accessorKey: PropTypes.string.isRequired,
-      header: PropTypes.string.isRequired,
-    }),
-  ).isRequired,
-  eventsColumns: PropTypes.arrayOf(
-    PropTypes.shape({
-      accessorKey: PropTypes.string.isRequired,
-      header: PropTypes.string.isRequired,
-    }),
-  ).isRequired,
+  membersData: PropTypes.array.isRequired,
+  achievementsData: PropTypes.array.isRequired,
+  eventsData: PropTypes.array.isRequired,
+  membersColumns: PropTypes.array.isRequired,
+  achievementsColumns: PropTypes.array.isRequired,
+  eventsColumns: PropTypes.array.isRequired,
 };
 
 export default ClubViewComponent;

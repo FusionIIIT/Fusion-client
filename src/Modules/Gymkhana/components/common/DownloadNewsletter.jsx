@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Button, Alert, Radio } from "@mantine/core";
 import axios from "axios";
-import { host } from "../../routes/globalRoutes/index.jsx";
-
+import apiClient from "../../services/apiClient";
+// Remove host import, use apiClient instead
 function DownloadNewsletter() {
   const [errorMessage, setErrorMessage] = useState("");
   const token = localStorage.getItem("authToken");

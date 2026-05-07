@@ -16,7 +16,7 @@ import "./GymkhanaForms.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { notifications } from "@mantine/notifications";
-import { useGetNewsLetterEvent } from "./BackendLogic/ApiRoutes";
+import { useCoordinatorEvents } from "../../hooks/useEvents";
 import { host, authRoute } from "../../routes/globalRoutes";
 
 function NewsForm({

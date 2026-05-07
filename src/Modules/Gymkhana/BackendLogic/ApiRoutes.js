@@ -8,7 +8,7 @@ export const useGetData = (clubName, token) => {
     queryFn: async () => {
       try {
         const { data } = await axios.post(
-          `${host}/gymkhana/club_detail/`,
+          `${host}/gymkhana/api/clubs/`,
           { club_name: clubName },
           {
             headers: {
@@ -32,7 +32,7 @@ export const useGetUpcomingEvents = (token) => {
     queryKey: ["UpcomingEventsData"],
     queryFn: async () => {
       try {
-        const { data } = await axios.get(`${host}/gymkhana/upcoming_events/`, {
+        const { data } = await axios.get(`${host}/gymkhana/api/events/`, {
           headers: {
             Authorization: `Token ${token}`,
           },
@@ -54,11 +54,14 @@ export const useGetPastEvents = (token) => {
     queryKey: ["PastEventsData"],
     queryFn: async () => {
       try {
-        const { data } = await axios.get(`${host}/gymkhana/past_events/`, {
-          headers: {
-            Authorization: `Token ${token}`,
+        const { data } = await axios.get(
+          `${host}/gymkhana/api/events/?past=true`,
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+            },
           },
-        });
+        );
         return data;
       } catch (error) {
         console.error("Error:", error.response?.data || error.message);
@@ -76,7 +79,7 @@ export const useGetClubMembers = (clubName, token) => {
     queryFn: async () => {
       try {
         const { data } = await axios.post(
-          `${host}/gymkhana/api/members_records/`,
+          `${host}/gymkhana/api/clubs/members/`,
           { club_name: clubName },
           {
             headers: {
@@ -99,7 +102,7 @@ export const useGetClubAcheivement = (clubName, token) => {
     queryFn: async () => {
       try {
         const { data } = await axios.post(
-          `${host}/gymkhana/api/show_achievement/`,
+          `${host}/gymkhana/api/clubs/`,
           { club_name: clubName },
           {
             headers: {
@@ -124,7 +127,7 @@ export const useGetCommentsEventInfo = (EventId, token) => {
     queryFn: async () => {
       try {
         const { data } = await axios.post(
-          `${host}/gymkhana/api/list_event_comments/`,
+          `${host}/gymkhana/api/events/comments/`,
           { event_id: EventId },
           {
             headers: {
@@ -141,69 +144,45 @@ export const useGetCommentsEventInfo = (EventId, token) => {
     enabled: !!EventId,
   });
 };
-// TODO handle Approve Button for Event form
-
 export const approveFICEventButton = async (eventId, token) => {
-  const response = axios.put(
-    `${host}/gymkhana/api/fic_approve_event/`,
+  const response = await axios.post(
+    `${host}/gymkhana/api/events/approve/`,
     { id: eventId },
-    {
-      headers: {
-        Authorization: `Token ${token}`,
-      },
-    },
+    { headers: { Authorization: `Token ${token}` } },
   );
-  return (await response).data;
+  return response.data;
 };
 
 export const approveCounsellorEventButton = async (eventId, token) => {
-  return axios.put(
-    `${host}/gymkhana/api/counsellor_approve_event/`,
+  return axios.post(
+    `${host}/gymkhana/api/events/approve/`,
     { id: eventId },
-    {
-      headers: {
-        Authorization: `Token ${token}`,
-      },
-    },
+    { headers: { Authorization: `Token ${token}` } },
   );
 };
 
 export const approveDeanEventButton = async (eventId, token) => {
-  return axios.put(
-    `${host}/gymkhana/api/dean_approve_event/`,
+  return axios.post(
+    `${host}/gymkhana/api/events/approve/`,
     { id: eventId },
-    {
-      headers: {
-        Authorization: `Token ${token}`,
-      },
-    },
+    { headers: { Authorization: `Token ${token}` } },
   );
 };
 
 // API call for rejecting
-
 export const rejectEventButton = async (eventId, token) => {
-  return axios.put(
-    `${host}/gymkhana/api/reject_event/`,
-    { id: eventId },
-    {
-      headers: {
-        Authorization: `Token ${token}`,
-      },
-    },
-  );
+  return axios.delete(`${host}/gymkhana/api/events/delete/`, {
+    data: { id: eventId },
+    headers: { Authorization: `Token ${token}` },
+  });
 };
 
 // API call for modifying
 export const modifyEventButton = async (eventId, token) => {
-  return axios.put(
-    `${host}/gymkhana/api/modify_event/`,
+  return axios.post(
+    `${host}/gymkhana/api/events/new/`,
     { id: eventId.eventId },
-    {
-      headers: {
-        Authorization: `Token ${token}`,
-      },
-    },
+    { headers: { Authorization: `Token ${token}` } },
   );
 };
 export const useGetUpcomingBudgets = (token) => {
@@ -211,7 +190,7 @@ export const useGetUpcomingBudgets = (token) => {
     queryKey: ["UpcomingBudgetData"],
     queryFn: async () => {
       try {
-        const { data } = await axios.get(`${host}/gymkhana/budget/`, {
+        const { data } = await axios.get(`${host}/gymkhana/api/budget/club/`, {
           headers: {
             Authorization: `Token ${token}`,
           },
@@ -233,7 +212,7 @@ export const useGetCommentsBudgetInfo = (budgetId, token) => {
     queryFn: async () => {
       try {
         const { data } = await axios.post(
-          `${host}/gymkhana/api/list_budget_comments/`,
+          `${host}/gymkhana/api/budget/comments/`,
           { budget_id: budgetId },
           {
             headers: {
@@ -254,78 +233,54 @@ export const useGetCommentsBudgetInfo = (budgetId, token) => {
 
 // API call to approve budget by FIC
 export const approveFICBudgetButton = async (budgetId, token) => {
-  const response = axios.put(
-    `${host}/gymkhana/api/fic_approve_budget/`,
-    { id: budgetId.budgetId },
-    {
-      headers: {
-        Authorization: `Token ${token}`,
-      },
-    },
+  const response = await axios.post(
+    `${host}/gymkhana/api/budget/approve/`,
+    { id: budgetId },
+    { headers: { Authorization: `Token ${token}` } },
   );
-  return (await response).data;
+  return response.data;
 };
 
 // API call to approve budget by Counsellor
 export const approveCounsellorBudgetButton = async (budgetId, token) => {
-  return axios.put(
-    `${host}/gymkhana/api/counsellor_approve_budget/`,
+  return axios.post(
+    `${host}/gymkhana/api/budget/approve/`,
     { id: budgetId },
-    {
-      headers: {
-        Authorization: `Token ${token}`,
-      },
-    },
+    { headers: { Authorization: `Token ${token}` } },
   );
 };
 
 // API call to approve budget by Dean
 export const reviewDeanBudgetButton = async (budgetId, token) => {
-  return axios.put(
-    `${host}/gymkhana/api/dean_review_budget/`,
+  return axios.post(
+    `${host}/gymkhana/api/budget/approve/`,
     { id: budgetId },
-    {
-      headers: {
-        Authorization: `Token ${token}`,
-      },
-    },
+    { headers: { Authorization: `Token ${token}` } },
   );
 };
 export const approveDeanBudgetButton = async (budgetId, token) => {
-  return axios.put(
-    `${host}/gymkhana/api/dean_approve_budget/`,
+  return axios.post(
+    `${host}/gymkhana/api/budget/approve/`,
     { id: budgetId },
-    {
-      headers: {
-        Authorization: `Token ${token}`,
-      },
-    },
+    { headers: { Authorization: `Token ${token}` } },
   );
 };
 
 // API call for rejecting budget
 export const rejectBudgetButton = async (budgetId, token) => {
-  return axios.put(
-    `${host}/gymkhana/api/reject_budget/`,
+  return axios.post(
+    `${host}/gymkhana/api/budget/reject/`,
     { id: budgetId },
-    {
-      headers: {
-        Authorization: `Token ${token}`,
-      },
-    },
+    { headers: { Authorization: `Token ${token}` } },
   );
 };
 
 // API call for modifying budget
 export const modifyBudgetButton = async (budgetId, token) => {
-  return axios.put(
-    `${host}/gymkhana/api/modify_budget/`,
+  return axios.post(
+    `${host}/gymkhana/api/budget/update-amount/`,
     { id: budgetId.budgetId },
-    {
-      headers: {
-        Authorization: `Token ${token}`,
-      },
-    },
+    { headers: { Authorization: `Token ${token}` } },
   );
 };
 
@@ -335,7 +290,7 @@ export const useGetCurrentLoginnedRoleRelatedClub = (InputName, token) => {
     queryFn: async () => {
       try {
         const { data } = await axios.post(
-          `${host}/gymkhana/api/list_club_position/`,
+          `${host}/gymkhana/api/clubs/`,
           { name: InputName },
           {
             headers: {
@@ -357,14 +312,11 @@ export const useGetClubPositionData = (token) => {
     queryKey: ["RoleRelatedTocLUB"],
     queryFn: async () => {
       try {
-        const { data } = await axios.get(
-          `${host}/gymkhana/api/list_all_club_position/`,
-          {
-            headers: {
-              Authorization: `Token ${token}`,
-            },
+        const { data } = await axios.get(`${host}/gymkhana/api/clubs/`, {
+          headers: {
+            Authorization: `Token ${token}`,
           },
-        );
+        });
         return data;
       } catch (error) {
         console.error("Error:", error.response?.data || error.message);
@@ -379,7 +331,7 @@ export const useGetFests = (token) => {
     queryKey: ["FestsData"],
     queryFn: async () => {
       try {
-        const { data } = await axios.get(`${host}/gymkhana/fest/`, {
+        const { data } = await axios.get(`${host}/gymkhana/api/budget/fest/`, {
           headers: {
             Authorization: `Token ${token}`,
           },
@@ -396,11 +348,11 @@ export const useGetFests = (token) => {
 
 export const useGetNewsLetterEvent = (roll_no, token) => {
   return useQuery({
-    queryKey: ["PastEventsData"],
+    queryKey: ["NewsletterEventsData"],
     queryFn: async () => {
       try {
         const { data } = await axios.post(
-          `${host}/gymkhana/api/coordinator_events/`,
+          `${host}/gymkhana/api/events/`,
           { roll_number: roll_no },
           {
             headers: {
@@ -525,7 +477,7 @@ export const ListYearlyPlans = (token) => {
 
 export const ListClubwiseYearlyPlans = (token) => {
   return useQuery({
-    queryKey: ["YearlyPlansData"],
+    queryKey: ["ClubwiseYearlyPlansData"],
     queryFn: async () => {
       try {
         const { data } = await axios.get(

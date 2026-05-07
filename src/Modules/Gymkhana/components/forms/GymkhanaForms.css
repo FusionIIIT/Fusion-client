@@ -1,0 +1,28 @@
+/* Gymkhana form styles */
+
+.club-form .mantine-Input-input,
+.club-form .mantine-Select-input,
+.club-form .mantine-Textarea-input,
+.club-form .mantine-DatePickerInput-input,
+.club-form .mantine-TimeInput-input {
+  border-color: #d0d7de;
+  background: #fff;
+}
+
+.club-form .mantine-Input-label,
+.club-form .mantine-Select-label,
+.club-form .mantine-Textarea-label,
+.club-form .mantine-DatePickerInput-label,
+.club-form .mantine-TimeInput-label {
+  color: #344054;
+  font-weight: 600;
+}
+
+.club-form .mantine-Input-input:focus,
+.club-form .mantine-Select-input:focus,
+.club-form .mantine-Textarea-input:focus,
+.club-form .mantine-DatePickerInput-input:focus,
+.club-form .mantine-TimeInput-input:focus {
+  border-color: #15abff;
+  box-shadow: 0 0 0 2px rgba(21, 171, 255, 0.12);
+}

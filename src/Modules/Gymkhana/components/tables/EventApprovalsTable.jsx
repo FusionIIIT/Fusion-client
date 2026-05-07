@@ -9,12 +9,16 @@ import {
   Flex,
   Stack,
   Text,
+  Input,
   Tooltip,
   Modal,
   Box,
   Button,
+  CloseButton,
+  Group,
   Divider,
   Pill,
+  ScrollArea,
 } from "@mantine/core";
 import { IconEye, IconEdit } from "@tabler/icons-react";
 import PropTypes from "prop-types";
@@ -24,22 +28,24 @@ import { useSelector } from "react-redux";
 import { notifications } from "@mantine/notifications";
 import { host } from "../../routes/globalRoutes/index.jsx";
 import {
-  useGetClubPositionData,
-  useGetCurrentLoginnedRoleRelatedClub,
-  approveFICYearlyPlan,
-  approveCounsellorYearlyPlan,
-  approveDeanYearlyPlan,
-  rejectYearlyPlan,
-  ListYearlyPlans,
-} from "./BackendLogic/ApiRoutes";
+  useUpcomingEvents,
+  useEventComments,
+  useCreateEvent,
+} from "../../hooks/useEvents";
+import { useClubPositionData } from "../../hooks/useClubs";
+import { EventsApprovalForm } from "../forms/EventForm";
+import { forwardFile } from "../../services/fileTrackingService";
 
-function YearlyApprovals({ clubName }) {
+function EventApprovals({ clubName }) {
   const user = useSelector((state) => state.user);
   const userRole = user.role;
   const token = localStorage.getItem("authToken");
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [validationErrors] = useState({});
+  const [commentValue, setCommentValue] = useState("");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const { data: commentsData, refetch: refetchComments } =
+    useGetCommentsEventInfo(selectedEvent?.id, token);
 
   const columns = useMemo(
     () => [
@@ -48,25 +54,12 @@ function YearlyApprovals({ clubName }) {
         header: "Status",
       },
       {
-        accessorKey: "club",
-        header: "club",
+        accessorKey: "event_name",
+        header: "Event Title",
       },
       {
-        accessorKey: "file_link",
-        header: "Link",
-        mantineTableBodyCellProps: ({ cell }) => {
-          return {
-            onClick: () => {
-              const url = cell.getValue();
-              window.open(url, "_blank");
-            },
-            style: { cursor: "pointer", color: "#1c7ed6" },
-          };
-        },
-      },
-      {
-        accessorKey: "year",
-        header: "year",
+        accessorKey: "start_date",
+        header: "Date",
       },
     ],
     [validationErrors],
@@ -85,14 +78,14 @@ function YearlyApprovals({ clubName }) {
     isFetching: isFetchingEvents,
     isLoading: isLoadingEvents,
     refetch: refetchEvents,
-  } = ListYearlyPlans(token);
+  } = useGetUpcomingEvents(token);
+
   const ClubMap = {
     Tech_Counsellor: ["BitByte", "AFC"],
     Cultural_Counsellor: ["Jazbaat", "Aavartan"],
     Sports_Counsellor: ["Badminton Club", "Volleyball Club"],
   };
-  // console.log(clubName, userRole, VisibeClubArray);
-
+  console.log(clubName, userRole, VisibeClubArray);
   const filteredEvents = useMemo(() => {
     return fetchedEvents.filter((event) => {
       if (
@@ -145,7 +138,6 @@ function YearlyApprovals({ clubName }) {
     });
   }, [fetchedEvents, userRole]);
   console.log(filteredEvents, fetchedEvents);
-
   const openViewModal = (event) => {
     setSelectedEvent(event);
   };
@@ -159,10 +151,10 @@ function YearlyApprovals({ clubName }) {
     setIsEditModalOpen(true);
   };
 
-  // const closeEditModal = () => {
-  //   setIsEditModalOpen(false);
-  //   setSelectedEvent(null);
-  // };
+  const closeEditModal = () => {
+    setIsEditModalOpen(false);
+    setSelectedEvent(null);
+  };
 
   const { data: CurrentLogginedRelatedClub = [] } =
     useGetClubPositionData(token);
@@ -197,9 +189,96 @@ function YearlyApprovals({ clubName }) {
     );
   };
 
+  const updateEventMutation = useMutation({
+    mutationFn: ({ formData }) => {
+      return axios.put(`${host}/gymkhana/api/update_event/`, formData, {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      });
+    },
+    onSuccess: async (_, variables) => {
+      const { SelectedEventFileId: fileId } = variables;
+      try {
+        const FICName =
+          CurrentLogginedRelatedClub.find(
+            (c) => c.club === clubName && c.position === "FIC",
+          )?.name || null;
+
+        await forwardFile({
+          fileId,
+          receiver: FICName, // based on clubname & under which fraternity we have filter from relatedClubData
+          receiverDesignation: "FIC",
+          remarks: "Approved by Co-ordinator",
+          fileExtraJSON: {
+            approved_by: "Co-ordinator",
+            approved_on: new Date().toISOString(),
+          },
+          files: [],
+        });
+
+        notifications.show({
+          title: "Co-ordinator Modification",
+          message: <Text fz="sm">File forwarded successfully</Text>,
+          color: "green",
+        });
+      } catch (err) {
+        console.error("File forwarding failed", err);
+        notifications.show({
+          title: "Forwarding Failed",
+          message: <Text fz="sm">Could not forward file</Text>,
+          color: "red",
+        });
+      }
+      closeEditModal();
+      refetchEvents();
+      // You might want to refresh your events data here
+    },
+  });
+
+  const mutation = useMutation({
+    mutationFn: (commentData) => {
+      return axios.post(
+        `${host}/gymkhana/api/create_event_comment/`,
+        {
+          event_id: commentData.selectedEvent.id,
+          commentator_designation: commentData.userRole,
+          comment: commentData.commentValue,
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+    },
+  });
+
+  const handleCommentSubmit = (values) => {
+    mutation.mutate(values, {
+      onSuccess: (response) => {
+        console.log("Successfully comment posted!!!", response.data);
+        setCommentValue(""); // Clear the comment input field
+        refetchComments(); // Refresh the comments list
+        // alert("Successfully comment posted!!!");
+      },
+      onError: (error) => {
+        console.error("Error during posting comment", error);
+        notifications.show({
+          title: "Approved by FIC",
+          message: (
+            <Flex gap="4px">
+              <Text fz="sm">Error during posting comment</Text>
+            </Flex>
+          ),
+          color: "green",
+        });
+      },
+    });
+  };
   const approveFICMutation = useMutation({
     mutationFn: ({ eventId }) => {
-      approveFICYearlyPlan(eventId, token);
+      approveFICEventButton(eventId, token);
     },
     onSuccess: async (_, variables) => {
       const { fileId } = variables;
@@ -248,7 +327,7 @@ function YearlyApprovals({ clubName }) {
   });
 
   const approveCounsellorMutation = useMutation({
-    mutationFn: ({ eventId }) => approveCounsellorYearlyPlan(eventId, token),
+    mutationFn: ({ eventId }) => approveCounsellorEventButton(eventId, token),
     onSuccess: async (_, variables) => {
       const { fileId } = variables;
 
@@ -292,7 +371,7 @@ function YearlyApprovals({ clubName }) {
   });
 
   const approveDeanMutation = useMutation({
-    mutationFn: (eventId) => approveDeanYearlyPlan(eventId, token),
+    mutationFn: (eventId) => approveDeanEventButton(eventId, token),
     onSuccess: () => {
       notifications.show({
         title: "Approved by Dean Student",
@@ -309,7 +388,7 @@ function YearlyApprovals({ clubName }) {
   });
 
   const rejectMutation = useMutation({
-    mutationFn: (eventId) => rejectYearlyPlan(eventId, token),
+    mutationFn: (eventId) => rejectEventButton(eventId, token),
     onSuccess: () => {
       notifications.show({
         title: "Rejected the Event",
@@ -320,6 +399,48 @@ function YearlyApprovals({ clubName }) {
         ),
         color: "green",
       });
+      closeViewModal();
+      refetchEvents();
+    },
+  });
+
+  const modifyMutation = useMutation({
+    mutationFn: (eventId) => modifyEventButton(eventId, token),
+    onSuccess: async (_, variables) => {
+      const { fileId } = variables;
+      try {
+        const CoordinatorName =
+          CurrentLogginedRelatedClub.find(
+            (c) =>
+              c.club === clubName &&
+              c.position.toLowerCase() === "co-ordinator",
+          )?.name || null;
+        console.log(CurrentLogginedRelatedClub, CoordinatorName);
+        await forwardFile({
+          fileId,
+          receiver: CoordinatorName, // based on clubname & under which fraternity we have filter from relatedClubData
+          receiverDesignation: "co-ordinator",
+          remarks: "Modification request to co-ordinator",
+          fileExtraJSON: {
+            approved_by: "Authority",
+            approved_on: new Date().toISOString(),
+          },
+          files: [],
+        });
+
+        notifications.show({
+          title: "Modify",
+          message: <Text fz="sm">File forwarded successfully</Text>,
+          color: "green",
+        });
+      } catch (err) {
+        console.error("File forwarding failed", err);
+        notifications.show({
+          title: "Forwarding Failed",
+          message: <Text fz="sm">Could not forward file</Text>,
+          color: "red",
+        });
+      }
       closeViewModal();
       refetchEvents();
     },
@@ -340,12 +461,15 @@ function YearlyApprovals({ clubName }) {
     rejectMutation.mutate(eventId);
   };
 
+  const handleModifyButton = (eventId, fileId) => {
+    modifyMutation.mutate({ eventId, fileId });
+  };
   const renderRoleBasedActions = useMemo(() => {
     if (!selectedEvent) return null;
 
     if (selectedEvent.status === "FIC" && userRole === "FIC") {
       return (
-        <Flex justify="center" gap={5}>
+        <>
           <Button
             color="blue"
             onClick={() =>
@@ -360,7 +484,15 @@ function YearlyApprovals({ clubName }) {
           >
             Reject
           </Button>
-        </Flex>
+          <Button
+            color="yellow"
+            onClick={() =>
+              handleModifyButton(selectedEvent.id, selectedEvent.file_id)
+            }
+          >
+            Modify
+          </Button>
+        </>
       );
     }
     if (
@@ -387,6 +519,14 @@ function YearlyApprovals({ clubName }) {
             onClick={() => handleRejectButton(selectedEvent.id)}
           >
             Reject
+          </Button>
+          <Button
+            color="yellow"
+            onClick={() =>
+              handleModifyButton(selectedEvent.id, selectedEvent.file_id)
+            }
+          >
+            Modify
           </Button>
         </>
       );
@@ -461,6 +601,7 @@ function YearlyApprovals({ clubName }) {
       showProgressBars: isFetchingEvents,
     },
   });
+
   return (
     <>
       <MantineReactTable table={table} />
@@ -484,50 +625,188 @@ function YearlyApprovals({ clubName }) {
             }}
           >
             <Box>
-              <Text size="lg">{selectedEvent.club} Yearly Plan</Text>
-              <Divider my="md" />
-              {selectedEvent.events.map((eve) => {
-                // Add your logic to display the event details here
-                return (
-                  <Box key={`${eve.id}-${eve.event_name}`}>
-                    <Text fw={700} size="sm">
-                      Event Name:{eve.event_name}
-                    </Text>
-                    <Text fw={700} size="sm">
-                      Tentative start date:{eve.tentative_start_date}
-                    </Text>
-                    <Text fw={700} size="sm">
-                      Tentative end date:{eve.tentative_end_date}
-                    </Text>
-                    <Text fw={700} size="sm">
-                      Description:{eve.description}
-                    </Text>
-                    <Text fw={700} size="sm">
-                      Budget:{eve.budget}
-                    </Text>
-                    <Divider my="md" />
-                  </Box>
-                );
-              })}
+              <Stack>
+                <Text
+                  size="25px"
+                  style={{ fontWeight: 900 }}
+                  align="center"
+                  mb="10px"
+                >
+                  {selectedEvent.event_name}
+                </Text>
+                <Text size="15px" weight={700}>
+                  <b>Date:</b> {selectedEvent.start_date} to{" "}
+                  {selectedEvent.end_date}
+                </Text>
+                <Text size="15px" weight={700}>
+                  <b>Time:</b> {selectedEvent.start_time} to{" "}
+                  {selectedEvent.end_time}
+                </Text>
+                <Text size="15px" weight={700}>
+                  <b>Venue: </b>
+                  {selectedEvent.venue}
+                </Text>
+                <Text size="15px" weight={700}>
+                  <b>Description: </b> {selectedEvent.details}
+                </Text>
+              </Stack>
+
+              <Divider my="sm" />
+
+              <Box>
+                <Stack>
+                  <Text size="md" weight={500}>
+                    Comments:
+                  </Text>
+                  <ScrollArea
+                    h={300}
+                    styles={{
+                      viewport: {
+                        paddingRight: "10px", // Add padding to avoid overlap
+                      },
+                      scrollbar: {
+                        position: "absolute",
+                        right: 0,
+                        width: "8px",
+                      },
+                    }}
+                  >
+                    {commentsData?.map((comment) => (
+                      <Box
+                        key={comment.comment}
+                        my="sm"
+                        style={{
+                          border: " solid 1px lightgray",
+                          borderRadius: "5px",
+                        }}
+                      >
+                        <Pill weight={900} size="xs" c="blue" ml="5px">
+                          {comment.commentator_designation}
+                        </Pill>
+                        <Text size="sm" pl="10px" radius="lg">
+                          {comment.comment}{" "}
+                        </Text>
+                        <Group justify="end">
+                          <Pill size="xs" mr="2px" mb="1px">
+                            {comment.comment_date}, {comment.comment_time}
+                          </Pill>
+                        </Group>
+                      </Box>
+                    ))}
+                  </ScrollArea>
+
+                  <Group position="apart" align="center">
+                    <div
+                      style={{
+                        position: "relative",
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Input
+                        placeholder="Add a comment"
+                        value={commentValue}
+                        onChange={(event) =>
+                          setCommentValue(event.currentTarget.value)
+                        }
+                        style={{ paddingRight: "30px", width: "290px" }} // Add padding to make space for the CloseButton
+                      />
+                      {commentValue && (
+                        <CloseButton
+                          aria-label="Clear input"
+                          onClick={() => setCommentValue("")}
+                          style={{
+                            position: "absolute",
+                            right: "5px",
+                            cursor: "pointer",
+                          }}
+                        />
+                      )}
+                    </div>
+                    <Button
+                      onClick={() => {
+                        const objectComment = {
+                          userRole,
+                          commentValue,
+                          selectedEvent,
+                        };
+                        handleCommentSubmit(objectComment);
+                      }}
+                      color="blue"
+                    >
+                      Submit
+                    </Button>
+                    {renderRoleBasedActions}
+                  </Group>
+                </Stack>
+              </Box>
             </Box>
-            <Box>{renderRoleBasedActions}</Box>
           </Stack>
+        )}
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        opened={isEditModalOpen}
+        onClose={closeEditModal}
+        title="Edit Event"
+        size="lg"
+      >
+        {selectedEvent && (
+          <EventsApprovalForm
+            clubName={clubName}
+            initialValues={{
+              ...selectedEvent,
+              start_date: new Date(selectedEvent.start_date),
+              end_date: new Date(selectedEvent.end_date),
+              start_time: selectedEvent.start_time,
+              end_time: selectedEvent.end_time,
+            }}
+            onSubmit={(values) => {
+              const formData = new FormData();
+
+              // Add the text data (details)
+              formData.append("details", values.details);
+
+              // Add the file (poster), check if a new file is selected
+              if (values.poster) {
+                formData.append("event_poster", values.poster);
+              }
+
+              // Add the ID of the event
+              formData.append("id", selectedEvent.id);
+              console.log(formData, selectedEvent);
+              const SelectedEventFileId = selectedEvent.file_id;
+              // Now, submit the formData to the backend using the mutation
+              updateEventMutation.mutate({ formData, SelectedEventFileId });
+            }}
+            editMode
+            disabledFields={[
+              "event_name",
+              "venue",
+              "incharge",
+              "start_date",
+              "end_date",
+              "start_time",
+              "end_time",
+            ]}
+          />
         )}
       </Modal>
     </>
   );
 }
 
-YearlyApprovals.propTypes = {
+EventApprovals.propTypes = {
   clubName: PropTypes.string,
 };
 
-function YearlyApprovalsWithProviders({ clubName }) {
-  return <YearlyApprovals clubName={clubName} />;
+function EventApprovalsWithProviders({ clubName }) {
+  return <EventApprovals clubName={clubName} />;
 }
 
-YearlyApprovalsWithProviders.propTypes = {
+EventApprovalsWithProviders.propTypes = {
   clubName: PropTypes.string,
 };
 
-export default YearlyApprovalsWithProviders;
+export default EventApprovalsWithProviders;

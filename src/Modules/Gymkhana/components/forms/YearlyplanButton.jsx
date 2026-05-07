@@ -4,10 +4,9 @@ import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { notifications } from "@mantine/notifications";
 import PropTypes from "prop-types";
-import {
-  uploadYearlyPlanExcel,
-  useGetClubPositionData,
-} from "./BackendLogic/ApiRoutes";
+import { useClubPositionData } from "../../hooks/useClubs";
+import { uploadYearlyPlan } from "../../services/yearlyPlanService";
+import { createAndForwardFile } from "../../services/fileTrackingService";
 import { host } from "../../routes/globalRoutes";
 
 export default function UploadForm({ clubName }) {

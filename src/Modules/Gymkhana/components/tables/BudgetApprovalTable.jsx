@@ -1,7 +1,3 @@
-import "@mantine/core/styles.css";
-import "@mantine/dates/styles.css";
-import "mantine-react-table/styles.css";
-
 import React, { useMemo, useState } from "react";
 import { MantineReactTable, useMantineReactTable } from "mantine-react-table";
 import {
@@ -17,40 +13,32 @@ import {
   CloseButton,
   Group,
   Divider,
-  Pill,
   ScrollArea,
+  Pill,
 } from "@mantine/core";
-import { IconEye, IconEdit } from "@tabler/icons-react";
-import PropTypes from "prop-types";
+import { IconEye, IconEdit, IconSend } from "@tabler/icons-react";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import PropTypes from "prop-types";
 import { notifications } from "@mantine/notifications";
 import { host } from "../../routes/globalRoutes/index.jsx";
-import {
-  rejectEventButton,
-  modifyEventButton,
-  useGetUpcomingEvents,
-  useGetCommentsEventInfo,
-  approveFICEventButton,
-  approveCounsellorEventButton,
-  approveDeanEventButton,
-  useGetClubPositionData,
-  useGetCurrentLoginnedRoleRelatedClub,
-} from "./BackendLogic/ApiRoutes";
+import { useUpcomingBudgets, useBudgetComments } from "../../hooks/useBudget";
+import { useClubPositionData } from "../../hooks/useClubs";
+import { BudgetApprovalForm } from "../forms/BudgetForm";
+import CounsellorReview from "../forms/CounsellorReview";
+import { forwardFile } from "../../services/fileTrackingService";
 
-import { EventsApprovalForm } from "./EventForm";
-
-function EventApprovals({ clubName }) {
+function BudgetApprovals({ clubName }) {
   const user = useSelector((state) => state.user);
   const userRole = user.role;
   const token = localStorage.getItem("authToken");
-  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedBudget, setSelectedBudget] = useState(null);
   const [validationErrors] = useState({});
   const [commentValue, setCommentValue] = useState("");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { data: commentsData, refetch: refetchComments } =
-    useGetCommentsEventInfo(selectedEvent?.id, token);
+    useGetCommentsBudgetInfo(selectedBudget?.id, token);
 
   const columns = useMemo(
     () => [
@@ -59,16 +47,37 @@ function EventApprovals({ clubName }) {
         header: "Status",
       },
       {
-        accessorKey: "event_name",
-        header: "Event Title",
+        accessorKey: "budget_for",
+        header: "Budget Title",
       },
       {
-        accessorKey: "start_date",
-        header: "Date",
+        accessorKey: "budget_requested",
+        header: "Budget Requested",
+      },
+      {
+        accessorKey: "budget_allocated",
+        header: "Budget Allocated",
+      },
+      {
+        accessorKey: "budget_comment",
+        header: "Budget Comment",
+      },
+      {
+        accessorKey: "remarks",
+        header: "Remarks",
       },
     ],
     [validationErrors],
   );
+
+  const {
+    data: fetchedBudgets = [],
+    isError: isLoadingBudgetsError,
+    isFetching: isFetchingBudgets,
+    isLoading: isLoadingBudgets,
+    refetch: refetchBudget,
+  } = useGetUpcomingBudgets(token); // Fetch budgets for the club (implement the API call)
+
   const { data: CurrentLoginRoleData = [] } =
     useGetCurrentLoginnedRoleRelatedClub(user.roll_no, token);
 
@@ -77,88 +86,83 @@ function EventApprovals({ clubName }) {
     VisibeClubArray.push(c.club);
   });
 
-  const {
-    data: fetchedEvents = [],
-    isError: isLoadingEventsError,
-    isFetching: isFetchingEvents,
-    isLoading: isLoadingEvents,
-    refetch: refetchEvents,
-  } = useGetUpcomingEvents(token);
-
   const ClubMap = {
     Tech_Counsellor: ["BitByte", "AFC"],
     Cultural_Counsellor: ["Jazbaat", "Aavartan"],
     Sports_Counsellor: ["Badminton Club", "Volleyball Club"],
   };
-  console.log(clubName, userRole, VisibeClubArray);
-  const filteredEvents = useMemo(() => {
-    return fetchedEvents.filter((event) => {
+
+  const filteredBudgets = useMemo(() => {
+    return fetchedBudgets.filter((budget) => {
       if (
-        event.status.toLowerCase() === "coordinator" ||
-        event.status.toLowerCase() === "reject" ||
-        event.status.toLowerCase() === "accept" ||
-        event.status.toLowerCase() === "accepted"
+        budget.status.toLowerCase() === "coordinator" ||
+        budget.status.toLowerCase() === "reject" ||
+        budget.status.toLowerCase() === "accept" ||
+        budget.status.toLowerCase() === "accepted"
       ) {
         if (
           userRole.toLowerCase() === "co-ordinator" &&
-          VisibeClubArray.includes(event.club)
+          VisibeClubArray.includes(budget.club)
         )
           return true;
       }
-      if (event.status.toLowerCase() === "fic") {
+      if (budget.status.toLowerCase() === "fic") {
         if (
           userRole.toLowerCase() === "fic" &&
-          VisibeClubArray.includes(event.club)
+          VisibeClubArray.includes(budget.club)
         ) {
           return true;
         }
       }
       if (
         userRole.toLowerCase() === "tech_counsellor" &&
-        event.status.toLowerCase() === "counsellor"
+        (budget.status.toLowerCase() === "counsellor" ||
+          budget.status.toLowerCase() === "rereview")
       ) {
         const allowedClubs = ClubMap.Tech_Counsellor;
-        return allowedClubs.includes(event.club);
+        return allowedClubs.includes(budget.club);
       }
       if (
         userRole.toLowerCase() === "sports_counsellor" &&
-        event.status.toLowerCase() === "counsellor"
+        (budget.status.toLowerCase() === "counsellor" ||
+          budget.status.toLowerCase() === "rereview")
       ) {
         const allowedClubs = ClubMap.Sports_Counsellor;
-        return allowedClubs.includes(event.club);
+        return allowedClubs.includes(budget.club);
       }
       if (
         userRole.toLowerCase() === "cultural_counsellor" &&
-        event.status.toLowerCase() === "counsellor"
+        (budget.status.toLowerCase() === "counsellor" ||
+          budget.status.toLowerCase() === "rereview")
       ) {
         const allowedClubs = ClubMap.Cultural_Counsellor;
-        return allowedClubs.includes(event.club);
+        return allowedClubs.includes(budget.club);
       }
-      if (event.status.toLowerCase() === "dean") {
+      if (budget.status.toLowerCase() === "dean") {
         if (userRole.toLowerCase() === "dean_s") {
           return true;
         }
       }
       return false;
     });
-  }, [fetchedEvents, userRole]);
-  console.log(filteredEvents, fetchedEvents);
-  const openViewModal = (event) => {
-    setSelectedEvent(event);
+  }, [fetchedBudgets, userRole]);
+
+  const openViewModal = (budget) => {
+    setSelectedBudget(budget);
   };
 
   const closeViewModal = () => {
-    setSelectedEvent(null);
+    setSelectedBudget(null);
   };
 
-  const openEditModal = (event) => {
-    setSelectedEvent(event);
+  const openEditModal = (budget) => {
+    setSelectedBudget(budget);
     setIsEditModalOpen(true);
   };
 
   const closeEditModal = () => {
     setIsEditModalOpen(false);
-    setSelectedEvent(null);
+    setSelectedBudget(null);
   };
 
   const { data: CurrentLogginedRelatedClub = [] } =
@@ -194,16 +198,17 @@ function EventApprovals({ clubName }) {
     );
   };
 
-  const updateEventMutation = useMutation({
+  const updateBudgetMutation = useMutation({
     mutationFn: ({ formData }) => {
-      return axios.put(`${host}/gymkhana/api/update_event/`, formData, {
+      return axios.put(`${host}/gymkhana/api/update_budget/`, formData, {
         headers: {
           Authorization: `Token ${token}`,
         },
       });
     },
     onSuccess: async (_, variables) => {
-      const { SelectedEventFileId: fileId } = variables;
+      const { SelectedBudgetFileId: fileId } = variables;
+      console.log(fileId);
       try {
         const FICName =
           CurrentLogginedRelatedClub.find(
@@ -213,7 +218,7 @@ function EventApprovals({ clubName }) {
         await forwardFile({
           fileId,
           receiver: FICName, // based on clubname & under which fraternity we have filter from relatedClubData
-          receiverDesignation: "FIC",
+          receiverDesignation: "Professor",
           remarks: "Approved by Co-ordinator",
           fileExtraJSON: {
             approved_by: "Co-ordinator",
@@ -236,7 +241,7 @@ function EventApprovals({ clubName }) {
         });
       }
       closeEditModal();
-      refetchEvents();
+      refetchBudget();
       // You might want to refresh your events data here
     },
   });
@@ -244,9 +249,9 @@ function EventApprovals({ clubName }) {
   const mutation = useMutation({
     mutationFn: (commentData) => {
       return axios.post(
-        `${host}/gymkhana/api/create_event_comment/`,
+        `${host}/gymkhana/api/create_budget_comment/`,
         {
-          event_id: commentData.selectedEvent.id,
+          budget_id: commentData.selectedBudget.id,
           commentator_designation: commentData.userRole,
           comment: commentData.commentValue,
         },
@@ -265,12 +270,11 @@ function EventApprovals({ clubName }) {
         console.log("Successfully comment posted!!!", response.data);
         setCommentValue(""); // Clear the comment input field
         refetchComments(); // Refresh the comments list
-        // alert("Successfully comment posted!!!");
       },
       onError: (error) => {
         console.error("Error during posting comment", error);
         notifications.show({
-          title: "Approved by FIC",
+          title: "Error",
           message: (
             <Flex gap="4px">
               <Text fz="sm">Error during posting comment</Text>
@@ -281,24 +285,25 @@ function EventApprovals({ clubName }) {
       },
     });
   };
+
   const approveFICMutation = useMutation({
-    mutationFn: ({ eventId }) => {
-      approveFICEventButton(eventId, token);
+    mutationFn: (eventId) => {
+      approveFICBudgetButton(eventId, token);
     },
     onSuccess: async (_, variables) => {
       const { fileId } = variables;
-      const fraternity = Object.keys(ClubMap).find((fra) =>
-        ClubMap[fra].includes(clubName),
-      );
 
-      // const fraternity = "Counsellor";
+      // const fraternity = Object.keys(ClubMap).find((fra) =>
+      //   ClubMap[fra].includes(clubName),
+      // );
+
+      const fraternity = "Counsellor";
 
       const CounsellorName =
         CurrentLogginedRelatedClub.find(
           (c) => c.club === clubName && c.position === fraternity,
         )?.name || "simanta";
 
-      console.log(CounsellorName, fraternity);
       try {
         await forwardFile({
           fileId,
@@ -327,15 +332,34 @@ function EventApprovals({ clubName }) {
       }
 
       closeViewModal();
-      refetchEvents();
+      refetchBudget();
+    },
+  });
+
+  const updateAllocatedBudgetMutation = useMutation({
+    mutationFn: (updatedBudgetData) => {
+      return axios.put(
+        `${host}/gymkhana/api/counsellor_approve_budget/`,
+        updatedBudgetData,
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+    },
+    onSuccess: () => {
+      closeEditModal();
+      refetchBudget();
     },
   });
 
   const approveCounsellorMutation = useMutation({
-    mutationFn: ({ eventId }) => approveCounsellorEventButton(eventId, token),
+    mutationFn: ({ budgetId }) =>
+      approveCounsellorBudgetButton(budgetId, token),
+    // mutationFn: ({ budgetId }) => console.log('here'),
     onSuccess: async (_, variables) => {
       const { fileId } = variables;
-
       const fraternity = "Dean_s";
 
       const deanName =
@@ -371,46 +395,94 @@ function EventApprovals({ clubName }) {
       }
 
       closeViewModal();
-      refetchEvents();
+      refetchBudget();
     },
   });
 
   const approveDeanMutation = useMutation({
-    mutationFn: (eventId) => approveDeanEventButton(eventId, token),
+    mutationFn: (budgetId) => approveDeanBudgetButton(budgetId, token),
     onSuccess: () => {
       notifications.show({
-        title: "Approved by Dean Student",
+        title: "Approved by Dean",
         message: (
           <Flex gap="4px">
-            <Text fz="sm">Approved by Dean Student</Text>
+            <Text fz="sm">Approved by Dean</Text>
           </Flex>
         ),
         color: "green",
       });
       closeViewModal();
-      refetchEvents();
+      refetchBudget();
+    },
+  });
+
+  const reviewDeanMutation = useMutation({
+    mutationFn: ({ budgetId }) => reviewDeanBudgetButton(budgetId, token),
+    // mutationFn: ({ budgetId }) => console.log('here'),
+    onSuccess: async (_, variables) => {
+      const { fileId } = variables;
+      // const fraternity = Object.keys(ClubMap).find((fra) =>
+      //   ClubMap[fra].includes(clubName),
+      // );
+      console.log(fileId);
+      const fraternity = "Counsellor";
+
+      const counsellorName =
+        CurrentLogginedRelatedClub.find(
+          (c) => c.club === clubName && c.position === fraternity,
+        )?.name || "simanta";
+
+      try {
+        await forwardFile({
+          fileId,
+          receiver: counsellorName,
+          receiverDesignation: fraternity,
+          remarks: "Reviewed by Dean",
+          fileExtraJSON: {
+            approved_by: "Dean",
+            approved_on: new Date().toISOString(),
+          },
+          files: [],
+        });
+
+        notifications.show({
+          title: "Dean Review",
+          message: <Text fz="sm">File forwarded successfully</Text>,
+          color: "green",
+        });
+      } catch (err) {
+        console.error("File forwarding failed", err);
+        notifications.show({
+          title: "Forwarding Failed",
+          message: <Text fz="sm">Could not forward file</Text>,
+          color: "red",
+        });
+      }
+
+      closeViewModal();
+      refetchBudget();
     },
   });
 
   const rejectMutation = useMutation({
-    mutationFn: (eventId) => rejectEventButton(eventId, token),
+    mutationFn: (budgetId) => rejectBudgetButton(budgetId, token),
     onSuccess: () => {
       notifications.show({
-        title: "Rejected the Event",
+        title: "Rejected",
         message: (
           <Flex gap="4px">
-            <Text fz="sm">Rejected the Event</Text>
+            <Text fz="sm">Rejected</Text>
           </Flex>
         ),
         color: "green",
       });
       closeViewModal();
-      refetchEvents();
+      refetchBudget();
     },
   });
 
   const modifyMutation = useMutation({
-    mutationFn: (eventId) => modifyEventButton(eventId, token),
+    mutationFn: (budgetId) => modifyBudgetButton(budgetId, token),
     onSuccess: async (_, variables) => {
       const { fileId } = variables;
       try {
@@ -420,7 +492,7 @@ function EventApprovals({ clubName }) {
               c.club === clubName &&
               c.position.toLowerCase() === "co-ordinator",
           )?.name || null;
-        console.log(CurrentLogginedRelatedClub, CoordinatorName);
+
         await forwardFile({
           fileId,
           receiver: CoordinatorName, // based on clubname & under which fraternity we have filter from relatedClubData
@@ -447,52 +519,56 @@ function EventApprovals({ clubName }) {
         });
       }
       closeViewModal();
-      refetchEvents();
+      refetchBudget();
     },
   });
 
-  const handleFICApproveButton = (eventId, fileId) => {
-    approveFICMutation.mutate({ eventId, fileId });
+  const handleFICApproveButton = (budgetId, fileId) => {
+    approveFICMutation.mutate({ budgetId, fileId });
+  };
+  const handleCounsellorApproveButton = (budgetId, fileId) => {
+    approveCounsellorMutation.mutate({ budgetId, fileId });
+  };
+  const handleDeanApproveButton = (budgetId) => {
+    approveDeanMutation.mutate(budgetId);
   };
 
-  const handleCounsellorApproveButton = (eventId, fileId) => {
-    approveCounsellorMutation.mutate({ eventId, fileId });
-  };
-  const handleDeanApproveButton = (eventId) => {
-    approveDeanMutation.mutate(eventId);
+  const handleDeanReviewButton = (budgetId, fileId) => {
+    reviewDeanMutation.mutate({ budgetId, fileId });
   };
 
-  const handleRejectButton = (eventId) => {
-    rejectMutation.mutate(eventId);
+  const handleRejectButton = (budgetId) => {
+    rejectMutation.mutate(budgetId);
   };
-
-  const handleModifyButton = (eventId, fileId) => {
-    modifyMutation.mutate({ eventId, fileId });
+  const handleModifyButton = (budgetId, fileId) => {
+    modifyMutation.mutate({ budgetId, fileId });
   };
   const renderRoleBasedActions = useMemo(() => {
-    if (!selectedEvent) return null;
+    if (!selectedBudget) return null;
 
-    if (selectedEvent.status === "FIC" && userRole === "FIC") {
+    if (selectedBudget.status === "FIC" && userRole === "FIC") {
       return (
         <>
           <Button
             color="blue"
             onClick={() =>
-              handleFICApproveButton(selectedEvent.id, selectedEvent.file_id)
+              handleFICApproveButton(selectedBudget.id, selectedBudget.file_id)
             }
           >
             FIC Approve
           </Button>
           <Button
             color="red"
-            onClick={() => handleRejectButton(selectedEvent.id)}
+            onClick={() =>
+              handleRejectButton(selectedBudget.id, selectedBudget.file_id)
+            }
           >
             Reject
           </Button>
           <Button
             color="yellow"
             onClick={() =>
-              handleModifyButton(selectedEvent.id, selectedEvent.file_id)
+              handleModifyButton(selectedBudget.id, selectedBudget.file_id)
             }
           >
             Modify
@@ -501,10 +577,11 @@ function EventApprovals({ clubName }) {
       );
     }
     if (
-      (selectedEvent.status === "COUNSELLOR" &&
-        userRole === "Tech_Counsellor") ||
-      userRole === "Sports_Counsellor" ||
-      userRole === "Cultural_Counsellor"
+      (selectedBudget.status === "COUNSELLOR" ||
+        selectedBudget.status.toLowerCase() === "rereview") &&
+      (userRole === "Tech_Counsellor" ||
+        userRole === "Sports_Counsellor" ||
+        userRole === "Cultural_Counsellor")
     ) {
       return (
         <>
@@ -512,8 +589,8 @@ function EventApprovals({ clubName }) {
             color="blue"
             onClick={() =>
               handleCounsellorApproveButton(
-                selectedEvent.id,
-                selectedEvent.file_id,
+                selectedBudget.id,
+                selectedBudget.file_id,
               )
             }
           >
@@ -521,14 +598,14 @@ function EventApprovals({ clubName }) {
           </Button>
           <Button
             color="red"
-            onClick={() => handleRejectButton(selectedEvent.id)}
+            onClick={() => handleRejectButton(selectedBudget.id)}
           >
             Reject
           </Button>
           <Button
             color="yellow"
             onClick={() =>
-              handleModifyButton(selectedEvent.id, selectedEvent.file_id)
+              handleModifyButton(selectedBudget.id, selectedBudget.file_id)
             }
           >
             Modify
@@ -536,34 +613,41 @@ function EventApprovals({ clubName }) {
         </>
       );
     }
-    if (selectedEvent.status === "DEAN" && userRole === "Dean_s") {
+    if (selectedBudget.status === "DEAN" && userRole === "Dean_s") {
       return (
         <>
           <Button
             color="blue"
-            onClick={() => handleDeanApproveButton(selectedEvent.id)}
+            onClick={() => handleDeanApproveButton(selectedBudget.id)}
           >
             Final Approve
           </Button>
           <Button
             color="red"
-            onClick={() => handleRejectButton(selectedEvent.id)}
+            onClick={() => handleRejectButton(selectedBudget.id)}
           >
             Reject
+          </Button>
+          <Button
+            color="yellow"
+            onClick={() =>
+              handleDeanReviewButton(selectedBudget.id, selectedBudget.file_id)
+            }
+          >
+            ReReview
           </Button>
         </>
       );
     }
 
     return null;
-  }, [selectedEvent, userRole]);
-
+  }, [selectedBudget, userRole]);
   const table = useMantineReactTable({
     columns,
-    data: filteredEvents,
+    data: filteredBudgets,
     enableEditing: true,
     getRowId: (row) => row.id,
-    mantineToolbarAlertBannerProps: isLoadingEventsError
+    mantineToolbarAlertBannerProps: isLoadingBudgetsError
       ? {
           color: "red",
           children: "Error loading data",
@@ -587,6 +671,16 @@ function EventApprovals({ clubName }) {
               </ActionIcon>
             </Tooltip>
           )}
+        {row.original.status === "REREVIEW" && userRole === "Counsellor" && (
+          <Tooltip label="Edit">
+            <ActionIcon
+              color="blue"
+              onClick={() => openEditModal(row.original)}
+            >
+              <IconEdit />
+            </ActionIcon>
+          </Tooltip>
+        )}
         <Pill
           bg={
             row.original.status === "ACCEPT"
@@ -601,27 +695,26 @@ function EventApprovals({ clubName }) {
       </Flex>
     ),
     state: {
-      isLoading: isLoadingEvents,
-      showAlertBanner: isLoadingEventsError,
-      showProgressBars: isFetchingEvents,
+      isLoading: isLoadingBudgets,
+      showAlertBanner: isLoadingBudgetsError,
+      showProgressBars: isFetchingBudgets,
     },
   });
 
   return (
     <>
       <MantineReactTable table={table} />
-
       {/* View Modal */}
       <Modal
-        opened={!!selectedEvent && !isEditModalOpen}
+        opened={!!selectedBudget && !isEditModalOpen}
         onClose={closeViewModal}
         w="40%"
       >
-        {selectedEvent && (
+        {selectedBudget && (
           <Stack
             spacing="md"
             sx={{
-              width: "100%",
+              width: "40%",
               padding: "20px",
               border: "1px solid #dfe1e5",
               borderRadius: "8px",
@@ -637,22 +730,14 @@ function EventApprovals({ clubName }) {
                   align="center"
                   mb="10px"
                 >
-                  {selectedEvent.event_name}
+                  {selectedBudget.budget_for}
                 </Text>
                 <Text size="15px" weight={700}>
-                  <b>Date:</b> {selectedEvent.start_date} to{" "}
-                  {selectedEvent.end_date}
+                  <b>Amount Requested: </b> {selectedBudget.budget_requested}
                 </Text>
                 <Text size="15px" weight={700}>
-                  <b>Time:</b> {selectedEvent.start_time} to{" "}
-                  {selectedEvent.end_time}
-                </Text>
-                <Text size="15px" weight={700}>
-                  <b>Venue: </b>
-                  {selectedEvent.venue}
-                </Text>
-                <Text size="15px" weight={700}>
-                  <b>Description: </b> {selectedEvent.details}
+                  <b>Description: </b>
+                  {selectedBudget.description}
                 </Text>
               </Stack>
 
@@ -678,17 +763,17 @@ function EventApprovals({ clubName }) {
                   >
                     {commentsData?.map((comment) => (
                       <Box
-                        key={comment.comment}
+                        key={comment.event_index}
                         my="sm"
                         style={{
                           border: " solid 1px lightgray",
                           borderRadius: "5px",
                         }}
                       >
-                        <Pill weight={900} size="xs" c="blue" ml="5px">
+                        <Pill weight={900} size="xs" c="blue" mb="5px">
                           {comment.commentator_designation}
                         </Pill>
-                        <Text size="sm" pl="10px" radius="lg">
+                        <Text size="sm" p="10px" radius="lg">
                           {comment.comment}{" "}
                         </Text>
                         <Group justify="end">
@@ -711,8 +796,8 @@ function EventApprovals({ clubName }) {
                       <Input
                         placeholder="Add a comment"
                         value={commentValue}
-                        onChange={(event) =>
-                          setCommentValue(event.currentTarget.value)
+                        onChange={(budget) =>
+                          setCommentValue(budget.currentTarget.value)
                         }
                         style={{ paddingRight: "30px", width: "290px" }} // Add padding to make space for the CloseButton
                       />
@@ -733,14 +818,15 @@ function EventApprovals({ clubName }) {
                         const objectComment = {
                           userRole,
                           commentValue,
-                          selectedEvent,
+                          selectedBudget,
                         };
                         handleCommentSubmit(objectComment);
                       }}
                       color="blue"
                     >
-                      Submit
+                      <IconSend />
                     </Button>
+                    {/* </Flex> */}
                     {renderRoleBasedActions}
                   </Group>
                 </Stack>
@@ -754,64 +840,79 @@ function EventApprovals({ clubName }) {
       <Modal
         opened={isEditModalOpen}
         onClose={closeEditModal}
-        title="Edit Event"
+        title="Edit Budget"
         size="lg"
       >
-        {selectedEvent && (
-          <EventsApprovalForm
+        {selectedBudget && selectedBudget.status !== "REREVIEW" && (
+          <BudgetApprovalForm
             clubName={clubName}
             initialValues={{
-              ...selectedEvent,
-              start_date: new Date(selectedEvent.start_date),
-              end_date: new Date(selectedEvent.end_date),
-              start_time: selectedEvent.start_time,
-              end_time: selectedEvent.end_time,
+              ...selectedBudget,
             }}
             onSubmit={(values) => {
               const formData = new FormData();
 
               // Add the text data (details)
-              formData.append("details", values.details);
-
-              // Add the file (poster), check if a new file is selected
-              if (values.poster) {
-                formData.append("event_poster", values.poster);
-              }
+              formData.append("budget_requested", values.budget_requested);
 
               // Add the ID of the event
-              formData.append("id", selectedEvent.id);
-              console.log(formData, selectedEvent);
-              const SelectedEventFileId = selectedEvent.file_id;
+              formData.append("id", selectedBudget.id);
+              const SelectedBudgetFileId = selectedBudget.file_id;
               // Now, submit the formData to the backend using the mutation
-              updateEventMutation.mutate({ formData, SelectedEventFileId });
+              updateBudgetMutation.mutate({ formData, SelectedBudgetFileId });
             }}
             editMode
             disabledFields={[
-              "event_name",
-              "venue",
-              "incharge",
-              "start_date",
-              "end_date",
-              "start_time",
-              "end_time",
+              "busget_allocated",
+              "budget_comment",
+              "budget_for",
+              // "budget_file",
+              "description",
+              "status",
+              // "remarks",
             ]}
           />
         )}
+        {selectedBudget &&
+          userRole === "Counsellor" &&
+          selectedBudget?.status === "REREVIEW" && (
+            <CounsellorReview
+              clubName={clubName}
+              initialValues={{
+                ...selectedBudget,
+              }}
+              onSubmit={(values) => {
+                const formData = new FormData();
+                formData.append("budget_allocated", values.budget_allocated);
+                formData.append("budget_comment", values.budget_comment);
+                formData.append("id", selectedBudget.id);
+
+                updateAllocatedBudgetMutation.mutate(formData);
+              }}
+              editMode
+              disabledFields={[
+                "budget_requested",
+                "budget_for",
+                "budget_file",
+                "description",
+                "status",
+                "remarks",
+              ]}
+            />
+          )}
       </Modal>
     </>
   );
 }
 
-EventApprovals.propTypes = {
+BudgetApprovals.propTypes = {
   clubName: PropTypes.string,
 };
-
-function EventApprovalsWithProviders({ clubName }) {
-  return <EventApprovals clubName={clubName} />;
+function BudgetApprovalsWithProviders({ clubName }) {
+  return <BudgetApprovals clubName={clubName} />;
 }
-
-EventApprovalsWithProviders.propTypes = {
+BudgetApprovalsWithProviders.propTypes = {
   clubName: PropTypes.string,
 };
 
-export default EventApprovalsWithProviders;
+export default BudgetApprovalsWithProviders;
