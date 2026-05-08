@@ -44,8 +44,8 @@ function LeaveApplication({ onBack }) {
     nominee_employee_id: "",
     handover_to: "",
     handover_notes: "",
-    medical_certificate: null,
-    attachment_file: null,
+    medical_certificate: "",
+    attachment_file: "",
   });
 
   const fetchData = async () => {
@@ -82,14 +82,8 @@ function LeaveApplication({ onBack }) {
   };
 
   const handleChange = (e) => {
-    const { name, value, type, files, checked } = e.target;
-    const nextValue =
-      type === "file"
-        ? (files && files[0]) || null
-        : type === "checkbox"
-          ? checked
-          : value;
-    const next = { ...formData, [name]: nextValue };
+    const { name, value } = e.target;
+    const next = { ...formData, [name]: value };
     if (fieldErrors[name]) {
       setFieldErrors((prev) => ({ ...prev, [name]: "" }));
     }
@@ -112,6 +106,7 @@ function LeaveApplication({ onBack }) {
       next.nominee_employee_id = "";
     }
     if (name === "is_half_day") {
+      const { checked } = e.target;
       next.is_half_day = checked;
       if (checked) {
         next.total_days = "0.5";
@@ -249,16 +244,7 @@ function LeaveApplication({ onBack }) {
       if (!payload.nominee_employee_id) {
         delete payload.nominee_employee_id;
       }
-      const formPayload = new FormData();
-      Object.entries(payload).forEach(([key, val]) => {
-        if (val === undefined || val === null || val === "") return;
-        if (typeof val === "boolean") {
-          formPayload.append(key, val ? "true" : "false");
-          return;
-        }
-        formPayload.append(key, val);
-      });
-      await createLeaveApplication(formPayload);
+      await createLeaveApplication(payload);
       setSubmitSuccess("Your form is submitted.");
       setShowForm(false);
       setFieldErrors({});
@@ -280,8 +266,8 @@ function LeaveApplication({ onBack }) {
         nominee_employee_id: "",
         handover_to: "",
         handover_notes: "",
-        medical_certificate: null,
-        attachment_file: null,
+        medical_certificate: "",
+        attachment_file: "",
       });
       fetchData();
     } catch (err) {
@@ -1031,33 +1017,18 @@ function LeaveApplication({ onBack }) {
                   Documents
                 </h3>
                 <div className="grid gap-4 md:grid-cols-2">
-                  <div className="fusion-field">
-                    <label
-                      htmlFor="medical_certificate"
-                      className="fusion-label"
-                    >
-                      <span className="block">Medical Certificate</span>
-                      <input
-                        id="medical_certificate"
-                        type="file"
-                        name="medical_certificate"
-                        onChange={handleChange}
-                        className="fusion-input"
-                      />
-                    </label>
-                  </div>
-                  <div className="fusion-field">
-                    <label htmlFor="attachment_file" className="fusion-label">
-                      <span className="block">Attachment File</span>
-                      <input
-                        id="attachment_file"
-                        type="file"
-                        name="attachment_file"
-                        onChange={handleChange}
-                        className="fusion-input"
-                      />
-                    </label>
-                  </div>
+                  <FormField
+                    label="Medical Certificate (reference)"
+                    name="medical_certificate"
+                    value={formData.medical_certificate}
+                    onChange={handleChange}
+                  />
+                  <FormField
+                    label="Attachment File (reference)"
+                    name="attachment_file"
+                    value={formData.attachment_file}
+                    onChange={handleChange}
+                  />
                 </div>
               </div>
 

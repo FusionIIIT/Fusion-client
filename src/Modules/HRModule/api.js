@@ -35,14 +35,8 @@ api.interceptors.response.use(
 
 // ==================== LEAVE ====================
 export const getLeaveApplications = () => api.get("/leave-applications/");
-export const createLeaveApplication = (data) => {
-  if (data instanceof FormData) {
-    return api.post("/leave-applications/", data, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-  }
-  return api.post("/leave-applications/", data);
-};
+export const createLeaveApplication = (data) =>
+  api.post("/leave-applications/", data);
 export const getLeaveApplication = (id) =>
   api.get(`/leave-applications/${id}/`);
 export const updateLeaveApplication = (id, data) =>
