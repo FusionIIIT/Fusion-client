@@ -28,3 +28,73 @@ export const generateprereport = `${host}/aims/api/generate_preregistration_repo
 export const searchPreRegistrationRoute = `${host}/academic-procedures/api/acad/search_preregistration/`;
 export const deletePreRegistrationRoute = `${host}/academic-procedures/api/acad/delete_preregistration/`;
 export const allotCoursesRoute = `${host}/academic-procedures/api/acad/allot_courses/`;
+
+// Calendar routes
+export const clearCalendarRoute = `${host}/aims/api/clear-calendar/`;
+export const exportCalendarRoute = `${host}/aims/api/export-calendar/`;
+export const importCalendarRoute = `${host}/aims/api/import-calendar/`;
+
+// Admin Add/Drop routes
+export const adminListAddRequestsRoute = `${host}/academic-procedures/api/acad/list_add_requests/`;
+export const approveAddRequestsRoute = `${host}/academic-procedures/api/acad/approve_add_requests/`;
+export const deleteAddRequestsRoute = `${host}/academic-procedures/api/acad/delete_add_requests/`;
+export const adminListDropRequestsRoute = `${host}/academic-procedures/api/acad/list_drop_requests/`;
+export const approveDropRequestsRoute = `${host}/academic-procedures/api/acad/approve_drop_requests/`;
+export const deleteDropRequestsRoute = `${host}/academic-procedures/api/acad/delete_drop_requests/`;
+
+// Batch routes
+export const listBatchesRoute = `${host}/academic-procedures/api/acad/list_batches/`;
+export const listStudentsRoute = `${host}/academic-procedures/api/acad/list_students/`;
+export const applyBatchRoute = `${host}/academic-procedures/api/acad/apply_batch/`;
+export const listStudentsPromoteRoute = `${host}/academic-procedures/api/acad/list_students_promote/`;
+export const applyPromoteRoute = `${host}/academic-procedures/api/acad/apply_promote/`;
+
+// Replacement routes
+export const adminListRequestsRoute = `${host}/academic-procedures/api/acad/list_requests/`;
+export const allotReplacementCoursesRoute = `${host}/academic-procedures/api/acad/allot_replacement_courses/`;
+export const revertReplacementRequestsRoute = `${host}/academic-procedures/api/acad/revert_replacement_requests/`;
+export const deleteReplacementRequestsRoute = `${host}/academic-procedures/api/acad/delete_replacement_requests/`;
+
+// Student search route
+export const StudentSearchRoute = `${host}/academic-procedures/api/acad/student_search/`;
+
+// Faculty PG TA stipend routes
+export const FAC_ASSIGNMENTS_URL = `${host}/academic-procedures/api/faculty/assignments/`;
+export const FAC_PENDING_URL = `${host}/academic-procedures/api/faculty/pending/`;
+export const FAC_APPROVED_URL = `${host}/academic-procedures/api/faculty/approved/`;
+export const FAC_APPROVE_URL = (stipendRequestId) =>
+  `${host}/academic-procedures/api/faculty/approve/${stipendRequestId}/`;
+
+// Feedback routes
+export const adminCoursesRoute = `${host}/academic-procedures/api/feedback/admin_courses/`;
+export const adminAllStatsRoute = `${host}/academic-procedures/api/feedback/admin_all_stats/`;
+export const instCoursesRoute = `${host}/academic-procedures/api/feedback/inst_courses/`;
+export const instAllStatsRoute = `${host}/academic-procedures/api/feedback/inst_all_stats/`;
+export const studentQuestionsRoute = `${host}/academic-procedures/api/feedback/student_questions/`;
+export const studentSubmitRoute = `${host}/academic-procedures/api/feedback/student_submit/`;
+
+// Course routes
+export const availableCoursesRoute = `${host}/aims/api/available_courses/`;
+export const semesterOptionsRoute = `${host}/academic-procedures/api/stu/semester_options/`;
+export const courseRegistrationReceiptRoute = `${host}/academic-procedures/api/stu/course_registration_receipt/`;
+export const getCourseSlotsRoute = `${host}/academic-procedures/api/acad/get_course_slots/`;
+export const getCoursesRoute = `${host}/academic-procedures/api/acad/get_courses/`;
+
+// Student request routes
+export const studentListRequestsRoute = `${host}/academic-procedures/api/stu/list_requests/`;
+export const studentDropRequestsRoute = `${host}/academic-procedures/api/stu/drop_requests/`;
+export const studentAddRequestsRoute = `${host}/academic-procedures/api/stu/add_requests/`;
+
+// Student Add/Drop course routes
+export const studentAvailableAddCourseSlotsRoute = `${host}/academic-procedures/api/stu/available_add_course_slots/`;
+export const studentAvailableAddCoursesRoute = `${host}/academic-procedures/api/stu/available_add_courses/`;
+export const studentAddCourseRoute = `${host}/academic-procedures/api/stu/add_course/`;
+export const studentDropRegistrationsRoute = `${host}/academic-procedures/api/stu/drop_registrations/`;
+export const studentDropCourseRoute = `${host}/academic-procedures/api/stu/drop_course/`;
+
+// Student calendar route
+export const studentCalenderRoute = `${host}/aims/api/student_calendar/`;
+
+// Student replacement routes
+export const studentRegisteredSlotsRoute = `${host}/academic-procedures/api/stu/registered_slots/`;
+export const studentBatchCreateRoute = `${host}/academic-procedures/api/stu/batch_create/`;

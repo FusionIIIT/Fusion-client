@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { Table, Paper, Loader } from "@mantine/core";
+import { Table, Paper, Loader, Button } from "@mantine/core";
 import axios from "axios";
-import { Get_Assistantship_Status } from "../../../../routes/otheracademicRoutes/index";
+import {
+  Get_Assistantship_Status,
+  Withdraw_Assistantship,
+} from "../../../../routes/otheracademicRoutes/index";
 
 function AssistantshipStatus() {
   const roll = useSelector((state) => state.user.roll_no);
@@ -12,6 +15,7 @@ function AssistantshipStatus() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [withdrawingId, setWithdrawingId] = useState(null);
 
   useEffect(() => {
     if (!roll || !name || !authToken) return;
@@ -45,6 +49,25 @@ function AssistantshipStatus() {
 
   if (error) return <div className="error-message">{error}</div>;
 
+  const handleWithdraw = async (formId) => {
+    setWithdrawingId(formId);
+    try {
+      await axios.post(
+        `${Withdraw_Assistantship}${formId}/`,
+        {},
+        { headers: { Authorization: `Token ${authToken}` } },
+      );
+      setData((prev) => prev.filter((item) => item.id !== formId));
+    } catch (err) {
+      const message =
+        err?.response?.data?.error ||
+        "Failed to withdraw assistantship form. Please try again.";
+      setError(message);
+    } finally {
+      setWithdrawingId(null);
+    }
+  };
+
   return (
     <Paper className="status-paper">
       <div className="table-wrapper">
@@ -52,27 +75,39 @@ function AssistantshipStatus() {
           <thead>
             <tr>
               <th>Date Applied</th>
-              <th>TA Supervisor</th>
-              <th>Thesis Supervisor</th>
+              <th>Faculty Supervisor</th>
+              <th>Department Admin</th>
               <th>HOD</th>
-              <th>Academic Admin</th>
-              <th>Dean</th>
-              <th>Director</th>
+              <th>Acad Admin Audit</th>
               <th>Status</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
             {data.map((item, index) => (
               <tr key={index}>
                 <td>{item.dateApplied || "N/A"}</td>
-                <td>{item.approvalStages.TA_Supervisor}</td>
-                <td>{item.approvalStages.Thesis_Supervisor}</td>
+                <td>{item.approvalStages.Faculty_Supervisor}</td>
+                <td>{item.approvalStages.Department_Admin}</td>
                 <td>{item.approvalStages.HOD}</td>
-                <td>{item.approvalStages.Academic_Admin}</td>
-                <td>{item.approvalStages.Dean_Academic}</td>
-                <td>{item.approvalStages.Director}</td>
+                <td>{item.approvalStages.Acad_Admin_Audit}</td>
                 <td className={`status-${item.status.toLowerCase()}`}>
                   {item.status}
+                </td>
+                <td>
+                  {item.canWithdraw ? (
+                    <Button
+                      size="xs"
+                      color="red"
+                      variant="outline"
+                      loading={withdrawingId === item.id}
+                      onClick={() => handleWithdraw(item.id)}
+                    >
+                      Withdraw
+                    </Button>
+                  ) : (
+                    "-"
+                  )}
                 </td>
               </tr>
             ))}

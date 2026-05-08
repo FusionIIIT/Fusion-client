@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { Table, Paper, Loader } from "@mantine/core";
+import { Table, Paper, Loader, Button } from "@mantine/core";
 import axios from "axios";
-import { Get_Bonafide_Status } from "../../../routes/otheracademicRoutes/index";
+import {
+  Get_Bonafide_Status,
+  Withdraw_Bonafide,
+} from "../../../routes/otheracademicRoutes/index";
 import "./BonafideFormStatus.css";
 
 function BonafideFormStatus() {
@@ -13,6 +16,7 @@ function BonafideFormStatus() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [withdrawingId, setWithdrawingId] = useState(null);
 
   useEffect(() => {
     const fetchBonafideStatus = async () => {
@@ -38,6 +42,26 @@ function BonafideFormStatus() {
     }
   }, [roll, name]);
 
+  const handleWithdraw = async (id) => {
+    setError("");
+    setWithdrawingId(id);
+    try {
+      await axios.post(
+        `${Withdraw_Bonafide}${id}/`,
+        {},
+        { headers: { Authorization: `Token ${authToken}` } },
+      );
+      setData((prev) => prev.filter((item) => item.id !== id));
+    } catch (err) {
+      const message =
+        err?.response?.data?.error ||
+        "Failed to withdraw bonafide request. Please try again.";
+      setError(message);
+    } finally {
+      setWithdrawingId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="loader-container">
@@ -60,6 +84,8 @@ function BonafideFormStatus() {
               <th>Purpose</th>
               <th>Date Applied</th>
               <th>Status</th>
+              <th>Certificate</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -70,6 +96,30 @@ function BonafideFormStatus() {
                 <td>{item.dateApplied}</td>
                 <td className={`status-${item.status.toLowerCase()}`}>
                   {item.status}
+                </td>
+                <td>
+                  {item.status === "Approved" && item.downloadUrl ? (
+                    <a href={item.downloadUrl} target="_blank" rel="noreferrer">
+                      Download
+                    </a>
+                  ) : (
+                    "-"
+                  )}
+                </td>
+                <td>
+                  {item.canWithdraw ? (
+                    <Button
+                      size="xs"
+                      color="red"
+                      variant="outline"
+                      loading={withdrawingId === item.id}
+                      onClick={() => handleWithdraw(item.id)}
+                    >
+                      Withdraw
+                    </Button>
+                  ) : (
+                    "-"
+                  )}
                 </td>
               </tr>
             ))}

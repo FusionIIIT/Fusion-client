@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { Button } from "@mantine/core";
-
 import { useMediaQuery } from "@mantine/hooks";
 import NoDuesStatus from "./NoDuesStatus";
 import NoduesForm from "./NoduesForm";
-import Incharge from "./Incharge";
+import NoDuesCertificate from "./NoDuesCertificate";
 
 function NoDuesCombined() {
   const [tab, setTab] = useState(0);
@@ -42,11 +41,17 @@ function NoDuesCombined() {
             variant={tab === 2 ? "filled" : "outline"}
             onClick={() => setTab(2)}
           >
-            Incharge
+            Download Certificate
           </Button>
         </div>
       </div>
-      {tab === 0 ? <NoduesForm /> : tab === 1 ? <NoDuesStatus /> : <Incharge />}
+      {tab === 0 ? (
+        <NoduesForm />
+      ) : tab === 1 ? (
+        <NoDuesStatus />
+      ) : (
+        <NoDuesCertificate />
+      )}
     </>
   );
 }

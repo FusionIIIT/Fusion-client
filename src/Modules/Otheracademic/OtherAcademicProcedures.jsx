@@ -10,6 +10,7 @@ import GraduateStatus from "./Graduate_Seminar/graduate_status"; // Adjusted to 
 import TAform from "./Assistantship/Supervisors/TA_supervisorCombined"; // Adjusted name to PascalCase
 import BonafideCombined from "./Bonafide/BonafideCombined";
 import NoDuesCombined from "./NoDues/NoDuesCombined";
+import InchargeNoDues from "./NoDues/InchargeNoDues";
 import ApproveLeave from "./Leave/ApproveLeave";
 import AdminBonafideRequests from "./Bonafide/AdminBonafideRequests";
 import ApproveLeaveTA from "./Leave/ApproveLeaveTA";
@@ -21,11 +22,14 @@ import HoDPage from "./Assistantship/Admins/Hod";
 import LeavePGCombined from "./Leave/LeavePGcombined";
 import ThesisSupervisor from "./Assistantship/Admins/ThesisSupervisor";
 import TAsupervisor from "./Assistantship/Admins/TAsupervisor";
+import TAAssignment from "./Assistantship/Admins/TAAssignment";
+import FacultySupervisorAssignment from "./Assistantship/Admins/FacultySupervisorAssignment";
 
 function OtherAcadProcedures() {
   const tabsListRef = useRef(null);
   const [activeTab, setActiveTab] = useState("0");
   const role = useSelector((state) => state.user.role);
+  const roles = useSelector((state) => state.user.roles);
   const roll_no = useSelector((state) => state.user.roll_no);
   const username = useSelector((state) => state.user.username);
   console.log(username, role, roll_no);
@@ -34,24 +38,49 @@ function OtherAcadProcedures() {
     { title: "Bonafide", component: <BonafideCombined /> }, // 0
     { title: "Leave", component: <LeaveCombined /> }, // 1
     { title: "No dues", component: <NoDuesCombined /> }, // 2
-    { title: "Graduate Status", component: <GraduateStatus /> }, // 3
-    { title: "TA Supervisor", component: <TAform /> }, // 4
-    { title: "Leave Requests HOD", component: <ApproveLeave /> }, // 5
-    { title: "Bonafide Request", component: <AdminBonafideRequests /> }, // 6
-    { title: "Leave TA", component: <ApproveLeaveTA /> }, // 7
-    { title: "Leave Thesis", component: <ApproveLeaveThesis /> }, // 8
+    { title: "No Dues Incharge", component: <InchargeNoDues /> }, // 3
+    { title: "Graduate Status", component: <GraduateStatus /> }, // 4
+    { title: "TA Supervisor", component: <TAform /> }, // 5
+    { title: "Leave Requests HOD", component: <ApproveLeave /> }, // 6
+    { title: "Bonafide Request", component: <AdminBonafideRequests /> }, // 7
+    { title: "Leave TA", component: <ApproveLeaveTA /> }, // 8
+    { title: "Leave Thesis", component: <ApproveLeaveThesis /> }, // 9
 
-    { title: "Assistant Request Director", component: <Director /> }, // 9
-    { title: "Assistant Request Dean ", component: <DeanPage /> }, // 10
-    { title: "Assistant Request HOD ", component: <HoDPage /> }, // 11
-    { title: "Assistant Request Acadadmin ", component: <AcadAdminPage /> }, // 12
-    { title: "Leave PG", component: <LeavePGCombined /> }, // 13
+    { title: "Assistant Request Director", component: <Director /> }, // 10
+    { title: "Assistant Request HOD ", component: <DeanPage /> }, // 11
+    { title: "Assistant Request Dept Admin ", component: <HoDPage /> }, // 12
+    { title: "Assistant Request Acadadmin ", component: <AcadAdminPage /> }, // 13
+    { title: "Leave PG", component: <LeavePGCombined /> }, // 14
     {
       title: "Assistant Request ThesisSupervisor",
       component: <ThesisSupervisor />,
-    },
-    { title: "Assistant Request TASupervisor", component: <TAsupervisor /> },
+    }, // 15
+    { title: "Assistant Request TASupervisor", component: <TAsupervisor /> }, // 16
+    { title: "TA Assignment", component: <TAAssignment /> }, // 17
+    {
+      title: "Faculty Supervisor Assignment",
+      component: <FacultySupervisorAssignment />,
+    }, // 18
   ];
+
+  const normalizeRole = (value) =>
+    String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "_");
+
+  const noDuesApproverRoles = [
+    "librarian",
+    "mess_incharge",
+    "lab_supervisor",
+    "hostel_warden",
+    "acadadmin",
+  ];
+
+  const canVerifyNoDues =
+    Array.isArray(roles) &&
+    roles.some((r) => noDuesApproverRoles.includes(normalizeRole(r)));
+
   let filteredTabItems = [];
   if (role === "student") {
     if (
@@ -61,7 +90,7 @@ function OtherAcadProcedures() {
       roll_no[2] === "P"
     ) {
       filteredTabItems = allTabItems.filter((_, index) =>
-        [0, 2, 4, 13].includes(index),
+        [0, 2, 5, 14].includes(index),
       );
     } else {
       filteredTabItems = allTabItems.filter((_, index) =>
@@ -70,12 +99,23 @@ function OtherAcadProcedures() {
     }
   } else if (role === "acadadmin") {
     filteredTabItems = allTabItems.filter((_, index) =>
-      [3, 6, 12].includes(index),
+      [3, 4, 7, 13].includes(index),
+    );
+  } else if (role === "faculty_supervisor") {
+    filteredTabItems = allTabItems.filter((_, index) => [16].includes(index));
+  } else if (role === "thesis_supervisor") {
+    filteredTabItems = allTabItems.filter((_, index) => [15].includes(index));
+  } else if (role === "dept_admin") {
+    filteredTabItems = allTabItems.filter((_, index) =>
+      [12, 17, 18].includes(index),
     );
   } else if (role.startsWith("HOD")) {
     filteredTabItems = allTabItems.filter((_, index) =>
-      [5, 11].includes(index),
+      [6, 11].includes(index),
     );
+  } else if (canVerifyNoDues) {
+    // For professors and others who can verify no dues
+    filteredTabItems = [allTabItems[3]]; // Only show No Dues Incharge
   } else filteredTabItems = allTabItems;
 
   const handleTabChange = (direction) => {

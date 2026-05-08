@@ -5,6 +5,12 @@ import {
   Fetch_Pending_Request_TA,
   Update_Leave_Status_TA,
 } from "../../../routes/otheracademicRoutes/index";
+import { mediaRoute } from "../../../routes/globalRoutes/index";
+
+const resolveMediaUrl = (url) =>
+  url && url.startsWith("http")
+    ? url
+    : `${mediaRoute}${String(url).replace(/^\/?media\//, "")}`;
 
 function ApproveLeaveTA() {
   const [leaveRequests, setLeaveRequests] = useState([]);
@@ -286,6 +292,20 @@ function ApproveLeaveTA() {
             </Text>
             <Text>
               <strong>Purpose:</strong> {selectedStudent.details.purpose}
+            </Text>
+            <Text>
+              <strong>Supporting Document:</strong>{" "}
+              {selectedStudent.form ? (
+                <a
+                  href={resolveMediaUrl(selectedStudent.form)}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Download
+                </a>
+              ) : (
+                "N/A"
+              )}
             </Text>
             <Text>
               <strong>HOD Credential:</strong>{" "}

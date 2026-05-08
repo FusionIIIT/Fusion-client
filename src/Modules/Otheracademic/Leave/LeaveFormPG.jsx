@@ -35,6 +35,14 @@ function LeaveFormPG(props) {
     academicYear: "",
     dateOfApplication: "",
   });
+  const [submitError, setSubmitError] = useState("");
+
+  const sanitizeMobileInput = (value) =>
+    String(value || "")
+      .replace(/\D/g, "")
+      .slice(0, 10);
+
+  const isValidMobile = (value) => /^\d{10}$/.test(String(value || ""));
 
   const handleChange = (field, value) => {
     setFormValues((prev) => ({ ...prev, [field]: value }));
@@ -47,6 +55,21 @@ function LeaveFormPG(props) {
       console.error("No auth token found");
       return;
     }
+
+    const validationError = !isValidMobile(formValues.mobileNumber)
+      ? "Mobile number must be exactly 10 digits."
+      : !isValidMobile(formValues.parentsMobile)
+        ? "Parents' mobile number must be exactly 10 digits."
+        : formValues.mobileDuringLeave &&
+            !isValidMobile(formValues.mobileDuringLeave)
+          ? "Mobile number during leave must be exactly 10 digits if provided."
+          : "";
+
+    if (validationError) {
+      setSubmitError(validationError);
+      return;
+    }
+
     const formData = new FormData();
     formData.append("student_name", name);
     formData.append("roll_no", roll);
@@ -68,9 +91,7 @@ function LeaveFormPG(props) {
     formData.append("mobile_during_leave", formValues.mobileDuringLeave);
     formData.append("semester", formValues.semester);
     formData.append("academic_year", formValues.academicYear);
-    if (props.setTab) {
-      props.setTab(1);
-    }
+    setSubmitError("");
 
     try {
       const response = await axios.post(Leave_PG_Submit, formData, {
@@ -82,7 +103,14 @@ function LeaveFormPG(props) {
       });
 
       console.log("Form submitted successfully:", response.data);
+      if (props.setTab) {
+        props.setTab(1);
+      }
     } catch (error) {
+      const errMsg =
+        error.response?.data?.error ||
+        "PG leave submission failed. Please verify credentials and try again.";
+      setSubmitError(errMsg);
       console.error(
         "Error submitting the form:",
         error.response?.data || error,
@@ -240,7 +268,12 @@ function LeaveFormPG(props) {
             required
             placeholder="Enter your mobile number"
             value={formValues.mobileNumber}
-            onChange={(e) => handleChange("mobileNumber", e.target.value)}
+            onChange={(e) =>
+              handleChange("mobileNumber", sanitizeMobileInput(e.target.value))
+            }
+            inputMode="numeric"
+            maxLength={10}
+            description="10 digits only"
           />
         </Grid.Col>
 
@@ -251,7 +284,12 @@ function LeaveFormPG(props) {
             required
             placeholder="Enter your parents' mobile number"
             value={formValues.parentsMobile}
-            onChange={(e) => handleChange("parentsMobile", e.target.value)}
+            onChange={(e) =>
+              handleChange("parentsMobile", sanitizeMobileInput(e.target.value))
+            }
+            inputMode="numeric"
+            maxLength={10}
+            description="10 digits only"
           />
         </Grid.Col>
 
@@ -260,7 +298,15 @@ function LeaveFormPG(props) {
             label="Mobile Number during leave"
             placeholder="Enter your mobile number during leave"
             value={formValues.mobileDuringLeave}
-            onChange={(e) => handleChange("mobileDuringLeave", e.target.value)}
+            onChange={(e) =>
+              handleChange(
+                "mobileDuringLeave",
+                sanitizeMobileInput(e.target.value),
+              )
+            }
+            inputMode="numeric"
+            maxLength={10}
+            description="Optional, 10 digits only"
           />
         </Grid.Col>
 
@@ -293,6 +339,11 @@ function LeaveFormPG(props) {
           Submit
         </Button>
       </Center>
+      {submitError && (
+        <Center style={{ marginBottom: "20px", color: "red" }}>
+          <Text size="sm">{submitError}</Text>
+        </Center>
+      )}
     </form>
   );
 }

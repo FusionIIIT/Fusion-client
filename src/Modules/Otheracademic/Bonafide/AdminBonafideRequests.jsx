@@ -4,11 +4,13 @@ import axios from "axios";
 import {
   Fetch_Pending_Bonafide_Request,
   Update_Bonafide_Status,
+  Upload_Bonafide_Certificate,
 } from "../../../routes/otheracademicRoutes/index"; // Adjust API paths if needed
 
 function ApproveBonafide() {
   const [bonafideRequests, setBonafideRequests] = useState([]);
   const [status, setStatus] = useState([]);
+  const [certificateFiles, setCertificateFiles] = useState({});
   const [opened, setOpened] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
 
@@ -65,16 +67,11 @@ function ApproveBonafide() {
     setOpened(true);
   };
 
+  const handleCertificateUploadChange = (bonafideId, file) => {
+    setCertificateFiles((prev) => ({ ...prev, [bonafideId]: file }));
+  };
+
   const handleSubmit = async () => {
-    const updatedStatus = status.map((entry) => {
-      if (entry.approveCheck || entry.rejectCheck) {
-        return { ...entry, submitted: true };
-      }
-      return entry;
-    });
-
-    setStatus(updatedStatus);
-
     const approvedBonafides = bonafideRequests.filter(
       (_, index) => status[index]?.approveCheck,
     );
@@ -82,8 +79,33 @@ function ApproveBonafide() {
       (_, index) => status[index]?.rejectCheck,
     );
 
+    const missingCertificates = approvedBonafides.filter(
+      (bonafide) => !certificateFiles[bonafide.id],
+    );
+
+    if (missingCertificates.length > 0) {
+      window.alert("Please upload a certificate file for all approved bonafide requests.");
+      return;
+    }
+
     // Submit data to the server if required
     try {
+      await Promise.all(
+        approvedBonafides.map((bonafide) => {
+          const formData = new FormData();
+          formData.append("certificate", certificateFiles[bonafide.id]);
+          return axios.post(
+            `${Upload_Bonafide_Certificate}${bonafide.id}/`,
+            formData,
+            {
+              headers: {
+                Authorization: `Token ${authToken}`,
+              },
+            },
+          );
+        }),
+      );
+
       const response = await axios.post(
         Update_Bonafide_Status,
         {
@@ -97,8 +119,17 @@ function ApproveBonafide() {
         },
       );
       console.log("Status updated successfully:", response.data);
+
+      const updatedStatus = status.map((entry) => {
+        if (entry.approveCheck || entry.rejectCheck) {
+          return { ...entry, submitted: true };
+        }
+        return entry;
+      });
+      setStatus(updatedStatus);
     } catch (error) {
       console.error("Error updating Bonafide status:", error);
+      window.alert("Failed to upload certificate or update bonafide status.");
     }
 
     fetchPendingBonafides();
@@ -111,6 +142,14 @@ function ApproveBonafide() {
           <Table striped highlightOnHover className="status-table">
             <thead>
               <tr>
+                <th
+                  style={{
+                    borderRight: "1px solid white",
+                    textAlign: "center",
+                  }}
+                >
+                  Certificate
+                </th>
                 <th
                   style={{
                     borderRight: "1px solid white",
@@ -149,6 +188,24 @@ function ApproveBonafide() {
             <tbody>
               {bonafideRequests.map((item, index) => (
                 <tr key={index}>
+                  <td
+                    style={{
+                      border: "1px solid black",
+                      textAlign: "center",
+                      minWidth: "220px",
+                    }}
+                  >
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      onChange={(event) =>
+                        handleCertificateUploadChange(
+                          item.id,
+                          event.currentTarget.files?.[0] || null,
+                        )
+                      }
+                    />
+                  </td>
                   <td
                     style={{
                       border: "1px solid black",
