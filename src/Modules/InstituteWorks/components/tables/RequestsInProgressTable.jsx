@@ -46,7 +46,9 @@ function RequestsInProgressTable({ rows, isLoading, onRefresh }) {
           <Table.Tbody>
             {rows.length > 0 ? (
               rows.map((item) => {
-                const isCompleted = Boolean(item.workCompleted);
+                const isCompleted = Boolean(
+                  readField(item, "work_completed", "workCompleted"),
+                );
                 return (
                   <Table.Tr key={item.id}>
                     <Table.Td>{item.id}</Table.Td>
@@ -92,7 +94,7 @@ function RequestsInProgressTable({ rows, isLoading, onRefresh }) {
               })
             ) : (
               <Table.Tr>
-                <Table.Td colSpan={9}>
+                <Table.Td colSpan={8}>
                   <Text ta="center" c="dimmed">
                     No proposals in progress.
                   </Text>

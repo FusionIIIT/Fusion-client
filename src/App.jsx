@@ -91,6 +91,10 @@ export default function App() {
             </Layout>
           }
         />
+        <Route
+          path="/institute-works"
+          element={<Navigate to="/iwd" replace />}
+        />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </MantineProvider>

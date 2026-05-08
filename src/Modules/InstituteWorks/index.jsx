@@ -82,15 +82,7 @@ function InstituteWorks() {
       {
         title: "Proposal Builder",
         component: ProposalBuilderView,
-        visible: normalizedRole.includes(
-          "junior engineer",
-          "executive engineer (civil)",
-          "electrical_ae",
-          "electrical_je",
-          "ee",
-          "civil_ae",
-          "civil_je",
-        ),
+        visible: isEngineerRole(normalizedRole),
       },
       {
         title: "Director Approved",
@@ -115,15 +107,7 @@ function InstituteWorks() {
       {
         title: "Proposal Status",
         component: RequestsInProgressView,
-        visible: normalizedRole.includes(
-          "junior engineer",
-          "executive engineer (civil)",
-          "electrical_ae",
-          "electrical_je",
-          "ee",
-          "civil_ae",
-          "civil_je",
-        ),
+        visible: isEngineerRole(normalizedRole),
       },
       {
         title: "Work Progress",

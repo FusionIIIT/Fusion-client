@@ -156,7 +156,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "Institute Work Departments",
       id: "iwd",
       icon: <IWDIcon size={18} />,
-      url: "/institute-works",
+      url: "/iwd",
     },
     {
       label: "Hostel Management",

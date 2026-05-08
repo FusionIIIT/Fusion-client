@@ -16,7 +16,13 @@ function statusBadgeColor(status) {
   return "yellow";
 }
 
-function CreatedRequestsTable({ requests, isLoading, onRefresh }) {
+function CreatedRequestsTable({
+  requests,
+  isLoading,
+  onRefresh,
+  onForward,
+  onTracking,
+}) {
   const rows = requests.map((request) => (
     <Table.Tr key={request.request_id}>
       <Table.Td>{request.request_id}</Table.Td>
@@ -52,7 +58,7 @@ function CreatedRequestsTable({ requests, isLoading, onRefresh }) {
         </Badge>
       </Table.Td>
       <Table.Td>{request.file_id || "-"}</Table.Td>
-      {/* <Table.Td>
+      <Table.Td>
         <Group gap="xs" wrap="nowrap">
           <Button
             size="xs"
@@ -71,7 +77,7 @@ function CreatedRequestsTable({ requests, isLoading, onRefresh }) {
             Tracking
           </Button>
         </Group>
-      </Table.Td> */}
+      </Table.Td>
     </Table.Tr>
   ));
 
@@ -95,10 +101,10 @@ function CreatedRequestsTable({ requests, isLoading, onRefresh }) {
                 <Table.Th>Priority</Table.Th> */}
               {/* <Table.Th>Next Approver</Table.Th> */}
               {/* <Table.Th>SLA Deadline</Table.Th> */}
-              <Table.Th>Proposal Status</Table.Th>
               <Table.Th>IWD Admin Approval</Table.Th>
+              <Table.Th>Proposal Status</Table.Th>
               <Table.Th>File ID</Table.Th>
-              {/* <Table.Th>Actions</Table.Th> */}
+              <Table.Th>Actions</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -106,7 +112,7 @@ function CreatedRequestsTable({ requests, isLoading, onRefresh }) {
               rows
             ) : (
               <Table.Tr>
-                <Table.Td colSpan={11}>
+                <Table.Td colSpan={7}>
                   <Text ta="center" c="dimmed">
                     No requests found for your current role.
                   </Text>
@@ -133,6 +139,8 @@ CreatedRequestsTable.propTypes = {
   ).isRequired,
   isLoading: PropTypes.bool.isRequired,
   onRefresh: PropTypes.func.isRequired,
+  onForward: PropTypes.func.isRequired,
+  onTracking: PropTypes.func.isRequired,
 };
 
 export default CreatedRequestsTable;
