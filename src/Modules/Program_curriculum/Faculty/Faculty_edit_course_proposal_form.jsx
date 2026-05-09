@@ -49,11 +49,16 @@ function Faculty_edit_course_proposal_form() {
       maxSeats: 0,
     },
     validate: {
-  courseName: (value) => value?.trim().length === 0 ? "Course name is required" : null,
-  courseCode: (value) => value?.trim().length === 0 ? "Course code is required" : null,
-  discipline: (value) => value?.trim().length === 0 ? "Discipline is required" : null,
-  syllabus: (value) => value?.trim().length === 0 ? "Syllabus is required" : null,
-  references: (value) => value?.trim().length === 0 ? "References is required" : null,
+      courseName: (value) =>
+        value?.trim().length === 0 ? "Course name is required" : null,
+      courseCode: (value) =>
+        value?.trim().length === 0 ? "Course code is required" : null,
+      discipline: (value) =>
+        value?.trim().length === 0 ? "Discipline is required" : null,
+      syllabus: (value) =>
+        value?.trim().length === 0 ? "Syllabus is required" : null,
+      references: (value) =>
+        value?.trim().length === 0 ? "References is required" : null,
     },
   });
   const role = useSelector((state) => state.user.role);

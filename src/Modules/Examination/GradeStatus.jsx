@@ -34,7 +34,7 @@ export default function GradeStatus() {
 
   const [selectedAcademicYear, setSelectedAcademicYear] = useState("");
   const [selectedSemesterType, setSelectedSemesterType] = useState("");
-  
+
   // Filter toggles
   const [showSubmitted, setShowSubmitted] = useState(true);
   const [showNotSubmitted, setShowNotSubmitted] = useState(true);
@@ -57,7 +57,7 @@ export default function GradeStatus() {
           response.data.academic_years.map((year) => ({
             value: year,
             label: year,
-          }))
+          })),
         );
       } catch (error) {
         console.error("Error fetching academic years:", error);
@@ -92,7 +92,7 @@ export default function GradeStatus() {
         },
         {
           headers: { Authorization: `Token ${token}` },
-        }
+        },
       );
 
       setGradeStatusData(response.data.grade_status);
@@ -112,20 +112,23 @@ export default function GradeStatus() {
   const getStatusBadge = (status, type) => {
     const statusConfig = {
       submitted: {
-        "Submitted": { color: "green", icon: IconCheck },
+        Submitted: { color: "green", icon: IconCheck },
         "Not Submitted": { color: "red", icon: IconX },
       },
       verified: {
-        "Verified": { color: "blue", icon: IconCheck },
+        Verified: { color: "blue", icon: IconCheck },
         "Not Verified": { color: "orange", icon: IconClock },
       },
       validated: {
-        "Validated": { color: "purple", icon: IconCheck },
+        Validated: { color: "purple", icon: IconCheck },
         "Not Validated": { color: "gray", icon: IconClock },
       },
     };
 
-    const config = statusConfig[type]?.[status] || { color: "gray", icon: IconX };
+    const config = statusConfig[type]?.[status] || {
+      color: "gray",
+      icon: IconX,
+    };
     const IconComponent = config.icon;
 
     return (
@@ -143,38 +146,63 @@ export default function GradeStatus() {
   const getFilteredData = () => {
     return gradeStatusData.filter((course) => {
       if (course.submitted === "Submitted" && !showSubmitted) return false;
-      if (course.submitted === "Not Submitted" && !showNotSubmitted) return false;
+      if (course.submitted === "Not Submitted" && !showNotSubmitted)
+        return false;
       return true;
     });
   };
 
   // Get counts for different statuses
   const getCounts = () => {
-    const submitted = gradeStatusData.filter(c => c.submitted === "Submitted").length;
-    const notSubmitted = gradeStatusData.filter(c => c.submitted === "Not Submitted").length;
-    const verified = gradeStatusData.filter(c => c.verified === "Verified").length;
-    const validated = gradeStatusData.filter(c => c.validated === "Validated").length;
-    
-    return { submitted, notSubmitted, verified, validated, total: gradeStatusData.length };
+    const submitted = gradeStatusData.filter(
+      (c) => c.submitted === "Submitted",
+    ).length;
+    const notSubmitted = gradeStatusData.filter(
+      (c) => c.submitted === "Not Submitted",
+    ).length;
+    const verified = gradeStatusData.filter(
+      (c) => c.verified === "Verified",
+    ).length;
+    const validated = gradeStatusData.filter(
+      (c) => c.validated === "Validated",
+    ).length;
+
+    return {
+      submitted,
+      notSubmitted,
+      verified,
+      validated,
+      total: gradeStatusData.length,
+    };
   };
 
   // Export to Excel function
   const exportToExcel = () => {
     const filteredData = getFilteredData();
-    
+
     // Create CSV content
-    const headers = ["Course Code", "Course Name", "Professor Name", "Credits", "Submitted", "Verified", "Validated"];
+    const headers = [
+      "Course Code",
+      "Course Name",
+      "Professor Name",
+      "Credits",
+      "Submitted",
+      "Verified",
+      "Validated",
+    ];
     const csvContent = [
       headers.join(","),
-      ...filteredData.map(course => [
-        course.course_code,
-        `"${course.course_name}"`,
-        `"${course.professor_name}"`,
-        course.credits,
-        course.submitted,
-        course.verified,
-        course.validated
-      ].join(","))
+      ...filteredData.map((course) =>
+        [
+          course.course_code,
+          `"${course.course_name}"`,
+          `"${course.professor_name}"`,
+          course.credits,
+          course.submitted,
+          course.verified,
+          course.validated,
+        ].join(","),
+      ),
     ].join("\n");
 
     // Create and download file
@@ -182,7 +210,10 @@ export default function GradeStatus() {
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
-    link.setAttribute("download", `Grade_Status_${selectedAcademicYear}_${selectedSemesterType.replace(" ", "_")}.csv`);
+    link.setAttribute(
+      "download",
+      `Grade_Status_${selectedAcademicYear}_${selectedSemesterType.replace(" ", "_")}.csv`,
+    );
     link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
@@ -197,7 +228,7 @@ export default function GradeStatus() {
 
   const renderTable = () => {
     const filteredData = getFilteredData();
-    
+
     if (gradeStatusData.length === 0) {
       return (
         <Center style={{ minHeight: 200 }}>
@@ -228,15 +259,9 @@ export default function GradeStatus() {
         <Table.Td>
           <Text size="sm">{course.professor_name}</Text>
         </Table.Td>
-        <Table.Td>
-          {getStatusBadge(course.submitted, "submitted")}
-        </Table.Td>
-        <Table.Td>
-          {getStatusBadge(course.verified, "verified")}
-        </Table.Td>
-        <Table.Td>
-          {getStatusBadge(course.validated, "validated")}
-        </Table.Td>
+        <Table.Td>{getStatusBadge(course.submitted, "submitted")}</Table.Td>
+        <Table.Td>{getStatusBadge(course.verified, "verified")}</Table.Td>
+        <Table.Td>{getStatusBadge(course.validated, "validated")}</Table.Td>
       </Table.Tr>
     ));
 
@@ -260,12 +285,15 @@ export default function GradeStatus() {
   return (
     <Card shadow="sm" p="md" radius="md" withBorder>
       <Paper p="md" style={{ position: "relative" }}>
-        <h1>
-          Grade Status
-        </h1>
+        <h1>Grade Status</h1>
 
         {error && (
-          <Alert color="red" mb="md" title="Error" onClose={() => setError(null)}>
+          <Alert
+            color="red"
+            mb="md"
+            title="Error"
+            onClose={() => setError(null)}
+          >
             {error}
           </Alert>
         )}
@@ -300,11 +328,17 @@ export default function GradeStatus() {
             <Grid.Col xs={12} sm={8}>
               {/* Empty space for alignment */}
             </Grid.Col>
-            <Grid.Col xs={12} sm={4} style={{ display: "flex", alignItems: "flex-end" }}>
+            <Grid.Col
+              xs={12}
+              sm={4}
+              style={{ display: "flex", alignItems: "flex-end" }}
+            >
               <Button
                 onClick={fetchGradeStatus}
                 fullWidth
-                disabled={!selectedAcademicYear || !selectedSemesterType || loading}
+                disabled={
+                  !selectedAcademicYear || !selectedSemesterType || loading
+                }
                 size="md"
                 loading={loading}
               >
@@ -314,78 +348,89 @@ export default function GradeStatus() {
           </Grid>
         )}
 
-        {(selectedAcademicYear && selectedSemesterType && !loading && gradeStatusData.length > 0) && (
-          <Stack spacing="md" mt="md">
-            <Group justify="space-between" align="center">
-              <Text fw={600}>
-                Grade Status - {selectedAcademicYear} ({selectedSemesterType})
-              </Text>
-              <Group spacing="lg">
-                <Flex align="center" gap="sm">
-                  <Switch
-                    checked={showSubmitted}
-                    onChange={(event) => setShowSubmitted(event.currentTarget.checked)}
-                    color="green"
-                    label=""
+        {selectedAcademicYear &&
+          selectedSemesterType &&
+          !loading &&
+          gradeStatusData.length > 0 && (
+            <Stack spacing="md" mt="md">
+              <Group justify="space-between" align="center">
+                <Text fw={600}>
+                  Grade Status - {selectedAcademicYear} ({selectedSemesterType})
+                </Text>
+                <Group spacing="lg">
+                  <Flex align="center" gap="sm">
+                    <Switch
+                      checked={showSubmitted}
+                      onChange={(event) =>
+                        setShowSubmitted(event.currentTarget.checked)
+                      }
+                      color="green"
+                      label=""
+                      size="sm"
+                    />
+                    <Group spacing="xs">
+                      <Badge color="green" variant="filled" size="sm">
+                        Submitted
+                      </Badge>
+                      <Text size="sm" c="dimmed">
+                        ({getCounts().submitted})
+                      </Text>
+                    </Group>
+                  </Flex>
+                  <Flex align="center" gap="sm">
+                    <Switch
+                      checked={showNotSubmitted}
+                      onChange={(event) =>
+                        setShowNotSubmitted(event.currentTarget.checked)
+                      }
+                      color="red"
+                      label=""
+                      size="sm"
+                    />
+                    <Group spacing="xs">
+                      <Badge color="red" variant="filled" size="sm">
+                        Not Submitted
+                      </Badge>
+                      <Text size="sm" c="dimmed">
+                        ({getCounts().notSubmitted})
+                      </Text>
+                    </Group>
+                  </Flex>
+                  <Button
+                    onClick={exportToExcel}
+                    leftSection={<IconDownload size={16} />}
+                    variant="outline"
+                    color="blue"
                     size="sm"
-                  />
-                  <Group spacing="xs">
-                    <Badge color="green" variant="filled" size="sm">
-                      Submitted
-                    </Badge>
-                    <Text size="sm" c="dimmed">({getCounts().submitted})</Text>
-                  </Group>
-                </Flex>
-                <Flex align="center" gap="sm">
-                  <Switch
-                    checked={showNotSubmitted}
-                    onChange={(event) => setShowNotSubmitted(event.currentTarget.checked)}
-                    color="red"
-                    label=""
-                    size="sm"
-                  />
-                  <Group spacing="xs">
-                    <Badge color="red" variant="filled" size="sm">
-                      Not Submitted
-                    </Badge>
-                    <Text size="sm" c="dimmed">({getCounts().notSubmitted})</Text>
-                  </Group>
-                </Flex>
-                <Button
-                  onClick={exportToExcel}
-                  leftSection={<IconDownload size={16} />}
-                  variant="outline"
-                  color="blue"
-                  size="sm"
-                >
-                  Export Excel
-                </Button>
+                  >
+                    Export Excel
+                  </Button>
+                </Group>
               </Group>
-            </Group>
 
-            <Paper withBorder style={{ overflow: "auto" }}>
-              {renderTable()}
-            </Paper>
+              <Paper withBorder style={{ overflow: "auto" }}>
+                {renderTable()}
+              </Paper>
 
-            <Group spacing="xl">
-              <Text size="sm" c="dimmed">
-                <strong>Legend:</strong>
-              </Text>
-              <Group spacing="sm">
-                {getStatusBadge("Submitted", "submitted")}
-                <Text size="xs">Professor Submitted</Text>
+              <Group spacing="xl">
+                <Text size="sm" c="dimmed">
+                  <strong>Legend:</strong>
+                </Text>
+                <Group spacing="sm">
+                  {getStatusBadge("Submitted", "submitted")}
+                  <Text size="xs">Professor Submitted</Text>
+                </Group>
+                <Group spacing="sm">
+                  {getStatusBadge("Verified", "verified")}
+                  <Text size="xs">Admin Verified</Text>
+                </Group>
+                <Group spacing="sm">
+                  {getStatusBadge("Validated", "validated")}
+                  <Text size="xs">Dean Validated</Text>
+                </Group>
               </Group>
-              <Group spacing="sm">
-                {getStatusBadge("Verified", "verified")}
-                <Text size="xs">Admin Verified</Text>
-              </Group>
-              <Group spacing="sm">
-                {getStatusBadge("Validated", "validated")}
-                <Text size="xs">Dean Validated</Text>
-              </Group>
-            </Group>
-          </Stack>
-        )}
+            </Stack>
+          )}
       </Paper>
     </Card>
   );

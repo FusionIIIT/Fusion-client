@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Paper,
   Group,
@@ -13,38 +13,66 @@ import {
   Tabs,
   Badge,
 } from "@mantine/core";
-import axios from "axios";
-import LeaveApplicationCard from "../../components/students/LeaveApplicationCard";
-import { my_leaves } from "../../../../routes/hostelManagementRoutes";
+import LeaveApplicationCard from "../../components/cards/LeaveApplicationCard";
+import { studentService } from "../../services";
+import { getApiErrorMessage } from "../../utils";
 
 export default function LeaveStatus() {
   const [leaves, setLeaves] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("active");
+  const [viewingDocumentLeaveId, setViewingDocumentLeaveId] = useState(null);
+  const requestRef = useRef(0);
+
+  const handleViewDocument = async (leaveId) => {
+    if (!leaveId) return;
+    try {
+      setViewingDocumentLeaveId(leaveId);
+      const response = await studentService.getLeaveDocument(leaveId);
+      const contentType =
+        response.headers?.["content-type"] || "application/octet-stream";
+      const blob = new Blob([response.data], { type: contentType });
+      const url = window.URL.createObjectURL(blob);
+      const opened = window.open(url, "_blank", "noopener,noreferrer");
+      if (!opened) {
+        // Popup blocked: open inline in the same tab (no forced download)
+        window.location.assign(url);
+      }
+      window.setTimeout(() => window.URL.revokeObjectURL(url), 60_000);
+    } catch (err) {
+      // Keep UX minimal: log and show a page-level error.
+      // (If you want, we can change this to an in-card error only.)
+      // eslint-disable-next-line no-console
+      console.error(err);
+      setError(
+        getApiErrorMessage(err, "Failed to open the supporting document."),
+      );
+    } finally {
+      setViewingDocumentLeaveId(null);
+    }
+  };
 
   const fetchLeaves = async () => {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      setError("Authentication token not found. Please login again.");
-      setLoading(false);
-      return;
-    }
-
     try {
+      const requestId = requestRef.current + 1;
+      requestRef.current = requestId;
       setLoading(true);
-      const response = await axios.get(my_leaves, {
-        headers: { Authorization: `Token ${token}` },
-      });
+      const response = await studentService.getMyLeaves();
+      if (requestId !== requestRef.current) return;
 
-      setLeaves(response.data.leaves);
+      setLeaves(
+        Array.isArray(response.data?.leaves) ? response.data.leaves : [],
+      );
       setError(null);
     } catch (err) {
-      console.error("Error fetching leaves:", err);
       setError(
-        err.response?.data?.message ||
+        getApiErrorMessage(
+          err,
           "Failed to fetch leaves. Please try again later.",
+        ),
       );
+      setLeaves([]);
     } finally {
       setLoading(false);
     }
@@ -73,9 +101,19 @@ export default function LeaveStatus() {
     return (
       <Stack spacing="lg">
         {leavesList.map((leave) => (
-          <Paper withBorder radius="md" p={0} shadow="xs" mb="md">
+          <Paper
+            key={
+              leave.id ??
+              `${leave.roll_num}-${leave.start_date}-${leave.end_date}`
+            }
+            withBorder
+            radius="md"
+            p={0}
+            shadow="xs"
+            mb="md"
+          >
             <LeaveApplicationCard
-              key={leave.roll_num + leave.start_date}
+              id={leave.id}
               student_name={leave.student_name}
               roll_num={leave.roll_num}
               reason={leave.reason}
@@ -84,6 +122,9 @@ export default function LeaveStatus() {
               end_date={leave.end_date}
               status={leave.status}
               remark={leave.remark}
+              file_upload={leave.file_upload}
+              onViewDocument={handleViewDocument}
+              documentLoading={viewingDocumentLeaveId === leave.id}
             />
           </Paper>
         ))}

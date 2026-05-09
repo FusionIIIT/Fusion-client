@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Text,
   Group,
@@ -13,42 +13,84 @@ import {
   Loader,
   Card,
   Tabs,
+  Modal,
 } from "@mantine/core";
 import { CalendarBlank } from "@phosphor-icons/react";
-import axios from "axios";
-import {
-  show_leave_request,
-  update_leave_status,
-} from "../../../../routes/hostelManagementRoutes";
+import { caretakerService } from "../../services";
+import { getApiErrorMessage } from "../../utils";
 
 export default function ManageLeaveRequest() {
   const [leaveRequests, setLeaveRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("active");
+  const [actionLoadingId, setActionLoadingId] = useState(null);
+  const [documentLoadingId, setDocumentLoadingId] = useState(null);
+  const [documentUrl, setDocumentUrl] = useState(null);
+  const [documentContentType, setDocumentContentType] = useState("");
+  const requestRef = useRef(0);
 
-  const fetchLeaveRequests = async () => {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      setError("Authentication token not found. Please login again.");
-      setLoading(false);
-      return;
-    }
-
+  const handleViewDocument = async (leaveId) => {
+    if (!leaveId) return;
     try {
-      const response = await axios.get(show_leave_request, {
-        headers: { Authorization: `Token ${token}` },
-      });
-      setLeaveRequests(Array.isArray(response.data) ? response.data : []);
-      setError(null);
+      setDocumentLoadingId(leaveId);
+      const response = await caretakerService.getLeaveDocument(leaveId);
+      const contentType =
+        response.headers?.["content-type"] || "application/octet-stream";
+      const blob = new Blob([response.data], { type: contentType });
+      const url = window.URL.createObjectURL(blob);
+      if (documentUrl) {
+        window.URL.revokeObjectURL(documentUrl);
+      }
+      setDocumentContentType(contentType);
+      setDocumentUrl(url);
     } catch (e) {
       setError(
-        e.response?.data?.message ||
+        getApiErrorMessage(e, "Failed to open the supporting document."),
+      );
+    } finally {
+      setDocumentLoadingId(null);
+    }
+  };
+
+  const handleCloseDocument = () => {
+    if (documentUrl) {
+      window.URL.revokeObjectURL(documentUrl);
+    }
+    setDocumentUrl(null);
+    setDocumentContentType("");
+  };
+
+  const fetchLeaveRequests = async () => {
+    const requestId = requestRef.current + 1;
+    requestRef.current = requestId;
+
+    try {
+      const response = await caretakerService.getLeaveRequests();
+      if (requestId !== requestRef.current) return;
+
+      const leaves = Array.isArray(response.data?.data)
+        ? response.data.data
+        : Array.isArray(response.data?.leaves)
+          ? response.data.leaves
+          : Array.isArray(response.data)
+            ? response.data
+            : [];
+      setLeaveRequests(leaves);
+      setError(null);
+    } catch (e) {
+      if (requestId !== requestRef.current) return;
+      setError(
+        getApiErrorMessage(
+          e,
           "Failed to fetch leave requests. Please try again later.",
+        ),
       );
       setLeaveRequests([]);
     } finally {
-      setLoading(false);
+      if (requestId === requestRef.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -57,49 +99,68 @@ export default function ManageLeaveRequest() {
   }, []);
 
   const handleStatusUpdate = async (id, status, remark = "") => {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      setError("Authentication token not found. Please login again.");
+    const confirmationText =
+      status === "approved"
+        ? "Are you sure you want to approve this leave request?"
+        : "Are you sure you want to reject this leave request?";
+
+    if (!window.confirm(confirmationText)) {
       return;
     }
 
+    let nextRemark = remark;
+    if (status === "rejected" && !nextRemark) {
+      nextRemark = window.prompt("Please add a remark for rejection:") || "";
+      if (!nextRemark.trim()) {
+        setError("Remark is required to reject a leave request.");
+        return;
+      }
+    }
+
+    const previousRequests = leaveRequests;
+    setActionLoadingId(id);
+    setError(null);
+
+    // Optimistic UI update for instant feedback.
+    setLeaveRequests((prev) =>
+      prev.map((request) =>
+        request.id === id
+          ? { ...request, status, remark: nextRemark }
+          : request,
+      ),
+    );
+
     try {
-      const response = await axios.post(
-        update_leave_status,
-        {
-          leave_id: id,
-          status,
-          remark,
-        },
-        {
-          headers: { Authorization: `Token ${token}` },
-        },
-      );
-      if (response.data.status === "success") {
-        setLeaveRequests(
-          leaveRequests.map((request) =>
-            request.id === id ? { ...request, status, remark } : request,
-          ),
-        );
-        if (status === "approved" || status === "rejected") {
-          setActiveTab("past");
-        }
+      await caretakerService.updateLeaveStatus({
+        leave_id: id,
+        status,
+        remark: nextRemark,
+      });
+
+      if (status === "approved" || status === "rejected") {
+        setActiveTab("past");
       }
     } catch (e) {
+      setLeaveRequests(previousRequests);
       setError(
-        e.response?.data?.message ||
+        getApiErrorMessage(
+          e,
           "Failed to update leave status. Please try again later.",
+        ),
       );
+    } finally {
+      setActionLoadingId(null);
     }
   };
 
   const activeRequests = leaveRequests.filter(
-    (request) => request.status === "pending",
+    (request) => String(request.status).toLowerCase() === "pending",
   );
 
-  const pastRequests = leaveRequests.filter(
-    (request) => request.status === "approved" || request.status === "rejected",
-  );
+  const pastRequests = leaveRequests.filter((request) => {
+    const currentStatus = String(request.status).toLowerCase();
+    return currentStatus === "approved" || currentStatus === "rejected";
+  });
 
   const renderLeaveRequests = (requests) => {
     if (loading) {
@@ -153,7 +214,7 @@ export default function ManageLeaveRequest() {
                     color: theme.colors.blue[7],
                   })}
                 >
-                  {request.student_name[0]}
+                  {request.student_name?.[0] || "S"}
                 </Avatar>
                 <Box>
                   <Text weight={600} size="sm" lineClamp={1}>
@@ -191,34 +252,61 @@ export default function ManageLeaveRequest() {
                   </Text>
                 </Group>
 
-                {request.status === "pending" ? (
-                  <Group spacing="xs">
+                <Group spacing="xs" align="center">
+                  {request.file_upload ? (
                     <Button
-                      color="green"
+                      color="blue"
                       size="xs"
                       variant="light"
-                      onClick={() => handleStatusUpdate(request.id, "approved")}
+                      loading={documentLoadingId === request.id}
+                      disabled={documentLoadingId === request.id}
+                      onClick={() => handleViewDocument(request.id)}
                     >
-                      Accept
+                      View Document
                     </Button>
-                    <Button
-                      color="red"
-                      size="xs"
-                      variant="light"
-                      onClick={() => handleStatusUpdate(request.id, "rejected")}
+                  ) : null}
+
+                  {String(request.status).toLowerCase() === "pending" ? (
+                    <>
+                      <Button
+                        color="green"
+                        size="xs"
+                        variant="light"
+                        loading={actionLoadingId === request.id}
+                        disabled={actionLoadingId === request.id}
+                        onClick={() =>
+                          handleStatusUpdate(request.id, "approved")
+                        }
+                      >
+                        Approve
+                      </Button>
+                      <Button
+                        color="red"
+                        size="xs"
+                        variant="light"
+                        loading={actionLoadingId === request.id}
+                        disabled={actionLoadingId === request.id}
+                        onClick={() =>
+                          handleStatusUpdate(request.id, "rejected")
+                        }
+                      >
+                        Reject
+                      </Button>
+                    </>
+                  ) : (
+                    <Badge
+                      color={
+                        String(request.status).toLowerCase() === "approved"
+                          ? "green"
+                          : "red"
+                      }
+                      variant="filled"
                     >
-                      Reject
-                    </Button>
-                  </Group>
-                ) : (
-                  <Badge
-                    color={request.status === "approved" ? "green" : "red"}
-                    variant="filled"
-                  >
-                    {request.status.charAt(0).toUpperCase() +
-                      request.status.slice(1)}
-                  </Badge>
-                )}
+                      {String(request.status).charAt(0).toUpperCase() +
+                        String(request.status).slice(1).toLowerCase()}
+                    </Badge>
+                  )}
+                </Group>
               </Box>
             </Flex>
           </Card>
@@ -296,6 +384,32 @@ export default function ManageLeaveRequest() {
           </Tabs>
         </Box>
       </Card>
+
+      <Modal
+        opened={Boolean(documentUrl)}
+        onClose={handleCloseDocument}
+        title="Supporting Document"
+        size="xl"
+        centered
+      >
+        {documentUrl ? (
+          documentContentType.startsWith("image/") ? (
+            <Box
+              component="img"
+              src={documentUrl}
+              alt="Supporting document"
+              sx={{ maxWidth: "10px", maxHeight: "10px", display: "block" }}
+            />
+          ) : (
+            <Box
+              component="iframe"
+              title="Supporting document"
+              src={documentUrl}
+              sx={{ width: "10px", height: "10px", border: "none" }}
+            />
+          )
+        ) : null}
+      </Modal>
     </Container>
   );
 }

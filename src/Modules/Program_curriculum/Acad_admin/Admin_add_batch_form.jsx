@@ -56,7 +56,8 @@ function Admin_add_batch_form() {
     validate: {
       batchName: (value) => (!value ? "Batch name is required" : null),
       discipline: (value) => (!value ? "Discipline is required" : null),
-      totalSeats: (value) => (value < 0 ? "Total seats cannot be negative" : null),
+      totalSeats: (value) =>
+        value < 0 ? "Total seats cannot be negative" : null,
       disciplineBatch: (value) => (!value ? "Curriculum is required" : null),
     },
   });
@@ -87,7 +88,7 @@ function Admin_add_batch_form() {
 
   const handleBatchNameChange = (value) => {
     form.setFieldValue("batchName", value);
-    
+
     form.setFieldValue("disciplineBatch", "");
   };
 
@@ -116,17 +117,17 @@ function Admin_add_batch_form() {
       }
 
       const curriculumData = form.values.disciplineBatch || "";
-      
+
       const payload = {
         batch_name: form.values.batchName,
         discipline: parseInt(form.values.discipline, 10),
         batchYear: parseInt(form.values.batchYear, 10),
         runningBatch: form.values.runningBatch,
         total_seats: parseInt(form.values.totalSeats, 10) || 0,
-        curriculum: curriculumData ? parseInt(curriculumData, 10) : null, 
-        disciplineBatch: curriculumData ? parseInt(curriculumData, 10) : null
+        curriculum: curriculumData ? parseInt(curriculumData, 10) : null,
+        disciplineBatch: curriculumData ? parseInt(curriculumData, 10) : null,
       };
-      
+
       const response = await axios.post(
         `${host}/programme_curriculum/api/admin_add_batch/`,
         payload,
@@ -136,7 +137,7 @@ function Admin_add_batch_form() {
           },
         },
       );
-      
+
       if (response.data.message) {
         notifications.show({
           title: "✅ Batch Added Successfully!",
@@ -144,12 +145,12 @@ function Admin_add_batch_form() {
           color: "green",
           autoClose: 5000,
           style: {
-            backgroundColor: '#d4edda',
-            borderColor: '#c3e6cb',
-            color: '#155724',
+            backgroundColor: "#d4edda",
+            borderColor: "#c3e6cb",
+            color: "#155724",
           },
         });
-        
+
         form.reset();
         setTimeout(() => {
           navigate("/programme_curriculum/admin_batches/");
@@ -164,7 +165,9 @@ function Admin_add_batch_form() {
         message: (
           <div>
             <Text size="sm" mb={8}>
-              <strong>{err.message || "Unable to create batch. Please try again."}</strong>
+              <strong>
+                {err.message || "Unable to create batch. Please try again."}
+              </strong>
             </Text>
             <Text size="xs" color="gray.7">
               Please check your inputs and try again.
@@ -174,9 +177,9 @@ function Admin_add_batch_form() {
         color: "red",
         autoClose: 7000,
         style: {
-          backgroundColor: '#f8d7da',
-          borderColor: '#f5c6cb',
-          color: '#721c24',
+          backgroundColor: "#f8d7da",
+          borderColor: "#f5c6cb",
+          color: "#721c24",
         },
       });
       setError(err.message);
@@ -326,13 +329,13 @@ function Admin_add_batch_form() {
               </Stack>
 
               <Group position="right" mt="lg">
-                 <Button
-                                                        variant="outline"
-                                                        className="cancel-btn"
-                                                        onClick={handleCancel}
-                                                      >
-                                                        Cancel
-                                                      </Button>
+                <Button
+                  variant="outline"
+                  className="cancel-btn"
+                  onClick={handleCancel}
+                >
+                  Cancel
+                </Button>
                 <Button type="submit" className="submit-btn">
                   Submit
                 </Button>

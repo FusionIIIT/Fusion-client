@@ -112,10 +112,10 @@ function Admin_view_all_courses() {
         {
           method: "DELETE",
           headers: {
-            "Authorization": `Token ${token}`,
+            Authorization: `Token ${token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       let data = {};
@@ -124,14 +124,18 @@ function Admin_view_all_courses() {
         data = await response.json();
       }
 
-      if (response.ok && (data.success !== false)) {
-        setCourses(prev => prev.filter(course => course.id !== courseToDelete.id));
-        
+      if (response.ok && data.success !== false) {
+        setCourses((prev) =>
+          prev.filter((course) => course.id !== courseToDelete.id),
+        );
+
         localStorage.setItem("AdminCoursesCachechange", "true");
-        
+
         notifications.show({
           title: "Successfully Deleted",
-          message: data.message || `Course '${courseToDelete.code} - ${courseToDelete.name}' has been deleted`,
+          message:
+            data.message ||
+            `Course '${courseToDelete.code} - ${courseToDelete.name}' has been deleted`,
           color: "green",
           autoClose: 3000,
         });
@@ -139,18 +143,19 @@ function Admin_view_all_courses() {
         if (response.status === 404) {
           notifications.show({
             title: "Not Found",
-            message: "This course may have already been deleted or the delete endpoint is not available",
+            message:
+              "This course may have already been deleted or the delete endpoint is not available",
             color: "orange",
             autoClose: 4000,
           });
         } else if (response.status === 400 && data.dependencies) {
           const dependencyMessage = data.dependencies
-            .map(dep => `${dep.count} ${dep.type}`)
-            .join(', ');
-          
+            .map((dep) => `${dep.count} ${dep.type}`)
+            .join(", ");
+
           notifications.show({
             title: "Cannot Delete",
-            message: `${data.message || 'This course has dependencies'}: ${dependencyMessage}`,
+            message: `${data.message || "This course has dependencies"}: ${dependencyMessage}`,
             color: "orange",
             autoClose: 5000,
           });
@@ -164,7 +169,9 @@ function Admin_view_all_courses() {
         } else {
           notifications.show({
             title: "Delete Failed",
-            message: data.error || "Failed to delete course. The backend delete API may not be implemented yet.",
+            message:
+              data.error ||
+              "Failed to delete course. The backend delete API may not be implemented yet.",
             color: "red",
             autoClose: 4000,
           });
@@ -173,7 +180,8 @@ function Admin_view_all_courses() {
     } catch (error) {
       notifications.show({
         title: "Network Error",
-        message: "Failed to connect to server. Please check your connection and try again.",
+        message:
+          "Failed to connect to server. Please check your connection and try again.",
         color: "red",
         autoClose: 3000,
       });
@@ -296,8 +304,7 @@ function Admin_view_all_courses() {
                   <tr
                     key={index}
                     style={{
-                      backgroundColor:
-                        index % 2 !== 0 ? "#E6F7FF" : "#ffffff",
+                      backgroundColor: index % 2 !== 0 ? "#E6F7FF" : "#ffffff",
                     }}
                   >
                     <td
@@ -370,9 +377,9 @@ function Admin_view_all_courses() {
                             <IconEdit size="1rem" />
                           </ActionIcon>
                         </Link>
-                        <ActionIcon 
-                          variant="light" 
-                          color="red" 
+                        <ActionIcon
+                          variant="light"
+                          color="red"
                           size="sm"
                           onClick={() => handleDeleteClick(course)}
                         >
@@ -401,30 +408,30 @@ function Admin_view_all_courses() {
           size="md"
         >
           <Text size="sm" mb="md">
-            Are you sure you want to delete the course <strong>"{courseToDelete?.code} - {courseToDelete?.name}"</strong> 
+            Are you sure you want to delete the course{" "}
+            <strong>
+              "{courseToDelete?.code} - {courseToDelete?.name}"
+            </strong>
             (Version: {courseToDelete?.version})?
           </Text>
-          
+
           <Text size="xs" color="orange" mb="sm">
             ⚠️ <strong>Warning:</strong> This action cannot be undone.
           </Text>
-          
+
           <Text size="xs" color="blue" mb="md">
-            ℹ️ <strong>Note:</strong> If the backend delete API is not yet implemented, 
-            you'll receive a notification about the current status.
+            ℹ️ <strong>Note:</strong> If the backend delete API is not yet
+            implemented, you'll receive a notification about the current status.
           </Text>
-          
+
           <Flex justify="flex-end" mt="md" gap="sm">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setDeleteModalOpened(false)}
             >
               Cancel
             </Button>
-            <Button 
-              color="red" 
-              onClick={handleConfirmDelete}
-            >
+            <Button color="red" onClick={handleConfirmDelete}>
               Delete Course
             </Button>
           </Flex>

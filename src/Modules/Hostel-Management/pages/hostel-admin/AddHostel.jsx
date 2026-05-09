@@ -9,8 +9,7 @@ import {
   Notification,
   Paper,
 } from "@mantine/core";
-import axios from "axios";
-import { addHostelRoute } from "../../../../routes/hostelManagementRoutes"; // Adjust the import path as per your file structure
+import { adminService } from "../../services";
 
 function AddHostel() {
   const [hallId, setHallId] = useState("");
@@ -35,16 +34,6 @@ function AddHostel() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const token = localStorage.getItem("authToken");
-
-    if (!token) {
-      setNotification({
-        opened: true,
-        message: "Authentication token not found. Please login again.",
-        color: "red",
-      });
-      return;
-    }
 
     setLoading(true);
     try {
@@ -56,12 +45,7 @@ function AddHostel() {
         type_of_seater: typeOfSeater,
       };
 
-      const response = await axios.post(addHostelRoute, data, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Token ${token}`,
-        },
-      });
+      const response = await adminService.addHostel(data);
 
       if (response.status === 201) {
         setNotification({

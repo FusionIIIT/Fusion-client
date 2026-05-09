@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import {
   Paper,
   Text,
@@ -14,30 +13,20 @@ import {
   Loader,
 } from "@mantine/core";
 import { MagnifyingGlass } from "@phosphor-icons/react";
-import { getStudentsInfo } from "../../../../routes/hostelManagementRoutes"; // Adjust this import path as needed
+import { commonService } from "../../services";
 
 export default function StudentInfo() {
   const [opened, setOpened] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const selectedBlock = "All";
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const fetchStudents = async () => {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      setError("Authentication token not found. Please login again.");
-      setLoading(false);
-      return;
-    }
-
     try {
       setLoading(true);
-      const response = await axios.get(getStudentsInfo, {
-        headers: { Authorization: `Token ${token}` },
-      });
+      const response = await commonService.getStudentsInfo();
       setStudents(response.data);
       setError(null);
     } catch (err) {

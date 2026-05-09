@@ -40,25 +40,27 @@ function Admin_add_programme_form() {
     }
 
     let categoryProgrammes = [];
-    
+
     switch (category?.toLowerCase()) {
-      case 'ug':
+      case "ug":
         categoryProgrammes = allProgrammesData.ug_programmes || [];
         break;
-      case 'pg':
+      case "pg":
         categoryProgrammes = allProgrammesData.pg_programmes || [];
         break;
-      case 'phd':
+      case "phd":
         categoryProgrammes = allProgrammesData.phd_programmes || [];
         break;
       default:
         categoryProgrammes = [];
     }
-    
-    const uniqueNames = [...new Set(categoryProgrammes.map(prog => prog.name))];
-    const options = uniqueNames.map(name => ({ value: name, label: name }));
+
+    const uniqueNames = [
+      ...new Set(categoryProgrammes.map((prog) => prog.name)),
+    ];
+    const options = uniqueNames.map((name) => ({ value: name, label: name }));
     options.push({ value: "other", label: "Other" });
-    
+
     setProgrammeOptions(options);
   };
 
@@ -70,7 +72,7 @@ function Admin_add_programme_form() {
         if (token) {
           const data = await fetchAllProgrammes(token);
           setAllProgrammesData(data);
-          
+
           updateProgrammeOptions(form.values.category);
         }
       } catch (error) {
@@ -108,11 +110,11 @@ function Admin_add_programme_form() {
   const handleSubmit = async (values) => {
     const apiUrl = `${host}/programme_curriculum/api/admin_add_programme/`;
     const token = localStorage.getItem("token");
-    
+
     localStorage.removeItem("AdminProgrammesCache");
     localStorage.removeItem("AdminProgrammesTimestamp");
     localStorage.setItem("AdminProgrammesCachechange", "true");
-    
+
     try {
       setLoading(true);
       const response = await fetch(apiUrl, {
@@ -129,19 +131,20 @@ function Admin_add_programme_form() {
                 <strong>Programme "{values.name}" has been created.</strong>
               </Text>
               <Text size="xs" color="gray.7">
-                Category: {values.category} | Begin Year: {values.programme_begin_year}
+                Category: {values.category} | Begin Year:{" "}
+                {values.programme_begin_year}
               </Text>
             </div>
           ),
           color: "green",
           autoClose: 5000,
           style: {
-            backgroundColor: '#d4edda',
-            borderColor: '#c3e6cb',
-            color: '#155724',
+            backgroundColor: "#d4edda",
+            borderColor: "#c3e6cb",
+            color: "#155724",
           },
         });
-        
+
         form.reset();
         setTimeout(() => {
           navigate("/programme_curriculum/acad_view_all_programme");
@@ -153,7 +156,10 @@ function Admin_add_programme_form() {
           message: (
             <div>
               <Text size="sm" mb={8}>
-                <strong>{errorData.message || "Unable to create programme. Please try again."}</strong>
+                <strong>
+                  {errorData.message ||
+                    "Unable to create programme. Please try again."}
+                </strong>
               </Text>
               <Text size="xs" color="gray.7">
                 Please check your inputs and try again.
@@ -163,9 +169,9 @@ function Admin_add_programme_form() {
           color: "red",
           autoClose: 7000,
           style: {
-            backgroundColor: '#f8d7da',
-            borderColor: '#f5c6cb',
-            color: '#721c24',
+            backgroundColor: "#f8d7da",
+            borderColor: "#f5c6cb",
+            color: "#721c24",
           },
         });
       }
@@ -185,9 +191,9 @@ function Admin_add_programme_form() {
         color: "red",
         autoClose: 7000,
         style: {
-          backgroundColor: '#f8d7da',
-          borderColor: '#f5c6cb',
-          color: '#721c24',
+          backgroundColor: "#f8d7da",
+          borderColor: "#f5c6cb",
+          color: "#721c24",
         },
       });
     } finally {
@@ -276,19 +282,21 @@ function Admin_add_programme_form() {
               <NumberInput
                 label="Programme Begin Year"
                 value={form.values.programme_begin_year}
-                onChange={(value) => form.setFieldValue("programme_begin_year", value)}
+                onChange={(value) =>
+                  form.setFieldValue("programme_begin_year", value)
+                }
                 required
               />
             </Stack>
 
             <Group position="right" mt="lg">
               <Button
-                                                                                   variant="outline"
-                                                                                   className="cancel-btn"
-                                                                                   onClick={handleCancel}
-                                                                                 >
-                                                                                   Cancel
-                                                                                 </Button>
+                variant="outline"
+                className="cancel-btn"
+                onClick={handleCancel}
+              >
+                Cancel
+              </Button>
               <Button type="submit" loading={loading}>
                 Submit
               </Button>

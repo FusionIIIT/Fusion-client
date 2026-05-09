@@ -70,7 +70,7 @@ function Admin_edit_programme_form() {
         programme_begin_year: values.year,
         id: programmeData.id,
       };
-      
+
       const response = await fetch(
         `${host}/programme_curriculum/api/admin_edit_programme/${id}/`,
         {
@@ -81,7 +81,7 @@ function Admin_edit_programme_form() {
       const result = await response.json();
       if (response.ok) {
         localStorage.setItem("AdminProgrammesCachechange", "true");
-        
+
         notifications.show({
           title: "✅ Programme Updated Successfully!",
           message: (
@@ -90,19 +90,20 @@ function Admin_edit_programme_form() {
                 <strong>Programme "{submitData.name}" has been updated.</strong>
               </Text>
               <Text size="xs" color="gray.7">
-                Category: {submitData.category} | Begin Year: {submitData.programme_begin_year}
+                Category: {submitData.category} | Begin Year:{" "}
+                {submitData.programme_begin_year}
               </Text>
             </div>
           ),
           color: "green",
           autoClose: 5000,
           style: {
-            backgroundColor: '#d4edda',
-            borderColor: '#c3e6cb',
-            color: '#155724',
+            backgroundColor: "#d4edda",
+            borderColor: "#c3e6cb",
+            color: "#155724",
           },
         });
-        
+
         setTimeout(() => {
           navigate("/programme_curriculum/acad_view_all_programme");
         }, 1500);
@@ -125,9 +126,9 @@ function Admin_edit_programme_form() {
         color: "red",
         autoClose: 7000,
         style: {
-          backgroundColor: '#f8d7da',
-          borderColor: '#f5c6cb',
-          color: '#721c24',
+          backgroundColor: "#f8d7da",
+          borderColor: "#f5c6cb",
+          color: "#721c24",
         },
       });
     }

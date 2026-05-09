@@ -34,43 +34,59 @@ import {
 } from "recharts";
 
 // Grade options & colors
-const GRADE_OPTIONS = ["O","A+","A","B+","B","C+","C","D+","D","F"]
-  .map((g) => ({ value: g, label: g }));
+const GRADE_OPTIONS = [
+  "O",
+  "A+",
+  "A",
+  "B+",
+  "B",
+  "C+",
+  "C",
+  "D+",
+  "D",
+  "F",
+].map((g) => ({ value: g, label: g }));
 const GRADE_COLORS = {
-  O: "#2e7d32","A+": "#388e3c",A: "#4caf50",
-  "B+": "#03a9f4",B: "#2196f3","C+": "#ff9800",
-  C: "#fb8c00","D+": "#f57c00",D: "#f44336",
+  O: "#2e7d32",
+  "A+": "#388e3c",
+  A: "#4caf50",
+  "B+": "#03a9f4",
+  B: "#2196f3",
+  "C+": "#ff9800",
+  C: "#fb8c00",
+  "D+": "#f57c00",
+  D: "#f44336",
   F: "#9e9e9e",
 };
 
 export default function VerifyDean() {
   const userRole = useSelector((s) => s.user.role);
   const semesterOptions = [
-    { value: "Odd Semester",   label: "Odd Semester"   },
-    { value: "Even Semester",  label: "Even Semester"  },
-    { value: "Summer Semester",label: "Summer Semester"},
+    { value: "Odd Semester", label: "Odd Semester" },
+    { value: "Even Semester", label: "Even Semester" },
+    { value: "Summer Semester", label: "Summer Semester" },
   ];
 
   const [loadingCourses, setLoadingCourses] = useState(false);
-  const [loadingSearch,  setLoadingSearch]  = useState(false);
-  const [error,           setError]          = useState(null);
-  const [success,         setSuccess]        = useState(null);
+  const [loadingSearch, setLoadingSearch] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
-  const [yearOptions,     setYearOptions]    = useState([]);
-  const [selectedYear,    setSelectedYear]   = useState(null);
-  const [selectedSemester,setSelectedSemester]= useState(null);
+  const [yearOptions, setYearOptions] = useState([]);
+  const [selectedYear, setSelectedYear] = useState(null);
+  const [selectedSemester, setSelectedSemester] = useState(null);
 
-  const [courses,         setCourses]        = useState([]);
-  const [selectedCourse,  setSelectedCourse] = useState(null);
-  const [selectedCourseName,setSelectedCourseName] = useState("");
+  const [courses, setCourses] = useState([]);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [selectedCourseName, setSelectedCourseName] = useState("");
 
-  const [registrations,   setRegistrations]  = useState([]);
-  const [initialRegs,     setInitialRegs]    = useState([]);
-  const [gradesStats,     setGradesStats]    = useState([]);
-  const [isVerified,      setIsVerified]     = useState(false);
-  const [allowResub,      setAllowResub]     = useState(false);
-  const [showTable,       setShowTable]      = useState(false);
-  const [confirmOpen,     setConfirmOpen]    = useState(false);
+  const [registrations, setRegistrations] = useState([]);
+  const [initialRegs, setInitialRegs] = useState([]);
+  const [gradesStats, setGradesStats] = useState([]);
+  const [isVerified, setIsVerified] = useState(false);
+  const [allowResub, setAllowResub] = useState(false);
+  const [showTable, setShowTable] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   // 1) Fetch academic years
   useEffect(() => {
@@ -83,7 +99,10 @@ export default function VerifyDean() {
           headers: { Authorization: `Token ${token}` },
         });
         setYearOptions(
-          data.academic_years.map((y) => ({ value: String(y), label: String(y) }))
+          data.academic_years.map((y) => ({
+            value: String(y),
+            label: String(y),
+          })),
         );
       } catch {
         setError("Failed to load academic years.");
@@ -120,7 +139,11 @@ export default function VerifyDean() {
           academic_year: selectedYear,
           semester_type: selectedSemester,
         },
-        { headers: { Authorization: `Token ${localStorage.getItem("authToken")}` } }
+        {
+          headers: {
+            Authorization: `Token ${localStorage.getItem("authToken")}`,
+          },
+        },
       )
       .then(({ data }) => {
         const mapped = (data.courses_info || []).map((c) => ({
@@ -153,7 +176,11 @@ export default function VerifyDean() {
           year: selectedYear,
           semester_type: selectedSemester,
         },
-        { headers: { Authorization: `Token ${localStorage.getItem("authToken")}` } }
+        {
+          headers: {
+            Authorization: `Token ${localStorage.getItem("authToken")}`,
+          },
+        },
       )
       .then(({ data }) => {
         if (data.message === "This course is already verified.") {
@@ -181,10 +208,10 @@ export default function VerifyDean() {
             name,
             value,
             color: GRADE_COLORS[name] || "#9e9e9e",
-          }))
+          })),
         );
         setSelectedCourseName(
-          courses.find((c) => c.value === selectedCourse)?.label || ""
+          courses.find((c) => c.value === selectedCourse)?.label || "",
         );
         setShowTable(true);
       })
@@ -207,12 +234,12 @@ export default function VerifyDean() {
         name,
         value,
         color: GRADE_COLORS[name] || "#9e9e9e",
-      }))
+      })),
     );
   };
   const updateRemarks = (id, remarks) =>
     setRegistrations(
-      registrations.map((r) => (r.id === id ? { ...r, remarks } : r))
+      registrations.map((r) => (r.id === id ? { ...r, remarks } : r)),
     );
 
   // 5) Verify & download CSV
@@ -233,7 +260,9 @@ export default function VerifyDean() {
 
     axios
       .post(moderate_student_grades, payload, {
-        headers: { Authorization: `Token ${localStorage.getItem("authToken")}` },
+        headers: {
+          Authorization: `Token ${localStorage.getItem("authToken")}`,
+        },
         responseType: "blob",
       })
       .then((resp) => {
@@ -286,9 +315,19 @@ export default function VerifyDean() {
     <Card p="lg" radius="md" style={{ width: "100%", position: "relative" }}>
       <LoadingOverlay visible={loadingCourses || loadingSearch} />
 
-      <Title order={2} mb="md">Verify Grades</Title>
-      {error   && <Alert color="red"  mb="md">{error}</Alert>}
-      {success && <Alert color="green" mb="md">{success}</Alert>}
+      <Title order={2} mb="md">
+        Verify Grades
+      </Title>
+      {error && (
+        <Alert color="red" mb="md">
+          {error}
+        </Alert>
+      )}
+      {success && (
+        <Alert color="green" mb="md">
+          {success}
+        </Alert>
+      )}
 
       <Stack spacing="md">
         <Select
@@ -312,9 +351,9 @@ export default function VerifyDean() {
 
         <Select
           label="Course"
-          placeholder={courses.length 
-            ? "Select course" 
-            : "Select year & semester first"}
+          placeholder={
+            courses.length ? "Select course" : "Select year & semester first"
+          }
           data={courses}
           value={selectedCourse}
           onChange={setSelectedCourse}
@@ -326,7 +365,12 @@ export default function VerifyDean() {
 
         <Button
           onClick={handleSearch}
-          disabled={!selectedYear || !selectedSemester || !selectedCourse || loadingSearch}
+          disabled={
+            !selectedYear ||
+            !selectedSemester ||
+            !selectedCourse ||
+            loadingSearch
+          }
         >
           {loadingSearch ? "Loading…" : "Search"}
         </Button>
@@ -358,7 +402,9 @@ export default function VerifyDean() {
                   dataKey="value"
                   nameKey="name"
                   outerRadius={60}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }) =>
+                    `${name}: ${(percent * 100).toFixed(0)}%`
+                  }
                 >
                   {gradesStats.map((e, i) => (
                     <Cell key={i} fill={e.color} />
@@ -393,7 +439,10 @@ export default function VerifyDean() {
         onClose={() => setConfirmOpen(false)}
         title="Confirm Verification"
       >
-        <Text>This action is not reversible. The following changes will be submitted:</Text>
+        <Text>
+          This action is not reversible. The following changes will be
+          submitted:
+        </Text>
         <ScrollArea style={{ maxHeight: 200 }} mt="sm">
           <Table striped>
             <thead>

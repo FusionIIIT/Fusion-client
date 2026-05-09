@@ -6,12 +6,16 @@ import LeaveStatus from "./students/LeaveStatus";
 import Fine from "./students/Fine";
 import AllotedRooms from "./students/AllotedRooms";
 import ViewAttendance from "./students/ViewAttendance";
+import Complaints from "./students/Complaints";
+import RoomChangeRequest from "./students/RoomChangeRequest";
 
 const sections = [
   "Notice Board",
+  "Complaints",
   "My Fine",
   "Leave",
   "Alloted rooms",
+  "Room Change",
   "My Attendance",
 ];
 
@@ -22,10 +26,12 @@ const subSections = {
 
 const components = {
   "Notice Board": NoticeBoard,
+  Complaints,
   "Leave_Leave Form": LeaveForm,
   "Leave_Leave Status": LeaveStatus,
   "My Fine": Fine,
   "Alloted rooms": AllotedRooms,
+  "Room Change": RoomChangeRequest,
   "My Attendance": ViewAttendance,
 };
 

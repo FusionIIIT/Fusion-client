@@ -66,7 +66,8 @@ function Admin_view_all_course_instructors() {
       } catch (error) {
         notifications.show({
           title: "Error",
-          message: "Failed to load course instructors. Please refresh the page.",
+          message:
+            "Failed to load course instructors. Please refresh the page.",
           color: "red",
           autoClose: 4000,
         });
@@ -85,14 +86,17 @@ function Admin_view_all_course_instructors() {
     const courseName = item.course_name || "";
     const courseCode = item.course_code || "";
     const semesterType = item.semester_type || "";
-    
-    const searchText = `${courseCode} ${courseName} ${instructorFirst} ${instructorLast} ${year} ${semesterType}`.toLowerCase();
-    
+
+    const searchText =
+      `${courseCode} ${courseName} ${instructorFirst} ${instructorLast} ${year} ${semesterType}`.toLowerCase();
+
     return searchText.includes(searchQuery.toLowerCase());
   });
 
   const handleDelete = async (instructorId) => {
-    if (!window.confirm("Are you sure you want to delete this course instructor?")) {
+    if (
+      !window.confirm("Are you sure you want to delete this course instructor?")
+    ) {
       return;
     }
 
@@ -106,7 +110,7 @@ function Admin_view_all_course_instructors() {
             Authorization: `Token ${token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       let data = {};
@@ -115,16 +119,22 @@ function Admin_view_all_course_instructors() {
         data = await response.json();
       }
 
-      if (response.ok && (data.success !== false)) {
-        const deletedInstructor = instructors.find(instructor => instructor.id === instructorId);
-        
-        setInstructors(instructors.filter(instructor => instructor.id !== instructorId));
-        
+      if (response.ok && data.success !== false) {
+        const deletedInstructor = instructors.find(
+          (instructor) => instructor.id === instructorId,
+        );
+
+        setInstructors(
+          instructors.filter((instructor) => instructor.id !== instructorId),
+        );
+
         localStorage.setItem("AdminInstructorsCacheChange", "true");
-        
+
         notifications.show({
           title: "Successfully Deleted",
-          message: data.message || `Course instructor '${deletedInstructor?.name || 'Unknown'}' has been deleted`,
+          message:
+            data.message ||
+            `Course instructor '${deletedInstructor?.name || "Unknown"}' has been deleted`,
           color: "green",
           autoClose: 3000,
         });
@@ -132,19 +142,23 @@ function Admin_view_all_course_instructors() {
         if (response.status === 404) {
           notifications.show({
             title: "Not Found",
-            message: "This course instructor may have already been deleted or the delete endpoint is not available",
+            message:
+              "This course instructor may have already been deleted or the delete endpoint is not available",
             color: "orange",
             autoClose: 4000,
           });
         } else if (response.status === 400 && data.dependencies) {
           notifications.show({
             title: "Cannot Delete",
-            message: data.message || "Cannot delete course instructor due to existing dependencies",
+            message:
+              data.message ||
+              "Cannot delete course instructor due to existing dependencies",
             color: "red",
             autoClose: 5000,
           });
         } else {
-          let errorMessage = data.message || "Failed to delete course instructor";
+          let errorMessage =
+            data.message || "Failed to delete course instructor";
           notifications.show({
             title: "Error",
             message: `${errorMessage} (Status: ${response.status})`,
@@ -152,21 +166,24 @@ function Admin_view_all_course_instructors() {
             autoClose: 4000,
           });
         }
-        
-        throw new Error(`HTTP ${response.status}: ${data.message || 'Failed to delete course instructor'}`);
+
+        throw new Error(
+          `HTTP ${response.status}: ${data.message || "Failed to delete course instructor"}`,
+        );
       }
     } catch (error) {
-      if (!error.message.includes('HTTP')) {
+      if (!error.message.includes("HTTP")) {
         notifications.show({
           title: "Network Error",
-          message: "Unable to connect to the server. Please check your internet connection.",
+          message:
+            "Unable to connect to the server. Please check your internet connection.",
           color: "red",
           autoClose: 4000,
         });
       }
     }
   };
-  
+
   const cellStyle = {
     padding: "15px 20px",
     textAlign: "center",
@@ -246,12 +263,22 @@ function Admin_view_all_course_instructors() {
       <Container
         style={{ padding: "20px", minHeight: "100vh", maxWidth: "100%" }}
       >
-        <Flex justify="space-between" align="center" mb={10} wrap="wrap" gap="md">
+        <Flex
+          justify="space-between"
+          align="center"
+          mb={10}
+          wrap="wrap"
+          gap="md"
+        >
           <Button variant="filled" style={{ marginRight: "10px" }}>
             Instructors
           </Button>
-          
-          <Flex align="center" gap="md" style={{ flex: 1, justifyContent: "flex-end" }}>
+
+          <Flex
+            align="center"
+            gap="md"
+            style={{ flex: 1, justifyContent: "flex-end" }}
+          >
             <TextInput
               placeholder="Search by course name, code, instructor, year, or semester..."
               value={searchQuery}
@@ -292,54 +319,54 @@ function Admin_view_all_course_instructors() {
               }
             `}
           </style>
-              <Table style={{ backgroundColor: "white", padding: "20px" }}>
-                <thead>
-                  <tr>
-                    {tableColumns.map((column) => (
-                      <th
-                        key={column.key}
-                        style={{
-                          padding: "15px 20px",
-                          backgroundColor: "#C5E2F6",
-                          color: "#3498db",
-                          fontSize: "16px",
-                          textAlign: "center",
-                          borderRight: "1px solid #d3d3d3",
-                        }}
-                      >
-                        {column.label}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading ? (
-                    <tr>
-                      <td
-                        colSpan={tableColumns.length}
-                        style={{ textAlign: "center" }}
-                      >
-                        Loading...
-                      </td>
-                    </tr>
-                  ) : rows.length > 0 ? (
-                    rows
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan={tableColumns.length}
-                        style={{ textAlign: "center" }}
-                      >
-                        No instructors found
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </Table>
-            </div>
-          </Container>
-        </MantineProvider>
-      );
-    }
+          <Table style={{ backgroundColor: "white", padding: "20px" }}>
+            <thead>
+              <tr>
+                {tableColumns.map((column) => (
+                  <th
+                    key={column.key}
+                    style={{
+                      padding: "15px 20px",
+                      backgroundColor: "#C5E2F6",
+                      color: "#3498db",
+                      fontSize: "16px",
+                      textAlign: "center",
+                      borderRight: "1px solid #d3d3d3",
+                    }}
+                  >
+                    {column.label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td
+                    colSpan={tableColumns.length}
+                    style={{ textAlign: "center" }}
+                  >
+                    Loading...
+                  </td>
+                </tr>
+              ) : rows.length > 0 ? (
+                rows
+              ) : (
+                <tr>
+                  <td
+                    colSpan={tableColumns.length}
+                    style={{ textAlign: "center" }}
+                  >
+                    No instructors found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </Table>
+        </div>
+      </Container>
+    </MantineProvider>
+  );
+}
 
-    export default Admin_view_all_course_instructors;
+export default Admin_view_all_course_instructors;

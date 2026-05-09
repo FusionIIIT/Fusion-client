@@ -48,7 +48,7 @@ export default function GradeSummary() {
           response.data.academic_years.map((year) => ({
             value: year,
             label: year,
-          }))
+          })),
         );
       } catch (error) {
         console.error("Error fetching academic years:", error);
@@ -82,7 +82,7 @@ export default function GradeSummary() {
         },
         {
           headers: { Authorization: `Token ${token}` },
-        }
+        },
       );
 
       setGradeSummaryData(response.data.grade_summary);
@@ -143,7 +143,7 @@ export default function GradeSummary() {
           course.grade_s,
           course.grade_x,
           course.total_students,
-        ].join(",")
+        ].join(","),
       ),
     ].join("\n");
 
@@ -153,7 +153,7 @@ export default function GradeSummary() {
     link.setAttribute("href", url);
     link.setAttribute(
       "download",
-      `Grade_Summary_${selectedAcademicYear}_${selectedSemesterType.replace(" ", "_")}.csv`
+      `Grade_Summary_${selectedAcademicYear}_${selectedSemesterType.replace(" ", "_")}.csv`,
     );
     link.style.visibility = "hidden";
     document.body.appendChild(link);
@@ -179,58 +179,94 @@ export default function GradeSummary() {
     const rows = gradeSummaryData.map((course) => (
       <Table.Tr key={course.sno}>
         <Table.Td style={{ textAlign: "center", backgroundColor: "#f8f9fa" }}>
-          <Text size="sm" fw={500}>{course.sno}</Text>
+          <Text size="sm" fw={500}>
+            {course.sno}
+          </Text>
         </Table.Td>
         <Table.Td style={{ minWidth: "100px" }}>
-          <Text fw={600} c="blue">{course.course_code}</Text>
+          <Text fw={600} c="blue">
+            {course.course_code}
+          </Text>
         </Table.Td>
         <Table.Td style={{ minWidth: "250px" }}>
-          <Text size="sm" fw={500}>{course.course_name}</Text>
+          <Text size="sm" fw={500}>
+            {course.course_name}
+          </Text>
         </Table.Td>
         <Table.Td style={{ minWidth: "200px" }}>
-          <Text size="sm" c="dimmed">{course.course_instructor || "N/A"}</Text>
+          <Text size="sm" c="dimmed">
+            {course.course_instructor || "N/A"}
+          </Text>
         </Table.Td>
         <Table.Td style={{ textAlign: "center", backgroundColor: "#e7f5ff" }}>
-          <Text size="sm" fw={500}>{course.grade_o}</Text>
+          <Text size="sm" fw={500}>
+            {course.grade_o}
+          </Text>
         </Table.Td>
         <Table.Td style={{ textAlign: "center", backgroundColor: "#e7f5ff" }}>
-          <Text size="sm" fw={500}>{course.grade_a_plus}</Text>
+          <Text size="sm" fw={500}>
+            {course.grade_a_plus}
+          </Text>
         </Table.Td>
         <Table.Td style={{ textAlign: "center", backgroundColor: "#e7f5ff" }}>
-          <Text size="sm" fw={500}>{course.grade_a}</Text>
+          <Text size="sm" fw={500}>
+            {course.grade_a}
+          </Text>
         </Table.Td>
         <Table.Td style={{ textAlign: "center", backgroundColor: "#fff3e0" }}>
-          <Text size="sm" fw={500}>{course.grade_b_plus}</Text>
+          <Text size="sm" fw={500}>
+            {course.grade_b_plus}
+          </Text>
         </Table.Td>
         <Table.Td style={{ textAlign: "center", backgroundColor: "#fff3e0" }}>
-          <Text size="sm" fw={500}>{course.grade_b}</Text>
+          <Text size="sm" fw={500}>
+            {course.grade_b}
+          </Text>
         </Table.Td>
         <Table.Td style={{ textAlign: "center", backgroundColor: "#fff9e6" }}>
-          <Text size="sm" fw={500}>{course.grade_c_plus}</Text>
+          <Text size="sm" fw={500}>
+            {course.grade_c_plus}
+          </Text>
         </Table.Td>
         <Table.Td style={{ textAlign: "center", backgroundColor: "#fff9e6" }}>
-          <Text size="sm" fw={500}>{course.grade_c}</Text>
+          <Text size="sm" fw={500}>
+            {course.grade_c}
+          </Text>
         </Table.Td>
         <Table.Td style={{ textAlign: "center", backgroundColor: "#ffeee6" }}>
-          <Text size="sm" fw={500}>{course.grade_d_plus}</Text>
+          <Text size="sm" fw={500}>
+            {course.grade_d_plus}
+          </Text>
         </Table.Td>
         <Table.Td style={{ textAlign: "center", backgroundColor: "#ffeee6" }}>
-          <Text size="sm" fw={500}>{course.grade_d}</Text>
+          <Text size="sm" fw={500}>
+            {course.grade_d}
+          </Text>
         </Table.Td>
         <Table.Td style={{ textAlign: "center", backgroundColor: "#ffe6e6" }}>
-          <Text size="sm" fw={600} c="red">{course.grade_f}</Text>
+          <Text size="sm" fw={600} c="red">
+            {course.grade_f}
+          </Text>
         </Table.Td>
         <Table.Td style={{ textAlign: "center", backgroundColor: "#f3f4f6" }}>
-          <Text size="sm" fw={500}>{course.grade_cd}</Text>
+          <Text size="sm" fw={500}>
+            {course.grade_cd}
+          </Text>
         </Table.Td>
         <Table.Td style={{ textAlign: "center", backgroundColor: "#f3f4f6" }}>
-          <Text size="sm" fw={500}>{course.grade_s}</Text>
+          <Text size="sm" fw={500}>
+            {course.grade_s}
+          </Text>
         </Table.Td>
         <Table.Td style={{ textAlign: "center", backgroundColor: "#f3f4f6" }}>
-          <Text size="sm" fw={500}>{course.grade_x}</Text>
+          <Text size="sm" fw={500}>
+            {course.grade_x}
+          </Text>
         </Table.Td>
         <Table.Td style={{ textAlign: "center", backgroundColor: "#e8f5e9" }}>
-          <Text size="sm" fw={700} c="green">{course.total_students}</Text>
+          <Text size="sm" fw={700} c="green">
+            {course.total_students}
+          </Text>
         </Table.Td>
       </Table.Tr>
     ));
@@ -239,24 +275,138 @@ export default function GradeSummary() {
       <Table striped={false} highlightOnHover withTableBorder>
         <Table.Thead>
           <Table.Tr style={{ backgroundColor: "#f1f3f5" }}>
-            <Table.Th style={{ textAlign: "center", fontWeight: 600 }}>S.No.</Table.Th>
+            <Table.Th style={{ textAlign: "center", fontWeight: 600 }}>
+              S.No.
+            </Table.Th>
             <Table.Th style={{ fontWeight: 600 }}>Course Code</Table.Th>
             <Table.Th style={{ fontWeight: 600 }}>Course Name</Table.Th>
             <Table.Th style={{ fontWeight: 600 }}>Course Instructor</Table.Th>
-            <Table.Th style={{ textAlign: "center", fontWeight: 600, backgroundColor: "#d0ebff" }}>O</Table.Th>
-            <Table.Th style={{ textAlign: "center", fontWeight: 600, backgroundColor: "#d0ebff" }}>A+</Table.Th>
-            <Table.Th style={{ textAlign: "center", fontWeight: 600, backgroundColor: "#d0ebff" }}>A</Table.Th>
-            <Table.Th style={{ textAlign: "center", fontWeight: 600, backgroundColor: "#ffe0b2" }}>B+</Table.Th>
-            <Table.Th style={{ textAlign: "center", fontWeight: 600, backgroundColor: "#ffe0b2" }}>B</Table.Th>
-            <Table.Th style={{ textAlign: "center", fontWeight: 600, backgroundColor: "#fff4cc" }}>C+</Table.Th>
-            <Table.Th style={{ textAlign: "center", fontWeight: 600, backgroundColor: "#fff4cc" }}>C</Table.Th>
-            <Table.Th style={{ textAlign: "center", fontWeight: 600, backgroundColor: "#ffd9cc" }}>D+</Table.Th>
-            <Table.Th style={{ textAlign: "center", fontWeight: 600, backgroundColor: "#ffd9cc" }}>D</Table.Th>
-            <Table.Th style={{ textAlign: "center", fontWeight: 600, backgroundColor: "#ffcccc" }}>F</Table.Th>
-            <Table.Th style={{ textAlign: "center", fontWeight: 600, backgroundColor: "#e9ecef" }}>CD</Table.Th>
-            <Table.Th style={{ textAlign: "center", fontWeight: 600, backgroundColor: "#e9ecef" }}>S</Table.Th>
-            <Table.Th style={{ textAlign: "center", fontWeight: 600, backgroundColor: "#e9ecef" }}>X</Table.Th>
-            <Table.Th style={{ textAlign: "center", fontWeight: 600, backgroundColor: "#c8e6c9" }}>Total</Table.Th>
+            <Table.Th
+              style={{
+                textAlign: "center",
+                fontWeight: 600,
+                backgroundColor: "#d0ebff",
+              }}
+            >
+              O
+            </Table.Th>
+            <Table.Th
+              style={{
+                textAlign: "center",
+                fontWeight: 600,
+                backgroundColor: "#d0ebff",
+              }}
+            >
+              A+
+            </Table.Th>
+            <Table.Th
+              style={{
+                textAlign: "center",
+                fontWeight: 600,
+                backgroundColor: "#d0ebff",
+              }}
+            >
+              A
+            </Table.Th>
+            <Table.Th
+              style={{
+                textAlign: "center",
+                fontWeight: 600,
+                backgroundColor: "#ffe0b2",
+              }}
+            >
+              B+
+            </Table.Th>
+            <Table.Th
+              style={{
+                textAlign: "center",
+                fontWeight: 600,
+                backgroundColor: "#ffe0b2",
+              }}
+            >
+              B
+            </Table.Th>
+            <Table.Th
+              style={{
+                textAlign: "center",
+                fontWeight: 600,
+                backgroundColor: "#fff4cc",
+              }}
+            >
+              C+
+            </Table.Th>
+            <Table.Th
+              style={{
+                textAlign: "center",
+                fontWeight: 600,
+                backgroundColor: "#fff4cc",
+              }}
+            >
+              C
+            </Table.Th>
+            <Table.Th
+              style={{
+                textAlign: "center",
+                fontWeight: 600,
+                backgroundColor: "#ffd9cc",
+              }}
+            >
+              D+
+            </Table.Th>
+            <Table.Th
+              style={{
+                textAlign: "center",
+                fontWeight: 600,
+                backgroundColor: "#ffd9cc",
+              }}
+            >
+              D
+            </Table.Th>
+            <Table.Th
+              style={{
+                textAlign: "center",
+                fontWeight: 600,
+                backgroundColor: "#ffcccc",
+              }}
+            >
+              F
+            </Table.Th>
+            <Table.Th
+              style={{
+                textAlign: "center",
+                fontWeight: 600,
+                backgroundColor: "#e9ecef",
+              }}
+            >
+              CD
+            </Table.Th>
+            <Table.Th
+              style={{
+                textAlign: "center",
+                fontWeight: 600,
+                backgroundColor: "#e9ecef",
+              }}
+            >
+              S
+            </Table.Th>
+            <Table.Th
+              style={{
+                textAlign: "center",
+                fontWeight: 600,
+                backgroundColor: "#e9ecef",
+              }}
+            >
+              X
+            </Table.Th>
+            <Table.Th
+              style={{
+                textAlign: "center",
+                fontWeight: 600,
+                backgroundColor: "#c8e6c9",
+              }}
+            >
+              Total
+            </Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>{rows}</Table.Tbody>
@@ -366,7 +516,8 @@ export default function GradeSummary() {
                     No grades submitted yet
                   </Text>
                   <Text size="sm" c="dimmed">
-                    Grades have not been submitted for {selectedAcademicYear} - {selectedSemesterType}
+                    Grades have not been submitted for {selectedAcademicYear} -{" "}
+                    {selectedSemesterType}
                   </Text>
                 </Stack>
               </Center>

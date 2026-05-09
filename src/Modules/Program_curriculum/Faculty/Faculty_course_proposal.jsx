@@ -540,7 +540,10 @@ function Admin_course_proposal_form() {
                   )?.is_rejected || false,
               },
             })) || [];
-            sessionStorage.setItem("courseProposals", JSON.stringify(processedNewProposals));
+          sessionStorage.setItem(
+            "courseProposals",
+            JSON.stringify(processedNewProposals),
+          );
 
           const processedUpdateProposals =
             proposalResponse.updateProposals?.map((proposal) => ({
@@ -554,8 +557,10 @@ function Admin_course_proposal_form() {
                   )?.is_rejected || false,
               },
             })) || [];
-            sessionStorage.setItem("updateProposals", JSON.stringify(processedUpdateProposals));
-
+          sessionStorage.setItem(
+            "updateProposals",
+            JSON.stringify(processedUpdateProposals),
+          );
 
           setProposals({
             newProposals: processedNewProposals,

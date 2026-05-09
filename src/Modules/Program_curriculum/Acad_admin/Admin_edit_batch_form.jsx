@@ -60,19 +60,22 @@ function Admin_edit_batch_form() {
 
         const unlinkedCurriculumData = await fetchGetUnlinkedCurriculum();
         setUnlinkedCurriculums(unlinkedCurriculumData);
-        
+
         const existingBatchData = await fetchBatchData(batchId);
-        
+
         if (existingBatchData.curriculum) {
           setUnlinkedCurriculums((prevUnlinkedCurriculums) => [
             ...prevUnlinkedCurriculums,
             ...existingBatchData.curriculum.map((curriculum) => curriculum),
           ]);
         }
-        
+
         // Extract curriculum IDs from the batch data
         const curriculumIds = [];
-        if (existingBatchData.curriculum && Array.isArray(existingBatchData.curriculum)) {
+        if (
+          existingBatchData.curriculum &&
+          Array.isArray(existingBatchData.curriculum)
+        ) {
           // If batch has multiple curricula, take the first one for single selection
           curriculumIds.push(existingBatchData.curriculum[0].id.toString());
         } else if (existingBatchData.batch.curriculum_id) {
@@ -82,7 +85,7 @@ function Admin_edit_batch_form() {
           // Fallback to URL parameter
           curriculumIds.push(curriculumId);
         }
-        
+
         form.setValues({
           batchName: existingBatchData.batch.name || "",
           discipline: existingBatchData.batch.discipline.toString(),
@@ -110,7 +113,7 @@ function Admin_edit_batch_form() {
   // Handler for batch name change
   const handleBatchNameChange = (value) => {
     form.setFieldValue("batchName", value);
-    
+
     // Clear curriculum selection when batch name changes
     form.setFieldValue("disciplineBatch", "");
   };
@@ -119,23 +122,23 @@ function Admin_edit_batch_form() {
     try {
       localStorage.setItem("AdminBatchesCachechange", "true");
       const token = localStorage.getItem("authToken");
-      
+
       if (!token) {
         throw new Error("Authorization token is required");
       }
-      
+
       const curriculumData = form.values.disciplineBatch || "";
-      
+
       const payload = {
         batch_name: form.values.batchName,
         discipline: parseInt(form.values.discipline, 10),
         batchYear: parseInt(form.values.batchYear, 10),
         runningBatch: form.values.runningBatch,
         total_seats: parseInt(form.values.totalSeats, 10),
-        curriculum: curriculumData ? parseInt(curriculumData, 10) : null, 
-        disciplineBatch: curriculumData ? parseInt(curriculumData, 10) : null
+        curriculum: curriculumData ? parseInt(curriculumData, 10) : null,
+        disciplineBatch: curriculumData ? parseInt(curriculumData, 10) : null,
       };
-      
+
       const response = await axios.put(
         `${host}/programme_curriculum/api/admin_edit_batch/${batchId}/`,
         payload,
@@ -145,32 +148,31 @@ function Admin_edit_batch_form() {
           },
         },
       );
-      
+
       if (response.data.message) {
         notifications.show({
-          title: '✅ Success',
-          message: 'Batch updated successfully!',
-          color: 'green',
+          title: "✅ Success",
+          message: "Batch updated successfully!",
+          color: "green",
           autoClose: 4000,
           style: {
-            backgroundColor: '#d4edda',
-            borderColor: '#c3e6cb',
-            color: '#155724',
+            backgroundColor: "#d4edda",
+            borderColor: "#c3e6cb",
+            color: "#155724",
           },
         });
-        
+
         // Clear curriculum cache to force refresh of curriculum-batch relationships
         localStorage.removeItem("AdminCurriculumsCache");
         localStorage.removeItem("AdminCurriculumsTimestamp");
         localStorage.setItem("AdminCurriculumsCachechange", "true");
-        
+
         navigate("/programme_curriculum/admin_batches/");
       } else {
         throw new Error(response.data.message || "Failed to update batch");
       }
     } catch (err) {
-      
-      let errorMessage = 'Failed to update batch';
+      let errorMessage = "Failed to update batch";
       if (err.response?.data?.message) {
         errorMessage = err.response.data.message;
       } else if (err.response?.data?.error) {
@@ -178,16 +180,16 @@ function Admin_edit_batch_form() {
       } else if (err.message) {
         errorMessage = err.message;
       }
-      
+
       notifications.show({
-        title: '❌ Error',
+        title: "❌ Error",
         message: errorMessage,
-        color: 'red',
+        color: "red",
         autoClose: 5000,
         style: {
-          backgroundColor: '#f8d7da',
-          borderColor: '#f5c6cb',
-          color: '#721c24',
+          backgroundColor: "#f8d7da",
+          borderColor: "#f5c6cb",
+          color: "#721c24",
         },
       });
       setError(errorMessage);

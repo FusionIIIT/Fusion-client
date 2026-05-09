@@ -125,7 +125,13 @@ export default function Examination() {
           <Route
             path="/submit-grades-prof"
             element={
-              <ProtectedRoute roles={["Associate Professor", "Assistant Professor", "Professor"]}>
+              <ProtectedRoute
+                roles={[
+                  "Associate Professor",
+                  "Assistant Professor",
+                  "Professor",
+                ]}
+              >
                 <SubmitGradesProf />
               </ProtectedRoute>
             }
@@ -133,7 +139,13 @@ export default function Examination() {
           <Route
             path="/download-grades-prof"
             element={
-              <ProtectedRoute roles={["Associate Professor", "Assistant Professor", "Professor"]}>
+              <ProtectedRoute
+                roles={[
+                  "Associate Professor",
+                  "Assistant Professor",
+                  "Professor",
+                ]}
+              >
                 <CheckResultProf />
               </ProtectedRoute>
             }

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, Select, Grid, Text, Box } from "@mantine/core";
-import { viewHostel } from "../../../../routes/hostelManagementRoutes"; // Import your endpoint
+import { adminService } from "../../services";
 
 export default function ViewHostel() {
   const [selectedHall, setSelectedHall] = useState("");
@@ -10,21 +10,10 @@ export default function ViewHostel() {
   useEffect(() => {
     const fetchHostels = async () => {
       try {
-        const response = await fetch(viewHostel, {
-          headers: {
-            Authorization: `Token ${localStorage.getItem("authToken")}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-
-        const data = await response.json();
-        setHostelsData(data.hostel_details);
-        if (data.hostel_details.length > 0) {
-          setSelectedHall(data.hostel_details[0].hall_id);
+        const response = await adminService.viewHostel();
+        setHostelsData(response.data.hostel_details);
+        if (response.data.hostel_details.length > 0) {
+          setSelectedHall(response.data.hostel_details[0].hall_id);
         }
         setLoading(false);
       } catch (error) {

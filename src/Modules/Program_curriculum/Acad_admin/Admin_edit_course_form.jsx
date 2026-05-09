@@ -64,7 +64,7 @@ function Admin_edit_course_form() {
   const [disciplines, setDisciplines] = useState([]);
   const [courses, setCourses] = useState([]);
   const [course, setCourse] = useState([]);
-  
+
   // New state for intelligent versioning
   const [versionInfo, setVersionInfo] = useState(null);
   const [showVersionPreview, setShowVersionPreview] = useState(false);
@@ -113,7 +113,7 @@ function Admin_edit_course_form() {
       try {
         const data = await fetchCourseDetails(id);
         setCourse(data);
-        
+
         // Store original form data for version comparison
         const formData = {
           courseName: data.name,
@@ -125,9 +125,15 @@ function Admin_edit_course_form() {
           practicalHours: data.pratical_hours,
           discussionHours: data.discussion_hours,
           projectHours: data.project_hours,
-          discipline: data.disciplines.length>0?data.disciplines.map((d) => JSON.stringify(d)):[],
+          discipline:
+            data.disciplines.length > 0
+              ? data.disciplines.map((d) => JSON.stringify(d))
+              : [],
           preRequisites: data.pre_requisits,
-          preRequisiteCourse: data.pre_requisit_courses.length>0?data.pre_requisit_courses.map((c) => JSON.stringify(c)):[],
+          preRequisiteCourse:
+            data.pre_requisit_courses.length > 0
+              ? data.pre_requisit_courses.map((c) => JSON.stringify(c))
+              : [],
           syllabus: data.syllabus,
           references: data.ref_books,
           quiz1: data.percent_quiz_1,
@@ -139,7 +145,7 @@ function Admin_edit_course_form() {
           attendance: data.percent_course_attendance,
           maxSeats: data.max_seats,
         };
-        
+
         form.setValues(formData);
         setOriginalFormData(formData);
       } catch (err) {
@@ -156,61 +162,64 @@ function Admin_edit_course_form() {
     fetchCourses();
     loadCourseDetails();
   }, [id]);
-  
+
   // Preview version changes before submitting
   const previewVersionChanges = async () => {
     if (!originalFormData) return;
-    
+
     try {
       const token = localStorage.getItem("authToken");
-      const response = await fetch(`${host}/programme_curriculum/api/test_intelligent_versioning/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Token ${token}`,
-        },
-        body: JSON.stringify({
-          old_course_data: {
-            name: originalFormData.courseName,
-            code: originalFormData.courseCode,
-            credit: originalFormData.courseCredit,
-            lecture_hours: originalFormData.lectureHours,
-            tutorial_hours: originalFormData.tutorialHours,
-            pratical_hours: originalFormData.practicalHours,
-            discussion_hours: originalFormData.discussionHours,
-            project_hours: originalFormData.projectHours,
-            syllabus: originalFormData.syllabus,
-            ref_books: originalFormData.references,
-            percent_quiz_1: originalFormData.quiz1,
-            percent_midsem: originalFormData.midsem,
-            percent_quiz_2: originalFormData.quiz2,
-            percent_endsem: originalFormData.endsem,
-            percent_project: originalFormData.project,
-            percent_lab_evaluation: originalFormData.labEvaluation,
-            percent_course_attendance: originalFormData.attendance,
+      const response = await fetch(
+        `${host}/programme_curriculum/api/test_intelligent_versioning/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Token ${token}`,
           },
-          new_course_data: {
-            name: form.values.courseName,
-            code: form.values.courseCode,
-            credit: form.values.courseCredit,
-            lecture_hours: form.values.lectureHours,
-            tutorial_hours: form.values.tutorialHours,
-            pratical_hours: form.values.practicalHours,
-            discussion_hours: form.values.discussionHours,
-            project_hours: form.values.projectHours,
-            syllabus: form.values.syllabus,
-            ref_books: form.values.references,
-            percent_quiz_1: form.values.quiz1,
-            percent_midsem: form.values.midsem,
-            percent_quiz_2: form.values.quiz2,
-            percent_endsem: form.values.endsem,
-            percent_project: form.values.project,
-            percent_lab_evaluation: form.values.labEvaluation,
-            percent_course_attendance: form.values.attendance,
-          }
-        }),
-      });
-      
+          body: JSON.stringify({
+            old_course_data: {
+              name: originalFormData.courseName,
+              code: originalFormData.courseCode,
+              credit: originalFormData.courseCredit,
+              lecture_hours: originalFormData.lectureHours,
+              tutorial_hours: originalFormData.tutorialHours,
+              pratical_hours: originalFormData.practicalHours,
+              discussion_hours: originalFormData.discussionHours,
+              project_hours: originalFormData.projectHours,
+              syllabus: originalFormData.syllabus,
+              ref_books: originalFormData.references,
+              percent_quiz_1: originalFormData.quiz1,
+              percent_midsem: originalFormData.midsem,
+              percent_quiz_2: originalFormData.quiz2,
+              percent_endsem: originalFormData.endsem,
+              percent_project: originalFormData.project,
+              percent_lab_evaluation: originalFormData.labEvaluation,
+              percent_course_attendance: originalFormData.attendance,
+            },
+            new_course_data: {
+              name: form.values.courseName,
+              code: form.values.courseCode,
+              credit: form.values.courseCredit,
+              lecture_hours: form.values.lectureHours,
+              tutorial_hours: form.values.tutorialHours,
+              pratical_hours: form.values.practicalHours,
+              discussion_hours: form.values.discussionHours,
+              project_hours: form.values.projectHours,
+              syllabus: form.values.syllabus,
+              ref_books: form.values.references,
+              percent_quiz_1: form.values.quiz1,
+              percent_midsem: form.values.midsem,
+              percent_quiz_2: form.values.quiz2,
+              percent_endsem: form.values.endsem,
+              percent_project: form.values.project,
+              percent_lab_evaluation: form.values.labEvaluation,
+              percent_course_attendance: form.values.attendance,
+            },
+          }),
+        },
+      );
+
       if (response.ok) {
         const preview = await response.json();
         setPreviewInfo(preview);
@@ -220,12 +229,12 @@ function Admin_edit_course_form() {
       console.error("Error previewing version changes:", error);
     }
   };
-  
+
   const handleSubmit = async (values) => {
     const apiUrl = `${host}/programme_curriculum/api/admin_update_course/${id}/`;
     const token = localStorage.getItem("authToken");
     localStorage.setItem("AdminCoursesCachechange", "true");
-    
+
     const payload = {
       name: values.courseName,
       code: values.courseCode,
@@ -261,7 +270,7 @@ function Admin_edit_course_form() {
 
       if (response.ok) {
         const data = await response.json();
-        
+
         // Store version information for display
         if (data.old_version && data.new_version) {
           setVersionInfo({
@@ -272,7 +281,7 @@ function Admin_edit_course_form() {
             reason: data.reason || "Course updated successfully",
           });
         }
-        
+
         // Enhanced notification with version information using utility function
         showVersioningNotification({
           entityName: values.courseName,
@@ -283,19 +292,22 @@ function Admin_edit_course_form() {
           reason: data.reason,
           changedFields: data.changed_academic_fields || [],
         });
-        
+
         setTimeout(() => {
           navigate(`/programme_curriculum/admin_course/${data.course_id}`);
         }, 1500);
       } else {
         const errorData = await response.json();
-        
+
         notifications.show({
           title: "❌ Failed to Update Course",
           message: (
             <div>
               <Text size="sm" mb={8}>
-                <strong>Failed to update course: {errorData.error || response.statusText}</strong>
+                <strong>
+                  Failed to update course:{" "}
+                  {errorData.error || response.statusText}
+                </strong>
               </Text>
               <Text size="xs" color="gray.7">
                 Please check your inputs and try again.
@@ -305,9 +317,9 @@ function Admin_edit_course_form() {
           color: "red",
           autoClose: 7000,
           style: {
-            backgroundColor: '#f8d7da',
-            borderColor: '#f5c6cb',
-            color: '#721c24',
+            backgroundColor: "#f8d7da",
+            borderColor: "#f5c6cb",
+            color: "#721c24",
           },
         });
       }
@@ -327,9 +339,9 @@ function Admin_edit_course_form() {
         color: "red",
         autoClose: 7000,
         style: {
-          backgroundColor: '#f8d7da',
-          borderColor: '#f5c6cb',
-          color: '#721c24',
+          backgroundColor: "#f8d7da",
+          borderColor: "#f5c6cb",
+          color: "#721c24",
         },
       });
     }
@@ -850,10 +862,7 @@ function Admin_edit_course_form() {
                 </Group>
 
                 <Group position="apart">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => navigate(-1)}
-                  >
+                  <Button variant="outline" onClick={() => navigate(-1)}>
                     Cancel
                   </Button>
                   <Button type="submit" mt="md">
@@ -865,7 +874,7 @@ function Admin_edit_course_form() {
           </div>
         </div>
       </Container>
-      
+
       {/* Version Preview Modal */}
       <Modal
         opened={showVersionPreview}
@@ -875,44 +884,56 @@ function Admin_edit_course_form() {
       >
         {previewInfo && (
           <Stack spacing="md">
-            <Alert 
-              color={previewInfo.version_bump_type === 'MAJOR' ? 'red' : 
-                     previewInfo.version_bump_type === 'MINOR' ? 'orange' : 
-                     previewInfo.version_bump_type === 'PATCH' ? 'green' : 'gray'}
+            <Alert
+              color={
+                previewInfo.version_bump_type === "MAJOR"
+                  ? "red"
+                  : previewInfo.version_bump_type === "MINOR"
+                    ? "orange"
+                    : previewInfo.version_bump_type === "PATCH"
+                      ? "green"
+                      : "gray"
+              }
               variant="light"
             >
               <Text weight={600}>
-                {previewInfo.version_bump_type === 'NONE' ? 
-                  '✏️ No version bump required' : 
-                  `🔄 ${previewInfo.version_bump_type} version bump detected`
-                }
+                {previewInfo.version_bump_type === "NONE"
+                  ? "✏️ No version bump required"
+                  : `🔄 ${previewInfo.version_bump_type} version bump detected`}
               </Text>
               <Text size="sm" mt={4}>
                 {previewInfo.reason}
               </Text>
             </Alert>
-            
-            {previewInfo.changed_academic_fields && previewInfo.changed_academic_fields.length > 0 && (
-              <div>
-                <Text size="sm" weight={500}>Changed Academic Fields:</Text>
-                <Group spacing="xs" mt={4}>
-                  {previewInfo.changed_academic_fields.map((field, index) => (
-                    <Badge key={index} variant="outline" size="sm">
-                      {field}
-                    </Badge>
-                  ))}
-                </Group>
-              </div>
-            )}
-            
+
+            {previewInfo.changed_academic_fields &&
+              previewInfo.changed_academic_fields.length > 0 && (
+                <div>
+                  <Text size="sm" weight={500}>
+                    Changed Academic Fields:
+                  </Text>
+                  <Group spacing="xs" mt={4}>
+                    {previewInfo.changed_academic_fields.map((field, index) => (
+                      <Badge key={index} variant="outline" size="sm">
+                        {field}
+                      </Badge>
+                    ))}
+                  </Group>
+                </div>
+              )}
+
             {previewInfo.old_version && previewInfo.new_version && (
               <Text size="sm">
-                <strong>Version Change:</strong> {previewInfo.old_version} → {previewInfo.new_version}
+                <strong>Version Change:</strong> {previewInfo.old_version} →{" "}
+                {previewInfo.new_version}
               </Text>
             )}
-            
+
             <Group position="right" mt="lg">
-              <Button variant="outline" onClick={() => setShowVersionPreview(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setShowVersionPreview(false)}
+              >
                 Close
               </Button>
             </Group>

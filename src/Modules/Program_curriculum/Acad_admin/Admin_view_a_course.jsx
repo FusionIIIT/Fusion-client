@@ -1,5 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { Button, Table, Card, Text, Grid, Stack, Badge, Alert, Modal, Pagination } from "@mantine/core";
+import {
+  Button,
+  Table,
+  Card,
+  Text,
+  Grid,
+  Stack,
+  Badge,
+  Alert,
+  Modal,
+  Pagination,
+} from "@mantine/core";
 import { useParams, useNavigate } from "react-router-dom";
 import { useMediaQuery } from "@mantine/hooks";
 import { fetchCourseDetails } from "../api/api";
@@ -34,7 +45,7 @@ function CourseDetail() {
 
     loadCourseDetails(); // Call the fetch function when the component mounts
   }, [id]);
-  
+
   // Fetch course audit logs
   const fetchAuditLogs = async (page = 1) => {
     setAuditLoading(true);
@@ -46,9 +57,9 @@ function CourseDetail() {
           headers: {
             Authorization: `Token ${token}`,
           },
-        }
+        },
       );
-      
+
       if (response.ok) {
         const data = await response.json();
         setAuditLogs(data.logs || []);
@@ -62,12 +73,12 @@ function CourseDetail() {
       setAuditLoading(false);
     }
   };
-  
+
   const handleShowAuditLogs = () => {
     setShowAuditLogs(true);
     fetchAuditLogs(1);
   };
-  
+
   const handlePageChange = (page) => {
     setCurrentPage(page);
     fetchAuditLogs(page);
@@ -91,7 +102,11 @@ function CourseDetail() {
               radius="sm"
               fullWidth
               style={{ width: "100%", maxWidth: "200px" }}
-              onClick={() => navigate(`/programme_curriculum/acad_admin_edit_course_form/${id}`)}
+              onClick={() =>
+                navigate(
+                  `/programme_curriculum/acad_admin_edit_course_form/${id}`,
+                )
+              }
             >
               Edit Course
             </Button>
@@ -499,7 +514,7 @@ function CourseDetail() {
           background-color: #f2f2f2;
         }
       `}</style>
-   
+
       <Modal
         opened={showAuditLogs}
         onClose={() => setShowAuditLogs(false)}
@@ -530,41 +545,57 @@ function CourseDetail() {
                       <Grid.Col span={4}>
                         <Badge
                           color={
-                            log.version_bump_type === 'MAJOR' ? 'red' :
-                            log.version_bump_type === 'MINOR' ? 'orange' :
-                            log.version_bump_type === 'PATCH' ? 'green' : 'gray'
+                            log.version_bump_type === "MAJOR"
+                              ? "red"
+                              : log.version_bump_type === "MINOR"
+                                ? "orange"
+                                : log.version_bump_type === "PATCH"
+                                  ? "green"
+                                  : "gray"
                           }
                           variant="light"
                           size="sm"
                         >
-                          {log.version_bump_type || 'UPDATE'}
+                          {log.version_bump_type || "UPDATE"}
                         </Badge>
                         {log.admin_override && (
-                          <Badge color="purple" variant="outline" size="xs" ml={4}>
+                          <Badge
+                            color="purple"
+                            variant="outline"
+                            size="xs"
+                            ml={4}
+                          >
                             Admin Override
                           </Badge>
                         )}
                       </Grid.Col>
                     </Grid>
-                    
+
                     {log.reason && (
                       <Text size="sm" mt="xs" color="gray.7">
                         {log.reason}
                       </Text>
                     )}
-                    
+
                     {log.old_version && log.new_version && (
                       <Text size="xs" mt={4} color="blue.6">
                         Version: {log.old_version} → {log.new_version}
                       </Text>
                     )}
-                    
+
                     {log.changed_fields && log.changed_fields.length > 0 && (
-                      <div style={{ marginTop: '8px' }}>
-                        <Text size="xs" color="gray.6">Changed fields:</Text>
-                        <div style={{ marginTop: '4px' }}>
+                      <div style={{ marginTop: "8px" }}>
+                        <Text size="xs" color="gray.6">
+                          Changed fields:
+                        </Text>
+                        <div style={{ marginTop: "4px" }}>
                           {log.changed_fields.map((field, index) => (
-                            <Badge key={index} variant="outline" size="xs" mr={4}>
+                            <Badge
+                              key={index}
+                              variant="outline"
+                              size="xs"
+                              mr={4}
+                            >
                               {field}
                             </Badge>
                           ))}
@@ -574,9 +605,15 @@ function CourseDetail() {
                   </Card>
                 ))}
               </Stack>
-              
+
               {totalPages > 1 && (
-                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    marginTop: "1rem",
+                  }}
+                >
                   <Pagination
                     value={currentPage}
                     onChange={handlePageChange}

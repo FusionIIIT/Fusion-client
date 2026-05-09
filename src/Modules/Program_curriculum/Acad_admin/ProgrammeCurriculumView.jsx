@@ -327,24 +327,22 @@ function BDesAcadView() {
                     borderRight: "1px solid #d3d3d3",
                   }}
                 >
-                  {curr.batches && curr.batches.length > 0 ? (
-                    curr.batches.map((batch, i) => (
-                      <React.Fragment key={i}>
-                        <span
-                          style={{
-                            marginRight: "10px",
-                          }}
-                        >
-                          {batch.name} {batch.discipline} {batch.year}
-                        </span>
-                        {i < curr.batches.length - 1 && (
-                          <span style={{ margin: "0 10px" }}>|</span>
-                        )}
-                      </React.Fragment>
-                    ))
-                  ) : (
-                    "No batches available"
-                  )}
+                  {curr.batches && curr.batches.length > 0
+                    ? curr.batches.map((batch, i) => (
+                        <React.Fragment key={i}>
+                          <span
+                            style={{
+                              marginRight: "10px",
+                            }}
+                          >
+                            {batch.name} {batch.discipline} {batch.year}
+                          </span>
+                          {i < curr.batches.length - 1 && (
+                            <span style={{ margin: "0 10px" }}>|</span>
+                          )}
+                        </React.Fragment>
+                      ))
+                    : "No batches available"}
                 </td>
                 <td
                   style={{
@@ -494,26 +492,24 @@ function BDesAcadView() {
                     borderRight: "1px solid #d3d3d3",
                   }}
                 >
-                  {curr.batches && curr.batches.length > 0 ? (
-                    curr.batches.map((batch, i) => (
-                      <React.Fragment key={i}>
-                        <span
-                          style={{
-                            marginRight: "10px",
-                            color: "black",
-                            textDecoration: "none",
-                          }}
-                        >
-                          {batch.name} {batch.discipline} {batch.year}
-                        </span>
-                        {i < curr.batches.length - 1 && (
-                          <span style={{ margin: "0 10px" }}>|</span>
-                        )}
-                      </React.Fragment>
-                    ))
-                  ) : (
-                    "No batches available"
-                  )}
+                  {curr.batches && curr.batches.length > 0
+                    ? curr.batches.map((batch, i) => (
+                        <React.Fragment key={i}>
+                          <span
+                            style={{
+                              marginRight: "10px",
+                              color: "black",
+                              textDecoration: "none",
+                            }}
+                          >
+                            {batch.name} {batch.discipline} {batch.year}
+                          </span>
+                          {i < curr.batches.length - 1 && (
+                            <span style={{ margin: "0 10px" }}>|</span>
+                          )}
+                        </React.Fragment>
+                      ))
+                    : "No batches available"}
                 </td>
                 <td
                   style={{
@@ -631,29 +627,31 @@ function BDesAcadView() {
                 >
                   {workingCurriculums.length > 0 ? (
                     workingCurriculums.map((curr, index) => (
-                    <Link
-                      key={index}
-                      to={`/programme_curriculum/acad_admin_replicate_curriculum_form?curriculum=${curr.id}`}
-                      style={{ textDecoration: "none" }}
-                    >
-                      <div
-                        className="semester-options"
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          padding: "5px 10px",
-                          borderBottom: "1px solid #ddd",
-                          cursor: "pointer",
-                        }}
+                      <Link
+                        key={index}
+                        to={`/programme_curriculum/acad_admin_replicate_curriculum_form?curriculum=${curr.id}`}
+                        style={{ textDecoration: "none" }}
                       >
-                        <div>
-                          <span>{curr.name}</span> v<span>{curr.version}</span>
+                        <div
+                          className="semester-options"
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            padding: "5px 10px",
+                            borderBottom: "1px solid #ddd",
+                            cursor: "pointer",
+                          }}
+                        >
+                          <div>
+                            <span>{curr.name}</span> v
+                            <span>{curr.version}</span>
+                          </div>
+                          <Copy size={20} color="#000" weight="bold" />
                         </div>
-                        <Copy size={20} color="#000" weight="bold" />
-                      </div>
-                    </Link>
-                  ))) : (
+                      </Link>
+                    ))
+                  ) : (
                     <div
                       style={{
                         padding: "5px 10px",

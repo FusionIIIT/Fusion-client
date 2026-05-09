@@ -71,7 +71,7 @@ function DisciplineAcad() {
       item.name.toLowerCase().includes(searchLower) ||
       item.acronym.toLowerCase().includes(searchLower) ||
       item.programmes.some((program) =>
-        program.name.toLowerCase().includes(searchLower)
+        program.name.toLowerCase().includes(searchLower),
       )
     );
   });
@@ -99,10 +99,10 @@ function DisciplineAcad() {
         {
           method: "DELETE",
           headers: {
-            "Authorization": `Token ${token}`,
+            Authorization: `Token ${token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       // Handle non-JSON responses
@@ -112,16 +112,20 @@ function DisciplineAcad() {
         data = await response.json();
       }
 
-      if (response.ok && (data.success !== false)) {
+      if (response.ok && data.success !== false) {
         // Remove from local state
-        setDisciplines(prev => prev.filter(disc => disc.id !== disciplineToDelete.id));
-        
+        setDisciplines((prev) =>
+          prev.filter((disc) => disc.id !== disciplineToDelete.id),
+        );
+
         // Update cache
         localStorage.setItem("AdminDisciplineCachechange", "true");
-        
+
         notifications.show({
           title: "Successfully Deleted",
-          message: data.message || `Discipline '${disciplineToDelete.name}' has been deleted`,
+          message:
+            data.message ||
+            `Discipline '${disciplineToDelete.name}' has been deleted`,
           color: "green",
           autoClose: 3000,
         });
@@ -130,19 +134,20 @@ function DisciplineAcad() {
         if (response.status === 404) {
           notifications.show({
             title: "Not Found",
-            message: "This discipline may have already been deleted or the delete endpoint is not available",
+            message:
+              "This discipline may have already been deleted or the delete endpoint is not available",
             color: "orange",
             autoClose: 4000,
           });
         } else if (response.status === 400 && data.dependencies) {
           // Handle dependency errors
           const dependencyMessage = data.dependencies
-            .map(dep => `${dep.count} ${dep.type}`)
-            .join(', ');
-          
+            .map((dep) => `${dep.count} ${dep.type}`)
+            .join(", ");
+
           notifications.show({
             title: "Cannot Delete",
-            message: `${data.message || 'This discipline has dependencies'}: ${dependencyMessage}`,
+            message: `${data.message || "This discipline has dependencies"}: ${dependencyMessage}`,
             color: "orange",
             autoClose: 5000,
           });
@@ -156,7 +161,9 @@ function DisciplineAcad() {
         } else {
           notifications.show({
             title: "Delete Failed",
-            message: data.error || "Failed to delete discipline. The backend delete API may not be implemented yet.",
+            message:
+              data.error ||
+              "Failed to delete discipline. The backend delete API may not be implemented yet.",
             color: "red",
             autoClose: 4000,
           });
@@ -165,7 +172,8 @@ function DisciplineAcad() {
     } catch (error) {
       notifications.show({
         title: "Network Error",
-        message: "Failed to connect to server. Please check your connection and try again.",
+        message:
+          "Failed to connect to server. Please check your connection and try again.",
         color: "red",
         autoClose: 3000,
       });
@@ -275,8 +283,7 @@ function DisciplineAcad() {
                   <tr
                     key={item.name}
                     style={{
-                      backgroundColor:
-                        index % 2 === 0 ? "#fff" : "#15ABFF1C",
+                      backgroundColor: index % 2 === 0 ? "#fff" : "#15ABFF1C",
                     }}
                   >
                     <td
@@ -333,9 +340,9 @@ function DisciplineAcad() {
                             <IconEdit size="1rem" />
                           </ActionIcon>
                         </Link>
-                        <ActionIcon 
-                          variant="light" 
-                          color="red" 
+                        <ActionIcon
+                          variant="light"
+                          color="red"
                           size="sm"
                           onClick={() => handleDeleteClick(item)}
                         >
@@ -364,30 +371,28 @@ function DisciplineAcad() {
           size="md"
         >
           <Text size="sm" mb="md">
-            Are you sure you want to delete the discipline <strong>"{disciplineToDelete?.name}"</strong> 
-            ({disciplineToDelete?.acronym})?
+            Are you sure you want to delete the discipline{" "}
+            <strong>"{disciplineToDelete?.name}"</strong>(
+            {disciplineToDelete?.acronym})?
           </Text>
-          
+
           <Text size="xs" color="orange" mb="sm">
             ⚠️ <strong>Warning:</strong> This action cannot be undone.
           </Text>
-          
+
           <Text size="xs" color="blue" mb="md">
-            ℹ️ <strong>Note:</strong> If the backend delete API is not yet implemented, 
-            you'll receive a notification about the current status.
+            ℹ️ <strong>Note:</strong> If the backend delete API is not yet
+            implemented, you'll receive a notification about the current status.
           </Text>
-          
+
           <Flex justify="flex-end" mt="md" gap="sm">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setDeleteModalOpened(false)}
             >
               Cancel
             </Button>
-            <Button 
-              color="red" 
-              onClick={handleConfirmDelete}
-            >
+            <Button color="red" onClick={handleConfirmDelete}>
               Delete Discipline
             </Button>
           </Flex>

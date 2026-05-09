@@ -34,10 +34,10 @@ function AdminViewProgrammes() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchFilter, setSearchFilter] = useState("");
-  
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingProgrammeId, setDeletingProgrammeId] = useState(null);
-  
+
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   const refreshProgrammeData = async () => {
@@ -45,16 +45,16 @@ function AdminViewProgrammes() {
       setLoading(true);
       const token = localStorage.getItem("authToken");
       if (!token) throw new Error("Authorization token not found");
-      
+
       localStorage.removeItem("AdminProgrammesCache");
       localStorage.removeItem("AdminProgrammesTimestamp");
       localStorage.setItem("AdminProgrammesCachechange", "true");
-      
+
       const data = await fetchAllProgrammes(token);
       setUgData(data.ug_programmes || []);
       setPgData(data.pg_programmes || []);
       setPhdData(data.phd_programmes || []);
-      
+
       localStorage.setItem("AdminProgrammesCache", JSON.stringify(data));
       localStorage.setItem("AdminProgrammesTimestamp", Date.now().toString());
       localStorage.setItem("AdminProgrammesCachechange", "false");
@@ -129,7 +129,7 @@ function AdminViewProgrammes() {
         ).includes(searchFilter.toLowerCase()),
     );
   };
-  
+
   const renderTable = (data) => {
     const filteredData = applyFilters(data);
     return filteredData.map((element, index) => (
@@ -180,17 +180,8 @@ function AdminViewProgrammes() {
             borderRight: "1px solid #d3d3d3",
           }}
         >
-          <Flex
-            direction="row"
-            justify="center"
-            align="center"
-            gap="md"
-          >
-            <Tooltip
-              label="Edit Programme"
-              position="top"
-              withArrow
-            >
+          <Flex direction="row" justify="center" align="center" gap="md">
+            <Tooltip label="Edit Programme" position="top" withArrow>
               <ActionIcon
                 color="blue"
                 size="lg"
@@ -203,11 +194,7 @@ function AdminViewProgrammes() {
               </ActionIcon>
             </Tooltip>
 
-            <Tooltip
-              label="Delete Programme"
-              position="top"
-              withArrow
-            >
+            <Tooltip label="Delete Programme" position="top" withArrow>
               <ActionIcon
                 color="red"
                 size="lg"
@@ -245,7 +232,7 @@ function AdminViewProgrammes() {
           headers: {
             Authorization: `Token ${token}`,
           },
-        }
+        },
       );
 
       if (response.data.success) {
@@ -254,11 +241,17 @@ function AdminViewProgrammes() {
           message: (
             <div>
               <Text size="sm" mb={8}>
-                <strong>Programme "{response.data.deleted_programme?.name || 'Programme'}" has been removed.</strong>
+                <strong>
+                  Programme "
+                  {response.data.deleted_programme?.name || "Programme"}" has
+                  been removed.
+                </strong>
               </Text>
               {response.data.deleted_programme && (
                 <Text size="xs" color="gray.7">
-                  Category: {response.data.deleted_programme.category || 'N/A'} | Discipline: {response.data.deleted_programme.discipline || 'N/A'}
+                  Category: {response.data.deleted_programme.category || "N/A"}{" "}
+                  | Discipline:{" "}
+                  {response.data.deleted_programme.discipline || "N/A"}
                 </Text>
               )}
             </div>
@@ -266,9 +259,9 @@ function AdminViewProgrammes() {
           color: "green",
           autoClose: 6000,
           style: {
-            backgroundColor: '#d4edda',
-            borderColor: '#c3e6cb',
-            color: '#155724',
+            backgroundColor: "#d4edda",
+            borderColor: "#c3e6cb",
+            color: "#155724",
           },
         });
 
@@ -284,20 +277,24 @@ function AdminViewProgrammes() {
 
       if (error.response) {
         const errorData = error.response.data;
-        
+
         if (error.response.status === 400) {
           if (errorData?.validation_error === "programme_has_batches") {
             errorTitle = "👥 Cannot Delete - Batches Exist";
-            
+
             notifications.show({
               title: errorTitle,
               message: (
                 <div>
                   <Text size="sm" mb={8}>
-                    <strong>{errorData.message || "This programme has batches associated with it. Please remove all batches first."}</strong>
+                    <strong>
+                      {errorData.message ||
+                        "This programme has batches associated with it. Please remove all batches first."}
+                    </strong>
                   </Text>
                   <Text size="xs" color="gray.7">
-                    Batch count: {errorData.batch_count || "Unknown"}<br/>
+                    Batch count: {errorData.batch_count || "Unknown"}
+                    <br />
                     You must remove all batches before deleting this programme.
                   </Text>
                 </div>
@@ -305,43 +302,46 @@ function AdminViewProgrammes() {
               color: "orange",
               autoClose: 10000,
               style: {
-                backgroundColor: '#fff3cd',
-                borderColor: '#ffeaa7',
-                color: '#856404',
+                backgroundColor: "#fff3cd",
+                borderColor: "#ffeaa7",
+                color: "#856404",
               },
             });
             setShowDeleteConfirm(false);
             setDeletingProgrammeId(null);
             return;
-            
           } else if (errorData?.validation_error === "programme_has_students") {
             errorTitle = "🚫 Cannot Delete - Students Enrolled";
-            
+
             notifications.show({
               title: errorTitle,
               message: (
                 <div>
                   <Text size="sm" mb={8}>
-                    <strong>{errorData.message || "This programme has students enrolled."}</strong>
+                    <strong>
+                      {errorData.message ||
+                        "This programme has students enrolled."}
+                    </strong>
                   </Text>
                   <Text size="xs" color="gray.7">
-                    Student count: {errorData.student_count || "Unknown"}<br/>
-                    All students must be transferred or graduated before deleting this programme.
+                    Student count: {errorData.student_count || "Unknown"}
+                    <br />
+                    All students must be transferred or graduated before
+                    deleting this programme.
                   </Text>
                 </div>
               ),
               color: "red",
               autoClose: 12000,
               style: {
-                backgroundColor: '#f8d7da',
-                borderColor: '#f5c6cb',
-                color: '#721c24',
+                backgroundColor: "#f8d7da",
+                borderColor: "#f5c6cb",
+                color: "#721c24",
               },
             });
             setShowDeleteConfirm(false);
             setDeletingProgrammeId(null);
             return;
-            
           } else {
             errorMessage =
               errorData?.message ||
@@ -367,7 +367,7 @@ function AdminViewProgrammes() {
         color: "red",
         autoClose: 6000,
       });
-      
+
       setShowDeleteConfirm(false);
       setDeletingProgrammeId(null);
     }
@@ -396,7 +396,13 @@ function AdminViewProgrammes() {
       withNormalizeCSS
     >
       <Container style={{ padding: "20px", maxWidth: "100%" }}>
-        <Flex justify="space-between" align="center" wrap="wrap" gap="sm" mb={10}>
+        <Flex
+          justify="space-between"
+          align="center"
+          wrap="wrap"
+          gap="sm"
+          mb={10}
+        >
           <Flex gap="sm" wrap="wrap">
             <Button
               variant={activeSection === "ug" ? "filled" : "outline"}
@@ -417,7 +423,7 @@ function AdminViewProgrammes() {
               PhD: Doctor of Philosophy
             </Button>
           </Flex>
-          
+
           <Flex gap="sm" align="center">
             <TextInput
               placeholder="Search by Programme or Discipline"
@@ -442,8 +448,7 @@ function AdminViewProgrammes() {
         <Grid>
           {isMobile && (
             <Grid.Col span={12}>
-              <ScrollArea>
-              </ScrollArea>
+              <ScrollArea></ScrollArea>
             </Grid.Col>
           )}
           <Grid.Col span={12}>
@@ -638,15 +643,17 @@ function AdminViewProgrammes() {
         >
           <Stack spacing="md">
             {(() => {
-              const programmeToDelete = [...ugData, ...pgData, ...phdData]
-                .find(programme => programme.id === deletingProgrammeId);
-              
+              const programmeToDelete = [...ugData, ...pgData, ...phdData].find(
+                (programme) => programme.id === deletingProgrammeId,
+              );
+
               return (
                 <>
                   <Text>
-                    Are you sure you want to delete this programme? This action cannot be undone.
+                    Are you sure you want to delete this programme? This action
+                    cannot be undone.
                   </Text>
-                  
+
                   {programmeToDelete && (
                     <Card withBorder p="md" bg="gray.1">
                       <Text size="sm" weight={500} mb={8}>
@@ -656,19 +663,27 @@ function AdminViewProgrammes() {
                         <strong>Name:</strong> {programmeToDelete.name}
                       </Text>
                       <Text size="sm">
-                        <strong>Discipline:</strong> {programmeToDelete.discipline__name}
+                        <strong>Discipline:</strong>{" "}
+                        {programmeToDelete.discipline__name}
                       </Text>
                       <Text size="sm">
-                        <strong>Type:</strong> {programmeToDelete.programme || activeSection.toUpperCase()}
+                        <strong>Type:</strong>{" "}
+                        {programmeToDelete.programme ||
+                          activeSection.toUpperCase()}
                       </Text>
                     </Card>
                   )}
 
-                  <Alert icon={<Warning size={16} />} title="Deletion Restrictions" color="orange">
+                  <Alert
+                    icon={<Warning size={16} />}
+                    title="Deletion Restrictions"
+                    color="orange"
+                  >
                     <Text size="sm">
-                      • Cannot delete if this programme has associated batches<br/>
-                      • Cannot delete if students are enrolled in this programme<br/>
-                      • All related data must be removed before deletion
+                      • Cannot delete if this programme has associated batches
+                      <br />
+                      • Cannot delete if students are enrolled in this programme
+                      <br />• All related data must be removed before deletion
                     </Text>
                   </Alert>
                 </>
@@ -682,8 +697,8 @@ function AdminViewProgrammes() {
               >
                 Cancel
               </Button>
-              <Button 
-                color="red" 
+              <Button
+                color="red"
                 onClick={handleDeleteProgramme}
                 leftSection={<Trash size={16} />}
               >
@@ -692,7 +707,6 @@ function AdminViewProgrammes() {
             </Group>
           </Stack>
         </Modal>
-
       </Container>
     </MantineProvider>
   );

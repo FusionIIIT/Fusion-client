@@ -95,7 +95,7 @@ function ViewInward() {
           subject: data.data.proposal?.subject || "",
           description: data.data.proposal?.description || "",
           sentBy: data.data.tracking?.current_id || "",
-          sentByDesignation:data.data.tracking?.current_design || "",
+          sentByDesignation: data.data.tracking?.current_design || "",
           receivedBy: data.data.tracking?.receive_id || "",
           receivedByDesignation: data.data.tracking?.receive_design || "",
           remarks: data.data.tracking?.remarks || "",
@@ -314,7 +314,8 @@ function ViewInward() {
               {/* <Group position="apart" style={{ marginTop: "10px" }}> */}
               <Text style={textStyle}>
                 {" "}
-                <b>Sent By:</b> {noteData.sentBy} - {noteData.sentByDesignation}, {formatDateWithRounding(noteData.forwarddate)}
+                <b>Sent By:</b> {noteData.sentBy} - {noteData.sentByDesignation}
+                , {formatDateWithRounding(noteData.forwarddate)}
               </Text>
             </Box>
             <Box
@@ -387,7 +388,8 @@ function ViewInward() {
           <hr style={{ width: "80%" }} />
 
           <Text size="lg" padding="lg" className="course-title">
-            Course Proposal Form by - {noteData.createdBy} - {noteData.designation}
+            Course Proposal Form by - {noteData.createdBy} -{" "}
+            {noteData.designation}
           </Text>
 
           <Table className="course-table" striped highlightOnHover>
@@ -705,9 +707,7 @@ function ViewInward() {
                 <td style={{ color: "blue", fontWeight: "bold" }}>
                   References & Books
                 </td>
-                <td>
-                  {courseDetails.references}
-                </td>
+                <td>{courseDetails.references}</td>
               </tr>
             </tbody>
           </Table>

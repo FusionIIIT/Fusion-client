@@ -49,16 +49,22 @@ export default function AnnounceResult() {
         headers: { Authorization: `Token ${token}` },
       })
       .then(({ data }) => {
-        setAnnouncements(Array.isArray(data.announcements) ? data.announcements : []);
+        setAnnouncements(
+          Array.isArray(data.announcements) ? data.announcements : [],
+        );
         setBatchOptions(
           Array.isArray(data.batches)
             ? data.batches.map((b) => ({ value: String(b.id), label: b.label }))
-            : []
+            : [],
         );
       })
       .catch((err) => {
         setError("Error fetching data: " + err.message);
-        showNotification({ title: "Error", message: err.message, color: "red" });
+        showNotification({
+          title: "Error",
+          message: err.message,
+          color: "red",
+        });
       })
       .finally(() => setLoading(false));
   }, [userRole]);
@@ -70,7 +76,7 @@ export default function AnnounceResult() {
   const isDuplicate = announcements.some(
     (a) =>
       String(a.batch?.id) === formData.batch &&
-      String(a.semester) === formData.semester
+      String(a.semester) === formData.semester,
   );
 
   const handleCreateAnnouncement = async (e) => {
@@ -93,18 +99,26 @@ export default function AnnounceResult() {
           batch: formData.batch,
           semester: parseInt(formData.semester, 10),
         },
-        { headers: { Authorization: `Token ${token}` } }
+        { headers: { Authorization: `Token ${token}` } },
       );
 
       const ann = response.data;
       if (response.status === 201) {
         setAnnouncements((prev) => [ann, ...prev]);
-        showNotification({ title: "Success", message: "Announcement created.", color: "green" });
+        showNotification({
+          title: "Success",
+          message: "Announcement created.",
+          color: "green",
+        });
       } else {
         setAnnouncements((prev) =>
-          prev.map((a) => (a.id === ann.id ? ann : a))
+          prev.map((a) => (a.id === ann.id ? ann : a)),
         );
-        showNotification({ title: "Notice", message: "Announcement already exists.", color: "blue" });
+        showNotification({
+          title: "Notice",
+          message: "Announcement already exists.",
+          color: "blue",
+        });
       }
       setFormData({ batch: "", semester: "" });
     } catch (err) {
@@ -121,12 +135,12 @@ export default function AnnounceResult() {
       await axios.post(
         update_result_announcement,
         { id, announced: !currentStatus, Role: userRole },
-        { headers: { Authorization: `Token ${token}` } }
+        { headers: { Authorization: `Token ${token}` } },
       );
       setAnnouncements((prev) =>
         prev.map((item) =>
-          item.id === id ? { ...item, announced: !currentStatus } : item
-        )
+          item.id === id ? { ...item, announced: !currentStatus } : item,
+        ),
       );
       showNotification({
         title: "Success",
@@ -140,7 +154,7 @@ export default function AnnounceResult() {
   };
 
   const filteredAnnouncements = announcements.filter((item) =>
-    item.batch?.label?.toLowerCase().includes(searchQuery.toLowerCase())
+    item.batch?.label?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   if (loading)
@@ -191,7 +205,11 @@ export default function AnnounceResult() {
             </SimpleGrid>
 
             <Group position="right">
-              <Button type="submit" variant="outline" disabled={loading || isDuplicate}>
+              <Button
+                type="submit"
+                variant="outline"
+                disabled={loading || isDuplicate}
+              >
                 {isDuplicate ? "Already Exists" : "Create Announcement"}
               </Button>
             </Group>

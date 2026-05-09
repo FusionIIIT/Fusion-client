@@ -141,7 +141,7 @@ export const fetchBatchesSync = async () => {
     );
 
     if (response.data.success) {
-      const mappedBatches = response.data.batches.map(batch => ({
+      const mappedBatches = response.data.batches.map((batch) => ({
         id: batch.batch_id,
         name: batch.name,
         programme: batch.name,
@@ -159,17 +159,17 @@ export const fetchBatchesSync = async () => {
         curriculum_name: batch.curriculum,
         curriculumId: batch.curriculum_id,
         curriculum_id: batch.curriculum_id,
-        status: batch.status
+        status: batch.status,
       }));
 
       return {
         runningBatches: mappedBatches,
         finishedBatches: [],
         filter: response.data.filter || {},
-        total_batches: response.data.total_batches
+        total_batches: response.data.total_batches,
       };
     } else {
-      throw new Error(response.data.message || 'Failed to sync batch data');
+      throw new Error(response.data.message || "Failed to sync batch data");
     }
   } catch (error) {
     throw error;
@@ -640,13 +640,16 @@ export const addSingleStudent = async (studentData, programmeType) => {
       aadhar_number: studentData.aadharNumber || studentData.aadhar_number,
       parent_email: studentData.parentEmail || studentData.parent_email,
       blood_group: studentData.bloodGroup || studentData.blood_group,
-      blood_group_remarks: studentData.bloodGroupRemarks || studentData.blood_group_remarks,
+      blood_group_remarks:
+        studentData.bloodGroupRemarks || studentData.blood_group_remarks,
       country: studentData.country,
       nationality: studentData.nationality,
       admission_mode: studentData.admissionMode || studentData.admission_mode,
-      admission_mode_remarks: studentData.admissionModeRemarks || studentData.admission_mode_remarks,
+      admission_mode_remarks:
+        studentData.admissionModeRemarks || studentData.admission_mode_remarks,
       pwd_category: studentData.pwdCategory || studentData.pwd_category,
-      pwd_category_remarks: studentData.pwdCategoryRemarks || studentData.pwd_category_remarks,
+      pwd_category_remarks:
+        studentData.pwdCategoryRemarks || studentData.pwd_category_remarks,
       income_group: studentData.incomeGroup || studentData.income_group,
       income: studentData.income,
       alternateEmail: studentData.alternateEmail || studentData.personal_email,

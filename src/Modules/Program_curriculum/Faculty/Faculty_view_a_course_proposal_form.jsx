@@ -8,9 +8,11 @@ function Faculty_view_a_course_proposal_form() {
   // Get the 'id' query parameter
   const id = searchParams.get("proposalid");
   const update = searchParams.get("update");
-  console.log(update)
+  console.log(update);
   const courseProposals = JSON.parse(
-    sessionStorage.getItem(update === "0" ? "courseProposals" : "updateProposals")
+    sessionStorage.getItem(
+      update === "0" ? "courseProposals" : "updateProposals",
+    ),
   );
   const courseProposal = courseProposals.find(
     (proposal) => proposal.pk === parseInt(id, 10),
@@ -58,7 +60,7 @@ function Faculty_view_a_course_proposal_form() {
       style={{ display: "flex", flexDirection: "column" }}
     >
       {/* Course Details Card */}
-      <div style={{ display: "flex",width: "100%", justifyContent: "center" }}>
+      <div style={{ display: "flex", width: "100%", justifyContent: "center" }}>
         <Card shadow="sm" padding="lg" className="course-card">
           <Text size="lg" weight={700} className="course-title">
             {courseProposal.fields.code} - {courseProposal.fields.name}
@@ -72,7 +74,9 @@ function Faculty_view_a_course_proposal_form() {
                 <td style={{ width: "50%" }}>{courseProposal.fields.code}</td>
               </tr>
               <tr>
-                <td style={{ color: "blue", fontWeight: "bold" }}>Course Name</td>
+                <td style={{ color: "blue", fontWeight: "bold" }}>
+                  Course Name
+                </td>
                 <td>{courseProposal.fields.name}</td>
               </tr>
               {/* <tr>
@@ -84,30 +88,67 @@ function Faculty_view_a_course_proposal_form() {
               <tr>
                 <td style={{ padding: "0" }}>
                   <tr>
-                    <td rowSpan="5" style={{ width: "10%", color: "blue", fontWeight: "bold" }}>
+                    <td
+                      rowSpan="5"
+                      style={{
+                        width: "10%",
+                        color: "blue",
+                        fontWeight: "bold",
+                      }}
+                    >
                       Contact Hours
                     </td>
-                    <td style={{ width: "10%", color: "blue", fontWeight: "bold" }}>
+                    <td
+                      style={{
+                        width: "10%",
+                        color: "blue",
+                        fontWeight: "bold",
+                      }}
+                    >
                       Lecture
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ width: "15%", color: "blue", fontWeight: "bold" }}>
+                    <td
+                      style={{
+                        width: "15%",
+                        color: "blue",
+                        fontWeight: "bold",
+                      }}
+                    >
                       Tutorial
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ width: "15%", color: "blue", fontWeight: "bold" }}>
+                    <td
+                      style={{
+                        width: "15%",
+                        color: "blue",
+                        fontWeight: "bold",
+                      }}
+                    >
                       Lab
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ width: "15%", color: "blue", fontWeight: "bold" }}>
+                    <td
+                      style={{
+                        width: "15%",
+                        color: "blue",
+                        fontWeight: "bold",
+                      }}
+                    >
                       Discussion
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ width: "15%", color: "blue", fontWeight: "bold" }}>
+                    <td
+                      style={{
+                        width: "15%",
+                        color: "blue",
+                        fontWeight: "bold",
+                      }}
+                    >
                       Project
                     </td>
                   </tr>
@@ -149,15 +190,34 @@ function Faculty_view_a_course_proposal_form() {
               <tr>
                 <td style={{ padding: "0" }}>
                   <tr>
-                    <td rowSpan="2" style={{ width: "10%", color: "blue", fontWeight: "bold" }}>
+                    <td
+                      rowSpan="2"
+                      style={{
+                        width: "10%",
+                        color: "blue",
+                        fontWeight: "bold",
+                      }}
+                    >
                       Pre-requisites
                     </td>
-                    <td style={{ width: "10%", color: "blue", fontWeight: "bold" }}>
+                    <td
+                      style={{
+                        width: "10%",
+                        color: "blue",
+                        fontWeight: "bold",
+                      }}
+                    >
                       Info
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ width: "15%", color: "blue", fontWeight: "bold" }}>
+                    <td
+                      style={{
+                        width: "15%",
+                        color: "blue",
+                        fontWeight: "bold",
+                      }}
+                    >
                       Courses
                     </td>
                   </tr>
@@ -184,40 +244,89 @@ function Faculty_view_a_course_proposal_form() {
               <tr>
                 <td style={{ padding: "0" }}>
                   <tr>
-                    <td rowSpan="7" style={{ width: "10%", color: "blue", fontWeight: "bold" }}>
+                    <td
+                      rowSpan="7"
+                      style={{
+                        width: "10%",
+                        color: "blue",
+                        fontWeight: "bold",
+                      }}
+                    >
                       Evaluation Schema
                     </td>
-                    <td style={{ width: "10%", color: "blue", fontWeight: "bold" }}>
+                    <td
+                      style={{
+                        width: "10%",
+                        color: "blue",
+                        fontWeight: "bold",
+                      }}
+                    >
                       Quiz-1
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ width: "15%", color: "blue", fontWeight: "bold" }}>
+                    <td
+                      style={{
+                        width: "15%",
+                        color: "blue",
+                        fontWeight: "bold",
+                      }}
+                    >
                       Mid-Sem-Exam
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ width: "15%", color: "blue", fontWeight: "bold" }}>
+                    <td
+                      style={{
+                        width: "15%",
+                        color: "blue",
+                        fontWeight: "bold",
+                      }}
+                    >
                       Quiz-2
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ width: "15%", color: "blue", fontWeight: "bold" }}>
+                    <td
+                      style={{
+                        width: "15%",
+                        color: "blue",
+                        fontWeight: "bold",
+                      }}
+                    >
                       End-Sem-Exam
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ width: "15%", color: "blue", fontWeight: "bold" }}>
+                    <td
+                      style={{
+                        width: "15%",
+                        color: "blue",
+                        fontWeight: "bold",
+                      }}
+                    >
                       Project
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ width: "15%", color: "blue", fontWeight: "bold" }}>
+                    <td
+                      style={{
+                        width: "15%",
+                        color: "blue",
+                        fontWeight: "bold",
+                      }}
+                    >
                       Lab
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ width: "15%", color: "blue", fontWeight: "bold" }}>
+                    <td
+                      style={{
+                        width: "15%",
+                        color: "blue",
+                        fontWeight: "bold",
+                      }}
+                    >
                       Course Attendance
                     </td>
                   </tr>
@@ -261,7 +370,9 @@ function Faculty_view_a_course_proposal_form() {
               </tr>
 
               <tr>
-                <td style={{ color: "blue", fontWeight: "bold" }}>References & Books</td>
+                <td style={{ color: "blue", fontWeight: "bold" }}>
+                  References & Books
+                </td>
                 <td>{courseProposal.fields.ref_books}</td>
               </tr>
             </tbody>

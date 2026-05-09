@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
-import { Box, Group, Loader, Text } from "@mantine/core";
-import axios from "axios";
-import StudentInfoCard from "../../components/students/StudentInfoCard";
+import { Alert, Box, Group, Loader, Text } from "@mantine/core";
+import StudentInfoCard from "../../components/cards/StudentInfoCard";
 import StudentInfo from "../all-actors/StudentInfo";
-import { getStudentsInfo } from "../../../../routes/hostelManagementRoutes"; // Adjust this import path as needed
+import { studentService } from "../../services";
+import { getApiErrorMessage } from "../../utils";
 
 export default function StudentDashboard() {
   const [allStudents, setAllStudents] = useState([]);
@@ -12,42 +12,44 @@ export default function StudentDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const userRollNo = useSelector((state) => state.user.roll_no);
+  const requestRef = useRef(0);
 
   const fetchAllStudentsInfo = async () => {
-    const token = localStorage.getItem("authToken");
-
-    if (!token) {
-      setError("Authentication token not found. Please login again.");
-      setLoading(false);
-      return;
-    }
+    const requestId = requestRef.current + 1;
+    requestRef.current = requestId;
 
     try {
       setLoading(true);
-      const response = await axios.get(getStudentsInfo, {
-        headers: { Authorization: `Token ${token}` },
-      });
+      const response = await studentService.getStudentsInfo();
+      if (requestId !== requestRef.current) return;
+
       setAllStudents(response.data);
 
       // Filter to find the current student
       const currentStudentData = response.data.find(
         (student) => student.id__user__username === userRollNo,
       );
-      console.log(response.data);
-      console.log(currentStudentData);
+
       if (currentStudentData) {
         setCurrentStudent(currentStudentData);
+        setError(null);
       } else {
         setError("Current student information not found.");
       }
     } catch (err) {
-      console.error("Error fetching students info:", err);
+      if (requestId !== requestRef.current) return;
       setError(
-        err.response?.data?.message ||
+        getApiErrorMessage(
+          err,
           "Failed to fetch student information. Please try again later.",
+        ),
       );
+      setAllStudents([]);
+      setCurrentStudent(null);
     } finally {
-      setLoading(false);
+      if (requestId === requestRef.current) {
+        setLoading(false);
+      }
     }
   };
   useEffect(() => {
@@ -56,6 +58,11 @@ export default function StudentDashboard() {
 
   return (
     <Box style={{ overflow: "hidden" }}>
+      {error && (
+        <Alert title="Error" color="red" mb="sm">
+          {error}
+        </Alert>
+      )}
       <Group align="flex-start" style={{ height: "78vh" }}>
         <Box style={{ height: "100%" }}>
           {loading ? (

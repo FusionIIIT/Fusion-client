@@ -8,7 +8,8 @@ import Dashboard from "./Modules/Dashboard/dashboardNotifications";
 import Profile from "./Modules/Dashboard/StudentProfile/profilePage";
 import LoginPage from "./pages/login";
 import ForgotPassword from "./pages/forgotPassword";
-import AcademicPage from "./Modules/Academic/index";
+// import AcademicPage from "./Modules/Academic/index";
+import HostelManagement from "./Modules/Hostel-Management/index";
 import ValidateAuth from "./helper/validateauth";
 import FacultyProfessionalProfile from "./Modules/facultyProfessionalProfile/facultyProfessionalProfile";
 import InactivityHandler from "./helper/inactivityhandler";
@@ -46,19 +47,27 @@ export default function App() {
             </Layout>
           }
         />
-        <Route
-          path="/academics"
-          element={
-            <Layout>
-              <AcademicPage />
-            </Layout>
-          }
-        />
+        {/* <Route
+            path="/academics"
+            element={
+              <Layout>
+                <AcademicPage />
+              </Layout>
+            }
+          /> */}
         <Route
           path="/profile"
           element={
             <Layout>
               <Profile />
+            </Layout>
+          }
+        />
+        <Route
+          path="/hostelmanagement"
+          element={
+            <Layout>
+              <HostelManagement />
             </Layout>
           }
         />

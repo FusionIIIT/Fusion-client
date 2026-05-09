@@ -22,9 +22,9 @@ export const showSuccessNotification = ({
     color: "green",
     autoClose,
     style: {
-      backgroundColor: '#d4edda',
-      borderColor: '#c3e6cb',
-      color: '#155724',
+      backgroundColor: "#d4edda",
+      borderColor: "#c3e6cb",
+      color: "#155724",
     },
   });
 };
@@ -46,9 +46,9 @@ export const showErrorNotification = ({
     color: "red",
     autoClose,
     style: {
-      backgroundColor: '#f8d7da',
-      borderColor: '#f5c6cb',
-      color: '#721c24',
+      backgroundColor: "#f8d7da",
+      borderColor: "#f5c6cb",
+      color: "#721c24",
     },
   });
 };
@@ -70,9 +70,9 @@ export const showWarningNotification = ({
     color: "orange",
     autoClose,
     style: {
-      backgroundColor: '#fff3cd',
-      borderColor: '#ffeaa7',
-      color: '#856404',
+      backgroundColor: "#fff3cd",
+      borderColor: "#ffeaa7",
+      color: "#856404",
     },
   });
 };
@@ -128,7 +128,11 @@ export const showDeleteFailureNotification = (itemType) => {
 };
 
 // API Error handling with specific actions
-export const showApiErrorNotification = (error, itemType = "item", refreshCallback = null) => {
+export const showApiErrorNotification = (
+  error,
+  itemType = "item",
+  refreshCallback = null,
+) => {
   let title, message, color, autoClose;
 
   if (error.response) {
@@ -138,40 +142,45 @@ export const showApiErrorNotification = (error, itemType = "item", refreshCallba
     switch (status) {
       case 404:
         title = `🔍 ${itemType} Not Found`;
-        message = errorData?.message || `The ${itemType.toLowerCase()} you're trying to access doesn't exist.`;
+        message =
+          errorData?.message ||
+          `The ${itemType.toLowerCase()} you're trying to access doesn't exist.`;
         color = "orange";
         autoClose = 8000;
-        
+
         // Auto-refresh if callback provided
         if (refreshCallback) {
           setTimeout(refreshCallback, 1000);
         }
         break;
-        
+
       case 400:
         title = `❌ Invalid ${itemType} Operation`;
-        message = errorData?.message || `The ${itemType.toLowerCase()} operation is not valid.`;
+        message =
+          errorData?.message ||
+          `The ${itemType.toLowerCase()} operation is not valid.`;
         color = "red";
         autoClose = 7000;
         break;
-        
+
       case 403:
         title = `🚫 Permission Denied`;
         message = `You don't have permission to perform this ${itemType.toLowerCase()} operation.`;
         color = "red";
         autoClose = 6000;
         break;
-        
+
       case 500:
         title = `🛠️ Server Error`;
         message = `Server error occurred while processing ${itemType.toLowerCase()}.`;
         color = "red";
         autoClose = 8000;
         break;
-        
+
       default:
         title = `❌ ${itemType} Operation Failed`;
-        message = errorData?.message || `Failed to process ${itemType.toLowerCase()}.`;
+        message =
+          errorData?.message || `Failed to process ${itemType.toLowerCase()}.`;
         color = "red";
         autoClose = 6000;
     }
@@ -199,9 +208,9 @@ export const showApiErrorNotification = (error, itemType = "item", refreshCallba
     color,
     autoClose,
     style: {
-      backgroundColor: color === "orange" ? '#fff3cd' : '#f8d7da',
-      borderColor: color === "orange" ? '#ffeaa7' : '#f5c6cb',
-      color: color === "orange" ? '#856404' : '#721c24',
+      backgroundColor: color === "orange" ? "#fff3cd" : "#f8d7da",
+      borderColor: color === "orange" ? "#ffeaa7" : "#f5c6cb",
+      color: color === "orange" ? "#856404" : "#721c24",
     },
   });
 };
@@ -219,25 +228,28 @@ export const showVersioningNotification = ({
   changedFields = [],
   autoClose = 7000,
 }) => {
-  const versionMessage = oldVersion && newVersion && oldVersion !== newVersion
-    ? `Version ${oldVersion} → ${newVersion}`
-    : "Updated successfully";
+  const versionMessage =
+    oldVersion && newVersion && oldVersion !== newVersion
+      ? `Version ${oldVersion} → ${newVersion}`
+      : "Updated successfully";
 
   notifications.show({
     title: "✅ Course Updated Successfully!",
     message: (
       <div>
         <Text size="sm" mb={8}>
-          <strong>Course "{entityName}" ({entityCode}) has been updated.</strong>
+          <strong>
+            Course "{entityName}" ({entityCode}) has been updated.
+          </strong>
         </Text>
       </div>
     ),
     color: "green",
     autoClose,
     style: {
-      backgroundColor: '#d4edda',
-      borderColor: '#c3e6cb',
-      color: '#155724',
+      backgroundColor: "#d4edda",
+      borderColor: "#c3e6cb",
+      color: "#155724",
     },
   });
 };

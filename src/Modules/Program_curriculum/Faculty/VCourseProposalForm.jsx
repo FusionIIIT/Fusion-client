@@ -32,7 +32,9 @@ function VCourseProposalForm() {
   const update = searchParams.get("update");
 
   const courseProposals = JSON.parse(
-    sessionStorage.getItem(update === "0" ? "courseProposals" : "updateProposals")
+    sessionStorage.getItem(
+      update === "0" ? "courseProposals" : "updateProposals",
+    ),
   );
   const courseProposal = courseProposals.find(
     (proposal) => proposal.pk === parseInt(id, 10),

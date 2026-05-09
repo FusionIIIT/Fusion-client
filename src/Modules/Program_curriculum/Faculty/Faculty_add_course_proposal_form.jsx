@@ -15,9 +15,7 @@ import {
 import { useForm } from "@mantine/form";
 import { useNavigate, useParams } from "react-router-dom";
 import { notifications } from "@mantine/notifications";
-import {
-  fetchAllCourses,
-} from "../api/api";
+import { fetchAllCourses } from "../api/api";
 import { host } from "../../../routes/globalRoutes";
 
 function Faculty_add_course_proposal_form() {
@@ -51,11 +49,16 @@ function Faculty_add_course_proposal_form() {
       Description: "",
     },
     validate: {
-      courseName: (value) => value?.trim().length === 0 ? "Course name is required" : null,
-      courseCode: (value) => value?.trim().length === 0 ? "Course code is required" : null,
-      discipline: (value) => value?.trim().length === 0 ? "Discipline is required" : null,
-      syllabus: (value) => value?.trim().length === 0 ? "Syllabus is required" : null,
-      references: (value) => value?.trim().length === 0 ? "References are required" : null,
+      courseName: (value) =>
+        value?.trim().length === 0 ? "Course name is required" : null,
+      courseCode: (value) =>
+        value?.trim().length === 0 ? "Course code is required" : null,
+      discipline: (value) =>
+        value?.trim().length === 0 ? "Discipline is required" : null,
+      syllabus: (value) =>
+        value?.trim().length === 0 ? "Syllabus is required" : null,
+      references: (value) =>
+        value?.trim().length === 0 ? "References are required" : null,
     },
   });
   const role = useSelector((state) => state.user.role);
@@ -143,13 +146,16 @@ function Faculty_add_course_proposal_form() {
 
       if (response.ok) {
         const data = await response.json();
-        
+
         notifications.show({
           title: "✅ Course Proposal Added Successfully!",
           message: (
             <div>
               <Text size="sm" mb={8}>
-                <strong>Course proposal "{values.courseName}" ({values.courseCode}) has been submitted.</strong>
+                <strong>
+                  Course proposal "{values.courseName}" ({values.courseCode})
+                  has been submitted.
+                </strong>
               </Text>
               <Text size="xs" color="gray.7">
                 Credits: {values.courseCredit} | Version: {values.courseVersion}
@@ -159,25 +165,27 @@ function Faculty_add_course_proposal_form() {
           color: "green",
           autoClose: 5000,
           style: {
-            backgroundColor: '#d4edda',
-            borderColor: '#c3e6cb',
-            color: '#155724',
+            backgroundColor: "#d4edda",
+            borderColor: "#c3e6cb",
+            color: "#155724",
           },
         });
-        
+
         form.reset();
         setTimeout(() => {
           navigate("/programme_curriculum/faculty_view_course_proposal");
         }, 1500);
       } else {
         const errorText = await response.text();
-        
+
         notifications.show({
           title: "❌ Failed to Add Course Proposal",
           message: (
             <div>
               <Text size="sm" mb={8}>
-                <strong>Unable to submit course proposal. Please try again.</strong>
+                <strong>
+                  Unable to submit course proposal. Please try again.
+                </strong>
               </Text>
               <Text size="xs" color="gray.7">
                 Please check your inputs and try again.
@@ -187,9 +195,9 @@ function Faculty_add_course_proposal_form() {
           color: "red",
           autoClose: 7000,
           style: {
-            backgroundColor: '#f8d7da',
-            borderColor: '#f5c6cb',
-            color: '#721c24',
+            backgroundColor: "#f8d7da",
+            borderColor: "#f5c6cb",
+            color: "#721c24",
           },
         });
       }
@@ -199,7 +207,9 @@ function Faculty_add_course_proposal_form() {
         message: (
           <div>
             <Text size="sm" mb={8}>
-              <strong>Connection error occurred while submitting proposal.</strong>
+              <strong>
+                Connection error occurred while submitting proposal.
+              </strong>
             </Text>
             <Text size="xs" color="gray.7">
               Please check your internet connection and try again.
@@ -209,9 +219,9 @@ function Faculty_add_course_proposal_form() {
         color: "red",
         autoClose: 7000,
         style: {
-          backgroundColor: '#f8d7da',
-          borderColor: '#f5c6cb',
-          color: '#721c24',
+          backgroundColor: "#f8d7da",
+          borderColor: "#f5c6cb",
+          color: "#721c24",
         },
       });
     }

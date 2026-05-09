@@ -151,27 +151,24 @@ function Admin_view_a_courses() {
               >
                 <thead>
                   <tr>
-                    {[
-                      "Code",
-                      "Course Name",
-                      "Version",
-                      "Credits",
-                      "Edit",
-                    ].map((header, index) => (
-                      <th
-                        key={index}
-                        style={{
-                          padding: "15px 20px",
-                          backgroundColor: "#C5E2F6",
-                          color: "#3498db",
-                          fontSize: "16px",
-                          textAlign: "center",
-                          borderRight: index < 4 ? "1px solid #d3d3d3" : "none",
-                        }}
-                      >
-                        {header}
-                      </th>
-                    ))}
+                    {["Code", "Course Name", "Version", "Credits", "Edit"].map(
+                      (header, index) => (
+                        <th
+                          key={index}
+                          style={{
+                            padding: "15px 20px",
+                            backgroundColor: "#C5E2F6",
+                            color: "#3498db",
+                            fontSize: "16px",
+                            textAlign: "center",
+                            borderRight:
+                              index < 4 ? "1px solid #d3d3d3" : "none",
+                          }}
+                        >
+                          {header}
+                        </th>
+                      ),
+                    )}
                   </tr>
                 </thead>
                 <tbody>

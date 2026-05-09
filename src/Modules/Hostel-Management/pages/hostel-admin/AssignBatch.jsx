@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import {
   Box,
   Select,
@@ -14,12 +13,7 @@ import {
   Container,
 } from "@mantine/core";
 import { Upload } from "@phosphor-icons/react";
-import {
-  getBatches,
-  assign_batch,
-} from "../../../../routes/hostelManagementRoutes";
-
-axios.defaults.withXSRFToken = true;
+import { adminService } from "../../services";
 
 export default function AssignBatch() {
   const [allHall, setHalls] = useState([]);
@@ -48,48 +42,25 @@ export default function AssignBatch() {
   const academicSessions = generateAcademicSessions();
 
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
-
-    if (!token) {
-      setNotification({
-        opened: true,
-        message: "Authentication token not found. Please login again.",
-        color: "red",
-      });
-      return;
-    }
-
-    axios
-      .get(getBatches, {
-        headers: {
-          Authorization: `Token ${token}`,
-        },
-      })
-      .then((response) => {
+    const loadBatches = async () => {
+      try {
+        const response = await adminService.getBatches();
         const { halls } = response.data;
         setHalls(halls.map((h) => ({ value: h.hall_id, label: h.hall_name })));
-      })
-      .catch(() => {
+      } catch (error) {
         setNotification({
           opened: true,
           message: "Failed to fetch data. Please try again.",
           color: "red",
         });
-      });
+      }
+    };
+
+    loadBatches();
   }, []);
 
   const handleUpload = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem("authToken");
-
-    if (!token) {
-      setNotification({
-        opened: true,
-        message: "Authentication token not found. Please login again.",
-        color: "red",
-      });
-      return;
-    }
 
     if (!selectedHall || !batchInput || !file || !academicSession) {
       setNotification({
@@ -109,13 +80,7 @@ export default function AssignBatch() {
     formData.append("file", file);
 
     try {
-      const response = await fetch(assign_batch, {
-        method: "POST",
-        headers: { Authorization: `Token ${token}` },
-        body: formData,
-      });
-
-      if (!response.ok) throw new Error("Upload failed");
+      await adminService.assignBatch(formData);
 
       setFile(null);
       setNotification({

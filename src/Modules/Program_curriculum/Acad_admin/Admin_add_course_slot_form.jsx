@@ -213,8 +213,10 @@ function Admin_add_course_slot_form() {
 
       if (response.status === 200) {
         // onSuccess?.();
-        navigate(`/programme_curriculum/view_curriculum?curriculum=${curriculumid}`);
-      }      
+        navigate(
+          `/programme_curriculum/view_curriculum?curriculum=${curriculumid}`,
+        );
+      }
     } catch (err) {
       console.error("Error submitting course slot:", err);
       // Handle error appropriately
@@ -403,12 +405,12 @@ function Admin_add_course_slot_form() {
 
               <Group position="right" mt="lg">
                 <Button
-                                 variant="outline"
-                                 className="cancel-btn"
-                                 onClick={handleCancel}
-                               >
-                                 Cancel
-                               </Button>
+                  variant="outline"
+                  className="cancel-btn"
+                  onClick={handleCancel}
+                >
+                  Cancel
+                </Button>
                 <Button type="submit" className="submit-btn">
                   Submit
                 </Button>

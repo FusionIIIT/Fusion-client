@@ -88,35 +88,38 @@ function Admin_add_discipline_form() {
       if (response.ok) {
         localStorage.setItem("AdminDisciplineCachechange", "true");
         const data = await response.json();
-        
+
         notifications.show({
           title: "✅ Discipline Added Successfully!",
           message: (
             <div>
               <Text size="sm" mb={8}>
-                <strong>Discipline "{values.disciplineName}" has been created.</strong>
+                <strong>
+                  Discipline "{values.disciplineName}" has been created.
+                </strong>
               </Text>
               <Text size="xs" color="gray.7">
-                Acronym: {values.acronym} | Linked Programmes: {values.linkedProgrammes?.length || 0}
+                Acronym: {values.acronym} | Linked Programmes:{" "}
+                {values.linkedProgrammes?.length || 0}
               </Text>
             </div>
           ),
           color: "green",
           autoClose: 5000,
           style: {
-            backgroundColor: '#d4edda',
-            borderColor: '#c3e6cb',
-            color: '#155724',
+            backgroundColor: "#d4edda",
+            borderColor: "#c3e6cb",
+            color: "#155724",
           },
         });
-        
+
         form.reset();
         setTimeout(() => {
           navigate("/programme_curriculum/acad_discipline_view");
         }, 1500);
       } else {
         const errorText = await response.text();
-        
+
         notifications.show({
           title: "❌ Failed to Add Discipline",
           message: (
@@ -132,9 +135,9 @@ function Admin_add_discipline_form() {
           color: "red",
           autoClose: 7000,
           style: {
-            backgroundColor: '#f8d7da',
-            borderColor: '#f5c6cb',
-            color: '#721c24',
+            backgroundColor: "#f8d7da",
+            borderColor: "#f5c6cb",
+            color: "#721c24",
           },
         });
       }
@@ -144,7 +147,9 @@ function Admin_add_discipline_form() {
         message: (
           <div>
             <Text size="sm" mb={8}>
-              <strong>Connection error occurred while adding discipline.</strong>
+              <strong>
+                Connection error occurred while adding discipline.
+              </strong>
             </Text>
             <Text size="xs" color="gray.7">
               Please check your internet connection and try again.
@@ -154,9 +159,9 @@ function Admin_add_discipline_form() {
         color: "red",
         autoClose: 7000,
         style: {
-          backgroundColor: '#f8d7da',
-          borderColor: '#f5c6cb',
-          color: '#721c24',
+          backgroundColor: "#f8d7da",
+          borderColor: "#f5c6cb",
+          color: "#721c24",
         },
       });
     } finally {
@@ -277,8 +282,7 @@ function Admin_add_discipline_form() {
               flexDirection: "column",
               justifyContent: "flex-start",
             }}
-          >
-          </div>
+          ></div>
         </div>
       </Container>
 

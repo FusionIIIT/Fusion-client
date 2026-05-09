@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import {
   Box,
   Select,
@@ -13,16 +12,9 @@ import {
   Group,
 } from "@mantine/core";
 
-import {
-  getCaretakers,
-  assignCaretakers,
-  getWardens,
-  assignWarden,
-} from "../../../../routes/hostelManagementRoutes";
+import { adminService } from "../../services";
 
 import AddHostel from "./AddHostel";
-
-axios.defaults.withXSRFToken = true;
 
 export default function AssignPersonnel() {
   const [activeTab, setActiveTab] = useState("caretaker");
@@ -56,45 +48,29 @@ export default function AssignPersonnel() {
     });
   };
 
-  const fetchCaretakerData = () => {
-    const token = localStorage.getItem("authToken");
-
-    if (!token) {
+  const fetchCaretakerData = async () => {
+    try {
+      const response = await adminService.getCaretakers();
+      const { halls, caretaker_usernames } = response.data;
+      setHallsForCaretaker(
+        halls.map((hallData) => ({
+          value: hallData.hall_id,
+          label: hallData.hall_name,
+        })),
+      );
+      setCaretakers(
+        caretaker_usernames.map((user) => ({
+          value: user.id_id,
+          label: user.id_id,
+        })),
+      );
+    } catch (error) {
+      console.error("Error fetching caretaker data", error);
       showNotification(
-        "Authentication token not found. Please login again.",
+        "Failed to fetch caretaker data. Please try again.",
         "red",
       );
-      return;
     }
-
-    axios
-      .get(getCaretakers, {
-        headers: {
-          Authorization: `Token ${token}`,
-        },
-      })
-      .then((response) => {
-        const { halls, caretaker_usernames } = response.data;
-        setHallsForCaretaker(
-          halls.map((hallData) => ({
-            value: hallData.hall_id,
-            label: hallData.hall_name,
-          })),
-        );
-        setCaretakers(
-          caretaker_usernames.map((user) => ({
-            value: user.id_id,
-            label: user.id_id,
-          })),
-        );
-      })
-      .catch((error) => {
-        console.error("Error fetching caretaker data", error);
-        showNotification(
-          "Failed to fetch caretaker data. Please try again.",
-          "red",
-        );
-      });
   };
 
   // Load caretaker data
@@ -104,45 +80,26 @@ export default function AssignPersonnel() {
     }
   }, [activeTab]);
 
-  const fetchWardenData = () => {
-    const token = localStorage.getItem("authToken");
-
-    if (!token) {
-      showNotification(
-        "Authentication token not found. Please login again.",
-        "red",
+  const fetchWardenData = async () => {
+    try {
+      const response = await adminService.getWardens();
+      const { halls, warden_usernames } = response.data;
+      setHallsForWarden(
+        halls.map((hallData) => ({
+          value: hallData.hall_id,
+          label: hallData.hall_name,
+        })),
       );
-      return;
+      setWardens(
+        warden_usernames.map((user) => ({
+          value: user.id_id,
+          label: user.id_id,
+        })),
+      );
+    } catch (error) {
+      console.error("Error fetching warden data", error);
+      showNotification("Failed to fetch warden data. Please try again.", "red");
     }
-
-    axios
-      .get(getWardens, {
-        headers: {
-          Authorization: `Token ${token}`,
-        },
-      })
-      .then((response) => {
-        const { halls, warden_usernames } = response.data;
-        setHallsForWarden(
-          halls.map((hallData) => ({
-            value: hallData.hall_id,
-            label: hallData.hall_name,
-          })),
-        );
-        setWardens(
-          warden_usernames.map((user) => ({
-            value: user.id_id,
-            label: user.id_id,
-          })),
-        );
-      })
-      .catch((error) => {
-        console.error("Error fetching warden data", error);
-        showNotification(
-          "Failed to fetch warden data. Please try again.",
-          "red",
-        );
-      });
   };
 
   // Load warden data
@@ -152,17 +109,7 @@ export default function AssignPersonnel() {
     }
   }, [activeTab]);
 
-  const handleAssignCaretaker = () => {
-    const token = localStorage.getItem("authToken");
-
-    if (!token) {
-      showNotification(
-        "Authentication token not found. Please login again.",
-        "red",
-      );
-      return;
-    }
-
+  const handleAssignCaretaker = async () => {
     if (!selectedHallForCaretaker || !selectedCaretaker) {
       showNotification("Please select both a hall and a caretaker.", "red");
       return;
@@ -170,47 +117,23 @@ export default function AssignPersonnel() {
 
     setLoading(true);
 
-    axios
-      .post(
-        assignCaretakers,
-        {
-          hall_id: selectedHallForCaretaker,
-          caretaker_username: selectedCaretaker,
-        },
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
-        },
-      )
-      .then(() => {
-        showNotification("Caretaker assigned successfully!", "green");
-        setSelectedHallForCaretaker(null);
-        setSelectedCaretaker(null);
-      })
-      .catch((error) => {
-        console.error("Error assigning caretaker", error);
-        showNotification(
-          "Failed to assign caretaker. Please try again.",
-          "red",
-        );
-      })
-      .finally(() => {
-        setLoading(false);
+    try {
+      await adminService.assignCaretakers({
+        hall_id: selectedHallForCaretaker,
+        caretaker_username: selectedCaretaker,
       });
+      showNotification("Caretaker assigned successfully!", "green");
+      setSelectedHallForCaretaker(null);
+      setSelectedCaretaker(null);
+    } catch (error) {
+      console.error("Error assigning caretaker", error);
+      showNotification("Failed to assign caretaker. Please try again.", "red");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleAssignWarden = () => {
-    const token = localStorage.getItem("authToken");
-
-    if (!token) {
-      showNotification(
-        "Authentication token not found. Please login again.",
-        "red",
-      );
-      return;
-    }
-
+  const handleAssignWarden = async () => {
     if (!selectedHallForWarden || !selectedWarden) {
       showNotification("Please select both a hall and a warden.", "red");
       return;
@@ -218,31 +141,20 @@ export default function AssignPersonnel() {
 
     setLoading(true);
 
-    axios
-      .post(
-        assignWarden,
-        {
-          hall_id: selectedHallForWarden,
-          warden_username: selectedWarden,
-        },
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
-        },
-      )
-      .then(() => {
-        showNotification("Warden assigned successfully!", "green");
-        setSelectedHallForWarden(null);
-        setSelectedWarden(null);
-      })
-      .catch((error) => {
-        console.error("Error assigning warden", error);
-        showNotification("Failed to assign warden. Please try again.", "red");
-      })
-      .finally(() => {
-        setLoading(false);
+    try {
+      await adminService.assignWarden({
+        hall_id: selectedHallForWarden,
+        warden_username: selectedWarden,
       });
+      showNotification("Warden assigned successfully!", "green");
+      setSelectedHallForWarden(null);
+      setSelectedWarden(null);
+    } catch (error) {
+      console.error("Error assigning warden", error);
+      showNotification("Failed to assign warden. Please try again.", "red");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

@@ -12,6 +12,7 @@ import {
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import PropTypes from "prop-types";
 import { setActiveTab_, setCurrentModule } from "../../../redux/moduleslice";
+import SectionErrorBoundary from "../components/common/SectionErrorBoundary";
 /**
  * Enhanced SectionNavigation component that can be used across different user roles
  *
@@ -207,7 +208,9 @@ export default function EnhancedSectionNavigation({
             padding: "8px",
           }}
         >
-          <ActiveComponent />
+          <SectionErrorBoundary>
+            <ActiveComponent />
+          </SectionErrorBoundary>
         </Box>
       </Paper>
     </Container>

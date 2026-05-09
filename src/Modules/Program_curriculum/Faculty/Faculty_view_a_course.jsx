@@ -40,7 +40,6 @@ function CourseDetail() {
         {/* Buttons section - shown above table on mobile, beside on desktop */}
         <Grid.Col span={isMobile ? 12 : 3} order={isMobile ? 1 : 2}>
           <div className="button-container">
-
             <Link
               to={`/programme_curriculum/edit_course_proposal_form/${courseDetails.id}`}
               style={{ textDecoration: "none" }}
@@ -56,7 +55,6 @@ function CourseDetail() {
               </Button>
             </Link>
 
-            
             {/* <Button
               variant="filled"
               color="blue"

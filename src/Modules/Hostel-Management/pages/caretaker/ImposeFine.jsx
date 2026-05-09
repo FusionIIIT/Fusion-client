@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import {
   Text,
   Input,
@@ -15,10 +14,7 @@ import {
   Box,
 } from "@mantine/core";
 import { MagnifyingGlass } from "@phosphor-icons/react";
-import {
-  getStudentsInfo2,
-  imposeFineRoute,
-} from "../../../../routes/hostelManagementRoutes"; // Adjust the path as needed
+import { caretakerService } from "../../services";
 
 export default function ImposeFine() {
   const [opened, setOpened] = useState(false);
@@ -32,18 +28,9 @@ export default function ImposeFine() {
 
   // Fetch students data
   const fetchStudents = async () => {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      setError("Authentication token not found. Please login again.");
-      setLoading(false);
-      return;
-    }
-
     try {
       setLoading(true);
-      const response = await axios.get(getStudentsInfo2, {
-        headers: { Authorization: `Token ${token}` },
-      });
+      const response = await caretakerService.getStudentsInfo();
       setStudents(response.data);
       setError(null);
     } catch (err) {
@@ -77,30 +64,16 @@ export default function ImposeFine() {
       return;
     }
 
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      setError("Authentication token not found. Please login again.");
-      return;
-    }
-
     try {
-      // Make the API call to impose the fine
-      const response = await axios.post(
-        imposeFineRoute, // Use the predefined route
-        {
-          studentId: selectedStudent.id__user__username, // Use selected student's ID
-          fineAmount,
-          fineReason,
-        },
-        {
-          headers: { Authorization: `Token ${token}` },
-        },
-      );
+      await caretakerService.imposeFine({
+        studentId: selectedStudent.id__user__username,
+        fineAmount,
+        fineReason,
+      });
       alert("Fine imposed successfully!");
-      console.log(response);
       setOpened(false);
-      setFineAmount(""); // Reset fine amount input
-      setFineReason(""); // Reset fine reason input
+      setFineAmount("");
+      setFineReason("");
     } catch (err) {
       console.error("Error imposing fine:", err);
       alert(

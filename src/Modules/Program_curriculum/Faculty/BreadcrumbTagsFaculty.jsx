@@ -13,24 +13,25 @@ function BreadcrumbTabsFaculty() {
 
   // Store role in localStorage and track changes
   useEffect(() => {
-    const storedRole = localStorage.getItem('userRole');
-    
+    const storedRole = localStorage.getItem("userRole");
+
     // If role exists and is different from stored role, update localStorage
     if (role) {
       if (storedRole !== role) {
-        localStorage.setItem('userRole', role);
-        
+        localStorage.setItem("userRole", role);
+
         // If storedRole exists and is different (role changed), redirect to first URL
         if (storedRole && storedRole !== role) {
-          navigate('/dashboard');
+          navigate("/dashboard");
         }
       }
     }
   }, [role, navigate]);
 
   // Check if user is HOD or DEAN Academic
-  const isHodOrDean = role && (role.startsWith("HOD") || role === "Dean Academic");
-  const isDean = role && (role === "Dean Academic");
+  const isHodOrDean =
+    role && (role.startsWith("HOD") || role === "Dean Academic");
+  const isDean = role && role === "Dean Academic";
 
   // Filter breadcrumb items based on role
   const breadcrumbItems = [
@@ -50,19 +51,31 @@ function BreadcrumbTabsFaculty() {
       url: "/programme_curriculum/faculty_course_instructor",
     },
     // Only show Course Proposal for non-HOD/DEAN roles
-    ...(!isHodOrDean ? [{
-      title: "Course Proposal",
-      url: "/programme_curriculum/faculty_view_course_proposal",
-    }] : []),
-    ...(!isDean ? [{
-      title: "Course Proposal Tracking",
-      url: "/programme_curriculum/faculty_outward_files",
-    }] : []),
+    ...(!isHodOrDean
+      ? [
+          {
+            title: "Course Proposal",
+            url: "/programme_curriculum/faculty_view_course_proposal",
+          },
+        ]
+      : []),
+    ...(!isDean
+      ? [
+          {
+            title: "Course Proposal Tracking",
+            url: "/programme_curriculum/faculty_outward_files",
+          },
+        ]
+      : []),
     // Only show Inward Files for HOD/DEAN roles
-    ...(isHodOrDean ? [{
-      title: "Inward Files",
-      url: "/programme_curriculum/faculty_inward_files",
-    }] : []),
+    ...(isHodOrDean
+      ? [
+          {
+            title: "Inward Files",
+            url: "/programme_curriculum/faculty_inward_files",
+          },
+        ]
+      : []),
   ];
 
   // Helper function to get cached tab from localStorage
@@ -94,9 +107,9 @@ function BreadcrumbTabsFaculty() {
   // Effect to check for role changes during the component's lifecycle
   useEffect(() => {
     const checkRoleChange = () => {
-      const storedRole = localStorage.getItem('userRole');
+      const storedRole = localStorage.getItem("userRole");
       if (storedRole && role && storedRole !== role) {
-        localStorage.setItem('userRole', role);
+        localStorage.setItem("userRole", role);
         navigate(breadcrumbItems[0].url);
       }
     };

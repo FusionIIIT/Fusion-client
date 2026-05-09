@@ -135,13 +135,16 @@ function Admin_add_course_proposal_form() {
       if (response.ok) {
         localStorage.setItem("AdminCoursesCachechange", "true");
         const data = await response.json();
-        
+
         notifications.show({
           title: "✅ Course Added Successfully!",
           message: (
             <div>
               <Text size="sm" mb={8}>
-                <strong>Course "{values.courseName}" ({values.courseCode}) has been created.</strong>
+                <strong>
+                  Course "{values.courseName}" ({values.courseCode}) has been
+                  created.
+                </strong>
               </Text>
               <Text size="xs" color="gray.7">
                 Credits: {values.courseCredit} | Version: {values.courseVersion}
@@ -151,19 +154,19 @@ function Admin_add_course_proposal_form() {
           color: "green",
           autoClose: 5000,
           style: {
-            backgroundColor: '#d4edda',
-            borderColor: '#c3e6cb',
-            color: '#155724',
+            backgroundColor: "#d4edda",
+            borderColor: "#c3e6cb",
+            color: "#155724",
           },
         });
-        
+
         form.reset();
         setTimeout(() => {
           navigate("/programme_curriculum/admin_courses");
         }, 1500);
       } else {
         const errorText = await response.text();
-        
+
         notifications.show({
           title: "❌ Failed to Add Course",
           message: (
@@ -179,9 +182,9 @@ function Admin_add_course_proposal_form() {
           color: "red",
           autoClose: 7000,
           style: {
-            backgroundColor: '#f8d7da',
-            borderColor: '#f5c6cb',
-            color: '#721c24',
+            backgroundColor: "#f8d7da",
+            borderColor: "#f5c6cb",
+            color: "#721c24",
           },
         });
       }
@@ -201,9 +204,9 @@ function Admin_add_course_proposal_form() {
         color: "red",
         autoClose: 7000,
         style: {
-          backgroundColor: '#f8d7da',
-          borderColor: '#f5c6cb',
-          color: '#721c24',
+          backgroundColor: "#f8d7da",
+          borderColor: "#f5c6cb",
+          color: "#721c24",
         },
       });
     }

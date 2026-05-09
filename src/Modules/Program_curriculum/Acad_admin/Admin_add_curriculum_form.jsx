@@ -111,7 +111,8 @@ function AdminAddCurriculumForm() {
       if (response.status === 201) {
         notifications.show({
           title: "🎉 Success!",
-          message: "Curriculum added successfully! You will be redirected to the curriculum list.",
+          message:
+            "Curriculum added successfully! You will be redirected to the curriculum list.",
           color: "green",
           autoClose: 4000,
           style: {
@@ -119,18 +120,18 @@ function AdminAddCurriculumForm() {
             borderLeft: "4px solid #10b981",
           },
           styles: {
-            title: { 
-              color: "#065f46", 
+            title: {
+              color: "#065f46",
               fontWeight: 600,
-              fontSize: "16px"
+              fontSize: "16px",
             },
-            description: { 
+            description: {
               color: "#047857",
-              fontSize: "14px"
+              fontSize: "14px",
             },
           },
         });
-        
+
         setTimeout(() => {
           navigate("/programme_curriculum/acad_view_all_working_curriculums");
         }, 1500);
@@ -138,7 +139,8 @@ function AdminAddCurriculumForm() {
     } catch (err) {
       notifications.show({
         title: "❌ Error!",
-        message: "Failed to add curriculum. Please check your input and try again.",
+        message:
+          "Failed to add curriculum. Please check your input and try again.",
         color: "red",
         autoClose: 5000,
         style: {
@@ -146,14 +148,14 @@ function AdminAddCurriculumForm() {
           borderLeft: "4px solid #ef4444",
         },
         styles: {
-          title: { 
-            color: "#7f1d1d", 
+          title: {
+            color: "#7f1d1d",
             fontWeight: 600,
-            fontSize: "16px"
+            fontSize: "16px",
           },
-          description: { 
+          description: {
             color: "#991b1b",
-            fontSize: "14px"
+            fontSize: "14px",
           },
         },
       });
@@ -275,12 +277,12 @@ function AdminAddCurriculumForm() {
 
             <Group position="right" mt="lg">
               <Button
-                                                                     variant="outline"
-                                                                     className="cancel-btn"
-                                                                     onClick={handleCancel}
-                                                                   >
-                                                                     Cancel
-                                                                   </Button>
+                variant="outline"
+                className="cancel-btn"
+                onClick={handleCancel}
+              >
+                Cancel
+              </Button>
               <Button type="submit" className="submit-btn" loading={loading}>
                 Submit
               </Button>

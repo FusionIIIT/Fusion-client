@@ -165,12 +165,12 @@ function FacultyCourseForwardForm() {
           color: "green",
           autoClose: 5000,
           style: {
-            backgroundColor: '#d4edda',
-            borderColor: '#c3e6cb',
-            color: '#155724',
+            backgroundColor: "#d4edda",
+            borderColor: "#c3e6cb",
+            color: "#155724",
           },
         });
-        
+
         setTimeout(() => {
           navigate("/programme_curriculum/faculty_outward_files");
         }, 1500);
@@ -180,7 +180,7 @@ function FacultyCourseForwardForm() {
       }
     } catch (err) {
       console.error("Rejection error:", err);
-      
+
       notifications.show({
         title: "❌ Failed to Reject Proposal",
         message: (
@@ -196,9 +196,9 @@ function FacultyCourseForwardForm() {
         color: "red",
         autoClose: 7000,
         style: {
-          backgroundColor: '#f8d7da',
-          borderColor: '#f5c6cb',
-          color: '#721c24',
+          backgroundColor: "#f8d7da",
+          borderColor: "#f5c6cb",
+          color: "#721c24",
         },
       });
     }
@@ -245,12 +245,12 @@ function FacultyCourseForwardForm() {
           color: "green",
           autoClose: 5000,
           style: {
-            backgroundColor: '#d4edda',
-            borderColor: '#c3e6cb',
-            color: '#155724',
+            backgroundColor: "#d4edda",
+            borderColor: "#c3e6cb",
+            color: "#155724",
           },
         });
-        
+
         setTimeout(() => {
           navigate("/programme_curriculum/faculty_outward_files");
         }, 1500);
@@ -260,7 +260,7 @@ function FacultyCourseForwardForm() {
       }
     } catch (e) {
       console.error("Submission error:", e);
-      
+
       notifications.show({
         title: "❌ Failed to Submit Form",
         message: (
@@ -276,9 +276,9 @@ function FacultyCourseForwardForm() {
         color: "red",
         autoClose: 7000,
         style: {
-          backgroundColor: '#f8d7da',
-          borderColor: '#f5c6cb',
-          color: '#721c24',
+          backgroundColor: "#f8d7da",
+          borderColor: "#f5c6cb",
+          color: "#721c24",
         },
       });
     }

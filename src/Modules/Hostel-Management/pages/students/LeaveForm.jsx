@@ -9,10 +9,10 @@ import {
   TextInput,
   Textarea,
   Alert,
+  FileInput,
 } from "@mantine/core";
 import { IconAlertCircle, IconCheck } from "@tabler/icons-react";
-import axios from "axios";
-import { requestLeave } from "../../../../routes/hostelManagementRoutes";
+import { studentService } from "../../services";
 
 export default function LeaveForm() {
   const [formData, setFormData] = useState({
@@ -22,6 +22,7 @@ export default function LeaveForm() {
     reason: "",
     startDate: "",
     endDate: "",
+    supportingDocument: null,
   });
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
@@ -48,29 +49,22 @@ export default function LeaveForm() {
     setIsSubmitting(true);
     setSuccessMessage("");
 
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      setErrors({
-        general: "Authentication token not found. Please log in again.",
-      });
-      setIsSubmitting(false);
-      return;
+    const payload = new FormData();
+    payload.append("student_name", formData.studentName);
+    payload.append("roll_num", formData.rollNumber);
+    payload.append("phone_number", formData.phoneNumber);
+    payload.append("reason", formData.reason);
+    payload.append("start_date", formData.startDate);
+    payload.append("end_date", formData.endDate);
+
+    if (formData.supportingDocument) {
+      payload.append("file_upload", formData.supportingDocument);
     }
 
-    const data = {
-      student_name: formData.studentName,
-      roll_num: formData.rollNumber,
-      phone_number: formData.phoneNumber,
-      reason: formData.reason,
-      start_date: formData.startDate,
-      end_date: formData.endDate,
-    };
-
     try {
-      const response = await axios.post(requestLeave, data, {
+      const response = await studentService.requestLeave(payload, {
         headers: {
-          Authorization: `Token ${token}`,
-          "Content-Type": "application/json",
+          "Content-Type": "multipart/form-data",
         },
       });
 
@@ -84,6 +78,7 @@ export default function LeaveForm() {
           reason: "",
           startDate: "",
           endDate: "",
+          supportingDocument: null,
         });
       } else {
         setErrors({ general: "Unexpected server response." });
@@ -253,6 +248,20 @@ export default function LeaveForm() {
                 error={getFieldError("reason")}
                 minRows={4}
                 required
+                size="md"
+              />
+            </Box>
+
+            <Box>
+              <Text fw={500} mb={8}>
+                Supporting Document (optional)
+              </Text>
+              <FileInput
+                placeholder="Upload PDF/JPG/PNG"
+                value={formData.supportingDocument}
+                onChange={(file) => handleChange("supportingDocument", file)}
+                clearable
+                accept=".pdf,.jpg,.jpeg,.png"
                 size="md"
               />
             </Box>

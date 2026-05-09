@@ -1,4 +1,4 @@
-import UploadAttendanceComponent from "../../components/caretaker/AttendanceForm";
+import { AttendanceForm as UploadAttendanceComponent } from "../../components";
 
 export default function UploadAttendance() {
   return <UploadAttendanceComponent />;

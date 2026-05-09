@@ -8,25 +8,44 @@ import SectionNavigationCaretaker from "./pages/SectionNavigationCaretaker";
 
 function HostelPage() {
   const userRole = useSelector((state) => state.user.role);
+
+  const normalizeRole = (role) =>
+    String(role || "")
+      .toLowerCase()
+      .trim()
+      .replace(/[\s_-]+/g, "");
+
   const renderSectionNavigation = () => {
+    const normalizedRole = normalizeRole(userRole);
+
     // Check if the user is a caretaker
-    if (userRole.toLowerCase().includes("caretaker")) {
+    if (normalizedRole.includes("caretaker")) {
       return <SectionNavigationCaretaker />;
     }
 
-    // Check if the user is a warden
-    if (userRole.toLowerCase().includes("warden")) {
+    // Check if the user is a warden.
+    // Support common spelling variants from role data (e.g., wrden/wardn).
+    if (
+      normalizedRole.includes("warden") ||
+      normalizedRole.includes("wrden") ||
+      normalizedRole.includes("wardn")
+    ) {
       return <SectionNavigationWarden />;
     }
-    if (userRole.toLowerCase().includes("admin")) {
+
+    if (normalizedRole.includes("admin")) {
       return <SectionNavigationAdmin />;
     }
+
     // Role-based navigation
-    switch (userRole.toLowerCase()) {
+    switch (normalizedRole) {
       case "student":
         return <SectionNavigationStudent />;
       case "hostel_admin":
+      case "hosteladmin":
         return <SectionNavigationAdmin />;
+      case "guestuser":
+        return <div>Loading role...</div>;
       default:
         return <div>No access</div>;
     }

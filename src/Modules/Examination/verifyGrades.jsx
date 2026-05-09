@@ -78,10 +78,9 @@ function VerifyGrades() {
       setError("");
       try {
         const token = localStorage.getItem("authToken");
-        const { data } = await axios.get(
-          get_student_grades_academic_years,
-          { headers: { Authorization: `Token ${token}` } }
-        );
+        const { data } = await axios.get(get_student_grades_academic_years, {
+          headers: { Authorization: `Token ${token}` },
+        });
         setYears(data.academic_years.map((y) => ({ value: y, label: y })));
       } catch {
         setError("Failed to load academic years.");
@@ -180,7 +179,9 @@ function VerifyGrades() {
         setShowContent(true);
         const courseInfo = courses.find((c) => c.value === selectedCourse);
         setSelectedCourseName(
-          courseInfo ? `${courseInfo.code} - ${courseInfo.name}` : selectedCourse
+          courseInfo
+            ? `${courseInfo.code} - ${courseInfo.name}`
+            : selectedCourse,
         );
       }
     } catch (err) {
@@ -190,13 +191,17 @@ function VerifyGrades() {
             setError("This course is not submitted by the instructor.");
             break;
           case 403:
-            setError("Access denied. You don't have permission to view this data.");
+            setError(
+              "Access denied. You don't have permission to view this data.",
+            );
             break;
           case 400:
             setError(err.response.data.error || "Invalid request parameters.");
             break;
           default:
-            setError(`Error fetching grades: ${err.response.data.error || err.message}`);
+            setError(
+              `Error fetching grades: ${err.response.data.error || err.message}`,
+            );
         }
       } else {
         setError(`Network error: ${err.message}`);
@@ -209,7 +214,7 @@ function VerifyGrades() {
 
   const handleRemarkChange = (id, newRemarks) => {
     const updatedRegistrations = registrations.map((reg) =>
-      reg.id === id ? { ...reg, remarks: newRemarks } : reg
+      reg.id === id ? { ...reg, remarks: newRemarks } : reg,
     );
     setRegistrations(updatedRegistrations);
   };
@@ -232,7 +237,7 @@ function VerifyGrades() {
       const remarks = registrations.map((reg) => reg.remarks || "");
       // Check if any registrations need resubmission
       const allowResubmission = registrations.some(
-        (reg) => reg.remarks.trim() !== ""
+        (reg) => reg.remarks.trim() !== "",
       )
         ? "YES"
         : "NO";
@@ -255,7 +260,7 @@ function VerifyGrades() {
       link.href = url;
       link.setAttribute(
         "download",
-        `${selectedCourseName.replace(/ /g, "_")}_grades_${selectedAcademicYear}.csv`
+        `${selectedCourseName.replace(/ /g, "_")}_grades_${selectedAcademicYear}.csv`,
       );
       document.body.appendChild(link);
       link.click();
@@ -266,13 +271,17 @@ function VerifyGrades() {
       if (err.response) {
         switch (err.response.status) {
           case 403:
-            setError("Access denied. You don't have permission to verify grades.");
+            setError(
+              "Access denied. You don't have permission to verify grades.",
+            );
             break;
           case 400:
             setError(err.response.data.error || "Invalid grade data provided.");
             break;
           default:
-            setError(`Error verifying grades: ${err.response.data?.error || err.message}`);
+            setError(
+              `Error verifying grades: ${err.response.data?.error || err.message}`,
+            );
         }
       } else {
         setError(`Network error: ${err.message}`);
@@ -317,16 +326,24 @@ function VerifyGrades() {
   return (
     <Card shadow="sm" p="md" radius="md" withBorder>
       <Paper p="md" style={{ position: "relative" }}>
-        <h1>
-          Verify Grades
-        </h1>
+        <h1>Verify Grades</h1>
         {error && (
-          <Alert color="red" mb="md" title="Error" onClose={() => setError(null)}>
+          <Alert
+            color="red"
+            mb="md"
+            title="Error"
+            onClose={() => setError(null)}
+          >
             {error}
           </Alert>
         )}
         {successMessage && (
-          <Alert color="green" mb="md" title="Success" onClose={() => setSuccessMessage(null)}>
+          <Alert
+            color="green"
+            mb="md"
+            title="Success"
+            onClose={() => setSuccessMessage(null)}
+          >
             {successMessage}
           </Alert>
         )}
@@ -365,7 +382,9 @@ function VerifyGrades() {
                   setSelectedCourse(value);
                   const courseInfo = courses.find((c) => c.value === value);
                   setSelectedCourseName(
-                    courseInfo ? `${courseInfo.code} - ${courseInfo.name}` : value
+                    courseInfo
+                      ? `${courseInfo.code} - ${courseInfo.name}`
+                      : value,
                   );
                 }}
                 data={courses}
@@ -374,11 +393,20 @@ function VerifyGrades() {
                 required
               />
             </Grid.Col>
-            <Grid.Col xs={12} sm={4} style={{ display: "flex", alignItems: "flex-end" }}>
+            <Grid.Col
+              xs={12}
+              sm={4}
+              style={{ display: "flex", alignItems: "flex-end" }}
+            >
               <Button
                 onClick={handleSearch}
                 fullWidth
-                disabled={!selectedCourse || !selectedAcademicYear || !selectedSemesterType || loading}
+                disabled={
+                  !selectedCourse ||
+                  !selectedAcademicYear ||
+                  !selectedSemesterType ||
+                  loading
+                }
                 size="md"
               >
                 Search
@@ -393,9 +421,13 @@ function VerifyGrades() {
                 <caption>
                   <Group position="apart">
                     <Text size="lg" weight={500}>
-                      {selectedCourseName} - {selectedAcademicYear} ({registrations.length} students)
+                      {selectedCourseName} - {selectedAcademicYear} (
+                      {registrations.length} students)
                     </Text>
-                    <Badge color={isAlreadyVerified ? "green" : "blue"} size="md">
+                    <Badge
+                      color={isAlreadyVerified ? "green" : "blue"}
+                      size="md"
+                    >
                       {isAlreadyVerified ? "Verified" : "Pending Verification"}
                     </Badge>
                   </Group>
@@ -432,13 +464,17 @@ function VerifyGrades() {
                           cx="50%"
                           cy="50%"
                           outerRadius={80}
-                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                          label={({ name, percent }) =>
+                            `${name}: ${(percent * 100).toFixed(0)}%`
+                          }
                         >
                           {gradesStats.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
-                        <Tooltip formatter={(value) => [`${value} students`, "Count"]} />
+                        <Tooltip
+                          formatter={(value) => [`${value} students`, "Count"]}
+                        />
                         <Legend />
                       </PieChart>
                     </ResponsiveContainer>
@@ -447,13 +483,19 @@ function VerifyGrades() {
                 <Grid.Col
                   xs={12}
                   md={6}
-                  style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
                 >
                   <Button
                     size="lg"
                     onClick={handleVerify}
                     color="blue"
-                    disabled={isAlreadyVerified || registrations.length === 0 || loading}
+                    disabled={
+                      isAlreadyVerified || registrations.length === 0 || loading
+                    }
                   >
                     Verify and Download
                   </Button>
