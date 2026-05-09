@@ -1,13 +1,14 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import Hr_Dashboard from "./pages/Hr_Dashboard"; // Ensure correct path
+import HrDashboard from "./pages/Hr_Dashboard"; // Ensure correct path
 import LeavePage from "./pages/LeavePage"; // Adjust the import path if necessary
-import CPDA_ADVANCE from "./pages/CPDA_ADVANCE";
+import CpdaAdvance from "./pages/CPDA_ADVANCE";
 import LTC from "./pages/LTC";
 import Appraisal from "./pages/Appraisel";
-import CPDA_Claim from "./pages/CPDA_Claim";
+import CpdaClaim from "./pages/CPDA_Claim";
 import FormView from "./pages/FormView";
-import CPDA_ADVANCEView from "./pages/CPDA_ADVANCEPageComp/CPDA_ADVANCEView";
+import Outbox from "./pages/Outbox";
+// Removed CpdaAdvanceView import since it's replaced by GenericFormView
 import LeaveFormView from "./pages/LeavePageComp/LeaveFormView";
 import LeaveFilehandle from "./pages/LeavePageComp/Leave_file_handle";
 import LeaveHandleResponsibility from "./pages/LeavePageComp/Leave_Handle_Responsibility";
@@ -19,12 +20,18 @@ import OfflineLeaveForm from "./pages/LeavePageComp/OfflineLeaveForm";
 import ViewEmployeeLB from "./pages/LeavePageComp/ViewEmployeeLB";
 import AdminLeaveRequests from "./pages/LeavePageComp/AdminLeaveRequests";
 // import UpdateLeaveBalance from "./pages/UpdateLeaveBalance";
+import CPDAClaimFormView from "./pages/CPDA_ClaimPageComp/CPDAClaimFormView";
+import GenericFormView from "./components/forms/GenericFormView";
+import CPDAAdvanceFormView from "./pages/CPDA_ADVANCEPageComp/CPDAAdvanceFormView";
+import LtcFormView from "./pages/LTCPageComp/LtcFormView";
+import AppraisalFormView from "./pages/AppraisalPageComp/AppraisalFormView";
+import * as api from "./services/api";
 
 export default function HR() {
   return (
     <Routes>
       {/* Show welcome message at /hr */}
-      <Route path="/" element={<Hr_Dashboard />} />
+      <Route path="/" element={<HrDashboard />} />
       {/* Render LeavePage at /hr/leave */}
       <Route path="leave/file_handler/:id" element={<LeaveFilehandle />} />
       <Route path="leave/view/:id" element={<LeaveFormView />} />
@@ -35,15 +42,20 @@ export default function HR() {
       <Route path="leave/*" element={<LeavePage />} />
 
       {/* Route for the CPDA Advance View page */}
-      <Route path="cpda_adv/view/:id" element={<CPDA_ADVANCEView />} />
-      <Route path="cpda_adv/*" element={<CPDA_ADVANCE />} />
+      <Route path="cpda_adv/view/:id" element={<CPDAAdvanceFormView />} />
+      <Route path="ltc/view/:id" element={<LtcFormView />} />
+      <Route path="appraisal/view/:id" element={<AppraisalFormView />} />
+      <Route path="cpda_claim/view/:id" element={<CPDAClaimFormView />} />
+
+      <Route path="cpda_adv/*" element={<CpdaAdvance />} />
       <Route path="ltc/*" element={<LTC />} />
       <Route path="appraisal/*" element={<Appraisal />} />
-      <Route path="cpda_claim/*" element={<CPDA_Claim />} />
+      <Route path="cpda_claim/*" element={<CpdaClaim />} />
+      <Route path="outbox/*" element={<Outbox />} />
       <Route path="FormView/*" element={<FormView />} />
-      <Route path="admin_leave/*" element={<AdminLeaveManagement />} />
+
       <Route
-        path="/admin_leave/view_employees_leave_balance/*"
+        path="admin_leave/view_employees_leave_balance/*"
         element={<ViewEmployeeLB />}
       />
       <Route
@@ -55,6 +67,7 @@ export default function HR() {
         path="admin_leave/manage_offline_leave_form/*"
         element={<OfflineLeaveForm />}
       />
+      <Route path="admin_leave/*" element={<AdminLeaveManagement />} />
     </Routes>
   );
 }

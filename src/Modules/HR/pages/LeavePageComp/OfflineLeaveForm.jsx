@@ -11,13 +11,13 @@ import {
   Textarea,
 } from "@mantine/core";
 import {
-  get_employee_initials,
-  offline_leave_form,
-} from "../../../../routes/hr";
-import "./LeaveForm.css";
-import SearchAndSelectUser from "../../components/SearchAndSelectUser";
+  getEmployeeInitials,
+  submitOfflineLeaveForm,
+} from "../../services/api";
+import "../../styles/LeaveForm.css";
+import SearchAndSelectUser from "../../components/common/SearchAndSelectUser";
 
-import HrBreadcrumbs from "../../components/HrBreadcrumbs";
+import HrBreadcrumbs from "../../components/common/HrBreadcrumbs";
 
 function OfflineLeaveForm() {
   // --- Form and Leave states ---
@@ -70,25 +70,13 @@ function OfflineLeaveForm() {
   const fetchEmployeeDetails = async (employeeId) => {
     setLoading(true);
     setError(null);
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      setError("Authentication token is missing.");
-      setLoading(false);
-      return;
-    }
+
     try {
-      const response = await fetch(`${get_employee_initials}/${employeeId}`, {
-        headers: { Authorization: `Token ${token}` },
-      });
-      if (!response.ok) {
-        throw new Error(`Error fetching details: ${response.statusText}`);
-      }
-      const data = await response.json();
+      const data = await getEmployeeInitials(employeeId);
       setDetails(data);
-      console.log(details);
     } catch (err) {
       setError("Failed to fetch employee details.");
-      console.error(err.message);
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -258,19 +246,7 @@ function OfflineLeaveForm() {
     }
 
     try {
-      const response = await fetch(offline_leave_form, {
-        method: "POST",
-        headers: {
-          Authorization: `Token ${localStorage.getItem("authToken")}`,
-        },
-        body: formDataObj,
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
-      }
-
-      const result = await response.json();
+      const result = await submitOfflineLeaveForm(formDataObj);
       alert(result.message || "Form submitted successfully!");
 
       // redirec to /hr/admin_leave/review_leave_requests?emp=mayur

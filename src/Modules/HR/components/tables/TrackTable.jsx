@@ -1,90 +1,106 @@
-import React, { useEffect, useState } from "react";
-import { Title } from "@mantine/core";
-import HrBreadcrumbs from "../../components/HrBreadcrumbs";
+import React from "react";
+import PropTypes from "prop-types";
+import HrBreadcrumbs from "../common/HrBreadcrumbs";
+import HRDataTable from "./HRDataTable";
+import { formatDateTime } from "../../utils/dateFormatter";
 
-import "./Table.css"; // Ensure this path is correct
-import { EmptyTable } from "./EmptyTable";
-
-const TrackTable = ({ title, data, exampleItems }) => {
-  // header contains the column names id name designation submissionDate view track
-  const headers = [
-    "Record Id",
-    "Receive Date",
-    "Forward Date",
-    "Remarks",
-    "Sender's username",
-
-    "Receiver's name",
-    "Receiver's Designation",
+function TrackTable({
+  title,
+  data,
+  exampleItems = [],
+  loading = false,
+  workflowStatusDisplay = "",
+  workflowHistory = [],
+}) {
+  const columns = [
+    { key: "id", label: "Record Id" },
+    {
+      key: "receive_date",
+      label: "Receive Date",
+      render: (row) => formatDateTime(row.receive_date),
+    },
+    {
+      key: "forward_date",
+      label: "Forward Date",
+      render: (row) => formatDateTime(row.forward_date),
+    },
+    { key: "remarks", label: "Remarks" },
+    { key: "current_id", label: "Sender's Username" },
+    { key: "receiver_id", label: "Receiver's Name" },
+    { key: "receive_design", label: "Receiver's Designation" },
   ];
 
   return (
-    <div className="app-container">
+    <>
       <HrBreadcrumbs items={exampleItems} />
-
-      <Title
-        order={2}
-        style={{ fontWeight: "500", marginTop: "40px", marginLeft: "15px" }}
-      >
-        {title}
-      </Title>
-      {data.length == 0 && (
-        <EmptyTable
-          title="No new requests found!"
-          message="There is no new request available. Please check back later."
-        />
-      )}
-      {headers.length > 0 && data.length > 0 ? (
-        <div className="form-table-container">
-          <table className="form-table">
-            <thead>
-              <tr>
-                {headers.map((header, index) => (
-                  <th key={index} className="table-header">
-                    {header}
-                  </th>
+      {(workflowStatusDisplay ||
+        (workflowHistory && workflowHistory.length > 0)) && (
+        <div
+          style={{
+            margin: "16px 15px",
+            padding: 16,
+            background: "#f5f7fa",
+            borderRadius: 8,
+            maxWidth: 960,
+          }}
+        >
+          {workflowStatusDisplay ? (
+            <p style={{ margin: "0 0 8px" }}>
+              <strong>Application status:</strong> {workflowStatusDisplay}
+            </p>
+          ) : null}
+          {workflowHistory.length > 0 ? (
+            <>
+              <p style={{ margin: "8px 0 4px", fontWeight: 600 }}>
+                Workflow steps
+              </p>
+              <ul style={{ margin: 0, paddingLeft: 20 }}>
+                {workflowHistory.map((row, idx) => (
+                  <li
+                    key={`${row.at || ""}-${idx}`}
+                    style={{ marginBottom: 6 }}
+                  >
+                    <strong>{row.status}</strong>
+                    {row.by ? ` — ${row.by}` : ""}
+                    {row.at ? ` — ${row.at}` : ""}
+                    {row.remarks ? ` — ${row.remarks}` : ""}
+                  </li>
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((item, index) => (
-                <tr className="table-row" key={index}>
-                  <td>{item.id}</td>
-                  <td>
-                    {item.receive_date && (
-                      <>
-                        {item.receive_date.split("T")[0]} {/* Date part */}
-                        <br />
-                        {item.receive_date.split("T")[1].split(".")[0]}{" "}
-                        {/* Time part */}
-                      </>
-                    )}
-                  </td>
-                  <td>
-                    {item.forward_date && (
-                      <>
-                        {item.forward_date.split("T")[0]} {/* Date part */}
-                        <br />
-                        {item.forward_date.split("T")[1].split(".")[0]}{" "}
-                        {/* Time part */}
-                      </>
-                    )}
-                  </td>
-                  <td>{item.remarks}</td>
-                  <td>{item.current_id}</td>
-
-                  <td>{item.receiver_id}</td>
-                  <td>{item.receive_design}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+              </ul>
+            </>
+          ) : null}
         </div>
-      ) : (
-        <div className="loading-spinner"></div>
       )}
-    </div>
+      <HRDataTable
+        title={title}
+        columns={columns}
+        rows={data}
+        rowKey="id"
+        loading={loading}
+      />
+    </>
   );
-};
+}
 
 export default TrackTable;
+
+TrackTable.propTypes = {
+  title: PropTypes.string.isRequired,
+  data: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+  exampleItems: PropTypes.arrayOf(
+    PropTypes.shape({
+      title: PropTypes.string.isRequired,
+      path: PropTypes.string.isRequired,
+    }),
+  ),
+  loading: PropTypes.bool,
+  workflowStatusDisplay: PropTypes.string,
+  workflowHistory: PropTypes.arrayOf(PropTypes.shape({})),
+};
+
+TrackTable.defaultProps = {
+  exampleItems: [],
+  loading: false,
+  workflowStatusDisplay: "",
+  workflowHistory: [],
+};

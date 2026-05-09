@@ -1,43 +1,36 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import InboxTable from "../../components/tables/InboxTable";
-import { get_cpda_adv_inbox } from "../../../../routes/hr/index"; // Ensure this is the correct import path
-import LoadingComponent from "../../components/Loading"; // Ensure this is the correct import path
+import { getCpdaAdvInbox } from "../../services/api";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
+import useFetchData from "../../hooks/useFetchData";
+import { getViewUrl, getTrackUrl } from "../../utils/routeHelpers";
 
 function Cpda_ADVANCEInbox() {
-  const [inboxData, setInboxData] = useState([]); // Correct useState syntax
-  const [loading, setLoading] = useState(true); // Add loading state
+  const { data: inboxData, loading } = useFetchData(getCpdaAdvInbox);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchCPDAInbox = async () => {
-      console.log("Fetching CPDA Advance inbox...");
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        console.error("No authentication token found!");
-        setLoading(false);
-        return;
-      }
-      try {
-        const response = await fetch(get_cpda_adv_inbox, {
-          headers: { Authorization: `Token ${token}` },
-        });
-        const data = await response.json();
-        setInboxData(data.cpda_adv_inbox); // Set fetched data
-        setLoading(false); // Set loading to false once data is fetched
-        console.log(data);
-      } catch (error) {
-        console.error("Failed to fetch CPDA Advance inbox:", error);
-        setLoading(false); // Set loading to false if there’s an error
-      }
-    };
-    fetchCPDAInbox(); // Ensure function is called
-  }, []); // Adding empty dependency array to run only once
+  const handleView = (row) => {
+    navigate(getViewUrl("cpda_adv", row.id));
+  };
+
+  const handleTrack = (row) => {
+    navigate(getTrackUrl("cpda_adv", row.id));
+  };
 
   if (loading) {
-    return <LoadingComponent />;
+    return <LoadingSpinner />;
   }
 
   return (
-    <InboxTable title="CPDA Adv Inbox" data={inboxData} formType="cpda_adv" />
+    <InboxTable
+      title="CPDA Adv Inbox"
+      data={inboxData}
+      formType="cpda_adv"
+      loading={loading}
+      onView={handleView}
+      onTrack={handleTrack}
+    />
   );
 }
 

@@ -2,8 +2,8 @@ import React from "react";
 import { Container, SimpleGrid, Title } from "@mantine/core";
 import { ShieldCheck, PencilSimple } from "@phosphor-icons/react";
 
-import PerformanceCard from "../../components/FormComponent/PerformanceCard";
-import HrBreadcrumbs from "../../components/HrBreadcrumbs";
+import PerformanceCard from "../../components/forms/FormComponent/PerformanceCard";
+import HrBreadcrumbs from "../../components/common/HrBreadcrumbs";
 
 function AdminLeaveManagement() {
   // Card for reviewing leave balances.

@@ -2,19 +2,20 @@ import React, { useEffect, useState, useRef } from "react";
 import { Tabs, Button, Flex, Text, Loader, Container } from "@mantine/core";
 import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
 import { useNavigate, useLocation } from "react-router-dom";
-import CustomBreadcrumbs from "../../../components/Breadcrumbs"; // Your breadcrumbs component
-import classes from "./LeavePage.module.css"; // Add your styles here
+import classes from "../styles/LeavePage.module.css";
 import LeaveForm from "./LeavePageComp/LeaveForm";
 // import LeaveArchive from "./LeavePageComp/LeaveArchive";
 import LeaveInbox from "./LeavePageComp/LeaveInbox";
 import LeaveRequests from "./LeavePageComp/LeaveRequests";
-import HrBreadcrumbs from "../components/HrBreadcrumbs";
+import SubstituteInbox from "./LeavePageComp/SubstituteInbox";
+import HrBreadcrumbs from "../components/common/HrBreadcrumbs";
 import LeaveBalanceButton from "./LeavePageComp/LeaveBalanceButton";
 
 const tabItems = [
   { title: "Leave Form", path: "/hr/leave/leaveform" },
   { title: "Leave Requests", path: "/hr/leave/leaverequests" },
   { title: "Leave Inbox", path: "/hr/leave/leaveinbox" },
+  { title: "Substitute Inbox", path: "/hr/leave/substituteinbox" },
   // { title: "Leave Archive", path: "/hr/leave/leavearchive" },
 ];
 
@@ -25,7 +26,7 @@ function Leave() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  //scroll to top on page load
+  // scroll to top on page load
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -96,7 +97,7 @@ function Leave() {
           className={`${classes.fusionTabsContainer} ${classes.limitedWidthTabs}`}
           ref={tabsListRef}
         >
-          <Tabs value={activeTab} onTabChange={handleTabChange}>
+          <Tabs value={activeTab} onChange={handleTabChange}>
             <Tabs.List style={{ display: "flex", flexWrap: "nowrap" }}>
               {tabItems.map((item, index) => (
                 <Tabs.Tab
@@ -136,7 +137,8 @@ function Leave() {
           {activeTab === "0" && <LeaveForm />}
           {activeTab === "1" && <LeaveRequests />}
           {activeTab === "2" && <LeaveInbox />}
-          {/* {activeTab === "3" && <LeaveArchive />} */}
+          {activeTab === "3" && <SubstituteInbox />}
+          {/* {activeTab === "4" && <LeaveArchive />} */}
         </div>
       )}
     </>

@@ -16,6 +16,7 @@ import Examination from "./Modules/Examination/examination";
 import Database from "./Modules/Database/database";
 import ProgrammeCurriculumRoutes from "./Modules/Program_curriculum/programmCurriculum";
 import NotFoundPage from "./components/NotFoundPage";
+import HR from "./Modules/HR";
 
 const theme = createTheme({
   breakpoints: {
@@ -81,6 +82,14 @@ export default function App() {
         <Route path="/accounts/login" element={<LoginPage />} />
         <Route path="/reset-password" element={<ForgotPassword />} />
         <Route path="/examination/*" element={<Examination />} />
+        <Route
+          path="/hr/*"
+          element={
+            <Layout>
+              <HR />
+            </Layout>
+          }
+        />
         <Route path="/database/*" element={<Database />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
