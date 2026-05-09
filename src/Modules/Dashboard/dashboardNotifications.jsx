@@ -127,15 +127,15 @@ function Dashboard() {
           data: JSON.parse(item.data.replace(/'/g, '"')),
         }));
 
+        const isAnnouncement = (item) =>
+          item?.data?.flag === "announcement" ||
+          item?.data?.type === "announcement";
+
         setNotificationsList(
-          notificationsData.filter(
-            (item) => item.data?.flag !== "announcement",
-          ),
+          notificationsData.filter((item) => !isAnnouncement(item)),
         );
         setAnnouncementsList(
-          notificationsData.filter(
-            (item) => item.data?.flag === "announcement",
-          ),
+          notificationsData.filter((item) => isAnnouncement(item)),
         );
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
