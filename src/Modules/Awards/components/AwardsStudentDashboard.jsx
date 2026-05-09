@@ -1,0 +1,573 @@
+import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import {
+  Stack, Tabs, Card, Box, Title, Text, Badge, Group,
+  Button, SimpleGrid, Paper, ThemeIcon, Loader, Center,
+  Divider, Accordion, TextInput, Textarea, Select, Modal,
+  Checkbox, LoadingOverlay, Alert, Grid, Table, ScrollArea,
+} from "@mantine/core";
+import {
+  IconMedal, IconTrophy, IconStar, IconSend, IconUser,
+  IconCircleCheck, IconInfoCircle, IconUpload, IconClipboardList,
+  IconChevronRight, IconAlertCircle, IconDownload
+} from "@tabler/icons-react";
+import {
+  getAwardsStudentProfile,
+  getAutoAwards,
+  getMyAwardApplications,
+  submitAwardApplication,
+  getAwardSettings,
+} from "../services/awardsAPI";
+
+const FUSION_BLUE = "#15abff";
+const GOLD = "#f59f00";
+const SILVER = "#868e96";
+
+const AWARD_OPTIONS = [
+  {
+    id: "IIITDM_PRIZE",
+    title: "IIITDM Proficiency Prize",
+    subtitle: "Academic & technical excellence recognition",
+    icon: IconTrophy,
+    color: "yellow",
+  },
+  {
+    id: "CULTURAL",
+    title: "Cultural Medal",
+    subtitle: "For outstanding cultural contributions",
+    icon: IconMedal,
+    color: "grape",
+  },
+  {
+    id: "SPORTS",
+    title: "Sports Medal",
+    subtitle: "For exceptional sports achievements",
+    icon: IconStar,
+    color: "green",
+  },
+];
+
+const LEVEL_OPTIONS = ["College", "State", "National", "International"];
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+const GRADE_POINTS = { O:10,"A+":9,A:8,"B+":7,B:6,"C+":5,C:4,"D+":3,D:2,F:0 };
+
+export default function AwardsStudentDashboard() {
+  const user = useSelector((s) => s.user);
+  const [tab, setTab] = useState("auto-awards");
+  const [profile, setProfile] = useState(null);
+  const [autoAwards, setAutoAwards] = useState([]);
+  const [myApps, setMyApps] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [selectedAward, setSelectedAward] = useState("IIITDM_PRIZE");
+  const [confirmModal, setConfirmModal] = useState(false);
+  const [successAlert, setSuccessAlert] = useState("");
+  const [errorAlert, setErrorAlert] = useState("");
+  const [deadline, setDeadline] = useState("");
+
+  // Form state
+  const [formData, setFormData] = useState({});
+
+  const updateField = (key, val) => setFormData((p) => ({ ...p, [key]: val }));
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      try {
+        const [pRes, aRes, mRes, sRes] = await Promise.all([
+          getAwardsStudentProfile().catch(() => ({ data: {} })),
+          getAutoAwards().catch(() => ({ data: [] })),
+          getMyAwardApplications().catch(() => ({ data: [] })),
+          getAwardSettings().catch(() => ({ data: {} })),
+        ]);
+        setProfile(pRes.data);
+        setAutoAwards(Array.isArray(aRes.data) ? aRes.data : []);
+        setMyApps(Array.isArray(mRes.data) ? mRes.data : []);
+        setDeadline(sRes.data?.application_deadline || "");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [user]);
+
+  // Pre-fill active application data when switching award type
+  useEffect(() => {
+    const existing = myApps.find((a) => a.award_type === selectedAward);
+    if (existing) setFormData(existing.form_data || {});
+    else setFormData({});
+  }, [selectedAward, myApps]);
+  const onSubmit = () => {
+    setConfirmModal(true);
+  };
+
+  const onConfirmSubmit = async () => {
+    setSubmitLoading(true);
+    // Keep submitLoading true until done
+    setConfirmModal(false);
+    setErrorAlert("");
+    setSuccessAlert("");
+
+    // Client-side validation: define required fields for each award type
+    const requiredFields = {
+      IIITDM_PRIZE: [
+        { key: "sop", label: "Statement of Purpose" },
+        { key: "academic_achievements", label: "Academic Achievements" },
+        { key: "technical_achievements", label: "Technical Achievements" },
+        { key: "extracurricular", label: "Extracurricular / Other" },
+        { key: "documents_link", label: "Supporting Documents Link" },
+      ],
+      CULTURAL: [
+        { key: "event_name", label: "Event Name" },
+        { key: "role", label: "Your Role" },
+        { key: "level", label: "Level" },
+        { key: "position", label: "Position" },
+        { key: "description", label: "Description" },
+        { key: "documents_link", label: "Supporting Documents Link" },
+      ],
+      SPORTS: [
+        { key: "sport_name", label: "Sport Name" },
+        { key: "role", label: "Your Role" },
+        { key: "tournament", label: "Tournament" },
+        { key: "level", label: "Level" },
+        { key: "medal", label: "Medal / Position" },
+        { key: "description", label: "Description" },
+        { key: "documents_link", label: "Supporting Documents Link" },
+      ],
+    };
+
+    const missing = [];
+    (requiredFields[selectedAward] || []).forEach((f) => {
+      const val = formData[f.key];
+      if (!val || !val.toString().trim()) {
+        missing.push(f.label);
+      }
+    });
+
+    if (missing.length > 0) {
+      setErrorAlert(`Please fill the following sections: ${missing.join(", ")}`);
+      setSubmitLoading(false);
+      return;
+    }
+    if (!formData._declaration) {
+      setErrorAlert("You must accept the declaration (checkbox at the bottom) to submit.");
+      setSubmitLoading(false);
+      return;
+    }
+
+    try {
+      await submitAwardApplication({
+        award_type: selectedAward,
+        form_data: formData,
+      });
+      setSuccessAlert(existingApp ? "Application updated successfully!" : "Application submitted successfully!");
+      const mRes = await getMyAwardApplications();
+      setMyApps(Array.isArray(mRes.data) ? mRes.data : []);
+    } catch (e) {
+      const msg = e?.response?.data?.error || "Submission failed. Please try again.";
+      setErrorAlert(msg);
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
+
+  if (loading)
+    return (
+      <Center py={80}>
+        <Loader size="lg" color={FUSION_BLUE} />
+      </Center>
+    );
+
+  const cpi = profile?.cpi ?? 0;
+
+  // ── Section: Auto Awards List ─────────────────────────────────────────────
+  const AutoAwardsList = () => {
+    const grouped = autoAwards.reduce((acc, r) => {
+      acc[r.award_name] = acc[r.award_name] || [];
+      acc[r.award_name].push(r);
+      return acc;
+    }, {});
+
+    if (autoAwards.length === 0)
+      return (
+        <Paper withBorder p="xl" radius="md" ta="center">
+          <IconTrophy size={48} color={GOLD} style={{ opacity: 0.4 }} />
+          <Text mt="md" c="dimmed">
+            No auto-award results available yet. The awards are generated by the
+            assistant.
+          </Text>
+        </Paper>
+      );
+
+    return (
+      <Stack gap="md">
+        {Object.entries(grouped).map(([awardName, winners]) => (
+          <Card key={awardName} withBorder radius="md" p={0} shadow="sm">
+            <Box
+              px="xl"
+              py="md"
+              style={{
+                background: `linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)`,
+              }}
+            >
+              <Group gap="xs">
+                <IconTrophy size={20} color={GOLD} />
+                <Text fw={700} c="white" size="md">
+                  {awardName}
+                </Text>
+              </Group>
+            </Box>
+            <Box p="md">
+              {winners.map((w) => (
+                <Group
+                  key={w.id}
+                  justify="space-between"
+                  py="xs"
+                  style={{ borderBottom: "1px solid #f0f0f0" }}
+                >
+                  <Box>
+                    <Text fw={600}>{w.student_name}</Text>
+                    <Text size="xs" c="dimmed">
+                      {w.roll_no} · {w.programme} · {w.branch}
+                    </Text>
+                  </Box>
+                  <Badge
+                    size="lg"
+                    variant="gradient"
+                    gradient={{ from: "yellow", to: "orange" }}
+                  >
+                    CPI {w.cpi}
+                  </Badge>
+                </Group>
+              ))}
+            </Box>
+          </Card>
+        ))}
+      </Stack>
+    );
+  };
+
+  // ── Section: Application Form ─────────────────────────────────────────────
+  const existingApp = myApps.find((a) => a.award_type === selectedAward);
+
+  const renderForm = () => {
+    const fieldLabel = (label) => (
+      <Text fw={700} size="sm" c="dimmed" tt="uppercase" mb={4} mt="md" style={{ letterSpacing: "0.5px" }}>
+        {label}
+      </Text>
+    );
+    switch (selectedAward) {
+      case "IIITDM_PRIZE":
+        return (
+          <>
+            {fieldLabel("Statement of Purpose")}
+            <Textarea rows={4} placeholder="Describe why you deserve this prize..." value={formData.sop || ""} onChange={(e) => updateField("sop", e.target.value)} />
+            {fieldLabel("Academic Achievements")}
+            <Textarea rows={3} placeholder="Academic medals, ranks, research..." value={formData.academic_achievements || ""} onChange={(e) => updateField("academic_achievements", e.target.value)} />
+            {fieldLabel("Technical Achievements")}
+            <Textarea rows={3} placeholder="Projects, patents, hackathons..." value={formData.technical_achievements || ""} onChange={(e) => updateField("technical_achievements", e.target.value)} />
+            {fieldLabel("Extracurricular / Other")}
+            <Textarea rows={3} placeholder="Clubs, volunteering, leadership..." value={formData.extracurricular || ""} onChange={(e) => updateField("extracurricular", e.target.value)} />
+            {fieldLabel("Supporting Documents (Google Drive link)")}
+            <TextInput placeholder="https://drive.google.com/..." value={formData.documents_link || ""} onChange={(e) => updateField("documents_link", e.target.value)} />
+          </>
+        );
+      case "CULTURAL":
+        return (
+          <>
+            {fieldLabel("Event Name")}
+            <TextInput placeholder="E.g. Techno-Cultural Fest 2025" value={formData.event_name || ""} onChange={(e) => updateField("event_name", e.target.value)} />
+            {fieldLabel("Your Role")}
+            <TextInput placeholder="E.g. Lead Vocalist, Choreographer" value={formData.role || ""} onChange={(e) => updateField("role", e.target.value)} />
+            {fieldLabel("Level")}
+            <Select data={LEVEL_OPTIONS} value={formData.level || null} onChange={(v) => updateField("level", v)} placeholder="Select level" />
+            {fieldLabel("Position / Award Received")}
+            <TextInput placeholder="E.g. 1st Place, Best Performance" value={formData.position || ""} onChange={(e) => updateField("position", e.target.value)} />
+            {fieldLabel("Contribution Description")}
+            <Textarea rows={4} placeholder="Describe your contribution in detail..." value={formData.description || ""} onChange={(e) => updateField("description", e.target.value)} />
+            {fieldLabel("Supporting Documents (Google Drive link)")}
+            <TextInput placeholder="https://drive.google.com/..." value={formData.documents_link || ""} onChange={(e) => updateField("documents_link", e.target.value)} />
+          </>
+        );
+      case "SPORTS":
+        return (
+          <>
+            {fieldLabel("Sport Name")}
+            <TextInput placeholder="E.g. Basketball, Chess" value={formData.sport_name || ""} onChange={(e) => updateField("sport_name", e.target.value)} />
+            {fieldLabel("Your Role")}
+            <TextInput placeholder="E.g. Captain, Player" value={formData.role || ""} onChange={(e) => updateField("role", e.target.value)} />
+            {fieldLabel("Tournament Name")}
+            <TextInput placeholder="E.g. Inter-IIT 2025" value={formData.tournament || ""} onChange={(e) => updateField("tournament", e.target.value)} />
+            {fieldLabel("Level")}
+            <Select data={LEVEL_OPTIONS} value={formData.level || null} onChange={(v) => updateField("level", v)} placeholder="Select level" />
+            {fieldLabel("Medal / Position")}
+            <TextInput placeholder="E.g. Gold Medal, Runner-up" value={formData.medal || ""} onChange={(e) => updateField("medal", e.target.value)} />
+            {fieldLabel("Contribution Description")}
+            <Textarea rows={4} placeholder="Describe your achievement..." value={formData.description || ""} onChange={(e) => updateField("description", e.target.value)} />
+            {fieldLabel("Supporting Documents (Google Drive link)")}
+            <TextInput placeholder="https://drive.google.com/..." value={formData.documents_link || ""} onChange={(e) => updateField("documents_link", e.target.value)} />
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <Stack gap="xl">
+      {/* ── Profile Banner ── */}
+
+      {/* ── Main Tabs ── */}
+      <Card withBorder radius="md" p={0} shadow="sm">
+        <Tabs value={tab} onChange={setTab}>
+          <Box px="xl" pt="md" style={{ background: "#f8f9fa" }}>
+            <Tabs.List variant="pills">
+              <Tabs.Tab value="auto-awards" leftSection={<IconTrophy size={16} />}>
+                Academic Awards
+              </Tabs.Tab>
+              <Tabs.Tab value="apply" leftSection={<IconUpload size={16} />}>
+                Apply for Awards
+              </Tabs.Tab>
+              <Tabs.Tab value="my-apps" leftSection={<IconClipboardList size={16} />}>
+                My Applications {myApps.length > 0 && <Badge size="xs" ml={4}>{myApps.length}</Badge>}
+              </Tabs.Tab>
+              <Tabs.Tab value="info" leftSection={<IconInfoCircle size={16} />}>
+                Award Info
+              </Tabs.Tab>
+              <Tabs.Tab value="archives" leftSection={<IconDownload size={16} />}>
+                Public Archives
+              </Tabs.Tab>
+            </Tabs.List>
+          </Box>
+          <Divider />
+
+          <Box p="xl">
+            {/* Auto Awards */}
+            <Tabs.Panel value="auto-awards">
+              <Stack gap="md">
+                <Alert icon={<IconInfoCircle />} color="blue" variant="light" radius="md">
+                  Academic awards (Chairman&apos;s Gold, Director&apos;s Gold, Academic Silver) are
+                  auto-generated from your CPI. No application required.
+                </Alert>
+                <AutoAwardsList />
+              </Stack>
+            </Tabs.Panel>
+
+            {/* Apply */}
+            <Tabs.Panel value="apply">
+              <Stack gap="md">
+                {deadline && (
+                  <Alert icon={<IconAlertCircle />} color="red" variant="filled" radius="md">
+                    Application Deadline: <b>{deadline}</b>. No submissions will be accepted after this date.
+                  </Alert>
+                )}
+                {successAlert && <Alert icon={<IconCircleCheck />} color="green" onClose={() => setSuccessAlert("")} withCloseButton>{successAlert}</Alert>}
+                {errorAlert && <Alert icon={<IconAlertCircle />} color="red" onClose={() => setErrorAlert("")} withCloseButton>{errorAlert}</Alert>}
+
+                <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="md">
+                  {AWARD_OPTIONS.map((opt) => {
+                    const hasApp = myApps.some((a) => a.award_type === opt.id);
+                    return (
+                      <Paper
+                        key={opt.id}
+                        withBorder
+                        p="lg"
+                        radius="md"
+                        onClick={() => setSelectedAward(opt.id)}
+                        style={{
+                          cursor: "pointer",
+                          transition: "all 0.2s",
+                          borderColor: selectedAward === opt.id ? FUSION_BLUE : undefined,
+                          backgroundColor: selectedAward === opt.id ? "#15abff08" : "#fff",
+                          position: "relative",
+                        }}
+                      >
+                        {hasApp && (
+                          <Badge size="xs" color="green" style={{ position: "absolute", top: 8, right: 8 }}>
+                            Applied
+                          </Badge>
+                        )}
+                        <ThemeIcon size={44} radius="md" color={opt.color} variant={selectedAward === opt.id ? "filled" : "light"}>
+                          <opt.icon size={22} />
+                        </ThemeIcon>
+                        <Text fw={700} mt="sm">{opt.title}</Text>
+                        <Text size="xs" c="dimmed">{opt.subtitle}</Text>
+                      </Paper>
+                    );
+                  })}
+                </SimpleGrid>
+
+                <Card withBorder radius="md" p="xl" shadow="xs" style={{ position: "relative" }}>
+                  <LoadingOverlay visible={submitLoading} overlayProps={{ blur: 1 }} />
+                  <Group mb="md">
+                    <ThemeIcon size={32} radius="md" color="blue" variant="light">
+                      <IconUser size={18} />
+                    </ThemeIcon>
+                    <Box>
+                      <Text fw={700}>Auto-filled Identity</Text>
+                      <Text size="xs" c="dimmed">{profile?.roll_no} · {profile?.name} · CPI: {cpi.toFixed(2)}</Text>
+                    </Box>
+                  </Group>
+                  <Divider mb="md" />
+                  {renderForm()}
+                  <Checkbox
+                    mt="xl"
+                    label="I confirm that all provided information is accurate and verifiable."
+                    checked={!!formData._declaration}
+                    onChange={(e) => updateField("_declaration", e.currentTarget.checked)}
+                  />
+                  <Button
+                    fullWidth
+                    size="lg"
+                    mt="lg"
+                    color="blue"
+                    leftSection={<IconSend size={18} />}
+                    disabled={!formData._declaration}
+                    onClick={() => setConfirmModal(true)}
+                  >
+                    {existingApp ? "Update Application" : "Submit Application"}
+                  </Button>
+                </Card>
+              </Stack>
+            </Tabs.Panel>
+
+            {/* My Applications */}
+            <Tabs.Panel value="my-apps">
+              {myApps.length === 0 ? (
+                <Paper withBorder p="xl" ta="center" radius="md">
+                  <IconClipboardList size={40} color={FUSION_BLUE} style={{ opacity: 0.4 }} />
+                  <Text mt="md" c="dimmed">No award applications submitted yet.</Text>
+                </Paper>
+              ) : (
+                <Stack gap="md">
+                  {myApps.map((app) => (
+                    <Paper key={app.id} withBorder p="lg" radius="md" shadow="xs" style={{ borderLeft: `4px solid ${FUSION_BLUE}` }}>
+                      <Group justify="space-between">
+                        <Box>
+                          <Text fw={700}>{app.award_label}</Text>
+                          <Text size="xs" c="dimmed">Submitted: {app.created_at}</Text>
+                        </Box>
+                        <Badge color="blue" variant="light">Submitted</Badge>
+                      </Group>
+                    </Paper>
+                  ))}
+                </Stack>
+              )}
+            </Tabs.Panel>
+
+            {/* Public Archives */}
+            <Tabs.Panel value="archives">
+              <Stack gap="md">
+                <Alert icon={<IconInfoCircle />} color="indigo" variant="light" radius="md">
+                  Official lists of previous year medal winners and proficiency prize awardees.
+                </Alert>
+                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                  <Paper withBorder p="lg" radius="md" shadow="xs">
+                    <Group justify="space-between">
+                      <Box>
+                        <Text fw={700}>Medal Awardee List 2024</Text>
+                        <Text size="xs" c="dimmed">Official PDF · Batch 2024</Text>
+                      </Box>
+                      <Button 
+                        component="a" 
+                        href="/downloads/Medal awardee list _2024.pdf" 
+                        download 
+                        variant="light" 
+                        color="blue"
+                        leftSection={<IconDownload size={16} />}
+                      >
+                        Download
+                      </Button>
+                    </Group>
+                  </Paper>
+                  <Paper withBorder p="lg" radius="md" shadow="xs">
+                    <Group justify="space-between">
+                      <Box>
+                        <Text fw={700}>Medal Awardee List 2025</Text>
+                        <Text size="xs" c="dimmed">Official PDF · Batch 2025</Text>
+                      </Box>
+                      <Button 
+                        component="a" 
+                        href="/downloads/Medal awardee list _2025.pdf" 
+                        download 
+                        variant="light" 
+                        color="blue"
+                        leftSection={<IconDownload size={16} />}
+                      >
+                        Download
+                      </Button>
+                    </Group>
+                  </Paper>
+                </SimpleGrid>
+              </Stack>
+            </Tabs.Panel>
+
+            {/* Award Info */}
+            <Tabs.Panel value="info">
+              <Accordion variant="separated" radius="md" defaultValue="cgm">
+                {[
+                  {
+                    value: "cgm",
+                    title: "Chairman's Gold Medal (CGM)",
+                    content: "Awarded to the student with the highest CPI overall across all programmes in the batch. Auto-generated by the system."
+                  },
+                  {
+                    value: "dgm",
+                    title: "Director's Gold Medal (DGM)",
+                    content: "Awarded to the student with the highest CPI in each category: UG (B.Tech/B.Des) and PG (M.Tech/PhD). Auto-generated."
+                  },
+                  {
+                    value: "asm",
+                    title: "Academic Silver Medal",
+                    content: "Awarded to the highest CPI achiever in each branch/programme. Auto-generated from grade data."
+                  },
+                  {
+                    value: "iiitdm",
+                    title: "IIITDM Proficiency Prize",
+                    content: "Application-based award for students demonstrating outstanding academic and technical proficiency. Committee decision is offline."
+                  },
+                  {
+                    value: "cultural",
+                    title: "Cultural Medal",
+                    content: "Awarded for exceptional contributions to cultural activities at college, state, national, or international level."
+                  },
+                  {
+                    value: "sports",
+                    title: "Sports Medal",
+                    content: "Awarded for exceptional sports achievements. Covers individual and team sports at all levels."
+                  },
+                ].map((item) => (
+                  <Accordion.Item key={item.value} value={item.value}>
+                    <Accordion.Control icon={<IconChevronRight size={16} color={FUSION_BLUE} />}>
+                      <Text fw={700}>{item.title}</Text>
+                    </Accordion.Control>
+                    <Accordion.Panel>
+                      <Text size="sm" c="dimmed">{item.content}</Text>
+                    </Accordion.Panel>
+                  </Accordion.Item>
+                ))}
+              </Accordion>
+            </Tabs.Panel>
+          </Box>
+        </Tabs>
+      </Card>
+
+      {/* Confirm Modal */}
+      <Modal
+        opened={confirmModal}
+        onClose={() => setConfirmModal(false)}
+        title={<Text fw={900}>Confirm Submission</Text>}
+        centered
+        radius="lg"
+      >
+        <Stack gap="md">
+          <Text size="sm">Please ensure all documents are shared publicly before submitting. Incorrect information may lead to disqualification.</Text>
+          <Group justify="flex-end">
+            <Button variant="subtle" color="gray" onClick={() => setConfirmModal(false)}>Back</Button>
+            <Button color="blue" onClick={onConfirmSubmit}>Confirm & Submit</Button>
+          </Group>
+        </Stack>
+      </Modal>
+    </Stack>
+  );
+}
