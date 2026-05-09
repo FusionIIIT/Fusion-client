@@ -3,7 +3,7 @@ import axios from "axios";
 import { Paper, Title, Loader, Text, Container, Box } from "@mantine/core";
 import NavCom from "../NavCom";
 import { compounderRoute } from "../../../../routes/health_center";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
 
 function FeedbackTable() {
   const [feedbackData, setFeedbackData] = useState({ complaints: [] });
@@ -23,7 +23,10 @@ function FeedbackTable() {
           },
         },
       );
-      setFeedbackData(response.data);
+      const complaints = Array.isArray(response?.data?.complaints)
+        ? response.data.complaints
+        : [];
+      setFeedbackData({ complaints });
       setError(null);
     } catch (err) {
       console.error("Error fetching feedback:", err);

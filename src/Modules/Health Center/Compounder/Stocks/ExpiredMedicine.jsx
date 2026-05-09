@@ -12,7 +12,7 @@ import {
 import axios from "axios";
 import NavCom from "../NavCom";
 import ManageStock from "./ManageStocksNav";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
 import { compounderRoute } from "../../../../routes/health_center";
 
 function ExpiredMedicine() {
@@ -40,8 +40,13 @@ function ExpiredMedicine() {
           },
         },
       );
-      setExpired(response.data.report_stock_expired);
-      setTotalPages(response.data.total_pages_stock_view);
+      const report = Array.isArray(response?.data?.report_stock_expired)
+        ? response.data.report_stock_expired
+        : [];
+      const pages = Number(response?.data?.total_pages_stock_view);
+
+      setExpired(report);
+      setTotalPages(Number.isFinite(pages) && pages > 0 ? pages : 1);
     } catch (err) {
       console.log(err);
     } finally {

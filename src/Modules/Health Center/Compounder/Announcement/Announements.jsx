@@ -1,30 +1,18 @@
 import { Button, Paper, Textarea, Title } from "@mantine/core";
-import axios from "axios";
 import { useState } from "react";
 import NavCom from "../NavCom";
-import { compounderRoute } from "../../../../routes/health_center";
 import AnnounceNavBar from "./announPath";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
+import { createAnnouncementApi } from "../../services/api";
 
 function CompAnnounements() {
   const [announce, setAnnounce] = useState("");
 
   const make_announcement = async () => {
-    const token = localStorage.getItem("authToken");
     try {
-      const response = await axios.post(
-        compounderRoute,
-        { announcement: announce, comp_announce: 1 },
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
-        },
-      );
-      console.log(response);
-      if (response.data.status === 1) {
-        alert("announcement done");
-      }
+      await createAnnouncementApi({ message: announce });
+      alert("announcement published");
+      setAnnounce("");
     } catch (err) {
       console.log(err);
     }

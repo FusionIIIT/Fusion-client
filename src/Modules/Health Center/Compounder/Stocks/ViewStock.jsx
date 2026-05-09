@@ -11,7 +11,7 @@ import {
 import axios from "axios";
 import NavCom from "../NavCom";
 import ManageStock from "./ManageStocksNav";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
 import { compounderRoute } from "../../../../routes/health_center";
 
 function ViewStock() {
@@ -20,6 +20,26 @@ function ViewStock() {
   const [totalPages, setTotalPages] = useState(1);
   const [activePage, setPage] = useState(1);
   const [viewStock, setView] = useState([]);
+
+  const getErrorMessage = (payload, fallback) => {
+    if (!payload) {
+      return fallback;
+    }
+    if (typeof payload.detail === "string" && payload.detail.trim() !== "") {
+      return payload.detail;
+    }
+    if (payload.errors && typeof payload.errors === "object") {
+      const firstKey = Object.keys(payload.errors)[0];
+      const firstValue = payload.errors[firstKey];
+      if (Array.isArray(firstValue) && firstValue.length > 0) {
+        return String(firstValue[0]);
+      }
+      if (typeof firstValue === "string") {
+        return firstValue;
+      }
+    }
+    return fallback;
+  };
 
   const fetchStock = async (pagenumber) => {
     setLoading(true);
@@ -38,10 +58,20 @@ function ViewStock() {
           },
         },
       );
-      setView(response.data.report_stock_view);
-      setTotalPages(response.data.total_pages_stock_view);
+      const report = Array.isArray(response?.data?.report_stock_view)
+        ? response.data.report_stock_view
+        : [];
+      const pages = Number(response?.data?.total_pages_stock_view);
+
+      setView(report);
+      setTotalPages(Number.isFinite(pages) && pages > 0 ? pages : 1);
     } catch (err) {
       console.log(err);
+      alert(
+        getErrorMessage(err?.response?.data, "Unable to fetch stock data."),
+      );
+      setView([]);
+      setTotalPages(1);
     } finally {
       setLoading(false);
     }

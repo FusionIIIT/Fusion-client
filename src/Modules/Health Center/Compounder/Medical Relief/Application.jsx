@@ -13,7 +13,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { compounderRoute } from "../../../../routes/health_center";
 import NavCom from "../NavCom";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
 
 function Application() {
   const [application, setApplication] = useState(null);

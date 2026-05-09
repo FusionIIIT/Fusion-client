@@ -16,7 +16,7 @@ import { useEffect, useState } from "react";
 import { Check, X } from "@phosphor-icons/react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
 import { studentRoute } from "../../../../routes/health_center";
 import NavPatient from "../Navigation";
 
@@ -122,12 +122,15 @@ function CompPrescription() {
           },
         );
         console.log(response);
-        if (response.data.prescription.dependent_name === "SELF") {
-          data.rollNumber = response.data.prescription.user_id;
+        const prescriptionHeader = response.data?.prescription || {};
+        const prescriptionList = response.data?.prescriptions || [];
+
+        if (prescriptionHeader.dependent_name === "SELF") {
+          data.rollNumber = prescriptionHeader.user_id;
         } else {
-          data.rollNumber = response.data.prescription.dependent_name;
+          data.rollNumber = prescriptionHeader.dependent_name || "SELF";
         }
-        data.prescriptions = response.data.prescriptions;
+        data.prescriptions = prescriptionList;
         setPrescrip(data);
         setLoading(false);
         if (data?.prescriptions?.length > 0) {
@@ -219,7 +222,7 @@ function CompPrescription() {
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
-          {prescription.revoked_medicines.map((med) => (
+          {(prescription.revoked_medicines || []).map((med) => (
             <Table.Tr key={med.medicine}>
               <Table.Td>{med.medicine}</Table.Td>
               <Table.Td>{med.quantity}</Table.Td>
@@ -254,7 +257,7 @@ function CompPrescription() {
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
-          {prescription.medicines.map((med) => (
+          {(prescription.medicines || []).map((med) => (
             <Table.Tr key={med.medicine}>
               <Table.Td>{med.medicine}</Table.Td>
               <Table.Td>{med.quantity}</Table.Td>

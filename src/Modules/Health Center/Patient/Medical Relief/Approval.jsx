@@ -6,7 +6,7 @@ import axios from "axios";
 import { studentRoute } from "../../../../routes/health_center";
 import NavPatient from "../Navigation";
 import MedicalNavBar from "./medicalPath";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
 
 function Approval() {
   const [elements, setMedical] = useState([]);

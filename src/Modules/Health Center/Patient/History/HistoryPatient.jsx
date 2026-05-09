@@ -13,7 +13,7 @@ import {
 } from "@mantine/core";
 import axios from "axios";
 import NavCom from "../Navigation";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
 import { studentRoute } from "../../../../routes/health_center";
 
 function HistoryPatient() {
@@ -42,8 +42,8 @@ function HistoryPatient() {
           },
         },
       );
-      setHistory(response.data.report);
-      setTotalPages(response.data.total_pages);
+      setHistory(response.data.report || []);
+      setTotalPages(response.data.total_pages || 1);
     } catch (err) {
       console.error("Error fetching patient history:", err);
     } finally {
@@ -64,7 +64,7 @@ function HistoryPatient() {
     navigate(`/healthcenter/student/prescription/${id}`);
   };
 
-  const rows = history.map((element) => (
+  const rows = (history || []).map((element) => (
     <tr key={element.id}>
       <td style={{ textAlign: "center" }}>{element.doctor_id}</td>
       <td style={{ textAlign: "center" }}>{element.date}</td>

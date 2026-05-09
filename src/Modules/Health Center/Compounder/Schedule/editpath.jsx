@@ -5,7 +5,7 @@ import axios from "axios";
 import NavCom from "../NavCom";
 import ScheduleNavBar from "./schedulePath";
 import { compounderRoute } from "../../../../routes/health_center";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
 
 function Editpath() {
   const [doctorName, setDoctorName] = useState("");
@@ -16,6 +16,26 @@ function Editpath() {
   const [dayToRemove, setDayToRemove] = useState("");
   const [roomToAdd, setRoom] = useState("");
   const [pathologists, setPathologists] = useState([]);
+
+  const getErrorMessage = (payload, fallback) => {
+    if (!payload) {
+      return fallback;
+    }
+    if (typeof payload.detail === "string" && payload.detail.trim() !== "") {
+      return payload.detail;
+    }
+    if (payload.errors && typeof payload.errors === "object") {
+      const firstKey = Object.keys(payload.errors)[0];
+      const firstValue = payload.errors[firstKey];
+      if (Array.isArray(firstValue) && firstValue.length > 0) {
+        return String(firstValue[0]);
+      }
+      if (typeof firstValue === "string") {
+        return firstValue;
+      }
+    }
+    return fallback;
+  };
 
   const containerStyle = {
     display: "flex",
@@ -122,9 +142,16 @@ function Editpath() {
         },
       );
       console.log(response);
-      alert("schedule added successfully");
+
+      if (response?.data?.status === 1) {
+        alert("Schedule added successfully");
+        return;
+      }
+
+      alert(getErrorMessage(response?.data, "Unable to add schedule"));
     } catch (err) {
       console.log(err);
+      alert(getErrorMessage(err?.response?.data, "Unable to add schedule"));
     }
   };
 
@@ -145,9 +172,16 @@ function Editpath() {
         },
       );
       console.log(response);
-      alert("schedule removed successfully");
+
+      if (response?.data?.status === 1) {
+        alert("Schedule removed successfully");
+        return;
+      }
+
+      alert(getErrorMessage(response?.data, "Unable to remove schedule"));
     } catch (err) {
       console.log(err);
+      alert(getErrorMessage(err?.response?.data, "Unable to remove schedule"));
     }
   };
 

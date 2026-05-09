@@ -5,7 +5,7 @@ import axios from "axios";
 import NavPatient from "../Navigation";
 import ScheduleNavBar from "./schedulePath";
 import { studentRoute } from "../../../../routes/health_center";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
 
 function Dropdown({ doctorName, selectedDay, onDayChange }) {
   const days = [
@@ -61,7 +61,7 @@ function Pathologist() {
         },
       );
       console.log(response);
-      setSchedule(response.data.schedule);
+      setSchedule(response.data.schedule || []);
     } catch (err) {
       console.log(err);
     }

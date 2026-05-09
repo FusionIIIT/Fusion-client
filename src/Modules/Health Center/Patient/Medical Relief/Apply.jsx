@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import axios from "axios";
-import { useSelector } from "react-redux";
 import {
   Button,
   FileInput,
@@ -12,17 +10,16 @@ import {
 } from "@mantine/core";
 import Navigation from "../Navigation";
 import MedicalNavBar from "./medicalPath";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
-import { studentRoute } from "../../../../routes/health_center";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
+import { createMedicalReliefApi } from "../../services/api";
 
 function Apply() {
   const [send_file, setFile] = useState(null);
-  const [recipient, setRecipient] = useState("Compounder(Pkumar)");
+  const [recipient, setRecipient] = useState("Compounder");
   const [desc, setDescription] = useState("");
   const [errors, setErrors] = useState({});
   // eslint-disable-next-line no-unused-vars
   const [isSubmitting, setSubmitting] = useState(false);
-  const role = useSelector((state) => state.user.role);
   const validate = () => {
     const newErrors = {};
     if (!desc.trim()) newErrors.description = "Description is required";
@@ -35,31 +32,15 @@ function Apply() {
 
     if (!validate()) return;
 
-    const formData = new FormData();
-    if (send_file) formData.append("file", send_file);
-    formData.append("recipient", recipient);
-    formData.append("description", desc);
-    formData.append("medical_relief_submit", 1);
-
-    const token = localStorage.getItem("authToken");
     try {
-      const response = await axios.post(
-        studentRoute,
-        {
-          description: desc,
-          designation: "pkumar",
-          selected_role: role,
-          // file: send_file,
-          medical_relief_submit: 1,
-        },
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
-        },
-      );
-      console.log(response.data);
+      await createMedicalReliefApi({
+        description: desc,
+        recipient,
+        file: send_file,
+      });
       alert("File forwarded successfully");
+      setDescription("");
+      setFile(null);
     } catch (err) {
       console.log(err);
     }
@@ -81,8 +62,8 @@ function Apply() {
               label="Upload file"
               placeholder="Choose file"
               value={send_file}
-              onChange={(e) => {
-                setFile(e.target.files[0]);
+              onChange={(file) => {
+                setFile(file);
               }}
               error={errors.file}
             />

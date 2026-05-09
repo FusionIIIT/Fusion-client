@@ -5,7 +5,7 @@ import { Download } from "@phosphor-icons/react";
 import axios from "axios";
 import NavCom from "../NavCom";
 import { compounderRoute } from "../../../../routes/health_center";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
 
 function Inbox() {
   const navigate = useNavigate();
@@ -25,8 +25,10 @@ function Inbox() {
           },
         },
       );
-      console.log(response.data);
-      setMedical(response.data.relief);
+      const relief = Array.isArray(response?.data?.relief)
+        ? response.data.relief
+        : [];
+      setMedical(relief);
     } catch (err) {
       console.log(err);
     } finally {

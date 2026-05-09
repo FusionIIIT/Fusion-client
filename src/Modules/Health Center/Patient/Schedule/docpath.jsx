@@ -14,8 +14,8 @@ import axios from "axios";
 import { IconPhone, IconPrinter, IconStethoscope } from "@tabler/icons-react";
 import NavCom from "../Navigation";
 import Changenav from "./schedulePath";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
-import { compounderRoute } from "../../../../routes/health_center";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
+import { studentRoute } from "../../../../routes/health_center";
 
 export default function DoctorPath() {
   const handlePrint = () => {
@@ -31,7 +31,7 @@ export default function DoctorPath() {
     const token = localStorage.getItem("authToken");
     try {
       const response = await axios.post(
-        compounderRoute,
+        studentRoute,
         { get_doctors: 1 },
         {
           headers: {

@@ -8,11 +8,10 @@ import {
   Center,
   Text,
 } from "@mantine/core";
-import axios from "axios";
 import NavCom from "../NavCom";
 import ManageStock from "./ManageStocksNav";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
-import { compounderRoute } from "../../../../routes/health_center";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
+import { fetchRequiredMedicinesApi } from "../../services/api";
 
 function RequiredMedicine() {
   const [loading, setLoading] = useState(true);
@@ -23,24 +22,24 @@ function RequiredMedicine() {
   const printRef = useRef();
 
   const fetchRequired = async (pagenumber) => {
-    const token = localStorage.getItem("authToken");
     setLoading(true);
     try {
-      const response = await axios.post(
-        compounderRoute,
-        {
-          page_stock_required: pagenumber,
-          search_view_required: search,
-          datatype: "manage_stock_required",
-        },
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
-        },
-      );
-      setRequired(response.data.report_stock_required || []);
-      setTotalPages(response.data.total_pages_stock_required || 1);
+      const response = await fetchRequiredMedicinesApi();
+      const rows = response.data || [];
+      const filteredRows = rows.filter((item) => {
+        if (!search) {
+          return true;
+        }
+        const medicine = `${item.medicine_name || ""}`.toLowerCase();
+        return medicine.includes(search.toLowerCase());
+      });
+
+      const pageSize = 10;
+      const offset = (pagenumber - 1) * pageSize;
+      const paginatedRows = filteredRows.slice(offset, offset + pageSize);
+
+      setRequired(paginatedRows);
+      setTotalPages(Math.max(1, Math.ceil(filteredRows.length / pageSize)));
     } catch (err) {
       console.log(err);
     } finally {
@@ -71,8 +70,8 @@ function RequiredMedicine() {
 
   const rows = requiredMed.map((item, index) => (
     <tr key={index}>
-      <td style={{ textAlign: "center" }}>{item.medicine_id}</td>
-      <td style={{ textAlign: "center" }}>{item.quantity}</td>
+      <td style={{ textAlign: "center" }}>{item.medicine_name || item.medicine_id}</td>
+      <td style={{ textAlign: "center" }}>{item.current_quantity ?? item.quantity}</td>
       <td style={{ textAlign: "center" }}>{item.threshold}</td>
     </tr>
   ));

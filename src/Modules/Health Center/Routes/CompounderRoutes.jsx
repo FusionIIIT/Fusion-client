@@ -1,9 +1,11 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { Layout } from "../../../components/layout";
+import CompounderDashboard from "../Compounder/CompounderDashboard";
 import HistoryCompounder from "../Compounder/History/HistoryComp";
 import UpdatePatient from "../Compounder/History/UpdatePatient";
 import CompPrescription from "../Compounder/History/CompPrescription";
+import CompounderPrescriptionPage from "../pages/CompounderPrescriptionPage";
 import Viewdoctor from "../Compounder/Schedule/viewdoctor";
 import Editdoctor from "../Compounder/Schedule/editdoctor";
 import Viewpath from "../Compounder/Schedule/viewpath";
@@ -25,10 +27,24 @@ import EditThreshold from "../Compounder/Stocks/EditThreshold";
 import ExpiredMedicine from "../Compounder/Stocks/ExpiredMedicine";
 import ViewStock from "../Compounder/Stocks/ViewStock";
 import RequiredMedicine from "../Compounder/Stocks/RequiredMedicine";
+import PathologistManagementPage from "../pages/PathologistManagementPage";
+import AnnouncementsPage from "../pages/AnnouncementsPage";
+import FollowupPrescriptionPage from "../pages/FollowupPrescriptionPage";
+import CreateRequisition from "../Compounder/Requisitions/CreateRequisition";
+import RequisitionList from "../Compounder/Requisitions/RequisitionList";
+import PendingRequisitions from "../Compounder/Requisitions/PendingRequisitions";
 
 export function CompounderRoutes() {
   return (
     <Routes>
+      <Route
+        path="/"
+        element={
+          <Layout>
+            <CompounderDashboard />
+          </Layout>
+        }
+      />
       <Route
         path="/patient-log/history"
         element={
@@ -50,6 +66,22 @@ export function CompounderRoutes() {
         element={
           <Layout>
             <CompPrescription />
+          </Layout>
+        }
+      />
+      <Route
+        path="/prescriptions"
+        element={
+          <Layout>
+            <CompounderPrescriptionPage />
+          </Layout>
+        }
+      />
+      <Route
+        path="/prescription/:id/followup"
+        element={
+          <Layout>
+            <FollowupPrescriptionPage />
           </Layout>
         }
       />
@@ -198,6 +230,22 @@ export function CompounderRoutes() {
         }
       />
       <Route
+        path="/announcements/v2"
+        element={
+          <Layout>
+            <AnnouncementsPage />
+          </Layout>
+        }
+      />
+      <Route
+        path="/pathologists/manage"
+        element={
+          <Layout>
+            <PathologistManagementPage />
+          </Layout>
+        }
+      />
+      <Route
         path="/announcement/record"
         element={
           <Layout>
@@ -226,6 +274,30 @@ export function CompounderRoutes() {
         element={
           <Layout>
             <Application />
+          </Layout>
+        }
+      />
+      <Route
+        path="/requisitions"
+        element={
+          <Layout>
+            <RequisitionList />
+          </Layout>
+        }
+      />
+      <Route
+        path="/requisitions/create"
+        element={
+          <Layout>
+            <CreateRequisition />
+          </Layout>
+        }
+      />
+      <Route
+        path="/requisitions/pending"
+        element={
+          <Layout>
+            <PendingRequisitions />
           </Layout>
         }
       />

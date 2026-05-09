@@ -15,7 +15,7 @@ import {
 import { Download } from "@phosphor-icons/react";
 import NavCom from "../NavCom";
 import HistoryNavBar from "./historyPath";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
 import { compounderRoute } from "../../../../routes/health_center";
 
 function HistoryCompounder() {
@@ -40,8 +40,13 @@ function HistoryCompounder() {
           },
         },
       );
-      setHistory(response.data.report);
-      setTotalPages(response.data.total_pages);
+      const report = Array.isArray(response?.data?.report)
+        ? response.data.report
+        : [];
+      const pages = Number(response?.data?.total_pages);
+
+      setHistory(report);
+      setTotalPages(Number.isFinite(pages) && pages > 0 ? pages : 1);
     } catch (err) {
       console.log(err);
     } finally {

@@ -22,7 +22,7 @@ import { useParams } from "react-router-dom";
 import { useForm } from "@mantine/form";
 import axios from "axios";
 import NavCom from "../NavCom";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
 import { compounderRoute } from "../../../../routes/health_center";
 
 // function getDummyData(medicineName) {
@@ -79,6 +79,26 @@ function CompPrescription() {
   const [revoke, setRevoke] = useState([]);
   const [followid, setFollowid] = useState(0);
   const [reportfile, setFile] = useState(null);
+
+  const getErrorMessage = (payload, fallback) => {
+    if (!payload) {
+      return fallback;
+    }
+    if (typeof payload.detail === "string" && payload.detail.trim() !== "") {
+      return payload.detail;
+    }
+    if (payload.errors && typeof payload.errors === "object") {
+      const firstKey = Object.keys(payload.errors)[0];
+      const firstValue = payload.errors[firstKey];
+      if (Array.isArray(firstValue) && firstValue.length > 0) {
+        return String(firstValue[0]);
+      }
+      if (typeof firstValue === "string") {
+        return firstValue;
+      }
+    }
+    return fallback;
+  };
 
   const handelcheck = async (event) => {
     const { value, checked } = event.target;
@@ -202,13 +222,22 @@ function CompPrescription() {
       if (response.data.status === -1) {
         alert("No patient found");
       } else if (response.data.status === 0) {
-        alert("Prescription Failed!");
-      } else {
+        alert(
+          getErrorMessage(response?.data, "Follow-up prescription failed."),
+        );
+      } else if (response.data.status === 1) {
         alert("Followup Added Successfully");
         window.location.reload();
+      } else {
+        alert(
+          getErrorMessage(response?.data, "Follow-up prescription failed."),
+        );
       }
     } catch (err) {
       console.log(err);
+      alert(
+        getErrorMessage(err?.response?.data, "Follow-up prescription failed."),
+      );
     }
   };
 

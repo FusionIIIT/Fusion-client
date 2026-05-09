@@ -5,7 +5,7 @@ import axios from "axios";
 import NavCom from "../NavCom";
 import ScheduleNavBar from "./schedulePath";
 import { compounderRoute } from "../../../../routes/health_center";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
 
 function Dropdown({ doctorName, selectedDay, onDayChange }) {
   const days = [
@@ -62,7 +62,7 @@ function Viewpath() {
         },
       );
       console.log(response);
-      setSchedule(response.data.schedule);
+      setSchedule(response.data.schedule || []);
     } catch (err) {
       console.log(err);
     } finally {

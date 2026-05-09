@@ -18,7 +18,7 @@ import { Check, X } from "@phosphor-icons/react";
 import axios from "axios";
 import NavCom from "../NavCom";
 import HistoryNavBar from "./historyPath";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
 import { compounderRoute } from "../../../../routes/health_center";
 
 function getDummyData(medicineName) {
@@ -44,6 +44,7 @@ function getDummyData(medicineName) {
 
 function UpdatePatient() {
   const [patientId, setpatientId] = useState("");
+  const [patients, setPatients] = useState([]);
   const [entries, setEntries] = useState([]);
   const [medicine, setMedicine] = useState("");
   const [quantity, setQuantity] = useState("");
@@ -70,6 +71,26 @@ function UpdatePatient() {
   const [textSuggested, setTextSuggested] = useState("");
   const [reportfile, setFile] = useState(null);
 
+  const getErrorMessage = (payload, fallback) => {
+    if (!payload) {
+      return fallback;
+    }
+    if (typeof payload.detail === "string" && payload.detail.trim() !== "") {
+      return payload.detail;
+    }
+    if (payload.errors && typeof payload.errors === "object") {
+      const firstKey = Object.keys(payload.errors)[0];
+      const firstValue = payload.errors[firstKey];
+      if (Array.isArray(firstValue) && firstValue.length > 0) {
+        return String(firstValue[0]);
+      }
+      if (typeof firstValue === "string") {
+        return firstValue;
+      }
+    }
+    return fallback;
+  };
+
   const fetchDoctors = async () => {
     const token = localStorage.getItem("authToken");
     try {
@@ -89,8 +110,32 @@ function UpdatePatient() {
     }
   };
 
+  const fetchPatients = async () => {
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.post(
+        compounderRoute,
+        { get_patients: 1 },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+
+      const patientRows = Array.isArray(response?.data?.patients)
+        ? response.data.patients
+        : [];
+      setPatients(patientRows);
+    } catch (err) {
+      console.log(err);
+      setPatients([]);
+    }
+  };
+
   useEffect(() => {
     fetchDoctors();
+    fetchPatients();
   }, []);
 
   const fetchMedicine = async (med) => {
@@ -169,7 +214,15 @@ function UpdatePatient() {
       );
       console.log(response);
       if (response.data.status === -1) {
-        alert("No patient found");
+        const samplePatients = patients
+          .slice(0, 5)
+          .map((item) => item.username)
+          .join(", ");
+        alert(
+          samplePatients
+            ? `No patient found. Use patient username (not full name). Example: ${samplePatients}`
+            : "No patient found. Use patient username (not full name).",
+        );
         setSelectedOption("self");
       } else if (response.data.dep.length === 0) {
         alert("No Dependent found");
@@ -296,15 +349,26 @@ function UpdatePatient() {
       );
       console.log(response);
       if (response.data.status === -1) {
-        alert("No patient found");
+        const samplePatients = patients
+          .slice(0, 5)
+          .map((item) => item.username)
+          .join(", ");
+        alert(
+          samplePatients
+            ? `No patient found. Use patient username (not full name). Example: ${samplePatients}`
+            : "No patient found. Use patient username (not full name).",
+        );
       } else if (response.data.status === 0) {
-        alert("Prescription Failed!");
-      } else {
+        alert(getErrorMessage(response?.data, "Prescription failed."));
+      } else if (response.data.status === 1) {
         alert("Prescribed Medicine Successfully");
         window.location.reload();
+      } else {
+        alert(getErrorMessage(response?.data, "Prescription failed."));
       }
     } catch (err) {
       console.log(err);
+      alert(getErrorMessage(err?.response?.data, "Prescription failed."));
     }
   };
 
@@ -331,11 +395,16 @@ function UpdatePatient() {
           <div style={{ display: "flex" }}>
             <div style={{ paddingRight: "100px" }}>
               <p style={{ marginBottom: "2px" }}>Patient</p>
-              <Input
-                type="text"
-                placeholder="Patient Id"
+              <Select
+                searchable
+                clearable
+                placeholder="Select Patient Username"
                 value={patientId}
-                onChange={(e) => setpatientId(e.target.value)}
+                onChange={(value) => setpatientId(value || "")}
+                data={patients.map((item) => ({
+                  value: item.username,
+                  label: `${item.username}${item.name ? ` (${item.name})` : ""}`,
+                }))}
               />
             </div>
 

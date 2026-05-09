@@ -38,7 +38,10 @@ export default function Addpath() {
         },
       );
       console.log(response);
-      alert("Pathologist added successfully");
+      if (response?.data?.status === 1) {
+        alert("Pathologist added successfully");
+        window.location.reload();
+      }
     } catch (err) {
       console.log(err);
     }

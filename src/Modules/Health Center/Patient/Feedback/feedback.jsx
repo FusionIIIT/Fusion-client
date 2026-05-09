@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Button, Textarea, Title, Center, Box, Paper } from "@mantine/core";
 import axios from "axios";
 import Navigation from "../Navigation";
-import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
+import CustomBreadcrumbs from "../../components/common/Breadcrumbs";
 import { studentRoute } from "../../../../routes/health_center";
 
 function Feedback() {
@@ -37,9 +37,17 @@ function Feedback() {
         },
       );
       console.log(response.data);
-      setIsSubmitting(false);
+      if (response?.data?.status === 1) {
+        alert("Feedback submitted successfully.");
+        setFeedback("");
+      } else {
+        setError(response?.data?.detail || "Unable to submit feedback.");
+      }
     } catch (err) {
       console.log(err);
+      setError(err?.response?.data?.detail || "Unable to submit feedback.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 

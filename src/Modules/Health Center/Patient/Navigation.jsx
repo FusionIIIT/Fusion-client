@@ -2,7 +2,6 @@ import React, { useRef, useState, useEffect } from "react";
 import { Flex, Button, Tabs, Text } from "@mantine/core";
 import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
 import classes from "../../Dashboard/Dashboard.module.css";
 
 function NavPatient() {
@@ -11,20 +10,16 @@ function NavPatient() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const role = useSelector((state) => state.user.role);
-
   const baseTabItems = [
     { title: "History", path: "/history" },
     { title: "Feedback", path: "/feedback" },
     { title: "Schedule", path: "/schedule" },
     { title: "Announcements", path: "/announcements" },
+    { title: "Medical Profile", path: "/medical-profile" },
     { title: "Medical Relief", path: "/medical-relief" },
   ];
 
-  const tabItems =
-    role === "student"
-      ? baseTabItems.filter((tab) => tab.title !== "Medical Relief")
-      : baseTabItems;
+  const tabItems = baseTabItems;
 
   useEffect(() => {
     const currentPath = location.pathname;
