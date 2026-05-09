@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 import {
   Text, // For displaying text
   Button, // For interactive buttons
@@ -10,6 +11,7 @@ import {
   Loader, // For showing loading state
   Center, // For centering content
 } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 
 // Import useSelector to access the Redux store and retrieve the role of the user
 import { useSelector } from "react-redux"; // Import useSelector to get role from Redux
@@ -17,37 +19,66 @@ import { useSelector } from "react-redux"; // Import useSelector to get role fro
 // Import custom components for the application
 import ComplaintDetails from "./ComplaintDetails.jsx";
 import UnresCompChangeStatus from "./UnresComp_ChangeStatus.jsx";
-import UnresCompRedirect from "./UnresComp_Redirect.jsx";
 
 // API utility for fetching complaints
-import { getComplaintsByRole } from "../routes/api"; // Import axios function
+import { getComplaintsByRole, extractApiErrorMessage } from "../routes/api"; // Import axios function
 
-function UnresolvedComplaints() {
+function CaretakerQueue({ roleOverride }) {
   const [activeComponent, setActiveComponent] = useState("list");
   const [selectedComplaint, setSelectedComplaint] = useState(null);
   const [complaints, setComplaints] = useState([]);
-  const [redirectedComplaints, setRedirectedComplaints] = useState([]);
+  const [activeStatusFilter, setActiveStatusFilter] = useState("all_assigned");
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
-  const role = useSelector((state) => state.user.role); // Get user role from Redux store
+  const [errorMessage, setErrorMessage] = useState("Failed to fetch complaints. Please try again.");
+  const storeRole = useSelector((state) => state.user.role); // Get user role from Redux store
+  const role = roleOverride || storeRole;
 
   const token = localStorage.getItem("authToken"); // Get token from localStorage
 
-  // Fetch unresolved complaints from the API based on role
+  const statusBadgeConfig = {
+    0: { label: "Pending", color: "red" },
+    1: { label: "In Progress", color: "blue" },
+    2: { label: "Resolved", color: "green" },
+    3: { label: "Declined", color: "gray" },
+    4: { label: "Escalated", color: "orange" },
+    5: { label: "Closed", color: "teal" },
+    6: { label: "Reopened", color: "yellow" },
+  };
+
+  const statusFilters = [
+    { key: "all_assigned", label: "All Assigned", statuses: [0, 1, 2, 3, 4, 5, 6] },
+    { key: "active", label: "Active", statuses: [0, 1, 6] },
+    { key: "escalated", label: "Escalated", statuses: [4] },
+    { key: "declined", label: "Declined", statuses: [3] },
+    { key: "resolved", label: "Resolved", statuses: [2] },
+    { key: "closed", label: "Closed", statuses: [5] },
+  ];
+
+  const selectedFilter = statusFilters.find((filter) => filter.key === activeStatusFilter) || statusFilters[0];
+  const visibleComplaints = complaints.filter((complaint) => selectedFilter.statuses.includes(complaint.status));
+
+  const getFilterCount = (statuses) => complaints.filter((complaint) => statuses.includes(complaint.status)).length;
+
+  // Fetch assigned complaints from the API based on role
   useEffect(() => {
     const fetchComplaints = async () => {
       setIsLoading(true);
       setIsError(false);
+      setErrorMessage("Failed to fetch complaints. Please try again.");
       const { success, data, error } = await getComplaintsByRole(role, token);
 
       if (success) {
-        // Filter unresolved complaints (status 0 or 1)
-        const unresolvedComplaints = data.filter(
-          (complaint) => complaint.status === 1 || complaint.status === 0,
-        );
-        setComplaints(unresolvedComplaints);
+        setComplaints(data || []);
       } else {
         setIsError(true);
+        const msg = extractApiErrorMessage(error, "Failed to fetch complaints. Please try again.");
+        setErrorMessage(msg);
+        notifications.show({
+          title: "Error",
+          message: msg,
+          color: "red",
+        });
         console.error("Error fetching complaints:", error);
       }
       setIsLoading(false);
@@ -66,10 +97,6 @@ function UnresolvedComplaints() {
     setActiveComponent("list");
   };
 
-  const markComplaintAsRedirected = (complaintId) => {
-    setRedirectedComplaints((prev) => [...prev, complaintId]);
-  };
-
   const formatDateTime = (datetimeStr) => {
     const date = new Date(datetimeStr);
     const day = String(date.getDate()).padStart(2, "0");
@@ -81,18 +108,20 @@ function UnresolvedComplaints() {
     return `${day}-${month}-${year}, ${hours}:${minutes}`; // Format: DD-MM-YYYY HH:MM
   };
 
-  const calculateDaysElapsed = (complaintDate) => {
-    const lodgeDate = new Date(complaintDate);
-    const currentDate = new Date();
-    const diffTime = Math.abs(currentDate - lodgeDate);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
+  const severityLabel = (priority) => {
+    const value = String(priority || "").toUpperCase();
+    if (value === "EMERGENCY") return "Critical";
+    if (value === "URGENT") return "High";
+    if (value === "LOW") return "Low";
+    return "Medium";
   };
 
-  const getSeverityColor = (days) => {
-    if (days <= 2) return "#4CAF50"; // Green for recent complaints
-    if (days <= 5) return "#FFC107"; // Yellow for moderate urgency
-    return "#FF5252"; // Red for high urgency
+  const severityColorByPriority = (priority) => {
+    const value = String(priority || "").toUpperCase();
+    if (value === "EMERGENCY") return "grape";
+    if (value === "URGENT") return "red";
+    if (value === "LOW") return "green";
+    return "yellow";
   };
 
   return (
@@ -109,8 +138,7 @@ function UnresolvedComplaints() {
           maxHeight: "70vh",
           width:
             activeComponent === "details" ||
-            activeComponent === "changeStatus" ||
-            activeComponent === "redirect"
+            activeComponent === "changeStatus"
               ? "70vw"
               : "100%",
           overflow: "auto",
@@ -125,12 +153,12 @@ function UnresolvedComplaints() {
           ) : isError ? (
             <Center style={{ flexGrow: 1 }}>
               <Text color="red">
-                Failed to fetch complaints. Please try again.
+                {errorMessage}
               </Text>
             </Center>
           ) : complaints.length === 0 ? (
             <Center style={{ flexGrow: 1 }}>
-              <Text>No unresolved complaints available.</Text>
+              <Text>No assigned complaints available.</Text>
             </Center>
           ) : activeComponent === "details" ? (
             <ComplaintDetails
@@ -142,14 +170,32 @@ function UnresolvedComplaints() {
               complaint={selectedComplaint}
               onBack={handleBack}
             />
-          ) : activeComponent === "redirect" ? (
-            <UnresCompRedirect
-              complaint={selectedComplaint}
-              onBack={handleBack}
-              onForward={() => markComplaintAsRedirected(selectedComplaint.id)}
-            />
           ) : (
-            complaints.map((complaint) => (
+            <>
+              <Flex gap="xs" mb="md" wrap="wrap">
+                {statusFilters.map((filter) => (
+                  <Button
+                    key={filter.key}
+                    size="xs"
+                    variant={activeStatusFilter === filter.key ? "filled" : "outline"}
+                    onClick={() => setActiveStatusFilter(filter.key)}
+                  >
+                    {filter.label} ({getFilterCount(filter.statuses)})
+                  </Button>
+                ))}
+              </Flex>
+
+              {visibleComplaints.length === 0 ? (
+                <Center style={{ flexGrow: 1 }}>
+                  <Text>No complaints found in this status group.</Text>
+                </Center>
+              ) : visibleComplaints.map((complaint) => {
+                const canChangeStatus = [0, 1, 6].includes(complaint.status);
+                const hasFeedback = !!complaint.has_feedback || (complaint.feedback || "").trim().length > 0;
+                const isOverdue = complaint.sla_deadline
+                  && new Date(complaint.sla_deadline) < new Date()
+                  && ![2, 3, 5].includes(complaint.status);
+                return (
               <Paper
                 key={complaint.id}
                 radius="md"
@@ -179,26 +225,18 @@ function UnresolvedComplaints() {
                       >
                         {complaint.complaint_type.toUpperCase()}
                       </Text>
-                      <Badge
-                        style={{
-                          borderRadius: "50px", // Match the complaint_type box
-                          padding: "10px 20px", // Match the padding
-                          fontSize: "14px",
-                          backgroundColor: getSeverityColor(
-                            calculateDaysElapsed(complaint.complaint_date),
-                          ),
-                          color: "white",
-                        }}
-                      >
-                        {calculateDaysElapsed(complaint.complaint_date)} days
-                      </Badge>
+                      {isOverdue && (
+                        <Badge size="sm" color="red" variant="filled">
+                          OVERDUE
+                        </Badge>
+                      )}
                     </Flex>
                     <Badge
-                      color={complaint.status === 1 ? "green" : "red"}
+                      color={(statusBadgeConfig[complaint.status] || {}).color || "gray"}
                       variant="filled"
                       size="lg"
                     >
-                      {complaint.status === 1 ? "Redirected" : "Unresolved"}
+                      {(statusBadgeConfig[complaint.status] || {}).label || "Unknown"}
                     </Badge>
                   </Flex>
 
@@ -211,6 +249,21 @@ function UnresolvedComplaints() {
                       <strong>Location:</strong> {complaint.specific_location},{" "}
                       {complaint.location}
                     </Text>
+                    <Flex gap="xs" align="center" wrap="wrap">
+                      <Text size="14px">
+                        <strong>SLA Deadline:</strong>{" "}
+                        {complaint.sla_deadline
+                          ? formatDateTime(complaint.sla_deadline)
+                          : "N/A"}
+                      </Text>
+                      <Badge
+                        size="sm"
+                        color={severityColorByPriority(complaint.priority)}
+                        variant="light"
+                      >
+                        {severityLabel(complaint.priority)}
+                      </Badge>
+                    </Flex>
                   </Flex>
                   <Divider my="sm" />
 
@@ -226,37 +279,24 @@ function UnresolvedComplaints() {
                       >
                         Details
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="xs"
-                        onClick={() =>
-                          handleButtonClick("changeStatus", complaint)
-                        }
-                      >
-                        Change Status
-                      </Button>
-
-                      {redirectedComplaints.includes(complaint.id) ||
-                      complaint.status === 1 ? (
-                        <Button variant="outline" size="xs" disabled>
-                          Redirected
-                        </Button>
-                      ) : (
+                      {canChangeStatus && (
                         <Button
                           variant="outline"
                           size="xs"
                           onClick={() =>
-                            handleButtonClick("redirect", complaint)
+                            handleButtonClick("changeStatus", complaint)
                           }
                         >
-                          Redirect
+                          Change Status / Escalate
                         </Button>
                       )}
                     </Flex>
                   </Flex>
                 </Flex>
               </Paper>
-            ))
+                );
+              })}
+            </>
           )}
         </Flex>
       </Paper>
@@ -264,4 +304,12 @@ function UnresolvedComplaints() {
   );
 }
 
-export default UnresolvedComplaints;
+CaretakerQueue.defaultProps = {
+  roleOverride: "",
+};
+
+CaretakerQueue.propTypes = {
+  roleOverride: PropTypes.string,
+};
+
+export default CaretakerQueue;

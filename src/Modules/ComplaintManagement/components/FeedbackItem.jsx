@@ -17,6 +17,8 @@ function FeedbackItem({ complaint, setSelectedComplaint }) {
   const handleFeedbackButtonClick = () => {
     setSelectedComplaint(complaint);
   };
+  const feedbackText = (complaint.feedback || "").trim();
+  const hasFeedback = feedbackText.length > 0;
 
   return (
     <Paper
@@ -106,13 +108,17 @@ function FeedbackItem({ complaint, setSelectedComplaint }) {
               <b>Location:</b> {complaint.specific_location},{" "}
               {complaint.location}
             </Text>
-            {complaint.feedback !== "" && (
+            {hasFeedback && (
               <Text size="14px">
-                <b>Feedback:</b> {complaint.feedback}
+                <b>Feedback:</b> {feedbackText}
               </Text>
             )}
           </Flex>
-          {complaint.feedback === "" && (
+          {hasFeedback ? (
+            <Text size="13px" c="green" fw={600}>
+              Feedback Submitted
+            </Text>
+          ) : (
             <Button
               color="#14ABFF"
               radius="lg"

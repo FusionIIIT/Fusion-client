@@ -1,9 +1,10 @@
 // MainPage.jsx
 import React, { useState } from "react";
+import PropTypes from "prop-types";
 import ComplaintForm from "./ComplainForm"; // Corrected import path
 import AcknowledgmentPage from "./FormAcknowledgmentPage"; // Corrected import path
 
-function MainPage() {
+function MainPage({ roleOverride }) {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [complaintDetails, setComplaintDetails] = useState(null);
 
@@ -23,8 +24,16 @@ function MainPage() {
       onBackToForm={handleBackToForm}
     />
   ) : (
-    <ComplaintForm onSubmit={handleFormSubmit} />
+    <ComplaintForm onSubmit={handleFormSubmit} roleOverride={roleOverride} />
   );
 }
+
+MainPage.defaultProps = {
+  roleOverride: "",
+};
+
+MainPage.propTypes = {
+  roleOverride: PropTypes.string,
+};
 
 export default MainPage;

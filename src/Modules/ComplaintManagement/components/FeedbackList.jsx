@@ -5,7 +5,7 @@ import FeedbackItem from "./FeedbackItem";
 
 function FeedbackList({ complaints, setSelectedComplaint }) {
   const filteredComplaints = complaints.filter(
-    (complaint) => complaint.status === 2,
+    (complaint) => complaint.status === 5,
   );
 
   return (
@@ -26,7 +26,7 @@ function FeedbackList({ complaints, setSelectedComplaint }) {
       >
         {filteredComplaints.length === 0 ? (
           <Text align="center" color="gray" style={{ fontSize: "14px" }}>
-            No resolved complaints available.
+            No closed complaints requiring feedback.
           </Text>
         ) : (
           filteredComplaints.map((complaint) => (

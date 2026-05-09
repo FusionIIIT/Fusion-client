@@ -1,12 +1,9 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { Paper, Badge, Button, Flex, Divider, Text } from "@mantine/core";
-import { useSelector } from "react-redux";
+import PropTypes from "prop-types";
+import { Paper, Badge, Button, Flex, Divider, Text, Grid, Title, Center, Loader } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { getComplaintReport } from "../routes/api"; // Ensure correct import path for getComplaintReport
+import { getReportNew, exportReport } from "../routes/api";
 import "../styles/GenerateReport.css";
-import detailIcon from "../../../assets/detail.png";
-import declinedIcon from "../../../assets/declined.png";
-import resolvedIcon from "../../../assets/resolved.png";
 import ComplaintDetails from "./ComplaintDetails";
 
 const complaintTypes = [
@@ -34,12 +31,6 @@ const locations = [
   "NR2",
 ];
 
-const statusMapping = {
-  0: "Pending",
-  2: "Resolved",
-  3: "Declined",
-};
-
 const calculateDaysElapsed = (complaintDate) => {
   const lodgeDate = new Date(complaintDate);
   const currentDate = new Date();
@@ -47,49 +38,47 @@ const calculateDaysElapsed = (complaintDate) => {
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 };
 
-const getSeverityColor = (days) => {
-  if (days <= 2) return "#4CAF50"; // Green for recent complaints
-  if (days <= 5) return "#FFC107"; // Yellow for moderate urgency
-  return "#FF5252"; // Red for high urgency
-};
-
-function GenerateReport() {
+function GenerateReport({ roleOverride }) {
   const [complaintsData, setComplaintsData] = useState([]);
+  const [summary, setSummary] = useState(null);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [exportFormat, setExportFormat] = useState("csv");
   const [filters, setFilters] = useState({
     location: "",
     complaintType: "",
     status: "",
+    priority: "",
     startDate: "",
     endDate: "",
-    sortBy: "mostRecent", // Default sort set to most recent
+    sortBy: "mostRecent",
   });
 
-  const username = useSelector((state) => state.user.username);
   const token = localStorage.getItem("authToken");
-  const role = useSelector((state) => state.user.role);
 
-  // Fetch complaints data when filters change.
   useEffect(() => {
     async function fetchData() {
+      setIsLoading(true);
       try {
-        const { success, data } = await getComplaintReport(filters, token);
+        const apiFilters = {};
+        if (filters.location) apiFilters.location = filters.location;
+        if (filters.complaintType) apiFilters.complaint_type = filters.complaintType;
+        if (filters.status) apiFilters.status = filters.status;
+        if (filters.priority) apiFilters.priority = filters.priority;
+        if (filters.startDate) apiFilters.start_date = filters.startDate;
+        if (filters.endDate) apiFilters.end_date = filters.endDate;
+
+        const { success, data } = await getReportNew(apiFilters, token);
         if (success) {
-          setComplaintsData(data);
+          setComplaintsData(data.results || []);
+          setSummary(data.summary || null);
         } else {
-          notifications.show({
-            title: "Error",
-            message: "Error fetching complaints. Please try again.",
-            color: "red",
-          });
+          notifications.show({ title: "Error", message: "Error fetching report.", color: "red" });
         }
       } catch (error) {
-        notifications.show({
-          title: "Unexpected Error",
-          message: "Unexpected error occurred. Please try again.",
-          color: "red",
-        });
+        notifications.show({ title: "Error", message: "Unexpected error.", color: "red" });
       }
+      setIsLoading(false);
     }
     fetchData();
   }, [filters, token]);
@@ -110,14 +99,14 @@ function GenerateReport() {
     if (filters.location) {
       filtered = filtered.filter(
         (complaint) =>
-          complaint.location.toLowerCase() === filters.location.toLowerCase(),
+          complaint.location?.toLowerCase() === filters.location.toLowerCase(),
       );
     }
     // Complaint type filter – applied if role includes "caretaker" or "convener"
     if (filters.complaintType) {
       filtered = filtered.filter(
         (complaint) =>
-          complaint.complaint_type.toLowerCase() ===
+          complaint.complaint_type?.toLowerCase() ===
           filters.complaintType.toLowerCase(),
       );
     }
@@ -182,69 +171,18 @@ function GenerateReport() {
     }));
   };
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString();
-  };
-
-  const generateCSV = () => {
-    if (!filteredData.length) {
-      notifications.show({
-        title: "No Data",
-        message: "No data to generate CSV.",
-        color: "red",
-      });
-      return;
+  const handleExport = async () => {
+    const apiFilters = {};
+    if (filters.location) apiFilters.location = filters.location;
+    if (filters.complaintType) apiFilters.complaint_type = filters.complaintType;
+    if (filters.status) apiFilters.status = filters.status;
+    if (filters.priority) apiFilters.priority = filters.priority;
+    if (filters.startDate) apiFilters.start_date = filters.startDate;
+    if (filters.endDate) apiFilters.end_date = filters.endDate;
+    const result = await exportReport(apiFilters, exportFormat, token);
+    if (!result.success) {
+      notifications.show({ title: "Error", message: "Failed to export report.", color: "red" });
     }
-    const currentDateTime = new Date().toLocaleString().replace(",", "");
-    const reportTitle = `Complaint Report`;
-    const dateLine = `Date of Generation: ${currentDateTime}`;
-    const userLine = `Generated by: ${username}`;
-
-    const appliedFilters = [
-      filters.complaintType && `Complaint Type: ${filters.complaintType}`,
-      filters.location && `Location: ${filters.location}`,
-      filters.status && `Status: ${statusMapping[filters.status]}`,
-      filters.startDate && `From Date: ${filters.startDate}`,
-      filters.endDate && `To Date: ${filters.endDate}`,
-    ].filter(Boolean);
-
-    // CSV headers
-    const headers = ["Complaint Type", "Location", "Status", "Date", "Details"];
-    // Create rows from complaints data
-    const rows = filteredData.map((complaint) => [
-      complaint.complaint_type,
-      complaint.location,
-      statusMapping[complaint.status] || "Pending",
-      formatDate(complaint.complaint_date),
-      complaint.details.replace(/,/g, ""), // Remove commas to prevent CSV formatting issues
-    ]);
-
-    const csvContent = [
-      [reportTitle],
-      [dateLine],
-      [userLine],
-      ...appliedFilters.map((line) => [line]),
-      [],
-      headers,
-      ...rows,
-    ]
-      .map((row) => row.join(","))
-      .join("\n");
-
-    return csvContent;
-  };
-
-  const downloadCSV = () => {
-    const csvData = generateCSV();
-    if (!csvData) return;
-    // Create a Blob from the CSV data
-    const blob = new Blob([csvData], { type: "text/csv" });
-    // Create a download link and simulate a click
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "Complaint Report.csv";
-    link.click();
   };
 
   const formatDateTime = (datetimeStr) => {
@@ -260,234 +198,182 @@ function GenerateReport() {
   return (
     <div className="full-width-container">
       <Paper
+        p="xl"
+        shadow="sm"
         radius="md"
-        px="lg"
-        pt="sm"
-        pb="xl"
+        mt="xl"
         style={{
-          borderLeft: "0.6rem solid #15ABFF",
+          borderLeft: "5px solid #15abff",
           width: "60vw",
           minHeight: "45vh",
           maxHeight: "78vh",
-          overflowY: "auto",
-          marginTop: "3.5vh",
+          display: "flex",
+          flexDirection: "column",
         }}
         withBorder
-        maw="1240px"
-        backgroundColor="white"
       >
         {!selectedComplaint ? (
-          <Flex direction="column">
-            {filteredData.length > 0 ? (
+          <Flex direction="column" gap="md" p="md" style={{ flexGrow: 1, overflow: "hidden" }}>
+            {/* KPI Panel */}
+            {summary && (
+              <Grid>
+                <Grid.Col span={3}>
+                  <Paper p="sm" withBorder style={{ backgroundColor: "#f8f9fa", textAlign: "center" }}>
+                    <Text size="xs" color="dimmed" transform="uppercase" weight={700}>Total Complaints</Text>
+                    <Text size="xl" weight={700}>{summary.total}</Text>
+                  </Paper>
+                </Grid.Col>
+                <Grid.Col span={3}>
+                  <Paper p="sm" withBorder style={{ backgroundColor: "#f8f9fa", textAlign: "center" }}>
+                    <Text size="xs" color="dimmed" transform="uppercase" weight={700}>Avg Resolution Time</Text>
+                    <Text size="xl" weight={700}>{summary.avg_resolution_hours ? `${summary.avg_resolution_hours} hrs` : "N/A"}</Text>
+                  </Paper>
+                </Grid.Col>
+                <Grid.Col span={3}>
+                  <Paper p="sm" withBorder style={{ backgroundColor: "#f8f9fa", textAlign: "center" }}>
+                    <Text size="xs" color="dimmed" transform="uppercase" weight={700}>Reopen Rate</Text>
+                    <Text size="xl" weight={700}>{summary.reopen_rate}%</Text>
+                  </Paper>
+                </Grid.Col>
+                <Grid.Col span={3}>
+                  <Paper p="sm" withBorder style={{ backgroundColor: "#f8f9fa", textAlign: "center" }}>
+                    <Text size="xs" color="dimmed" transform="uppercase" weight={700}>SLA Compliance</Text>
+                    <Text size="xl" weight={700}>{summary.sla_compliance}%</Text>
+                  </Paper>
+                </Grid.Col>
+              </Grid>
+            )}
+
+            {/* List */}
+            <div style={{ flexGrow: 1, overflowY: "auto", paddingRight: "10px" }}>
+            {isLoading ? (
+              <Center style={{ minHeight: "20vh" }}>
+                <Loader size="xl" variant="bars" />
+              </Center>
+            ) : filteredData.length > 0 ? (
               filteredData.map((complaint, index) => {
-                const displayedStatus =
-                  complaint.status === 2
-                    ? "Resolved"
-                    : complaint.status === 3
-                      ? "Declined"
-                      : "Pending";
+                const isOverdue = complaint.sla_deadline && new Date(complaint.sla_deadline) < new Date() && ![2, 3, 5].includes(complaint.status);
                 return (
-                  <Paper
-                    key={index}
-                    radius="md"
-                    px="lg"
-                    pt="sm"
-                    pb="xl"
-                    style={{
-                      width: "100%",
-                      margin: "10px 0",
-                    }}
-                    withBorder
-                  >
+                  <Paper key={index} radius="md" px="lg" pt="sm" pb="xl" style={{ width: "100%", margin: "10px 0" }} withBorder>
                     <Flex direction="column" style={{ width: "100%" }}>
                       <Flex direction="row" justify="space-between">
                         <Flex direction="row" gap="xs" align="center">
-                          <Text size="14px" style={{ fontWeight: "bold" }}>
-                            Complaint Id: {complaint.id}
-                          </Text>
-                          <Badge
-                            size="lg"
-                            color={
-                              displayedStatus === "Resolved" ? "green" : "blue"
-                            }
-                          >
-                            {complaint.complaint_type}
-                          </Badge>
-                          <Badge
-                            size="lg"
-                            style={{
-                              backgroundColor: getSeverityColor(
-                                calculateDaysElapsed(complaint.complaint_date),
-                              ),
-                              color: "white",
-                            }}
-                          >
-                            {calculateDaysElapsed(complaint.complaint_date)}{" "}
-                            days
-                          </Badge>
+                          <Text size="14px" style={{ fontWeight: "bold" }}>Complaint Id: {complaint.id}</Text>
+                          <Badge size="lg" color="blue">{complaint.complaint_type}</Badge>
+                          {complaint.priority && (
+                           <Badge size="sm" color={complaint.priority === "URGENT" ? "red" : complaint.priority === "LOW" ? "gray" : "blue"} variant="outline">
+                             {complaint.priority}
+                           </Badge>
+                          )}
+                          {isOverdue && <Badge size="sm" color="red" variant="filled">OVERDUE</Badge>}
                         </Flex>
-                        {displayedStatus === "Resolved" ? (
-                          <img
-                            src={resolvedIcon}
-                            alt="Resolved"
-                            style={{
-                              width: "35px",
-                              borderRadius: "50%",
-                              backgroundColor: "#2BB673",
-                              padding: "10px",
-                            }}
-                          />
-                        ) : displayedStatus === "Declined" ? (
-                          <img
-                            src={declinedIcon}
-                            alt="Declined"
-                            style={{
-                              width: "35px",
-                              borderRadius: "50%",
-                              backgroundColor: "#FF6B6B",
-                              padding: "10px",
-                            }}
-                          />
-                        ) : (
-                          <img
-                            src={detailIcon}
-                            alt="Pending"
-                            style={{
-                              width: "35px",
-                              borderRadius: "50%",
-                              backgroundColor: "#FF6B6B",
-                              padding: "10px",
-                            }}
-                          />
-                        )}
                       </Flex>
-                      <Flex direction="column" gap="xs">
-                        <Text size="14px">
-                          <strong>Date:</strong>{" "}
-                          {formatDateTime(complaint.complaint_date)}
-                        </Text>
-                        <Text size="14px">
-                          <strong>Location:</strong>{" "}
-                          {complaint.specific_location}, {complaint.location}
-                        </Text>
+                      <Flex direction="column" gap="xs" mt="xs">
+                        <Text size="14px"><strong>Date:</strong> {formatDateTime(complaint.complaint_date)}</Text>
+                        <Text size="14px"><strong>Location:</strong> {complaint.specific_location}, {complaint.location}</Text>
                       </Flex>
                       <Divider my="md" size="sm" />
-                      <Flex
-                        direction="row"
-                        justify="space-between"
-                        align="center"
-                      >
-                        <Text size="14px">
-                          <strong>Description:</strong> {complaint.details}
-                        </Text>
-                        <Button
-                          variant="outline"
-                          size="xs"
-                          onClick={() => handleDetailsClick(complaint)}
-                        >
-                          Details
-                        </Button>
+                      <Flex direction="row" justify="space-between" align="center">
+                        <Text size="14px"><strong>Description:</strong> {complaint.details}</Text>
+                        <Button variant="outline" size="xs" onClick={() => handleDetailsClick(complaint)}>Details</Button>
                       </Flex>
                     </Flex>
                   </Paper>
                 );
               })
             ) : (
-              <p>No complaints found.</p>
+              <Center style={{ minHeight: "20vh" }}>
+                <Text size="14px">No complaints found.</Text>
+              </Center>
             )}
+            </div>
           </Flex>
         ) : (
-          <ComplaintDetails
-            complaintId={selectedComplaint.id}
-            onBack={handleBackClick}
-          />
+          <ComplaintDetails complaintId={selectedComplaint.id} onBack={handleBackClick} />
         )}
       </Paper>
 
       {!selectedComplaint ? (
         <div className="filter-card-container mt-5">
           <h2>Filters</h2>
-          {(role.includes("SA") ||
-            role.includes("SP") ||
-            role.includes("complaint_admin")) && (
-            <>
-              <div className="filter-label" style={{ fontWeight: "bold" }}>
-                Location
-              </div>
-              <select name="location" onChange={handleFilterChange}>
-                <option value="">Select Location</option>
-                {locations.map((loc) => (
-                  <option key={loc} value={loc}>
-                    {loc}
-                  </option>
-                ))}
-              </select>
-            </>
-          )}
-          {(role.includes("caretaker") ||
-            role.includes("warden") ||
-            role.includes("complaint_admin")) && (
-            <>
-              <div className="filter-label" style={{ fontWeight: "bold" }}>
-                Complaint Type
-              </div>
-              <select name="complaintType" onChange={handleFilterChange}>
-                <option value="">Select Complaint Type</option>
-                {complaintTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-            </>
-          )}
-          <div className="filter-label" style={{ fontWeight: "bold" }}>
-            Status
-          </div>
-          <select name="status" onChange={handleFilterChange}>
-            <option value="">Select Status</option>
+          <div className="filter-label" style={{ fontWeight: "bold" }}>Location</div>
+          <select name="location" onChange={handleFilterChange} value={filters.location}>
+            <option value="">All Locations</option>
+            {locations.map((loc) => (<option key={loc} value={loc}>{loc}</option>))}
+          </select>
+          <div className="filter-label" style={{ fontWeight: "bold" }}>Complaint Type</div>
+          <select name="complaintType" onChange={handleFilterChange} value={filters.complaintType}>
+            <option value="">All Types</option>
+            {complaintTypes.map((type) => (<option key={type} value={type}>{type}</option>))}
+          </select>
+          <div className="filter-label" style={{ fontWeight: "bold" }}>Status</div>
+          <select name="status" onChange={handleFilterChange} value={filters.status}>
+            <option value="">All Statuses</option>
             <option value="0">Pending</option>
+            <option value="1">In Progress</option>
             <option value="2">Resolved</option>
             <option value="3">Declined</option>
+            <option value="4">Escalated</option>
+            <option value="5">Closed</option>
+            <option value="6">Reopened</option>
           </select>
-          <div className="filter-label" style={{ fontWeight: "bold" }}>
-            Severity
-          </div>
-          <select name="severity" onChange={handleFilterChange}>
-            <option value="">Select Severity</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
+          <div className="filter-label" style={{ fontWeight: "bold" }}>Priority</div>
+          <select name="priority" onChange={handleFilterChange} value={filters.priority}>
+            <option value="">All Priorities</option>
+            <option value="URGENT">Urgent</option>
+            <option value="STANDARD">Standard</option>
+            <option value="LOW">Low</option>
           </select>
-          <div className="filter-label" style={{ fontWeight: "bold" }}>
-            From Date
-          </div>
-          <input type="date" name="startDate" onChange={handleFilterChange} />
-          <div className="filter-label" style={{ fontWeight: "bold" }}>
-            To Date
-          </div>
-          <input type="date" name="endDate" onChange={handleFilterChange} />
-          <div className="filter-label" style={{ fontWeight: "bold" }}>
-            Sort By
-          </div>
-          <select name="sortBy" onChange={handleFilterChange}>
-            <option value="">Sort By</option>
-            <option value="mostRecent">Most Recent</option>
-            <option value="mostOlder">Most Older</option>
-            <option value="status">Status</option>
-            <option value="severity">Severity</option>
-          </select>
-          <Flex direction="row-reverse">
-            <Button onClick={downloadCSV} size="xs" variant="outline">
-              Download CSV
-            </Button>
+          <div className="filter-label" style={{ fontWeight: "bold" }}>From Date</div>
+          <input type="date" name="startDate" onChange={handleFilterChange} value={filters.startDate} />
+          <div className="filter-label" style={{ fontWeight: "bold" }}>To Date</div>
+          <input type="date" name="endDate" onChange={handleFilterChange} value={filters.endDate} />
+
+          <Divider my="md" />
+          <Flex gap="sm" direction="column">
+            <Text weight="bold" size="sm">Export Report</Text>
+            <Flex gap="xs" align="stretch" style={{ width: "100%" }}>
+              <select
+                name="exportFormat"
+                value={exportFormat}
+                onChange={(event) => setExportFormat(event.target.value)}
+                style={{
+                  width: "120px",
+                  height: "34px",
+                  minHeight: "34px",
+                  fontSize: "12px",
+                  lineHeight: "34px",
+                  padding: "0 28px 0 10px",
+                  marginBottom: 0,
+                  boxSizing: "border-box",
+                }}
+              >
+                <option value="csv">CSV</option>
+                <option value="excel">Excel</option>
+                <option value="pdf">PDF</option>
+              </select>
+              <Button
+                onClick={handleExport}
+                size="xs"
+                variant="filled"
+                style={{ flexGrow: 1, height: "34px", minHeight: "34px" }}
+              >
+                Export
+              </Button>
+            </Flex>
           </Flex>
         </div>
-      ) : (
-        <div />
-      )}
+      ) : null}
     </div>
   );
 }
+
+GenerateReport.defaultProps = {
+  roleOverride: "",
+};
+
+GenerateReport.propTypes = {
+  roleOverride: PropTypes.string,
+};
 
 export default GenerateReport;
