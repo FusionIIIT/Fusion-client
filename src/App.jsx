@@ -1,6 +1,7 @@
 import { createTheme, MantineProvider } from "@mantine/core";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
+import { ModalsProvider } from '@mantine/modals';
 import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { Notifications } from "@mantine/notifications";
 import { Layout } from "./components/layout";
@@ -15,6 +16,7 @@ import InactivityHandler from "./helper/inactivityhandler";
 import Examination from "./Modules/Examination/examination";
 import Database from "./Modules/Database/database";
 import ProgrammeCurriculumRoutes from "./Modules/Program_curriculum/programmCurriculum";
+import HealthCenterRoutes from "./routes/healthCenterRoutes";
 import NotFoundPage from "./components/NotFoundPage";
 
 const theme = createTheme({
@@ -32,9 +34,10 @@ export default function App() {
   const location = useLocation();
   return (
     <MantineProvider theme={theme}>
-      <Notifications position="top-center" autoClose={2000} limit={1} />
-      {location.pathname !== "/accounts/login" && <ValidateAuth />}
-      {location.pathname !== "/accounts/login" && <InactivityHandler />}
+      <ModalsProvider>
+        <Notifications position="top-center" autoClose={2000} limit={1} />
+        {location.pathname !== "/accounts/login" && <ValidateAuth />}
+        {location.pathname !== "/accounts/login" && <InactivityHandler />}
 
       <Routes>
         <Route path="/" element={<Navigate to="/accounts/login" replace />} />
@@ -82,8 +85,10 @@ export default function App() {
         <Route path="/reset-password" element={<ForgotPassword />} />
         <Route path="/examination/*" element={<Examination />} />
         <Route path="/database/*" element={<Database />} />
+        <Route path="/health-center/*" element={<HealthCenterRoutes />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
+      </ModalsProvider>
     </MantineProvider>
   );
 }
