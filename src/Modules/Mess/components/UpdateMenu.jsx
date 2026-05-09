@@ -1,180 +1,228 @@
-import React, { useState } from "react";
-import { Divider, TextInput, Table, Title } from "@mantine/core";
-import classes from "../styles/messModule.module.css";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  Flex,
+  Group,
+  Loader,
+  SegmentedControl,
+  Table,
+  Text,
+  TextInput,
+  Title,
+} from "@mantine/core";
+import { CheckCircle, WarningCircle } from "@phosphor-icons/react";
+import axios from "axios";
+import { notifications } from "@mantine/notifications";
+import { viewMenuRoute } from "../routes";
+
+const DAYS = [
+  { label: "Monday", code: "M" },
+  { label: "Tuesday", code: "T" },
+  { label: "Wednesday", code: "W" },
+  { label: "Thursday", code: "TH" },
+  { label: "Friday", code: "F" },
+  { label: "Saturday", code: "S" },
+  { label: "Sunday", code: "SU" },
+];
+
+const MEALS = [
+  { label: "Breakfast", code: "B" },
+  { label: "Lunch", code: "L" },
+  { label: "Dinner", code: "D" },
+];
+
+const createEmptyMenu = () =>
+  DAYS.reduce((acc, day) => {
+    acc[day.label] = { Breakfast: "", Lunch: "", Dinner: "" };
+    return acc;
+  }, {});
+
+function mapApiMenuToTable(menuData, messOption) {
+  const table = createEmptyMenu();
+  menuData
+    .filter((item) => item.mess_option === messOption)
+    .forEach((item) => {
+      const dayCode = item.meal_time.slice(0, item.meal_time.length - 1);
+      const mealCode = item.meal_time.slice(-1);
+      const day = DAYS.find((entry) => entry.code === dayCode)?.label;
+      const meal = MEALS.find((entry) => entry.code === mealCode)?.label;
+      if (day && meal) {
+        table[day][meal] = item.dish;
+      }
+    });
+  return table;
+}
 
 function UpdateMenu() {
-  const initialMenu = {
-    Monday: {
-      breakfast: "Sprouts, Idli Sambhar, Nariyal Chutney",
-      lunch: "Sprouts, Idli Sambhar, Nariyal Chutney",
-      dinner: "Sprouts, Idli Sambhar, Nariyal Chutney",
-    },
-    Tuesday: {
-      breakfast: "Idli Sambhar, Nariyal Chutney",
-      lunch: "Idli Sambhar, Nariyal Chutney",
-      dinner: "Idli Sambhar, Nariyal Chutney",
-    },
-    Wednesday: {
-      breakfast: "Idli Sambhar, Nariyal Chutney",
-      lunch: "Idli Sambhar, Nariyal Chutney",
-      dinner: "Idli Sambhar, Nariyal Chutney",
-    },
-    Thursday: {
-      breakfast: "Idli Sambhar, Nariyal Chutney",
-      lunch: "Idli Sambhar, Nariyal Chutney",
-      dinner: "Idli Sambhar, Nariyal Chutney",
-    },
-    Friday: {
-      breakfast: "Idli Sambhar, Nariyal Chutney",
-      lunch: "Idli Sambhar, Nariyal Chutney",
-      dinner: "Idli Sambhar, Nariyal Chutney",
-    },
-    Saturday: {
-      breakfast: "Idli Sambhar, Nariyal Chutney",
-      lunch: "Idli Sambhar, Nariyal Chutney",
-      dinner: "Idli Sambhar, Nariyal Chutney",
-    },
-    Sunday: {
-      breakfast: "Idli Sambhar, Nariyal Chutney",
-      lunch: "Idli Sambhar, Nariyal Chutney",
-      dinner: "Idli Sambhar, Nariyal Chutney",
-    },
+  const [activeMess, setActiveMess] = useState("mess1");
+  const [menuData, setMenuData] = useState([]);
+  const [drafts, setDrafts] = useState({
+    mess1: createEmptyMenu(),
+    mess2: createEmptyMenu(),
+  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchMenu = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        const response = await axios.get(viewMenuRoute, {
+          headers: { Authorization: `Token ${token}` },
+        });
+        const payload = response.data.payload || [];
+        setMenuData(payload);
+        setDrafts({
+          mess1: mapApiMenuToTable(payload, "mess1"),
+          mess2: mapApiMenuToTable(payload, "mess2"),
+        });
+      } catch (err) {
+        setError(
+          err.response?.data?.error || "Unable to load the current menu.",
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMenu();
+  }, []);
+
+  const currentDraft = useMemo(() => drafts[activeMess], [drafts, activeMess]);
+
+  const handleChange = (day, meal, value) => {
+    setDrafts((prev) => ({
+      ...prev,
+      [activeMess]: {
+        ...prev[activeMess],
+        [day]: {
+          ...prev[activeMess][day],
+          [meal]: value,
+        },
+      },
+    }));
   };
 
-  const [menu1, setMenu1] = useState(initialMenu);
-  const [menu2, setMenu2] = useState(initialMenu);
-  const [activeMess, setActiveMess] = useState("Mess 1");
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      setError("");
+      const token = localStorage.getItem("authToken");
+      const entries = DAYS.flatMap((day) =>
+        MEALS.map((meal) => ({
+          meal_time: `${day.code}${meal.code}`,
+          dish: drafts[activeMess][day.label][meal.label] || "-",
+        })),
+      );
 
-  const handleChange = (day, mealType, value) => {
-    if (activeMess === "Mess 1") {
-      setMenu1((prevMenu) => ({
-        ...prevMenu,
-        [day]: { ...prevMenu[day], [mealType]: value },
-      }));
-    } else {
-      setMenu2((prevMenu) => ({
-        ...prevMenu,
-        [day]: { ...prevMenu[day], [mealType]: value },
-      }));
+      const response = await axios.put(
+        viewMenuRoute,
+        {
+          mess_option: activeMess,
+          entries,
+        },
+        {
+          headers: { Authorization: `Token ${token}` },
+        },
+      );
+
+      setMenuData(response.data.payload || menuData);
+      notifications.show({
+        title: "Menu Updated",
+        message:
+          response.data.message || "The weekly menu was saved successfully.",
+        color: "green",
+        icon: <CheckCircle size={18} />,
+      });
+    } catch (err) {
+      const message =
+        err.response?.data?.message || "Unable to save menu changes.";
+      setError(message);
+    } finally {
+      setSaving(false);
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Updated Menu:", activeMess === "Mess 1" ? menu1 : menu2);
-  };
-
-  const buttonStyle = (isActive) => ({
-    backgroundColor: isActive ? "#6c757d" : "#007bff", // Gray if active, blue otherwise
-    color: "#fff",
-    padding: "10px 20px",
-    fontSize: "1rem",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-    margin: "10px",
-  });
+  if (loading) {
+    return (
+      <Flex justify="center" p="xl">
+        <Loader />
+      </Flex>
+    );
+  }
 
   return (
-    <div
-      className={classes.fusionText}
-      style={{ padding: "40px 20px", textAlign: "center" }}
-    >
-      {/* Title */}
-      <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
-        Update Mess Menu
-      </Title>
+    <Card shadow="sm" radius="lg" p="xl" withBorder>
+      <Flex justify="space-between" align="center" wrap="wrap" gap="md" mb="lg">
+        <Box>
+          <Title order={3} c="#1c7ed6">
+            Update Weekly Menu
+          </Title>
+          <Text c="dimmed" size="sm">
+            Edit dishes for each meal slot and publish them live.
+          </Text>
+        </Box>
+        <SegmentedControl
+          value={activeMess}
+          onChange={setActiveMess}
+          data={[
+            { label: "Central Mess 1", value: "mess1" },
+            { label: "Central Mess 2", value: "mess2" },
+          ]}
+        />
+      </Flex>
 
-      {/* Mess Selection */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          gap: "20px",
-          marginBottom: "20px",
-        }}
-      >
-        <button
-          onClick={() => setActiveMess("Mess 1")}
-          style={buttonStyle(activeMess === "Mess 1")}
-        >
-          Mess-1
-        </button>
-        <button
-          onClick={() => setActiveMess("Mess 2")}
-          style={buttonStyle(activeMess === "Mess 2")}
-        >
-          Mess-2
-        </button>
+      {error && (
+        <Alert color="red" icon={<WarningCircle size={18} />} mb="lg">
+          {error}
+        </Alert>
+      )}
+
+      <div style={{ overflowX: "auto" }}>
+        <Table striped highlightOnHover withColumnBorders>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>Day</Table.Th>
+              <Table.Th>Breakfast</Table.Th>
+              <Table.Th>Lunch</Table.Th>
+              <Table.Th>Dinner</Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {DAYS.map((day) => (
+              <Table.Tr key={day.label}>
+                <Table.Td fw={600}>{day.label}</Table.Td>
+                {MEALS.map((meal) => (
+                  <Table.Td key={`${day.label}-${meal.label}`}>
+                    <TextInput
+                      value={currentDraft[day.label][meal.label]}
+                      onChange={(event) =>
+                        handleChange(
+                          day.label,
+                          meal.label,
+                          event.currentTarget.value,
+                        )
+                      }
+                      placeholder={`Enter ${meal.label.toLowerCase()} dish`}
+                    />
+                  </Table.Td>
+                ))}
+              </Table.Tr>
+            ))}
+          </Table.Tbody>
+        </Table>
       </div>
 
-      <Divider my="sm" />
-
-      <form onSubmit={handleSubmit}>
-        <Table
-          striped
-          highlightOnHover
-          style={{ width: "80%", margin: "20px auto" }}
-        >
-          <thead>
-            <tr>
-              <th>Day</th>
-              <th>Breakfast</th>
-              <th>Lunch</th>
-              <th>Dinner</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.keys(activeMess === "Mess 1" ? menu1 : menu2).map((day) => (
-              <tr key={day}>
-                <td>{day}</td>
-                <td>
-                  <TextInput
-                    value={
-                      activeMess === "Mess 1"
-                        ? menu1[day].breakfast
-                        : menu2[day].breakfast
-                    }
-                    onChange={(e) =>
-                      handleChange(day, "breakfast", e.target.value)
-                    }
-                  />
-                </td>
-                <td>
-                  <TextInput
-                    value={
-                      activeMess === "Mess 1"
-                        ? menu1[day].lunch
-                        : menu2[day].lunch
-                    }
-                    onChange={(e) => handleChange(day, "lunch", e.target.value)}
-                  />
-                </td>
-                <td>
-                  <TextInput
-                    value={
-                      activeMess === "Mess 1"
-                        ? menu1[day].dinner
-                        : menu2[day].dinner
-                    }
-                    onChange={(e) =>
-                      handleChange(day, "dinner", e.target.value)
-                    }
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-
-        {/* Submit Button */}
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <button type="submit" style={buttonStyle(false)}>
-            Save Menu
-          </button>
-        </div>
-      </form>
-    </div>
+      <Group justify="flex-end" mt="lg">
+        <Button onClick={handleSave} loading={saving}>
+          Save Menu
+        </Button>
+      </Group>
+    </Card>
   );
 }
 

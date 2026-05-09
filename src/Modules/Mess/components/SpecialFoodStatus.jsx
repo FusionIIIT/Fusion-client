@@ -3,6 +3,33 @@ import { useSelector } from "react-redux";
 import { Table, Container, Paper, Title, Box } from "@mantine/core";
 import { specialFoodRequestRoute } from "../routes";
 
+const statusMeta = {
+  2: {
+    label: "Approved",
+    color: "white",
+    backgroundColor: "#40C057",
+    borderColor: "#40C057",
+  },
+  1: {
+    label: "Pending",
+    color: "#8f5b00",
+    backgroundColor: "#FFC107",
+    borderColor: "#FFC107",
+  },
+  3: {
+    label: "Escalated",
+    color: "white",
+    backgroundColor: "#228be6",
+    borderColor: "#228be6",
+  },
+  0: {
+    label: "Declined",
+    color: "white",
+    backgroundColor: "#DC3545",
+    borderColor: "#DC3545",
+  },
+};
+
 function SpecialFoodStatus() {
   const roleno = useSelector((state) => state.user.roll_no); // Use Redux state for roll number
   const [specialFoodData, setSpecialFoodData] = useState([]); // Store special food data
@@ -48,50 +75,32 @@ function SpecialFoodStatus() {
   );
 
   const renderRows = () =>
-    specialFoodData.map((item, index) => (
-      <Table.Tr key={index}>
-        <Table.Td>{item.app_date}</Table.Td>
-        <Table.Td>{item.request}</Table.Td>
-        <Table.Td>{item.start_date}</Table.Td>
-        <Table.Td>{item.end_date}</Table.Td>
-        <Table.Td>
-          <Box
-            style={{
-              padding: "8px",
-              fontWeight: "600",
-              color:
-                item.status === "2" // Approved
-                  ? "white"
-                  : item.status === "1" // Pending
-                    ? "black"
-                    : "white", // Declined (Red background, White text)
-              backgroundColor:
-                item.status === "2" // Approved
-                  ? "#40C057"
-                  : item.status === "1" // Pending
-                    ? "#FFC107"
-                    : "#DC3545", // Declined (Red)
-              border: `1.5px solid ${
-                item.status === "2"
-                  ? "#40C057"
-                  : item.status === "1"
-                    ? "#FFC107"
-                    : "#DC3545" // Declined (Red border)
-              }`,
-              borderRadius: "4px",
-            }}
-          >
-            {
-              item.status === "2" // Approved
-                ? "Approved"
-                : item.status === "1" // Pending
-                  ? "Pending"
-                  : "Declined" // Declined
-            }
-          </Box>
-        </Table.Td>
-      </Table.Tr>
-    ));
+    specialFoodData.map((item, index) => {
+      const currentStatus = statusMeta[item.status] || statusMeta["0"];
+
+      return (
+        <Table.Tr key={index}>
+          <Table.Td>{item.app_date}</Table.Td>
+          <Table.Td>{item.request}</Table.Td>
+          <Table.Td>{item.start_date}</Table.Td>
+          <Table.Td>{item.end_date}</Table.Td>
+          <Table.Td>
+            <Box
+              style={{
+                padding: "8px",
+                fontWeight: "600",
+                color: currentStatus.color,
+                backgroundColor: currentStatus.backgroundColor,
+                border: `1.5px solid ${currentStatus.borderColor}`,
+                borderRadius: "4px",
+              }}
+            >
+              {currentStatus.label}
+            </Box>
+          </Table.Td>
+        </Table.Tr>
+      );
+    });
 
   return (
     <Container

@@ -1,29 +1,59 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
-  Table,
-  Container,
-  Paper,
-  Title,
+  Alert,
+  Badge,
   Button,
-  TextInput,
+  Card,
   Flex,
+  Group,
+  Loader,
+  ScrollArea,
+  SegmentedControl,
+  Table,
   Text,
+  TextInput,
+  Title,
 } from "@mantine/core";
-import * as PhosphorIcons from "@phosphor-icons/react";
+import { WarningCircle } from "@phosphor-icons/react";
 import { rebateRoute } from "../routes";
+
+const statusMeta = {
+  pending: {
+    code: "1",
+    label: "Pending",
+    color: "orange",
+  },
+  approved: {
+    code: "2",
+    label: "Approved",
+    color: "green",
+  },
+  declined: {
+    code: "0",
+    label: "Declined",
+    color: "red",
+  },
+  escalated: {
+    code: "3",
+    label: "Escalated",
+    color: "blue",
+  },
+};
 
 function RespondToRebateRequest() {
   const [rebateData, setRebateData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const authToken = localStorage.getItem("authToken");
+  const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("pending");
 
   useEffect(() => {
+    const authToken = localStorage.getItem("authToken");
+
     const fetchRebateRequests = async () => {
-      setLoading(true);
-      setError(null);
       try {
+        setLoading(true);
+        setError("");
+
         const response = await fetch(rebateRoute, {
           method: "GET",
           headers: {
@@ -32,175 +62,273 @@ function RespondToRebateRequest() {
           },
         });
 
-        if (!response.ok)
-          throw new Error(`HTTP error! status: ${response.status}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch rebate requests.");
+        }
 
         const data = await response.json();
         setRebateData(
-          data.payload.map((item) => ({
+          (data.payload || []).map((item) => ({
             ...item,
-            statusText:
-              item.status === "2"
-                ? "Approved"
-                : item.status === "0"
-                  ? "Declined"
-                  : "Pending",
-            status: item.status || "1",
+            status: item.status || statusMeta.pending.code,
             remark: item.rebate_remark || "",
           })),
         );
-      } catch (err) {
-        setError(err.message || "Failed to fetch rebate requests");
+      } catch (fetchError) {
+        setError(fetchError.message || "Failed to fetch rebate requests.");
       } finally {
         setLoading(false);
       }
     };
 
     fetchRebateRequests();
-  }, [authToken]);
+  }, []);
 
-  // Update remark using a unique identifier (assumed item.id exists)
   const handleRemarkChange = (id, value) => {
     setRebateData((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, remark: value } : r)),
+      prev.map((item) => (item.id === id ? { ...item, remark: value } : item)),
     );
   };
 
-  // Update toggleApproval to use a unique identifier (id)
-  const toggleApproval = async (id, newStatus) => {
-    const item = rebateData.find((r) => r.id === id);
-    if (!item) return;
-    const updatedRequest = {
-      ...item,
-      rebate_remark: item.remark,
-      status: newStatus,
-    };
+  const toggleApproval = async (id, nextStatus) => {
+    const authToken = localStorage.getItem("authToken");
+    const requestItem = rebateData.find((item) => item.id === id);
+
+    if (!requestItem) return;
 
     try {
+      const payload = {
+        id: requestItem.id,
+        rebate_remark: requestItem.remark,
+        status: nextStatus,
+      };
+      if (nextStatus === statusMeta.escalated.code) {
+        payload.escalation_remark = requestItem.remark;
+      }
+
       const response = await fetch(rebateRoute, {
         method: "PUT",
         headers: {
           Authorization: `Token ${authToken}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(updatedRequest),
+        body: JSON.stringify(payload),
       });
-      if (response.ok) {
-        setRebateData((prev) =>
-          prev.map((r) =>
-            r.id === id
-              ? {
-                  ...r,
-                  status: newStatus,
-                  statusText: newStatus === "2" ? "Approved" : "Declined",
-                }
-              : r,
-          ),
-        );
-      } else {
-        setError(`Failed to update approval: ${response.statusText}`);
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.message || "Failed to update rebate request.");
       }
-    } catch (errors) {
-      setError(`Error updating approval: ${errors.message}`);
+
+      setRebateData((prev) =>
+        prev.map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                status: nextStatus,
+                rebate_remark: requestItem.remark,
+                remark: requestItem.remark,
+              }
+            : item,
+        ),
+      );
+    } catch (updateError) {
+      setError(updateError.message || "Failed to update rebate request.");
     }
   };
 
-  const getFilteredRebateData = () => {
-    switch (activeTab) {
-      case "approved":
-        return rebateData.filter((item) => item.status === "2");
-      case "declined":
-        return rebateData.filter((item) => item.status === "0");
-      default:
-        return rebateData.filter((item) => item.status === "1");
-    }
+  const getFilteredRebateData = () =>
+    rebateData.filter((item) => item.status === statusMeta[activeTab].code);
+
+  const filteredRebateData = getFilteredRebateData();
+  const statusCounts = {
+    pending: rebateData.filter(
+      (item) => item.status === statusMeta.pending.code,
+    ).length,
+    approved: rebateData.filter(
+      (item) => item.status === statusMeta.approved.code,
+    ).length,
+    declined: rebateData.filter(
+      (item) => item.status === statusMeta.declined.code,
+    ).length,
   };
 
-  const renderRows = () =>
-    getFilteredRebateData().map((item) => (
-      <Table.Tr key={item.id}>
-        <Table.Td>{item.app_date}</Table.Td>
-        <Table.Td>{item.student_id}</Table.Td>
-        <Table.Td>{item.purpose || "No Purpose Provided"}</Table.Td>
-        <Table.Td>{item.start_date}</Table.Td>
-        <Table.Td>{item.end_date}</Table.Td>
-        <Table.Td>
-          {item.status === "1" ? (
-            <TextInput
-              placeholder="Enter remark"
-              value={item.remark}
-              onChange={(e) => handleRemarkChange(item.id, e.target.value)}
-            />
-          ) : (
-            <Text>{item.remark || "No Remark Provided"}</Text>
-          )}
-        </Table.Td>
-        <Table.Td>{item.statusText}</Table.Td>
-        <Table.Td>
-          {item.status === "1" ? (
-            <>
-              <Button
-                onClick={() => toggleApproval(item.id, "2")}
-                color="green"
-              >
-                Approve
-              </Button>
-              <Button onClick={() => toggleApproval(item.id, "0")} color="red">
-                Decline
-              </Button>
-            </>
-          ) : (
-            <Text>No Actions Available</Text>
-          )}
-        </Table.Td>
-      </Table.Tr>
-    ));
-
-  return loading ? (
-    <Text align="center">Loading data...</Text>
-  ) : error ? (
-    <Text color="red" align="center">
-      {error}
-    </Text>
-  ) : (
-    <Container size="lg" mt={30} miw="75rem">
-      <Paper shadow="md" radius="md" p="lg" withBorder>
-        <Title order={2} align="center" mb="lg">
-          Respond to Rebate Request
-        </Title>
-        <Flex justify="center" gap={20} mb={30}>
-          {["pending", "approved", "declined"].map((tab) => (
-            <Button
-              key={tab}
-              leftSection={<PhosphorIcons.Clock size={20} />}
-              variant={activeTab === tab ? "filled" : "outline"}
-              onClick={() => setActiveTab(tab)}
-            >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </Button>
-          ))}
+  if (loading) {
+    return (
+      <Card shadow="sm" radius="xl" p="xl" withBorder>
+        <Flex justify="center" align="center" py="xl">
+          <Loader />
         </Flex>
-        {getFilteredRebateData().length === 0 ? (
-          <Text align="center">No {activeTab} requests.</Text>
-        ) : (
-          <Table striped highlightOnHover withColumnBorders>
-            <Table.Thead>
+      </Card>
+    );
+  }
+
+  return (
+    <Card shadow="sm" radius="xl" p="xl" withBorder>
+      <Group justify="space-between" align="flex-start" gap="md" mb="lg">
+        <div>
+          <Title order={3}>Rebate Review</Title>
+          <Text c="dimmed" size="sm" mt={4}>
+            Process leave-linked rebate requests, or escalate edge cases for
+            warden review with context attached.
+          </Text>
+        </div>
+        <Badge
+          size="lg"
+          radius="xl"
+          color={statusMeta[activeTab].color}
+          variant="light"
+        >
+          {filteredRebateData.length}{" "}
+          {statusMeta[activeTab].label.toLowerCase()}
+        </Badge>
+      </Group>
+
+      {error ? (
+        <Alert color="red" icon={<WarningCircle size={18} />} mb="lg">
+          {error}
+        </Alert>
+      ) : null}
+
+      <SegmentedControl
+        fullWidth
+        radius="xl"
+        value={activeTab}
+        onChange={setActiveTab}
+        data={[
+          {
+            label: `Pending (${statusCounts.pending})`,
+            value: "pending",
+          },
+          {
+            label: `Approved (${statusCounts.approved})`,
+            value: "approved",
+          },
+          {
+            label: `Declined (${statusCounts.declined})`,
+            value: "declined",
+          },
+        ]}
+      />
+
+      <ScrollArea mt="lg" offsetScrollbars>
+        <Table
+          striped
+          highlightOnHover
+          verticalSpacing="md"
+          horizontalSpacing="md"
+          miw={940}
+        >
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>Date</Table.Th>
+              <Table.Th>Student ID</Table.Th>
+              <Table.Th>Purpose</Table.Th>
+              <Table.Th>From</Table.Th>
+              <Table.Th>To</Table.Th>
+              <Table.Th>Remark</Table.Th>
+              <Table.Th>Status</Table.Th>
+              <Table.Th>Actions</Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {filteredRebateData.length > 0 ? (
+              filteredRebateData.map((item) => {
+                const itemStatus =
+                  Object.values(statusMeta).find(
+                    (status) => status.code === item.status,
+                  ) || statusMeta.pending;
+
+                return (
+                  <Table.Tr key={item.id}>
+                    <Table.Td>{item.app_date}</Table.Td>
+                    <Table.Td>{item.student_id}</Table.Td>
+                    <Table.Td>
+                      <Text size="sm" maw={200}>
+                        {item.purpose || "No purpose provided"}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td>{item.start_date}</Table.Td>
+                    <Table.Td>{item.end_date}</Table.Td>
+                    <Table.Td>
+                      {item.status === statusMeta.pending.code ? (
+                        <TextInput
+                          value={item.remark}
+                          placeholder="Add remark"
+                          onChange={(event) =>
+                            handleRemarkChange(
+                              item.id,
+                              event.currentTarget.value,
+                            )
+                          }
+                        />
+                      ) : (
+                        <Text size="sm">
+                          {item.remark || "No remark added"}
+                        </Text>
+                      )}
+                    </Table.Td>
+                    <Table.Td>
+                      <Badge color={itemStatus.color} variant="light">
+                        {itemStatus.label}
+                      </Badge>
+                    </Table.Td>
+                    <Table.Td>
+                      {item.status === statusMeta.pending.code ? (
+                        <Group gap="xs">
+                          <Button
+                            size="xs"
+                            color="green"
+                            variant="light"
+                            onClick={() =>
+                              toggleApproval(item.id, statusMeta.approved.code)
+                            }
+                          >
+                            Approve
+                          </Button>
+                          <Button
+                            size="xs"
+                            color="red"
+                            variant="light"
+                            onClick={() =>
+                              toggleApproval(item.id, statusMeta.declined.code)
+                            }
+                          >
+                            Decline
+                          </Button>
+                          <Button
+                            size="xs"
+                            color="yellow"
+                            variant="light"
+                            onClick={() =>
+                              toggleApproval(item.id, statusMeta.escalated.code)
+                            }
+                          >
+                            Escalate
+                          </Button>
+                        </Group>
+                      ) : (
+                        <Text size="sm" c="dimmed">
+                          No further action
+                        </Text>
+                      )}
+                    </Table.Td>
+                  </Table.Tr>
+                );
+              })
+            ) : (
               <Table.Tr>
-                <Table.Th>Date</Table.Th>
-                <Table.Th>Student ID</Table.Th>
-                <Table.Th>Purpose</Table.Th>
-                <Table.Th>From</Table.Th>
-                <Table.Th>To</Table.Th>
-                <Table.Th>Remark</Table.Th>
-                <Table.Th>Status</Table.Th>
-                <Table.Th>Actions</Table.Th>
+                <Table.Td colSpan={8}>
+                  <Text ta="center" c="dimmed" py="lg">
+                    No {activeTab} rebate requests are available right now.
+                  </Text>
+                </Table.Td>
               </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>{renderRows()}</Table.Tbody>
-          </Table>
-        )}
-      </Paper>
-    </Container>
+            )}
+          </Table.Tbody>
+        </Table>
+      </ScrollArea>
+    </Card>
   );
 }
 

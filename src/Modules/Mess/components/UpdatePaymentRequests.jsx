@@ -11,7 +11,7 @@ import {
   Alert,
   TextInput,
 } from "@mantine/core";
-import { updateBalanceRequestRoute } from "../routes";
+import { updateBalanceRequestRoute, host } from "../routes";
 
 const tableHeaders = [
   "Student ID",
@@ -42,9 +42,12 @@ function ViewUpdatePaymentRequests() {
         });
 
         if (response.data && response.data.payload) {
-          const filteredData = response.data.payload.filter(
-            (item) => item.status !== "accept",
-          );
+          const filteredData = response.data.payload
+            .filter((item) => item.status === "pending")
+            .map((item) => ({
+              ...item,
+              update_remark: item.update_remark || "",
+            }));
           setUpdatePaymentData(filteredData);
         } else {
           setError("No payment request data found.");
@@ -65,14 +68,13 @@ function ViewUpdatePaymentRequests() {
       const token = localStorage.getItem("authToken");
       const item = updatePaymentData.find((items) => items.id === id);
       const payload = {
-        student_id: item.student_id,
-        payment_date: item.payment_date,
-        amount: item.amount,
-        Txn_no: item.Txn_no,
-        img: item.img,
+        id: item.id,
         status,
-        update_payment_remark: item.remark || "",
+        update_payment_remark: item.update_remark || item.remark || "",
       };
+      if (status === "escalated") {
+        payload.escalation_remark = item.update_remark || item.remark || "";
+      }
       await axios.put(updateBalanceRequestRoute, payload, {
         headers: { Authorization: `Token ${token}` },
       });
@@ -81,14 +83,16 @@ function ViewUpdatePaymentRequests() {
       );
     } catch (errors) {
       console.error(`Error updating payment request ${status}:`, errors);
-      setError(`Error updating payment request: ${error.message}`);
+      setError(
+        errors.response?.data?.message || "Error updating payment request.",
+      );
     }
   };
 
   const handleRemarkChange = (id, value) => {
     setUpdatePaymentData((prevData) =>
       prevData.map((item) =>
-        item.id === id ? { ...item, remark: value } : item,
+        item.id === id ? { ...item, update_remark: value } : item,
       ),
     );
   };
@@ -124,12 +128,20 @@ function ViewUpdatePaymentRequests() {
                     <Table.Td>{item.Txn_no}</Table.Td>
                     <Table.Td>
                       <a
-                        href={item.img}
+                        href={
+                          item.img?.startsWith("http")
+                            ? item.img
+                            : `${host}${item.img?.startsWith("/") ? "" : "/"}${item.img}`
+                        }
                         target="_blank"
                         rel="noopener noreferrer"
                       >
                         <img
-                          src={item.img}
+                          src={
+                            item.img?.startsWith("http")
+                              ? item.img
+                              : `${host}${item.img?.startsWith("/") ? "" : "/"}${item.img}`
+                          }
                           alt="Payment"
                           style={{ width: "50px", cursor: "pointer" }}
                         />
@@ -139,7 +151,7 @@ function ViewUpdatePaymentRequests() {
                     <Table.Td>{item.payment_date}</Table.Td>
                     <Table.Td>
                       <TextInput
-                        value={item.remark || ""}
+                        value={item.update_remark || ""}
                         onChange={(e) =>
                           handleRemarkChange(item.id, e.target.value)
                         }
@@ -160,8 +172,17 @@ function ViewUpdatePaymentRequests() {
                         color="red"
                         size="xs"
                         onClick={() => handleStatusUpdate(item.id, "reject")}
+                        style={{ marginRight: "8px" }}
                       >
                         Reject
+                      </Button>
+                      <Button
+                        color="yellow"
+                        size="xs"
+                        variant="light"
+                        onClick={() => handleStatusUpdate(item.id, "escalated")}
+                      >
+                        Escalate
                       </Button>
                     </Table.Td>
                   </Table.Tr>

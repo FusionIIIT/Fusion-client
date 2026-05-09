@@ -7,128 +7,76 @@ import {
   Box,
   Table,
   Flex,
+  Loader,
+  Alert,
+  Text,
 } from "@mantine/core";
 import axios from "axios";
-import { useSelector } from "react-redux";
-import { host } from "../../../routes/globalRoutes";
-import { updateBalanceRequestRoute } from "../routes";
+import { updateBalanceRequestRoute, host } from "../routes";
 
-const fetchUpdateBalanceRequestsStatus = async (studentId, token) => {
-  try {
-    const response = await axios.get(
-      `${updateBalanceRequestRoute}?student_id=${studentId}`,
-      {
-        headers: { Authorization: `Token ${token}` },
-      },
-    );
-    return response.data.payload;
-  } catch (error) {
-    console.error("Error fetching update payment request status:", error);
-    throw error;
-  }
+const statusMeta = {
+  accept: {
+    label: "Accepted",
+    backgroundColor: "#40C057",
+    borderColor: "#40C057",
+    color: "white",
+  },
+  pending: {
+    label: "Pending",
+    backgroundColor: "#fff3bf",
+    borderColor: "#fab005",
+    color: "#8f5b00",
+  },
+  escalated: {
+    label: "Escalated",
+    backgroundColor: "#d0ebff",
+    borderColor: "#228be6",
+    color: "#1864ab",
+  },
+  reject: {
+    label: "Rejected",
+    backgroundColor: "#ffe3e3",
+    borderColor: "#fa5252",
+    color: "#c92a2a",
+  },
 };
 
-function UpdateBalanceRequest() {
+function UpdateBalanceRequestStatus() {
   const [balanceRequests, setBalanceRequests] = useState([]);
-  const studentId = useSelector((state) => state.user.roll_no);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const token = localStorage.getItem("authToken");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await fetchUpdateBalanceRequestsStatus(studentId, token);
-        setBalanceRequests(data);
-        console.log("Data:", data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
+        const response = await axios.get(updateBalanceRequestRoute, {
+          headers: { Authorization: `Token ${token}` },
+        });
+        setBalanceRequests(response.data.payload || []);
+      } catch (err) {
+        setError(
+          err.response?.data?.error || "Unable to fetch payment update status.",
+        );
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchData();
-  }, [studentId, token]);
-  const renderHeader = () => (
-    <Table.Tr>
-      <Table.Th>
-        <Flex align="center" justify="center" h="100%">
-          Transaction Number
-        </Flex>
-      </Table.Th>
-      <Table.Th>
-        <Flex align="center" justify="center" h="100%">
-          Image
-        </Flex>
-      </Table.Th>
-      <Table.Th>
-        <Flex align="center" justify="center" h="100%">
-          Amount
-        </Flex>
-      </Table.Th>
-      <Table.Th>
-        <Flex align="center" justify="center" h="100%">
-          Remark
-        </Flex>
-      </Table.Th>
-      <Table.Th>
-        <Flex align="center" justify="center" h="100%">
-          Status
-        </Flex>
-      </Table.Th>
-    </Table.Tr>
-  );
+  }, [token]);
 
-  const renderRows = () =>
-    balanceRequests.map((item, index) => (
-      <Table.Tr key={index} style={{ height: "60px" }}>
-        {" "}
-        {/* Increase row height */}
-        <Table.Td align="center" p={12}>
-          {" "}
-          {/* Increase cell padding */}
-          {item.Txn_no}
-        </Table.Td>
-        <Table.Td align="center" p={12}>
-          <a
-            href={`${host}${item.img}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            View Image
-          </a>
-        </Table.Td>
-        <Table.Td align="center" p={12}>
-          {item.amount}
-        </Table.Td>
-        <Table.Td align="center" p={12}>
-          {item.update_remark}
-        </Table.Td>
-        <Table.Td align="center" p={12}>
-          <Box
-            display="inline-block"
-            p={8}
-            fz={14}
-            fw={600}
-            bg={item.status === "accept" ? "#40C057" : "transparent"}
-            bd={
-              item.status === "accept"
-                ? "1.5px solid #40C057"
-                : item.status === "pending"
-                  ? "1.5px solid yellow"
-                  : "1.5px solid red"
-            }
-            c={
-              item.status === "accept"
-                ? "white"
-                : item.status === "pending"
-                  ? "yellow"
-                  : "red"
-            }
-            style={{ borderRadius: "4px" }}
-          >
-            {item.status.charAt(0).toUpperCase() + item.status.slice(1)}{" "}
-          </Box>
-        </Table.Td>
-      </Table.Tr>
-    ));
+  if (loading) {
+    return (
+      <Flex justify="center" p="xl">
+        <Loader />
+      </Flex>
+    );
+  }
+
+  if (error) {
+    return <Alert color="red">{error}</Alert>;
+  }
 
   return (
     <Container
@@ -142,13 +90,100 @@ function UpdateBalanceRequest() {
     >
       <Paper shadow="md" radius="md" p="xl" withBorder miw="75rem">
         <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
-          Update Balance Request
+          Update Balance Request Status
         </Title>
 
-        {/* FusionTable */}
         <Table striped highlightOnHover withBorder withColumnBorders>
-          <Table.Thead>{renderHeader()}</Table.Thead>
-          <Table.Tbody>{renderRows()}</Table.Tbody>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>
+                <Flex align="center" justify="center">
+                  Transaction Number
+                </Flex>
+              </Table.Th>
+              <Table.Th>
+                <Flex align="center" justify="center">
+                  Image
+                </Flex>
+              </Table.Th>
+              <Table.Th>
+                <Flex align="center" justify="center">
+                  Amount
+                </Flex>
+              </Table.Th>
+              <Table.Th>
+                <Flex align="center" justify="center">
+                  Remark
+                </Flex>
+              </Table.Th>
+              <Table.Th>
+                <Flex align="center" justify="center">
+                  Status
+                </Flex>
+              </Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {balanceRequests.length > 0 ? (
+              balanceRequests.map((item) => {
+                const currentStatus =
+                  statusMeta[item.status] || statusMeta.reject;
+
+                return (
+                  <Table.Tr key={item.id}>
+                    <Table.Td align="center" p={12}>
+                      {item.Txn_no}
+                    </Table.Td>
+                    <Table.Td align="center" p={12}>
+                      {item.img ? (
+                        <a
+                          href={
+                            item.img?.startsWith("http")
+                              ? item.img
+                              : `${host}${item.img?.startsWith("/") ? "" : "/"}${item.img}`
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          View Proof
+                        </a>
+                      ) : (
+                        <Text c="dimmed" size="sm">
+                          No file
+                        </Text>
+                      )}
+                    </Table.Td>
+                    <Table.Td align="center" p={12}>
+                      {item.amount}
+                    </Table.Td>
+                    <Table.Td align="center" p={12}>
+                      {item.update_remark || "-"}
+                    </Table.Td>
+                    <Table.Td align="center" p={12}>
+                      <Box
+                        display="inline-block"
+                        p={8}
+                        fz={14}
+                        fw={600}
+                        bg={currentStatus.backgroundColor}
+                        bd={`1.5px solid ${currentStatus.borderColor}`}
+                        c={currentStatus.color}
+                        style={{ borderRadius: "4px" }}
+                      >
+                        {currentStatus.label}
+                      </Box>
+                    </Table.Td>
+                  </Table.Tr>
+                );
+              })
+            ) : (
+              <Table.Tr>
+                <Table.Td colSpan={5} align="center">
+                  No update requests found.
+                </Table.Td>
+              </Table.Tr>
+            )}
+          </Table.Tbody>
         </Table>
       </Paper>
       <Space h="xl" />
@@ -156,4 +191,4 @@ function UpdateBalanceRequest() {
   );
 }
 
-export default UpdateBalanceRequest;
+export default UpdateBalanceRequestStatus;

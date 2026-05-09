@@ -4,134 +4,191 @@ import {
   Button,
   Container,
   Title,
-  Paper,
   Select,
   Group,
-} from "@mantine/core"; // Mantine UI components
-import { PencilSimple, FunnelSimple } from "@phosphor-icons/react"; // Phosphor Icons
+  Card,
+  Text,
+  Grid,
+} from "@mantine/core";
+import {
+  ChatCircleText,
+  List,
+  PaperPlaneRight,
+  CheckCircle,
+  WarningCircle,
+  Buildings,
+} from "@phosphor-icons/react";
+import { notifications } from "@mantine/notifications";
 import axios from "axios";
 import { feedbackRoute } from "../routes";
 
 function StudentFeedback() {
-  const [messOption, setMessOption] = useState("Mess 1");
-  const [feedbackType, setFeedbackType] = useState("Cleanliness");
+  const [messOption, setMessOption] = useState("mess1");
+  const [feedbackType, setFeedbackType] = useState("cleanliness");
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async () => {
-    if (description.trim() === "") {
-      alert("Feedback cannot be empty!");
+  const handleSubmit = async (e) => {
+    if (e) e.preventDefault();
+    if (!feedbackType) {
+      notifications.show({
+        title: "Validation Error",
+        message: "Please choose a feedback category.",
+        color: "red",
+        icon: <WarningCircle size={20} />,
+      });
       return;
     }
+
+    const trimmedDescription = description.trim();
+    if (trimmedDescription === "") {
+      notifications.show({
+        title: "Validation Error",
+        message: "Feedback description cannot be empty!",
+        color: "red",
+        icon: <WarningCircle size={20} />,
+      });
+      return;
+    }
+
     try {
       setIsSubmitting(true);
-      const token = localStorage.getItem("authToken"); // Get the token from local storage
+      const token = localStorage.getItem("authToken");
+
       const response = await axios.post(
         feedbackRoute,
         {
-          mess: messOption, // Need to change the mess option based on the registration
+          mess: messOption,
           feedback_type: feedbackType,
-          description,
+          description: trimmedDescription,
         },
         {
           headers: {
-            authorization: `Token ${token}`, // Pass the token in the Authorization header
+            Authorization: `Token ${token}`,
           },
         },
       );
-      console.log(response);
-      if (response.status === 200) {
-        alert("Feedback submitted successfully!");
+
+      if (response.status === 200 || response.status === 201) {
+        notifications.show({
+          title: "Feedback Submitted",
+          message: "Thank you! Your feedback has been received successfully.",
+          color: "green",
+          icon: <CheckCircle size={20} />,
+        });
         setDescription(""); // Clear the textarea after submission
       } else {
-        alert("Failed to submit description");
+        throw new Error("Failed to submit feedback");
       }
     } catch (error) {
-      console.error("Error submitting description:", error);
-      alert("An error occurred. Please try again.");
+      console.error("Error submitting feedback:", error);
+      notifications.show({
+        title: "Submission Failed",
+        message:
+          error.response?.data?.message ||
+          "An error occurred while submitting your feedback. Please try again.",
+        color: "red",
+        icon: <WarningCircle size={20} />,
+      });
     } finally {
-      setIsSubmitting(false); // Reset submission state
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Container
-      size="lg"
-      style={{
-        miw: "1100px",
-        width: "1100px",
-        marginTop: "25px",
-      }}
-    >
-      <Paper
-        shadow="md"
-        radius="md"
+    <Container size="md" px={0} mt="lg">
+      <Card
+        shadow="sm"
+        radius="lg"
         p="xl"
         withBorder
-        style={{ padding: "30px" }}
+        style={{ backgroundColor: "#ffffff" }}
       >
-        <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
-          Submit Feedback
-        </Title>
+        <Group mb="xl" align="flex-start">
+          <ChatCircleText size={36} color="#1A2980" weight="duotone" />
+          <div style={{ flex: 1 }}>
+            <Title order={3} fw={800} style={{ color: "#1A2980" }}>
+              Give Feedback
+            </Title>
+            <Text size="sm" c="dimmed" mt={4}>
+              Help us improve! Share your thoughts on food quality, hygiene, or
+              maintenance in the mess.
+            </Text>
+          </div>
+        </Group>
 
         <form onSubmit={handleSubmit}>
-          {/* Dropdown for mess option */}
-          <Group grow mb="lg">
-            <Select
-              label="Select Mess"
-              placeholder="Choose Mess"
-              value={messOption}
-              onChange={setMessOption}
-              data={["Mess 1", "Mess 2"]}
+          <Grid gutter="xl">
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <Select
+                label="Select Mess"
+                placeholder="Choose Mess"
+                value={messOption}
+                onChange={setMessOption}
+                data={[
+                  { value: "mess1", label: "Central Mess 1" },
+                  { value: "mess2", label: "Central Mess 2" },
+                ]}
+                radius="md"
+                size="md"
+                required
+                leftSection={<Buildings size={18} />}
+                comboboxProps={{ shadow: "md" }}
+              />
+            </Grid.Col>
+
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <Select
+                label="Feedback Category"
+                placeholder="Select an area"
+                value={feedbackType}
+                onChange={setFeedbackType}
+                data={[
+                  { value: "cleanliness", label: "Cleanliness" },
+                  { value: "food", label: "Food" },
+                  { value: "maintenance", label: "Maintenance" },
+                  { value: "others", label: "Others" },
+                ]}
+                radius="md"
+                size="md"
+                required
+                leftSection={<List size={18} />}
+                comboboxProps={{ shadow: "md" }}
+              />
+            </Grid.Col>
+
+            <Grid.Col span={12}>
+              <Textarea
+                label="Detailed Description"
+                placeholder="Explain the issue or provide suggestions..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                radius="md"
+                size="md"
+                required
+                minRows={5}
+              />
+            </Grid.Col>
+          </Grid>
+
+          <Group justify="flex-end" mt="xl">
+            <Button
+              type="submit"
+              size="lg"
               radius="md"
-              size="md"
-              icon={<FunnelSimple size={18} />} // Phosphor icon
-            />
+              loading={isSubmitting}
+              leftSection={<PaperPlaneRight size={20} />}
+              style={{
+                paddingLeft: "40px",
+                paddingRight: "40px",
+                backgroundColor: "#1A2980",
+              }}
+            >
+              Send Feedback
+            </Button>
           </Group>
-
-          {/* Dropdown for description type */}
-          <Group grow mb="lg">
-            <Select
-              label="Feedback Type"
-              placeholder="Select Feedback Type"
-              value={feedbackType}
-              onChange={setFeedbackType}
-              data={["Cleanliness", "Food", "Maintenance", "Others"]}
-              radius="md"
-              size="md"
-              icon={<FunnelSimple size={18} />} // Phosphor icon
-            />
-          </Group>
-
-          {/* Textarea for description description */}
-          <Textarea
-            label="Description"
-            placeholder="Enter your description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            radius="md"
-            size="md"
-            mb="lg"
-            required
-            minRows={4}
-            icon={<PencilSimple size={18} />} // Phosphor icon
-          />
-
-          {/* Submit Button */}
-          <Button
-            fullWidth
-            size="md"
-            radius="md"
-            color="blue"
-            type="submit"
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            leftIcon={<PencilSimple size={18} />} // Phosphor icon
-          >
-            Submit Feedback
-          </Button>
         </form>
-      </Paper>
+      </Card>
     </Container>
   );
 }

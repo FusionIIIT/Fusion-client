@@ -1,35 +1,16 @@
-import {
-  Button,
-  Container,
-  Flex,
-  Grid,
-  Loader,
-  Tabs,
-  Text,
-} from "@mantine/core";
-import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
-import { useRef, useState } from "react";
-import classes from "../styles/messModule.module.css";
+import { Loader, Tabs, Text, Card, Box, Title } from "@mantine/core";
+import { Receipt, ClockCounterClockwise } from "@phosphor-icons/react";
+import { useState } from "react";
 import ViewBill from "./ViewBill";
 import PaymentHistory from "./PaymentHistory";
 
 function ViewBillAndPayments() {
   const [activeTab, setActiveTab] = useState("0");
-  const tabsListRef = useRef(null);
 
-  const tabItems = [{ title: "View Bill" }, { title: "Payment History" }];
-
-  const handleTabChange = (direction) => {
-    const newIndex =
-      direction === "next"
-        ? Math.min(+activeTab + 1, tabItems.length - 1)
-        : Math.max(+activeTab - 1, 0);
-    setActiveTab(String(newIndex));
-    tabsListRef.current.scrollBy({
-      left: direction === "next" ? 100 : -100,
-      behavior: "smooth",
-    });
-  };
+  const tabItems = [
+    { title: "Current Bill", icon: <Receipt size={18} /> },
+    { title: "Payment History", icon: <ClockCounterClockwise size={18} /> },
+  ];
 
   // Function to render content based on active tab
   const renderTabContent = () => {
@@ -44,74 +25,54 @@ function ViewBillAndPayments() {
   };
 
   return (
-    <>
-      {/* Tab navigation */}
-      <Flex justify="center" align="center" mt="5">
-        <Flex justify="space-between" align="center" gap="1rem" mt="1.5rem">
-          <Button
-            onClick={() => handleTabChange("prev")}
-            variant="default"
-            p={0}
-            style={{ border: "none" }}
-          >
-            <CaretCircleLeft
-              className={classes.fusionCaretCircleIcon}
-              weight="light"
-            />
-          </Button>
+    <Card
+      shadow="sm"
+      radius="lg"
+      p="xl"
+      withBorder
+      style={{ backgroundColor: "#ffffff" }}
+    >
+      <Box mb="xl">
+        <Title order={3} fw={800} style={{ color: "#1A2980" }}>
+          Billing & Payments
+        </Title>
+        <Text size="sm" c="dimmed" mt={4}>
+          View your active bills and past transaction records
+        </Text>
+      </Box>
 
-          {/* Tabs container with scrolling */}
-          <div
-            style={{
-              display: "flex",
-              overflowX: "auto",
-              whiteSpace: "nowrap",
-              maxWidth: "1000px",
-            }}
-            ref={tabsListRef}
-          >
-            <Tabs value={activeTab} onChange={setActiveTab}>
-              <Tabs.List>
-                {tabItems.map((item, index) => (
-                  <Tabs.Tab
-                    value={`${index}`}
-                    key={index}
-                    className={
-                      activeTab === `${index}`
-                        ? classes.fusionActiveRecentTab
-                        : ""
-                    }
-                  >
-                    <Flex gap="4px">
-                      <Text>{item.title}</Text>
-                    </Flex>
-                  </Tabs.Tab>
-                ))}
-              </Tabs.List>
-            </Tabs>
-          </div>
-
-          <Button
-            onClick={() => handleTabChange("next")}
-            variant="default"
-            p={0}
-            style={{ border: "none" }}
-          >
-            <CaretCircleRight
-              className={classes.fusionCaretCircleIcon}
-              weight="light"
-            />
-          </Button>
-        </Flex>
-      </Flex>
+      {/* Modern Tabs */}
+      <Tabs
+        value={activeTab}
+        onChange={setActiveTab}
+        variant="outline"
+        radius="md"
+        color="blue"
+      >
+        <Tabs.List style={{ marginBottom: "20px" }}>
+          {tabItems.map((item, index) => (
+            <Tabs.Tab
+              value={`${index}`}
+              key={index}
+              leftSection={item.icon}
+              style={{
+                padding: "12px 24px",
+                fontWeight: activeTab === `${index}` ? 600 : 500,
+                fontSize: "15px",
+                transition: "all 0.2s ease",
+              }}
+            >
+              {item.title}
+            </Tabs.Tab>
+          ))}
+        </Tabs.List>
+      </Tabs>
 
       {/* Main content */}
-      <Grid>
-        <Container fluid style={{ maxWidth: "1000px", margin: "0 auto" }}>
-          {renderTabContent()}
-        </Container>
-      </Grid>
-    </>
+      <Box mt="md" style={{ animation: "fadeIn 0.4s ease" }}>
+        {renderTabContent()}
+      </Box>
+    </Card>
   );
 }
 

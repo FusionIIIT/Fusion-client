@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
+  Badge,
   Table,
   Container,
   Paper,
@@ -13,7 +14,7 @@ import {
   Select,
   ScrollArea, // Import ScrollArea from Mantine
 } from "@mantine/core";
-import { viewRegistrationRequestsRoute } from "../routes";
+import { viewRegistrationRequestsRoute, host } from "../routes";
 
 const tableHeaders = [
   "Student ID",
@@ -70,16 +71,14 @@ function ViewRegistration() {
       }
 
       const updatedData = {
-        student_id: item.student_id,
-        start_date: item.start_date,
-        payment_date: item.payment_date,
-        amount: item.amount,
-        Txn_no: item.Txn_no,
-        img: item.img,
+        id: item.id,
         status,
         registration_remark: item.registration_remark,
         mess_option: item.mess_option,
       };
+      if (status === "escalated") {
+        updatedData.escalation_remark = item.registration_remark;
+      }
 
       const response = await axios.put(
         viewRegistrationRequestsRoute,
@@ -95,8 +94,12 @@ function ViewRegistration() {
         );
       }
     } catch (errors) {
-      window.alert("Update the mess option before accepting.");
-      // setError("Failed to update registration status.");
+      setError(
+        errors.response?.data?.message ||
+          (status === "accept"
+            ? "Update the mess option before accepting."
+            : "Failed to update registration status."),
+      );
     }
   };
 
@@ -115,6 +118,10 @@ function ViewRegistration() {
       ),
     );
   };
+
+  const pendingRequests = registrationData.filter(
+    (item) => item.status === "pending",
+  );
 
   return (
     <Container size="lg" mt={30} style={{ width: "100%", padding: 0 }}>
@@ -158,89 +165,105 @@ function ViewRegistration() {
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
-                {registrationData.length > 0 ? (
-                  registrationData
-                    .filter((item) => item.status !== "accept") // Filter out accepted rows
-                    .map((item) => (
-                      <Table.Tr key={item.id}>
-                        <Table.Td style={{ padding: "4px", fontSize: "12px" }}>
-                          {item.student_id}
-                        </Table.Td>
-                        <Table.Td style={{ padding: "4px", fontSize: "12px" }}>
-                          {item.Txn_no}
-                        </Table.Td>
-                        <Table.Td style={{ padding: "4px" }}>
-                          <a
-                            href={item.img}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <img
-                              src={item.img}
-                              alt="Student"
-                              style={{ width: "30px", height: "30px" }}
-                            />
-                          </a>
-                        </Table.Td>
-                        <Table.Td style={{ padding: "4px", fontSize: "12px" }}>
-                          {item.amount}
-                        </Table.Td>
-                        <Table.Td style={{ padding: "4px", fontSize: "12px" }}>
-                          {item.start_date}
-                        </Table.Td>
-                        <Table.Td style={{ padding: "4px", fontSize: "12px" }}>
-                          {item.payment_date}
-                        </Table.Td>
-                        <Table.Td style={{ padding: "4px" }}>
-                          <Select
-                            data={[
-                              { value: "mess1", label: "M1" },
-                              { value: "mess2", label: "M2" },
-                            ]}
-                            required
-                            value={item.mess_option || ""}
-                            onChange={(value) =>
-                              handleMessOptionChange(item.id, value)
+                {pendingRequests.length > 0 ? (
+                  pendingRequests.map((item) => (
+                    <Table.Tr key={item.id}>
+                      <Table.Td style={{ padding: "4px", fontSize: "12px" }}>
+                        {item.student_id}
+                      </Table.Td>
+                      <Table.Td style={{ padding: "4px", fontSize: "12px" }}>
+                        {item.Txn_no}
+                      </Table.Td>
+                      <Table.Td style={{ padding: "4px" }}>
+                        <a
+                          href={
+                            item.img?.startsWith("http")
+                              ? item.img
+                              : `${host}${item.img?.startsWith("/") ? "" : "/"}${item.img}`
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <img
+                            src={
+                              item.img?.startsWith("http")
+                                ? item.img
+                                : `${host}${item.img?.startsWith("/") ? "" : "/"}${item.img}`
                             }
-                            placeholder="Mess"
-                            size="xs"
+                            alt="Student"
+                            style={{ width: "30px", height: "30px" }}
                           />
-                        </Table.Td>
-                        <Table.Td style={{ padding: "4px" }}>
-                          <Textarea
-                            value={item.registration_remark || ""}
-                            onChange={(e) =>
-                              handleRemarkChange(item.id, e.target.value)
-                            }
-                            placeholder="Remark"
-                            autosize
-                            minRows={1}
-                            maxRows={2}
-                            size="xs"
-                          />
-                        </Table.Td>
-                        <Table.Td style={{ padding: "4px", fontSize: "12px" }}>
-                          {item.status || "N/A"}
-                        </Table.Td>
-                        <Table.Td style={{ padding: "4px" }}>
-                          <Button
-                            color="green"
-                            size="xs"
-                            onClick={() => handleStatusChange(item, "accept")}
-                            style={{ marginRight: "4px" }}
-                          >
-                            ✓
-                          </Button>
-                          <Button
-                            color="red"
-                            size="xs"
-                            onClick={() => handleStatusChange(item, "reject")}
-                          >
-                            ✗
-                          </Button>
-                        </Table.Td>
-                      </Table.Tr>
-                    ))
+                        </a>
+                      </Table.Td>
+                      <Table.Td style={{ padding: "4px", fontSize: "12px" }}>
+                        {item.amount}
+                      </Table.Td>
+                      <Table.Td style={{ padding: "4px", fontSize: "12px" }}>
+                        {item.start_date}
+                      </Table.Td>
+                      <Table.Td style={{ padding: "4px", fontSize: "12px" }}>
+                        {item.payment_date}
+                      </Table.Td>
+                      <Table.Td style={{ padding: "4px" }}>
+                        <Select
+                          data={[
+                            { value: "mess1", label: "M1" },
+                            { value: "mess2", label: "M2" },
+                          ]}
+                          required
+                          value={item.mess_option || ""}
+                          onChange={(value) =>
+                            handleMessOptionChange(item.id, value)
+                          }
+                          placeholder="Mess"
+                          size="xs"
+                        />
+                      </Table.Td>
+                      <Table.Td style={{ padding: "4px" }}>
+                        <Textarea
+                          value={item.registration_remark || ""}
+                          onChange={(e) =>
+                            handleRemarkChange(item.id, e.target.value)
+                          }
+                          placeholder="Remark"
+                          autosize
+                          minRows={1}
+                          maxRows={2}
+                          size="xs"
+                        />
+                      </Table.Td>
+                      <Table.Td style={{ padding: "4px", fontSize: "12px" }}>
+                        <Badge color="yellow" variant="light">
+                          Pending
+                        </Badge>
+                      </Table.Td>
+                      <Table.Td style={{ padding: "4px" }}>
+                        <Button
+                          color="green"
+                          size="xs"
+                          onClick={() => handleStatusChange(item, "accept")}
+                          style={{ marginRight: "4px" }}
+                        >
+                          ✓
+                        </Button>
+                        <Button
+                          color="red"
+                          size="xs"
+                          onClick={() => handleStatusChange(item, "reject")}
+                          style={{ marginRight: "4px" }}
+                        >
+                          ✗
+                        </Button>
+                        <Button
+                          color="yellow"
+                          size="xs"
+                          onClick={() => handleStatusChange(item, "escalated")}
+                        >
+                          !
+                        </Button>
+                      </Table.Td>
+                    </Table.Tr>
+                  ))
                 ) : (
                   <Table.Tr>
                     <Table.Td colSpan={10} style={{ textAlign: "center" }}>

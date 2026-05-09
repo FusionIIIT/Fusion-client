@@ -39,16 +39,145 @@
 }
 
 .selectinputs {
-    background-color: #15abff20;
-    border-color: #15abff4d;
+  background-color: #15abff20;
+  border-color: #15abff4d;
 }
 
 .selectinputs::placeholder {
-    color: #15abff;
-    font-weight: 600;
+  color: #15abff;
+  font-weight: 600;
 }
 
 .selectoptions:hover {
   background-color: #15abff10; /* Transparent blue hover background */
 }
 
+.dashboardPage {
+  width: 100%;
+}
+
+.dashboardHero {
+  margin-top: 1rem;
+  border: 1px solid #dbe7f3;
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(21, 171, 255, 0.14),
+      transparent 34%
+    ),
+    linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+}
+
+.heroEyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #15abff;
+}
+
+.heroTitle {
+  color: #12344d;
+}
+
+.heroDescription {
+  max-width: 56rem;
+  color: #587085;
+}
+
+.heroBadges {
+  row-gap: 0.5rem;
+}
+
+.summaryCard {
+  border: 1px solid #e1ebf5;
+  background: #ffffff;
+}
+
+.summaryLabel {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #6b7f92;
+}
+
+.summaryValue {
+  font-size: clamp(1.125rem, 2vw, 1.6rem);
+  font-weight: 700;
+  line-height: 1.15;
+  color: #12344d;
+}
+
+.summaryHelp {
+  color: #6b7f92;
+}
+
+.summaryIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  color: #15abff;
+  background: #eef8ff;
+}
+
+.tabPanel {
+  margin-top: 1rem;
+  border: 1px solid #dbe7f3;
+  background: #ffffff;
+}
+
+.dashboardTabs {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.75rem;
+  padding-bottom: 0.25rem;
+}
+
+.dashboardTab {
+  min-height: 2.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 999px;
+  border: 1px solid #e5edf6;
+  background: #f8fbff;
+  color: #35506a;
+  font-weight: 600;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.dashboardTab:hover {
+  background: #eef7ff;
+  border-color: #cfe3f4;
+}
+
+.dashboardTabActive {
+  border-color: #15abff;
+  background: #15abff;
+  color: #ffffff;
+  box-shadow: 0 10px 22px rgba(21, 171, 255, 0.18);
+  transform: translateY(-1px);
+}
+
+.sectionHeading {
+  margin-top: 1rem;
+}
+
+.sectionTitle {
+  color: #12344d;
+}
+
+.sectionDescription {
+  color: #6b7f92;
+}
+
+.sectionBody {
+  margin-top: 1rem;
+}

@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import axios from "axios";
 import {
+  Alert,
   Button,
   Select,
   Container,
+  FileInput,
   Paper,
   Title,
   Group,
@@ -19,51 +21,67 @@ import { specialFoodRequestRoute } from "../routes";
 function ApplyForSpecialFood() {
   const [food, setFood] = useState("");
   const [timing, setTiming] = useState("");
+  const [requestType, setRequestType] = useState("event");
+  const [medicalProof, setMedicalProof] = useState(null);
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
   const [purpose, setPurpose] = useState("");
+  const [error, setError] = useState("");
   const authToken = localStorage.getItem("authToken");
   const today = new Date();
   const minstartdate = new Date();
   minstartdate.setDate(today.getDate() + 3);
-  // console.log(authToken);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setError("");
 
-    const requestData = {
-      start_date: fromDate.toISOString().split("T")[0],
-      end_date: toDate.toISOString().split("T")[0],
-      status: "1", // Pending status
-      app_date: new Date().toISOString().split("T")[0],
-      request: purpose,
-      item1: food,
-      item2: timing,
-    };
-    console.log(requestData);
+    if (!fromDate || !toDate) {
+      setError("Select both the start and end dates.");
+      return;
+    }
+
+    if (requestType === "medical" && !medicalProof) {
+      setError("Upload medical proof for illness-based requests.");
+      return;
+    }
+
+    const requestData = new FormData();
+    requestData.append("start_date", fromDate.toISOString().split("T")[0]);
+    requestData.append("end_date", toDate.toISOString().split("T")[0]);
+    requestData.append("status", "1");
+    requestData.append("app_date", new Date().toISOString().split("T")[0]);
+    requestData.append("request", purpose);
+    requestData.append("item1", food);
+    requestData.append("item2", timing);
+    requestData.append("request_type", requestType);
+    if (medicalProof) {
+      requestData.append("supporting_document", medicalProof);
+    }
 
     try {
       const response = await axios.post(specialFoodRequestRoute, requestData, {
         headers: {
           Authorization: `Token ${authToken}`,
-          "Content-Type": "application/json",
         },
       });
 
-      if (response.status === 200) {
+      if (response.status === 200 || response.status === 201) {
         alert("Special food request submitted successfully!");
         setFood("");
         setTiming("");
+        setRequestType("event");
+        setMedicalProof(null);
         setFromDate(null);
         setToDate(null);
         setPurpose("");
       } else {
         console.error("Failed to submit request:", response.data);
-        alert(`Error: ${response.data.message || "Submission failed."}`);
+        setError(response.data.message || "Submission failed.");
       }
-    } catch (error) {
-      console.error("Error submitting request:", error);
-      alert(`Error: ${error.response?.data?.message || error.message}`);
+    } catch (submitError) {
+      console.error("Error submitting request:", submitError);
+      setError(submitError.response?.data?.message || submitError.message);
     }
   };
 
@@ -90,6 +108,12 @@ function ApplyForSpecialFood() {
 
         <form onSubmit={handleSubmit}>
           <Flex direction="column" gap="md">
+            {error ? (
+              <Alert color="red" variant="light">
+                {error}
+              </Alert>
+            ) : null}
+
             <Select
               label="Select Food"
               placeholder="Choose food"
@@ -105,6 +129,18 @@ function ApplyForSpecialFood() {
               data={["Breakfast", "Lunch", "Dinner"]}
               value={timing}
               onChange={setTiming}
+              required
+            />
+
+            <Select
+              label="Request Type"
+              placeholder="Choose the reason category"
+              data={[
+                { value: "event", label: "Event" },
+                { value: "medical", label: "Illness / Medical" },
+              ]}
+              value={requestType}
+              onChange={(value) => setRequestType(value || "event")}
               required
             />
 
@@ -134,6 +170,20 @@ function ApplyForSpecialFood() {
               value={purpose}
               onChange={(event) => setPurpose(event.currentTarget.value)}
               required
+            />
+
+            <FileInput
+              label="Supporting Document"
+              description={
+                requestType === "medical"
+                  ? "Medical proof is required for illness-based requests."
+                  : "Attach proof if your event request needs supporting approval."
+              }
+              placeholder="Upload a document"
+              value={medicalProof}
+              onChange={setMedicalProof}
+              clearable
+              required={requestType === "medical"}
             />
           </Flex>
 
