@@ -46,6 +46,14 @@ function ValidateAuth() {
         roll_no,
       } = data;
 
+      if (!Array.isArray(designation_info) || designation_info.length === 0) {
+        throw new Error("ROLE_RESOLUTION_FAILED: Missing designation_info");
+      }
+
+      if (typeof accessible_modules !== "object" || accessible_modules === null) {
+        throw new Error("ROLE_RESOLUTION_FAILED: Invalid accessible_modules payload");
+      }
+
       // console.log("User Data:", data);
 
       dispatch(setUserName(name));
@@ -58,10 +66,21 @@ function ValidateAuth() {
       dispatch(setAccessibleModules(accessible_modules));
       dispatch(setCurrentAccessibleModules());
     } catch (error) {
-      console.error("User validation failed:", error);
+      const statusCode = error?.response?.status;
+      const isRoleError = String(error?.message || "").startsWith("ROLE_RESOLUTION_FAILED");
+
+      console.error("User validation failed", {
+        statusCode,
+        message: error?.message,
+        responseData: error?.response?.data,
+        path: window.location.pathname,
+      });
+
       notifications.show({
-        title: "Session Expired",
-        message: "Your session has expired. Please log in again.",
+        title: isRoleError ? "Role Resolution Failed" : "Session Expired",
+        message: isRoleError
+          ? "Unable to resolve your role and module access. Please log in again."
+          : "Your session has expired. Please log in again.",
         color: "red",
       });
       localStorage.removeItem("authToken");

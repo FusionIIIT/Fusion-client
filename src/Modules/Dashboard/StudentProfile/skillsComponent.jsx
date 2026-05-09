@@ -1,17 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import {
-  Text,
-  Button,
-  Input,
-  Flex,
-  Divider,
-  NumberInput,
-  Table,
-} from "@mantine/core";
+import { Text, Flex, Divider } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import axios from "axios";
-import { updateProfileDataRoute } from "../../../routes/dashboardRoutes";
+import { updateProfileSection } from "../services/profileService";
+import SkillForm from "../components/forms/SkillForm";
+import SkillsTable from "../components/tables/SkillsTable";
 
 function SkillsTechComponent({ data }) {
   const [skills, setSkills] = useState(data || []);
@@ -28,10 +21,12 @@ function SkillsTechComponent({ data }) {
       return;
     }
 
-    if (rating < 0 || rating > 5) {
+    const normalizedRating = Number(rating);
+
+    if (!Number.isInteger(normalizedRating) || normalizedRating < 1 || normalizedRating > 5) {
       notifications.show({
         title: "Error",
-        message: "Rating must be between 0 and 5",
+        message: "Rating must be between 1 and 5",
         color: "red",
       });
       return;
@@ -39,38 +34,40 @@ function SkillsTechComponent({ data }) {
 
     const newSkillEntry = {
       skillsubmit: {
-        skill_id: {
-          skill_name: newSkill,
-        },
-        skill_rating: rating,
+        skill_name: newSkill.trim(),
+        skill_rating: normalizedRating,
       },
     };
 
     try {
-      await axios.put(updateProfileDataRoute, newSkillEntry, {
-        headers: {
-          Authorization: `Token ${localStorage.getItem("authToken")}`,
-        },
-      });
+      await updateProfileSection(newSkillEntry);
 
-      setSkills([...skills, { skill_name: newSkill, skill_rating: rating }]);
+      setSkills([
+        ...skills,
+        { skill_name: newSkill.trim(), skill_rating: normalizedRating },
+      ]);
       setNewSkill("");
-      setRating(0);
+      setRating(1);
       notifications.show({
         title: "Success",
         message: "Skill added successfully!",
         color: "green",
       });
     } catch (error) {
+      const backendError = error?.response?.data;
+      const errorMessage =
+        backendError?.skill_name?.[0]
+        || backendError?.skill_rating?.[0]
+        || backendError?.error
+        || "Failed to update skills. Please try again.";
+
       notifications.show({
         title: "Error",
-        message: "Failed to update skills. Please try again.",
+        message: errorMessage,
         color: "red",
       });
     }
   };
-
-  console.log(skills);
 
   return (
     <Flex
@@ -96,36 +93,13 @@ function SkillsTechComponent({ data }) {
           <Text fw={500} mb="lg">
             Add New Skill/Technology
           </Text>
-          <Flex
-            align="center"
-            justify="space-between"
-            direction={{ base: "column", sm: "row" }}
-          >
-            <Input.Wrapper
-              label="Skill/Technology"
-              w={{ base: "100%", sm: "50%" }}
-            >
-              <Input
-                size="md"
-                mt="xs"
-                value={newSkill}
-                onChange={(e) => setNewSkill(e.target.value)}
-              />
-            </Input.Wrapper>
-            <Input.Wrapper label="Rating" w={{ base: "100%", sm: "30%" }}>
-              <NumberInput
-                mt="xs"
-                min={0}
-                max={5}
-                clampBehavior="strict"
-                value={rating}
-                onChange={setRating}
-              />
-            </Input.Wrapper>
-            <Button mt="xl" onClick={updateSkills}>
-              Add
-            </Button>
-          </Flex>
+          <SkillForm
+            newSkill={newSkill}
+            rating={rating}
+            setNewSkill={setNewSkill}
+            setRating={setRating}
+            onSubmit={updateSkills}
+          />
         </Flex>
       </Flex>
 
@@ -140,30 +114,7 @@ function SkillsTechComponent({ data }) {
           Your Skills
         </Text>
         <Divider my="md" />
-        <Table striped highlightOnHover withTableBorder withColumnBorders>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>Skill</Table.Th>
-              <Table.Th>Rating</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {skills.length > 0 ? (
-              skills.map((skill, index) => (
-                <Table.Tr key={index}>
-                  <Table.Td>{skill.skill_name}</Table.Td>
-                  <Table.Td>{skill.skill_rating}</Table.Td>
-                </Table.Tr>
-              ))
-            ) : (
-              <Table.Tr>
-                <Table.Td colSpan={2} align="center">
-                  No skills added yet
-                </Table.Td>
-              </Table.Tr>
-            )}
-          </Table.Tbody>
-        </Table>
+        <SkillsTable skills={skills} />
       </Flex>
     </Flex>
   );

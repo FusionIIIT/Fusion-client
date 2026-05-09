@@ -49,6 +49,21 @@ export default function Nav() {
       path: "/database/view",
       roles: ["acadadmin"],
     },
+    {
+      title: "Issues",
+      path: "/database/issues",
+      roles: ["acadadmin", "student", "faculty", "staff"],
+    },
+    {
+      title: "Feedback",
+      path: "/database/feedback",
+      roles: ["acadadmin", "student", "faculty", "staff"],
+    },
+    {
+      title: "Search",
+      path: "/database/search",
+      roles: ["acadadmin", "student", "faculty", "staff"],
+    },
   ];
 
   const filteredTabs = tabItems.filter((tab) => tab.roles.includes(userRole));

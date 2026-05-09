@@ -1,22 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import {
-  Flex,
-  Input,
-  Tabs,
-  Text,
-  Button,
-  Select,
-  Table,
-  Textarea,
-  Divider,
-} from "@mantine/core";
-import axios from "axios";
+import { Flex, Tabs, Text, Divider } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { updateProfileDataRoute } from "../../../routes/dashboardRoutes";
+import { useFormState } from "../utils/formHelpers";
+import { updateProfileSection } from "../services/profileService";
+import InternshipForm from "../components/forms/InternshipForm";
+import ProjectForm from "../components/forms/ProjectForm";
+import InternshipsTable from "../components/tables/InternshipsTable";
+import ProjectsTable from "../components/tables/ProjectsTable";
 
-function InternshipsTab({ internshipsData }) {
-  const [formData, setFormData] = useState({
+function InternshipsTab({ internshipsData, onAddInternship }) {
+  const { formData, handleInputChange, handleFieldChange, resetForm } =
+    useFormState({
     organization: "",
     location: "",
     job_title: "",
@@ -26,40 +21,45 @@ function InternshipsTab({ internshipsData }) {
     description: "",
   });
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
   const handleSubmit = async () => {
     try {
-      await axios.put(
-        updateProfileDataRoute,
-        { experiencesubmit: formData },
-        {
-          headers: {
-            Authorization: `Token ${localStorage.getItem("authToken")}`,
-          },
-        },
-      );
+      const payload = {
+        company: formData.organization,
+        location: formData.location,
+        title: formData.job_title,
+        status: formData.status,
+        description: formData.description,
+      };
+
+      if (formData.start_date) {
+        payload.sdate = formData.start_date;
+      }
+      if (formData.end_date) {
+        payload.edate = formData.end_date;
+      }
+
+      const response = await updateProfileSection({ experiencesubmit: payload });
+      const createdInternship = response?.data?.id
+        ? response.data
+        : {
+            ...formData,
+            company: formData.organization,
+            title: formData.job_title,
+            sdate: formData.start_date,
+            edate: formData.end_date,
+          };
+
+      onAddInternship(createdInternship);
       notifications.show({
         message: "Internship Added Successfully!",
         color: "green",
       });
-      setFormData({
-        organization: "",
-        location: "",
-        job_title: "",
-        status: "ONGOING",
-        start_date: "",
-        end_date: "",
-        description: "",
-      });
+      resetForm();
     } catch (error) {
       notifications.show({
         message: "Failed! Please try later.",
         color: "red",
       });
-      console.error("Error updating internships:", error);
     }
   };
 
@@ -73,136 +73,24 @@ function InternshipsTab({ internshipsData }) {
       <Text fw={500} mb="md">
         Add a New Internship
       </Text>
-      <Flex align="center" justify="space-between" mb="md">
-        <Input.Wrapper label="Organization Name" w="65%">
-          <Input
-            name="organization"
-            value={formData.organization}
-            onChange={handleChange}
-            size="md"
-            mt="xs"
-          />
-        </Input.Wrapper>
-        <Input.Wrapper label="Location" w="30%">
-          <Input
-            name="location"
-            value={formData.location}
-            onChange={handleChange}
-            size="md"
-            mt="xs"
-          />
-        </Input.Wrapper>
-      </Flex>
-      <Flex align="center" justify="space-between" mb="md">
-        <Input.Wrapper label="Job Profile Title" w="65%">
-          <Input
-            name="job_title"
-            value={formData.job_title}
-            onChange={handleChange}
-            size="md"
-            mt="xs"
-          />
-        </Input.Wrapper>
-        <Input.Wrapper label="Status" w="30%">
-          <Select
-            name="status"
-            data={["ONGOING", "COMPLETED"]}
-            value={formData.status}
-            onChange={(value) => setFormData({ ...formData, status: value })}
-            size="md"
-            mt="xs"
-          />
-        </Input.Wrapper>
-      </Flex>
-      <Flex align="center" justify="space-between" mb="md">
-        <Input.Wrapper label="Start Date" w="48%">
-          <Input
-            name="start_date"
-            type="date"
-            value={formData.start_date}
-            onChange={handleChange}
-            size="md"
-            mt="xs"
-          />
-        </Input.Wrapper>
-        <Input.Wrapper label="End Date" w="48%">
-          <Input
-            name="end_date"
-            type="date"
-            value={formData.end_date}
-            onChange={handleChange}
-            size="md"
-            mt="xs"
-          />
-        </Input.Wrapper>
-      </Flex>
-      <Input.Wrapper label="Description" w="100%">
-        <Textarea
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          autosize
-          minRows={5}
-          resize="vertical"
-          mt="xs"
-        />
-      </Input.Wrapper>
-      <Button onClick={handleSubmit} size="md" mt="lg">
-        Submit
-      </Button>
+      <InternshipForm
+        formData={formData}
+        onChange={handleInputChange}
+        onStatusChange={(value) => handleFieldChange("status", value || "ONGOING")}
+        onSubmit={handleSubmit}
+      />
       <Divider my="md" />
       <Text fw={500} mb="md">
         Your Experience
       </Text>
-
-      {internshipsData.length > 0 ? (
-        <Table striped highlightOnHover withTableBorder withColumnBorders>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>Organization</Table.Th>
-              <Table.Th>Location</Table.Th>
-              <Table.Th>Job Title</Table.Th>
-              <Table.Th>Status</Table.Th>
-              <Table.Th>Start Date</Table.Th>
-              <Table.Th>End Date</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {internshipsData.map((internship, index) => (
-              <Table.Tr key={index}>
-                <Table.Td style={{ textAlign: "center" }}>
-                  {internship.organization}
-                </Table.Td>
-                <Table.Td style={{ textAlign: "center" }}>
-                  {internship.location}
-                </Table.Td>
-                <Table.Td style={{ textAlign: "center" }}>
-                  {internship.job_title}
-                </Table.Td>
-                <Table.Td style={{ textAlign: "center" }}>
-                  {internship.status}
-                </Table.Td>
-                <Table.Td style={{ textAlign: "center" }}>
-                  {internship.sdate}
-                </Table.Td>
-                <Table.Td style={{ textAlign: "center" }}>
-                  {internship.edate}
-                </Table.Td>
-              </Table.Tr>
-            ))}
-          </Table.Tbody>
-        </Table>
-      ) : (
-        <Text mt="lg" style={{ textAlign: "center" }}>
-          No data found!
-        </Text>
-      )}
+      <InternshipsTable internshipsData={internshipsData} />
     </Flex>
   );
 }
 
-function ProjectsTab({ projectsData }) {
-  const [formData, setFormData] = useState({
+function ProjectsTab({ projectsData, onAddProject }) {
+  const { formData, handleInputChange, handleFieldChange, resetForm } =
+    useFormState({
     project_name: "",
     status: "ONGOING",
     project_link: "",
@@ -211,39 +99,44 @@ function ProjectsTab({ projectsData }) {
     description: "",
   });
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
   const handleSubmit = async () => {
     try {
-      await axios.put(
-        updateProfileDataRoute,
-        { projectsubmit: formData },
-        {
-          headers: {
-            Authorization: `Token ${localStorage.getItem("authToken")}`,
-          },
-        },
-      );
+      const payload = {
+        project_name: formData.project_name,
+        project_status: formData.status,
+        project_link: formData.project_link,
+        summary: formData.description,
+      };
+
+      if (formData.start_date) {
+        payload.sdate = formData.start_date;
+      }
+      if (formData.end_date) {
+        payload.edate = formData.end_date;
+      }
+
+      const response = await updateProfileSection({ projectsubmit: payload });
+      const createdProject = response?.data?.id
+        ? response.data
+        : {
+            ...formData,
+            project_status: formData.status,
+            summary: formData.description,
+            sdate: formData.start_date,
+            edate: formData.end_date,
+          };
+
+      onAddProject(createdProject);
       notifications.show({
         message: "Project Added Successfully!",
         color: "green",
       });
-      setFormData({
-        project_name: "",
-        status: "ONGOING",
-        project_link: "",
-        start_date: "",
-        end_date: "",
-        description: "",
-      });
+      resetForm();
     } catch (error) {
       notifications.show({
         message: "Failed! Please try later.",
         color: "red",
       });
-      console.error("Error updating projects:", error);
     }
   };
 
@@ -257,125 +150,41 @@ function ProjectsTab({ projectsData }) {
       <Text fw={500} mb="md">
         Add a New Project
       </Text>
-      <Flex align="center" justify="space-between" mb="md">
-        <Input.Wrapper label="Project Name" w="65%">
-          <Input
-            name="project_name"
-            value={formData.project_name}
-            onChange={handleChange}
-            size="md"
-            mt="xs"
-          />
-        </Input.Wrapper>
-        <Input.Wrapper label="Status" w="30%">
-          <Select
-            name="status"
-            data={["ONGOING", "COMPLETED"]}
-            value={formData.status}
-            onChange={(value) => setFormData({ ...formData, status: value })}
-            size="md"
-            mt="xs"
-          />
-        </Input.Wrapper>
-      </Flex>
-      <Input.Wrapper label="Project Link" w="100%" mb="md">
-        <Input
-          name="project_link"
-          value={formData.project_link}
-          onChange={handleChange}
-          size="md"
-          mt="xs"
-        />
-      </Input.Wrapper>
-      <Flex align="center" justify="space-between" mb="md">
-        <Input.Wrapper label="Start Date" w="48%">
-          <Input
-            name="start_date"
-            type="date"
-            value={formData.start_date}
-            onChange={handleChange}
-            size="md"
-            mt="xs"
-          />
-        </Input.Wrapper>
-        <Input.Wrapper label="End Date" w="48%">
-          <Input
-            name="end_date"
-            type="date"
-            value={formData.end_date}
-            onChange={handleChange}
-            size="md"
-            mt="xs"
-          />
-        </Input.Wrapper>
-      </Flex>
-      <Input.Wrapper label="Description" w="100%" mb="md">
-        <Textarea
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          autosize
-          minRows={5}
-          resize="vertical"
-          mt="xs"
-        />
-      </Input.Wrapper>
-      <Button onClick={handleSubmit} size="md" mt="lg">
-        Submit
-      </Button>
+      <ProjectForm
+        formData={formData}
+        onChange={handleInputChange}
+        onStatusChange={(value) => handleFieldChange("status", value || "ONGOING")}
+        onSubmit={handleSubmit}
+      />
       <Divider my="md" />
       <Text fw={500} mb="md">
         Your Projects
       </Text>
-      {projectsData.length > 0 ? (
-        <Table striped highlightOnHover withTableBorder withColumnBorders>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>Project Name</Table.Th>
-              <Table.Th>Status</Table.Th>
-              <Table.Th>Project Link</Table.Th>
-              <Table.Th>Start Date</Table.Th>
-              <Table.Th>End Date</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {projectsData.map((project, index) => (
-              <Table.Tr key={index}>
-                <Table.Td style={{ textAlign: "center" }}>
-                  {project.project_name}
-                </Table.Td>
-                <Table.Td style={{ textAlign: "center" }}>
-                  {project.status}
-                </Table.Td>
-                <Table.Td style={{ textAlign: "center" }}>
-                  <a
-                    href={project.project_link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {project.project_link}
-                  </a>
-                </Table.Td>
-                <Table.Td style={{ textAlign: "center" }}>
-                  {project.start_date}
-                </Table.Td>
-                <Table.Td style={{ textAlign: "center" }}>
-                  {project.end_date}
-                </Table.Td>
-              </Table.Tr>
-            ))}
-          </Table.Tbody>
-        </Table>
-      ) : (
-        <Text mt="lg" style={{ textAlign: "center" }}>
-          No data found!
-        </Text>
-      )}
+      <ProjectsTable projectsData={projectsData} />
     </Flex>
   );
 }
 
 export default function WorkExperienceComponent({ experience, project }) {
+  const [internships, setInternships] = useState(experience || []);
+  const [projects, setProjects] = useState(project || []);
+
+  useEffect(() => {
+    setInternships(experience || []);
+  }, [experience]);
+
+  useEffect(() => {
+    setProjects(project || []);
+  }, [project]);
+
+  const handleAddInternship = (newInternship) => {
+    setInternships((prev) => [...prev, newInternship]);
+  };
+
+  const handleAddProject = (newProject) => {
+    setProjects((prev) => [...prev, newProject]);
+  };
+
   return (
     <Flex
       w={{ base: "100%", sm: "60%" }}
@@ -400,10 +209,16 @@ export default function WorkExperienceComponent({ experience, project }) {
         </Tabs.List>
 
         <Tabs.Panel value="internships">
-          <InternshipsTab internshipsData={experience} />
+          <InternshipsTab
+            internshipsData={internships}
+            onAddInternship={handleAddInternship}
+          />
         </Tabs.Panel>
         <Tabs.Panel value="projects">
-          <ProjectsTab projectsData={project} />
+          <ProjectsTab
+            projectsData={projects}
+            onAddProject={handleAddProject}
+          />
         </Tabs.Panel>
       </Tabs>
     </Flex>
@@ -446,6 +261,7 @@ InternshipsTab.propTypes = {
       description: PropTypes.string,
     }),
   ).isRequired,
+  onAddInternship: PropTypes.func.isRequired,
 };
 
 ProjectsTab.propTypes = {
@@ -459,4 +275,5 @@ ProjectsTab.propTypes = {
       description: PropTypes.string,
     }),
   ).isRequired,
+  onAddProject: PropTypes.func.isRequired,
 };

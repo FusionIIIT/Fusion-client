@@ -7,6 +7,7 @@ const userSlice = createSlice({
     roll_no: "",
     roles: ["Guest-User"],
     role: "Guest-User",
+    totalNotifications: 0,
     accessibleModules: {}, // Format---> {role: {module: true}}
     currentAccessibleModules: {}, // Format---> {module: true}
   },
@@ -22,6 +23,9 @@ const userSlice = createSlice({
     },
     setRole: (state, action) => {
       state.role = action.payload;
+    },
+    setTotalNotifications: (state, action) => {
+      state.totalNotifications = action.payload;
     },
     setAccessibleModules: (state, action) => {
       state.accessibleModules = action.payload;
@@ -44,6 +48,7 @@ export const {
   setRollNo,
   setRoles,
   setRole,
+  setTotalNotifications,
   setAccessibleModules,
   setCurrentAccessibleModules,
   clearUserName,
