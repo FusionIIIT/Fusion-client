@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import PropTypes from "prop-types";
 import { useSelector } from "react-redux";
 import {
   Flex,
@@ -12,9 +13,18 @@ import {
   Title,
   Text,
   Modal,
+  Badge,
 } from "@mantine/core";
-import { showNotification } from "@mantine/notifications"; // Import notifications
-import { lodgeComplaint } from "../routes/api";
+import { showNotification } from "@mantine/notifications";
+import { createComplaint } from "../routes/api";
+
+const PRIORITIES = [
+  { value: "URGENT", label: "Urgent (24h SLA)" },
+  { value: "STANDARD", label: "Standard (3 day SLA)" },
+  { value: "LOW", label: "Low (7 day SLA)" },
+];
+
+const MAX_FILE_SIZE_MB = 5;
 
 const COMPLAINT_TYPES = [
   "Electricity",
@@ -43,12 +53,14 @@ const LOCATIONS = [
   "Panini Hostel",
 ];
 
-function ComplaintForm() {
-  const role = useSelector((state) => state.user.role);
+function ComplaintForm({ roleOverride, onSubmit }) {
+  const storeRole = useSelector((state) => state.user.role);
+  const role = roleOverride || storeRole;
   const [complaintType, setComplaintType] = useState("");
   const [location, setLocation] = useState("");
   const [specificLocation, setSpecificLocation] = useState("");
   const [complaintDetails, setComplaintDetails] = useState("");
+  const [priority, setPriority] = useState("STANDARD");
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -60,8 +72,22 @@ function ComplaintForm() {
     setLocation("");
     setSpecificLocation("");
     setComplaintDetails("");
+    setPriority("STANDARD");
     setFile(null);
     setIsSuccess(false);
+  };
+
+  const handleFileChange = (selectedFile) => {
+    if (selectedFile && selectedFile.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      showNotification({
+        title: "File Too Large",
+        message: `Attachment must be under ${MAX_FILE_SIZE_MB}MB.`,
+        color: "red",
+      });
+      setFile(null);
+      return;
+    }
+    setFile(selectedFile);
   };
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -125,15 +151,29 @@ function ComplaintForm() {
     formData.append("location", location);
     formData.append("specific_location", specificLocation);
     formData.append("details", complaintDetails);
+    formData.append("priority", priority);
     if (file) {
       formData.append("upload_complaint", file);
     }
 
-    const response = await lodgeComplaint(role, formData, token);
+    const response = await createComplaint(formData, token);
 
     if (response.success) {
       setIsSuccess(true);
       console.log("Complaint registered:", response.data);
+
+      if (onSubmit) {
+        // Normalize backend snake_case response for UI acknowledgment page.
+        onSubmit({
+          complaintType: response.data?.complaint_type || complaintType,
+          location: response.data?.location || location,
+          specificLocation:
+            response.data?.specific_location || specificLocation,
+          complaintDetails: response.data?.details || complaintDetails,
+          complaintId: response.data?.id,
+          priority: response.data?.priority || priority,
+        });
+      }
 
       // Show success notification
       showNotification({
@@ -249,45 +289,68 @@ function ComplaintForm() {
               />
             </Grid.Col>
           </Grid>
-          <TextInput
-            label="Specific Location"
-            placeholder="Room number, Floor, Block, etc."
-            value={specificLocation}
-            onChange={(e) => setSpecificLocation(e.target.value)}
-            required
-            mb="md"
-            labelProps={{ fz: "md" }}
-            styles={(theme) => ({
-              input: {
-                fontSize: theme.fontSizes.md,
-              },
-            })}
-          />
+          <Grid>
+            <Grid.Col xs={12} md={6} sm={12}>
+              <TextInput
+                label="Specific Location"
+                placeholder="Room number, Floor, Block, etc."
+                value={specificLocation}
+                onChange={(e) => setSpecificLocation(e.target.value)}
+                required
+                mb="md"
+                labelProps={{ fz: "md" }}
+                styles={(theme) => ({
+                  input: { fontSize: theme.fontSizes.md },
+                })}
+              />
+            </Grid.Col>
+            <Grid.Col xs={12} md={6} sm={12}>
+              <Select
+                label="Priority"
+                placeholder="Select Priority"
+                value={priority}
+                onChange={setPriority}
+                data={PRIORITIES}
+                required
+                mb="md"
+                labelProps={{ fz: "md" }}
+                styles={(theme) => ({
+                  input: { fontSize: theme.fontSizes.md },
+                })}
+              />
+              {priority && (
+                <Badge
+                  size="sm"
+                  color={priority === "URGENT" ? "red" : priority === "LOW" ? "gray" : "blue"}
+                  variant="light"
+                  mb="md"
+                >
+                  SLA: {priority === "URGENT" ? "24 hours" : priority === "LOW" ? "7 days" : "3 days"}
+                </Badge>
+              )}
+            </Grid.Col>
+          </Grid>
           <Textarea
             label="Complaint Details"
-            placeholder="What is your complaint?"
+            placeholder="What is your complaint? (min 5 characters)"
             value={complaintDetails}
             onChange={(e) => setComplaintDetails(e.target.value)}
             required
             mb="md"
             labelProps={{ fz: "md" }}
             styles={(theme) => ({
-              input: {
-                fontSize: theme.fontSizes.md,
-              },
+              input: { fontSize: theme.fontSizes.md },
             })}
           />
           <FileInput
-            label="Attach Files (PDF, JPEG, PNG, JPG)"
+            label="Attach Files (PDF, JPEG, PNG, JPG, DOCX — max 5MB)"
             placeholder="Choose File"
-            accept=".pdf,.jpeg,.png,.jpg"
-            onChange={setFile}
+            accept=".pdf,.jpeg,.png,.jpg,.docx"
+            onChange={handleFileChange}
             mb="md"
             labelProps={{ fz: "md" }}
             styles={(theme) => ({
-              input: {
-                fontSize: theme.fontSizes.md,
-              },
+              input: { fontSize: theme.fontSizes.md },
             })}
           />
           <Flex
@@ -350,5 +413,15 @@ function ComplaintForm() {
     </Grid>
   );
 }
+
+ComplaintForm.defaultProps = {
+  roleOverride: "",
+  onSubmit: null,
+};
+
+ComplaintForm.propTypes = {
+  roleOverride: PropTypes.string,
+  onSubmit: PropTypes.func,
+};
 
 export default ComplaintForm;

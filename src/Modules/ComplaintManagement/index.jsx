@@ -1,9 +1,10 @@
-import { lazy, Suspense, useRef, useState, useMemo } from "react";
+import { lazy, Suspense, useRef, useState, useMemo, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Button, Flex, Loader, Tabs, Text } from "@mantine/core";
 import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
 import PropTypes from "prop-types";
 import CustomBreadcrumbs from "../../components/Breadcrumbs";
+import { getComplaintUserRole } from "./routes/api";
 import classes from "./ComplaintModule.module.css";
 
 // Lazy load components
@@ -11,15 +12,14 @@ const Feedback = lazy(() => import("./components/Feedback"));
 const FormPage = lazy(() => import("./components/FormPage"));
 const ComplaintHistory = lazy(() => import("./components/ComplaintHistory"));
 const GenerateReport = lazy(() => import("./components/Generate_Report"));
-const ResolvedComplaints = lazy(
-  () => import("./components/ResolvedComplaints"),
-);
-const UnresolvedComplaints = lazy(
+const SupervisorDashboard = lazy(() => import("./components/SupervisorDashboard"));
+const CaretakerQueue = lazy(
   () => import("./components/UnresolvedComplaints"),
 );
 const RedirectedComplaints = lazy(
   () => import("./components/RedirectedComplaints"),
 );
+const AdminDashboard = lazy(() => import("./components/AdminDashboard"));
 
 // Initialize font
 (() => {
@@ -32,15 +32,14 @@ const RedirectedComplaints = lazy(
 
 // Define role-based tab configurations
 const TAB_CONFIGS = {
+  supervisor: [{ title: "Dashboard" }, { title: "Generate Report" }],
   report: [{ title: "Generate Report" }],
   staff: [
-    // Updated order: Unresolved Complaints first, Resolved Complaints second
-    { title: "Unresolved Complaints" },
-    { title: "Resolved Complaints" },
-    { title: "Generate Report" },
+    // Single queue with status filters including resolved/escalated/declined
+    { title: "Dashboard" },
   ],
   sp: [{ title: "Redirected Complaints" }, { title: "Generate Report" }],
-  complaint_admin: [{ title: "Generate Report" }],
+  complaint_admin: [{ title: "Admin Dashboard" }, { title: "Generate Report" }],
   default: [
     { title: "Lodge a Complaint" },
     { title: "Complaint History" },
@@ -81,16 +80,53 @@ function ComplaintModuleLayout() {
   const [activeTab, setActiveTab] = useState("0");
   const tabsListRef = useRef(null);
   const role = useSelector((state) => state.user.role);
+  const [complaintRole, setComplaintRole] = useState("");
+  const [isRoleLoading, setIsRoleLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchComplaintRole = async () => {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        if (isMounted) setIsRoleLoading(false);
+        return;
+      }
+
+      const response = await getComplaintUserRole(token);
+      if (isMounted) {
+        setComplaintRole(response.success ? response.data?.user_type || "" : "");
+        setIsRoleLoading(false);
+      }
+    };
+
+    fetchComplaintRole();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Prefer the selected dashboard role (designation) over generic user_type
+  // from /complaint/, because values like "staff" are too broad for routing.
+  const effectiveRole = role || complaintRole;
+
+  const isComplaintAdminRole =
+    effectiveRole.includes("complaint_admin") ||
+    effectiveRole.includes("service_authority");
+  const isSupervisorRole = effectiveRole.includes("supervisor");
+  const isReportRole = effectiveRole.includes("warden");
+  const isServiceProviderRole = effectiveRole.includes("service_provider");
+  const isStaffQueueRole =
+    effectiveRole.includes("caretaker") || effectiveRole.includes("convener");
 
   // Choose the tab configuration based on user role.
   const tabItems = useMemo(() => {
-    if (role.includes("complaint_admin")) return TAB_CONFIGS.complaint_admin;
-    if (role.includes("warden") || role.includes("SA"))
-      return TAB_CONFIGS.report;
-    if (role.includes("SP")) return TAB_CONFIGS.sp;
-    if (role.includes("caretaker")) return TAB_CONFIGS.staff;
+    if (isComplaintAdminRole) return TAB_CONFIGS.complaint_admin;
+    if (isSupervisorRole) return TAB_CONFIGS.supervisor;
+    if (isReportRole) return TAB_CONFIGS.report;
+    if (isServiceProviderRole) return TAB_CONFIGS.sp;
+    if (isStaffQueueRole) return TAB_CONFIGS.staff;
     return TAB_CONFIGS.default;
-  }, [role]);
+  }, [isComplaintAdminRole, isSupervisorRole, isReportRole, isServiceProviderRole, isStaffQueueRole]);
 
   const handleTabChange = (direction) => {
     const newIndex =
@@ -110,40 +146,42 @@ function ComplaintModuleLayout() {
   // Map tab content based on role
   const tabContentMap = useMemo(
     () => ({
+      supervisor: {
+        0: <SupervisorDashboard roleOverride={effectiveRole} />,
+        1: <GenerateReport roleOverride={effectiveRole} />,
+      },
       report: {
-        0: <GenerateReport />,
+        0: <GenerateReport roleOverride={effectiveRole} />,
       },
       staff: {
-        // Updated order: Unresolved Complaints first, Resolved Complaints second
-        0: <UnresolvedComplaints />,
-        1: <ResolvedComplaints />,
-        2: <GenerateReport />,
+        0: <CaretakerQueue roleOverride={effectiveRole} />,
       },
       sp: {
         0: <RedirectedComplaints />,
-        1: <GenerateReport />,
+        1: <GenerateReport roleOverride={effectiveRole} />,
       },
       complaint_admin: {
-        0: <GenerateReport />,
+        0: <AdminDashboard />,
+        1: <GenerateReport roleOverride={effectiveRole} />,
       },
       default: {
-        0: <FormPage />,
-        1: <ComplaintHistory />,
+        0: <FormPage roleOverride={effectiveRole} />,
+        1: <ComplaintHistory roleOverride={effectiveRole} />,
         2: <Feedback />,
       },
     }),
-    [],
+    [effectiveRole],
   );
 
   const getTabContent = () => {
     let content;
-    if (role.includes("complaint_admin"))
-      content = tabContentMap.complaint_admin[activeTab];
-    else if (role.includes("warden") || role.includes("SA"))
-      content = tabContentMap.report[activeTab];
-    else if (role.includes("SP")) content = tabContentMap.sp[activeTab];
-    else if (role.includes("caretaker"))
-      content = tabContentMap.staff[activeTab];
+    if (isRoleLoading) return <Loader />;
+
+    if (isComplaintAdminRole) content = tabContentMap.complaint_admin[activeTab];
+    else if (isSupervisorRole) content = tabContentMap.supervisor[activeTab];
+    else if (isReportRole) content = tabContentMap.report[activeTab];
+    else if (isServiceProviderRole) content = tabContentMap.sp[activeTab];
+    else if (isStaffQueueRole) content = tabContentMap.staff[activeTab];
     else content = tabContentMap.default[activeTab];
 
     return content || <Loader />;

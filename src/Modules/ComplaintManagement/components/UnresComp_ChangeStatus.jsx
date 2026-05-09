@@ -1,89 +1,97 @@
 import {
-  Textarea,
-  Text,
-  Button,
-  Flex,
-  Grid,
-  Select,
-  FileInput,
+  Textarea, Text, Button, Flex, Grid, Select, FileInput,
 } from "@mantine/core";
 import { useState } from "react";
 import PropTypes from "prop-types";
 import { useMediaQuery } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
-import { updateComplaintStatus } from "../routes/api";
+import { updateProgressNew, escalateComplaint, extractApiErrorMessage } from "../routes/api";
 
-function UnresComp_ChangeStatus({ complaint, onBack }) {
+function UnresCompChangeStatus({ complaint, onBack, allowEscalation }) {
   const [status, setStatus] = useState("");
   const [comments, setComments] = useState("");
   const [image, setImage] = useState(null);
+  const [escalateMode, setEscalateMode] = useState(false);
+  const [justification, setJustification] = useState("");
   const isSmallScreen = useMediaQuery("(max-width: 768px)");
 
   if (!complaint) return null;
 
   const token = localStorage.getItem("authToken");
 
-  const handleStatusChange = (value) => {
-    setStatus(value);
-  };
-
-  const handleCommentsChange = (event) => {
-    setComments(event.currentTarget.value);
-  };
-
-  const handleImageChange = (file) => {
-    console.log("Selected Image:", file);
-    setImage(file);
-  };
-
   const handleSubmit = async () => {
-    if (!status) {
-      notifications.show({
-        title: "Incomplete Action",
-        message: "Please select an option before submitting.",
-        color: "red",
-      });
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("yesorno", status);
-    formData.append("comment", comments);
-
-    if (image) {
-      formData.append("image", image);
-      console.log("Image before sending:", image);
-      formData.append("upload_resolved", image);
-    } else {
-      console.log("No image selected before sending.");
-    }
-
-    try {
-      const response = await updateComplaintStatus(
-        complaint.id,
-        formData,
-        token,
-      );
+    if (escalateMode) {
+      if (!justification || justification.length < 10) {
+        notifications.show({
+          title: "Validation Error",
+          message: "Justification must be at least 10 characters.",
+          color: "red",
+        });
+        return;
+      }
+      const response = await escalateComplaint(complaint.id, justification, token);
       if (response.success) {
         notifications.show({
-          title: "Success",
-          message: "Thank you for resolving the complaint.",
+          title: "Escalated",
+          message: "Complaint has been escalated to supervisor.",
           color: "green",
         });
         onBack();
       } else {
         notifications.show({
           title: "Error",
-          message:
-            "There was an issue submitting your response. Please try again.",
+          message: extractApiErrorMessage(response.error, "Failed to escalate."),
           color: "red",
         });
       }
-      console.log("Response from API:", response);
+      return;
+    }
+
+    if (!status) {
+      notifications.show({
+        title: "Incomplete Action",
+        message: "Please select a status before submitting.",
+        color: "red",
+      });
+      return;
+    }
+
+    // Map to new API status values
+    const statusMap = { Resolved: 2, Declined: 3, "In Progress": 1 };
+    const statusValue = statusMap[status];
+    if (statusValue === undefined) {
+      notifications.show({ title: "Error", message: "Invalid status selected.", color: "red" });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("status", statusValue);
+    formData.append("note", comments);
+    if (image) {
+      formData.append("upload_resolved", image);
+    }
+
+    try {
+      const response = await updateProgressNew(complaint.id, formData, token);
+      if (response.success) {
+        notifications.show({
+          title: "Success",
+          message: "Complaint status updated successfully.",
+          color: "green",
+        });
+        onBack();
+      } else {
+        const msg = extractApiErrorMessage(response.error, "Failed to update status.");
+        notifications.show({
+          title: "Error",
+          message: msg || "Failed to update status.",
+          color: "red",
+        });
+      }
     } catch (error) {
       notifications.show({
         title: "Unexpected Error",
-        message: "An unexpected error occurred. Please try again.",
+        message: "An unexpected error occurred.",
         color: "red",
       });
     }
@@ -97,49 +105,67 @@ function UnresComp_ChangeStatus({ complaint, onBack }) {
       }}
     >
       <Text size={isSmallScreen ? "md" : "lg"} weight="bold">
-        Change Status
+        {escalateMode ? "Escalate Complaint" : "Change Status"}
       </Text>
       <Text size={isSmallScreen ? "xs" : "sm"} mt="1rem">
         <strong>Complainer ID:</strong> {complaint.complainer}
       </Text>
       <Text size={isSmallScreen ? "xs" : "sm"}>
-        <strong>Location:</strong> {complaint.specific_location},{" "}
-        {complaint.location}
+        <strong>Location:</strong> {complaint.specific_location}, {complaint.location}
       </Text>
       <Text size={isSmallScreen ? "xs" : "sm"}>
         <strong>Issue:</strong> {complaint.details}
       </Text>
 
-      <Text mt="1rem">Has the issue been resolved?</Text>
-      <Select
-        placeholder="Choose an option"
-        data={[
-          { value: "Yes", label: "Yes" },
-          { value: "No", label: "No" },
-        ]}
-        value={status}
-        onChange={handleStatusChange}
-        mt="1rem"
-      />
+      {escalateMode ? (
+        <>
+          <Text mt="1rem" weight={600}>Justification for Escalation *</Text>
+          <Textarea
+            placeholder="Why does this complaint need escalation? (min 10 characters)"
+            value={justification}
+            onChange={(e) => setJustification(e.target.value)}
+            minRows={3}
+            mt="0.5rem"
+          />
+          <Text size="xs" color="dimmed" mt={4}>
+            {justification.length}/10 minimum characters
+          </Text>
+        </>
+      ) : (
+        <>
+          <Text mt="1rem">Update complaint status:</Text>
+          <Select
+            placeholder="Choose status"
+            data={[
+              { value: "In Progress", label: "In Progress" },
+              { value: "Resolved", label: "Resolved" },
+              { value: "Declined", label: "Declined" },
+            ]}
+            value={status}
+            onChange={setStatus}
+            mt="1rem"
+          />
 
-      <Text mt="1rem">Any Comments</Text>
-      <Textarea
-        placeholder="Write your comments here"
-        autosize
-        minRows={2}
-        maxRows={4}
-        value={comments}
-        onChange={handleCommentsChange}
-        mt="1rem"
-      />
+          <Text mt="1rem">Notes / Comments</Text>
+          <Textarea
+            placeholder="Add resolution notes or comments"
+            autosize
+            minRows={2}
+            maxRows={4}
+            value={comments}
+            onChange={(e) => setComments(e.target.value)}
+            mt="0.5rem"
+          />
 
-      <Text mt="1rem">Attach an Image (optional)</Text>
-      <FileInput
-        placeholder="Upload an image"
-        onChange={handleImageChange}
-        mt="1rem"
-        accept="image/*"
-      />
+          <Text mt="1rem">Attach Evidence (optional)</Text>
+          <FileInput
+            placeholder="Upload an image"
+            onChange={setImage}
+            mt="0.5rem"
+            accept="image/*,.pdf"
+          />
+        </>
+      )}
 
       <Flex
         justify={isSmallScreen ? "center" : "flex-end"}
@@ -147,26 +173,41 @@ function UnresComp_ChangeStatus({ complaint, onBack }) {
         mt="md"
         gap="xs"
       >
-        <Button
-          variant="outline"
-          onClick={onBack}
-          style={{ width: isSmallScreen ? "100%" : "auto" }}
-        >
+        <Button variant="outline" onClick={onBack} style={{ width: isSmallScreen ? "100%" : "auto" }}>
           BACK
         </Button>
+        {!escalateMode && allowEscalation && (
+          <Button
+            variant="outline" color="orange"
+            onClick={() => setEscalateMode(true)}
+            style={{ width: isSmallScreen ? "100%" : "auto" }}
+          >
+            Escalate Instead
+          </Button>
+        )}
+        {escalateMode && allowEscalation && (
+          <Button
+            variant="outline"
+            onClick={() => setEscalateMode(false)}
+            style={{ width: isSmallScreen ? "100%" : "auto" }}
+          >
+            Back to Status
+          </Button>
+        )}
         <Button
-          variant="outline"
+          variant="filled"
+          color={escalateMode ? "orange" : "blue"}
           onClick={handleSubmit}
           style={{ width: isSmallScreen ? "100%" : "auto" }}
         >
-          Submit
+          {escalateMode ? "Escalate" : "Submit"}
         </Button>
       </Flex>
     </Grid.Col>
   );
 }
 
-UnresComp_ChangeStatus.propTypes = {
+UnresCompChangeStatus.propTypes = {
   complaint: PropTypes.shape({
     id: PropTypes.number.isRequired,
     complainer: PropTypes.string,
@@ -175,6 +216,11 @@ UnresComp_ChangeStatus.propTypes = {
     details: PropTypes.string.isRequired,
   }),
   onBack: PropTypes.func.isRequired,
+  allowEscalation: PropTypes.bool,
 };
 
-export default UnresComp_ChangeStatus;
+UnresCompChangeStatus.defaultProps = {
+  allowEscalation: true,
+};
+
+export default UnresCompChangeStatus;

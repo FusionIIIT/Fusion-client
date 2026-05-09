@@ -1,14 +1,28 @@
 // AcknowledgmentPage.jsx
 import React from "react";
 import PropTypes from "prop-types";
-import { Container, Paper, Button, Title, Text } from "@mantine/core";
+import { Grid, Paper, Button, Title, Text } from "@mantine/core";
 
 function AcknowledgmentPage({ complaintDetails, onBackToForm }) {
+  const complaintType =
+    complaintDetails?.complaintType || complaintDetails?.complaint_type || "-";
+  const location = complaintDetails?.location || "-";
+  const specificLocation =
+    complaintDetails?.specificLocation ||
+    complaintDetails?.specific_location ||
+    "-";
+  const details =
+    complaintDetails?.complaintDetails || complaintDetails?.details || "-";
+
   return (
-    <Container
-      size="md"
+    <Grid
       mt="xl"
-      style={{ display: "flex", justifyContent: "center" }}
+      style={{ paddingInline: "49px", width: "100%" }}
+      sx={(theme) => ({
+        [theme.fn.smallerThan("sm")]: {
+          paddingInline: theme.spacing.md,
+        },
+      })}
     >
       <Paper
         radius="md"
@@ -17,10 +31,16 @@ function AcknowledgmentPage({ complaintDetails, onBackToForm }) {
         pb="xl"
         style={{
           borderLeft: "0.6rem solid #15ABFF",
-          width: "55%",
+          width: "70vw",
           backgroundColor: "white",
         }}
         withBorder
+        sx={(theme) => ({
+          [theme.fn.smallerThan("sm")]: {
+            width: "90vw",
+            padding: theme.spacing.sm,
+          },
+        })}
       >
         <Title order={3} mb="md">
           Complaint Submitted Successfully!
@@ -29,24 +49,22 @@ function AcknowledgmentPage({ complaintDetails, onBackToForm }) {
           Your complaint has been registered successfully. Here are the details:
         </Text>
         <Text>
-          <strong>Complaint Type:</strong> {complaintDetails.complaintType}
+          <strong>Complaint Type:</strong> {complaintType}
         </Text>
         <Text>
-          <strong>Location:</strong> {complaintDetails.location}
+          <strong>Location:</strong> {location}
         </Text>
         <Text>
-          <strong>Specific Location:</strong>{" "}
-          {complaintDetails.specificLocation}
+          <strong>Specific Location:</strong> {specificLocation}
         </Text>
         <Text>
-          <strong>Complaint Details:</strong>{" "}
-          {complaintDetails.complaintDetails}
+          <strong>Complaint Details:</strong> {details}
         </Text>
         <Button onClick={onBackToForm} fullWidth mt="lg">
           Back to Form
         </Button>
       </Paper>
-    </Container>
+    </Grid>
   );
 }
 
