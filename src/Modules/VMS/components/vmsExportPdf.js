@@ -1,0 +1,540 @@
+import { jsPDF as JsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+
+const timestamp = () =>
+  new Date().toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+const fileTs = () =>
+  new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+
+function addDocHeader(doc, title) {
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.text(title, 14, 18);
+
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(120);
+  doc.text(`Exported: ${timestamp()}`, 14, 26);
+  doc.setTextColor(0);
+}
+
+/**
+ * Export the Visitor Records panel (active visitors) to PDF.
+ * @param {Array} visitorRows
+ */
+export function exportVisitorRecordsPdf(visitorRows) {
+  const doc = new JsPDF({ orientation: "landscape" });
+
+  addDocHeader(doc, "Visitor Records – Active Visitors");
+
+  if (visitorRows.length === 0) {
+    doc.setFontSize(11);
+    doc.text("No active visitors to display.", 14, 36);
+  } else {
+    autoTable(doc, {
+      startY: 32,
+      head: [["Visit ID", "Name", "Gate", "Authorized Zone", "VIP", "Status"]],
+      body: visitorRows.map((row) => [
+        row.id ?? "-",
+        row.name ?? "-",
+        row.gate_name ?? "-",
+        row.authorized_zones ?? "-",
+        row.is_vip ? "Yes" : "No",
+        row.status ?? "-",
+      ]),
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [37, 99, 235] },
+      alternateRowStyles: { fillColor: [239, 246, 255] },
+    });
+  }
+
+  doc.save(`visitor_records_${fileTs()}.pdf`);
+}
+
+/**
+ * Export the Security Snapshot panel (incidents + personnel) to PDF.
+ * @param {Array} incidents
+ * @param {Array} staff
+ */
+export function exportSecuritySnapshotPdf(incidents, staff) {
+  const doc = new JsPDF();
+
+  addDocHeader(doc, "Security Snapshot");
+
+  // --- Recent Incidents ---
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.text("Recent Incident Log", 14, 36);
+
+  if (incidents.length === 0) {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text("No incidents reported.", 14, 44);
+  } else {
+    autoTable(doc, {
+      startY: 40,
+      head: [
+        [
+          "Severity",
+          "Issue Type",
+          "Visit ID",
+          "Description",
+          "Status",
+          "Raised At",
+        ],
+      ],
+      body: incidents.map((inc) => [
+        inc.severity ?? "-",
+        inc.issue_type ?? "-",
+        inc.visit_id ?? "-",
+        inc.description ?? "-",
+        inc.status ?? "-",
+        inc.raised_at ? new Date(inc.raised_at).toLocaleString() : "-",
+      ]),
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [220, 38, 38] },
+      alternateRowStyles: { fillColor: [255, 241, 242] },
+    });
+  }
+
+  const afterIncidents = doc.lastAutoTable?.finalY ?? 44;
+
+  // --- Personnel Status ---
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.text("Personnel Status", 14, afterIncidents + 12);
+
+  autoTable(doc, {
+    startY: afterIncidents + 16,
+    head: [["Name", "Role", "Shift", "Status"]],
+    body: staff.map((member) => [
+      member.name ?? "-",
+      member.role ?? "-",
+      member.shift ?? "-",
+      member.status ?? "-",
+    ]),
+    styles: { fontSize: 9 },
+    headStyles: { fillColor: [5, 150, 105] },
+    alternateRowStyles: { fillColor: [236, 253, 245] },
+  });
+
+  doc.save(`security_snapshot_${fileTs()}.pdf`);
+}
+
+/**
+ * Export a full operational report dossier to PDF.
+ * Expects the server response from POST /vms/reports/ plus optional
+ * in-memory context (active visitors and incident log) to embed a
+ * snapshot for reviewers.
+ *
+ * @param {Object} report        server response body
+ * @param {Object} [context]     { activeVisitors, incidents }
+ */
+export function exportOperationalReportPdf(report, context = {}) {
+  const doc = new JsPDF({ orientation: "portrait" });
+  const activeVisitors = Array.isArray(context.activeVisitors)
+    ? context.activeVisitors
+    : [];
+  const incidents = Array.isArray(context.incidents) ? context.incidents : [];
+  const summary = report?.summary || {};
+  const trends = report?.trends || {};
+  const dateRange = report?.date_range || {};
+  const statusBreakdown = summary.status_breakdown || {};
+  const severityBreakdown = summary.severity_breakdown || {};
+
+  const reportLabel = (report?.report_type || "Operational Report")
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+
+  addDocHeader(doc, `VMS ${reportLabel}`);
+
+  // --- Metadata ---
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+  doc.text("Report Metadata", 14, 36);
+  autoTable(doc, {
+    startY: 40,
+    body: [
+      ["Report Type", report?.report_type || "-"],
+      ["Date Range", `${dateRange.start ?? "-"} → ${dateRange.end ?? "-"}`],
+      [
+        "Generated At",
+        report?.generated_at
+          ? new Date(report.generated_at).toLocaleString()
+          : "-",
+      ],
+      ["Generated By", report?.generated_by || "-"],
+    ],
+    styles: { fontSize: 9 },
+    columnStyles: {
+      0: { fontStyle: "bold", cellWidth: 50, fillColor: [239, 246, 255] },
+    },
+    theme: "grid",
+  });
+  let y = doc.lastAutoTable?.finalY ?? 40;
+
+  // --- Headline metrics (4-column strip) ---
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text("Summary Statistics", 14, y + 10);
+  autoTable(doc, {
+    startY: y + 14,
+    head: [
+      [
+        "Total Visits",
+        "VIP Visits",
+        "Total Incidents",
+        "Daily Avg",
+        "Incident Rate %",
+      ],
+    ],
+    body: [
+      [
+        summary.total_visits ?? 0,
+        summary.vip_visits ?? 0,
+        summary.total_incidents ?? 0,
+        trends.daily_averages ?? 0,
+        trends.incident_rate ?? 0,
+      ],
+    ],
+    styles: { fontSize: 10, halign: "center" },
+    headStyles: { fillColor: [37, 99, 235], halign: "center" },
+  });
+  y = doc.lastAutoTable?.finalY ?? y;
+
+  // --- Status breakdown ---
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text("Visit Status Breakdown", 14, y + 10);
+  const statusRows = Object.entries(statusBreakdown);
+  if (statusRows.length === 0) {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text("No visits in the selected range.", 14, y + 18);
+    y += 18;
+  } else {
+    autoTable(doc, {
+      startY: y + 14,
+      head: [["Status", "Count"]],
+      body: statusRows.map(([k, v]) => [k, v]),
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [5, 150, 105] },
+      alternateRowStyles: { fillColor: [236, 253, 245] },
+    });
+    y = doc.lastAutoTable?.finalY ?? y;
+  }
+
+  // --- Severity breakdown ---
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text("Incident Severity Breakdown", 14, y + 10);
+  const severityRows = Object.entries(severityBreakdown);
+  if (severityRows.length === 0) {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text("No incidents in the selected range.", 14, y + 18);
+    y += 18;
+  } else {
+    autoTable(doc, {
+      startY: y + 14,
+      head: [["Severity", "Count"]],
+      body: severityRows.map(([k, v]) => [k, v]),
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [220, 38, 38] },
+      alternateRowStyles: { fillColor: [255, 241, 242] },
+    });
+    y = doc.lastAutoTable?.finalY ?? y;
+  }
+
+  // --- Trends ---
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text("Trends", 14, y + 10);
+  autoTable(doc, {
+    startY: y + 14,
+    body: [
+      ["Daily Averages", trends.daily_averages ?? 0],
+      ["Incident Rate (%)", trends.incident_rate ?? 0],
+    ],
+    styles: { fontSize: 9 },
+    columnStyles: {
+      0: { fontStyle: "bold", cellWidth: 60, fillColor: [243, 244, 246] },
+    },
+    theme: "grid",
+  });
+  y = doc.lastAutoTable?.finalY ?? y;
+
+  // --- Snapshot: current active visitors (context) ---
+  if (y > 230) {
+    doc.addPage();
+    y = 20;
+  }
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text(
+    `Current Active Visitors Snapshot (${activeVisitors.length})`,
+    14,
+    y + 10,
+  );
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(120);
+  doc.text(
+    "Live roster at the moment the report was exported — not filtered by date range.",
+    14,
+    y + 16,
+  );
+  doc.setTextColor(0);
+  if (activeVisitors.length === 0) {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text("No active visitors currently inside.", 14, y + 24);
+    y += 24;
+  } else {
+    autoTable(doc, {
+      startY: y + 20,
+      head: [["Visit ID", "Name", "Gate", "Zone", "VIP", "Status"]],
+      body: activeVisitors.map((row) => [
+        row.id ?? "-",
+        row.name ?? "-",
+        row.gate_name ?? "-",
+        row.authorized_zones ?? "-",
+        row.is_vip ? "Yes" : "No",
+        row.status ?? "-",
+      ]),
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [37, 99, 235] },
+      alternateRowStyles: { fillColor: [239, 246, 255] },
+    });
+    y = doc.lastAutoTable?.finalY ?? y;
+  }
+
+  // --- Snapshot: incidents in memory (context) ---
+  if (y > 240) {
+    doc.addPage();
+    y = 20;
+  }
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text(`Recent Incident Log (${incidents.length})`, 14, y + 10);
+  if (incidents.length === 0) {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text("No incidents loaded in the current session.", 14, y + 18);
+  } else {
+    autoTable(doc, {
+      startY: y + 14,
+      head: [
+        [
+          "ID",
+          "Severity",
+          "Type",
+          "Visit ID",
+          "Description",
+          "Status",
+          "Raised",
+        ],
+      ],
+      body: incidents.map((inc) => [
+        inc.id ?? "-",
+        inc.severity ?? "-",
+        inc.issue_type ?? "-",
+        inc.visit_id ?? "-",
+        inc.description ?? "-",
+        inc.status ?? "-",
+        inc.raised_at ? new Date(inc.raised_at).toLocaleString() : "-",
+      ]),
+      styles: { fontSize: 7 },
+      headStyles: { fillColor: [220, 38, 38] },
+      alternateRowStyles: { fillColor: [255, 241, 242] },
+    });
+  }
+
+  // --- Footer with page numbers ---
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i += 1) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(120);
+    doc.text(
+      `Page ${i} of ${pageCount}`,
+      doc.internal.pageSize.getWidth() - 24,
+      doc.internal.pageSize.getHeight() - 8,
+    );
+    doc.text(
+      "VMS Operations Report",
+      14,
+      doc.internal.pageSize.getHeight() - 8,
+    );
+    doc.setTextColor(0);
+  }
+
+  const typeSafe = (report?.report_type || "report").replace(/[^\w-]/g, "_");
+  doc.save(`vms_${typeSafe}_${fileTs()}.pdf`);
+}
+
+/**
+ * Export a full visitor history dossier to PDF.
+ * Expects the server response from GET /vms/history/<id_number>/.
+ * @param {Object} history { visitor, visits, incidents, blacklist }
+ */
+export function exportVisitorHistoryPdf(history) {
+  const doc = new JsPDF();
+  const visitor = history?.visitor || {};
+  const visits = Array.isArray(history?.visits) ? history.visits : [];
+  const incidents = Array.isArray(history?.incidents) ? history.incidents : [];
+  const blacklist = Array.isArray(history?.blacklist) ? history.blacklist : [];
+
+  addDocHeader(doc, "Visitor History Dossier");
+
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+  doc.text("Visitor Details", 14, 36);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+
+  const rows = [
+    ["Full Name", visitor.full_name || "-"],
+    ["ID Type", visitor.id_type || "-"],
+    ["ID Number", visitor.id_number || "-"],
+    ["Phone", visitor.contact_phone || "-"],
+    ["Email", visitor.contact_email || "-"],
+    ["Photo Ref", visitor.photo_reference || "-"],
+  ];
+  autoTable(doc, {
+    startY: 40,
+    body: rows,
+    styles: { fontSize: 9 },
+    columnStyles: {
+      0: { fontStyle: "bold", cellWidth: 40, fillColor: [239, 246, 255] },
+    },
+    theme: "grid",
+  });
+
+  let y = doc.lastAutoTable?.finalY ?? 40;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text(`Visits (${visits.length})`, 14, y + 10);
+  if (visits.length === 0) {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text("No visits on record.", 14, y + 18);
+    y += 18;
+  } else {
+    autoTable(doc, {
+      startY: y + 14,
+      head: [
+        ["Visit ID", "Purpose", "Host", "Dept", "Status", "VIP", "Registered"],
+      ],
+      body: visits.map((v) => [
+        v.id ?? "-",
+        v.purpose ?? "-",
+        v.host_name ?? "-",
+        v.host_department ?? "-",
+        v.status ?? "-",
+        v.is_vip ? "Yes" : "No",
+        v.registered_at ? new Date(v.registered_at).toLocaleString() : "-",
+      ]),
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [37, 99, 235] },
+      alternateRowStyles: { fillColor: [239, 246, 255] },
+    });
+    y = doc.lastAutoTable?.finalY ?? y + 14;
+  }
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text(`Incidents (${incidents.length})`, 14, y + 10);
+  if (incidents.length === 0) {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text("No incidents on record.", 14, y + 18);
+    y += 18;
+  } else {
+    autoTable(doc, {
+      startY: y + 14,
+      head: [["ID", "Severity", "Type", "Description", "Status", "Raised At"]],
+      body: incidents.map((inc) => [
+        inc.id ?? "-",
+        inc.severity ?? "-",
+        inc.issue_type ?? "-",
+        inc.description ?? "-",
+        inc.status ?? "-",
+        inc.created_at ? new Date(inc.created_at).toLocaleString() : "-",
+      ]),
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [220, 38, 38] },
+      alternateRowStyles: { fillColor: [255, 241, 242] },
+    });
+    y = doc.lastAutoTable?.finalY ?? y + 14;
+  }
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text(`Blacklist Entries (${blacklist.length})`, 14, y + 10);
+  if (blacklist.length === 0) {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text("No blacklist entries.", 14, y + 18);
+  } else {
+    autoTable(doc, {
+      startY: y + 14,
+      head: [["ID", "Reason", "Active", "Added By", "Created At"]],
+      body: blacklist.map((b) => [
+        b.id ?? "-",
+        b.reason ?? "-",
+        b.active ? "Yes" : "No",
+        b.added_by ?? "-",
+        b.created_at ? new Date(b.created_at).toLocaleString() : "-",
+      ]),
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [120, 53, 15] },
+      alternateRowStyles: { fillColor: [254, 243, 199] },
+    });
+  }
+
+  const idSafe = (visitor.id_number || "visitor").replace(/[^\w-]/g, "_");
+  doc.save(`visitor_history_${idSafe}_${fileTs()}.pdf`);
+}
+
+/**
+ * Export the Recently Registered panel to PDF.
+ * @param {Array} recentRegistrations
+ */
+export function exportRecentlyRegisteredPdf(recentRegistrations) {
+  const doc = new JsPDF();
+
+  addDocHeader(doc, "Recently Registered Visitors");
+
+  if (recentRegistrations.length === 0) {
+    doc.setFontSize(11);
+    doc.text("No recent registrations to display.", 14, 36);
+  } else {
+    autoTable(doc, {
+      startY: 32,
+      head: [["Name", "Host", "Registered At", "Status", "VIP"]],
+      body: recentRegistrations.map((entry) => [
+        entry.name ?? "-",
+        entry.host_name ?? "-",
+        entry.registered_at
+          ? new Date(entry.registered_at).toLocaleString()
+          : "-",
+        entry.status ?? "-",
+        entry.is_vip ? "Yes" : "No",
+      ]),
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [79, 70, 229] },
+      alternateRowStyles: { fillColor: [238, 242, 255] },
+    });
+  }
+
+  doc.save(`recently_registered_${fileTs()}.pdf`);
+}

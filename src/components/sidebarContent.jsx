@@ -30,6 +30,7 @@ import {
   Question as HelpIcon,
   User as ProfileIcon,
   Gear as SettingsIcon,
+  ShieldCheck as VmsIcon,
   CaretRight,
   CaretLeft,
 } from "@phosphor-icons/react";
@@ -37,11 +38,31 @@ import PropTypes from "prop-types";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import axios from "axios";
 import IIITLOGO from "../assets/IIITJ_logo.webp";
 import { setCurrentModule } from "../redux/moduleslice";
+import { host } from "../routes/globalRoutes";
+
+const VMS_ADMIN_AUTHORITIES = new Set(["super_admin", "admin"]);
 
 function SidebarContent({ isCollapsed, toggleSidebar }) {
   const role = useSelector((state) => state.user.role);
+  const [vmsAuthority, setVmsAuthority] = useState(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (!token) return;
+    axios
+      .get(`${host}/vms/me/`, {
+        headers: { Authorization: `Token ${token}` },
+      })
+      .then((res) => setVmsAuthority(res.data?.authority_level ?? null))
+      .catch(() => setVmsAuthority(null));
+  }, []);
+
+  const vmsUrl = VMS_ADMIN_AUTHORITIES.has(vmsAuthority)
+    ? "/vms-demo-admin"
+    : "/vms-demo-staff";
 
   const Modules = [
     {
@@ -170,6 +191,12 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       icon: <OtherAcademicIcon size={18} />,
       url: "/",
     },
+    {
+      label: "Visitor Management",
+      id: "vms",
+      icon: <VmsIcon size={18} />,
+      url: vmsUrl,
+    },
   ];
 
   const otherItems = [
@@ -193,11 +220,18 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // VMS is visible only to users with a HostAuthority row (gate staff,
+    // department hosts, VMS admin, super admin) — regular students and
+    // other users without VMS authority don't see the module at all.
+    const hasVmsAccess = vmsAuthority !== null;
     const filterModules = Modules.filter(
-      (module) => accessibleModules[module.id] || module.id === "home",
+      (module) =>
+        accessibleModules[module.id] ||
+        module.id === "home" ||
+        (module.id === "vms" && hasVmsAccess),
     );
     setFilteredModules(filterModules);
-  }, [accessibleModules]);
+  }, [accessibleModules, vmsAuthority]);
 
   const handleModuleClick = (item) => {
     setSelected(item.label);
