@@ -1,191 +1,239 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
-  Table,
-  Container,
-  Paper,
-  Title,
-  Button,
-  Flex,
-  Loader,
   Alert,
+  Badge,
+  Button,
+  Card,
+  Flex,
+  Group,
+  Loader,
+  ScrollArea,
+  Table,
+  Text,
+  Textarea,
+  Title,
 } from "@mantine/core";
+import { WarningCircle } from "@phosphor-icons/react";
 import axios from "axios";
-import { specialFoodRequestRoute } from "../routes";
-
-const tableHeader = [
-  "Date",
-  "Student ID",
-  "Food",
-  "Reason",
-  "From",
-  "To",
-  "Action",
-];
+import { specialFoodRequestRoute, host } from "../routes";
 
 function ViewSpecialFoodRequest() {
   const [foodRequestData, setFoodRequestData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
 
-  // Fetch data on mount
   const fetchData = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        setError("Authentication token not found.");
-        return;
-      }
+      setError("");
 
+      const token = localStorage.getItem("authToken");
       const response = await axios.get(specialFoodRequestRoute, {
         headers: {
           Authorization: `Token ${token}`,
         },
       });
-      console.log("Response:", response.data.payload);
-      if (response.data && response.data.payload) {
-        const filteredData = response.data.payload.filter(
-          (item) => parseInt(item.status, 10) === 1,
-        );
-        setFoodRequestData(filteredData);
-        console.log("Filtered Data:", filteredData);
-      } else {
-        setFoodRequestData([]);
-      }
-    } catch (err) {
-      setError("Error fetching special food requests.");
-      console.error("Error fetching special food requests:", err);
+
+      const filteredData = (response.data.payload || [])
+        .filter((item) => parseInt(item.status, 10) === 1)
+        .map((item) => ({
+          ...item,
+          remark: item.special_request_remark || "",
+        }));
+      setFoodRequestData(filteredData);
+    } catch (fetchError) {
+      setError("Unable to load special-food requests.");
     } finally {
       setLoading(false);
     }
   };
 
-  // useEffect block
   useEffect(() => {
     fetchData();
   }, []);
 
+  const handleRemarkChange = (id, value) => {
+    setFoodRequestData((prevData) =>
+      prevData.map((item) =>
+        item.id === id ? { ...item, remark: value } : item,
+      ),
+    );
+  };
+
   const updateApprovalStatus = async (status, requestData, index) => {
     try {
       const token = localStorage.getItem("authToken");
-      if (!token) {
-        setError("Authentication token not found.");
-        return;
-      }
-
       const payload = {
-        student_id: requestData.student_id,
-        start_date: requestData.start_date,
-        end_date: requestData.end_date,
-        app_date: requestData.app_date,
-        request: requestData.request,
-        item1: requestData.item1,
-        item2: requestData.item2,
+        id: requestData.id,
         status,
+        special_request_remark: requestData.remark,
       };
-
-      const response = await axios.put(specialFoodRequestRoute, payload, {
+      if (status === 3) {
+        payload.escalation_remark = requestData.remark;
+      }
+      await axios.put(specialFoodRequestRoute, payload, {
         headers: {
           Authorization: `Token ${token}`,
         },
       });
 
-      if (response.data.status === 200) {
-        // Remove the request from table after updating status
-        setFoodRequestData((prevData) =>
-          prevData.filter((_, i) => i !== index),
-        );
-      }
-    } catch (err) {
-      setError("Failed to update request status.");
-      console.error("PUT error:", err);
+      setFoodRequestData((prevData) =>
+        prevData.filter((_, itemIndex) => itemIndex !== index),
+      );
+    } catch (updateError) {
+      setError("Failed to update the request status.");
     }
   };
 
-  const renderHeader = (titles) =>
-    titles.map((title, index) => (
-      <Table.Th key={index}>
-        <Flex align="center" justify="center" h="100%">
-          {title}
-        </Flex>
-      </Table.Th>
-    ));
-
-  const renderRows = () =>
-    foodRequestData.map((item, index) => (
-      <Table.Tr key={index} h={50}>
-        <Table.Td align="center">{item.app_date}</Table.Td>
-        <Table.Td align="center">{item.student_id}</Table.Td>
-        <Table.Td align="center">{item.item1}</Table.Td>
-        <Table.Td align="center">{item.request}</Table.Td>
-        <Table.Td align="center">{item.start_date}</Table.Td>
-        <Table.Td align="center">{item.end_date}</Table.Td>
-        <Table.Td align="center">
-          <Flex justify="center" gap={8}>
-            <Button
-              color="green"
-              size="xs"
-              onClick={() => updateApprovalStatus(2, item, index)}
-            >
-              Accept
-            </Button>
-            <Button
-              color="red"
-              size="xs"
-              variant="outline"
-              onClick={() => updateApprovalStatus(0, item, index)}
-            >
-              Reject
-            </Button>
-          </Flex>
-        </Table.Td>
-      </Table.Tr>
-    ));
-
   return (
-    <Container size="lg" mt={30} miw="75rem">
-      <Paper shadow="md" radius="md" p="lg" withBorder>
-        <Flex justify="space-between" align="center" mb="lg">
-          <Title order={2} c="#1c7ed6">
-            View Special Food Requests
-          </Title>
-          <Button onClick={fetchData} variant="light" color="blue" size="sm">
+    <Card shadow="sm" radius="xl" p="xl" withBorder>
+      <Group justify="space-between" align="flex-start" gap="md" mb="lg">
+        <div>
+          <Title order={3}>Special Food Requests</Title>
+          <Text c="dimmed" size="sm" mt={4}>
+            Review pending meal exceptions and act on them quickly.
+          </Text>
+        </div>
+        <Group gap="sm">
+          <Badge size="lg" radius="xl" color="pink" variant="light">
+            {foodRequestData.length} pending
+          </Badge>
+          <Button variant="light" onClick={fetchData}>
             Refresh
           </Button>
-        </Flex>
+        </Group>
+      </Group>
 
-        {loading ? (
-          <Flex justify="center" align="center" style={{ minHeight: "200px" }}>
-            <Loader size="xl" />
-          </Flex>
-        ) : error ? (
-          <Alert color="red" title="Error" mb="lg">
-            {error}
-          </Alert>
-        ) : (
-          <Table striped highlightOnHover withBorder withColumnBorders>
+      {loading ? (
+        <Flex justify="center" align="center" py="xl">
+          <Loader />
+        </Flex>
+      ) : error ? (
+        <Alert color="red" icon={<WarningCircle size={18} />}>
+          {error}
+        </Alert>
+      ) : (
+        <ScrollArea offsetScrollbars>
+          <Table
+            striped
+            highlightOnHover
+            verticalSpacing="md"
+            horizontalSpacing="md"
+            miw={860}
+          >
             <Table.Thead>
-              <Table.Tr>{renderHeader(tableHeader)}</Table.Tr>
+              <Table.Tr>
+                <Table.Th>Date</Table.Th>
+                <Table.Th>Student ID</Table.Th>
+                <Table.Th>Type</Table.Th>
+                <Table.Th>Food</Table.Th>
+                <Table.Th>Reason</Table.Th>
+                <Table.Th>Document</Table.Th>
+                <Table.Th>From</Table.Th>
+                <Table.Th>To</Table.Th>
+                <Table.Th>Remark</Table.Th>
+                <Table.Th>Action</Table.Th>
+              </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
               {foodRequestData.length > 0 ? (
-                renderRows()
+                foodRequestData.map((item, index) => (
+                  <Table.Tr key={item.id || index}>
+                    <Table.Td>{item.app_date}</Table.Td>
+                    <Table.Td>{item.student_id}</Table.Td>
+                    <Table.Td>
+                      <Badge
+                        color={item.request_type === "medical" ? "red" : "blue"}
+                        variant="light"
+                      >
+                        {item.request_type === "medical" ? "Medical" : "Event"}
+                      </Badge>
+                    </Table.Td>
+                    <Table.Td>{item.item1}</Table.Td>
+                    <Table.Td>
+                      <Text size="sm" maw={220}>
+                        {item.request}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td>
+                      {item.supporting_document ? (
+                        <Button
+                          component="a"
+                          href={
+                            item.supporting_document.startsWith("http")
+                              ? item.supporting_document
+                              : `${host}/${item.supporting_document.replace(/^\/+/, "")}`
+                          }
+                          target="_blank"
+                          rel="noreferrer"
+                          size="xs"
+                          variant="subtle"
+                        >
+                          View
+                        </Button>
+                      ) : (
+                        <Text size="sm" c="dimmed">
+                          Not attached
+                        </Text>
+                      )}
+                    </Table.Td>
+                    <Table.Td>{item.start_date}</Table.Td>
+                    <Table.Td>{item.end_date}</Table.Td>
+                    <Table.Td>
+                      <Textarea
+                        value={item.remark}
+                        placeholder="Add context for the decision"
+                        onChange={(event) =>
+                          handleRemarkChange(item.id, event.currentTarget.value)
+                        }
+                        minRows={1}
+                        autosize
+                      />
+                    </Table.Td>
+                    <Table.Td>
+                      <Group gap="xs">
+                        <Button
+                          size="xs"
+                          color="green"
+                          variant="light"
+                          onClick={() => updateApprovalStatus(2, item, index)}
+                        >
+                          Accept
+                        </Button>
+                        <Button
+                          size="xs"
+                          color="red"
+                          variant="light"
+                          onClick={() => updateApprovalStatus(0, item, index)}
+                        >
+                          Reject
+                        </Button>
+                        <Button
+                          size="xs"
+                          color="yellow"
+                          variant="light"
+                          onClick={() => updateApprovalStatus(3, item, index)}
+                        >
+                          Escalate
+                        </Button>
+                      </Group>
+                    </Table.Td>
+                  </Table.Tr>
+                ))
               ) : (
                 <Table.Tr>
-                  <Table.Td
-                    colSpan={tableHeader.length}
-                    align="center"
-                    style={{ fontStyle: "italic", color: "#888" }}
-                  >
-                    No pending food requests.
+                  <Table.Td colSpan={10}>
+                    <Text ta="center" c="dimmed" py="lg">
+                      No pending special-food requests right now.
+                    </Text>
                   </Table.Td>
                 </Table.Tr>
               )}
             </Table.Tbody>
           </Table>
-        )}
-      </Paper>
-    </Container>
+        </ScrollArea>
+      )}
+    </Card>
   );
 }
 

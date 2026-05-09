@@ -3,17 +3,25 @@ import axios from "axios";
 import {
   Table,
   Container,
-  Paper,
   Title,
-  Button,
   Flex,
-  Divider,
   Loader,
   Alert,
+  SegmentedControl,
+  Text,
+  Badge,
+  Card,
+  Group,
+  Box,
 } from "@mantine/core";
+import {
+  CalendarBlank,
+  Coffee,
+  Hamburger,
+  BowlFood,
+  WarningCircle,
+} from "@phosphor-icons/react";
 import { viewMenuRoute } from "../routes";
-
-const tableHeaders = ["Day", "Breakfast", "Lunch", "Dinner"];
 
 function ViewMenu() {
   const [currentMess, setCurrentMess] = useState("mess1");
@@ -119,112 +127,198 @@ function ViewMenu() {
   const rows = filterMenuData(currentMess);
 
   // Render table headers
-  const renderHeader = (titles) => {
-    return titles.map((title, index) => (
-      <Table.Th key={index}>
-        <Flex align="center" justify="center" h="100%">
-          {title}
-        </Flex>
-      </Table.Th>
-    ));
+  const renderHeader = () => {
+    return (
+      <Table.Tr>
+        <Table.Th
+          style={{
+            textAlign: "left",
+            padding: "16px",
+            backgroundColor: "#f8f9fa",
+            borderTopLeftRadius: "12px",
+          }}
+        >
+          <Group gap="xs">
+            <CalendarBlank size={20} color="#1A2980" weight="duotone" />
+            <Text fw={700} c="#1A2980">
+              Day
+            </Text>
+          </Group>
+        </Table.Th>
+        <Table.Th
+          style={{
+            textAlign: "center",
+            padding: "16px",
+            backgroundColor: "#f8f9fa",
+          }}
+        >
+          <Group gap="xs" justify="center">
+            <Coffee size={20} color="#e67e22" weight="duotone" />
+            <Text fw={700} c="#e67e22">
+              Breakfast
+            </Text>
+          </Group>
+        </Table.Th>
+        <Table.Th
+          style={{
+            textAlign: "center",
+            padding: "16px",
+            backgroundColor: "#f8f9fa",
+          }}
+        >
+          <Group gap="xs" justify="center">
+            <Hamburger size={20} color="#d35400" weight="duotone" />
+            <Text fw={700} c="#d35400">
+              Lunch
+            </Text>
+          </Group>
+        </Table.Th>
+        <Table.Th
+          style={{
+            textAlign: "center",
+            padding: "16px",
+            backgroundColor: "#f8f9fa",
+            borderTopRightRadius: "12px",
+          }}
+        >
+          <Group gap="xs" justify="center">
+            <BowlFood size={20} color="#c0392b" weight="duotone" />
+            <Text fw={700} c="#c0392b">
+              Dinner
+            </Text>
+          </Group>
+        </Table.Th>
+      </Table.Tr>
+    );
+  };
+
+  const getDayColor = (day) => {
+    const today = new Date().toLocaleDateString("en-US", { weekday: "long" });
+    return day === today ? "blue" : "gray";
   };
 
   // Render table rows
   const renderRows = () =>
     rows.map((item, index) => (
-      <Table.Tr key={index} h={60}>
-        <Table.Td align="center" p={12}>
-          {item.day}
+      <Table.Tr
+        key={index}
+        style={{
+          borderBottom: "1px solid #f1f3f5",
+          transition: "background-color 0.2s",
+        }}
+      >
+        <Table.Td p={16}>
+          <Badge
+            variant={getDayColor(item.day) === "blue" ? "filled" : "light"}
+            color={getDayColor(item.day)}
+            size="lg"
+            radius="md"
+          >
+            {item.day}
+          </Badge>
         </Table.Td>
-        <Table.Td align="center" p={12}>
-          {item.breakfast}
+        <Table.Td align="center" p={16}>
+          <Text
+            size="sm"
+            fw={500}
+            color={item.breakfast === "N/A" ? "dimmed" : "dark"}
+          >
+            {item.breakfast}
+          </Text>
         </Table.Td>
-        <Table.Td align="center" p={12}>
-          {item.lunch}
+        <Table.Td align="center" p={16}>
+          <Text
+            size="sm"
+            fw={500}
+            color={item.lunch === "N/A" ? "dimmed" : "dark"}
+          >
+            {item.lunch}
+          </Text>
         </Table.Td>
-        <Table.Td align="center" p={12}>
-          {item.dinner}
+        <Table.Td align="center" p={16}>
+          <Text
+            size="sm"
+            fw={500}
+            color={item.dinner === "N/A" ? "dimmed" : "dark"}
+          >
+            {item.dinner}
+          </Text>
         </Table.Td>
       </Table.Tr>
     ));
 
   return (
-    <Container
-      size="lg"
-      mt={30}
-      miw="75rem"
-      style={{
-        width: "100%",
-        display: "flex",
-        justifyContent: "center",
-        marginTop: "50px",
-      }}
-    >
-      <Paper
-        shadow="xl"
-        radius="md"
-        p="xl"
-        withBorder
-        style={{
-          minWidth: "75rem",
-          width: "100%",
-          padding: "30px",
-          margin: "auto",
-        }}
-      >
-        <Title order={2} align="center" mb="lg" c="#1c7ed6">
-          Weekly Mess Menu
-        </Title>
-        <Divider my="lg" />
+    <Container fluid px={0}>
+      {/* Error and Loading State */}
+      {loading ? (
+        <Flex justify="center" align="center" style={{ minHeight: "300px" }}>
+          <Loader size="xl" variant="bars" color="blue" />
+        </Flex>
+      ) : error ? (
+        <Alert
+          icon={<WarningCircle size={24} />}
+          color="red"
+          title="Oops, something went wrong"
+          variant="filled"
+          radius="md"
+        >
+          {error}
+        </Alert>
+      ) : (
+        <Card
+          shadow="sm"
+          radius="lg"
+          p="0"
+          withBorder
+          style={{ overflow: "hidden" }}
+        >
+          <Box p="xl" style={{ backgroundColor: "#ffffff" }}>
+            <Flex
+              direction={{ base: "column", sm: "row" }}
+              justify="space-between"
+              align="center"
+              mb="lg"
+            >
+              <Box>
+                <Title order={3} fw={800} style={{ color: "#1A2980" }}>
+                  Weekly Mess Menu
+                </Title>
+                <Text size="sm" c="dimmed" mt={4}>
+                  View the meal schedule assigned for the ongoing week
+                </Text>
+              </Box>
 
-        {/* Error and Loading State */}
-        {loading ? (
-          <Flex justify="center" align="center" style={{ minHeight: "200px" }}>
-            <Loader size="xl" />
-          </Flex>
-        ) : error ? (
-          <Alert color="red" title="Error" mb="lg">
-            {error}
-          </Alert>
-        ) : (
-          <>
-            <Flex justify="center" mb="lg" gap="md">
-              <Button
-                variant={currentMess === "mess1" ? "filled" : "outline"}
+              <SegmentedControl
+                value={currentMess}
+                onChange={setCurrentMess}
+                data={[
+                  { label: "Central Mess 1", value: "mess1" },
+                  { label: "Central Mess 2", value: "mess2" },
+                ]}
                 size="md"
-                radius="md"
-                onClick={() => setCurrentMess("mess1")}
-                color={currentMess === "mess1" ? "blue" : "gray"}
-                fullWidth
-              >
-                Mess 1
-              </Button>
-              <Button
-                variant={currentMess === "mess2" ? "filled" : "outline"}
-                size="md"
-                radius="md"
-                onClick={() => setCurrentMess("mess2")}
-                color={currentMess === "mess2" ? "blue" : "gray"}
-                fullWidth
-              >
-                Mess 2
-              </Button>
+                radius="xl"
+                color="blue"
+                bg="gray.1"
+                mt={{ base: "md", sm: 0 }}
+                styles={{
+                  label: { padding: "8px 24px", fontWeight: 600 },
+                }}
+              />
             </Flex>
 
-            <Table
-              striped
-              highlightOnHover
-              withColumnBorders
-              horizontalSpacing="xl"
-            >
-              <Table.Thead>
-                <Table.Tr>{renderHeader(tableHeaders)}</Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>{renderRows()}</Table.Tbody>
-            </Table>
-          </>
-        )}
-      </Paper>
+            <Box style={{ overflowX: "auto" }}>
+              <Table
+                verticalSpacing="md"
+                horizontalSpacing="xl"
+                style={{ minWidth: "800px" }}
+              >
+                <Table.Thead>{renderHeader()}</Table.Thead>
+                <Table.Tbody>{renderRows()}</Table.Tbody>
+              </Table>
+            </Box>
+          </Box>
+        </Card>
+      )}
     </Container>
   );
 }

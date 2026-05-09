@@ -1,19 +1,39 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
-  TextInput,
+  Alert,
+  Badge,
   Button,
-  Container,
-  Title,
-  Paper,
-  Table,
-  Space,
+  Card,
+  Grid,
   Group,
+  Loader,
+  ScrollArea,
   Select,
-} from "@mantine/core"; // Mantine UI components
-import { MagnifyingGlass, FunnelSimple } from "@phosphor-icons/react"; // Phosphor Icons
+  Table,
+  Text,
+  TextInput,
+  Title,
+} from "@mantine/core";
+import {
+  FunnelSimple,
+  MagnifyingGlass,
+  WarningCircle,
+} from "@phosphor-icons/react";
 import axios from "axios";
 import { notifications } from "@mantine/notifications";
-import { viewRegistrationDataRoute } from "../routes"; // Import the API endpoint
+import { viewRegistrationDataRoute } from "../routes";
+
+const messLabelMap = {
+  mess1: "Central Mess 1",
+  mess2: "Central Mess 2",
+};
+
+function getStatusColor(status = "") {
+  const normalized = status.toLowerCase();
+  if (normalized.includes("register")) return "teal";
+  if (normalized.includes("deregister")) return "red";
+  return "gray";
+}
 
 function ViewRegistrations() {
   const [filteredStudents, setFilteredStudents] = useState([]);
@@ -21,25 +41,29 @@ function ViewRegistrations() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [programFilter, setProgramFilter] = useState("All");
   const [messFilter, setMessFilter] = useState("All");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const fetchRegistrations = async (search) => {
+  const fetchRegistrations = async (isSearch = false) => {
     try {
-      const token = localStorage.getItem("authToken");
-      let requestData = {};
+      setLoading(true);
+      setError("");
 
-      if (search) {
-        requestData = {
-          type: "search",
-          student_id: searchQuery.toUpperCase(),
-        };
-      } else {
-        requestData = {
-          type: "filter",
-          status: statusFilter === "All" ? "all" : statusFilter,
-          program: programFilter === "All" ? "all" : programFilter,
-          mess_option: messFilter.toLowerCase().replace(/\s+/g, ""),
-        };
-      }
+      const token = localStorage.getItem("authToken");
+      const requestData = isSearch
+        ? {
+            type: "search",
+            student_id: searchQuery.trim().toUpperCase(),
+          }
+        : {
+            type: "filter",
+            status: statusFilter === "All" ? "all" : statusFilter,
+            program: programFilter === "All" ? "all" : programFilter,
+            mess_option:
+              messFilter === "All"
+                ? "all"
+                : messFilter.toLowerCase().replace(/\s+/g, ""),
+          };
 
       const response = await axios.post(
         viewRegistrationDataRoute,
@@ -51,30 +75,21 @@ function ViewRegistrations() {
         },
       );
 
-      console.log("Fetched Data:", response.data); // Log the fetched data
-      if (response.data.payload) {
-        setFilteredStudents(
-          Array.isArray(response.data.payload)
-            ? response.data.payload
-            : [response.data.payload],
-        );
-      } else {
-        setFilteredStudents(
-          Array.isArray(response.data) ? response.data : [response.data],
-        );
-      }
-      console.log("Filtered Students Length:", filteredStudents.length);
-    } catch (error) {
-      console.error("Error fetching registrations:", error);
-      if (error.response && error.response.status === 404) {
+      const payload = response.data.payload || response.data;
+      setFilteredStudents(Array.isArray(payload) ? payload : [payload]);
+    } catch (fetchError) {
+      if (fetchError.response?.status === 404) {
+        setFilteredStudents([]);
         notifications.show({
           title: "Student Not Found",
-          message: "The student does not exist.",
+          message: "The requested student could not be found.",
           color: "red",
         });
       } else {
-        console.error("Error fetching registrations:", error);
+        setError("Unable to load registration records right now.");
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -82,148 +97,145 @@ function ViewRegistrations() {
     fetchRegistrations(false);
   }, []);
 
-  const centeredCellStyle = {
-    textAlign: "center",
-  };
-
   return (
-    <Container
-      size="xl"
-      style={{
-        width: "100%", // Ensure it takes full width but respects min width
-        display: "flex", // Use flexbox to center the content
-        justifyContent: "center", // Horizontally centers the content
-        marginTop: "25px",
-      }}
-    >
-      <Paper
-        shadow="md"
-        radius="md"
-        p="xl"
-        withBorder
-        style={{
-          minWidth: "75rem", // Set the minimum width to 75rem
-          width: "100%", // Ensure it is responsive
-          padding: "30px",
-          margin: "auto", // Center the Paper component
-        }}
-      >
-        <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
-          View Mess Registrations
-        </Title>
+    <Card shadow="sm" radius="xl" p="xl" withBorder>
+      <Group justify="space-between" align="flex-start" gap="md" mb="lg">
+        <div>
+          <Title order={3}>Student Registrations</Title>
+          <Text c="dimmed" size="sm" mt={4}>
+            Search by roll number or filter the currently registered student
+            list.
+          </Text>
+        </div>
+        <Badge size="lg" radius="xl" color="blue" variant="light">
+          {filteredStudents.length} result
+          {filteredStudents.length === 1 ? "" : "s"}
+        </Badge>
+      </Group>
 
-        <form>
-          {/* Search section with icon */}
-          <Group grow mb="lg" align="flex-end">
-            <TextInput
-              label="Search by Roll Number"
-              placeholder="Enter Roll Number"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              radius="md"
-              size="md"
-              icon={<MagnifyingGlass size={18} />} // Added Phosphor icon
-            />
-            <Button
-              size="md"
-              radius="md"
-              color="blue"
-              onClick={() => fetchRegistrations(true)}
-              style={{ alignSelf: "flex-end", flex: "0 1 auto" }} // Adjust button size
-            >
-              Search
-            </Button>
-          </Group>
+      {error ? (
+        <Alert color="red" icon={<WarningCircle size={18} />} mb="lg">
+          {error}
+        </Alert>
+      ) : null}
 
-          {/* Filter section */}
-          <Group grow mb="lg">
-            <Select
-              label="Filter by Status"
-              placeholder="Select Status"
-              value={statusFilter}
-              onChange={(value) => setStatusFilter(value)}
-              data={["Registered", "Deregistered", "All"]}
-              radius="md"
-              size="md"
-              icon={<FunnelSimple size={18} />} // Added Phosphor icon
-            />
-            <Select
-              label="Filter by Program"
-              placeholder="Select Program"
-              value={programFilter}
-              onChange={(value) => setProgramFilter(value)}
-              data={["B.Tech", "M.Tech", "All"]}
-              radius="md"
-              size="md"
-              icon={<FunnelSimple size={18} />} // Added Phosphor icon
-            />
-            <Select
-              label="Filter by Mess"
-              placeholder="Select Mess"
-              value={messFilter}
-              onChange={(value) => setMessFilter(value)}
-              data={["Mess 1", "Mess 2", "All"]}
-              radius="md"
-              size="md"
-              icon={<FunnelSimple size={18} />} // Added Phosphor icon
-            />
-          </Group>
-
+      <Grid gutter="md" mb="md">
+        <Grid.Col span={{ base: 12, md: 8 }}>
+          <TextInput
+            label="Search by roll number"
+            placeholder="Enter roll number"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.currentTarget.value)}
+            leftSection={<MagnifyingGlass size={18} />}
+          />
+        </Grid.Col>
+        <Grid.Col span={{ base: 12, md: 4 }}>
           <Button
             fullWidth
-            size="md"
-            radius="md"
-            color="blue"
-            onClick={() => fetchRegistrations(false)}
+            mt={{ base: 0, md: 24 }}
+            onClick={() => fetchRegistrations(true)}
           >
-            Apply Filters
+            Search
           </Button>
+        </Grid.Col>
+      </Grid>
 
-          <Space h="lg" />
+      <Grid gutter="md" align="flex-end">
+        <Grid.Col span={{ base: 12, md: 4 }}>
+          <Select
+            label="Status"
+            value={statusFilter}
+            onChange={(value) => setStatusFilter(value || "All")}
+            data={["Registered", "Deregistered", "All"]}
+            leftSection={<FunnelSimple size={16} />}
+          />
+        </Grid.Col>
+        <Grid.Col span={{ base: 12, md: 4 }}>
+          <Select
+            label="Program"
+            value={programFilter}
+            onChange={(value) => setProgramFilter(value || "All")}
+            data={["B.Tech", "M.Tech", "All"]}
+            leftSection={<FunnelSimple size={16} />}
+          />
+        </Grid.Col>
+        <Grid.Col span={{ base: 12, md: 4 }}>
+          <Select
+            label="Mess"
+            value={messFilter}
+            onChange={(value) => setMessFilter(value || "All")}
+            data={["Mess 1", "Mess 2", "All"]}
+            leftSection={<FunnelSimple size={16} />}
+          />
+        </Grid.Col>
+      </Grid>
 
-          {/* Students Table */}
+      <Group justify="flex-end" mt="md">
+        <Button variant="light" onClick={() => fetchRegistrations(false)}>
+          Apply filters
+        </Button>
+      </Group>
+
+      {loading ? (
+        <Group justify="center" py="xl">
+          <Loader />
+        </Group>
+      ) : (
+        <ScrollArea mt="lg" offsetScrollbars>
           <Table
             striped
             highlightOnHover
-            style={{
-              border: "1px solid #e0e0e0", // Border for the table
-              borderRadius: "8px", // Rounded corners
-            }}
+            verticalSpacing="md"
+            horizontalSpacing="md"
+            miw={760}
           >
-            <thead style={{ backgroundColor: "#f7f7f7" }}>
-              <tr>
-                <th style={centeredCellStyle}>Name</th>
-                <th style={centeredCellStyle}>Roll No</th>
-                <th style={centeredCellStyle}>Program</th>
-                <th style={centeredCellStyle}>Status</th>
-                <th style={centeredCellStyle}>Mess</th>
-              </tr>
-            </thead>
-            <tbody>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Name</Table.Th>
+                <Table.Th>Roll No</Table.Th>
+                <Table.Th>Program</Table.Th>
+                <Table.Th>Status</Table.Th>
+                <Table.Th>Mess</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
               {filteredStudents.length > 0 ? (
                 filteredStudents.map((student) => (
-                  <tr key={student.id}>
-                    <td style={centeredCellStyle}>{student.first_name}</td>
-                    <td style={centeredCellStyle}>{student.student_id}</td>
-                    <td style={centeredCellStyle}>{student.program}</td>
-                    <td style={centeredCellStyle}>
-                      {student.current_mess_status}
-                    </td>
-                    <td style={centeredCellStyle}>{student.mess_option}</td>
-                  </tr>
+                  <Table.Tr key={student.id || student.student_id}>
+                    <Table.Td>{student.first_name || "-"}</Table.Td>
+                    <Table.Td>{student.student_id || "-"}</Table.Td>
+                    <Table.Td>{student.program || "-"}</Table.Td>
+                    <Table.Td>
+                      <Badge
+                        color={getStatusColor(student.current_mess_status)}
+                        variant="light"
+                      >
+                        {student.current_mess_status || "Unknown"}
+                      </Badge>
+                    </Table.Td>
+                    <Table.Td>
+                      <Badge color="blue" variant="outline">
+                        {messLabelMap[student.mess_option] ||
+                          student.mess_option ||
+                          "NA"}
+                      </Badge>
+                    </Table.Td>
+                  </Table.Tr>
                 ))
               ) : (
-                <tr>
-                  <td colSpan={5} style={{ textAlign: "center" }}>
-                    No registrations found.
-                  </td>
-                </tr>
+                <Table.Tr>
+                  <Table.Td colSpan={5}>
+                    <Text ta="center" c="dimmed" py="lg">
+                      No registrations matched the current search or filter.
+                    </Text>
+                  </Table.Td>
+                </Table.Tr>
               )}
-            </tbody>
+            </Table.Tbody>
           </Table>
-        </form>
-      </Paper>
-    </Container>
+        </ScrollArea>
+      )}
+    </Card>
   );
 }
 

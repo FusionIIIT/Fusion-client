@@ -53,7 +53,7 @@ function DateSelectionForm() {
         },
       );
 
-      if (response.status === 200) {
+      if (response.status === 200 || response.status === 201) {
         notifications.show({
           title: "Success",
           message: "Semester dates updated successfully",
@@ -64,11 +64,13 @@ function DateSelectionForm() {
         setEndDate(null);
       }
     } catch (err) {
-      console.error("Server response:", error.response.data);
+      console.error("Server response:", err.response?.data);
 
       notifications.show({
         title: "Error",
-        message: "Something went wrong. Please try again later.",
+        message:
+          err.response?.data?.message ||
+          "Something went wrong. Please try again later.",
         color: "red",
         position: "top-center",
       });

@@ -1,14 +1,24 @@
 import React, { useEffect, useState } from "react";
-// import { useSelector } from "react-redux";
-import { Table, Text, Container, Paper, Title, Flex } from "@mantine/core";
+import {
+  Table,
+  Text,
+  Container,
+  Paper,
+  Flex,
+  Badge,
+  Group,
+  Loader,
+  Alert,
+} from "@mantine/core";
+import { CheckCircle, WarningCircle } from "@phosphor-icons/react";
 import { paymentRoute } from "../routes";
 
 function PaymentHistory() {
-  // const roleno = useSelector((state) => state.user.roll_no); // Use Redux state to get roll number
-  const [paymentData, setPaymentData] = useState([]); // Store payment data
-  const authToken = localStorage.getItem("authToken"); // Authorization token
+  const [paymentData, setPaymentData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const authToken = localStorage.getItem("authToken");
 
-  // Fetch payment data from API
   useEffect(() => {
     fetch(paymentRoute, {
       method: "GET",
@@ -17,106 +27,178 @@ function PaymentHistory() {
         "Content-Type": "application/json",
       },
     })
-      .then((response) => response.json())
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || "Unable to load payment history.");
+        }
+        return data;
+      })
       .then((data) => {
-        // Map API response to the required format
-        const mappedData = data.payload.map((payment) => ({
+        const mappedData = (data.payload || []).map((payment) => ({
+          id: payment.id,
           paymentDate: payment.payment_date,
           amount: payment.amount_paid,
-          month: payment.payment_month,
-          year: payment.payment_year,
+          month: payment.payment_month || "",
+          year: payment.payment_year || payment.year,
+          status: payment.status || "accept",
         }));
         setPaymentData(mappedData);
       })
-      .catch((error) => {
-        console.error("Error fetching payment data:", error);
+      .catch((err) => {
+        setError(err.message);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   }, [authToken]);
 
-  // Render table header
-  const renderHeader = () => (
-    <Table.Tr>
-      <Table.Th>
-        <Flex align="center" justify="center" h="100%">
-          Payment Date
-        </Flex>
-      </Table.Th>
-      <Table.Th>
-        <Flex align="center" justify="center" h="100%">
-          Amount (₹)
-        </Flex>
-      </Table.Th>
-      <Table.Th>
-        <Flex align="center" justify="center" h="100%">
-          Month
-        </Flex>
-      </Table.Th>
-      <Table.Th>
-        <Flex align="center" justify="center" h="100%">
-          Year
-        </Flex>
-      </Table.Th>
-    </Table.Tr>
-  );
+  if (loading) {
+    return (
+      <Flex justify="center" p="xl">
+        <Loader />
+      </Flex>
+    );
+  }
 
-  // Render table rows dynamically from API data
-  const renderRows = () =>
-    paymentData.map((row, index) => (
-      <Table.Tr key={index}>
-        <Table.Td align="center" p={12}>
-          {row.paymentDate}
-        </Table.Td>
-        <Table.Td align="center" p={12}>
-          ₹{row.amount}
-        </Table.Td>
-        <Table.Td align="center" p={12}>
-          {row.month}
-        </Table.Td>
-        <Table.Td align="center" p={12}>
-          {row.year}
-        </Table.Td>
-      </Table.Tr>
-    ));
+  if (error) {
+    return (
+      <Alert color="red" icon={<WarningCircle size={18} />}>
+        {error}
+      </Alert>
+    );
+  }
 
-  // Calculate total payments
   const totalPayments = paymentData.reduce(
-    (total, item) => total + item.amount,
+    (total, item) => total + (item.amount || 0),
     0,
   );
 
   return (
-    <Container
-      size="lg"
-      style={{
-        display: "flex",
-        justifyContent: "center", // Centers the form horizontally
-        marginTop: "40px",
-      }}
-    >
+    <Container fluid px={0} mt="lg">
       <Paper
-        shadow="md"
-        radius="md"
-        p="xl"
+        shadow="xs"
+        radius="lg"
         withBorder
-        style={{
-          width: "100%",
-          minWidth: "75rem", // Set the min-width to 75rem
-          padding: "2rem", // Add padding for better spacing
-        }}
+        p="0"
+        style={{ overflow: "hidden" }}
       >
-        <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
-          Payment History
-        </Title>
+        <div style={{ overflowX: "auto" }}>
+          <Table verticalSpacing="sm" highlightOnHover>
+            <Table.Thead>
+              <Table.Tr
+                style={{
+                  backgroundColor: "#f8f9fa",
+                  borderBottom: "2px solid #e9ecef",
+                }}
+              >
+                <Table.Th
+                  style={{
+                    padding: "16px",
+                    color: "#495057",
+                    fontSize: "14px",
+                  }}
+                >
+                  Payment Date
+                </Table.Th>
+                <Table.Th
+                  style={{
+                    padding: "16px",
+                    color: "#495057",
+                    fontSize: "14px",
+                    textAlign: "center",
+                  }}
+                >
+                  Amount
+                </Table.Th>
+                <Table.Th
+                  style={{
+                    padding: "16px",
+                    color: "#495057",
+                    fontSize: "14px",
+                    textAlign: "center",
+                  }}
+                >
+                  Billing Cycle
+                </Table.Th>
+                <Table.Th
+                  style={{
+                    padding: "16px",
+                    color: "#495057",
+                    fontSize: "14px",
+                    textAlign: "center",
+                  }}
+                >
+                  Status
+                </Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {paymentData.map((row) => (
+                <Table.Tr
+                  key={row.id}
+                  style={{ borderBottom: "1px solid #f1f3f5" }}
+                >
+                  <Table.Td p={16}>
+                    <Text fw={600} size="sm">
+                      {row.paymentDate
+                        ? new Date(row.paymentDate).toLocaleDateString(
+                            "en-US",
+                            { day: "numeric", month: "long", year: "numeric" },
+                          )
+                        : "Not recorded"}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td align="center" p={16}>
+                    <Text fw={700} c="green.8">
+                      Rs. {Number(row.amount || 0).toLocaleString()}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td align="center" p={16}>
+                    <Badge color="blue" variant="light" size="lg">
+                      {[row.month, row.year].filter(Boolean).join(" - ") ||
+                        "General"}
+                    </Badge>
+                  </Table.Td>
+                  <Table.Td align="center" p={16}>
+                    <Group gap="xs" justify="center">
+                      <CheckCircle
+                        size={18}
+                        color={row.status === "accept" ? "teal" : "orange"}
+                        weight="fill"
+                      />
+                      <Text
+                        c={row.status === "accept" ? "teal" : "orange"}
+                        fw={600}
+                        size="sm"
+                      >
+                        {row.status === "accept" ? "Accepted" : "Pending"}
+                      </Text>
+                    </Group>
+                  </Table.Td>
+                </Table.Tr>
+              ))}
+            </Table.Tbody>
+          </Table>
 
-        {/* Table */}
-        <Table striped highlightOnHover withBorder withColumnBorders>
-          <Table.Thead>{renderHeader()}</Table.Thead>
-          <Table.Tbody>{renderRows()}</Table.Tbody>
-        </Table>
+          {paymentData.length === 0 && (
+            <Flex justify="center" p="xl">
+              <Text c="dimmed">No payment history found.</Text>
+            </Flex>
+          )}
+        </div>
 
-        <Flex direction="column" mt="lg">
-          <Text size="lg" weight={700} align="center" mt="md">
-            Total Payments: ₹{totalPayments}
+        <Flex
+          justify="space-between"
+          align="center"
+          p="md"
+          style={{ backgroundColor: "#1A2980", color: "white" }}
+        >
+          <Text size="sm" fw={500} opacity={0.9}>
+            Overall Processed
+          </Text>
+          <Text size="xl" fw={800}>
+            Rs. {totalPayments.toLocaleString()}
           </Text>
         </Flex>
       </Paper>

@@ -1,164 +1,231 @@
-import React, { useEffect, useState } from "react";
-import { Table, Container, Paper, Title, Button, Flex } from "@mantine/core";
-import * as PhosphorIcons from "@phosphor-icons/react";
+import { useEffect, useState } from "react";
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Flex,
+  Group,
+  Loader,
+  ScrollArea,
+  SegmentedControl,
+  Table,
+  Text,
+  Title,
+} from "@mantine/core";
+import {
+  Broom,
+  ChatCircleText,
+  ForkKnife,
+  WarningCircle,
+  Wrench,
+} from "@phosphor-icons/react";
 import { feedbackRoute } from "../routes";
 
-const tableHeader = [
-  "Date",
-  "Student ID",
-  "Description",
-  "Mess",
-  "Status",
-  "Actions",
-];
+const categoryMeta = {
+  Food: { label: "Food", icon: <ForkKnife size={16} weight="fill" /> },
+  Cleanliness: {
+    label: "Cleanliness",
+    icon: <Broom size={16} weight="fill" />,
+  },
+  Maintenance: {
+    label: "Maintenance",
+    icon: <Wrench size={16} weight="fill" />,
+  },
+  Others: {
+    label: "Others",
+    icon: <ChatCircleText size={16} weight="fill" />,
+  },
+};
 
 function ViewFeedback() {
   const [activeTab, setActiveTab] = useState("Food");
   const [feedbackData, setFeedbackData] = useState([]);
-  const authToken = localStorage.getItem("authToken");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch(feedbackRoute, {
-      method: "GET",
-      headers: {
-        Authorization: `Token ${authToken}`,
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
+    const authToken = localStorage.getItem("authToken");
+
+    const fetchFeedback = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await fetch(feedbackRoute, {
+          method: "GET",
+          headers: {
+            Authorization: `Token ${authToken}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Unable to fetch feedback data.");
+        }
+
+        const data = await response.json();
         setFeedbackData(
-          data.payload.map((feedback) => ({
+          (data.payload || []).map((feedback) => ({
             ...feedback,
-            status: "Unread", // Initialize status
+            status: feedback.is_read ? "Read" : "Unread",
           })),
         );
-      })
-      .catch((error) => {
-        console.error("Error fetching feedback data:", error);
-      });
-  }, [authToken]);
+      } catch (fetchError) {
+        setError(fetchError.message || "Unable to fetch feedback data.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const markAsRead = (index, feedback) => {
-    fetch(feedbackRoute, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Token ${authToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        student_id: feedback.student_id,
-        mess: feedback.mess,
-        feedback_type: feedback.feedback_type,
-        description: feedback.description,
-        fdate: feedback.fdate,
-      }),
-    })
-      .then((response) => {
-        if (response.ok) {
-          // Update the status in the state instead of removing the item
-          setFeedbackData((prevData) =>
-            prevData.map((item, i) =>
-              i === index ? { ...item, status: "Read" } : item,
-            ),
-          );
-        } else {
-          console.error("Failed to delete feedback:", response.statusText);
-        }
-      })
-      .catch((error) => {
-        console.error("Error deleting feedback:", error);
+    fetchFeedback();
+  }, []);
+
+  const markAsRead = async (index, feedback) => {
+    const authToken = localStorage.getItem("authToken");
+
+    try {
+      const response = await fetch(feedbackRoute, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Token ${authToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          student_id: feedback.student_id,
+          mess: feedback.mess,
+          feedback_type: feedback.feedback_type,
+          description: feedback.description,
+          fdate: feedback.fdate,
+        }),
       });
+
+      if (!response.ok) {
+        throw new Error("Failed to mark feedback as read.");
+      }
+
+      setFeedbackData((prevData) =>
+        prevData.map((item, itemIndex) =>
+          itemIndex === index
+            ? { ...item, status: "Read", is_read: true }
+            : item,
+        ),
+      );
+    } catch (updateError) {
+      setError(updateError.message || "Failed to update feedback status.");
+    }
   };
 
   const filteredFeedback = feedbackData.filter(
     (feedback) => feedback.feedback_type === activeTab,
   );
 
-  const renderRows = () =>
-    filteredFeedback.map((item, index) => (
-      <Table.Tr key={index}>
-        <Table.Td align="center">{item.fdate}</Table.Td>
-        <Table.Td align="center">{item.student_id}</Table.Td>
-        <Table.Td align="center">{item.description}</Table.Td>
-        <Table.Td align="center">{item.mess}</Table.Td>
-        <Table.Td align="center">{item.status}</Table.Td>
-        <Table.Td align="center">
-          <Button
-            onClick={() => markAsRead(index, item)}
-            variant="outline"
-            color={item.status === "Unread" ? "red" : "gray"}
-            size="xs"
-            disabled={item.status === "Read"} // Disable button for "Read" feedback
-          >
-            {item.status === "Unread" ? "Mark as Read" : "Read"}
-          </Button>
-        </Table.Td>
-      </Table.Tr>
-    ));
-
-  const renderHeader = (titles) => {
-    return titles.map((title, index) => (
-      <Table.Th key={index}>
-        <Flex align="center" justify="center" h="100%">
-          {title}
+  if (loading) {
+    return (
+      <Card shadow="sm" radius="xl" p="xl" withBorder>
+        <Flex justify="center" align="center" py="xl">
+          <Loader />
         </Flex>
-      </Table.Th>
-    ));
-  };
+      </Card>
+    );
+  }
 
   return (
-    <Container size="lg" mt={30} miw="75rem">
-      <Paper shadow="md" radius="md" p="lg" withBorder>
-        <Title order={2} align="center" mb="lg" c="#1c7ed6">
-          View Feedback
-        </Title>
+    <Card shadow="sm" radius="xl" p="xl" withBorder>
+      <Group justify="space-between" align="flex-start" gap="md" mb="lg">
+        <div>
+          <Title order={3}>Feedback Review</Title>
+          <Text c="dimmed" size="sm" mt={4}>
+            Track student concerns by category and clear unread items quickly.
+          </Text>
+        </div>
+        <Badge size="lg" radius="xl" color="blue" variant="light">
+          {filteredFeedback.length} item
+          {filteredFeedback.length === 1 ? "" : "s"}
+        </Badge>
+      </Group>
 
-        {/* Tabs for filtering feedback */}
-        <Flex justify="center" align="center" mb={30} gap={20}>
-          <Button
-            onClick={() => setActiveTab("Food")}
-            leftSection={<PhosphorIcons.ForkKnife size={20} />}
-            variant={activeTab === "Food" ? "filled" : "outline"}
-            size="xs"
-          >
-            Food
-          </Button>
-          <Button
-            onClick={() => setActiveTab("Cleanliness")}
-            leftSection={<PhosphorIcons.Broom size={20} />}
-            variant={activeTab === "Cleanliness" ? "filled" : "outline"}
-            size="xs"
-          >
-            Cleanliness
-          </Button>
-          <Button
-            onClick={() => setActiveTab("Maintenance")}
-            leftSection={<PhosphorIcons.Wrench size={20} />}
-            variant={activeTab === "Maintenance" ? "filled" : "outline"}
-            size="xs"
-          >
-            Maintenance
-          </Button>
-          <Button
-            onClick={() => setActiveTab("Others")}
-            leftSection={<PhosphorIcons.ChatText size={20} />}
-            variant={activeTab === "Others" ? "filled" : "outline"}
-            size="xs"
-          >
-            Others
-          </Button>
-        </Flex>
+      {error ? (
+        <Alert color="red" icon={<WarningCircle size={18} />} mb="lg">
+          {error}
+        </Alert>
+      ) : null}
 
-        {/* Feedback Table */}
-        <Table striped highlightOnHover withColumnBorders>
+      <SegmentedControl
+        fullWidth
+        radius="xl"
+        value={activeTab}
+        onChange={setActiveTab}
+        data={Object.entries(categoryMeta).map(([value, item]) => ({
+          label: item.label,
+          value,
+        }))}
+      />
+
+      <ScrollArea mt="lg" offsetScrollbars>
+        <Table
+          striped
+          highlightOnHover
+          verticalSpacing="md"
+          horizontalSpacing="md"
+          miw={820}
+        >
           <Table.Thead>
-            <Table.Tr>{renderHeader(tableHeader)}</Table.Tr>
+            <Table.Tr>
+              <Table.Th>Date</Table.Th>
+              <Table.Th>Student ID</Table.Th>
+              <Table.Th>Description</Table.Th>
+              <Table.Th>Mess</Table.Th>
+              <Table.Th>Status</Table.Th>
+              <Table.Th>Action</Table.Th>
+            </Table.Tr>
           </Table.Thead>
-          <Table.Tbody>{renderRows()}</Table.Tbody>
+          <Table.Tbody>
+            {filteredFeedback.length > 0 ? (
+              filteredFeedback.map((item, index) => (
+                <Table.Tr key={`${item.student_id}-${item.fdate}-${index}`}>
+                  <Table.Td>{item.fdate}</Table.Td>
+                  <Table.Td>{item.student_id}</Table.Td>
+                  <Table.Td>
+                    <Text size="sm" maw={320}>
+                      {item.description}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td>{item.mess}</Table.Td>
+                  <Table.Td>
+                    <Badge
+                      color={item.status === "Unread" ? "blue" : "gray"}
+                      variant={item.status === "Unread" ? "light" : "outline"}
+                    >
+                      {item.status}
+                    </Badge>
+                  </Table.Td>
+                  <Table.Td>
+                    <Button
+                      size="xs"
+                      variant={item.status === "Unread" ? "light" : "subtle"}
+                      color={item.status === "Unread" ? "blue" : "gray"}
+                      onClick={() => markAsRead(index, item)}
+                      disabled={item.status === "Read"}
+                    >
+                      {item.status === "Unread" ? "Mark as read" : "Handled"}
+                    </Button>
+                  </Table.Td>
+                </Table.Tr>
+              ))
+            ) : (
+              <Table.Tr>
+                <Table.Td colSpan={6}>
+                  <Text ta="center" c="dimmed" py="lg">
+                    No {activeTab.toLowerCase()} feedback is pending right now.
+                  </Text>
+                </Table.Td>
+              </Table.Tr>
+            )}
+          </Table.Tbody>
         </Table>
-      </Paper>
-    </Container>
+      </ScrollArea>
+    </Card>
   );
 }
 

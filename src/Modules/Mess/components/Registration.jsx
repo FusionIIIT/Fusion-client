@@ -5,17 +5,26 @@ import {
   Button,
   Container,
   Title,
-  Paper,
   FileInput,
   Textarea,
   Select,
   Group,
+  Text,
+  Alert,
+  Card,
+  Grid,
 } from "@mantine/core";
 import { useSelector } from "react-redux";
 import { DateInput } from "@mantine/dates";
 import { notifications } from "@mantine/notifications";
 import axios from "axios";
-import { FunnelSimple } from "@phosphor-icons/react";
+import {
+  FunnelSimple,
+  WarningCircle,
+  CheckCircle,
+  Receipt,
+  IdentificationCard,
+} from "@phosphor-icons/react";
 import { registrationRequestRoute } from "../routes";
 
 function Registration() {
@@ -28,20 +37,19 @@ function Registration() {
   const [error, setError] = useState(null);
   const [messOption, setMessOption] = useState("");
   const [remark, setRemark] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const today = new Date();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
     const token = localStorage.getItem("authToken");
     if (!token) {
       const msg = "Authentication token not found.";
       setError(msg);
-      notifications.show({
-        title: "Error",
-        message: msg,
-        color: "red",
-      });
+      notifications.show({ title: "Error", message: msg, color: "red" });
+      setIsSubmitting(false);
       return;
     }
 
@@ -55,10 +63,9 @@ function Registration() {
     const formData = new FormData();
     formData.append("Txn_no", txnNo);
     formData.append("amount", amount);
-    formData.append("img", file);
+    if (file) formData.append("img", file);
     formData.append("payment_date", formattedPaymentDate);
     formData.append("start_date", formattedStartDate);
-    // formData.append("student_id", studentId);
     formData.append("mess_option", messOption);
     formData.append("student_id", roll_no);
     formData.append("registration_remark", remark);
@@ -71,16 +78,16 @@ function Registration() {
         },
       });
 
-      if (response.status === 200) {
-        // console.log("Form submitted successfully", response.data);
+      if (response.status === 200 || response.status === 201) {
         setError(null);
-        // notifications.show({
-        //   title: "Success",
-        //   message: "Form submitted successfully!",
-        //   color: "green",
-        // });
-        window.alert("form submitted successfully");
-        // Reset form fields
+        notifications.show({
+          title: "Registration Success",
+          message:
+            "Your mess registration has been submitted and is awaiting approval.",
+          color: "green",
+          icon: <CheckCircle size={20} />,
+        });
+
         setTxnNo("");
         setAmount(0);
         setFile(null);
@@ -94,130 +101,176 @@ function Registration() {
         errors.response?.data?.message ||
         "Error submitting the form. Please try again.";
       setError(errorMessage);
-      // notifications.show({
-      //   title: "Error",
-      //   message: errorMessage,
-      //   color: "red",
-      // });
-      window.alert("error occured");
+      notifications.show({
+        title: "Registration Failed",
+        message: errorMessage,
+        color: "red",
+        icon: <WarningCircle size={20} />,
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Container
-      size="lg"
-      style={{ maxWidth: "800px", width: "570px", marginTop: "25px" }}
-    >
-      <Paper
-        shadow="md"
-        radius="md"
+    <Container size="md" px={0} mt="lg">
+      <Card
+        shadow="sm"
+        radius="lg"
         p="xl"
         withBorder
-        style={{ width: "100%", padding: "30px" }}
+        style={{ backgroundColor: "#ffffff" }}
       >
-        <Title order={2} align="center" mb="lg" style={{ color: "#1c7ed6" }}>
-          Registration Form
-        </Title>
+        <Group mb="xl" align="flex-start">
+          <IdentificationCard size={36} color="#1A2980" weight="duotone" />
+          <div style={{ flex: 1 }}>
+            <Title order={3} fw={800} style={{ color: "#1A2980" }}>
+              Enroll in Mess
+            </Title>
+            <Text size="sm" c="dimmed" mt={4}>
+              Submit your receipt details and register for the upcoming mess
+              cycle.
+            </Text>
+          </div>
+        </Group>
 
-        {error && <p style={{ color: "red" }}>{error}</p>}
+        {error && (
+          <Alert
+            icon={<WarningCircle size={20} />}
+            color="red"
+            title="Error"
+            mb="xl"
+            radius="md"
+          >
+            {error}
+          </Alert>
+        )}
 
         <form onSubmit={handleSubmit}>
-          <Group grow mb="lg">
-            <Select
-              label="Select Mess"
-              placeholder="Choose Mess"
-              value={messOption}
-              onChange={(value) => setMessOption(value)}
-              data={[
-                { value: "mess1", label: "Mess 1" },
-                { value: "mess2", label: "Mess 2" },
-              ]}
+          <Grid gutter="xl">
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <Select
+                label="Preferred Mess"
+                placeholder="Select an option"
+                value={messOption}
+                onChange={setMessOption}
+                data={[
+                  { value: "mess1", label: "Central Mess 1" },
+                  { value: "mess2", label: "Central Mess 2" },
+                ]}
+                radius="md"
+                size="md"
+                required
+                leftSection={<FunnelSimple size={18} />}
+                comboboxProps={{ shadow: "md" }}
+              />
+            </Grid.Col>
+
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <DateInput
+                label="Start Date"
+                placeholder="When will you start dining?"
+                value={startDate}
+                minDate={today}
+                onChange={setStartDate}
+                required
+                radius="md"
+                size="md"
+                valueFormat="MMMM D, YYYY"
+              />
+            </Grid.Col>
+
+            <Grid.Col span={12}>
+              <Title order={5} mt="sm" mb="sm" style={{ color: "#495057" }}>
+                Payment Details
+              </Title>
+            </Grid.Col>
+
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <TextInput
+                label="Transaction No."
+                placeholder="e.g. TXN123456789"
+                value={txnNo}
+                onChange={(e) => setTxnNo(e.target.value)}
+                required
+                radius="md"
+                size="md"
+                leftSection={<Receipt size={18} />}
+              />
+            </Grid.Col>
+
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <NumberInput
+                label="Amount Paid"
+                placeholder="₹ 0"
+                value={amount}
+                onChange={setAmount}
+                required
+                radius="md"
+                size="md"
+                min={0}
+                step={100}
+                prefix="₹ "
+              />
+            </Grid.Col>
+
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <DateInput
+                label="Date of Payment"
+                placeholder="When did you pay?"
+                value={paymentDate}
+                onChange={setPaymentDate}
+                maxDate={today}
+                required
+                radius="md"
+                size="md"
+                valueFormat="MMMM D, YYYY"
+              />
+            </Grid.Col>
+
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <FileInput
+                label="Payment Receipt/Screenshot"
+                placeholder="Upload receipt..."
+                value={file}
+                onChange={setFile}
+                accept="image/*,.pdf"
+                required
+                radius="md"
+                size="md"
+              />
+            </Grid.Col>
+
+            <Grid.Col span={12}>
+              <Textarea
+                label="Additional Remarks"
+                placeholder="Any dietary preferences or notes for the warden..."
+                value={remark}
+                onChange={(e) => setRemark(e.target.value)}
+                radius="md"
+                size="md"
+                minRows={3}
+              />
+            </Grid.Col>
+          </Grid>
+
+          <Group justify="flex-end" mt="xl">
+            <Button
+              type="submit"
+              size="lg"
               radius="md"
-              size="md"
-              icon={<FunnelSimple size={18} />}
-              required
-            />
+              loading={isSubmitting}
+              style={{
+                paddingLeft: "40px",
+                paddingRight: "40px",
+                backgroundColor: "#1c7ed6",
+              }}
+            >
+              Submit Registration
+            </Button>
           </Group>
-
-          <TextInput
-            label="Transaction No."
-            placeholder="Transaction No."
-            value={txnNo}
-            onChange={(e) => setTxnNo(e.target.value)}
-            required
-            radius="md"
-            size="md"
-            mt="xl"
-            mb="md"
-          />
-
-          <NumberInput
-            label="Amount"
-            placeholder="Balance Amount"
-            value={amount}
-            onChange={setAmount}
-            required
-            radius="md"
-            size="md"
-            min={0}
-            step={100}
-            mb="lg"
-          />
-
-          <FileInput
-            label="Image"
-            placeholder="Choose file"
-            value={file}
-            onChange={setFile}
-            accept="image/*"
-            required
-            size="md"
-            mb="lg"
-          />
-
-          <DateInput
-            label="Payment Date"
-            placeholder="Select date"
-            value={paymentDate}
-            onChange={setPaymentDate}
-            maxDate={today}
-            onDayChange={(day) => setPaymentDate(day)}
-            required
-            radius="md"
-            size="md"
-            mb="lg"
-            valueFormat="MMMM D, YYYY"
-          />
-
-          <DateInput
-            label="Start Date"
-            placeholder="Select date"
-            value={startDate}
-            minDate={today}
-            // onChange={(day) => setStartDate(day)}
-            onChange={setStartDate}
-            required
-            radius="md"
-            size="md"
-            mb="lg"
-            valueFormat="MMMM D, YYYY"
-          />
-
-          <Textarea
-            label="Remark"
-            placeholder="Add any remarks"
-            value={remark}
-            onChange={(e) => setRemark(e.target.value)}
-            radius="md"
-            size="md"
-            mb="lg"
-          />
-
-          <Button fullWidth size="md" radius="md" color="blue" type="submit">
-            Submit
-          </Button>
         </form>
-      </Paper>
+      </Card>
     </Container>
   );
 }
