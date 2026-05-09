@@ -42,6 +42,9 @@ import { setCurrentModule } from "../redux/moduleslice";
 
 function SidebarContent({ isCollapsed, toggleSidebar }) {
   const role = useSelector((state) => state.user.role);
+  const isEmployee = /employee/i.test(role || "");
+  const isFacultyEmployee =
+    /assistant\s+professor|associate\s+professor|professor/i.test(role || "");
 
   const Modules = [
     {
@@ -132,7 +135,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "Human Resource",
       id: "hr",
       icon: <HumanResourceIcon size={18} />,
-      url: "/",
+      url: "/hr2",
     },
     {
       label: "Examination",
@@ -140,7 +143,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       icon: <ExamIcon size={18} />,
       url: "/examination",
     },
-        {
+    {
       label: "Database",
       id: "database",
       icon: <DatabaseIcon size={18} />,
@@ -193,11 +196,17 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const filterModules = Modules.filter(
-      (module) => accessibleModules[module.id] || module.id === "home",
-    );
+    const filterModules = Modules.filter((module) => {
+      if (
+        (isEmployee || isFacultyEmployee) &&
+        ["course_registration", "examinations"].includes(module.id)
+      ) {
+        return false;
+      }
+      return accessibleModules[module.id] || module.id === "home";
+    });
     setFilteredModules(filterModules);
-  }, [accessibleModules]);
+  }, [accessibleModules, isEmployee]);
 
   const handleModuleClick = (item) => {
     setSelected(item.label);
