@@ -1,6 +1,6 @@
-import { Stack, Text, Card, Image, Flex, Box } from "@mantine/core";
+import { Stack, Text, Card, Image, Flex, Box, Button } from "@mantine/core";
+
 import { useState, useEffect } from "react";
-import axios from "axios";
 import PropTypes from "prop-types";
 import CustomBreadcrumbs from "../../../components/Breadcrumbs";
 import ModuleTabs from "../../../components/moduleTabs";
@@ -10,9 +10,11 @@ import SkillsTechComponent from "./skillsComponent";
 import AchievementsComponent from "./achievementsComponent";
 import WorkExperienceComponent from "./workExperienceComponent";
 import EducationCoursesComponent from "./educationCoursesComponent";
-import { getProfileDataRoute } from "../../../routes/dashboardRoutes";
+import { fetchProfileData } from "../services/profileService";
+import LoadingSpinner from "../components/common/LoadingSpinner";
+import EmptyState from "../components/common/EmptyState";
 
-function InfoCard({ data }) {
+function InfoCard({ data, isEditable, onEditProfile }) {
   return (
     <Card withBorder shadow="sm" radius="md" w={300}>
       <Card.Section>
@@ -39,58 +41,72 @@ function InfoCard({ data }) {
       <Text mt="xs" c="dimmed" size="sm">
         Student
       </Text>
+
+      {/* Conditionally render the "Edit Profile" button */}
+      {isEditable && (
+        <Button mt="md" variant="light" color="blue" onClick={onEditProfile}>
+          Edit Profile
+        </Button>
+      )}
     </Card>
   );
 }
 
-function Profile() {
+function Profile({ connectionRoute }) {
   const [activeTab, setActiveTab] = useState("0");
+  const [profileEditTrigger, setProfileEditTrigger] = useState(0);
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const handleEditProfileClick = () => {
+    setActiveTab("0");
+    setProfileEditTrigger((prev) => prev + 1);
+  };
+
   useEffect(() => {
     async function fetchProfile() {
-      const token = localStorage.getItem("authToken");
-      if (!token) return console.error("No authentication token found!");
       try {
-        const response = await axios.get(getProfileDataRoute, {
-          headers: { Authorization: `Token ${token}` },
-        });
+        const response = await fetchProfileData(connectionRoute);
         setProfileData(response.data);
       } catch (err) {
         setError("Error fetching profile data.");
-        console.error(err);
       } finally {
         setLoading(false);
       }
     }
     fetchProfile();
-  }, []);
+  }, [connectionRoute]);
 
-  const tabItems = [
-    { title: "Profile" },
-    { title: "Skills & Technologies" },
-    { title: "Education & Courses" },
-    { title: "Work Experience" },
-    { title: "Achievements" },
-  ];
-  const tabToDisplay = [
-    <ProfileComponent data={profileData} />,
-    <SkillsTechComponent data={profileData?.skills} />,
-    <EducationCoursesComponent
-      education={profileData?.education}
-      courses={profileData?.course}
-    />,
-    <WorkExperienceComponent
-      experience={profileData?.experience}
-      project={profileData?.project}
-    />,
-    <AchievementsComponent achievements={profileData?.achievement} />,
-  ];
+  // Conditionally define tabItems and tabToDisplay
+  const tabItems = connectionRoute
+    ? [{ title: "Profile" }] // Only show the Profile tab if connectionRoute is provided
+    : [
+        { title: "Profile" },
+        { title: "Skills & Technologies" },
+        { title: "Education & Courses" },
+        { title: "Work Experience" },
+        { title: "Achievements" },
+      ];
 
-  if (loading) return <p>Loading profile...</p>;
-  if (error) return <p>{error}</p>;
+  const tabToDisplay = connectionRoute
+    ? [<ProfileComponent data={profileData} isEditable={!connectionRoute} externalEditTrigger={profileEditTrigger} />] // Only display Profile if connectionRoute is provided
+    : [
+        <ProfileComponent data={profileData} isEditable={!connectionRoute} externalEditTrigger={profileEditTrigger} />,
+        <SkillsTechComponent data={profileData?.skills} />,
+        <EducationCoursesComponent
+          education={profileData?.education}
+          courses={profileData?.course}
+        />,
+        <WorkExperienceComponent
+          experience={profileData?.experience}
+          project={profileData?.project}
+        />,
+        <AchievementsComponent achievements={profileData?.achievement} />,
+      ];
+
+  if (loading) return <LoadingSpinner />;
+  if (error) return <EmptyState message={error} />;
 
   return (
     <Stack>
@@ -109,7 +125,12 @@ function Profile() {
       >
         {tabToDisplay[activeTab]}
         <Box visibleFrom="sm">
-          <InfoCard data={profileData} />
+          {/* Pass the isEditable prop based on the connectionRoute */}
+          <InfoCard
+            data={profileData}
+            isEditable={!connectionRoute}
+            onEditProfile={handleEditProfileClick}
+          />
         </Box>
       </Flex>
     </Stack>
@@ -133,6 +154,16 @@ InfoCard.propTypes = {
       }),
     }),
   }).isRequired,
+  isEditable: PropTypes.bool.isRequired,
+  onEditProfile: PropTypes.func,
+};
+
+InfoCard.defaultProps = {
+  onEditProfile: () => {},
+};
+
+Profile.propTypes = {
+  connectionRoute: PropTypes.string,
 };
 
 export default Profile;

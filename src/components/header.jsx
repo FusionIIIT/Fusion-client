@@ -183,13 +183,7 @@ function Header({ opened, toggleSidebar }) {
                       variant="light"
                       color="blue"
                       size="xs"
-                      onClick={() =>
-                        navigate(
-                          role === "student"
-                            ? "/profile"
-                            : "/facultyprofessionalprofile",
-                        )
-                      }
+                      onClick={() => navigate("/profile")}
                     >
                       Profile
                     </Button>

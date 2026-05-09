@@ -1,62 +1,141 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import { Table, Text, Button, Flex, Divider, TextInput } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import axios from "axios";
-import { updateProfileDataRoute } from "../../../routes/dashboardRoutes";
+import { useFormState } from "../utils/formHelpers";
+import { updateProfileSection } from "../services/profileService";
 
-function ProfileComponent({ data }) {
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+const ALT_DATE_PATTERN = /^(\d{2})-(\d{2})-(\d{4})$/;
+
+const normalizeDateForApi = (value) => {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  if (DATE_PATTERN.test(raw)) return raw;
+
+  const altMatch = raw.match(ALT_DATE_PATTERN);
+  if (altMatch) {
+    const [, dd, mm, yyyy] = altMatch;
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  return "";
+};
+
+const normalizeDateForInput = (value) => normalizeDateForApi(value);
+
+const calculateAgeFromDob = (value) => {
+  const normalizedDob = normalizeDateForApi(value);
+  if (!normalizedDob) return "-";
+
+  const birthDate = new Date(`${normalizedDob}T00:00:00`);
+  if (Number.isNaN(birthDate.getTime())) return "-";
+
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age -= 1;
+  }
+
+  return age >= 0 ? age : "-";
+};
+
+const formatApiError = (error) => {
+  const data = error?.response?.data;
+  if (typeof data === "string") return data;
+  if (data?.error) return data.error;
+  if (data && typeof data === "object") {
+    const firstFieldError = Object.values(data).flat()[0];
+    if (firstFieldError) return firstFieldError;
+  }
+  return "Error updating profile";
+};
+
+function ProfileComponent({ data, isEditable, externalEditTrigger }) {
   const [isEditing, setIsEditing] = useState(false);
-  const [profileData, setProfileData] = useState({
+  const lastHandledTriggerRef = useRef(0);
+  const { formData: profileData, handleFieldChange } = useFormState({
     about: data.profile?.about_me || "N/A",
-    dob: data.profile?.date_of_birth || "Jan 01, 2004",
+    dob: normalizeDateForInput(data.profile?.date_of_birth),
     address: data.profile?.address || "XYZ",
-    contactNumber: data.profile?.phone_no || "+91 99999 99999",
+    contactNumber: data.profile?.phone_no || "",
     mailId: data.current[0]?.user.email || "abc@gmail.com",
   });
+  const calculatedAge = calculateAgeFromDob(profileData.dob);
 
   const handleEditClick = async () => {
-    const token = localStorage.getItem("authToken");
-    if (!token) return console.error("No authentication token found!");
     if (isEditing) {
       try {
+        const normalizedContact = String(profileData.contactNumber || "")
+          .replace(/\D/g, "")
+          .trim();
+        const normalizedDob = normalizeDateForApi(profileData.dob);
+
+        if (!normalizedDob) {
+          notifications.show({
+            title: "Validation Error",
+            message: "Date of Birth must be in YYYY-MM-DD or DD-MM-YYYY format.",
+            color: "yellow",
+          });
+          return;
+        }
+
+        if (!normalizedContact) {
+          notifications.show({
+            title: "Validation Error",
+            message: "Contact Number must contain digits.",
+            color: "yellow",
+          });
+          return;
+        }
+
         const payload = {
           profilesubmit: {
             about_me: profileData.about,
-            date_of_birth: profileData.dob,
+            date_of_birth: normalizedDob,
             address: profileData.address,
-            phone_no: profileData.contactNumber,
+            phone_no: Number(normalizedContact),
           },
         };
 
-        const response = await axios.put(updateProfileDataRoute, payload, {
-          headers: { Authorization: `Token ${token}` },
-        });
+        const response = await updateProfileSection(payload);
 
         if (response.status === 200) {
           notifications.show({
+            title: "Success",
             message: "Profile updated successfully!",
-            type: "success",
+            color: "green",
           });
+          setIsEditing(false);
         } else {
           notifications.show({
+            title: "Update Failed",
             message: "Failed to update profile",
-            type: "error",
+            color: "red",
           });
         }
       } catch (error) {
         notifications.show({
-          message: "Error updating profile",
-          type: "error",
+          title: "Update Failed",
+          message: formatApiError(error),
+          color: "red",
         });
       }
+      return;
     }
-    setIsEditing(!isEditing);
+    setIsEditing(true);
   };
 
-  const handleChange = (field, value) => {
-    setProfileData((prev) => ({ ...prev, [field]: value }));
-  };
+  useEffect(() => {
+    if (!isEditable) return;
+    if (externalEditTrigger <= 0) return;
+    if (externalEditTrigger === lastHandledTriggerRef.current) return;
+
+    lastHandledTriggerRef.current = externalEditTrigger;
+    setIsEditing(true);
+  }, [externalEditTrigger, isEditable]);
 
   return (
     <Flex
@@ -82,15 +161,20 @@ function ProfileComponent({ data }) {
           {isEditing ? (
             <TextInput
               value={profileData.about}
-              onChange={(e) => handleChange("about", e.target.value)}
+              onChange={(e) => handleFieldChange("about", e.target.value)}
               w="80%"
             />
           ) : (
             <Text>{profileData.about}</Text>
           )}
-          <Button onClick={handleEditClick} color={isEditing ? "green" : "red"}>
-            {isEditing ? "Save" : "Edit"}
-          </Button>
+          {isEditable && (
+            <Button
+              onClick={handleEditClick}
+              color={isEditing ? "green" : "red"}
+            >
+              {isEditing ? "Save" : "Edit"}
+            </Button>
+          )}
         </Flex>
       </Flex>
 
@@ -112,8 +196,9 @@ function ProfileComponent({ data }) {
               <Table.Td>
                 {isEditing ? (
                   <TextInput
+                    type="date"
                     value={profileData.dob}
-                    onChange={(e) => handleChange("dob", e.target.value)}
+                    onChange={(e) => handleFieldChange("dob", e.target.value)}
                   />
                 ) : (
                   profileData.dob
@@ -121,12 +206,18 @@ function ProfileComponent({ data }) {
               </Table.Td>
             </Table.Tr>
             <Table.Tr>
+              <Table.Td fw={500}>Age</Table.Td>
+              <Table.Td>{calculatedAge === "-" ? "-" : `${calculatedAge} years`}</Table.Td>
+            </Table.Tr>
+            <Table.Tr>
               <Table.Td fw={500}>Address</Table.Td>
               <Table.Td>
                 {isEditing ? (
                   <TextInput
                     value={profileData.address}
-                    onChange={(e) => handleChange("address", e.target.value)}
+                    onChange={(e) =>
+                      handleFieldChange("address", e.target.value)
+                    }
                   />
                 ) : (
                   profileData.address
@@ -155,9 +246,10 @@ function ProfileComponent({ data }) {
               <Table.Td>
                 {isEditing ? (
                   <TextInput
+                    type="tel"
                     value={profileData.contactNumber}
                     onChange={(e) =>
-                      handleChange("contactNumber", e.target.value)
+                      handleFieldChange("contactNumber", e.target.value)
                     }
                   />
                 ) : (
@@ -192,6 +284,11 @@ ProfileComponent.propTypes = {
       }),
     ),
   }),
+  isEditable: PropTypes.bool.isRequired, // Added this line
+  externalEditTrigger: PropTypes.number,
 };
 
+ProfileComponent.defaultProps = {
+  externalEditTrigger: 0,
+};
 export default ProfileComponent;

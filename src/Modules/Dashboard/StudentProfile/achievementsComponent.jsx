@@ -1,21 +1,37 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import {
-  Flex,
-  Input,
-  Divider,
-  Text,
-  Button,
-  Select,
-  Textarea,
-  Table,
-} from "@mantine/core";
-import axios from "axios";
+import { Flex, Divider, Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { updateProfileDataRoute } from "../../../routes/dashboardRoutes";
+import { useFormState } from "../utils/formHelpers";
+import { updateProfileSection } from "../services/profileService";
+import AchievementForm from "../components/forms/AchievementForm";
+import AchievementsTable from "../components/tables/AchievementsTable";
+
+const getAchievementType = (value) => {
+  const normalized = String(value || "Other").trim().toUpperCase();
+  if (normalized === "EDUCATIONAL") return "EDUCATIONAL";
+  return "OTHER";
+};
+
+const formatApiError = (error) => {
+  const data = error?.response?.data;
+  if (typeof data === "string") return data;
+  if (data?.error) return data.error;
+  if (data && typeof data === "object") {
+    const firstFieldError = Object.values(data).flat()[0];
+    if (firstFieldError) return firstFieldError;
+  }
+  return "Error adding achievement";
+};
 
 function AchievementsComponent({ achievements }) {
-  const [achievement, setAchievement] = useState({
+  const [achievementsList, setAchievementsList] = useState(achievements || []);
+
+  useEffect(() => {
+    setAchievementsList(achievements || []);
+  }, [achievements]);
+
+  const { formData: achievement, handleFieldChange, resetForm } = useFormState({
     skill: "",
     type: "Educational",
     date: "",
@@ -23,41 +39,51 @@ function AchievementsComponent({ achievements }) {
     description: "",
   });
 
-  const handleChange = (field, value) => {
-    setAchievement((prev) => ({ ...prev, [field]: value }));
-  };
-
   const handleSubmit = async () => {
     try {
-      const response = await axios.put(
-        updateProfileDataRoute,
-        {
-          achievementsubmit: {
-            skill: achievement.skill,
-            type: achievement.type,
-            date: achievement.date,
-            issuer: achievement.issuer,
-            description: achievement.description,
-          },
-        },
-        {
-          headers: {
-            Authorization: `Token ${localStorage.getItem("authToken")}`,
-          },
-        },
-      );
-      console.log(response);
+      const achievementName = String(achievement.skill || "").trim();
+      if (!achievementName) {
+        notifications.show({
+          message: "Achievement name is required.",
+          color: "yellow",
+        });
+        return;
+      }
+
+      const payload = {
+        achievement: achievementName,
+        achievement_type: getAchievementType(achievement.type),
+        issuer: String(achievement.issuer || "").trim(),
+        description: String(achievement.description || "").trim(),
+      };
+
+      if (achievement.date) {
+        payload.date_earned = achievement.date;
+      }
+
+      const response = await updateProfileSection({
+        achievementsubmit: payload,
+      });
+
+      const createdAchievement = response?.data?.id
+        ? response.data
+        : payload;
+
+      setAchievementsList((prev) => [...prev, createdAchievement]);
+
+      resetForm();
 
       notifications.show({
         message: "Achievement added successfully!",
         color: "green",
       });
     } catch (error) {
-      alert("Error adding achievement");
+      notifications.show({
+        message: formatApiError(error),
+        color: "red",
+      });
     }
   };
-
-  console.log(achievements);
 
   return (
     <Flex
@@ -82,109 +108,18 @@ function AchievementsComponent({ achievements }) {
           <Text fw={500} mb="md">
             Add a new achievement
           </Text>
-          <Flex align="center" justify="space-between" mb="md">
-            <Input.Wrapper label="Achievement name" w="65%">
-              <Input
-                size="md"
-                mt="xs"
-                value={achievement.skill}
-                onChange={(e) => handleChange("skill", e.target.value)}
-              />
-            </Input.Wrapper>
-            <Input.Wrapper label="Type" w="30%">
-              <Select
-                size="md"
-                mt="xs"
-                data={["Educational", "Other"]}
-                value={achievement.type}
-                onChange={(value) => handleChange("type", value)}
-              />
-            </Input.Wrapper>
-          </Flex>
-          <Flex align="center" justify="space-between" mb="md">
-            <Input.Wrapper label="Date" w={{ base: "45%", sm: "30%" }}>
-              <Input
-                type="date"
-                size="md"
-                mt="xs"
-                value={achievement.date}
-                onChange={(e) => handleChange("date", e.target.value)}
-              />
-            </Input.Wrapper>
-            <Input.Wrapper label="Issuer" w={{ base: "50%", sm: "65%" }}>
-              <Input
-                size="md"
-                mt="xs"
-                value={achievement.issuer}
-                onChange={(e) => handleChange("issuer", e.target.value)}
-              />
-            </Input.Wrapper>
-          </Flex>
-          <Flex
-            align="center"
-            gap={{ base: "md", sm: "lg" }}
-            justify="space-between"
-            direction={{ base: "column" }}
-          >
-            <Input.Wrapper label="Description" w={{ base: "100%" }}>
-              <Textarea
-                autosize
-                minRows={5}
-                resize="vertical"
-                mt="xs"
-                value={achievement.description}
-                onChange={(e) => handleChange("description", e.target.value)}
-              />
-            </Input.Wrapper>
-            <Button
-              size="md"
-              style={{
-                base: { alignSelf: "flex-center" },
-                sm: { alignSelf: "flex-end" },
-              }}
-              onClick={handleSubmit}
-            >
-              Submit
-            </Button>
-          </Flex>
+            <AchievementForm
+              formData={achievement}
+              onChange={handleFieldChange}
+              onSubmit={handleSubmit}
+            />
         </Flex>
         <Divider my="md" />
         <Text fw={500} mb="md">
           Your Achievements
         </Text>
         <Divider my="md" />
-        {achievements.length > 0 ? (
-          <Table striped highlightOnHover withTableBorder withColumnBorders>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th style={{ textAlign: "center" }}>Type</Table.Th>
-                <Table.Th style={{ textAlign: "center" }}>Date</Table.Th>
-                <Table.Th style={{ textAlign: "center" }}>Issuer</Table.Th>
-                <Table.Th style={{ textAlign: "center" }}>Description</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {achievements.map((ach, index) => (
-                <Table.Tr key={index}>
-                  <Table.Td style={{ textAlign: "center" }}>
-                    {ach.achievement_type}
-                  </Table.Td>
-                  <Table.Td style={{ textAlign: "center" }}>
-                    {ach.date_earned}
-                  </Table.Td>
-                  <Table.Td style={{ textAlign: "center" }}>
-                    {ach.issuer}
-                  </Table.Td>
-                  <Table.Td style={{ textAlign: "center" }}>
-                    {ach.description}
-                  </Table.Td>
-                </Table.Tr>
-              ))}
-            </Table.Tbody>
-          </Table>
-        ) : (
-          <Text>No achievements added yet.</Text>
-        )}
+          <AchievementsTable achievements={achievementsList} />
       </Flex>
     </Flex>
   );
@@ -193,13 +128,17 @@ function AchievementsComponent({ achievements }) {
 AchievementsComponent.propTypes = {
   achievements: PropTypes.arrayOf(
     PropTypes.shape({
-      skill: PropTypes.string,
-      type: PropTypes.string,
-      date: PropTypes.string,
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      achievement_type: PropTypes.string,
+      date_earned: PropTypes.string,
       issuer: PropTypes.string,
       description: PropTypes.string,
     }),
   ),
+};
+
+AchievementsComponent.defaultProps = {
+  achievements: [],
 };
 
 export default AchievementsComponent;

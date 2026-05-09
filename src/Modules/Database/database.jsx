@@ -5,6 +5,9 @@ import CustomBreadDatabase from "./components/customBreadCrumbs.jsx";
 import { useSelector } from "react-redux";
 import { useState, useEffect } from "react";
 import ViewDatabase from "./ViewDatabase.jsx";
+import IssuesPage from "./IssuesPage.jsx";
+import FeedbackPage from "./FeedbackPage.jsx";
+import SearchPage from "./SearchPage.jsx";
 
 export default function Database() {
   const userRole = useSelector((state) => state.user.role);
@@ -38,6 +41,9 @@ export default function Database() {
             element={<Navigate to={defaultRedirectPath()} replace />}
           />
           <Route path="/view" element={<ViewDatabase />} />
+          <Route path="/issues" element={<IssuesPage />} />
+          <Route path="/feedback" element={<FeedbackPage />} />
+          <Route path="/search" element={<SearchPage />} />
         </Routes>
       </Layout>
     </div>
