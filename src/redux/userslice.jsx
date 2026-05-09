@@ -9,6 +9,8 @@ const userSlice = createSlice({
     role: "Guest-User",
     accessibleModules: {}, // Format---> {role: {module: true}}
     currentAccessibleModules: {}, // Format---> {module: true}
+    isStaff: false,
+    totalNotifications: 0,
   },
   reducers: {
     setUserName: (state, action) => {
@@ -33,6 +35,12 @@ const userSlice = createSlice({
     clearUserName: (state) => {
       state.username = "User";
     },
+    setIsStaff: (state, action) => {
+      state.isStaff = action.payload;
+    },
+    setTotalNotifications: (state, action) => {
+      state.totalNotifications = action.payload;
+    },
     clearRoles: (state) => {
       state.roles = null;
     },
@@ -46,6 +54,8 @@ export const {
   setRole,
   setAccessibleModules,
   setCurrentAccessibleModules,
+  setIsStaff,
+  setTotalNotifications,
   clearUserName,
   clearRoles,
 } = userSlice.actions;

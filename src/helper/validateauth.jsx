@@ -10,6 +10,7 @@ import {
   setRole,
   setAccessibleModules,
   setCurrentAccessibleModules,
+  setIsStaff,
   clearUserName,
   clearRoles,
 } from "../redux/userslice";
@@ -20,6 +21,11 @@ function ValidateAuth() {
   const navigate = useNavigate();
 
   const validateUser = useCallback(async () => {
+    // /notifications is a single-page module — let it mount; individual tabs handle auth errors
+    if (window.location.pathname === "/notifications") {
+      return;
+    }
+
     const token = localStorage.getItem("authToken");
 
     if (!token) {
@@ -44,6 +50,8 @@ function ValidateAuth() {
         accessible_modules = [],
         last_selected_role,
         roll_no,
+        is_staff = false,
+        is_superuser = false,
       } = data;
 
       // console.log("User Data:", data);
@@ -51,6 +59,7 @@ function ValidateAuth() {
       dispatch(setUserName(name));
       dispatch(setRollNo(roll_no));
       dispatch(setRoles(designation_info));
+      dispatch(setIsStaff(is_staff || is_superuser));
 
       const selectedRole = last_selected_role || designation_info[0] || null;
       if (selectedRole) dispatch(setRole(selectedRole));

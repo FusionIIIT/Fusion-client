@@ -1,21 +1,37 @@
 import axios from "axios";
 import PropTypes from "prop-types";
-import { SortAscending } from "@phosphor-icons/react";
+import {
+  SortAscending,
+  Megaphone,
+  CalendarBlank,
+  Star,
+  EnvelopeOpen,
+  Envelope,
+  Trash,
+  CheckCircle,
+} from "@phosphor-icons/react";
 import { useEffect, useMemo, useState } from "react";
 import {
+  ActionIcon,
   Container,
   Loader,
   Badge,
   Button,
-  Divider,
   Flex,
   Grid,
+  Group,
+  Modal,
+  MultiSelect,
   Paper,
   Select,
+  Stack,
   Text,
-  CloseButton,
+  Textarea,
+  TextInput,
+  Tooltip,
 } from "@mantine/core";
-import { useDispatch } from "react-redux";
+import { notifications as toast } from "@mantine/notifications";
+import { useDispatch, useSelector } from "react-redux";
 import classes from "./Dashboard.module.css";
 import { Empty } from "../../components/empty";
 import CustomBreadcrumbs from "../../components/Breadcrumbs.jsx";
@@ -23,70 +39,190 @@ import {
   notificationReadRoute,
   notificationDeleteRoute,
   notificationUnreadRoute,
+  notificationStarRoute,
   getNotificationsRoute,
+  markAllReadRoute,
+  markAllUnreadRoute,
 } from "../../routes/dashboardRoutes";
+import { broadcastRoute } from "../../routes/notificationRoutes";
 import ModuleTabs from "../../components/moduleTabs.jsx";
 
+const AUDIENCE_OPTIONS = [
+  { value: "all",           label: "All Users" },
+  { value: "students",      label: "All Students" },
+  { value: "faculty",       label: "All Faculty" },
+  { value: "staff",         label: "All Staff" },
+  { value: "department",    label: "By Department" },
+  { value: "batch",         label: "By Batch" },
+  { value: "group",         label: "Specific Designation" },
+  { value: "specific_user", label: "Specific Users" },
+];
+
+// Backend endpoints powering the dependent dropdowns
+const HOST = "";
+const AUDIENCE_DEPARTMENTS_URL  = `${HOST}/api/notifications/audience/departments/`;
+const AUDIENCE_DESIGNATIONS_URL = `${HOST}/api/notifications/audience/designations/`;
+const AUDIENCE_BATCHES_URL      = `${HOST}/api/notifications/audience/batches/`;
+const AUDIENCE_USERS_URL        = `${HOST}/api/notifications/audience/users/`;
+
 const categories = ["Most Recent", "Tags", "Title"];
+
+// Defensive parse for older rows that may still hold a Python-repr string
+const safeParse = (s) => {
+  try {
+    return JSON.parse(String(s).replace(/'/g, '"'));
+  } catch {
+    return {};
+  }
+};
+
+// Pretty timestamp like "5m ago", "2h ago", "yesterday", "Apr 26"
+function timeAgo(ts) {
+  const d = new Date(ts);
+  const diff = (Date.now() - d.getTime()) / 1000;
+  if (diff < 60)       return "just now";
+  if (diff < 3600)     return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400)    return `${Math.floor(diff / 3600)}h ago`;
+  if (diff < 172800)   return "yesterday";
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
 
 function NotificationItem({
   notification,
   markAsRead,
   deleteNotification,
   markAsUnread,
+  toggleStar,
   loading,
 }) {
-  const { module } = notification.data;
+  const { module, flag } = notification.data || {};
+  const isAnnouncement = flag === "announcement";
+  const starred = !!notification.data?.starred;
+  const accent  = isAnnouncement ? "#FA8C16" : "#15ABFF";
+
+  const [expanded, setExpanded] = useState(false);
 
   return (
     <Grid.Col span={{ base: 12, md: 6 }} key={notification.id}>
       <Paper
         radius="md"
-        px="lg"
-        pt="sm"
-        pb="xl"
-        style={{ borderLeft: "0.6rem solid #15ABFF" }}
+        p="md"
         withBorder
-        maw="1240px"
+        shadow={notification.unread ? "xs" : "none"}
+        style={{
+          borderLeft: `4px solid ${accent}`,
+          background: notification.unread ? "var(--mantine-color-blue-0)" : "white",
+          transition: "background 120ms ease",
+        }}
       >
-        <Flex justify="space-between">
-          <Flex direction="column">
-            <Flex gap="md">
-              <Text fw={600} size="1.2rem" mb="0.4rem">
-                {notification.verb}
-              </Text>
-              <Badge color="#15ABFF">{module || "N/A"}</Badge>
-            </Flex>
-            <Text c="#6B6B6B" size="0.7rem">
-              {new Date(notification.timestamp).toLocaleDateString()}
+        <Group justify="space-between" align="flex-start" wrap="nowrap" gap="sm">
+          <Stack gap={4} style={{ flex: 1, minWidth: 0 }}>
+            <Group gap="xs" wrap="wrap" mb={2}>
+              {isAnnouncement && (
+                <Badge color="orange" variant="light" size="sm" radius="sm">
+                  Announcement
+                </Badge>
+              )}
+              {module && (
+                <Badge color="gray" variant="default" size="sm" radius="sm">
+                  {module}
+                </Badge>
+              )}
+            </Group>
+            <Text
+              fw={notification.unread ? 700 : 500}
+              size="sm"
+              lineClamp={expanded ? undefined : 2}
+              style={{ wordBreak: "break-word" }}
+              onClick={() => setExpanded((v) => !v)}
+            >
+              {notification.verb || "Notification"}
             </Text>
-            <Divider my="sm" w="10rem" />
-          </Flex>
-          <CloseButton
-            variant="transparent"
-            style={{ cursor: "pointer" }}
-            onClick={() => deleteNotification(notification.id)}
-          />
-        </Flex>
-        <Flex justify="space-between">
-          <Text>{notification.description || "No description available."}</Text>
-          <Button
-            variant="filled"
-            color={notification.unread ? "blue" : "gray"}
-            onClick={() =>
-              notification.unread
-                ? markAsRead(notification.id)
-                : markAsUnread(notification.id)
-            }
-            loaderProps={{ type: "dots" }}
-            loading={loading === notification.id}
-            style={{ cursor: "pointer" }}
-            ml="sm"
-            miw="120px"
-          >
-            {notification.unread ? "Mark as read" : "Unread"}
-          </Button>
-        </Flex>
+            {notification.description &&
+              notification.description !== notification.verb && (
+              <Text
+                size="sm"
+                c="dimmed"
+                lineClamp={expanded ? undefined : 3}
+                style={{ wordBreak: "break-word" }}
+              >
+                {notification.description}
+              </Text>
+            )}
+            {((notification.verb || "").length > 80 ||
+              (notification.description || "").length > 100) && (
+              <Text
+                size="xs"
+                c="blue"
+                style={{ cursor: "pointer", userSelect: "none" }}
+                onClick={() => setExpanded((v) => !v)}
+              >
+                {expanded ? "Show less" : "Show more"}
+              </Text>
+            )}
+            <Group gap="xs" mt={2}>
+              <Text size="xs" c="dimmed">
+                {timeAgo(notification.timestamp)}
+              </Text>
+              {isAnnouncement && notification.data?.expiry_date && (
+                <Badge
+                  size="xs"
+                  variant="light"
+                  color="orange"
+                  leftSection={<CalendarBlank size={11} weight="duotone" />}
+                  radius="sm"
+                >
+                  Expires {new Date(notification.data.expiry_date).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}
+                </Badge>
+              )}
+            </Group>
+          </Stack>
+
+          <Group gap={4} wrap="nowrap">
+            <Tooltip label={starred ? "Unstar" : "Star"} withArrow>
+              <ActionIcon
+                variant="subtle"
+                color={starred ? "yellow" : "gray"}
+                size="lg"
+                onClick={() => toggleStar(notification.id)}
+                aria-label="Star"
+              >
+                <Star size={18} weight={starred ? "fill" : "regular"} />
+              </ActionIcon>
+            </Tooltip>
+            <Tooltip label={notification.unread ? "Mark as read" : "Mark as unread"} withArrow>
+              <ActionIcon
+                variant="subtle"
+                color={notification.unread ? "blue" : "gray"}
+                size="lg"
+                loading={loading === notification.id}
+                onClick={() =>
+                  notification.unread
+                    ? markAsRead(notification.id)
+                    : markAsUnread(notification.id)
+                }
+                aria-label="Toggle read"
+              >
+                {notification.unread
+                  ? <Envelope size={18} />
+                  : <EnvelopeOpen size={18} />}
+              </ActionIcon>
+            </Tooltip>
+            {!isAnnouncement && (
+              <Tooltip label="Archive (180-day retention)" withArrow>
+                <ActionIcon
+                  variant="subtle"
+                  color="red"
+                  size="lg"
+                  onClick={() => deleteNotification(notification.id)}
+                  aria-label="Delete"
+                >
+                  <Trash size={18} />
+                </ActionIcon>
+              </Tooltip>
+            )}
+          </Group>
+        </Group>
       </Paper>
     </Grid.Col>
   );
@@ -97,6 +233,105 @@ function Dashboard() {
   const [announcementsList, setAnnouncementsList] = useState([]);
   const [activeTab, setActiveTab] = useState("0");
   const [sortedBy, setSortedBy] = useState("Most Recent");
+
+  // UC-NT-03: Broadcast announcement (staff only) — inline modal
+  const isStaff = useSelector((s) => s.user.isStaff);
+  const [broadcastOpen,  setBroadcastOpen]  = useState(false);
+  const [bTitle,         setBTitle]         = useState("");
+  const [bMessage,       setBMessage]       = useState("");
+  const [bAudience,      setBAudience]      = useState("all");
+  const [bAudienceValue, setBAudienceValue] = useState("");   // single string (department/batch/group)
+  const [bUsers,         setBUsers]         = useState([]);   // array (specific_user multi)
+  const [bExpiry,        setBExpiry]        = useState(null);
+  const [bSending,       setBSending]       = useState(false);
+
+  // Audience option lists (fetched once when modal first opens)
+  const [departments,    setDepartments]    = useState([]);
+  const [designations,   setDesignations]   = useState([]);
+  const [batches,        setBatches]        = useState([]);
+  const [usersList,      setUsersList]      = useState([]);
+  const [audienceLoaded, setAudienceLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!broadcastOpen || audienceLoaded) return;
+    const token = localStorage.getItem("authToken");
+    const headers = { Authorization: `Token ${token}` };
+    Promise.all([
+      axios.get(AUDIENCE_DEPARTMENTS_URL,  { headers }),
+      axios.get(AUDIENCE_DESIGNATIONS_URL, { headers }),
+      axios.get(AUDIENCE_BATCHES_URL,      { headers }),
+      axios.get(AUDIENCE_USERS_URL,        { headers }),
+    ])
+      .then(([d, g, b, u]) => {
+        setDepartments(d.data.departments || []);
+        setDesignations(g.data.designations || []);
+        setBatches(b.data.batches || []);
+        setUsersList(u.data.users || []);
+        setAudienceLoaded(true);
+      })
+      .catch(() =>
+        toast.show({ color: "red", message: "Failed to load audience options." }),
+      );
+  }, [broadcastOpen, audienceLoaded]);
+
+  // Reset the secondary value whenever the audience type changes
+  useEffect(() => { setBAudienceValue(""); setBUsers([]); }, [bAudience]);
+
+  const audienceNeedsSingle = ["department", "batch", "group"].includes(bAudience);
+  const audienceNeedsUsers  = bAudience === "specific_user";
+
+  const submitBroadcast = async () => {
+    if (!bTitle.trim() || !bMessage.trim() || !bExpiry) {
+      toast.show({ color: "orange", message: "Please fill all required fields." });
+      return;
+    }
+    if (audienceNeedsSingle && !bAudienceValue.trim()) {
+      toast.show({ color: "orange", message: "Please pick the audience value." });
+      return;
+    }
+    if (audienceNeedsUsers && bUsers.length === 0) {
+      toast.show({ color: "orange", message: "Please pick at least one user." });
+      return;
+    }
+
+    let audienceValue = "";
+    if (audienceNeedsSingle) audienceValue = bAudienceValue.trim();
+    if (audienceNeedsUsers)  audienceValue = bUsers.join(",");
+
+    setBSending(true);
+    try {
+      const token = localStorage.getItem("authToken");
+      await axios.post(
+        broadcastRoute,
+        {
+          title:          bTitle.trim(),
+          message:        bMessage.trim(),
+          audience_type:  bAudience,
+          audience_value: audienceValue,
+          expiry_date:    (bExpiry instanceof Date ? bExpiry : new Date(bExpiry))
+                            .toISOString()
+                            .split("T")[0],
+        },
+        { headers: { Authorization: `Token ${token}` } },
+      );
+      toast.show({
+        color: "green",
+        message:
+          audienceNeedsUsers && bUsers.length > 1
+            ? `Announcement broadcasted to ${bUsers.length} users.`
+            : "Announcement broadcasted.",
+      });
+      setBroadcastOpen(false);
+      setBTitle(""); setBMessage("");
+      setBAudience("all"); setBAudienceValue(""); setBUsers([]);
+      setBExpiry(null);
+    } catch (err) {
+      const detail = err?.response?.data?.error || "Failed to broadcast.";
+      toast.show({ color: "red", message: typeof detail === "string" ? detail : "Failed to broadcast." });
+    } finally {
+      setBSending(false);
+    }
+  };
   const [loading, setLoading] = useState(false);
   const [read_Loading, setRead_Loading] = useState(-1);
   const dispatch = useDispatch();
@@ -112,39 +347,52 @@ function Dashboard() {
   const badges = [notificationBadgeCount, announcementBadgeCount];
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    let cancelled = false;
+
+    const fetchDashboardData = async ({ silent = false } = {}) => {
       const token = localStorage.getItem("authToken");
       if (!token) return console.error("No authentication token found!");
 
       try {
-        setLoading(true);
+        if (!silent) setLoading(true);
         const { data } = await axios.get(getNotificationsRoute, {
           headers: { Authorization: `Token ${token}` },
         });
+        if (cancelled) return;
         const { notifications } = data;
         const notificationsData = notifications.map((item) => ({
           ...item,
-          data: JSON.parse(item.data.replace(/'/g, '"')),
+          data: typeof item.data === "string" ? safeParse(item.data) : (item.data || {}),
         }));
 
         setNotificationsList(
-          notificationsData.filter(
-            (item) => item.data?.flag !== "announcement",
-          ),
+          notificationsData.filter((item) => item.flag !== "announcement"),
         );
         setAnnouncementsList(
-          notificationsData.filter(
-            (item) => item.data?.flag === "announcement",
-          ),
+          notificationsData.filter((item) => item.flag === "announcement"),
         );
       } catch (error) {
-        console.error("Error fetching dashboard data:", error);
+        if (!cancelled) console.error("Error fetching dashboard data:", error);
       } finally {
-        setLoading(false);
+        if (!cancelled && !silent) setLoading(false);
       }
     };
 
+    // Initial load — show the loader
     fetchDashboardData();
+
+    // Poll every 5s in the background — keeps the list in sync with the bell.
+    const interval = setInterval(() => fetchDashboardData({ silent: true }), 5000);
+
+    // Refetch whenever the tab regains focus — covers long sleeps where polling paused.
+    const onFocus = () => fetchDashboardData({ silent: true });
+    window.addEventListener("focus", onFocus);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+      window.removeEventListener("focus", onFocus);
+    };
   }, [dispatch]);
 
   // const handleTabChange = (direction) => {
@@ -183,9 +431,9 @@ function Dashboard() {
     const token = localStorage.getItem("authToken");
     try {
       setRead_Loading(notifId);
-      const response = await axios.post(
-        notificationReadRoute,
-        { id: notifId },
+      const response = await axios.patch(
+        notificationReadRoute(notifId),
+        {},
         { headers: { Authorization: `Token ${token}` } },
       );
       if (response.status === 200) {
@@ -211,9 +459,9 @@ function Dashboard() {
     const token = localStorage.getItem("authToken");
     try {
       setRead_Loading(notifId);
-      const response = await axios.post(
-        notificationUnreadRoute,
-        { id: notifId },
+      const response = await axios.patch(
+        notificationUnreadRoute(notifId),
+        {},
         { headers: { Authorization: `Token ${token}` } },
       );
       if (response.status === 200) {
@@ -239,15 +487,11 @@ function Dashboard() {
     const token = localStorage.getItem("authToken");
 
     try {
-      const response = await axios.post(
-        notificationDeleteRoute,
-        { id: notifId },
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
+      const response = await axios.delete(notificationDeleteRoute(notifId), {
+        headers: {
+          Authorization: `Token ${token}`,
         },
-      );
+      });
 
       if (response.status === 200) {
         setNotificationsList((prev) =>
@@ -259,6 +503,57 @@ function Dashboard() {
       }
     } catch (err) {
       console.error("Error deleting notification:", err);
+    }
+  };
+
+  // Star toggle (server-side flip of data.starred)
+  const toggleStar = async (notifId) => {
+    const token = localStorage.getItem("authToken");
+    try {
+      const { data } = await axios.patch(
+        notificationStarRoute(notifId),
+        {},
+        { headers: { Authorization: `Token ${token}` } },
+      );
+      const apply = (list) =>
+        list.map((n) =>
+          n.id === notifId
+            ? { ...n, data: { ...(n.data || {}), starred: data.starred } }
+            : n,
+        );
+      setNotificationsList(apply);
+      setAnnouncementsList(apply);
+    } catch (err) {
+      console.error("Error toggling star:", err);
+    }
+  };
+
+  // Bulk actions — Mark all read / Mark all unread / Delete all (BR-NT-09 archive)
+  const markAllRead = async () => {
+    const token = localStorage.getItem("authToken");
+    try {
+      await axios.patch(markAllReadRoute, {}, {
+        headers: { Authorization: `Token ${token}` },
+      });
+      const apply = (list) => list.map((n) => ({ ...n, unread: false }));
+      setNotificationsList(apply);
+      setAnnouncementsList(apply);
+    } catch (err) {
+      console.error("Error marking all as read:", err);
+    }
+  };
+
+  const markAllUnread = async () => {
+    const token = localStorage.getItem("authToken");
+    try {
+      await axios.patch(markAllUnreadRoute, {}, {
+        headers: { Authorization: `Token ${token}` },
+      });
+      const apply = (list) => list.map((n) => ({ ...n, unread: true }));
+      setNotificationsList(apply);
+      setAnnouncementsList(apply);
+    } catch (err) {
+      console.error("Error marking all as unread:", err);
     }
   };
 
@@ -346,9 +641,18 @@ function Dashboard() {
           align="center"
           mt="md"
           rowGap="1rem"
-          columnGap="4rem"
+          columnGap="1rem"
           wrap="wrap"
         >
+          {isStaff && (
+            <Button
+              leftSection={<Megaphone size={16} weight="fill" />}
+              color="orange"
+              onClick={() => setBroadcastOpen(true)}
+            >
+              Broadcast
+            </Button>
+          )}
           <Select
             classNames={{
               option: classes.selectoptions,
@@ -363,7 +667,173 @@ function Dashboard() {
           />
         </Flex>
       </Flex>
-      <Grid mt="xl">
+
+      {/* UC-NT-03: Broadcast announcement modal — inline, no new page */}
+      <Modal
+        opened={broadcastOpen}
+        onClose={() => setBroadcastOpen(false)}
+        title={<Text fw={700} size="lg">Broadcast Announcement</Text>}
+        size="lg"
+        radius="md"
+        centered
+        overlayProps={{ backgroundOpacity: 0.55, blur: 3 }}
+      >
+        <Stack gap="md">
+          <TextInput
+            label="Title"
+            placeholder="e.g. Campus network maintenance on Friday"
+            required
+            size="md"
+            radius="md"
+            value={bTitle}
+            onChange={(e) => setBTitle(e.target.value)}
+          />
+          <Textarea
+            label="Message"
+            placeholder="Enter the full announcement content…"
+            required
+            size="md"
+            radius="md"
+            minRows={3}
+            autosize
+            value={bMessage}
+            onChange={(e) => setBMessage(e.target.value)}
+          />
+          <Select
+            label="Target Audience"
+            data={AUDIENCE_OPTIONS}
+            value={bAudience}
+            onChange={setBAudience}
+            size="md"
+            radius="md"
+          />
+          {bAudience === "department" && (
+            <Select
+              label="Department"
+              placeholder="Pick a department"
+              searchable
+              size="md"
+              radius="md"
+              data={departments}
+              value={bAudienceValue}
+              onChange={(v) => setBAudienceValue(v || "")}
+            />
+          )}
+          {bAudience === "group" && (
+            <Select
+              label="Designation"
+              placeholder="Pick a designation"
+              searchable
+              size="md"
+              radius="md"
+              data={designations}
+              value={bAudienceValue}
+              onChange={(v) => setBAudienceValue(v || "")}
+            />
+          )}
+          {bAudience === "batch" && (
+            <Select
+              label="Batch"
+              placeholder="Pick a batch (e.g. 23BCS)"
+              searchable
+              size="md"
+              radius="md"
+              data={batches}
+              value={bAudienceValue}
+              onChange={(v) => setBAudienceValue(v || "")}
+            />
+          )}
+          {bAudience === "specific_user" && (
+            <MultiSelect
+              label={`Users (${usersList.length} available — type to search)`}
+              placeholder={bUsers.length ? "" : "Type a name or username (e.g. skjain, ABHAY, 24BCS)"}
+              description="Filters live as you type — search by username, first name, or last name."
+              searchable
+              clearable
+              hidePickedOptions
+              size="md"
+              radius="md"
+              limit={200}
+              maxValues={500}
+              data={usersList}
+              value={bUsers}
+              onChange={setBUsers}
+              nothingFoundMessage="No matching users"
+            />
+          )}
+          <TextInput
+            label="Expiry Date"
+            type="date"
+            required
+            size="md"
+            radius="md"
+            leftSection={<CalendarBlank size={18} weight="duotone" />}
+            leftSectionPointerEvents="none"
+            min={new Date().toISOString().split("T")[0]}
+            max={new Date(new Date().setFullYear(new Date().getFullYear() + 1))
+                   .toISOString().split("T")[0]}
+            value={bExpiry ? new Date(bExpiry).toISOString().split("T")[0] : ""}
+            onChange={(e) => setBExpiry(e.target.value ? new Date(e.target.value) : null)}
+          />
+          <Flex justify="flex-end" gap="sm" mt="lg">
+            <Button
+              variant="default"
+              size="md"
+              radius="md"
+              onClick={() => setBroadcastOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              color="orange"
+              size="md"
+              radius="md"
+              leftSection={<Megaphone size={16} weight="fill" />}
+              loading={bSending}
+              onClick={submitBroadcast}
+            >
+              Broadcast
+            </Button>
+          </Flex>
+        </Stack>
+      </Modal>
+      {/* Toolbar — counter + bulk actions */}
+      {!loading && sortedNotifications.length > 0 && (
+        <Paper withBorder radius="md" p="sm" mt="md" mb="sm">
+          <Group justify="space-between" wrap="wrap" gap="sm">
+            <Group gap="xs">
+              <Badge color="blue" variant="filled" size="lg" radius="sm">
+                {sortedNotifications.filter((n) => n.unread).length} unread
+              </Badge>
+              <Text size="sm" c="dimmed">
+                of {sortedNotifications.length} {activeTab === "1" ? "announcements" : "notifications"}
+              </Text>
+            </Group>
+            <Group gap="xs">
+              <Button
+                size="xs"
+                variant="light"
+                color="blue"
+                leftSection={<CheckCircle size={14} weight="fill" />}
+                onClick={markAllRead}
+              >
+                Mark all read
+              </Button>
+              <Button
+                size="xs"
+                variant="light"
+                color="gray"
+                leftSection={<Envelope size={14} />}
+                onClick={markAllUnread}
+              >
+                Mark all unread
+              </Button>
+            </Group>
+          </Group>
+        </Paper>
+      )}
+
+      <Grid mt="md" gutter="md">
         {loading ? (
           <Container py="xl">
             <Loader size="lg" />
@@ -381,6 +851,7 @@ function Dashboard() {
                 markAsRead={markAsRead}
                 markAsUnread={markAsUnread}
                 deleteNotification={deleteNotification}
+                toggleStar={toggleStar}
                 loading={read_Loading}
               />
             ))
@@ -407,5 +878,6 @@ NotificationItem.propTypes = {
   markAsRead: PropTypes.func.isRequired,
   markAsUnread: PropTypes.func.isRequired,
   deleteNotification: PropTypes.func.isRequired,
+  toggleStar: PropTypes.func.isRequired,
   loading: PropTypes.number.isRequired,
 };
