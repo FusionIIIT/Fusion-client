@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { User, SignOut, Bell, UserSwitch } from "@phosphor-icons/react";
+import { User, SignOut, UserSwitch } from "@phosphor-icons/react";
+import NotificationBell from "../Modules/Notification/components/NotificationBell";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
@@ -7,7 +8,6 @@ import {
   Avatar,
   Burger,
   Flex,
-  Indicator,
   Popover,
   Group,
   Stack,
@@ -141,9 +141,7 @@ function Header({ opened, toggleSidebar }) {
             onChange={handleRoleChange}
             placeholder="Role"
           />
-          <Indicator>
-            <Bell color="orange" size="32px" cursor="pointer" />
-          </Indicator>
+          <NotificationBell />
           <Popover
             opened={popoverOpened}
             onChange={setPopoverOpened}
@@ -168,7 +166,7 @@ function Header({ opened, toggleSidebar }) {
               }}
               width={{ xxs: "320px", xs: "340px" }}
             >
-              <Group spacing="xs">
+              <Group gap="xs">
                 <Avatar size="xl" radius="xl" src={avatarImage} />
                 <Stack gap={8}>
                   <Text size="lg" fz={{ xxs: 18, xs: 24 }} fw={700}>

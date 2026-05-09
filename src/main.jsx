@@ -4,6 +4,8 @@ import { BrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
 import App from "./App";
+import "@mantine/core/styles.css";
+import "@mantine/notifications/styles.css";
 import "./index.css";
 
 createRoot(document.getElementById("root")).render(
