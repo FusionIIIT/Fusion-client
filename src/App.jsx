@@ -16,6 +16,8 @@ import Examination from "./Modules/Examination/examination";
 import Database from "./Modules/Database/database";
 import ProgrammeCurriculumRoutes from "./Modules/Program_curriculum/programmCurriculum";
 import NotFoundPage from "./components/NotFoundPage";
+import VmsPage, { VmsStaffPage, VmsAdminPage } from "./Modules/VMS";
+import VmsAccessGuard from "./Modules/VMS/components/VmsAccessGuard";
 
 const theme = createTheme({
   breakpoints: {
@@ -76,6 +78,36 @@ export default function App() {
             <div>
               <ProgrammeCurriculumRoutes />
             </div>
+          }
+        />
+        <Route
+          path="/vms"
+          element={
+            <Layout>
+              <VmsAccessGuard require="staff">
+                <VmsPage />
+              </VmsAccessGuard>
+            </Layout>
+          }
+        />
+        <Route
+          path="/vms-demo-staff"
+          element={
+            <Layout>
+              <VmsAccessGuard require="staff">
+                <VmsStaffPage />
+              </VmsAccessGuard>
+            </Layout>
+          }
+        />
+        <Route
+          path="/vms-demo-admin"
+          element={
+            <Layout>
+              <VmsAccessGuard require="admin">
+                <VmsAdminPage />
+              </VmsAccessGuard>
+            </Layout>
           }
         />
         <Route path="/accounts/login" element={<LoginPage />} />
