@@ -1,51 +1,54 @@
 import React, { useEffect, useState } from "react";
-import InboxTable from "../../components/tables/InboxTable";
 import { useParams } from "react-router-dom";
-import {
-  get_cpda_adv_inbox,
-  get_form_track,
-} from "../../../../routes/hr/index"; // Ensure this is the correct import path
-import LoadingComponent from "../../components/Loading"; // Ensure this is the correct import path
+import { getCpdaAdvTrack } from "../../services/api";
+import LoadingComponent from "../../components/common/Loading";
 import TrackTable from "../../components/tables/TrackTable";
+
+const STATUS_LABELS = {
+  submitted: "Submitted (with HOD)",
+  hod_verified: "Verified by HOD",
+  hod_not_verified: "Not verified by HOD",
+  forwarded_to_director: "With Director",
+  director_approved: "Approved — with Accountant",
+  director_rejected: "Rejected by Director",
+  accountant_processed: "Completed by Accountant",
+};
 
 function Cpda_ADVANCETrack() {
   const { id } = useParams();
-  const [trackData, setTrackData] = useState([]); // Correct useState syntax
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [trackData, setTrackData] = useState([]);
+  const [workflowStatusDisplay, setWorkflowStatusDisplay] = useState("");
+  const [workflowHistory, setWorkflowHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const currentPath = window.location.pathname;
   const exampleItems = [
     { title: "Home", path: "/dashboard" },
     { title: "Human Resources", path: "/hr" },
     { title: "CPDA Adv Management", path: "/hr/cpda_adv" },
-
     { title: "Track", path: `${currentPath}` },
   ];
 
   useEffect(() => {
     const fetchCPDATrack = async () => {
       console.log("Fetching CPDA Advance Track...");
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        console.error("No authentication token found!");
-        setLoading(false);
-        return;
-      }
       try {
-        const response = await fetch(`${get_form_track(id)}`, {
-          headers: { Authorization: `Token ${token}` },
-        });
-        const data = await response.json();
-        setTrackData(data.file_history); // Set fetched data
-        setLoading(false); // Set loading to false once data is fetched
-        console.log(data);
+        const data = await getCpdaAdvTrack(id);
+        setTrackData(data.file_history ?? []);
+        const ws = data.workflow_status;
+        setWorkflowStatusDisplay((ws && STATUS_LABELS[ws]) || ws || "");
+        setWorkflowHistory(data.workflow_history ?? []);
       } catch (error) {
         console.error("Failed to fetch CPDA Advance Track:", error);
-        setLoading(false); // Set loading to false if there’s an error
+        setTrackData([]);
+        setWorkflowStatusDisplay("");
+        setWorkflowHistory([]);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchCPDATrack(); // Ensure function is called
-  }, []); // Adding empty dependency array to run only once
+    fetchCPDATrack();
+  }, [id]);
 
   if (loading) {
     return <LoadingComponent />;
@@ -55,7 +58,10 @@ function Cpda_ADVANCETrack() {
     <TrackTable
       title="CPDA Adv Track"
       data={trackData}
+      loading={loading}
       exampleItems={exampleItems}
+      workflowStatusDisplay={workflowStatusDisplay}
+      workflowHistory={workflowHistory}
     />
   );
 }

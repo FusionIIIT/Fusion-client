@@ -1,589 +1,348 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   TextInput,
-  Checkbox,
   Button,
   Title,
   Box,
   Grid,
-  Group,
+  Select,
   Textarea,
+  Checkbox,
+  FileInput,
+  Text,
+  Alert,
 } from "@mantine/core";
-import { get_form_initials, submit_leave_form } from "../../../../routes/hr";
-import "./LeaveForm.css";
-import SearchAndSelectUser from "../../components/SearchAndSelectUser";
+import "../../styles/LeaveForm.css";
 import { useNavigate } from "react-router-dom";
+import {
+  getFormInitials,
+  submitLeaveForm,
+  getLeaveTypesForHr,
+  getLeaveBalance,
+} from "../../services/api";
+import SubstituteNomination from "./SubstituteNomination";
 
-const LeaveForm = () => {
-  const [stationLeave, setStationLeave] = useState(false);
-  const [academicResponsibility, setAcademicResponsibility] = useState(null);
-  const [administrativeResponsibility, setAdministrativeResponsibility] =
-    useState(null);
-  const [forwardTo, setForwardTo] = useState(null);
-  const [attachedPdf, setAttachedPdf] = useState(null);
+function LeaveForm() {
   const [formData, setFormData] = useState({
+    leave_type: "",
     leaveStartDate: "",
     leaveEndDate: "",
+    start_half: false,
+    end_half: false,
     purpose: "",
-    casualLeave: "0",
-    vacationLeave: "0",
-    earnedLeave: "0",
-    commutedLeave: "0",
-    specialCasualLeave: "0",
-    restrictedHoliday: "0",
-    halfPayLeave: "0",
-    maternityLeave: "0",
-    childCareLeave: "0",
-    paternityLeave: "0",
-    remarks: "",
-    stationLeaveStartDate: "",
-    stationLeaveEndDate: "",
-    stationLeaveAddress: "",
+    leave_info: "",
+    addressDuringLeave: "",
   });
+  const [substituteNominations, setSubstituteNominations] = useState([]);
+  const [leavePdfFile, setLeavePdfFile] = useState(null);
 
   const today = new Date().toISOString().split("T")[0];
   const navigate = useNavigate();
+
   const [details, setDetails] = useState({
     name: "",
+    username: "",
     last_selected_role: "",
     pfno: "",
     department: "",
   });
+  const [leaveTypes, setLeaveTypes] = useState([]);
+  const [balanceSummary, setBalanceSummary] = useState(null);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activeSubmit, setActiveSubmit] = useState(true);
 
-  const fetchDetails = async () => {
-    setLoading(true);
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      console.error("No authentication token found!");
-      setError("Authentication token is missing.");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const response = await fetch(get_form_initials, {
-        headers: { Authorization: `Token ${token}` },
-      });
-      if (!response.ok) {
-        throw new Error(`Error fetching details: ${response.statusText}`);
-      }
-      const data = await response.json();
-      setDetails(data);
-    } catch (err) {
-      setError("Failed to fetch user details.");
-      console.error(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const selectedMeta = useMemo(() => {
+    const id = formData.leave_type;
+    if (!id) return null;
+    return leaveTypes.find((t) => String(t.id) === String(id)) || null;
+  }, [formData.leave_type, leaveTypes]);
 
   useEffect(() => {
-    fetchDetails();
+    const load = async () => {
+      setLoading(true);
+      try {
+        const [init, types, bal] = await Promise.all([
+          getFormInitials(),
+          getLeaveTypesForHr(),
+          getLeaveBalance().catch(() => null),
+        ]);
+        setDetails(init);
+        setLeaveTypes(types);
+        if (bal?.leave_balance) {
+          setBalanceSummary(bal.leave_balance);
+        }
+      } catch (err) {
+        setError("Failed to load leave form data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
   }, []);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file && file.type === "application/pdf") {
-      setAttachedPdf(file);
-    } else {
-      alert("Please upload a valid PDF file.");
-    }
-  };
 
   const handleSubmit = async () => {
     setActiveSubmit(false);
+    setError(null);
 
-    // Validation Checks
-    if (
-      !formData.leaveStartDate ||
-      !formData.leaveEndDate ||
-      !formData.purpose ||
-      !forwardTo
-    ) {
-      alert("Required fields: Leave dates, purpose, and forward to!");
+    if (!formData.leave_type) {
+      alert("Please select a leave type.");
+      setActiveSubmit(true);
+      return;
+    }
+    if (!formData.leaveStartDate || !formData.leaveEndDate || !formData.purpose?.trim()) {
+      alert("Leave type, start date, end date, and purpose are required.");
+      setActiveSubmit(true);
+      return;
+    }
+    if (formData.leaveEndDate < formData.leaveStartDate) {
+      alert("Leave end date must be on or after the start date.");
+      setActiveSubmit(true);
+      return;
+    }
+    if (selectedMeta?.requires_address && !formData.addressDuringLeave?.trim()) {
+      alert(`${selectedMeta.name} requires an address during leave.`);
+      setActiveSubmit(true);
+      return;
+    }
+    if (selectedMeta?.requires_proof && !leavePdfFile) {
+      alert(`${selectedMeta.name} requires a supporting document (PDF or image).`);
       setActiveSubmit(true);
       return;
     }
 
-    if (
-      stationLeave &&
-      (!formData.stationLeaveStartDate ||
-        !formData.stationLeaveEndDate ||
-        !formData.stationLeaveAddress)
-    ) {
-      alert(
-        "Station leave details are required when station leave is checked!",
-      );
-      setActiveSubmit(true);
-      return;
-    }
-
-    // Ensure number of leaves are non-negative integers
-    const leaveFields = [
-      "casualLeave",
-      "vacationLeave",
-      "earnedLeave",
-      "commutedLeave",
-      "specialCasualLeave",
-      "restrictedHoliday",
-      "halfPayLeave",
-      "maternityLeave",
-      "childCareLeave",
-      "paternityLeave",
-    ];
-
-    for (const field of leaveFields) {
-      if (!/^\d+$/.test(formData[field])) {
-        alert(
-          `"${field.replace(/([A-Z])/g, " $1")}" must be a non-negative integer!`,
-        );
-        setActiveSubmit(true);
-        return;
-      }
-    }
-
-    // Prepare form data for submission
     const finalFormData = new FormData();
     finalFormData.append("name", details.name);
     finalFormData.append("designation", details.last_selected_role);
-    finalFormData.append("pfno", details.pfno);
-    finalFormData.append("department", details.department);
-    finalFormData.append("date", today);
+    const pfRaw = details.pfno;
+    if (pfRaw !== undefined && pfRaw !== null && `${pfRaw}`.trim() !== "") {
+      const n = Number.parseInt(String(pfRaw).trim(), 10);
+      if (Number.isFinite(n)) {
+        finalFormData.append("pfNo", String(n));
+        finalFormData.append("employeeId", String(n));
+      }
+    }
+    finalFormData.append("departmentInfo", details.department || "");
+    finalFormData.append("submissionDate", today);
+    finalFormData.append("leave_type", String(formData.leave_type));
     finalFormData.append("leaveStartDate", formData.leaveStartDate);
     finalFormData.append("leaveEndDate", formData.leaveEndDate);
-    finalFormData.append("purpose", formData.purpose);
-
-    // Append all leave types
-    finalFormData.append("casualLeave", formData.casualLeave);
-    finalFormData.append("vacationLeave", formData.vacationLeave);
-    finalFormData.append("earnedLeave", formData.earnedLeave);
-    finalFormData.append("commutedLeave", formData.commutedLeave);
-    finalFormData.append("specialCasualLeave", formData.specialCasualLeave);
-    finalFormData.append("restrictedHoliday", formData.restrictedHoliday);
-    finalFormData.append("halfPayLeave", formData.halfPayLeave);
-    finalFormData.append("maternityLeave", formData.maternityLeave);
-    finalFormData.append("childCareLeave", formData.childCareLeave);
-    finalFormData.append("paternityLeave", formData.paternityLeave);
-
-    finalFormData.append("remarks", formData.remarks || "N/A");
-    finalFormData.append("stationLeave", stationLeave);
-    finalFormData.append(
-      "stationLeaveStartDate",
-      formData.stationLeaveStartDate,
-    );
-    finalFormData.append("stationLeaveEndDate", formData.stationLeaveEndDate);
-    finalFormData.append("stationLeaveAddress", formData.stationLeaveAddress);
-
-    // Only append if selected
-    if (academicResponsibility) {
-      finalFormData.append("academicResponsibility", academicResponsibility.id);
-      finalFormData.append(
-        "academicResponsibility_designation",
-        academicResponsibility.designation,
-      );
+    finalFormData.append("start_half", formData.start_half ? "true" : "false");
+    finalFormData.append("end_half", formData.end_half ? "true" : "false");
+    finalFormData.append("purposeOfLeave", (formData.purpose || "").slice(0, 40));
+    finalFormData.append("leave_info", formData.leave_info || "");
+    finalFormData.append("addressDuringLeave", formData.addressDuringLeave || "");
+    
+    if (substituteNominations.length > 0) {
+      finalFormData.append("substitute_nominations", JSON.stringify(substituteNominations));
     }
 
-    if (administrativeResponsibility) {
-      finalFormData.append(
-        "administrativeResponsibility",
-        administrativeResponsibility.id,
-      );
-      finalFormData.append(
-        "administrativeResponsibility_designation",
-        administrativeResponsibility.designation,
-      );
-    }
-
-    finalFormData.append("forwardTo", forwardTo.id);
-    finalFormData.append("forwardTo_designation", forwardTo.designation);
-
-    if (attachedPdf) {
-      finalFormData.append("attached_pdf", attachedPdf);
+    if (leavePdfFile) {
+      finalFormData.append("leave_pdf_file", leavePdfFile);
     }
 
     try {
-      const token = localStorage.getItem("authToken");
-      const response = await fetch(submit_leave_form, {
-        method: "POST",
-        headers: {
-          Authorization: `Token ${token}`,
-        },
-        body: finalFormData,
-      });
-
-      if (!response.ok) {
-        setActiveSubmit(true);
-        throw new Error(`Error submitting form: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      alert("Form submitted successfully!");
-      setActiveSubmit(true);
+      await submitLeaveForm(finalFormData);
+      const isDirector = details.last_selected_role?.toLowerCase() === "director";
+      const successMsg = isDirector
+        ? "Leave application submitted. It is sent for self-sanction."
+        : "Leave application submitted. It is sent to your HOD for approval.";
+      alert(successMsg);
       navigate("/hr/leave/leaverequests");
     } catch (err) {
-      console.error("Form submission failed:", err.message);
-      alert("Form submission failed. Please try again.");
+      const msg =
+        typeof err?.message === "string" ? err.message : "Submission failed.";
+      setError(msg);
+      alert(msg);
+    } finally {
       setActiveSubmit(true);
     }
   };
 
-  return (
-    <Box
-      style={{
-        padding: "25px 30px",
-        margin: "20px 5px",
-        border: "1px solid #e0e0e0",
-        borderRadius: "8px",
-      }}
-    >
-      {/* Section 1: Your Details */}
-      <Title order={4}>Your Details</Title>
-      <br />
-      <Grid gutter="lg" style={{ padding: "0 20px" }}>
-        <Grid.Col span={12}>
-          {loading && <p>Loading your details...</p>}
-          {error && <p style={{ color: "red" }}>{error}</p>}
-        </Grid.Col>
+  const typeSelectData = leaveTypes.map((t) => ({
+    value: String(t.id),
+    label: t.name,
+  }));
 
+  return (
+    <Box style={{ padding: "25px 30px", margin: "20px 5px" }}>
+      <Title order={4} mb="md">
+        Leave application
+      </Title>
+      <Text size="sm" c="dimmed" mb="md">
+        Uses the same leave types and day rules as the institute leave module
+        (including half-days, proof, and address requirements).
+      </Text>
+
+      {loading && <p>Loading...</p>}
+      {error && (
+        <Alert color="red" mb="md" title="Error">
+          {error}
+        </Alert>
+      )}
+
+      {balanceSummary && (
+        <Alert color="blue" mb="md" title="Your HR leave balances (summary)">
+          <Text size="xs">
+            Casual: {balanceSummary.casual_leave?.balance ?? "—"} &nbsp;|&nbsp;
+            Earned: {balanceSummary.earned_leave?.balance ?? "—"} &nbsp;|&nbsp;
+            Special casual:{" "}
+            {balanceSummary.special_casual_leave?.balance ?? "—"}
+          </Text>
+        </Alert>
+      )}
+
+      <Grid mb="md">
         <Grid.Col span={6}>
-          <TextInput
-            label="Name"
-            value={details.name || "N/A"}
-            disabled
-            sx={{ maxWidth: "300px", color: "black" }}
-          />
+          <TextInput label="Name" value={details.name} disabled />
         </Grid.Col>
         <Grid.Col span={6}>
           <TextInput
             label="Designation"
-            value={details.last_selected_role || "N/A"}
+            value={details.last_selected_role}
             disabled
-            sx={{ maxWidth: "300px" }}
-          />
-        </Grid.Col>
-        <Grid.Col span={6}>
-          <TextInput
-            label="Personal File Number"
-            value={details.pfno || "N/A"}
-            disabled
-            sx={{ maxWidth: "300px" }}
-          />
-        </Grid.Col>
-        <Grid.Col span={6}>
-          <TextInput
-            label="Department/Discipline"
-            value={details.department || "N/A"}
-            disabled
-            sx={{ maxWidth: "300px" }}
           />
         </Grid.Col>
 
-        <Grid.Col span={6}>
-          <TextInput
-            label="Date"
-            type="date"
-            defaultValue={today}
+        <Grid.Col span={12}>
+          <Select
+            label="Type of leave"
+            placeholder="Select leave type"
             required
-            disabled
-            style={{ maxWidth: "300px" }}
+            data={typeSelectData}
+            value={formData.leave_type || null}
+            onChange={(v) =>
+              setFormData({ ...formData, leave_type: v || "" })
+            }
+            searchable
           />
         </Grid.Col>
-      </Grid>
-      <p style={{ color: "#023f60" }}>
-        Note: &nbsp;If your details are not correct, please contact HR Admin.
-      </p>
 
-      {/* Section 2: Leave Details */}
-      <br />
-      <Title order={4} sx={{ marginBottom: "20px" }}>
-        Leave Details
-      </Title>
-      <br />
+        {selectedMeta && (
+          <Grid.Col span={12}>
+            <Text size="sm" c="dimmed">
+              {selectedMeta.requires_proof ? "Requires supporting document. " : ""}
+              {selectedMeta.requires_address ? "Requires address during leave. " : ""}
+              Max {selectedMeta.max_in_year ?? "—"} per year (catalog).
+            </Text>
+          </Grid.Col>
+        )}
 
-      <Grid gutter="lg" style={{ padding: "0 20px" }}>
-        <Grid.Col span={4}>
+        <Grid.Col span={6}>
           <TextInput
-            label="Leave Start Date"
-            name="leaveStartDate"
+            label="Leave from"
+            type="date"
+            required
             value={formData.leaveStartDate}
-            onChange={handleInputChange}
-            required
-            type="date"
-            style={{ maxWidth: "300px" }}
+            onChange={(e) =>
+              setFormData({ ...formData, leaveStartDate: e.target.value })
+            }
           />
         </Grid.Col>
-        <Grid.Col span={4}>
+        <Grid.Col span={6}>
           <TextInput
-            label="Leave End Date"
-            name="leaveEndDate"
+            label="Leave to"
+            type="date"
+            required
             value={formData.leaveEndDate}
-            onChange={handleInputChange}
-            required
-            type="date"
-            style={{ maxWidth: "300px" }}
+            onChange={(e) =>
+              setFormData({ ...formData, leaveEndDate: e.target.value })
+            }
           />
         </Grid.Col>
+
+        <Grid.Col span={6}>
+          <Checkbox
+            label="Half day at start"
+            checked={formData.start_half}
+            onChange={(e) =>
+              setFormData({ ...formData, start_half: e.currentTarget.checked })
+            }
+          />
+        </Grid.Col>
+        <Grid.Col span={6}>
+          <Checkbox
+            label="Half day at end"
+            checked={formData.end_half}
+            onChange={(e) =>
+              setFormData({ ...formData, end_half: e.currentTarget.checked })
+            }
+          />
+        </Grid.Col>
+
         <Grid.Col span={12}>
           <Textarea
-            label="Purpose of Leave"
-            name="purpose"
+            label="Purpose of leave (max 40 characters)"
+            required
+            maxLength={40}
+            autosize
+            minRows={2}
             value={formData.purpose}
-            onChange={handleInputChange}
-            placeholder="Enter purpose of leave"
-            required
-            style={{ maxWidth: "800px" }}
-          />
-        </Grid.Col>
-
-        {/* Number of Leaves Fields */}
-        <Grid.Col span={12}>
-          <p style={{ color: "#023f60" }}>
-            Note: &nbsp; Please check your leave balance before applying to
-            avoid rejection
-          </p>
-        </Grid.Col>
-
-        {/* Original leave types */}
-        <Grid.Col span={4}>
-          <TextInput
-            label="No. of Casual Leave"
-            name="casualLeave"
-            value={formData.casualLeave}
-            onChange={handleInputChange}
-            type="number"
-            placeholder="0"
-            style={{ maxWidth: "300px" }}
-          />
-        </Grid.Col>
-        <Grid.Col span={4}>
-          <TextInput
-            label="No. of Vacation Leave"
-            name="vacationLeave"
-            value={formData.vacationLeave}
-            onChange={handleInputChange}
-            type="number"
-            placeholder="0"
-            style={{ maxWidth: "300px" }}
-          />
-        </Grid.Col>
-        <Grid.Col span={4}>
-          <TextInput
-            label="No. of Earned Leave"
-            name="earnedLeave"
-            value={formData.earnedLeave}
-            onChange={handleInputChange}
-            type="number"
-            placeholder="0"
-            style={{ maxWidth: "300px" }}
-          />
-        </Grid.Col>
-        <Grid.Col span={4}>
-          <TextInput
-            label="No. of Commuted Leave"
-            name="commutedLeave"
-            value={formData.commutedLeave}
-            onChange={handleInputChange}
-            type="number"
-            placeholder="0"
-            style={{ maxWidth: "300px" }}
-          />
-        </Grid.Col>
-        <Grid.Col span={4}>
-          <TextInput
-            label="No. of Special Casual Leave"
-            name="specialCasualLeave"
-            value={formData.specialCasualLeave}
-            onChange={handleInputChange}
-            type="number"
-            placeholder="0"
-            style={{ maxWidth: "300px" }}
-          />
-        </Grid.Col>
-        <Grid.Col span={4}>
-          <TextInput
-            label="No. of Restricted Holiday"
-            name="restrictedHoliday"
-            value={formData.restrictedHoliday}
-            onChange={handleInputChange}
-            type="number"
-            placeholder="0"
-            style={{ maxWidth: "300px" }}
-          />
-        </Grid.Col>
-
-        {/* New leave types */}
-        <Grid.Col span={4}>
-          <TextInput
-            label="No. of Half Pay Leave"
-            name="halfPayLeave"
-            value={formData.halfPayLeave}
-            onChange={handleInputChange}
-            type="number"
-            placeholder="0"
-            style={{ maxWidth: "300px" }}
-          />
-        </Grid.Col>
-        <Grid.Col span={4}>
-          <TextInput
-            label="No. of Maternity Leave"
-            name="maternityLeave"
-            value={formData.maternityLeave}
-            onChange={handleInputChange}
-            type="number"
-            placeholder="0"
-            style={{ maxWidth: "300px" }}
-          />
-        </Grid.Col>
-        <Grid.Col span={4}>
-          <TextInput
-            label="No. of Child Care Leave"
-            name="childCareLeave"
-            value={formData.childCareLeave}
-            onChange={handleInputChange}
-            type="number"
-            placeholder="0"
-            style={{ maxWidth: "300px" }}
-          />
-        </Grid.Col>
-        <Grid.Col span={4}>
-          <TextInput
-            label="No. of Paternity Leave"
-            name="paternityLeave"
-            value={formData.paternityLeave}
-            onChange={handleInputChange}
-            type="number"
-            placeholder="0"
-            style={{ maxWidth: "300px" }}
+            onChange={(e) =>
+              setFormData({ ...formData, purpose: e.target.value })
+            }
           />
         </Grid.Col>
 
         <Grid.Col span={12}>
           <Textarea
-            label="Remarks (optional)"
-            name="remarks"
-            value={formData.remarks}
-            onChange={handleInputChange}
-            placeholder="Enter remarks if any"
-            style={{ maxWidth: "800px" }}
+            label="Additional information (e.g. station leave details)"
+            autosize
+            minRows={2}
+            value={formData.leave_info}
+            onChange={(e) =>
+              setFormData({ ...formData, leave_info: e.target.value })
+            }
           />
         </Grid.Col>
 
-        <Grid.Col span={12}>
-          <TextInput
-            label="Attach Supporting Document (PDF, optional)"
-            type="file"
-            accept=".pdf"
-            onChange={handleFileChange}
-            style={{ maxWidth: "350px" }}
-          />
-        </Grid.Col>
-      </Grid>
-
-      {/* Subsection: Station Leave */}
-      <br />
-      <Checkbox
-        label="Do you want to take station leave?"
-        checked={stationLeave}
-        onChange={(e) => setStationLeave(e.currentTarget.checked)}
-        stule={{ margin: "20px 0" }}
-      />
-      <br />
-      {stationLeave && (
-        <Grid gutter="lg" style={{ padding: "0 20px" }}>
-          <Grid.Col span={4}>
-            <TextInput
-              label="Station Leave Start Date"
-              name="stationLeaveStartDate"
-              value={formData.stationLeaveStartDate}
-              onChange={handleInputChange}
-              type="date"
-              required={stationLeave}
-              style={{ maxWidth: "300px" }}
-            />
-          </Grid.Col>
-          <Grid.Col span={4}>
-            <TextInput
-              label="Station Leave End Date"
-              name="stationLeaveEndDate"
-              value={formData.stationLeaveEndDate}
-              onChange={handleInputChange}
-              type="date"
-              required={stationLeave}
-              style={{ maxWidth: "300px" }}
-            />
-          </Grid.Col>
+        {selectedMeta?.requires_address && (
           <Grid.Col span={12}>
             <Textarea
-              label="Address During Station Leave"
-              name="stationLeaveAddress"
-              value={formData.stationLeaveAddress}
-              onChange={handleInputChange}
-              placeholder="Enter address"
-              required={stationLeave}
-              style={{ maxWidth: "800px" }}
+              label="Address during leave / out of station address"
+              required
+              autosize
+              minRows={2}
+              value={formData.addressDuringLeave}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  addressDuringLeave: e.target.value,
+                })
+              }
             />
           </Grid.Col>
-        </Grid>
-      )}
+        )}
 
-      {/* Section 3: Responsibility Transfer (optional) */}
-      <br />
-      <Title order={4} sx={{ marginBottom: "20px" }}>
-        Responsibility Transfer During Period (optional)
-      </Title>
-      <Grid gutter="lg" style={{ padding: "0 20px" }}>
-        <Grid.Col span={6}>
-          <Title order={6} style={{ marginBottom: "10px", marginTop: "20px" }}>
-            Academic Responsibility (optional)
-          </Title>
-          <SearchAndSelectUser
-            onUserSelect={(user) => setAcademicResponsibility(user)}
+        <Grid.Col span={12}>
+          <SubstituteNomination
+            nominations={substituteNominations}
+            onNominationsChange={setSubstituteNominations}
+            currentUsername={details.username}
+            disabled={!activeSubmit}
           />
         </Grid.Col>
 
-        <Grid.Col span={6}>
-          <Title order={6} style={{ marginBottom: "10px", marginTop: "20px" }}>
-            Administrative Responsibility (optional)
-          </Title>
-          <SearchAndSelectUser
-            onUserSelect={(user) => setAdministrativeResponsibility(user)}
-          />
-        </Grid.Col>
+        {selectedMeta?.requires_proof && (
+          <Grid.Col span={12}>
+            <FileInput
+              label="Supporting document"
+              placeholder="Upload file"
+              accept="application/pdf,image/*"
+              value={leavePdfFile}
+              onChange={setLeavePdfFile}
+              required
+            />
+          </Grid.Col>
+        )}
       </Grid>
 
-      {/* Section 4: Forward Application */}
-      <br />
-      <Title order={4} style={{ marginBottom: "10px" }}>
-        Forward Application
-      </Title>
-      <SearchAndSelectUser onUserSelect={(user) => setForwardTo(user)} />
-
-      {/* Submit Button */}
-      <Group position="center" mt="xl">
-        <Button
-          onClick={handleSubmit}
-          sx={{
-            backgroundColor: "#15abff",
-            "&:hover": { backgroundColor: "#0e8ad8" },
-          }}
-          disabled={!activeSubmit}
-        >
-          Submit
-        </Button>
-      </Group>
+      <Button onClick={handleSubmit} disabled={!activeSubmit}>
+        Submit
+      </Button>
     </Box>
   );
-};
+}
 
 export default LeaveForm;

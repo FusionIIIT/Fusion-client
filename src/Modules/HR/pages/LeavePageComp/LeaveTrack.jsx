@@ -1,71 +1,74 @@
 import React, { useEffect, useState } from "react";
-
-import { get_form_track } from "../../../../routes/hr/index"; // Ensure this is the correct import path
 import { useParams } from "react-router-dom";
-import LoadingComponent from "../../components/Loading"; // Ensure this is the correct import path
+import LoadingComponent from "../../components/common/Loading";
 import TrackTable from "../../components/tables/TrackTable";
+import { getLeaveTrack, leaveWorkflowDisplayLabel } from "../../services/api";
 
 function LeaveTrack() {
   const { id } = useParams();
-  const [trackData, setTrackData] = useState([]); // Correct useState syntax
-  const [loading, setLoading] = useState(true); // Add loading state
   const admin = new URLSearchParams(window.location.search).get("admin");
   const [exampleItems, setExampleItems] = useState([]);
+  const [trackData, setTrackData] = useState([]);
+  const [workflowStatusDisplay, setWorkflowStatusDisplay] = useState("");
+  const [workflowHistory, setWorkflowHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const currentPath = window.location.pathname;
+
   useEffect(() => {
     if (admin) {
       setExampleItems([
         { title: "Home", path: "/dashboard" },
         { title: "Human Resources", path: "/hr" },
         { title: "Admin Leave Management", path: "/hr/admin_leave" },
-
         { title: "Track", path: `${currentPath}?admin=true` },
-        // { title: "Handle Leave", path: `/hr/leave/handle/${id}` },
       ]);
     } else {
       setExampleItems([
         { title: "Home", path: "/dashboard" },
         { title: "Human Resources", path: "/hr" },
         { title: "Leave Management", path: "/hr/leave" },
-        { title: "Track", path: `${currentPath}` },
+        { title: "Track", path: currentPath },
       ]);
     }
-  }, [admin]);
+  }, [admin, currentPath]);
 
-  const currentPath = window.location.pathname;
-
-  console.log("checking");
   useEffect(() => {
-    const fetchLeaveTrack = async () => {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        console.error("No authentication token found!");
-        setLoading(false);
-        return;
-      }
+    let cancelled = false;
+    (async () => {
       try {
-        const response = await fetch(`${get_form_track(id)}`, {
-          headers: { Authorization: `Token ${token}` },
-        });
-        const data = await response.json();
-        setTrackData(data.file_history); // Set fetched data
-        setLoading(false); // Set loading to false once data is fetched
-      } catch (error) {
-        console.error("Failed to fetch leave Track:", error);
-        setLoading(false); // Set loading to false if there’s an error
+        const data = await getLeaveTrack(id);
+        if (cancelled) return;
+        setTrackData(data.file_history ?? []);
+        const ws = data.workflow_status;
+        setWorkflowStatusDisplay(ws ? leaveWorkflowDisplayLabel(ws) : "");
+        setWorkflowHistory(data.workflow_history ?? []);
+      } catch {
+        if (!cancelled) {
+          setTrackData([]);
+          setWorkflowStatusDisplay("");
+          setWorkflowHistory([]);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
+    })();
+    return () => {
+      cancelled = true;
     };
-    fetchLeaveTrack(); // Ensure function is called
-  }, []); // Adding empty dependency array to run only once
+  }, [id]);
 
   if (loading) {
-    return <LoadingComponent loadingMsg="Fetching Leave Track..." />;
+    return <LoadingComponent />;
   }
 
   return (
     <TrackTable
-      title="Leave Track"
+      title="Leave request track"
       exampleItems={exampleItems}
       data={trackData}
+      workflowStatusDisplay={workflowStatusDisplay}
+      workflowHistory={workflowHistory}
     />
   );
 }

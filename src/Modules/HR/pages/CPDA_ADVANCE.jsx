@@ -1,14 +1,20 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Tabs, Button, Flex, Text, Loader, Container } from "@mantine/core";
 import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
-import { useNavigate, useLocation } from "react-router-dom";
-import CustomBreadcrumbs from "../../../components/Breadcrumbs";
-import classes from "./CPDA_ADVANCEPage.module.css";
-import Cpda_ADVANCEForm from "./CPDA_ADVANCEPageComp/CPDA_ADVANCEForm";
-import Cpda_ADVANCERequests from "./CPDA_ADVANCEPageComp/Cpda_ADVANCERequests";
-import Cpda_ADVANCEInbox from "./CPDA_ADVANCEPageComp/Cpda_ADVANCEInbox";
-import Cpda_ADVANCEArchive from "./CPDA_ADVANCEPageComp/Cpda_ADVANCEArchive";
-import HrBreadcrumbs from "../components/HrBreadcrumbs";
+import {
+  useNavigate,
+  useLocation,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import classes from "../styles/CPDA_ADVANCEPage.module.css";
+import CpdaAdvanceForm from "./CPDA_ADVANCEPageComp/CPDA_ADVANCEForm";
+import CpdaAdvanceRequests from "./CPDA_ADVANCEPageComp/Cpda_ADVANCERequests";
+import CpdaAdvanceInbox from "./CPDA_ADVANCEPageComp/Cpda_ADVANCEInbox";
+import CpdaAdvanceArchive from "./CPDA_ADVANCEPageComp/Cpda_ADVANCEArchive";
+import HrBreadcrumbs from "../components/common/HrBreadcrumbs";
+import CPDABalanceButton from "../components/common/CPDABalanceButton";
 
 // Define paths for each tab
 const tabItems = [
@@ -25,7 +31,7 @@ function CPDA_ADVANCE() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  //scroll to top on page load
+  // scroll to top on page load
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -81,6 +87,7 @@ function CPDA_ADVANCE() {
   return (
     <>
       <HrBreadcrumbs items={exampleItems} />
+      <CPDABalanceButton />
 
       <Flex justify="flex-start" align="center" mt="lg">
         <Button
@@ -135,10 +142,13 @@ function CPDA_ADVANCE() {
         </Container>
       ) : (
         <div className="fullWidthGrid">
-          {activeTab === "0" && <Cpda_ADVANCEForm />}
-          {activeTab === "1" && <Cpda_ADVANCERequests />}
-          {activeTab === "2" && <Cpda_ADVANCEInbox />}
-          {activeTab === "3" && <Cpda_ADVANCEArchive />}
+          <Routes>
+            <Route path="adv_form" element={<CpdaAdvanceForm />} />
+            <Route path="adv_requests" element={<CpdaAdvanceRequests />} />
+            <Route path="adv_inbox" element={<CpdaAdvanceInbox />} />
+            <Route path="adv_archive" element={<CpdaAdvanceArchive />} />
+            <Route path="*" element={<Navigate to="adv_form" replace />} />
+          </Routes>
         </div>
       )}
     </>

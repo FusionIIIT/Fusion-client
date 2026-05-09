@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Button } from "@mantine/core";
 import {
   PaperPlaneRight,
-  CheckCircle,
   User,
   Tag,
   IdentificationCard,
@@ -11,21 +10,23 @@ import {
   CurrencyDollar,
   FileText,
 } from "@phosphor-icons/react";
-import { useDispatch, useSelector } from "react-redux";
-import { updateForm, resetForm } from "../../../../redux/formSlice";
-import {
-  search_employee,
-  get_my_details,
-  submit_cpda_adv_form,
-} from "../../../../routes/hr";
-import "./CPDA_ADVANCEForm.css";
+import { get_my_details } from "../../../../routes/hr";
+import "../../styles/CPDA_ADVANCEForm.css";
 
-const CPDA_ADVANCEForm = () => {
-  const formData = useSelector((state) => state.form);
-  const dispatch = useDispatch();
-  const [verifiedReceiver, setVerifiedReceiver] = useState(false);
+function CPDA_ADVANCEForm() {
+  const [formData, setFormData] = useState({
+    name: "",
+    designation: "",
+    pfNo: "",
+    purpose: "",
+    amountRequired: "",
+    submissionDate: "",
+    advanceDueAdjustment: "",
+    balanceAvailable: "",
+    advanceAmountPDA: "",
+    amountCheckedInPDA: "",
+  });
 
-  // set formData to initial state
   useEffect(() => {
     const fetchMyDetails = async () => {
       try {
@@ -34,83 +35,34 @@ const CPDA_ADVANCEForm = () => {
           console.error("No authentication token found!");
           return;
         }
-
         const response = await fetch(get_my_details, {
           headers: { Authorization: `Token ${token}` },
         });
-
         if (!response.ok) {
           alert("Failed to fetch user details. Please try again later.");
           throw new Error("Network response was not ok");
         }
-
         const fetchedData = await response.json();
-        dispatch(updateForm({ name: "name", value: fetchedData.username }));
-        dispatch(
-          updateForm({ name: "designation", value: fetchedData.designation }),
-        );
+        setFormData((prev) => ({
+          ...prev,
+          name: fetchedData.username || "",
+          designation: fetchedData.designation || "",
+        }));
       } catch (error) {
         console.error("Failed to fetch user details:", error);
       }
     };
     fetchMyDetails();
   }, []);
-  const handleCheck = async (username_reciever) => {
-    try {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        console.error("No authentication token found!");
-        return;
-      }
-
-      const response = await fetch(
-        `${search_employee}?search=${formData.username_reciever}`,
-        {
-          headers: { Authorization: `Token ${token}` },
-        },
-      );
-
-      if (!response.ok) {
-        alert("Receiver not found. Please check the username and try again.");
-        throw new Error("Network response was not ok");
-      }
-
-      const fetchedReceiverData = await response.json();
-
-      dispatch(
-        updateForm({
-          name: "username_reciever",
-          value: formData.username_reciever,
-        }),
-      );
-      dispatch(
-        updateForm({
-          name: "designation_reciever",
-          value: fetchedReceiverData.designation,
-        }),
-      );
-      setVerifiedReceiver(true);
-      alert("Receiver verified successfully!");
-    } catch (error) {
-      console.error("Failed to fetch receiver data:", error);
-    }
-  };
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-    dispatch(updateForm({ name, value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    // Ensure receiver is verified
-    if (!verifiedReceiver) {
-      alert("Please verify the receiver's designation before submitting.");
-      return;
-    }
-
-    // Check required fields and alert if any are blank
     const requiredFields = [
       { name: "name", label: "Name" },
       { name: "designation", label: "Designation" },
@@ -120,14 +72,15 @@ const CPDA_ADVANCEForm = () => {
       { name: "submissionDate", label: "Submission Date" },
     ];
 
-    for (let field of requiredFields) {
-      if (!formData[field.name] || formData[field.name] === "") {
-        alert(`${field.label} is required.`);
-        return;
-      }
+    const missingField = requiredFields.find(
+      (field) => !formData[field.name] || formData[field.name] === "",
+    );
+
+    if (missingField) {
+      alert(`${missingField.label} is required.`);
+      return;
     }
 
-    // Convert string fields to numbers if necessary and create processed data
     const processedData = {
       name: formData.name,
       designation: formData.designation,
@@ -149,9 +102,6 @@ const CPDA_ADVANCEForm = () => {
         : null,
     };
 
-    console.log(processedData);
-
-    // Submit form data
     const submitForm = async () => {
       try {
         const token = localStorage.getItem("authToken");
@@ -159,72 +109,113 @@ const CPDA_ADVANCEForm = () => {
           console.error("No authentication token found!");
           return;
         }
-
-        const response = await fetch(
-          `${submit_cpda_adv_form}/?username_reciever=${formData.username_reciever}`,
-          {
-            // Note the trailing slash
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Token ${token}`,
-            },
-            body: JSON.stringify(processedData),
+        const response = await fetch("/api/hr/cpdaadv/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Token ${token}`,
           },
-        );
-
+          body: JSON.stringify([
+            processedData,
+            {
+              uploader_designation: formData.designation,
+            },
+          ]),
+        });
         if (!response.ok) {
-          alert("Failed to submit form. Please try again later.");
-          throw new Error("Network response was not ok");
+          const errText = await response.text();
+          let message = errText || `Request failed (${response.status})`;
+          try {
+            const parsed = JSON.parse(errText);
+            if (parsed && typeof parsed === "object") {
+              if (parsed.detail) message = String(parsed.detail);
+              else if (parsed.non_field_errors)
+                message = String(parsed.non_field_errors);
+              else message = JSON.stringify(parsed);
+            }
+          } catch {
+            /* use raw text */
+          }
+          console.error(
+            "CPDA Advance submit failed:",
+            response.status,
+            message,
+          );
+          alert(message);
+          throw new Error(message);
         }
-
-        alert("CPDA Advance form submitted successfully!");
-        dispatch(resetForm());
+        alert(
+          "CPDA Advance submitted. It has been routed to your department HOD for verification.",
+        );
+        setFormData({
+          name: formData.name,
+          designation: formData.designation,
+          pfNo: "",
+          purpose: "",
+          amountRequired: "",
+          submissionDate: "",
+          advanceDueAdjustment: "",
+          balanceAvailable: "",
+          advanceAmountPDA: "",
+          amountCheckedInPDA: "",
+        });
       } catch (error) {
         console.error("Failed to submit CPDA Advance form:", error);
       }
     };
     submitForm();
-    dispatch(resetForm());
   };
 
   return (
     <div className="CPDA_ADVANCEForm_container">
       <form onSubmit={handleSubmit}>
+        <p
+          style={{
+            margin: "0 0 16px 8px",
+            color: "#444",
+            maxWidth: 720,
+            lineHeight: 1.5,
+          }}
+        >
+          Your application is sent automatically to the Head of Department (HOD)
+          for your academic department, based on your profile. Ensure your
+          department and HOD designation (e.g. HOD (CSE)) are configured in the
+          system.
+        </p>
         {/* Row 1: Name and Designation */}
         <div className="grid-row">
           <div className="grid-col">
             <label className="input-label" htmlFor="name">
               Name
+              <div className="input-wrapper">
+                <User size={20} aria-hidden="true" />
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  className="input"
+                  disabled
+                />
+              </div>
             </label>
-            <div className="input-wrapper">
-              <User size={20} />
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name} // Auto-fetched from backend
-                className="input"
-                disabled
-              />
-            </div>
           </div>
 
           <div className="grid-col">
             <label className="input-label" htmlFor="designation">
               Designation
+              <div className="input-wrapper">
+                <Tag size={20} aria-hidden="true" />
+                <input
+                  type="text"
+                  id="designation"
+                  name="designation"
+                  value={formData.designation}
+                  className="input"
+                  disabled
+                />
+              </div>
             </label>
-            <div className="input-wrapper">
-              <Tag size={20} />
-              <input
-                type="text"
-                id="designation"
-                name="designation"
-                value={formData.designation}
-                className="input"
-                disabled
-              />
-            </div>
           </div>
         </div>
 
@@ -233,95 +224,103 @@ const CPDA_ADVANCEForm = () => {
           <div className="grid-col">
             <label className="input-label" htmlFor="amountRequired">
               Amount Required
+              <div className="input-wrapper">
+                <CurrencyDollar size={20} aria-hidden="true" />
+                <input
+                  type="number"
+                  id="amountRequired"
+                  name="amountRequired"
+                  placeholder="Amount Required"
+                  value={formData.amountRequired}
+                  onChange={handleChange}
+                  className="input"
+                  required
+                />
+              </div>
             </label>
-            <div className="input-wrapper">
-              <CurrencyDollar size={20} />
-              <input
-                type="number"
-                id="amountRequired"
-                name="amountRequired"
-                placeholder="Amount Required"
-                value={formData.amountRequired}
-                onChange={handleChange}
-                className="input"
-                required
-              />
-            </div>
           </div>
 
           <div className="grid-col">
             <label className="input-label" htmlFor="submissionDate">
               Date
+              <div className="input-wrapper">
+                <Calendar size={20} aria-hidden="true" />
+                <input
+                  type="date"
+                  id="submissionDate"
+                  name="submissionDate"
+                  value={formData.submissionDate}
+                  onChange={handleChange}
+                  className="input"
+                  required
+                />
+              </div>
             </label>
-            <div className="input-wrapper">
-              <Calendar size={20} />
-              <input
-                type="date"
-                id="submissionDate"
-                name="submissionDate"
-                value={formData.submissionDate}
-                onChange={handleChange}
-                className="input"
-                required
-              />
-            </div>
           </div>
         </div>
 
-        {/* Row 3: Purpose and PF Number */}
+        {/* Row 3: Purpose, PF Number, Advance Due */}
         <div className="grid-row">
           <div className="grid-col" style={{ flexGrow: 2 }}>
             <label className="input-label" htmlFor="purpose">
               Purpose
+              <div className="input-wrapper">
+                <ClipboardText size={20} aria-hidden="true" />
+                <select
+                  id="purpose"
+                  name="purpose"
+                  value={formData.purpose || ""}
+                  onChange={handleChange}
+                  className="select"
+                  style={{ width: "60%", border: "none", outline: "none", paddingLeft: "10px", backgroundColor: "transparent", color: "inherit", fontSize: "16px" }}
+                  required
+                >
+                  <option value="" disabled>Select Expense Category</option>
+                  <option value="Books">Books</option>
+                  <option value="Contingency">Contingency</option>
+                  <option value="Conferences/Workshops">Conferences/Workshops</option>
+                  <option value="Software">Software</option>
+                  <option value="Equipment/Hardware">Equipment/Hardware</option>
+                  <option value="Others">Others</option>
+                </select>
+              </div>
             </label>
-            <div className="input-wrapper">
-              <ClipboardText size={20} />
-              <input
-                type="text"
-                id="purpose"
-                name="purpose"
-                placeholder="Purpose"
-                value={formData.purpose}
-                onChange={handleChange}
-                className="input"
-                required
-              />
-            </div>
           </div>
 
           <div className="grid-col">
             <label className="input-label" htmlFor="pfNo">
               PF Number
+              <div className="input-wrapper">
+                <IdentificationCard size={20} aria-hidden="true" />
+                <input
+                  type="text"
+                  id="pfNo"
+                  name="pfNo"
+                  placeholder="XXXXXXXXXXXX"
+                  value={formData.pfNo}
+                  onChange={handleChange}
+                  className="input"
+                />
+              </div>
             </label>
-            <div className="input-wrapper">
-              <IdentificationCard size={20} />
-              <input
-                type="text"
-                id="pfNo"
-                name="pfNo"
-                placeholder="XXXXXXXXXXXX"
-                value={formData.pfNo}
-                onChange={handleChange}
-                className="input"
-              />
-            </div>
           </div>
+
           <div className="grid-col">
             <label className="input-label" htmlFor="advanceDueAdjustment">
               Advance (PDA) due for adjustment (if any)
+              <div className="input-wrapper">
+                <CurrencyDollar size={20} aria-hidden="true" />
+                <input
+                  type="text"
+                  id="advanceDueAdjustment"
+                  name="advanceDueAdjustment"
+                  placeholder="Advance Due"
+                  value={formData.advanceDueAdjustment}
+                  onChange={handleChange}
+                  className="input"
+                />
+              </div>
             </label>
-            <div className="input-wrapper">
-              <CurrencyDollar size={20} />
-              <input
-                type="text"
-                id="advanceDueAdjustment"
-                name="advanceDueAdjustment"
-                placeholder="Advance Due"
-                value={formData.advanceDueAdjustment}
-                onChange={handleChange}
-                className="input"
-              />
-            </div>
           </div>
         </div>
 
@@ -334,35 +333,35 @@ const CPDA_ADVANCEForm = () => {
           <div className="grid-col">
             <label className="input-label" htmlFor="balanceAvailable">
               Balance available as on date
+              <div className="input-wrapper">
+                <CurrencyDollar size={20} aria-hidden="true" />
+                <input
+                  type="number"
+                  id="balanceAvailable"
+                  name="balanceAvailable"
+                  value={formData.balanceAvailable}
+                  onChange={handleChange}
+                  className="input"
+                />
+              </div>
             </label>
-            <div className="input-wrapper">
-              <CurrencyDollar size={20} />
-              <input
-                type="number"
-                id="balanceAvailable"
-                name="balanceAvailable"
-                value={formData.balanceAvailable}
-                onChange={handleChange}
-                className="input"
-              />
-            </div>
           </div>
           <div className="grid-col">
             <label className="input-label" htmlFor="advanceAmountPDA">
               Advance amount entered in PDA Register page no.
+              <div className="input-wrapper">
+                <FileText size={20} aria-hidden="true" />
+                <input
+                  type="number"
+                  id="advanceAmountPDA"
+                  name="advanceAmountPDA"
+                  placeholder="Enter amount"
+                  value={formData.advanceAmountPDA}
+                  onChange={handleChange}
+                  className="input"
+                />
+              </div>
             </label>
-            <div className="input-wrapper">
-              <FileText size={20} />
-              <input
-                type="number"
-                id="advanceAmountPDA"
-                name="advanceAmountPDA"
-                placeholder="Enter amount"
-                value={formData.advanceAmountPDA}
-                onChange={handleChange}
-                className="input"
-              />
-            </div>
           </div>
         </div>
 
@@ -375,57 +374,24 @@ const CPDA_ADVANCEForm = () => {
           <div className="grid-col">
             <label className="input-label" htmlFor="amountCheckedInPDA">
               Entry checked in PDA Register for Rs.
+              <div className="input-wrapper">
+                <FileText size={20} aria-hidden="true" />
+                <input
+                  type="number"
+                  id="amountCheckedInPDA"
+                  name="amountCheckedInPDA"
+                  placeholder="PDA Register Entry"
+                  value={formData.amountCheckedInPDA}
+                  onChange={handleChange}
+                  className="input"
+                  style={{ maxWidth: "50%" }}
+                />
+              </div>
             </label>
-            <div className="input-wrapper">
-              <FileText size={20} />
-              <input
-                type="number"
-                id="amountCheckedInPDA"
-                name="amountCheckedInPDA"
-                placeholder="PDA Register Entry"
-                value={formData.amountCheckedInPDA}
-                onChange={handleChange}
-                className="input"
-                style={{ maxWidth: "50%" }}
-              />
-            </div>
           </div>
         </div>
 
-        {/* Footer */}
         <div className="footer-section">
-          <div className="input-wrapper">
-            <User size={20} />
-            <input
-              type="text"
-              name="username_reciever"
-              placeholder="Receiver's Username"
-              value={formData.username_reciever}
-              onChange={handleChange}
-              className="username-input"
-              required
-            />
-          </div>
-          <div className="input-wrapper">
-            <Tag size={20} />
-            <input
-              type="text"
-              name="designation_reciever"
-              placeholder="Designation"
-              value={formData.designation_reciever}
-              className="designation-input"
-              required
-              disabled
-            />
-          </div>
-          <Button
-            leftIcon={<CheckCircle size={25} />}
-            style={{ marginLeft: "50px", paddingRight: "15px" }}
-            className="button"
-            onClick={handleCheck}
-          >
-            <CheckCircle size={18} /> &nbsp; Check
-          </Button>
           <Button
             type="submit"
             rightIcon={<PaperPlaneRight size={20} />}
@@ -436,7 +402,6 @@ const CPDA_ADVANCEForm = () => {
               borderRadius: "5px",
             }}
             className="button"
-            disabled={!verifiedReceiver}
           >
             <PaperPlaneRight size={20} /> &nbsp; Submit
           </Button>
@@ -444,6 +409,6 @@ const CPDA_ADVANCEForm = () => {
       </form>
     </div>
   );
-};
+}
 
 export default CPDA_ADVANCEForm;

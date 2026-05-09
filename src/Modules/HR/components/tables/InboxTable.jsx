@@ -1,27 +1,25 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Title } from "@mantine/core";
+import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom"; // Use for navigation
 import { Eye, MapPin } from "@phosphor-icons/react";
-import "./Table.css"; // Ensure this path is correct
+import "../../styles/Table.css"; // Ensure this path is correct
 import { EmptyTable } from "./EmptyTable";
-import LeaveTrackView from "../../pages/LeavePageComp/LeaveTrack";
 
-const InboxTable = ({ title, data, formType }) => {
+function InboxTable({ title, data, formType }) {
   const navigate = useNavigate();
-
-  const headers = ["FileID", "User", "Designation", "Date", "View", "Track"];
 
   const handleViewClick = (id) => {
     const viewUrlMap = {
-      leave: `/hr/leave/file_handler/${id}`,
-      cpda_adv: `/hr/cpda_adv/file_handler/${id}`,
-      ltc: `/hr/ltc/file_handler/${id}`,
-      cpda_claim: `/hr/cpda_claim/file_handler/${id}`,
-      appraisal: `/hr/appraisal/file_handler/${id}`,
+      leave: `/hr/leave/file_handler/${id}`, // Leave has a file handler
+      cpda_adv: `/hr/cpda_adv/view/${id}`,
+      ltc: `/hr/ltc/view/${id}`,
+      cpda_claim: `/hr/cpda_claim/view/${id}`,
+      appraisal: `/hr/appraisal/view/${id}`,
     };
 
     console.log(formType);
-    navigate(viewUrlMap[formType]); // Default to leaveform if formType is not matched
+    navigate(viewUrlMap[formType] || `/hr/FormView/${formType}_track/${id}`); // Fallback
   };
   const handleTrackClick = (id) => {
     console.log(formType);
@@ -45,49 +43,52 @@ const InboxTable = ({ title, data, formType }) => {
       >
         {title}
       </Title>
-      {data.length == 0 && (
+      {data.length === 0 && (
         <EmptyTable
           title="No new Inbox requests found!"
           message="There is no new Inbox request available. Please check back later."
         />
       )}
-      {headers.length > 0 && data.length > 0 ? (
+      {data.length > 0 ? (
         <div className="form-table-container">
           <table className="form-table">
             <thead>
               <tr>
-                {headers.map((header, index) => (
-                  <th key={index} className="table-header">
-                    {header}
-                  </th>
-                ))}
+                {["FileID", "User", "Designation", "Date", "View", "Track"].map(
+                  (header, index) => (
+                    <th key={index} className="table-header">
+                      {header}
+                    </th>
+                  ),
+                )}
               </tr>
             </thead>
             <tbody>
               {data.map((item, index) => (
                 <tr className="table-row" key={index}>
                   <td>{item.id}</td>
-                  <td>{item.sent_by_user}</td>
-                  <td>{item.sent_by_designation}</td>
-                  <td>{item.upload_date}</td>
+                  <td>{item.name}</td>
+                  <td>{item.designation}</td>
+                  <td>{item.submissionDate}</td>
                   <td>
-                    <span
+                    <button
+                      type="button"
                       className="text-link"
-                      // onClick={() => handleViewClick(`/hr/FormView/leaveform`)}
                       onClick={() => handleViewClick(item.id)}
                     >
                       <Eye size={20} />
                       View
-                    </span>
+                    </button>
                   </td>
                   <td>
-                    <span
+                    <button
+                      type="button"
                       className="text-link"
                       onClick={() => handleTrackClick(item.id)}
                     >
                       <MapPin size={20} />
                       Track
-                    </span>
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -95,10 +96,16 @@ const InboxTable = ({ title, data, formType }) => {
           </table>
         </div>
       ) : (
-        <div className="loading-spinner"></div>
+        <div className="loading-spinner" />
       )}
     </div>
   );
-};
+}
 
 export default InboxTable;
+
+InboxTable.propTypes = {
+  title: PropTypes.string.isRequired,
+  data: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+  formType: PropTypes.string.isRequired,
+};

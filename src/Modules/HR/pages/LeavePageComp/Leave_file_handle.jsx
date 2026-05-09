@@ -14,27 +14,36 @@ import {
 } from "@mantine/core";
 import { useNavigate, useParams } from "react-router-dom";
 import { CheckCircle, XCircle, PaperPlaneRight } from "@phosphor-icons/react";
-import HrBreadcrumbs from "../../components/HrBreadcrumbs";
-import LoadingComponent from "../../components/Loading";
+import HrBreadcrumbs from "../../components/common/HrBreadcrumbs";
+import LoadingComponent from "../../components/common/Loading";
 import { EmptyTable } from "../../components/tables/EmptyTable";
-import SearchAndSelectUser from "../../components/SearchAndSelectUser";
+import SearchAndSelectUser from "../../components/common/SearchAndSelectUser";
 import {
-  get_leave_form_by_id,
-  handle_leave_file,
-  download_leave_form_pdf,
-} from "../../../../routes/hr";
+  getLeaveFormById,
+  getEmployeeInitials,
+  getLeaveBalanceForUser,
+  handleLeaveFileAction,
+  downloadLeavePdf,
+  leaveWorkflowDisplayLabel,
+} from "../../services/api";
+import {
+  buildLeaveTypesAppliedRows,
+  buildAllLeaveBalanceRows,
+  leaveBalanceDefaultsHint,
+} from "../../utils/leaveBalanceDisplay";
 // import "./LeaveFileHandle.css";
 
-const LeaveFileHandle = () => {
+function LeaveFileHandle() {
   const { id } = useParams();
   const [fetchedformData, setFetchedFormData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [action, setAction] = useState(null); // "accept", "reject", or "forward"
   const [forwardToUser, setForwardToUser] = useState(null); // Selected user for forwarding
-  const [forwardToDesignation, setForwardToDesignation] = useState(""); // Designation for forwarding [Not used in the API call
   const [fileRemarks, setFileRemarks] = useState(""); // Remarks for the action
   const [submitting, setSubmitting] = useState(false); // Loading state for submission
+  /** ``leave_balance`` object from ``/hr2/leave/balance/?name=`` for the applicant. */
+  const [balanceSummary, setBalanceSummary] = useState(null);
   const navigate = useNavigate();
 
   const exampleItems = [
@@ -46,30 +55,63 @@ const LeaveFileHandle = () => {
 
   useEffect(() => {
     const fetchFormData = async () => {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        console.error("No authentication token found!");
-        setError("Authentication token is missing.");
-        setLoading(false);
-        return;
-      }
-
       try {
-        const response = await fetch(`${get_leave_form_by_id}/${id}`, {
-          headers: { Authorization: `Token ${token}` },
-        });
+        const data = await getLeaveFormById(id);
+        // API returns form fields directly (not wrapped in leave_form)
+        const raw = data.leave_form || data;
 
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
+        let applicantBalances = null;
+        const uname = raw.created_by_username;
+        if (uname) {
+          try {
+            const bal = await getLeaveBalanceForUser(uname);
+            applicantBalances = bal.leave_balance ?? null;
+          } catch {
+            applicantBalances = null;
+          }
+        } else if (raw.created_by != null) {
+          try {
+            const emp = await getEmployeeInitials(raw.created_by);
+            const bal = await getLeaveBalanceForUser(emp.username);
+            applicantBalances = bal.leave_balance ?? null;
+          } catch {
+            applicantBalances = null;
+          }
         }
+        setBalanceSummary(applicantBalances);
 
-        const data = await response.json();
-        setFetchedFormData(data.leave_form); // Assuming the API returns data in a `leave_form` key
-        console.log("Fetched form data:", data.leave_form);
-        setLoading(false);
-      } catch (error) {
-        console.error("Failed to fetch form data:", error);
-        setError("Failed to fetch form data. Please try again.");
+        // Map serializer field names to what the UI expects
+        setFetchedFormData({
+          ...raw,
+          name: raw.name || "",
+          designation: raw.designation || "",
+          pfno: raw.pfNo || raw.pfno || "",
+          department: raw.departmentInfo || raw.department || "",
+          submissionDate: raw.submissionDate || "",
+          leaveStartDate: raw.leaveStartDate || "",
+          leaveEndDate: raw.leaveEndDate || "",
+          purpose: raw.purposeOfLeave || raw.purpose || "",
+          remarks: raw.remarks || "",
+          applied_leave_days: raw.applied_leave_days,
+          natureOfLeave: raw.natureOfLeave,
+          leave_balance_category: raw.leave_balance_category,
+          leave_type_name: raw.leave_type_name,
+          application_type: raw.application_type || "Online",
+          status:
+            raw.workflow_status != null && raw.workflow_status !== ""
+              ? leaveWorkflowDisplayLabel(raw.workflow_status)
+              : raw.approved === true
+                ? "Accepted"
+                : raw.approved === false
+                  ? "Rejected"
+                  : "Pending",
+          workflow_status: raw.workflow_status || "submitted",
+          leaveFormPk: raw.id,
+          trackingFileId: raw.file_id || id,
+        });
+      } catch (err) {
+        setError("Failed to fetch form data.");
+      } finally {
         setLoading(false);
       }
     };
@@ -79,90 +121,76 @@ const LeaveFileHandle = () => {
 
   const handleActionSubmit = async () => {
     if (!action) {
-      alert("Please select an action (Accept, Reject, or Forward).");
+      alert("Please select an action (Accept or Reject).");
       return;
     }
 
-    if (action === "forward" && !forwardToUser) {
-      alert("Please select a user to forward the leave form.");
+    if (action === "reject" && !fileRemarks.trim()) {
+      alert("Remarks are required when rejecting.");
       return;
     }
 
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      setError("Authentication token is missing.");
+    const fileTrackingId = fetchedformData?.trackingFileId || id;
+    if (!fileTrackingId) {
+      alert("Missing file id for this leave; cannot submit action.");
       return;
     }
 
     setSubmitting(true);
 
     try {
-      const response = await fetch(`${handle_leave_file}/${id}/`, {
-        method: "POST",
-        headers: {
-          Authorization: `Token ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          action, // "accept", "reject", or "forward"
-          forwardTo: forwardToUser?.id, // User ID for forwarding
-          forwardToDesignation: forwardToUser?.designation, // Designation for forwarding
-          fileRemarks, // Remarks for the action
-        }),
+      const result = await handleLeaveFileAction(fileTrackingId, {
+        action,
+        remarks: fileRemarks,
       });
 
-      if (!response.ok) {
-        alert(
-          result.message || "Failed to handle leave action. Please try again.",
-        );
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
+      alert(result.detail || result.message || "Action completed successfully.");
 
-      const result = await response.json();
-      alert(result.message || "Action completed successfully.");
       setFetchedFormData((prev) => ({
         ...prev,
+        workflow_status: result.workflow_status || prev.workflow_status,
         status:
-          action === "accept"
-            ? "Accepted"
-            : action === "reject"
-              ? "Rejected"
-              : "Forwarded",
+          result.workflow_status != null && result.workflow_status !== ""
+            ? leaveWorkflowDisplayLabel(result.workflow_status)
+            : action === "accept"
+              ? "Accepted"
+              : action === "reject"
+                ? "Rejected"
+                : prev.status,
       }));
-    } catch (error) {
-      console.error("Failed to handle leave action:", error);
-      alert("You are not authorized to perform this action.");
+    } catch (err) {
+      console.error("Failed to handle leave action:", err);
+      alert(err.message || "You are not authorized to perform this action.");
       setError("Failed to handle leave action. Please try again.");
     } finally {
       setSubmitting(false);
     }
   };
-  const handleDownloadPdf = async () => {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      console.error("No authentication token found!");
-      return;
-    }
+
+  const handleDownloadPdf = async (event) => {
+    event?.preventDefault();
 
     try {
-      const response = await fetch(`${download_leave_form_pdf}/${id}`, {
-        headers: { Authorization: `Token ${token}` },
-      });
-
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
+      const formPk = fetchedformData?.leaveFormPk || fetchedformData?.id;
+      if (!formPk) {
+        setError("Missing leave form id for PDF download.");
+        return;
       }
-
-      const blob = await response.blob();
+      const blob = await downloadLeavePdf(formPk);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = fetchedformData.attachedPdfName;
+      a.download = fetchedformData?.attachedPdfName || "leave.pdf";
+      document.body.appendChild(a);
       a.click();
-    } catch (error) {
-      console.error("Failed to download PDF:", error);
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Failed to download PDF:", err);
+      setError("Failed to download PDF. Please try again.");
     }
   };
+
   if (loading) {
     return <LoadingComponent />;
   }
@@ -179,6 +207,11 @@ const LeaveFileHandle = () => {
   return (
     <>
       <HrBreadcrumbs items={exampleItems} />
+      {error && (
+        <Text color="red" mb="md">
+          {error}
+        </Text>
+      )}
       {/* Title */}
       <Box
         style={{
@@ -200,14 +233,17 @@ const LeaveFileHandle = () => {
               <strong>Status:</strong>{" "}
               <Badge
                 color={
-                  fetchedformData.status === "Accepted"
+                  fetchedformData.status === "Accepted" ||
+                  (fetchedformData.workflow_status || "").includes("hr_approved")
                     ? "green"
-                    : fetchedformData.status === "Rejected"
+                    : fetchedformData.status === "Rejected" ||
+                        (fetchedformData.workflow_status || "").includes("rejected")
                       ? "red"
                       : "yellow"
                 }
               >
-                {fetchedformData.status}
+                {leaveWorkflowDisplayLabel(fetchedformData.workflow_status) ||
+                  fetchedformData.status}
               </Badge>
             </Text>
           </Grid.Col>
@@ -225,7 +261,7 @@ const LeaveFileHandle = () => {
                   onClick={() => {
                     // Add functionality to track status
                     navigate(
-                      `../FormView/leaveform_track/${fetchedformData.file_id}`,
+                      `../FormView/leaveform_track/${fetchedformData.trackingFileId || id}`,
                     );
                   }}
                 >
@@ -333,6 +369,14 @@ const LeaveFileHandle = () => {
               <Title order={5} mb="sm" style={{ textAlign: "center" }}>
                 Leave Types Applied
               </Title>
+              <Text size="xs" c="dimmed" mb="xs">
+                Days applied use this request&apos;s{" "}
+                <strong>applied_leave_days</strong> on the selected leave type (
+                {fetchedformData.leave_type_name ||
+                  fetchedformData.natureOfLeave ||
+                  "—"}
+                ).
+              </Text>
               <Table>
                 <thead>
                   <tr style={{ backgroundColor: "#e9ecef" }}>
@@ -359,48 +403,7 @@ const LeaveFileHandle = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {[
-                    {
-                      type: "Casual Leave",
-                      applied: fetchedformData.casualLeave,
-                    },
-                    {
-                      type: "Vacation Leave",
-                      applied: fetchedformData.vacationLeave,
-                    },
-                    {
-                      type: "Earned Leave",
-                      applied: fetchedformData.earnedLeave,
-                    },
-                    {
-                      type: "Commuted Leave",
-                      applied: fetchedformData.commutedLeave,
-                    },
-                    {
-                      type: "Special Casual Leave",
-                      applied: fetchedformData.specialCasualLeave,
-                    },
-                    {
-                      type: "Restricted Holiday",
-                      applied: fetchedformData.restrictedHoliday,
-                    },
-                    {
-                      type: "Half Pay Leave",
-                      applied: fetchedformData.halfPayLeave,
-                    },
-                    {
-                      type: "Maternity Leave",
-                      applied: fetchedformData.maternityLeave,
-                    },
-                    {
-                      type: "Child Care Leave",
-                      applied: fetchedformData.childCareLeave,
-                    },
-                    {
-                      type: "Paternity Leave",
-                      applied: fetchedformData.paternityLeave,
-                    },
-                  ].map((leave, index) => (
+                  {buildLeaveTypesAppliedRows(fetchedformData).map((leave, index) => (
                     <tr
                       key={`applied-${index}`}
                       style={{
@@ -437,6 +440,9 @@ const LeaveFileHandle = () => {
               <Title order={5} mb="sm" style={{ textAlign: "center" }}>
                 All Leave Balances
               </Title>
+              <Text size="xs" c="dimmed" mb="xs">
+                {leaveBalanceDefaultsHint}
+              </Text>
               <Table>
                 <thead>
                   <tr style={{ backgroundColor: "#e9ecef" }}>
@@ -463,39 +469,14 @@ const LeaveFileHandle = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {[
-                    {
-                      type: "Casual Leave",
-                      balance: fetchedformData.casualLeaveBalance,
-                    },
-                    {
-                      type: "Special Casual Leave",
-                      balance: fetchedformData.special_casual_leaveBalance,
-                    },
-                    {
-                      type: "Earned Leave",
-                      balance: fetchedformData.earned_leaveBalance,
-                    },
-                    {
-                      type: "Half Pay Leave",
-                      balance: fetchedformData.half_pay_leaveBalance,
-                    },
-                    {
-                      type: "Maternity Leave",
-                      balance: fetchedformData.maternity_leaveBalance,
-                    },
-                    {
-                      type: "Child Care Leave",
-                      balance: fetchedformData.child_care_leaveBalance,
-                    },
-                    {
-                      type: "Paternity Leave",
-                      balance: fetchedformData.paternity_leaveBalance,
-                    },
-                  ].map((leave, index) => {
-                    const balance = parseFloat(leave.balance) || 0;
-                    const isNegative = balance < 0;
-                    const isPositive = balance > 0;
+                  {buildAllLeaveBalanceRows(balanceSummary).map((leave, index) => {
+                    const numeric =
+                      leave.balance === "—"
+                        ? NaN
+                        : parseFloat(String(leave.balance).replace(/,/g, ""));
+                    const balance = Number.isFinite(numeric) ? numeric : NaN;
+                    const isNegative = Number.isFinite(balance) && balance < 0;
+                    const isPositive = Number.isFinite(balance) && balance > 0;
 
                     return (
                       <tr
@@ -528,7 +509,7 @@ const LeaveFileHandle = () => {
                               isNegative || isPositive ? "bold" : "normal",
                           }}
                         >
-                          {leave.balance || "0"}
+                          {leave.balance}
                         </td>
                       </tr>
                     );
@@ -651,7 +632,7 @@ const LeaveFileHandle = () => {
               <Text>
                 <strong>Attached PDF:</strong>{" "}
                 {fetchedformData.attachedPdfName ? (
-                  <Anchor onClick={(e) => handleDownloadPdf(e)} download>
+                  <Anchor component="button" onClick={handleDownloadPdf}>
                     {fetchedformData.attachedPdfName}
                   </Anchor>
                 ) : (
@@ -662,7 +643,6 @@ const LeaveFileHandle = () => {
           </Grid>
           {/* add note that Please Track status of the file before doing any Actions if you don't have current ownership the Action will not be performed */}
 
-          {/* Section 7: Action Buttons */}
           <Title order={4} mt="xl">
             Select Action
           </Title>
@@ -677,7 +657,6 @@ const LeaveFileHandle = () => {
               leftIcon={<CheckCircle size={20} />}
               onClick={() => setAction("accept")}
               variant={action === "accept" ? "filled" : "outline"}
-              disabled={fetchedformData.status !== "Pending"}
             >
               Accept
             </Button>
@@ -685,32 +664,10 @@ const LeaveFileHandle = () => {
               leftIcon={<XCircle size={20} />}
               onClick={() => setAction("reject")}
               variant={action === "reject" ? "filled" : "outline"}
-              disabled={fetchedformData.status !== "Pending"}
             >
               Reject
             </Button>
-            <Button
-              leftIcon={<PaperPlaneRight size={20} />}
-              onClick={() => setAction("forward")}
-              variant={action === "forward" ? "filled" : "outline"}
-              disabled={fetchedformData.status !== "Pending"}
-            >
-              Forward
-            </Button>
           </Group>
-
-          {/* Section 4: Forward User Selection */}
-          {action === "forward" && (
-            <>
-              <Title order={4} mt="xl">
-                Forward To
-              </Title>
-              <Divider my="sm" />
-              <SearchAndSelectUser
-                onUserSelect={(user) => setForwardToUser(user)}
-              />
-            </>
-          )}
 
           {/* Section 5: File Remarks */}
           <Title order={4} mt="xl">
@@ -729,7 +686,7 @@ const LeaveFileHandle = () => {
             <Button
               onClick={handleActionSubmit}
               loading={submitting}
-              disabled={!action || (action === "forward" && !forwardToUser)}
+              disabled={!action}
             >
               Submit Action
             </Button>
@@ -738,6 +695,6 @@ const LeaveFileHandle = () => {
       </Box>
     </>
   );
-};
+}
 
 export default LeaveFileHandle;

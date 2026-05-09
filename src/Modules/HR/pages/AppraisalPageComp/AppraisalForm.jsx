@@ -1,33 +1,44 @@
-// create a similar AppraisalForm in which
-// in first section NAme and Designation and Descipline will be there
-// in next section there will be inputs for "Specific field of knowledge" "Current Research Interests"
-
-// in next section there will be title of that decription "Please give information pertaining to the period of appraisal as per the format given below :-"
-// below that there will be a table title named 1. INSTRUCTION ELEMENT
-// in 1.1 there is 1.1 Teaching
-// in 1.1.1 there is Courses taught at UG/PG level
-
-// which gives a table of input "Semester"	"Course Name and Number"	"Lecture Hrs/wk"	"Tutorial Hrs/wk"	"Lab Hrs/wk"	"No of Registererd Students"	"Co-Instructor/ Instructor In charge(if any)" make this table number of rows dynamic and he can add number of rows.
-
-// in 1.1.2 "New Courses/ laboratory experiments introduced and taught" there is again a table of input with columns "Course Name and Numbe" "UG/PG"  "	Year and Semester of first offering"
-
-// 1.1.3 New course material developed/instructional software developed (should be made available on the web / public domain and may be under GIAN/NPTEL/SWAYAM etc)
-import React, { useState } from "react";
-import { Button } from "@mantine/core";
+import React, { useState, useEffect } from "react";
+import { Button, Select, Text } from "@mantine/core";
 import {
+  PaperPlaneRight,
+  CheckCircle,
   User,
   Tag,
-  IdentificationCard,
-  Calendar,
   ClipboardText,
-  CurrencyDollar,
-  FileText,
-  CheckCircle,
-  PaperPlaneRight,
 } from "@phosphor-icons/react";
-import classes from "./AppraisalForm.module.css";
+import { submitAppraisalForm } from "../../services/api";
+import { get_my_details, search_employee } from "../../../../routes/hr";
+import classes from "../../styles/AppraisalForm.module.css";
 
 function AppraisalForm() {
+  // ── form field state ──
+  const [formData, setFormData] = useState({
+    name: "",
+    designation: "",
+    disciplineInfo: "",
+    specificFieldOfKnowledge: "",
+    currentResearchInterests: "",
+    newCoursesIntroduced: "",
+    newCoursesDeveloped: "",
+    otherInstructionalTasks: "",
+    otherResearchElement: "",
+    publication: "",
+    referredConference: "",
+    conferenceOrganised: "",
+    membership: "",
+    honours: "",
+    editorOfPublications: "",
+    expertLectureDelivered: "",
+    membershipOfBOS: "",
+    otherExtensionTasks: "",
+    administrativeAssignment: "",
+    serviceToInstitute: "",
+    otherContribution: "",
+    performanceComments: "",
+  });
+
+  // ── dynamic rows for "Courses taught" table ──
   const [rows, setRows] = useState([
     {
       semester: "",
@@ -39,11 +50,49 @@ function AppraisalForm() {
       coInstructor: "",
     },
   ]);
-  const handleChange = (index, event) => {
+
+  // ── receiver / footer ──
+  const [receiverUsername, setReceiverUsername] = useState("hr_admin");
+  const [receiverDesignation, setReceiverDesignation] = useState("HR Admin");
+  const [verifiedReceiver, setVerifiedReceiver] = useState(true);
+  const [approverMode, setApproverMode] = useState("hr_admin");
+
+  // ── autofill logged-in user ──
+  useEffect(() => {
+    const fetchMyDetails = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        if (!token) return;
+        const response = await fetch(get_my_details, {
+          headers: { Authorization: `Token ${token}` },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setFormData((prev) => ({
+            ...prev,
+            name: data.username || "",
+            designation: data.designation || "",
+          }));
+        }
+      } catch (error) {
+        console.error("Failed to fetch user details:", error);
+      }
+    };
+    fetchMyDetails();
+  }, []);
+
+  // ── handlers ──
+  const handleFieldChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleRowChange = (index, e) => {
     const newRows = [...rows];
-    newRows[index][event.target.name] = event.target.value;
+    newRows[index][e.target.name] = e.target.value;
     setRows(newRows);
   };
+
   const handleAddRow = () => {
     setRows([
       ...rows,
@@ -58,9 +107,79 @@ function AppraisalForm() {
       },
     ]);
   };
-  const handleSubmit = (event) => {
+
+  const handleApproverModeChange = (value) => {
+    const mode = value || "hr_admin";
+    setApproverMode(mode);
+    if (mode === "hr_admin") {
+      setReceiverUsername("hr_admin");
+      setReceiverDesignation("HR Admin");
+      setVerifiedReceiver(true);
+    } else {
+      setReceiverUsername("");
+      setReceiverDesignation("");
+      setVerifiedReceiver(false);
+    }
+  };
+
+  const handleCheck = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) return;
+      if (!receiverUsername) {
+        alert("Please enter a receiver username first.");
+        return;
+      }
+      const response = await fetch(
+        `${search_employee}?search=${receiverUsername}`,
+        { headers: { Authorization: `Token ${token}` } },
+      );
+      if (!response.ok) {
+        alert("Receiver not found. Please check the username and try again.");
+        return;
+      }
+      const data = await response.json();
+      setReceiverDesignation(data.designation || "");
+      setVerifiedReceiver(true);
+      alert("Receiver verified successfully!");
+    } catch (error) {
+      console.error("Failed to fetch receiver data:", error);
+    }
+  };
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log("Form submitted:", rows);
+
+    if (approverMode === "other" && !verifiedReceiver) {
+      alert("Please verify the approver before submitting.");
+      return;
+    }
+
+    // Build the payload the backend expects: [form_data, user_info]
+    const payload = [
+      {
+        ...formData,
+        coursesTaught: rows,
+      },
+      {
+        uploader_name: formData.name,
+        uploader_designation: formData.designation,
+        receiver_name: receiverUsername,
+        receiver_designation: receiverDesignation,
+      },
+    ];
+
+    try {
+      const result = await submitAppraisalForm(payload);
+      console.log("Appraisal form submitted successfully:", result);
+      alert("Appraisal form submitted successfully!");
+      if (approverMode === "other") {
+        setVerifiedReceiver(false);
+      }
+    } catch (error) {
+      console.error("Error submitting appraisal form:", error);
+      alert(`Failed to submit form: ${error.message}`);
+    }
   };
 
   return (
@@ -71,85 +190,95 @@ function AppraisalForm() {
           <div className="grid-col">
             <label className="input-label" htmlFor="name">
               Name
+              <div className="input-wrapper">
+                <User size={20} />
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  placeholder="Name"
+                  value={formData.name}
+                  onChange={handleFieldChange}
+                  className="input"
+                  required
+                />
+              </div>
             </label>
-            <div className="input-wrapper">
-              <User size={20} />
-              <input
-                type="text"
-                id="name"
-                name="name"
-                placeholder="Name"
-                className="input"
-                required
-              />
-            </div>
           </div>
           <div className="grid-col">
             <label className="input-label" htmlFor="designation">
               Designation
+              <div className="input-wrapper">
+                <Tag size={20} />
+                <input
+                  type="text"
+                  id="designation"
+                  name="designation"
+                  placeholder="Designation"
+                  value={formData.designation}
+                  onChange={handleFieldChange}
+                  className="input"
+                  required
+                />
+              </div>
             </label>
-            <div className="input-wrapper">
-              <Tag size={20} />
-              <input
-                type="text"
-                id="designation"
-                name="designation"
-                placeholder="Designation"
-                className="input"
-                required
-              />
-            </div>
           </div>
           <div className="grid-col">
-            <label className="input-label" htmlFor="discipline">
+            <label className="input-label" htmlFor="disciplineInfo">
               Discipline
+              <div className="input-wrapper">
+                <Tag size={20} />
+                <input
+                  type="text"
+                  id="disciplineInfo"
+                  name="disciplineInfo"
+                  placeholder="Discipline"
+                  value={formData.disciplineInfo}
+                  onChange={handleFieldChange}
+                  className="input"
+                  required
+                />
+              </div>
             </label>
-            <div className="input-wrapper">
-              <Tag size={20} />
-              <input
-                type="text"
-                id="discipline"
-                name="discipline"
-                placeholder="Discipline"
-                className="input"
-                required
-              />
-            </div>
           </div>
         </div>
         {/* Section 2: Specific field of knowledge, Current Research Interests */}
         <div className="grid-row">
           <div className="grid-col">
-            <label className="input-label" htmlFor="knowledge">
+            <label className="input-label" htmlFor="specificFieldOfKnowledge">
               Specific field of knowledge
+              <div className="input-wrapper">
+                <ClipboardText size={20} />
+                <input
+                  type="text"
+                  id="specificFieldOfKnowledge"
+                  name="specificFieldOfKnowledge"
+                  placeholder="Specific field of knowledge"
+                  value={formData.specificFieldOfKnowledge}
+                  onChange={handleFieldChange}
+                  className="input"
+                  required
+                />
+              </div>
             </label>
-            <div className="input-wrapper">
-              <ClipboardText size={20} />
-              <input
-                type="text"
-                id="knowledge"
-                name="knowledge"
-                placeholder="Specific field of knowledge"
-                className="input"
-                required
-              />
-            </div>
           </div>
           <div className="grid-col">
-            <label className="input-label" htmlFor="researchInterests">
+            <label className="input-label" htmlFor="currentResearchInterests">
               Current Research Interests
+              <div className="input-wrapper">
+                <ClipboardText size={20} />
+                <input
+                  type="text"
+                  id="currentResearchInterests"
+                  name="currentResearchInterests"
+                  placeholder="Current Research Interests"
+                  value={formData.currentResearchInterests}
+                  onChange={handleFieldChange}
+                  className="input"
+                  required
+                />
+              </div>
             </label>
-            <div className="input-wrapper">
-              <ClipboardText size={20} />
-              <input
-                type="text"
-                id="researchInterests"
-                name="researchInterests"
-                placeholder="Current Research Interests"
-                className="input"
-                required
-              />
-            </div>
           </div>
         </div>
         {/* Section 3: Instruction Element */}
@@ -176,19 +305,19 @@ function AppraisalForm() {
             <div className="grid-col">
               <label className="input-label" htmlFor={`semester_${index}`}>
                 Semester
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    id={`semester_${index}`}
+                    name="semester"
+                    placeholder="Semester"
+                    value={row.semester}
+                    onChange={(e) => handleRowChange(index, e)}
+                    className="input"
+                    required
+                  />
+                </div>
               </label>
-              <div className="input-wrapper">
-                <input
-                  type="text"
-                  id={`semester_${index}`}
-                  name="semester"
-                  placeholder="Semester"
-                  value={row.semester}
-                  onChange={(e) => handleChange(index, e)}
-                  className="input"
-                  required
-                />
-              </div>
             </div>
             <div className="grid-col">
               <label
@@ -196,70 +325,70 @@ function AppraisalForm() {
                 htmlFor={`courseNameNumber_${index}`}
               >
                 Course Name and Number
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    id={`courseNameNumber_${index}`}
+                    name="courseNameNumber"
+                    placeholder="Course Name and Number"
+                    value={row.courseNameNumber}
+                    onChange={(e) => handleRowChange(index, e)}
+                    className="input"
+                    required
+                  />
+                </div>
               </label>
-              <div className="input-wrapper">
-                <input
-                  type="text"
-                  id={`courseNameNumber_${index}`}
-                  name="courseNameNumber"
-                  placeholder="Course Name and Number"
-                  value={row.courseNameNumber}
-                  onChange={(e) => handleChange(index, e)}
-                  className="input"
-                  required
-                />
-              </div>
             </div>
             <div className="grid-col">
               <label className="input-label" htmlFor={`lectureHrs_${index}`}>
                 Lecture Hrs/wk
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    id={`lectureHrs_${index}`}
+                    name="lectureHrs"
+                    placeholder="Lecture Hrs/wk"
+                    value={row.lectureHrs}
+                    onChange={(e) => handleRowChange(index, e)}
+                    className="input"
+                    required
+                  />
+                </div>
               </label>
-              <div className="input-wrapper">
-                <input
-                  type="text"
-                  id={`lectureHrs_${index}`}
-                  name="lectureHrs"
-                  placeholder="Lecture Hrs/wk"
-                  value={row.lectureHrs}
-                  onChange={(e) => handleChange(index, e)}
-                  className="input"
-                  required
-                />
-              </div>
             </div>
             <div className="grid-col">
               <label className="input-label" htmlFor={`tutorialHrs_${index}`}>
                 Tutorial Hrs/wk
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    id={`tutorialHrs_${index}`}
+                    name="tutorialHrs"
+                    placeholder="Tutorial Hrs/wk"
+                    value={row.tutorialHrs}
+                    onChange={(e) => handleRowChange(index, e)}
+                    className="input"
+                    required
+                  />
+                </div>
               </label>
-              <div className="input-wrapper">
-                <input
-                  type="text"
-                  id={`tutorialHrs_${index}`}
-                  name="tutorialHrs"
-                  placeholder="Tutorial Hrs/wk"
-                  value={row.tutorialHrs}
-                  onChange={(e) => handleChange(index, e)}
-                  className="input"
-                  required
-                />
-              </div>
             </div>
             <div className="grid-col">
               <label className="input-label" htmlFor={`labHrs_${index}`}>
                 Lab Hrs/wk
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    id={`labHrs_${index}`}
+                    name="labHrs"
+                    placeholder="Lab Hrs/wk"
+                    value={row.labHrs}
+                    onChange={(e) => handleRowChange(index, e)}
+                    className="input"
+                    required
+                  />
+                </div>
               </label>
-              <div className="input-wrapper">
-                <input
-                  type="text"
-                  id={`labHrs_${index}`}
-                  name="labHrs"
-                  placeholder="Lab Hrs/wk"
-                  value={row.labHrs}
-                  onChange={(e) => handleChange(index, e)}
-                  className="input"
-                  required
-                />
-              </div>
             </div>
             <div className="grid-col">
               <label
@@ -267,36 +396,36 @@ function AppraisalForm() {
                 htmlFor={`registeredStudents_${index}`}
               >
                 No of Registered Students
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    id={`registeredStudents_${index}`}
+                    name="registeredStudents"
+                    placeholder="No of Registered Students"
+                    value={row.registeredStudents}
+                    onChange={(e) => handleRowChange(index, e)}
+                    className="input"
+                    required
+                  />
+                </div>
               </label>
-              <div className="input-wrapper">
-                <input
-                  type="text"
-                  id={`registeredStudents_${index}`}
-                  name="registeredStudents"
-                  placeholder="No of Registered Students"
-                  value={row.registeredStudents}
-                  onChange={(e) => handleChange(index, e)}
-                  className="input"
-                  required
-                />
-              </div>
             </div>
             <div className="grid-col">
               <label className="input-label" htmlFor={`coInstructor_${index}`}>
                 Co-Instructor/ Instructor In charge (if any)
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    id={`coInstructor_${index}`}
+                    name="coInstructor"
+                    placeholder="Co-Instructor/ Instructor In charge (if any)"
+                    value={row.coInstructor}
+                    onChange={(e) => handleRowChange(index, e)}
+                    className="input"
+                    required
+                  />
+                </div>
               </label>
-              <div className="input-wrapper">
-                <input
-                  type="text"
-                  id={`coInstructor_${index}`}
-                  name="coInstructor"
-                  placeholder="Co-Instructor/ Instructor In charge (if any)"
-                  value={row.coInstructor}
-                  onChange={(e) => handleChange(index, e)}
-                  className="input"
-                  required
-                />
-              </div>
             </div>
           </div>
         ))}
@@ -310,49 +439,20 @@ function AppraisalForm() {
         </div>
         <div className="grid-row">
           <div className="grid-col">
-            <label className="input-label" htmlFor="newCourseName">
+            <label className="input-label" htmlFor="newCoursesIntroduced">
               Course Name and Number
+              <div className="input-wrapper">
+                <input
+                  type="text"
+                  id="newCoursesIntroduced"
+                  name="newCoursesIntroduced"
+                  placeholder="Course Name and Number"
+                  value={formData.newCoursesIntroduced}
+                  onChange={handleFieldChange}
+                  className="input"
+                />
+              </div>
             </label>
-            <div className="input-wrapper">
-              <input
-                type="text"
-                id="newCourseName"
-                name="newCourseName"
-                placeholder="Course Name and Number"
-                className="input"
-                required
-              />
-            </div>
-          </div>
-          <div className="grid-col">
-            <label className="input-label" htmlFor="courseLevel">
-              UG/PG
-            </label>
-            <div className="input-wrapper">
-              <input
-                type="text"
-                id="courseLevel"
-                name="courseLevel"
-                placeholder="UG/PG"
-                className="input"
-                required
-              />
-            </div>
-          </div>
-          <div className="grid-col">
-            <label className="input-label" htmlFor="firstOffering">
-              Year and Semester of first offering
-            </label>
-            <div className="input-wrapper">
-              <input
-                type="text"
-                id="firstOffering"
-                name="firstOffering"
-                placeholder="Year and Semester of first offering"
-                className="input"
-                required
-              />
-            </div>
           </div>
         </div>
         <div className="section-subsubtitle">
@@ -364,83 +464,102 @@ function AppraisalForm() {
         </div>
         <div className="grid-row">
           <div className="grid-col">
-            <label className="input-label" htmlFor="courseMaterial">
-              Course Material
+            <label className="input-label" htmlFor="newCoursesDeveloped">
+              Course Material / Software Developed
+              <div className="input-wrapper">
+                <input
+                  type="text"
+                  id="newCoursesDeveloped"
+                  name="newCoursesDeveloped"
+                  placeholder="Course Material / Software Developed"
+                  value={formData.newCoursesDeveloped}
+                  onChange={handleFieldChange}
+                  className="input"
+                />
+              </div>
             </label>
-            <div className="input-wrapper">
-              <input
-                type="text"
-                id="courseMaterial"
-                name="courseMaterial"
-                placeholder="Course Material"
-                className="input"
-                required
-              />
-            </div>
-          </div>
-          <div className="grid-col">
-            <label className="input-label" htmlFor="softwareDeveloped">
-              Instructional Software Developed
-            </label>
-            <div className="input-wrapper">
-              <input
-                type="text"
-                id="softwareDeveloped"
-                name="softwareDeveloped"
-                placeholder="Instructional Software Developed"
-                className="input"
-                required
-              />
-            </div>
           </div>
         </div>
-        {/* Footer */}
-        {/* <div className="footer-section">
-          <div className="input-wrapper">
-            <User size={20} />
-            <input
-              type="text"
-              name="username"
-              placeholder="Username"
-              value={formData.username}
-              onChange={handleChange}
-              className="username-input"
-              required
+
+        {/* Footer: approver + Submit */}
+        <div className="footer-section" style={{ flexWrap: "wrap", gap: 12 }}>
+          <div style={{ width: "100%", maxWidth: 420, marginBottom: 8 }}>
+            <Select
+              label="Forward application to (approver)"
+              data={[
+                { value: "hr_admin", label: "HR Admin (hr_admin)" },
+                {
+                  value: "other",
+                  label: "Other approver (enter username & verify)",
+                },
+              ]}
+              value={approverMode}
+              onChange={handleApproverModeChange}
             />
           </div>
-          <div className="input-wrapper">
-            <Tag size={20} />
-            <input
-              type="text"
-              name="designationFooter"
-              placeholder="Designation"
-              value={formData.designationFooter}
-              onChange={handleChange}
-              className="designation-input"
-              required
-            />
-          </div>
-          <Button
-            leftIcon={<CheckCircle size={25} />}
-            style={{ marginLeft: "50px", paddingRight: "15px" }}
-            className="button"
-          >
-            <CheckCircle size={18} /> &nbsp; Check
-          </Button>
+          {approverMode === "hr_admin" ? (
+            <Text
+              size="sm"
+              color="dimmed"
+              style={{ width: "100%", marginBottom: 8 }}
+            >
+              Submissions go to <strong>hr_admin</strong> as{" "}
+              <strong>HR Admin</strong> (Appraisal Inbox).
+            </Text>
+          ) : (
+            <>
+              <div className="input-wrapper">
+                <User size={20} />
+                <input
+                  type="text"
+                  name="receiverUsername"
+                  placeholder="Approver username"
+                  value={receiverUsername}
+                  onChange={(e) => {
+                    setReceiverUsername(e.target.value);
+                    setVerifiedReceiver(false);
+                  }}
+                  className="username-input"
+                  required
+                />
+              </div>
+              <div className="input-wrapper">
+                <Tag size={20} />
+                <input
+                  type="text"
+                  name="receiverDesignation"
+                  placeholder="Designation (from verify)"
+                  value={receiverDesignation}
+                  readOnly
+                  className="designation-input"
+                />
+              </div>
+              <Button
+                leftIcon={<CheckCircle size={25} />}
+                style={{ marginLeft: "12px", paddingRight: "15px" }}
+                className="button"
+                type="button"
+                onClick={handleCheck}
+              >
+                <CheckCircle size={18} /> &nbsp; Verify approver
+              </Button>
+            </>
+          )}
           <Button
             type="submit"
             rightIcon={<PaperPlaneRight size={20} />}
             style={{
-              marginLeft: "350px",
+              marginLeft: "auto",
               width: "150px",
               paddingRight: "15px",
               borderRadius: "5px",
             }}
             className="button"
+            disabled={approverMode === "other" && !verifiedReceiver}
           >
             <PaperPlaneRight size={20} /> &nbsp; Submit
           </Button>
-        </div> */}
+        </div>
       </form>
     </div>
   );

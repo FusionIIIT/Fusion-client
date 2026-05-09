@@ -12,10 +12,10 @@ import {
   ShieldCheck,
 } from "@phosphor-icons/react";
 import { useSelector } from "react-redux";
-import PerformanceCard from "../components/FormComponent/PerformanceCard";
-import classes from "./Hr_Dashboard.module.css";
+import PerformanceCard from "../components/common/PerformanceCard";
+import classes from "../styles/Hr_Dashboard.module.css";
 // import { HeroBanner } from "../components/HeroBanner";
-import HrBreadcrumbs from "../components/HrBreadcrumbs";
+import HrBreadcrumbs from "../components/common/HrBreadcrumbs";
 
 const mockdata = [
   {

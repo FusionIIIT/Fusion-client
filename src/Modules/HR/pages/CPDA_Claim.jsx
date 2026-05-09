@@ -1,14 +1,20 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Tabs, Button, Flex, Text, Loader, Container } from "@mantine/core";
 import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
-import { useNavigate, useLocation } from "react-router-dom";
-import CustomBreadcrumbs from "../../../components/Breadcrumbs";
-import classes from "./CPDA_ClaimPage.module.css";
-import CPDA_ClaimForm from "./CPDA_ClaimPageComp/CPDA_ClaimForm";
-import CPDA_ClaimRequests from "./CPDA_ClaimPageComp/CPDA_ClaimRequests";
-import CPDA_ClaimInbox from "./CPDA_ClaimPageComp/CPDA_ClaimInbox";
-import CPDA_ClaimArchive from "./CPDA_ClaimPageComp/CPDA_ClaimArchive";
-import HrBreadcrumbs from "../components/HrBreadcrumbs";
+import {
+  useNavigate,
+  useLocation,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import classes from "../styles/CPDA_ClaimPage.module.css";
+import CPDAClaimForm from "./CPDA_ClaimPageComp/CPDA_ClaimForm";
+import CPDAClaimRequests from "./CPDA_ClaimPageComp/CPDA_ClaimRequests";
+import CPDAClaimInbox from "./CPDA_ClaimPageComp/CPDA_ClaimInbox";
+import CPDAClaimArchive from "./CPDA_ClaimPageComp/CPDA_ClaimArchive";
+import HrBreadcrumbs from "../components/common/HrBreadcrumbs";
+import CPDABalanceButton from "../components/common/CPDABalanceButton";
 
 // Define paths for each tab
 const tabItems = [
@@ -25,7 +31,7 @@ function CPDA_Claim() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  //scroll to top on page load
+  // scroll to top on page load
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -34,7 +40,7 @@ function CPDA_Claim() {
   useEffect(() => {
     const currentPath = location.pathname;
     const matchingTab = tabItems.findIndex((tab) =>
-      currentPath.includes(tab.path),
+      currentPath.includes(tab.path.split("/").pop()),
     );
     setActiveTab(matchingTab !== -1 ? String(matchingTab) : "0");
   }, [location.pathname]);
@@ -80,6 +86,7 @@ function CPDA_Claim() {
   return (
     <>
       <HrBreadcrumbs items={exampleItems} />
+      <CPDABalanceButton />
       <Flex justify="flex-start" align="center" mt="lg">
         <Button
           style={{ marginRight: "20px" }}
@@ -133,10 +140,13 @@ function CPDA_Claim() {
         </Container>
       ) : (
         <div className="fullWidthGrid">
-          {activeTab === "0" && <CPDA_ClaimForm />}
-          {activeTab === "1" && <CPDA_ClaimRequests />}
-          {activeTab === "2" && <CPDA_ClaimInbox />}
-          {activeTab === "3" && <CPDA_ClaimArchive />}
+          <Routes>
+            <Route path="cpdaform" element={<CPDAClaimForm />} />
+            <Route path="cpda_requests" element={<CPDAClaimRequests />} />
+            <Route path="cpda_inbox" element={<CPDAClaimInbox />} />
+            <Route path="cpda_archive" element={<CPDAClaimArchive />} />
+            <Route path="*" element={<Navigate to="cpdaform" replace />} />
+          </Routes>
         </div>
       )}
     </>

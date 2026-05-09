@@ -1,58 +1,69 @@
 import React, { useEffect, useState } from "react";
-import InboxTable from "../../components/tables/InboxTable";
-import { get_form_track, get_ltc_inbox } from "../../../../routes/hr/index"; // Ensure this is the correct import path
-import LoadingComponent from "../../components/Loading"; // Ensure this is the correct import path
+import { useParams } from "react-router-dom";
+import TrackTable from "../../components/tables/TrackTable";
+import { getLtcTrack } from "../../services/api";
+import LoadingComponent from "../../components/common/Loading";
 
-function LTCTrack() {
-  const [trackData, setTrackData] = useState([]); // Correct useState syntax
-  const [loading, setLoading] = useState(true); // Add loading state
+const STATUS_LABELS = {
+  submitted: "Submitted — with approver",
+  hr_approved: "Approved by HR",
+  hr_rejected: "Rejected by HR",
+  with_accountant: "With Accountant",
+};
+
+function LtcTrack() {
+  const { id } = useParams();
 
   const currentPath = window.location.pathname;
+
   const exampleItems = [
     { title: "Home", path: "/dashboard" },
     { title: "Human Resources", path: "/hr" },
     { title: "LTC", path: "/hr/ltc" },
-
-    { title: "Track", path: `${currentPath}` },
+    { title: "Track", path: currentPath },
   ];
 
+  const [trackData, setTrackData] = useState([]);
+  const [workflowStatusDisplay, setWorkflowStatusDisplay] = useState("");
+  const [workflowHistory, setWorkflowHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    const fetchLTCTrack = async () => {
-      console.log("Fetching LTC Track...");
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        console.error("No authentication token found!");
-        setLoading(false);
-        return;
-      }
+    let cancelled = false;
+    (async () => {
       try {
-        const response = await fetch(`${get_form_track(id)}`, {
-          headers: { Authorization: `Token ${token}` },
-        });
-        const data = await response.json();
-        setTrackData(data.file_history); // Set fetched data
-        setLoading(false); // Set loading to false once data is fetched
-        console.log(data);
-      } catch (error) {
-        console.error("Failed to fetch LTC Track:", error);
-        setLoading(false); // Set loading to false if there’s an error
+        const data = await getLtcTrack(id);
+        if (cancelled) return;
+        setTrackData(data.file_history ?? []);
+        const ws = data.workflow_status;
+        setWorkflowStatusDisplay((ws && STATUS_LABELS[ws]) || ws || "");
+        setWorkflowHistory(data.workflow_history ?? []);
+      } catch (e) {
+        if (!cancelled) {
+          setTrackData([]);
+          setWorkflowStatusDisplay("");
+          setWorkflowHistory([]);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
+    })();
+    return () => {
+      cancelled = true;
     };
-    fetchLTCTrack(); // Ensure function is called
-  }, []); // Adding empty dependency array to run only once
+  }, [id]);
 
-  if (loading) {
-    return <LoadingComponent />;
-  }
+  if (loading) return <LoadingComponent />;
 
-  // return <InboxTable title="LTC Inbox" data={inboxData} />;
   return (
     <TrackTable
-      title="Track File"
+      title="LTC Track"
       exampleItems={exampleItems}
       data={trackData}
+      workflowStatusDisplay={workflowStatusDisplay}
+      workflowHistory={workflowHistory}
     />
   );
 }
 
-export default LTCTrack;
+export default LtcTrack;

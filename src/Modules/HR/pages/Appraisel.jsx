@@ -1,14 +1,19 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Tabs, Button, Flex, Text, Loader, Container } from "@mantine/core";
 import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
-import { useNavigate, useLocation } from "react-router-dom"; // Import these hooks
-import CustomBreadcrumbs from "../../../components/Breadcrumbs";
-import classes from "./AppraisalPage.module.css";
+import {
+  useNavigate,
+  useLocation,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom"; // Import these hooks
+import classes from "../styles/AppraisalPage.module.css";
 import AppraisalForm from "./AppraisalPageComp/AppraisalForm";
 import AppraisalRequests from "./AppraisalPageComp/AppraisalRequests";
 import AppraisalInbox from "./AppraisalPageComp/AppraisalInbox";
 import AppraisalArchive from "./AppraisalPageComp/AppraisalArchive";
-import HrBreadcrumbs from "../components/HrBreadcrumbs";
+import HrBreadcrumbs from "../components/common/HrBreadcrumbs";
 
 // Define paths for each tab
 const tabItems = [
@@ -25,7 +30,7 @@ function Appraisal() {
   const navigate = useNavigate(); // Initialize navigate
   const location = useLocation(); // Initialize location
 
-  //scroll to top on page load
+  // scroll to top on page load
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -133,10 +138,16 @@ function Appraisal() {
         </Container>
       ) : (
         <div className="fullWidthGrid">
-          {activeTab === "0" && <AppraisalForm />}
-          {activeTab === "1" && <AppraisalRequests />}
-          {activeTab === "2" && <AppraisalInbox />}
-          {activeTab === "3" && <AppraisalArchive />}
+          <Routes>
+            <Route path="appraisal_form" element={<AppraisalForm />} />
+            <Route path="appraisal_requests" element={<AppraisalRequests />} />
+            <Route path="appraisal_inbox" element={<AppraisalInbox />} />
+            <Route path="appraisal_archive" element={<AppraisalArchive />} />
+            <Route
+              path="*"
+              element={<Navigate to="appraisal_form" replace />}
+            />
+          </Routes>
         </div>
       )}
     </>
