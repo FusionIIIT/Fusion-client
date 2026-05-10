@@ -26,6 +26,7 @@ import {
   Wrench as IWDIcon,
   City as HostelIcon,
   Certificate as OtherAcademicIcon,
+  Certificate as PatentIcon,
   Database as DatabaseIcon,
   Question as HelpIcon,
   User as ProfileIcon,
@@ -140,7 +141,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       icon: <ExamIcon size={18} />,
       url: "/examination",
     },
-        {
+    {
       label: "Database",
       id: "database",
       icon: <DatabaseIcon size={18} />,
@@ -170,6 +171,12 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       icon: <OtherAcademicIcon size={18} />,
       url: "/",
     },
+    {
+      label: "Patent Management",
+      id: "patentsystem",
+      icon: <PatentIcon size={18} />,
+      url: "/patentsystem",
+    },
   ];
 
   const otherItems = [
@@ -193,11 +200,26 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const patentRoles = [
+      "student",
+      "alumini",
+      "Professor",
+      "Associate Professor",
+      "Assistant Professor",
+      "Research Engineer",
+      "Director",
+      "PCC Admin",
+      "Attorney",
+    ];
+
     const filterModules = Modules.filter(
-      (module) => accessibleModules[module.id] || module.id === "home",
+      (module) =>
+        accessibleModules[module.id] ||
+        module.id === "home" ||
+        (module.id === "patentsystem" && patentRoles.includes(role)),
     );
     setFilteredModules(filterModules);
-  }, [accessibleModules]);
+  }, [accessibleModules, role]);
 
   const handleModuleClick = (item) => {
     setSelected(item.label);
