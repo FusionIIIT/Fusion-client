@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import {
   MantineProvider,
   TextInput,
-  Select,
   NumberInput,
   Button,
   Textarea,
@@ -12,28 +11,30 @@ import {
   Modal,
   LoadingOverlay,
   MultiSelect,
+  Select,
 } from "@mantine/core";
-import axios from "axios";
-import { host } from "../../routes/globalRoutes";
-import { fetchAvailableRoomsRoute } from "../../routes/visitorsHostelRoutes";
+import { bookingsAPI, roomsAPI } from "../../services/visitorHostelApi";
+import { ErrorHandlers } from "../../utils/errorHandler";
+import ErrorBoundary from "../common/ErrorBoundary";
 
-function ForwardBookingForm({
+function ConfirmBookingIn({
   forwardmodalOpened,
   onClose,
-  onBookingForward,
   bookingId,
+  bookingf,
 }) {
   console.log("BOOKING ID: ", bookingId); // Log booking ID for debugging
+      
   const [formData, setFormData] = useState({
     intenderUsername: "",
     intenderEmail: "",
     bookingFrom: "",
     bookingTo: "",
     visitorCategory: "",
-    modifiedCategory: "",
+    modifiedCategory: bookingf?.modifiedCategory || "", // Provide a fallback value
     personCount: 1,
     numberOfRooms: 1,
-    rooms: [],
+    rooms: bookingf?.rooms || [], // Provide a fallback value
     purpose: "",
     billToBeSettledBy: "",
     remarks: "",
@@ -43,62 +44,40 @@ function ForwardBookingForm({
     visitorOrganization: "",
     visitorAddress: "",
   });
-
   const [loading, setLoading] = useState(false);
   const [availableRooms, setAvailableRooms] = useState([]);
 
   useEffect(() => {
-    const fetchAvailableRooms = async (startDate, endDate) => {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        return console.error("No authentication token found!");
-      }
-
-      try {
-        const response = await axios.post(
-          fetchAvailableRoomsRoute,
-          {
-            start_date: startDate,
-            end_date: endDate,
-          },
-          {
-            headers: {
-              Authorization: `Token ${token}`,
-              "Content-Type": "application/json",
-            },
-          },
-        );
-        setAvailableRooms(response.data.available_rooms);
-      } catch (error) {
-        console.error("Error fetching available rooms:", error);
-      }
-    };
     const fetchBookingData = async () => {
       try {
-        const response = await axios.get(
-          `${host}/visitorhostel/get-booking-details/${bookingId}/`,
-        );
-        const booking = response.data;
-        setFormData({
-          intenderUsername: booking.intenderUsername,
-          intenderEmail: booking.intenderEmail,
-          bookingFrom: booking.bookingFrom,
-          bookingTo: booking.bookingTo,
-          visitorCategory: booking.visitorCategory,
-          modifiedCategory: booking.visitorCategory, // Keep this field empty for editing
-          personCount: booking.personCount,
-          numberOfRooms: booking.numberOfRooms,
-          rooms: [], // Keep this field empty for editing
-          purpose: booking.purpose,
-          billToBeSettledBy: booking.billToBeSettledBy,
-          remarks: booking.remarks,
-          visitorName: booking.visitorName,
-          visitorEmail: booking.visitorEmail,
-          visitorPhone: booking.visitorPhone,
-          visitorOrganization: booking.visitorOrganization,
-          visitorAddress: booking.visitorAddress,
-        });
-        fetchAvailableRooms(booking.bookingFrom, booking.bookingTo);
+        // TODO: Implement GET /api/bookings/{bookingId}/ endpoint on backend
+        // Currently, this endpoint is not available in the REST API
+        
+        // For now, use booking data from props (bookingf)
+        if (bookingf) {
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            intenderUsername: bookingf.intenderUsername || "",
+            intenderEmail: bookingf.intenderEmail || "",
+            bookingFrom: bookingf.bookingFrom || "",
+            bookingTo: bookingf.bookingTo || "",
+            visitorCategory: bookingf.visitorCategory || "",
+            modifiedCategory: bookingf.visitorCategory || "",
+            personCount: bookingf.personCount || 1,
+            numberOfRooms: bookingf.numberOfRooms || 1,
+            rooms: bookingf?.rooms?.map((room) => room.room_number) || [],
+            purpose: bookingf.purpose || "",
+            billToBeSettledBy: bookingf.billToBeSettledBy || "",
+            remarks: bookingf.remarks || "",
+            visitorName: bookingf.visitorName || "",
+            visitorEmail: bookingf.visitorEmail || "",
+            visitorPhone: bookingf.visitorPhone || "",
+            visitorOrganization: bookingf.visitorOrganization || "",
+            visitorAddress: bookingf.visitorAddress || "",
+          }));
+          const rooms = bookingf.availableRooms?.map((room) => room.room_number) || [];
+          setAvailableRooms(rooms);
+        }
       } catch (error) {
         console.error("Error fetching booking data", error);
       }
@@ -107,70 +86,70 @@ function ForwardBookingForm({
     if (bookingId) {
       fetchBookingData();
     }
-  }, [bookingId]);
+  }, [bookingId, bookingf]);
 
   const handleInputChange = (name, value) => {
-    setFormData({ ...formData, [name]: value });
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
   };
 
-  function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== "") {
-      const cookies = document.cookie.split(";");
-      for (let i = 0; i < cookies.length; i += 1) {
-        const cookie = cookies[i].trim();
-        // Does this cookie string begin with the name we want?
-        if (cookie.substring(0, name.length + 1) === `${name}=`) {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
-        }
-      }
-    }
-    return cookieValue;
-  }
+  // Token handling moved to service layer interceptor - getCookie no longer needed
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e, action) => {
     e.preventDefault();
     setLoading(true);
 
-    const token = localStorage.getItem("authToken");
-    const csrfToken = getCookie("csrftoken");
-
-    const requestData = {
-      booking_id: bookingId,
-      modified_category: formData.modifiedCategory,
-      rooms: formData.rooms,
-      remarks: formData.remarks,
-    };
-
     try {
-      const response = await axios.post(
-        `${host}/visitorhostel/forward-booking-new/`,
-        requestData,
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-            "X-CSRFToken": csrfToken,
-            "Content-Type": "application/json",
-          },
-        },
-      );
-      console.log("Form submitted", response.data);
-      onBookingForward(); // Call the fetch function to refresh bookings
-      onClose(); // Close the modal after the operation
+      if (action === "accept") {
+        // SECURITY ENHANCEMENT: Room allocation now happens ONLY during VhIncharge confirmation
+        // Validate that rooms are selected before confirming
+        if (!formData.rooms || formData.rooms.length === 0) {
+          alert("Please select at least one room before confirming the booking.");
+          setLoading(false);
+          return;
+        }
+        
+        // Confirm the booking with new category and rooms - this will allocate rooms
+        const response = await bookingsAPI.confirmBooking(
+          bookingId,
+          formData.modifiedCategory,
+          formData.rooms,
+        );
+        console.log("Booking confirmed and rooms allocated", response);
+        alert("Booking confirmed successfully! Rooms have been allocated to the guest.");
+      } else if (action === "reject") {
+        // Reject the booking with remarks
+        const response = await bookingsAPI.rejectBooking(
+          bookingId,
+          formData.remarks,
+        );
+        console.log("Booking rejected", response);
+        alert("Booking rejected successfully.");
+      }
+
+      onClose(); // Close the modal after action
+      window.location.reload(); // Refresh to show updated bookings list
     } catch (error) {
-      console.error("Error submitting form", error);
+      // Use centralized error handling
+      if (action === "accept") {
+        ErrorHandlers.bookingError(error, 'Booking Confirmation');
+      } else {
+        ErrorHandlers.bookingError(error, 'Booking Rejection');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <MantineProvider theme={{ fontFamily: "Arial, sans-serif" }}>
-      <Modal
+    <ErrorBoundary>
+      <MantineProvider theme={{ fontFamily: "Arial, sans-serif" }}>
+        <Modal
         opened={forwardmodalOpened}
         onClose={onClose}
-        title="Forward Booking Request"
+        title="Action Booking Request"
         size="xl"
         overlayOpacity={0.55}
         overlayBlur={3}
@@ -178,7 +157,7 @@ function ForwardBookingForm({
         transitionDuration={500}
       >
         <LoadingOverlay visible={loading} overlayBlur={2} />
-        <form onSubmit={handleSubmit}>
+        <form>
           <Grid>
             <Grid.Col span={12}>
               <TextInput
@@ -223,6 +202,7 @@ function ForwardBookingForm({
             </Grid.Col>
 
             <Grid.Col span={6}>
+              {console.log("FORMDATA :", formData)}
               <Select
                 label="Modified Category"
                 value={formData.modifiedCategory}
@@ -252,23 +232,27 @@ function ForwardBookingForm({
 
             <Grid.Col span={12}>
               <MultiSelect
-                label="Rooms (required*)"
+                label="🔒 Rooms (required*) - ALLOCATION HAPPENS ONLY AFTER CONFIRMATION"
+                description="⚠️ SECURITY: Rooms will be allocated ONLY when you click 'Accept'. This ensures VhIncharge approval before room assignment."
                 value={formData.rooms}
-                onChange={(value) => {
-                  if (value.length <= formData.numberOfRooms) {
-                    handleInputChange("rooms", value); // Allow selection if within limit
-                  } else {
-                    console.warn("Cannot select more rooms than required!"); // Warn user
-                  }
-                }}
+                onChange={(value) => handleInputChange("rooms", value)}
                 data={availableRooms.map((room) => ({
                   value: room,
                   label: room,
                 }))}
                 required
-                multiple
                 searchable
                 clearable
+                styles={{
+                  label: { 
+                    fontWeight: 'bold',
+                    color: '#d63384'
+                  },
+                  description: {
+                    color: '#fd7e14',
+                    fontWeight: 500
+                  }
+                }}
               />
             </Grid.Col>
 
@@ -340,22 +324,38 @@ function ForwardBookingForm({
 
             <Grid.Col span={12}>
               <Group position="right" mt="md">
-                <Button type="submit">Forward</Button>
+                <Button
+                  type="button"
+                  color="red"
+                  onClick={(e) => handleSubmit(e, "reject")}
+                >
+                  Reject
+                </Button>
+                <Button
+                  type="button"
+                  color="green"
+                  onClick={(e) => handleSubmit(e, "accept")}
+                >
+                  Accept
+                </Button>
               </Group>
             </Grid.Col>
           </Grid>
         </form>
-      </Modal>
-    </MantineProvider>
+        </Modal>
+      </MantineProvider>
+    </ErrorBoundary>
   );
 }
 
-ForwardBookingForm.propTypes = {
+ConfirmBookingIn.propTypes = {
   forwardmodalOpened: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  bookingId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
-    .isRequired,
-  onBookingForward: PropTypes.func.isRequired, // Add this prop type
+  bookingId: PropTypes.string.isRequired,
+  bookingf: PropTypes.shape({
+    modifiedCategory: PropTypes.string,
+    rooms: PropTypes.arrayOf(PropTypes.string),
+  }).isRequired,
 };
 
-export default ForwardBookingForm;
+export default ConfirmBookingIn;

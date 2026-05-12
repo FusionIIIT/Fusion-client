@@ -265,12 +265,8 @@ import {
   TextInput,
   Select,
 } from "@mantine/core";
-import axios from "axios";
 import { FaEye } from "react-icons/fa"; // Import the eye icon
-import {
-  cancelBookingRoute,
-  getActiveBookingsRoute,
-} from "../../routes/visitorsHostelRoutes";
+import { bookingsAPI } from "./services/visitorHostelApi";
 import ViewBooking from "./viewActiveBooking"; // Import the new ViewActiveBooking component
 
 function BookingTable({ activeBooking }) {
@@ -299,7 +295,6 @@ function BookingTable({ activeBooking }) {
     })
     .sort((a, b) => new Date(b.bookingFrom) - new Date(a.bookingFrom));
 
-  console.log("Sorted Bookings from Active Booking", sortedBookings);
   return (
     <Box p="md" style={{ margin: 10 }}>
       <Box
@@ -474,16 +469,9 @@ function ActiveBookings() {
 
   useEffect(() => {
     const fetchActiveBookings = async () => {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        return console.error("No authentication token found!");
-      }
-
       try {
-        const { data } = await axios.get(getActiveBookingsRoute, {
-          headers: { Authorization: `Token ${token}` },
-        });
-        setActiveBooking(data.active_bookings);
+        const activeBookingsData = await bookingsAPI.getActiveBookings();
+        setActiveBooking(activeBookingsData || []);
       } catch (error) {
         console.error("Error fetching active bookings:", error);
       }
@@ -493,17 +481,8 @@ function ActiveBookings() {
   }, []);
 
   const handleCancel = async (id) => {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      return console.error("No authentication token found!");
-    }
-
     try {
-      await axios.post(
-        cancelBookingRoute,
-        { booking_id: id },
-        { headers: { Authorization: `Token ${token}` } },
-      );
+      await bookingsAPI.cancelBooking(id);
       setActiveBooking((prev) => prev.filter((booking) => booking.id !== id));
     } catch (error) {
       console.error("Error canceling booking:", error);

@@ -9,79 +9,56 @@ import {
   Group,
   Badge,
 } from "@mantine/core";
-import axios from "axios";
 import PropTypes from "prop-types";
-import { fetchPartialBookingdataRoute } from "../../routes/visitorsHostelRoutes";
-import { host } from "../../routes/globalRoutes";
+import { roomsAPI } from "../services/visitorHostelApi";
 
-function RoomsDetails({ bookingFrom, bookingTo }) {
+function RoomAvailabilityDetails({ bookingFrom, bookingTo, selectedCategory }) {
   const [availableRooms, setAvailableRooms] = useState([]);
   const [partialBookingData, setPartialBookingData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const roomData = {
-    G: ["G01", "G02", "G03", "G04", "G05", "G06", "G07", "G08", "G09", "G10"],
-    F: [
-      "F01",
-      "F02",
-      "F03",
-      "F04",
-      "F05",
-      "F06",
-      "F07",
-      "F08",
-      "F09",
-      "F10",
-      "F11",
-      "F12",
-    ],
-    S: ["S01", "S02", "S03", "S04", "S05", "S06"],
-    T: ["T01", "T02", "T03", "T04", "T05", "T06", "T07", "T08"],
+    A: ["A01", "A02", "A03", "A04", "A05", "A06"],
+    B: ["B01", "B02", "B03", "B04", "B05", "B06"],
+    C: ["C01", "C02", "C03", "C04", "C05", "C06"],
+    D: ["D01", "D02", "D03", "D04"],
   };
 
   useEffect(() => {
     const fetchAvailableRooms = async () => {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        return console.error("No authentication token found!");
+      if (!selectedCategory) {
+        setAvailableRooms([]);
+        setError("Please select a category to check availability.");
+        return;
       }
 
       try {
-        const response = await axios.post(
-          `${host}/visitorhostel/room_availabity_new/`,
-          { start_date: bookingFrom, end_date: bookingTo },
-          {
-            headers: {
-              Authorization: `Token ${token}`,
-              "Content-Type": "application/json",
-            },
-          },
-        );
-        setAvailableRooms(response.data.available_rooms);
-      } catch (error) {
-        console.error("Error fetching available rooms:", error);
+        setLoading(true);
+        setError(null);
+
+        // Use service layer for room availability
+        const rooms = await roomsAPI.getAvailableRooms(bookingFrom, bookingTo, selectedCategory);
+        setAvailableRooms(rooms || []);
+      } catch (err) {
+        const errorMsg = err?.message || "Error fetching available rooms";
+        console.error("Error fetching available rooms:", err);
+        setError(errorMsg);
+        setAvailableRooms([]);
+      } finally {
+        setLoading(false);
       }
     };
 
+    // Note: Partial booking data endpoint not yet available in REST API
+    // TODO: Implement this endpoint or remove feature if not needed
     const fetchPartialBookingData = async () => {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        return console.error("No authentication token found!");
-      }
-
       try {
-        const response = await axios.post(
-          fetchPartialBookingdataRoute,
-          { start_date: bookingFrom, end_date: bookingTo },
-          {
-            headers: {
-              Authorization: `Token ${token}`,
-              "Content-Type": "application/json",
-            },
-          },
-        );
-        setPartialBookingData(response.data);
-      } catch (error) {
-        console.error("Error fetching partial booking data:", error);
+        // Placeholder - will be implemented when API endpoint is available
+        setPartialBookingData([]);
+      } catch (err) {
+        console.error("Error fetching partial booking data:", err);
+        setPartialBookingData([]);
       }
     };
 
@@ -89,7 +66,7 @@ function RoomsDetails({ bookingFrom, bookingTo }) {
       fetchAvailableRooms();
       fetchPartialBookingData();
     }
-  }, [bookingFrom, bookingTo]);
+  }, [bookingFrom, bookingTo, selectedCategory]);
 
   const filteredPartialBookingData = partialBookingData.filter(
     (data) => data.available_ranges && data.available_ranges.length > 0,
@@ -111,30 +88,32 @@ function RoomsDetails({ bookingFrom, bookingTo }) {
   return (
     <MantineProvider theme={{ fontFamily: "Arial, sans-serif" }}>
       <Box>
-        {Object.keys(roomData).map((section) => (
-          <Grid
-            key={section}
-            justify="center"
-            gutter="xs"
-            style={{ marginBottom: "10px", marginTop: "10px" }}
-          >
-            {roomData[section].map((room) => (
-              <Grid.Col
-                span={1}
-                key={room}
-                style={{ textAlign: "center", padding: "5px" }}
-              >
-                <Button
-                  variant="filled"
-                  color={getButtonColor(room)}
-                  style={{ width: "64px", height: "40px" }}
+        {Object.keys(roomData)
+          .filter((section) => !selectedCategory || selectedCategory === section)
+          .map((section) => (
+            <Grid
+              key={section}
+              justify="center"
+              gutter="xs"
+              style={{ marginBottom: "10px", marginTop: "10px" }}
+            >
+              {roomData[section].map((room) => (
+                <Grid.Col
+                  span={1}
+                  key={room}
+                  style={{ textAlign: "center", padding: "5px" }}
                 >
-                  {room}
-                </Button>
-              </Grid.Col>
-            ))}
-          </Grid>
-        ))}
+                  <Button
+                    variant="filled"
+                    color={getButtonColor(room)}
+                    style={{ width: "64px", height: "40px" }}
+                  >
+                    {room}
+                  </Button>
+                </Grid.Col>
+              ))}
+            </Grid>
+          ))}
       </Box>
 
       <Box mt="xl">
@@ -209,9 +188,10 @@ function RoomsDetails({ bookingFrom, bookingTo }) {
   );
 }
 
-RoomsDetails.propTypes = {
+RoomAvailabilityDetails.propTypes = {
   bookingFrom: PropTypes.string.isRequired,
   bookingTo: PropTypes.string.isRequired,
+  selectedCategory: PropTypes.string,
 };
 
-export default RoomsDetails;
+export default RoomAvailabilityDetails;

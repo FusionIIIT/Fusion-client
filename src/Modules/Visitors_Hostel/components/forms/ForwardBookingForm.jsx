@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import {
   MantineProvider,
   TextInput,
+  Select,
   NumberInput,
   Button,
   Textarea,
@@ -11,30 +12,26 @@ import {
   Modal,
   LoadingOverlay,
   MultiSelect,
-  Select,
 } from "@mantine/core";
-import axios from "axios";
-import { host } from "../../routes/globalRoutes";
-import { confirmBookingRoute } from "../../routes/visitorsHostelRoutes";
+import { bookingsAPI, roomsAPI } from "../../services/visitorHostelApi";
 
-function ConfirmBookingIn({
+function ForwardBookingForm({
   forwardmodalOpened,
   onClose,
+  onBookingForward,
   bookingId,
-  bookingf,
 }) {
   console.log("BOOKING ID: ", bookingId); // Log booking ID for debugging
-  console.log("booking fetched as Props: ", bookingf);
   const [formData, setFormData] = useState({
     intenderUsername: "",
     intenderEmail: "",
     bookingFrom: "",
     bookingTo: "",
     visitorCategory: "",
-    modifiedCategory: bookingf?.modifiedCategory || "", // Provide a fallback value
+    modifiedCategory: "",
     personCount: 1,
     numberOfRooms: 1,
-    rooms: bookingf?.rooms || [], // Provide a fallback value
+    rooms: [],
     purpose: "",
     billToBeSettledBy: "",
     remarks: "",
@@ -44,41 +41,27 @@ function ConfirmBookingIn({
     visitorOrganization: "",
     visitorAddress: "",
   });
+
   const [loading, setLoading] = useState(false);
   const [availableRooms, setAvailableRooms] = useState([]);
 
   useEffect(() => {
+    const fetchAvailableRooms = async (startDate, endDate) => {
+      try {
+        const rooms = await roomsAPI.getAvailableRooms(startDate, endDate);
+        setAvailableRooms(rooms || []);
+      } catch (error) {
+        console.error("Error fetching available rooms:", error);
+      }
+    };
+
     const fetchBookingData = async () => {
       try {
-        const response = await axios.get(
-          `${host}/visitorhostel/get-booking-details/${bookingId}/`,
-        );
-        const booking = response.data;
-        console.log("BOOKING FOR FORM: ", booking);
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          intenderUsername: booking.intenderUsername,
-          intenderEmail: booking.intenderEmail,
-          bookingFrom: booking.bookingFrom,
-          bookingTo: booking.bookingTo,
-          visitorCategory: booking.visitorCategory,
-          modifiedCategory: booking.visitorCategory || "", // Use optional chaining and fallback
-          personCount: booking.personCount,
-          numberOfRooms: booking.numberOfRooms,
-          rooms: bookingf?.rooms || [], // Use optional chaining and fallback
-          purpose: booking.purpose,
-          billToBeSettledBy: booking.billToBeSettledBy,
-          remarks: booking.remarks,
-          visitorName: booking.visitorName,
-          visitorEmail: booking.visitorEmail,
-          visitorPhone: booking.visitorPhone,
-          visitorOrganization: booking.visitorOrganization,
-          visitorAddress: booking.visitorAddress,
-        }));
-        setAvailableRooms(
-          booking.availableRooms.map((room) => room.room_number),
-        );
-        console.log("Rooms Available are: ", booking.availableRooms);
+        // TODO: Implement GET /api/bookings/{bookingId}/ endpoint on backend
+        // Currently, this endpoint is not available in the REST API
+        console.log("TODO: Fetch booking data for ID:", bookingId);
+        // For now, booking data would need to be passed in as props or fetched from parent
+        // This component should ideally receive booking data via props
       } catch (error) {
         console.error("Error fetching booking data", error);
       }
@@ -87,64 +70,34 @@ function ConfirmBookingIn({
     if (bookingId) {
       fetchBookingData();
     }
-  }, [bookingId, bookingf]);
+  }, [bookingId]);
 
   const handleInputChange = (name, value) => {
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      [name]: value,
-    }));
+    setFormData({ ...formData, [name]: value });
   };
 
-  function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== "") {
-      const cookies = document.cookie.split(";");
-      for (let i = 0; i < cookies.length; i += 1) {
-        const cookie = cookies[i].trim();
-        // Does this cookie string begin with the name we want?
-        if (cookie.substring(0, name.length + 1) === `${name}=`) {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
-        }
-      }
-    }
-    return cookieValue;
-  }
+  // Token handling moved to service layer interceptor - getCookie no longer needed
 
-  const handleSubmit = async (e, action) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    const token = localStorage.getItem("authToken");
-    const csrfToken = getCookie("csrftoken");
-
-    const requestData = {
-      booking_id: bookingId,
-      modified_category: formData.modifiedCategory,
-      rooms: formData.rooms,
-      remarks: formData.remarks,
-      action, // "accept" or "reject" as action
-    };
-
     try {
-      // Send the POST request to the confirm_booking_new endpoint
-      const response = await axios.post(confirmBookingRoute, requestData, {
-        headers: {
-          Authorization: `Token ${token}`,
-          "X-CSRFToken": csrfToken,
-          "Content-Type": "application/json",
-        },
-      });
-
-      console.log(`Booking ${action}ed`, response.data);
-      onClose(); // Close the modal after action
+      // Use bookingsAPI service to forward booking
+      const response = await bookingsAPI.forwardBooking(
+        bookingId,
+        formData.modifiedCategory,
+        formData.rooms,
+        formData.remarks,
+      );
+      console.log("Form submitted", response);
+      onBookingForward(); // Call the fetch function to refresh bookings
+      onClose(); // Close the modal after the operation
     } catch (error) {
-      console.error(`Error ${action}ing booking:`, error);
+      console.error("Error submitting form", error);
     } finally {
       setLoading(false);
     }
-    window.location.reload();
   };
 
   return (
@@ -152,7 +105,7 @@ function ConfirmBookingIn({
       <Modal
         opened={forwardmodalOpened}
         onClose={onClose}
-        title="Action Booking Request"
+        title="Forward Booking Request"
         size="xl"
         overlayOpacity={0.55}
         overlayBlur={3}
@@ -160,7 +113,7 @@ function ConfirmBookingIn({
         transitionDuration={500}
       >
         <LoadingOverlay visible={loading} overlayBlur={2} />
-        <form>
+        <form onSubmit={handleSubmit}>
           <Grid>
             <Grid.Col span={12}>
               <TextInput
@@ -205,7 +158,6 @@ function ConfirmBookingIn({
             </Grid.Col>
 
             <Grid.Col span={6}>
-              {console.log("FORMDATA :", formData)}
               <Select
                 label="Modified Category"
                 value={formData.modifiedCategory}
@@ -237,12 +189,19 @@ function ConfirmBookingIn({
               <MultiSelect
                 label="Rooms (required*)"
                 value={formData.rooms}
-                onChange={(value) => handleInputChange("rooms", value)}
+                onChange={(value) => {
+                  if (value.length <= formData.numberOfRooms) {
+                    handleInputChange("rooms", value); // Allow selection if within limit
+                  } else {
+                    console.warn("Cannot select more rooms than required!"); // Warn user
+                  }
+                }}
                 data={availableRooms.map((room) => ({
                   value: room,
                   label: room,
                 }))}
                 required
+                multiple
                 searchable
                 clearable
               />
@@ -316,20 +275,7 @@ function ConfirmBookingIn({
 
             <Grid.Col span={12}>
               <Group position="right" mt="md">
-                <Button
-                  type="button"
-                  color="red"
-                  onClick={(e) => handleSubmit(e, "reject")}
-                >
-                  Reject
-                </Button>
-                <Button
-                  type="button"
-                  color="green"
-                  onClick={(e) => handleSubmit(e, "accept")}
-                >
-                  Accept
-                </Button>
+                <Button type="submit">Forward</Button>
               </Group>
             </Grid.Col>
           </Grid>
@@ -339,14 +285,12 @@ function ConfirmBookingIn({
   );
 }
 
-ConfirmBookingIn.propTypes = {
+ForwardBookingForm.propTypes = {
   forwardmodalOpened: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  bookingId: PropTypes.string.isRequired,
-  bookingf: PropTypes.shape({
-    modifiedCategory: PropTypes.string,
-    rooms: PropTypes.arrayOf(PropTypes.string),
-  }).isRequired,
+  bookingId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    .isRequired,
+  onBookingForward: PropTypes.func.isRequired, // Add this prop type
 };
 
-export default ConfirmBookingIn;
+export default ForwardBookingForm;

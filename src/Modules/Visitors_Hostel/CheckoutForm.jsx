@@ -12,9 +12,8 @@ import {
   NumberInput,
   Divider,
 } from "@mantine/core";
-import axios from "axios";
 import PropTypes from "prop-types";
-import { host } from "../../routes/globalRoutes";
+import { bookingsAPI } from "./services/visitorHostelApi";
 
 function CheckoutForm({ modalOpened, onClose, bookingId, bookingDetails }) {
   const [items, setItems] = useState([
@@ -53,43 +52,15 @@ function CheckoutForm({ modalOpened, onClose, bookingId, bookingDetails }) {
   };
 
   const handleCompleteCheckout = async () => {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      return console.error("No authentication token found!");
-    }
-
     try {
-      const now = new Date();
-      const formattedTime = now.toTimeString().split(" ")[0]; // Extract time in HH:MM:SS format
+      // Use bookingsAPI service for checkout
+      const mealBill = 0; // Default meal bill
+      const roomBill = totalAmount; // Total amount as room bill
 
-      const data = {
-        booking_id: bookingId,
-        inventory_items: items.map((item) => ({
-          name: item.name,
-          quantity: item.quantity,
-          cost: item.cost,
-        })),
-        meal_bill: 0, // Add meal bill if applicable
-        room_bill: totalAmount, // Total amount as room bill
-        check_out_time: formattedTime, // Send time in HH:MM:SS format
-      };
-
-      console.log("Data being sent to backend:", data); // Log the data
-
-      // Send request to the backend
-      const response = await axios.post(
-        `${host}/visitorhostel/check-out-with-inventory/`,
-        data,
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-            "Content-Type": "application/json",
-          },
-        },
-      );
+      const response = await bookingsAPI.checkOut(bookingId, mealBill, roomBill);
 
       console.log("Successfully completed checkout for booking ID:", bookingId);
-      console.log("Response from backend:", response.data);
+      console.log("Response from backend:", response);
 
       alert("Checkout completed successfully!");
       onClose(); // Close the modal after checkout

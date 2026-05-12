@@ -1,36 +1,32 @@
 import React from "react";
 import { Tabs, MantineProvider, Button } from "@mantine/core";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import CustomBreadcrumbs from "./components/BreadCrumbs"; // Import the CustomBreadcrumbs component
+import { VH_ABSOLUTE_PATHS } from "../../routes/visitorsHostelRoutes";
 
 const TabsModules = [
   {
     label: "Manage Bookings",
     id: "manage-bookings",
-    url: "/visitors_hostel",
+    url: VH_ABSOLUTE_PATHS.ROOT,
   },
   {
     label: "Room Availability",
     id: "room-availability",
-    url: "/visitors_hostel/room-availability",
+    url: VH_ABSOLUTE_PATHS.ROOM_AVAILABILITY,
   },
-  // {
-  //   label: "Mess Record",
-  //   id: "mess-record",
-  //   url: "/visitors_hostel/mess-record",
-  // },
-  { label: "Inventory", id: "inventory", url: "/visitors_hostel/inventory" },
+  { label: "Inventory", id: "inventory", url: VH_ABSOLUTE_PATHS.INVENTORY },
   {
     label: "Account Statement",
     id: "account-statement",
-    url: "/visitors_hostel/account-statement",
+    url: VH_ABSOLUTE_PATHS.ACCOUNT_STATEMENTS,
   },
   {
     label: "Rules and Regulations",
     id: "rules",
-    url: "/visitors_hostel/rules",
+    url: VH_ABSOLUTE_PATHS.GUIDELINES,
   },
 ];
 
@@ -38,27 +34,27 @@ const ManageBookingsTabs = [
   {
     label: "Bookings",
     id: "bookings",
-    url: "/visitors_hostel/",
+    url: VH_ABSOLUTE_PATHS.BOOKINGS,
   },
   {
     label: "Pending Requests",
     id: "pending-requests",
-    url: "/visitors_hostel/pending_requests",
+    url: VH_ABSOLUTE_PATHS.PENDING_BOOKINGS,
   },
   {
     label: "Cancelled Requests",
     id: "cancel-request",
-    url: "/visitors_hostel/cancel_request",
+    url: VH_ABSOLUTE_PATHS.CANCELLED_BOOKINGS,
   },
   {
     label: "Active Bookings",
     id: "active-bookings",
-    url: "/visitors_hostel/active_bookings",
+    url: VH_ABSOLUTE_PATHS.ACTIVE_BOOKINGS,
   },
   {
     label: "Completed Bookings",
     id: "completed-bookings",
-    url: "/visitors_hostel/completed_bookings",
+    url: VH_ABSOLUTE_PATHS.COMPLETED_BOOKINGS,
   },
 ];
 
@@ -66,6 +62,32 @@ export default function BookingManagement() {
   const [activeTab, setActiveTab] = React.useState("manage-bookings");
   const [activeSubTab, setActiveSubTab] = React.useState("bookings");
   const navigate = useNavigate();
+  const location = useLocation();
+
+  React.useEffect(() => {
+    const path = location.pathname;
+
+    if (
+      path.includes(VH_ABSOLUTE_PATHS.ROOM_AVAILABILITY) ||
+      path.includes(VH_ABSOLUTE_PATHS.INVENTORY) ||
+      path.includes(VH_ABSOLUTE_PATHS.ACCOUNT_STATEMENTS) ||
+      path.includes(VH_ABSOLUTE_PATHS.GUIDELINES)
+    ) {
+      if (path.includes(VH_ABSOLUTE_PATHS.ROOM_AVAILABILITY)) setActiveTab("room-availability");
+      else if (path.includes(VH_ABSOLUTE_PATHS.INVENTORY)) setActiveTab("inventory");
+      else if (path.includes(VH_ABSOLUTE_PATHS.ACCOUNT_STATEMENTS)) setActiveTab("account-statement");
+      else if (path.includes(VH_ABSOLUTE_PATHS.GUIDELINES)) setActiveTab("rules");
+      return;
+    }
+
+    setActiveTab("manage-bookings");
+
+    if (path.includes(VH_ABSOLUTE_PATHS.PENDING_BOOKINGS)) setActiveSubTab("pending-requests");
+    else if (path.includes(VH_ABSOLUTE_PATHS.CANCELLED_BOOKINGS)) setActiveSubTab("cancel-request");
+    else if (path.includes(VH_ABSOLUTE_PATHS.ACTIVE_BOOKINGS)) setActiveSubTab("active-bookings");
+    else if (path.includes(VH_ABSOLUTE_PATHS.COMPLETED_BOOKINGS)) setActiveSubTab("completed-bookings");
+    else setActiveSubTab("bookings");
+  }, [location.pathname]);
 
   const handleTabChange = (tabId) => {
     const tab = TabsModules.find((t) => t.id === tabId);
@@ -84,20 +106,36 @@ export default function BookingManagement() {
   };
 
   const role = useSelector((state) => state.user.role);
+  const currentAccessibleModules = useSelector(
+    (state) => state.user.currentAccessibleModules
+  );
+  const isIncharge = role === "VhIncharge";
+  const isCaretaker = role === "VhCaretaker";
+  
+  // Check if user has access to visitor_hostel module
+  const hasVHAccess = currentAccessibleModules?.visitor_hostel === true;
 
   const filteredTabs = TabsModules.filter((tab) => {
-    if (role === "VhCaretaker" || role === "VhIncharge") {
+    // VhIncharge has full module access.
+    if (isIncharge) {
       return true;
     }
-    return ["manage-bookings", "booking-form", "rules"].includes(tab.id);
+    // VhCaretaker cannot access financial reports.
+    if (isCaretaker) {
+      return tab.id !== "account-statement";
+    }
+    // Other users see tabs only if they have visitor_hostel module access
+    if (hasVHAccess) {
+      return ["manage-bookings", "booking-form", "rules"].includes(tab.id);
+    }
+    // If no access, show nothing
+    return false;
   });
 
-  const activeTabLabel = filteredTabs.find(
-    (tab) => tab.id === activeTab,
-  )?.label;
-  const activeSubTabLabel = ManageBookingsTabs.find(
-    (tab) => tab.id === activeSubTab,
-  )?.label;
+  const activeTabLabel =
+    TabsModules.find((tab) => tab.id === activeTab)?.label || "Manage Bookings";
+  const activeSubTabLabel =
+    ManageBookingsTabs.find((tab) => tab.id === activeSubTab)?.label || "Bookings";
 
   const activeTabIndex = filteredTabs.findIndex((tab) => tab.id === activeTab);
   const activeSubTabIndex = ManageBookingsTabs.findIndex(
@@ -136,14 +174,14 @@ export default function BookingManagement() {
     <MantineProvider withGlobalStyles withNormalizeCSS>
       <CustomBreadcrumbs
         activeTab={activeTabLabel}
-        subTab={activeSubTabLabel}
+        subTab={activeTab === "manage-bookings" ? activeSubTabLabel : ""}
       />
       <div className="booking-management">
         {/* Main Tab Navigation */}
         <div className="tabs-navigation">
           <Button
             variant="subtle"
-            compact
+            size="xs"
             onClick={handlePreviousTab}
             disabled={activeTabIndex === 0}
             className="toggle-button"
@@ -151,7 +189,7 @@ export default function BookingManagement() {
             <IconChevronLeft size={18} />
           </Button>
           <div className="tabs-scrollable-container">
-            <Tabs value={activeTab} onTabChange={handleTabChange}>
+            <Tabs value={activeTab} onChange={handleTabChange}>
               <Tabs.List className="responsive-tabs">
                 {filteredTabs.map((tab) => (
                   <Tabs.Tab
@@ -174,7 +212,7 @@ export default function BookingManagement() {
           </div>
           <Button
             variant="subtle"
-            compact
+            size="xs"
             onClick={handleNextTab}
             disabled={activeTabIndex === filteredTabs.length - 1}
             className="toggle-button"
@@ -188,7 +226,7 @@ export default function BookingManagement() {
             <div className="tabs-navigation">
               <Button
                 variant="subtle"
-                compact
+                size="xs"
                 onClick={handlePreviousSubTab}
                 disabled={activeSubTabIndex === 0}
                 className="toggle-button"
@@ -196,9 +234,16 @@ export default function BookingManagement() {
                 <IconChevronLeft size={18} />
               </Button>
               <div className="tabs-scrollable-container">
-                <Tabs value={activeSubTab} onTabChange={handleSubTabChange}>
+                <Tabs value={activeSubTab} onChange={handleSubTabChange}>
                   <Tabs.List className="responsive-tabs">
-                    {ManageBookingsTabs.map((tab) => (
+                    {ManageBookingsTabs.filter((tab) => {
+                      // Pending Requests only for VhIncharge/VhCaretaker
+                      if (tab.id === "pending-requests") {
+                        return role === "VhIncharge" || role === "VhCaretaker";
+                      }
+                      // All other tabs visible to everyone
+                      return true;
+                    }).map((tab) => (
                       <Tabs.Tab
                         key={tab.id}
                         value={tab.id}
@@ -220,7 +265,7 @@ export default function BookingManagement() {
               </div>
               <Button
                 variant="subtle"
-                compact
+                size="xs"
                 onClick={handleNextSubTab}
                 disabled={activeSubTabIndex === ManageBookingsTabs.length - 1}
                 className="toggle-button"

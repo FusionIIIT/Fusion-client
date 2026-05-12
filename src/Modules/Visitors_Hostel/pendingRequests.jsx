@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import {
   MantineProvider,
   Table,
@@ -16,7 +15,7 @@ import CombinedBookingForm from "./bookingForm";
 import ForwardBookingForm from "./forwardBooking";
 import ConfirmBookingIn from "./confirmBooking_Incharge";
 import ViewBooking from "./viewBooking"; // Import the new ViewBooking component
-import { fetchBookingsRoute } from "../../routes/visitorsHostelRoutes";
+import { bookingsAPI } from "./services/visitorHostelApi";
 
 function BookingsRequestTable({ bookings, onBookingForward }) {
   const [modalOpened, setModalOpened] = useState(false); // State to control modal
@@ -74,26 +73,32 @@ function BookingsRequestTable({ bookings, onBookingForward }) {
         mb="md"
         style={{
           display: "flex",
-          justifyContent: "center", // Centers the content horizontally
+          justifyContent: "space-between", // Space between title and button
           alignItems: "center", // Centers the content vertically
           width: "100%", // Ensures the Box takes full width
           gap: "1rem", // Adds space between the text and button
         }}
       >
-        <Box
-          style={{ display: "flex", justifyContent: "center", width: "80%" }}
+        <Text
+          style={{
+            paddingBottom: 15,
+            fontWeight: "bold",
+            fontSize: "24px",
+            color: "#228be6",
+          }}
         >
-          <Text
-            style={{
-              paddingBottom: 15,
-              fontWeight: "bold",
-              fontSize: "24px",
-              color: "#228be6",
-            }}
+          Pending Requests
+        </Text>
+        {role !== "VhIncharge" && role !== "VhCaretaker" && (
+          <Button
+            variant="filled"
+            color="blue"
+            onClick={() => setModalOpened(true)}
+            style={{ marginBottom: 15 }}
           >
-            Pending Requests
-          </Text>
-        </Box>
+            + Create Booking Request
+          </Button>
+        )}
       </Box>
 
       <TextInput
@@ -190,7 +195,6 @@ function BookingsRequestTable({ bookings, onBookingForward }) {
                   }}
                 >
                   {booking.modifiedCategory}
-                  {console.log("BOOKING: ", booking)}
                 </td>
                 {role === "VhIncharge" ? (
                   <td
@@ -332,16 +336,9 @@ function PendingReqs() {
   const [bookings, setBookings] = useState([]);
 
   const fetchBookings = async () => {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      return console.error("No authentication token found!");
-    }
-
     try {
-      const { data } = await axios.get(fetchBookingsRoute, {
-        headers: { Authorization: `Token ${token}` },
-      });
-      setBookings(data.pending_bookings);
+      const pendingBookings = await bookingsAPI.getPendingBookings();
+      setBookings(pendingBookings || []);
     } catch (error) {
       console.error("Error fetching booking requests:", error);
     }

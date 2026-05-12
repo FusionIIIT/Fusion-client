@@ -1,18 +1,45 @@
-// export const host = "http://127.0.0.1:8000";
-import { host } from "../globalRoutes";
+const VH_BASE_PATH = "/visitors_hostel";
 
-export const fetchAvailableRoomsRoute = `${host}/visitorhostel/room_availabity_new/`;
-export const confirmBookingRoute = `${host}/visitorhostel/confirm-booking-new/`;
-export const fetchCompletedBookingsRoute = `${host}/visitorhostel/completed-bookings/`;
-export const fetchCancelledBookingsRoute = `${host}/visitorhostel/get-inactive-bookings/`;
-export const fetchBookingsRoute = `${host}/visitorhostel/get-booking-requests/`;
-export const requestBookingRoute = `${host}/visitorhostel/request-booking/`;
-export const addInventoryRoute = `${host}/visitorhostel/api/inventory_add/`;
-export const getActiveBookingsRoute = `${host}/visitorhostel/get-active-bookings/`;
-export const cancelBookingRoute = `${host}/visitorhostel/cancel-booking/`;
-export const fetchIncomeDataRoute = `${host}/visitorhostel/accounts-income/`;
-export const addItemsRoute = `${host}/visitorhostel/api/inventory_add/`;
-export const fetchInventorydataRoute = `${host}/visitorhostel/api/inventory_list/`;
-export const fetchPartialBookingdataRoute = `${host}/visitorhostel/check-partial-booking/`;
-export const checkInBookingRoute = `${host}/visitorhostel/check-in/`;
-export const checkOutBookingRoute = `${host}/visitorhostel/check-out/`;
+export const VH_ROLES = {
+  INCHARGE: "VhIncharge",
+  CARETAKER: "VhCaretaker",
+};
+
+export const VH_STAFF_ROLES = [VH_ROLES.INCHARGE, VH_ROLES.CARETAKER];
+export const VH_INCHARGE_ONLY_ROLES = [VH_ROLES.INCHARGE];
+
+export const VH_RELATIVE_PATHS = {
+  ROOT: "/",
+  BOOKINGS: "bookings",
+  PENDING_BOOKINGS: "pending-bookings",
+  CANCELLED_BOOKINGS: "cancelled-bookings",
+  ACTIVE_BOOKINGS: "active-bookings",
+  COMPLETED_BOOKINGS: "completed-bookings",
+  ROOM_AVAILABILITY: "room-availability",
+  INVENTORY: "inventory",
+  INVENTORY_MANAGEMENT: "inventory-management",
+  BILLS: "bills",
+  ACCOUNT_STATEMENTS: "account-statements",
+  GUIDELINES: "guidelines",
+  PENDING_REQUESTS_LEGACY: "pending_requests",
+  CANCEL_REQUEST_LEGACY: "cancel_request",
+  ACTIVE_BOOKINGS_LEGACY: "active_bookings",
+  COMPLETED_BOOKINGS_LEGACY: "completed_bookings",
+  ACCOUNT_STATEMENT_LEGACY: "account-statement",
+  RULES_LEGACY: "rules",
+};
+
+export const VH_ABSOLUTE_PATHS = {
+  ROOT: VH_BASE_PATH,
+  BOOKINGS: `${VH_BASE_PATH}/${VH_RELATIVE_PATHS.BOOKINGS}`,
+  PENDING_BOOKINGS: `${VH_BASE_PATH}/${VH_RELATIVE_PATHS.PENDING_BOOKINGS}`,
+  CANCELLED_BOOKINGS: `${VH_BASE_PATH}/${VH_RELATIVE_PATHS.CANCELLED_BOOKINGS}`,
+  ACTIVE_BOOKINGS: `${VH_BASE_PATH}/${VH_RELATIVE_PATHS.ACTIVE_BOOKINGS}`,
+  COMPLETED_BOOKINGS: `${VH_BASE_PATH}/${VH_RELATIVE_PATHS.COMPLETED_BOOKINGS}`,
+  ROOM_AVAILABILITY: `${VH_BASE_PATH}/${VH_RELATIVE_PATHS.ROOM_AVAILABILITY}`,
+  INVENTORY: `${VH_BASE_PATH}/${VH_RELATIVE_PATHS.INVENTORY}`,
+  INVENTORY_MANAGEMENT: `${VH_BASE_PATH}/${VH_RELATIVE_PATHS.INVENTORY_MANAGEMENT}`,
+  BILLS: `${VH_BASE_PATH}/${VH_RELATIVE_PATHS.BILLS}`,
+  ACCOUNT_STATEMENTS: `${VH_BASE_PATH}/${VH_RELATIVE_PATHS.ACCOUNT_STATEMENTS}`,
+  GUIDELINES: `${VH_BASE_PATH}/${VH_RELATIVE_PATHS.GUIDELINES}`,
+};
