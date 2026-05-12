@@ -2,7 +2,7 @@ import React from "react";
 import { Box, Text, List, ThemeIcon, Divider } from "@mantine/core";
 import { IconCircleDot } from "@tabler/icons-react";
 
-function VHGuidelinesPage() {
+function GuidelinesPage() {
   return (
     <Box
       style={{
@@ -148,4 +148,4 @@ function VHGuidelinesPage() {
   );
 }
 
-export default VHGuidelinesPage;
+export default GuidelinesPage;

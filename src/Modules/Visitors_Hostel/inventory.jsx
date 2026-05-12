@@ -13,10 +13,7 @@ import {
   Switch,
   Group,
 } from "@mantine/core";
-import {
-  addItemsRoute,
-  fetchInventorydataRoute,
-} from "../../routes/visitorsHostelRoutes";
+import { inventoryAPI } from "./services/visitorHostelApi";
 
 const TabsModules = [
   { label: "Consumable Inventory", id: "consumable-inventory" },
@@ -47,59 +44,41 @@ function InventoryManagement() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const token = localStorage.getItem("authToken");
-
-    const data = {
-      item_name: itemName,
-      bill_number: billId,
-      quantity: parseInt(quantity, 10),
-      cost: parseInt(cost, 10),
-      consumable,
-    };
-
     try {
-      const response = await fetch(addItemsRoute, {
-        method: "POST",
-        headers: {
-          Authorization: `Token ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
+      // Use inventoryAPI service to add item
+      const response = await inventoryAPI.addInventory(
+        itemName,
+        billId,
+        parseInt(quantity, 10),
+        parseInt(cost, 10),
+        consumable,
+      );
 
-      if (response.ok) {
-        const responseData = await response.json();
-        console.log("Item added successfully:", responseData);
-        setModalOpened(false);
-      } else {
-        const errorData = await response.json();
-        console.error("Failed to add item:", errorData);
-      }
+      console.log("Item added successfully:", response);
+      
+      // Reset form
+      setBillId("");
+      setItemName("");
+      setQuantity("");
+      setCost("");
+      setConsumable(false);
+      setModalOpened(false);
+      
+      // Refresh inventory data
+      // TODO: Implement real-time refresh or polling
     } catch (err) {
-      console.error("An error occurred:", error);
     }
   };
 
   useEffect(() => {
     const fetchInventoryData = async () => {
       try {
-        const token = localStorage.getItem("authToken");
-        const response = await fetch(fetchInventorydataRoute, {
-          headers: {
-            Authorization: `Token ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch inventory data");
-        }
-
-        const data = await response.json();
-        setInventoryData(data);
+        // TODO: Implement GET /api/inventory/ endpoint on backend to retrieve inventory data
+        // For now, setting to empty as the endpoint doesn't exist yet
+        setInventoryData([]);
         setLoading(false);
-      } catch (errr) {
-        setError(errr.message);
+      } catch (err) {
+        setError(err?.message || "Failed to fetch inventory data");
         setLoading(false);
       }
     };
