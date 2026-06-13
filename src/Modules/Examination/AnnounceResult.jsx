@@ -231,11 +231,13 @@ export default function AnnounceResult() {
             <SimpleGrid cols={3} spacing="md">
               <Select
                 label="Batch"
-                placeholder="Select Batch"
+                placeholder="Select or type to search batch"
                 data={batchOptions}
                 value={formData.batch}
                 onChange={(v) => { setFormData((f) => ({ ...f, batch: v })); setFieldErrors((e) => ({ ...e, batch: null })); }}
                 error={fieldErrors.batch}
+                searchable
+                nothingFoundMessage="No matching batch"
                 required
               />
               <Select

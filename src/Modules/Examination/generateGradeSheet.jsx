@@ -135,11 +135,13 @@ export default function GenerateGradeSheet() {
                 <Box>
                   <Select
                     label="Batch"
-                    placeholder="Select Batch"
+                    placeholder="Select or type to search batch"
                     data={formOptions.batches}
                     value={formData.batch?.toString()}
                     onChange={handleChange("batch")}
                     radius="sm"
+                    searchable
+                    nothingFoundMessage="No matching batch"
                   />
                 </Box>
                 <Box>

@@ -246,7 +246,7 @@ function LoginPage() {
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
+    const token = sessionStorage.getItem("authToken");
     if (token) {
       navigate("/dashboard", { replace: true });
     }

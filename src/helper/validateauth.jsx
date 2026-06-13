@@ -20,7 +20,7 @@ function ValidateAuth() {
   const navigate = useNavigate();
 
   const validateUser = useCallback(async () => {
-    const token = localStorage.getItem("authToken");
+    const token = sessionStorage.getItem("authToken");
 
     if (!token) {
       console.error("No authentication token found!");

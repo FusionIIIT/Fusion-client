@@ -1,8 +1,8 @@
-import { createTheme, MantineProvider } from "@mantine/core";
+import { createTheme, MantineProvider, Center, Loader } from "@mantine/core";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 import { Route, Routes, Navigate, useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Notifications } from "@mantine/notifications";
 import { Layout } from "./components/layout";
 import Dashboard from "./Modules/Dashboard/dashboardNotifications";
@@ -31,84 +31,99 @@ const theme = createTheme({
 export default function App() {
   const location = useLocation();
 
+  // True immediately when sessionStorage already has the token (normal in-session
+  // navigation), or when there is no token at all (fresh visit / already logged out).
+  // False only when localStorage has a token but sessionStorage doesn't — that
+  // happens after a browser/tab close and requires a BroadcastChannel check to
+  // determine whether the token is still backed by a live tab or is stale.
+  const [sessionReady, setSessionReady] = useState(() => {
+    const sessionToken = sessionStorage.getItem("authToken");
+    const localToken = localStorage.getItem("authToken");
+    return !!(sessionToken || !localToken);
+  });
+
+  // Permanent responder: reply to SESSION_CHECK messages from other tabs that
+  // are trying to determine if their localStorage token is still live.
   useEffect(() => {
-    const tokenKey = "authToken";
-    const localToken = localStorage.getItem(tokenKey);
-    const sessionToken = sessionStorage.getItem(tokenKey);
-    const canUseBroadcastChannel = typeof BroadcastChannel !== "undefined";
-    const channel = canUseBroadcastChannel
-      ? new BroadcastChannel("fusion-auth-session")
-      : null;
-
-    let pendingRequestId = null;
-    let receivedSessionAck = false;
-    let checkTimer = null;
-
+    if (typeof BroadcastChannel === "undefined") return;
+    const channel = new BroadcastChannel("fusion-auth-session");
     const onMessage = (event) => {
-      const message = event?.data;
-      if (!message) return;
-
-      if (
-        message.type === "SESSION_CHECK" &&
-        sessionStorage.getItem(tokenKey) &&
-        channel
-      ) {
-        channel.postMessage({
-          type: "SESSION_ACTIVE",
-          requestId: message.requestId,
-        });
-      }
-
-      if (
-        message.type === "SESSION_ACTIVE" &&
-        pendingRequestId &&
-        message.requestId === pendingRequestId
-      ) {
-        receivedSessionAck = true;
-        const currentLocalToken = localStorage.getItem(tokenKey);
-        if (currentLocalToken) {
-          sessionStorage.setItem(tokenKey, currentLocalToken);
-        }
+      const msg = event?.data;
+      if (msg?.type === "SESSION_CHECK" && sessionStorage.getItem("authToken")) {
+        channel.postMessage({ type: "SESSION_ACTIVE", requestId: msg.requestId });
       }
     };
-
-    if (channel) {
-      channel.addEventListener("message", onMessage);
-    }
-
-    // Keep token reads backward-compatible for existing API calls that still
-    // fetch authToken from localStorage.
-    if (!localToken && sessionToken) {
-      localStorage.setItem(tokenKey, sessionToken);
-    }
-
-    // If token exists only in localStorage, verify whether another active tab
-    // can confirm the same browser session; otherwise invalidate stale token.
-    if (localToken && !sessionToken) {
-      if (channel) {
-        pendingRequestId = `${Date.now()}-${Math.random()}`;
-        channel.postMessage({ type: "SESSION_CHECK", requestId: pendingRequestId });
-
-        checkTimer = setTimeout(() => {
-          if (!receivedSessionAck) {
-            localStorage.removeItem(tokenKey);
-            sessionStorage.removeItem(tokenKey);
-          }
-        }, 400);
-      } else {
-        localStorage.removeItem(tokenKey);
-        sessionStorage.removeItem(tokenKey);
-      }
-    }
-
+    channel.addEventListener("message", onMessage);
     return () => {
-      if (checkTimer) clearTimeout(checkTimer);
-      if (channel) {
-        channel.removeEventListener("message", onMessage);
-        channel.close();
-      }
+      channel.removeEventListener("message", onMessage);
+      channel.close();
     };
   }, []);
+
+  // One-time initializer: resolve the ambiguous case where localStorage has a
+  // token but sessionStorage doesn't (browser/tab was closed and reopened).
+  // Waits up to 400 ms for another active tab to confirm the session; if none
+  // responds the token is treated as stale and removed.
+  useEffect(() => {
+    if (sessionReady) return;
+
+    const tokenKey = "authToken";
+
+    if (typeof BroadcastChannel === "undefined") {
+      localStorage.removeItem(tokenKey);
+      setSessionReady(true);
+      return;
+    }
+
+    const channel = new BroadcastChannel("fusion-auth-session");
+    const requestId = `init-${Math.random()}`;
+    let confirmed = false;
+
+    const onMessage = (event) => {
+      const msg = event?.data;
+      if (msg?.type === "SESSION_ACTIVE" && msg.requestId === requestId) {
+        confirmed = true;
+        const token = localStorage.getItem(tokenKey);
+        if (token) sessionStorage.setItem(tokenKey, token);
+        setSessionReady(true);
+      }
+    };
+
+    channel.addEventListener("message", onMessage);
+    channel.postMessage({ type: "SESSION_CHECK", requestId });
+
+    const timer = setTimeout(() => {
+      if (!confirmed) {
+        localStorage.removeItem(tokenKey);
+      }
+      setSessionReady(true);
+    }, 400);
+
+    return () => {
+      clearTimeout(timer);
+      channel.removeEventListener("message", onMessage);
+      channel.close();
+    };
+  }, [sessionReady]);
+
+  // Backward-compat: keep localStorage in sync with sessionStorage so that
+  // existing API callers which still read authToken from localStorage work.
+  useEffect(() => {
+    const sessionToken = sessionStorage.getItem("authToken");
+    if (sessionToken && !localStorage.getItem("authToken")) {
+      localStorage.setItem("authToken", sessionToken);
+    }
+  }, []);
+
+  if (!sessionReady) {
+    return (
+      <MantineProvider theme={theme}>
+        <Center h="100vh">
+          <Loader size="md" />
+        </Center>
+      </MantineProvider>
+    );
+  }
 
   return (
     <MantineProvider theme={theme}>
