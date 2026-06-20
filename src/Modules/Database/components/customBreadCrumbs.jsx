@@ -1,19 +1,28 @@
 import { Breadcrumbs, Text } from "@mantine/core";
 import { CaretRight } from "@phosphor-icons/react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
-// Breadcrumbs Mapping for Database Module
 const breadcrumbMap = {
-  "/database/view": "View Database",
+  "/database/view": "Course-wise Student Enrollment",
+  "/database/student-courses": "Student Course Detail",
+  "/database/students-grade": "Student Grade Info",
+  "/database/unregistered-students": "Unregistered Students",
 };
 
 function CustomBreadDatabase() {
   const location = useLocation();
+  const categoryFromUrl = new URLSearchParams(location.search).get("category");
+  const safeCategory = ["ug", "pg", "phd"].includes(categoryFromUrl)
+    ? categoryFromUrl
+    : "ug";
 
   const pathSegments = location.pathname.split("/").filter(Boolean);
 
   const breadcrumbs = pathSegments.map((segment, index) => {
     const fullPath = `/${pathSegments.slice(0, index + 1).join("/")}`;
+    const targetPath = fullPath.startsWith("/database")
+      ? `${fullPath}?category=${safeCategory}`
+      : fullPath;
     let title = breadcrumbMap[fullPath] || segment;
 
     title = title.charAt(0).toUpperCase() + title.slice(1);
@@ -21,8 +30,8 @@ function CustomBreadDatabase() {
     return (
       <Text
         key={index}
-        component="a"
-        href={fullPath}
+        component={Link}
+        to={targetPath}
         size="1.2rem"
         fw={600}
         style={{ textDecoration: "none", color: "black" }}
@@ -40,8 +49,8 @@ function CustomBreadDatabase() {
       style={{ margin: "20px 10px" }}
     >
       <Text
-        component="a"
-        href="/dashboard"
+        component={Link}
+        to="/dashboard"
         size="1.2rem"
         fw={600}
         style={{ textDecoration: "none", color: "black" }}

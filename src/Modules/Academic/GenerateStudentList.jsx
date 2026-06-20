@@ -33,7 +33,7 @@ const generateAcademicYears = () => {
   const currentYear = new Date().getFullYear();
   const endYear = currentYear;
   const years = [];
-  for (let y = endYear; y >= 2020; y--) {
+  for (let y = endYear; y >= 2020; y -= 1) {
     years.push(`${y}-${String(y + 1).slice(-2)}`);
   }
   return years;
@@ -53,15 +53,6 @@ const PROGRAMME_TYPE_CHOICES = [
   { value: "All", label: "All Programmes" },
 ];
 
-const LIST_TYPE_CHOICES = [
-  { value: "Regular", label: "Regular" },
-  { value: "Backlog", label: "Backlog" },
-  { value: "Improvement", label: "Improvement" },
-  { value: "Audit", label: "Audit" },
-  { value: "Extra Credits", label: "Extra Credits" },
-  { value: "Replacement", label: "Replacement" },
-];
-
 export default function GenerateStudentList() {
   const [activeTab, setActiveTab]       = useState("rolllist");
 
@@ -69,7 +60,6 @@ export default function GenerateStudentList() {
   const [academicYear, setAcademicYear] = useState("");
   const [semesterType, setSemesterType] = useState("");
   const [programmeType, setProgrammeType] = useState("All");
-  const [listType, setListType]         = useState("");
   const [course, setCourse]             = useState("");
   const [courseOptions, setCourseOptions] = useState([]);
   const [showPreview, setShowPreview] = useState(false);
@@ -411,14 +401,15 @@ export default function GenerateStudentList() {
   const uniqueStudents = (() => {
     if (!preRegData?.students) return { registered: 0, notRegistered: 0 };
     const seen = new Set();
-    let registered = 0, notRegistered = 0;
-    for (const row of preRegData.students) {
+    let registered = 0;
+    let notRegistered = 0;
+    preRegData.students.forEach((row) => {
       if (!seen.has(row.roll_no)) {
         seen.add(row.roll_no);
-        if (row.status === "Registered") registered++;
-        else notRegistered++;
+        if (row.status === "Registered") registered += 1;
+        else notRegistered += 1;
       }
-    }
+    });
     return { registered, notRegistered };
   })();
 
@@ -851,7 +842,7 @@ export default function GenerateStudentList() {
                         <td style={{ padding: "8px", fontSize: "12px" }}>
                           {student.registration_type || student.status || listType || 'Regular'}
                         </td>
-                        <td style={{ padding: "8px", fontSize: "12px" }}>
+                        <td style={{ padding: "8px", fontSize: "12px" }} aria-label="signature">
                         </td>
                       </tr>
                     ))}
