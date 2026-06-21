@@ -210,6 +210,11 @@ const tpoTabs = [
     component: <StudentCpiTab />,
   },
   {
+    value: "company-registration",
+    label: "Company Registration",
+    component: <CompanyRegistrationForm />,
+  },
+  {
     value: "schedule",
     label: "Placement Schedule",
     component: <PlacementSchedule />,
@@ -233,11 +238,6 @@ const tpoTabs = [
     value: "send-notifications",
     label: "Send Notifications",
     component: <SendNotificationForm />,
-  },
-  {
-    value: "company-registration",
-    label: "Company Registration",
-    component: <CompanyRegistrationForm />,
   },
   {
     value: "reports",

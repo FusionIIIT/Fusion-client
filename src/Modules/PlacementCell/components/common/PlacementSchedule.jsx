@@ -11,11 +11,13 @@ import {
   TextInput,
   Select,
   Group,
+  SegmentedControl,
 } from "@mantine/core";
 import { useSelector } from "react-redux";
 import { notifications } from "@mantine/notifications";
 import AddPlacementEventForm from "../forms/AddPlacementEventForm";
 import PlacementScheduleCard from "./PlacementScheduleCard";
+import PlacementAgenda from "./PlacementAgenda";
 import LoadingSpinner from "./LoadingSpinner";
 import { placementApi } from "../../services/api";
 
@@ -101,6 +103,7 @@ function PlacementSchedule() {
   const [minPackage, setMinPackage] = useState("");
   const [maxPackage, setMaxPackage] = useState("");
   const [eligibilityFilter, setEligibilityFilter] = useState("all");
+  const [viewMode, setViewMode] = useState("agenda");
   const role = useSelector((state) => state.user.role);
   const isPlacementAdmin =
     role === "placement officer" || role === "placement chairman";
@@ -310,74 +313,93 @@ function PlacementSchedule() {
             Search
           </Button>
         </Group>
-        <Tabs defaultValue="all" variant="pills" style={{ marginLeft: 16 }}>
-          <Tabs.List>
-            <Tabs.Tab value="all">All</Tabs.Tab>
-            <Tabs.Tab value="active">Active</Tabs.Tab>
-            <Tabs.Tab value="upcoming">Upcoming</Tabs.Tab>
-            {role === "placement officer" && (
-              <Tabs.Tab value="closed">Closed</Tabs.Tab>
-            )}
-          </Tabs.List>
+        <SegmentedControl
+          value={viewMode}
+          onChange={setViewMode}
+          data={[
+            { label: "Agenda", value: "agenda" },
+            { label: "Cards", value: "cards" },
+          ]}
+          ml={16}
+          mb="md"
+        />
+        {viewMode === "agenda" ? (
+          <Container fluid>
+            <PlacementAgenda
+              data={filteredPlacementData}
+              isStudent={role === "student"}
+            />
+          </Container>
+        ) : (
+          <Tabs defaultValue="all" variant="pills" style={{ marginLeft: 16 }}>
+            <Tabs.List>
+              <Tabs.Tab value="all">All</Tabs.Tab>
+              <Tabs.Tab value="active">Active</Tabs.Tab>
+              <Tabs.Tab value="upcoming">Upcoming</Tabs.Tab>
+              {role === "placement officer" && (
+                <Tabs.Tab value="closed">Closed</Tabs.Tab>
+              )}
+            </Tabs.List>
 
-          <Tabs.Panel value="all" pt="md">
-            {allEvents.length > 0 ? (
-              <PlacementScheduleGrid
-                data={allEvents}
-                itemsPerPage={10}
-                cardsPerRow={2}
-              />
-            ) : (
-              <div style={{ textAlign: "center", marginTop: "20px" }}>
-                No placement schedules available.
-              </div>
-            )}
-          </Tabs.Panel>
-
-          <Tabs.Panel value="active" pt="md">
-            {activeEvents.length > 0 ? (
-              <PlacementScheduleGrid
-                data={activeEvents}
-                itemsPerPage={10}
-                cardsPerRow={2}
-              />
-            ) : (
-              <div style={{ textAlign: "center", marginTop: "20px" }}>
-                No active placement schedules available.
-              </div>
-            )}
-          </Tabs.Panel>
-
-          <Tabs.Panel value="upcoming" pt="md">
-            {upcomingEvents.length > 0 ? (
-              <PlacementScheduleGrid
-                data={upcomingEvents}
-                itemsPerPage={10}
-                cardsPerRow={2}
-              />
-            ) : (
-              <div style={{ textAlign: "center", marginTop: "20px" }}>
-                No upcoming placement schedules available.
-              </div>
-            )}
-          </Tabs.Panel>
-
-          {role === "placement officer" && (
-            <Tabs.Panel value="closed" pt="md">
-              {closedEvents.length > 0 ? (
+            <Tabs.Panel value="all" pt="md">
+              {allEvents.length > 0 ? (
                 <PlacementScheduleGrid
-                  data={closedEvents}
+                  data={allEvents}
                   itemsPerPage={10}
                   cardsPerRow={2}
                 />
               ) : (
                 <div style={{ textAlign: "center", marginTop: "20px" }}>
-                  No closed placement schedules available.
+                  No placement schedules available.
                 </div>
               )}
             </Tabs.Panel>
-          )}
-        </Tabs>
+
+            <Tabs.Panel value="active" pt="md">
+              {activeEvents.length > 0 ? (
+                <PlacementScheduleGrid
+                  data={activeEvents}
+                  itemsPerPage={10}
+                  cardsPerRow={2}
+                />
+              ) : (
+                <div style={{ textAlign: "center", marginTop: "20px" }}>
+                  No active placement schedules available.
+                </div>
+              )}
+            </Tabs.Panel>
+
+            <Tabs.Panel value="upcoming" pt="md">
+              {upcomingEvents.length > 0 ? (
+                <PlacementScheduleGrid
+                  data={upcomingEvents}
+                  itemsPerPage={10}
+                  cardsPerRow={2}
+                />
+              ) : (
+                <div style={{ textAlign: "center", marginTop: "20px" }}>
+                  No upcoming placement schedules available.
+                </div>
+              )}
+            </Tabs.Panel>
+
+            {role === "placement officer" && (
+              <Tabs.Panel value="closed" pt="md">
+                {closedEvents.length > 0 ? (
+                  <PlacementScheduleGrid
+                    data={closedEvents}
+                    itemsPerPage={10}
+                    cardsPerRow={2}
+                  />
+                ) : (
+                  <div style={{ textAlign: "center", marginTop: "20px" }}>
+                    No closed placement schedules available.
+                  </div>
+                )}
+              </Tabs.Panel>
+            )}
+          </Tabs>
+        )}
       </Container>
       <Modal opened={isModalOpen} onClose={handleCloseModal} size="lg" centered>
         <AddPlacementEventForm

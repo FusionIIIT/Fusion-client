@@ -1,12 +1,22 @@
 import React, { useState, useEffect } from "react";
-import { Calendar, dateFnsLocalizer } from "react-big-calendar";
+import { Calendar, dateFnsLocalizer, Views } from "react-big-calendar";
 import format from "date-fns/format";
 import parse from "date-fns/parse";
 import startOfWeek from "date-fns/startOfWeek";
 import getDay from "date-fns/getDay";
 import enUS from "date-fns/locale/en-US";
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import { Alert, Container, Title } from "@mantine/core";
+import {
+  Alert,
+  Badge,
+  Button,
+  Container,
+  Group,
+  Modal,
+  Stack,
+  Text,
+  Title,
+} from "@mantine/core";
 import { useNavigate } from "react-router-dom";
 import { placementApi } from "../../services/api";
 import {
@@ -15,9 +25,7 @@ import {
   showApiError,
 } from "../../utils/authorization";
 
-const locales = {
-  "en-US": enUS,
-};
+const locales = { "en-US": enUS };
 
 const localizer = dateFnsLocalizer({
   format,
@@ -27,38 +35,113 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
+// Event categories drive the colour-coding and the legend below the calendar.
+const CATEGORY = {
+  drive: { label: "Drive", color: "#2f9e44" },
+  test: { label: "Online Test", color: "#1c7ed6" },
+  interview: { label: "Interview", color: "#7048e8" },
+  deadline: { label: "Deadline", color: "#e03131" },
+  other: { label: "Other", color: "#868e96" },
+};
+
+// Classify a round's free-text type into one of the legend categories.
+const categorise = (type, round) => {
+  const value = (type || "").toLowerCase();
+  if (value.includes("interview")) return "interview";
+  if (
+    value.includes("test") ||
+    value.includes("online") ||
+    value.includes("written") ||
+    value.includes("aptitude") ||
+    value.includes("coding")
+  ) {
+    return "test";
+  }
+  if (!round) return "drive";
+  return "other";
+};
+
+const parseValidDate = (value) => {
+  if (!value) return null;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
 function PlacementCalendar() {
   const [events, setEvents] = useState([]);
   const [authorizationError, setAuthorizationError] = useState("");
+  const [selectedEvent, setSelectedEvent] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    async function fetchScheduleData() {
+    async function fetchData() {
       try {
-        const response = await placementApi.getCalendarEvents();
+        // Recruitment rounds (drives, tests, interviews) come from the calendar
+        // endpoint; application deadlines come from the schedule list so the
+        // calendar shows the whole placement timeline in one place.
+        const [calendarRes, scheduleRes] = await Promise.all([
+          placementApi.getCalendarEvents(),
+          placementApi.getPlacementSchedule().catch(() => ({ data: [] })),
+        ]);
 
-        const scheduleData = response.data.schedule_data;
+        const rounds = Array.isArray(calendarRes.data?.schedule_data)
+          ? calendarRes.data.schedule_data
+          : [];
 
-        if (Array.isArray(scheduleData)) {
-          const calendarEvents = scheduleData.map((item) => ({
-            id: item.id,
-            title: `${item.company_name} - Round ${item.round}`,
-            start: new Date(item.date),
-            end: new Date(item.date),
-            description: item.description,
-            type: item.type,
-          }));
+        const roundEvents = rounds
+          .map((item) => {
+            const start = parseValidDate(item.date);
+            if (!start) return null;
+            const end = parseValidDate(item.end_datetime) || start;
+            const category = categorise(item.type, item.round);
+            return {
+              id: `round-${item.id}-${item.round}`,
+              jobId: item.id,
+              title: `${item.company_name} — ${
+                item.round ? `Round ${item.round}` : "Drive"
+              }`,
+              start,
+              end,
+              category,
+              company: item.company_name,
+              round: item.round,
+              type: item.type,
+              mode: item.mode,
+              locationLink: item.location_link,
+              description: item.description,
+            };
+          })
+          .filter(Boolean);
 
-          setEvents(calendarEvents);
-        } else {
-          console.error("Schedule data is not an array:", scheduleData);
-        }
+        const schedule = Array.isArray(scheduleRes.data)
+          ? scheduleRes.data
+          : [];
+        const deadlineEvents = schedule
+          .map((item) => {
+            const start = parseValidDate(item.placement_date);
+            if (!start) return null;
+            return {
+              id: `deadline-${item.id}`,
+              jobId: item.id,
+              title: `${item.company_name} — Apply by`,
+              start,
+              end: start,
+              allDay: true,
+              category: "deadline",
+              company: item.company_name,
+              type: "Application deadline",
+              description: item.role_st || item.description,
+            };
+          })
+          .filter(Boolean);
+
+        setEvents([...roundEvents, ...deadlineEvents]);
       } catch (error) {
         if (isForbiddenError(error)) {
           setAuthorizationError(
             getAuthorizationErrorMessage(
               error,
-              "Only placement officer users can access the placement calendar.",
+              "You are not authorized to view the placement calendar.",
             ),
           );
         }
@@ -66,51 +149,135 @@ function PlacementCalendar() {
           error,
           fallback: "Failed to fetch placement calendar.",
           authorizationFallback:
-            "Only placement officer users can access the placement calendar.",
+            "You are not authorized to view the placement calendar.",
         });
-        console.error("Error fetching schedule data:", error);
       }
     }
 
-    fetchScheduleData();
+    fetchData();
   }, []);
 
-  const handleSelect = (event) => {
-    navigate(`/placement-cell/timeline?jobId=${encodeURIComponent(event.id)}`);
-  };
+  const eventStyleGetter = (event) => ({
+    style: {
+      backgroundColor: (CATEGORY[event.category] || CATEGORY.other).color,
+      borderRadius: 4,
+      border: "none",
+      color: "#fff",
+      fontSize: "0.8rem",
+    },
+  });
 
   return (
-    <div style={{ height: "50vh", width: "90%", margin: "20px auto" }}>
-      <Container
-        fluid
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-        my={32}
-      >
+    <Container fluid mt={32}>
+      <Group justify="space-between" mb={16}>
         <Title order={2}>Placement Calendar</Title>
-      </Container>{" "}
+        <Group gap="xs">
+          {Object.values(CATEGORY).map((category) => (
+            <Badge
+              key={category.label}
+              variant="filled"
+              styles={{ root: { backgroundColor: category.color } }}
+            >
+              {category.label}
+            </Badge>
+          ))}
+        </Group>
+      </Group>
+
       {authorizationError ? (
         <Alert color="red" title="Authorization Error">
           {authorizationError}
         </Alert>
       ) : (
-        <Calendar
-          localizer={localizer}
-          events={events}
-          startAccessor="start"
-          endAccessor="end"
-          style={{ height: "100%", width: "100%", fontSize: "0.85rem" }}
-          views={["month", "week", "day"]}
-          defaultView="month"
-          tooltipAccessor="description"
-          onSelectEvent={handleSelect}
-        />
+        <div style={{ height: "72vh" }}>
+          <Calendar
+            localizer={localizer}
+            events={events}
+            startAccessor="start"
+            endAccessor="end"
+            style={{ height: "100%" }}
+            views={[Views.MONTH, Views.WEEK, Views.AGENDA]}
+            defaultView={Views.MONTH}
+            popup
+            tooltipAccessor={(event) =>
+              [event.type, event.mode].filter(Boolean).join(" · ") ||
+              event.title
+            }
+            eventPropGetter={eventStyleGetter}
+            onSelectEvent={(event) => setSelectedEvent(event)}
+          />
+        </div>
       )}
-    </div>
+
+      <Modal
+        opened={Boolean(selectedEvent)}
+        onClose={() => setSelectedEvent(null)}
+        title={selectedEvent?.company}
+        centered
+      >
+        {selectedEvent && (
+          <Stack gap="xs">
+            <Group gap="xs">
+              <Badge
+                styles={{
+                  root: {
+                    backgroundColor: (
+                      CATEGORY[selectedEvent.category] || CATEGORY.other
+                    ).color,
+                  },
+                }}
+              >
+                {(CATEGORY[selectedEvent.category] || CATEGORY.other).label}
+              </Badge>
+              {selectedEvent.round ? (
+                <Text size="sm">Round {selectedEvent.round}</Text>
+              ) : null}
+            </Group>
+            {selectedEvent.type && (
+              <Text size="sm">
+                <strong>Type:</strong> {selectedEvent.type}
+              </Text>
+            )}
+            <Text size="sm">
+              <strong>When:</strong>{" "}
+              {format(selectedEvent.start, "EEE, dd MMM yyyy")}
+              {selectedEvent.allDay
+                ? ""
+                : ` · ${format(selectedEvent.start, "p")}`}
+            </Text>
+            {selectedEvent.mode && (
+              <Text size="sm">
+                <strong>Mode:</strong> {selectedEvent.mode}
+              </Text>
+            )}
+            {selectedEvent.locationLink && (
+              <Text size="sm" style={{ wordBreak: "break-all" }}>
+                <strong>Venue / Link:</strong> {selectedEvent.locationLink}
+              </Text>
+            )}
+            {selectedEvent.description && (
+              <Text size="sm" style={{ whiteSpace: "pre-wrap" }}>
+                {selectedEvent.description}
+              </Text>
+            )}
+            <Group justify="flex-end" mt="sm">
+              <Button
+                variant="light"
+                onClick={() => {
+                  const { jobId } = selectedEvent;
+                  setSelectedEvent(null);
+                  navigate(
+                    `/placement-cell/timeline?jobId=${encodeURIComponent(jobId)}`,
+                  );
+                }}
+              >
+                Open timeline
+              </Button>
+            </Group>
+          </Stack>
+        )}
+      </Modal>
+    </Container>
   );
 }
 
