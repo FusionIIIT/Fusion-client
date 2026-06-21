@@ -5,12 +5,16 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
   build: {
-    // Let Rollup chunk automatically. A hand-rolled manualChunks that split the
-    // React runtime (react / react-dom / scheduler / use-sync-external-store /
-    // react-redux) across separate chunks caused an init-order crash in the
-    // production build ("Cannot read properties of undefined (reading
-    // 'useSyncExternalStore')") and a blank page. The big load-time win comes
-    // from the lazy-loaded placement tabs, which split regardless of this.
-    chunkSizeWarningLimit: 1500,
+    chunkSizeWarningLimit: 2000,
+    rollupOptions: {
+      output: {
+        // Emit a single JS bundle (no code-split chunks). The static test
+        // server was returning 404 for hashed dynamic-import chunks (stale /
+        // partial deploys leave the index referencing chunk files that aren't
+        // present), which blanked the app. One bundle has nothing to 404 on and
+        // loads in a single request — the most robust shape for this host.
+        inlineDynamicImports: true,
+      },
+    },
   },
 });
