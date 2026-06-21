@@ -13,14 +13,13 @@ import {
   Divider,
 } from "@mantine/core";
 import PropTypes from "prop-types";
-import { DateTimePicker } from "@mantine/dates";
 import { notifications } from "@mantine/notifications";
 import { placementApi } from "../../services/api";
 import { showApiError } from "../../utils/authorization";
 
 function AddPlacementEventForm({ onClose, onSuccess }) {
-  const [date, setDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const [date, setDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [location, setLocation] = useState("");
   const [ctc, setCtc] = useState("");
   const [placementType, setPlacementType] = useState("");
@@ -187,19 +186,15 @@ function AddPlacementEventForm({ onClose, onSuccess }) {
     if (branches.length) {
       formData.append("branch", branches.join(", "));
     }
-    formData.append(
-      "schedule_at",
-      date.toISOString().slice(0, 16).replace("T", " "),
-    );
+    // datetime-local gives "YYYY-MM-DDTHH:MM"; the backend wants a space and a
+    // plain date for placement_date.
+    formData.append("schedule_at", date.replace("T", " "));
     matchingIds.forEach((id) => formData.append("fields", String(id)));
-    formData.append("placement_date", date.toISOString().split("T")[0]);
+    formData.append("placement_date", date.split("T")[0]);
 
     if (endDate) {
-      formData.append("end_date", endDate.toISOString().split("T")[0]);
-      formData.append(
-        "end_datetime",
-        endDate.toISOString().slice(0, 16).replace("T", " "),
-      );
+      formData.append("end_date", endDate.split("T")[0]);
+      formData.append("end_datetime", endDate.replace("T", " "));
     }
 
     setIsSubmitting(true);
@@ -260,26 +255,22 @@ function AddPlacementEventForm({ onClose, onSuccess }) {
         </Grid.Col>
 
         <Grid.Col span={4}>
-          <DateTimePicker
+          <TextInput
+            type="datetime-local"
             label="Start Date and Time"
-            placeholder="Pick start date and time"
             value={date}
-            onChange={setDate}
-            popoverProps={{ withinPortal: true }}
-            clearable
+            onChange={(e) => setDate(e.currentTarget.value)}
             required
           />
         </Grid.Col>
 
         <Grid.Col span={4}>
-          <DateTimePicker
+          <TextInput
+            type="datetime-local"
             label="End Date and Time"
-            placeholder="Pick end date and time"
             value={endDate}
-            onChange={setEndDate}
-            minDate={date || undefined}
-            popoverProps={{ withinPortal: true }}
-            clearable
+            min={date || undefined}
+            onChange={(e) => setEndDate(e.currentTarget.value)}
           />
         </Grid.Col>
 

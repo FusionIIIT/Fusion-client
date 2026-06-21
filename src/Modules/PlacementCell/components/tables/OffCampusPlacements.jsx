@@ -12,7 +12,6 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { DateInput } from "@mantine/dates";
 import { notifications } from "@mantine/notifications";
 import { Trash } from "@phosphor-icons/react";
 import { MantineReactTable, useMantineReactTable } from "mantine-react-table";
@@ -37,7 +36,7 @@ const emptyForm = {
   offerType: "placement",
   ctc: "",
   stipend: "",
-  offerDate: null,
+  offerDate: "",
   notes: "",
 };
 
@@ -101,7 +100,7 @@ function OffCampusPlacements() {
       company_name: form.companyName.trim(),
       role: form.role.trim(),
       offer_type: form.offerType,
-      offer_date: form.offerDate.toISOString().slice(0, 10),
+      offer_date: form.offerDate,
       notes: form.notes.trim(),
     };
     if (form.ctc !== "" && form.ctc !== null) payload.ctc = form.ctc;
@@ -262,11 +261,11 @@ function OffCampusPlacements() {
             />
           </Grid.Col>
           <Grid.Col span={6}>
-            <DateInput
+            <TextInput
+              type="date"
               label="Offer Date"
-              placeholder="Select date"
               value={form.offerDate}
-              onChange={(value) => updateField("offerDate", value)}
+              onChange={(e) => updateField("offerDate", e.currentTarget.value)}
               required
             />
           </Grid.Col>
