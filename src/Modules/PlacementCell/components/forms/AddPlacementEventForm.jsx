@@ -11,6 +11,10 @@ import {
   NumberInput,
   Text,
   Divider,
+  Group,
+  Switch,
+  Alert,
+  Collapse,
 } from "@mantine/core";
 import PropTypes from "prop-types";
 import { notifications } from "@mantine/notifications";
@@ -35,6 +39,12 @@ function AddPlacementEventForm({ onClose = undefined, onSuccess = undefined }) {
   const [tpoFields, setTpoFields] = useState([]);
   const [selectedFields, setSelectedFields] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [restrictions, setRestrictions] = useState([]);
+  const [showNewField, setShowNewField] = useState(false);
+  const [newFieldName, setNewFieldName] = useState("");
+  const [newFieldType, setNewFieldType] = useState("text");
+  const [newFieldRequired, setNewFieldRequired] = useState(false);
+  const [creatingField, setCreatingField] = useState(false);
 
   const getCompanyId = (companyName) => {
     const company = companies.find((c) => c.companyName === companyName);
@@ -112,6 +122,71 @@ function AddPlacementEventForm({ onClose = undefined, onSuccess = undefined }) {
     };
     fetchBranches();
   }, []);
+
+  useEffect(() => {
+    const fetchRestrictions = async () => {
+      try {
+        const response = await placementApi.getRestrictions();
+        if (Array.isArray(response.data)) {
+          setRestrictions(response.data);
+        }
+      } catch {
+        setRestrictions([]);
+      }
+    };
+    fetchRestrictions();
+  }, []);
+
+  const handleCreateField = async () => {
+    if (!newFieldName.trim()) {
+      notifications.show({
+        title: "Field name required",
+        message: "Enter a name for the new application field.",
+        color: "red",
+      });
+      return;
+    }
+    setCreatingField(true);
+    try {
+      const response = await placementApi.createField({
+        name: newFieldName.trim(),
+        type: newFieldType,
+        required: newFieldRequired,
+      });
+      const created = response.data;
+      const option = {
+        value: created.name,
+        label: created.name,
+        id: created.id,
+      };
+      setTpoFields((prev) =>
+        prev.some((field) => field.value === option.value)
+          ? prev
+          : [...prev, option],
+      );
+      setSelectedFields((prev) =>
+        prev.includes(option.value) ? prev : [...prev, option.value],
+      );
+      setNewFieldName("");
+      setNewFieldType("text");
+      setNewFieldRequired(false);
+      setShowNewField(false);
+      notifications.show({
+        title: "Field added",
+        message: `"${created.name}" is now available and selected for this drive.`,
+        color: "green",
+      });
+    } catch (error) {
+      showApiError({
+        error,
+        fallback: "Failed to create the application field.",
+        authorizationFallback:
+          "Only placement officer users can manage placement fields.",
+      });
+    } finally {
+      setCreatingField(false);
+    }
+  };
 
   // Build a human-readable eligibility summary shown to students on the drive.
   const buildEligibilitySummary = () => {
@@ -382,9 +457,50 @@ function AddPlacementEventForm({ onClose = undefined, onSuccess = undefined }) {
         </Grid.Col>
 
         <Grid.Col span={12}>
+          <Alert
+            color="gray"
+            variant="light"
+            title="Institute-wide restrictions"
+          >
+            {restrictions.length === 0 ? (
+              <Text size="sm">
+                No institute-wide restrictions are currently set. You can add
+                sit-out / eligibility-bar rules (which apply automatically to
+                every drive) in the Restrictions tab.
+              </Text>
+            ) : (
+              <>
+                <Text size="sm" mb={4}>
+                  These rules apply automatically to this and every drive — no
+                  need to repeat them here:
+                </Text>
+                {restrictions.map((restriction) => (
+                  <Text size="sm" key={restriction.id}>
+                    •{" "}
+                    {restriction.description ||
+                      `${restriction.criteria} ${restriction.condition} ${restriction.value}`}
+                  </Text>
+                ))}
+              </>
+            )}
+          </Alert>
+        </Grid.Col>
+
+        <Grid.Col span={12}>
+          <Group justify="space-between" align="flex-end" mb={4}>
+            <Text fw={500} size="sm">
+              Application fields
+            </Text>
+            <Button
+              variant="subtle"
+              size="xs"
+              onClick={() => setShowNewField((prev) => !prev)}
+            >
+              {showNewField ? "Close" : "＋ New field"}
+            </Button>
+          </Group>
           <MultiSelect
-            label="Application fields"
-            description="Extra details each student must fill in when applying to this drive (e.g. cover letter, preferred location). Manage the available fields in the Fields tab. Optional."
+            description="Extra details each student must fill in when applying to this drive (e.g. cover letter, preferred location). Create new ones inline, or manage them in the Fields tab. Optional."
             placeholder="Select application fields"
             data={tpoFields}
             value={selectedFields}
@@ -392,6 +508,42 @@ function AddPlacementEventForm({ onClose = undefined, onSuccess = undefined }) {
             searchable
             clearable
           />
+          <Collapse in={showNewField}>
+            <Grid gutter="sm" mt="sm" align="flex-end">
+              <Grid.Col span={5}>
+                <TextInput
+                  label="New field name"
+                  placeholder="e.g. Cover letter"
+                  value={newFieldName}
+                  onChange={(e) => setNewFieldName(e.target.value)}
+                />
+              </Grid.Col>
+              <Grid.Col span={3}>
+                <Select
+                  label="Type"
+                  data={["text", "number", "decimal", "date", "time"]}
+                  value={newFieldType}
+                  onChange={(value) => setNewFieldType(value || "text")}
+                />
+              </Grid.Col>
+              <Grid.Col span={2}>
+                <Switch
+                  label="Required"
+                  checked={newFieldRequired}
+                  onChange={(e) => setNewFieldRequired(e.currentTarget.checked)}
+                />
+              </Grid.Col>
+              <Grid.Col span={2}>
+                <Button
+                  fullWidth
+                  onClick={handleCreateField}
+                  loading={creatingField}
+                >
+                  Add
+                </Button>
+              </Grid.Col>
+            </Grid>
+          </Collapse>
         </Grid.Col>
 
         <Grid.Col span={12}>
