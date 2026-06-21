@@ -101,4 +101,22 @@ describe("placementApi endpoint + auth contract", () => {
       /\/placement\/api\/offcampus\/9\/$/,
     );
   });
+
+  it("CPI methods target the cpi endpoints and pass the batch filter", async () => {
+    await placementApi.getCpiBatches();
+    expect(axios.get.mock.calls[0][0]).toMatch(
+      /\/placement\/api\/cpi-batches\/$/,
+    );
+
+    await placementApi.getCpiStudents(7);
+    const [studentsUrl, studentsConfig] = axios.get.mock.calls[1];
+    expect(studentsUrl).toMatch(/\/placement\/api\/cpi-students\/$/);
+    expect(studentsConfig.params).toEqual({ batch_id: 7 });
+
+    await placementApi.exportCpiStudents(7);
+    const [exportUrl, exportConfig] = axios.get.mock.calls[2];
+    expect(exportUrl).toMatch(/\/placement\/api\/cpi-students\/$/);
+    expect(exportConfig.params).toEqual({ batch_id: 7, export: "excel" });
+    expect(exportConfig.responseType).toBe("blob");
+  });
 });

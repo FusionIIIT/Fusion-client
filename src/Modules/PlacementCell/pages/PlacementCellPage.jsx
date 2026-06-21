@@ -31,6 +31,7 @@ import PlacementRecordsTable from "../components/tables/PlacementRecordsTable";
 import PlacementReportsPanel from "../components/tables/PlacementReportsPanel";
 import RestrictionsTab from "../components/tables/RestrictionsTab";
 import StudentApplicationsTable from "../components/tables/StudentApplicationsTable";
+import StudentCpiTab from "../components/tables/StudentCpiTab";
 import StudentOffersTable from "../components/tables/StudentOffersTable";
 import "../styles/module.css";
 
@@ -166,6 +167,11 @@ const chairmanTabs = [
     component: <OffCampusPlacements />,
   },
   {
+    value: "student-cpi",
+    label: "Student CPI",
+    component: <StudentCpiTab />,
+  },
+  {
     value: "debarred-students",
     label: "Debarred Students",
     component: <DebarredStudents />,
@@ -232,6 +238,11 @@ const tpoTabs = [
     value: "offcampus",
     label: "Off-Campus Placements",
     component: <OffCampusPlacements />,
+  },
+  {
+    value: "student-cpi",
+    label: "Student CPI",
+    component: <StudentCpiTab />,
   },
   {
     value: "company-registration",

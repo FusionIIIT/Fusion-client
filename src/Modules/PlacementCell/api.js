@@ -45,6 +45,8 @@ const alumniConnectionsRoute = `${host}/placement/api/alumni/connections/`;
 const alumniSessionsRoute = `${host}/placement/api/alumni/sessions/`;
 const placementAnnouncementsRoute = `${host}/placement/api/announcements/`;
 const offCampusPlacementsRoute = `${host}/placement/api/offcampus/`;
+const cpiBatchesRoute = `${host}/placement/api/cpi-batches/`;
+const cpiStudentsRoute = `${host}/placement/api/cpi-students/`;
 
 export const placementApi = {
   getOfferDetail(offerId) {
@@ -574,6 +576,27 @@ export const placementApi = {
     return axios.delete(
       `${offCampusPlacementsRoute}${placementId}/`,
       buildAuthConfig(),
+    );
+  },
+
+  getCpiBatches() {
+    return axios.get(cpiBatchesRoute, buildAuthConfig());
+  },
+
+  getCpiStudents(batchId) {
+    return axios.get(
+      cpiStudentsRoute,
+      buildAuthConfig({ params: { batch_id: batchId } }),
+    );
+  },
+
+  exportCpiStudents(batchId) {
+    return axios.get(
+      cpiStudentsRoute,
+      buildAuthConfig({
+        params: { batch_id: batchId, export: "excel" },
+        responseType: "blob",
+      }),
     );
   },
 };
