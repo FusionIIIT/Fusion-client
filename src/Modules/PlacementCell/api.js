@@ -47,6 +47,7 @@ const placementAnnouncementsRoute = `${host}/placement/api/announcements/`;
 const offCampusPlacementsRoute = `${host}/placement/api/offcampus/`;
 const cpiBatchesRoute = `${host}/placement/api/cpi-batches/`;
 const cpiStudentsRoute = `${host}/placement/api/cpi-students/`;
+const placementBranchesRoute = `${host}/placement/api/branches/`;
 
 export const placementApi = {
   getOfferDetail(offerId) {
@@ -598,5 +599,9 @@ export const placementApi = {
         responseType: "blob",
       }),
     );
+  },
+
+  getBranches() {
+    return axios.get(placementBranchesRoute, buildAuthConfig());
   },
 };

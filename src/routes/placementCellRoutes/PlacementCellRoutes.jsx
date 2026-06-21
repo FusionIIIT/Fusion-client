@@ -2,8 +2,13 @@ import { lazy, Suspense } from "react";
 import PropTypes from "prop-types";
 import { useSelector } from "react-redux";
 import { Navigate, Route, Routes } from "react-router-dom";
+import { Center, Loader } from "@mantine/core";
 import AuthorizationError from "../../Modules/PlacementCell/components/common/AuthorizationError";
 import { PLACEMENT_OFFICER_ROLES } from "../../Modules/PlacementCell/utils/authorization";
+// The landing page is imported eagerly (like the other ERP modules) so opening
+// the module from the sidebar renders immediately for every role instead of
+// flashing a loading state while a separate chunk downloads.
+import PlacementCellPage from "../../Modules/PlacementCell";
 import {
   placementCellApplicationDetailRoute,
   placementCellApplyRoute,
@@ -13,7 +18,6 @@ import {
   placementCellViewRoute,
 } from ".";
 
-const PlacementCellPage = lazy(() => import("../../Modules/PlacementCell"));
 const ApplyForPlacementPage = lazy(
   () => import("../../Modules/PlacementCell/ApplyForPlacement"),
 );
@@ -48,7 +52,13 @@ PlacementOfficerRoute.propTypes = {
 
 function PlacementCellRoutes() {
   return (
-    <Suspense fallback={<div>Loading .... </div>}>
+    <Suspense
+      fallback={
+        <Center h="60vh">
+          <Loader />
+        </Center>
+      }
+    >
       <Routes>
         <Route index element={<PlacementCellPage />} />
         <Route

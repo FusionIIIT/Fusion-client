@@ -2,14 +2,15 @@ import React, { useState, useEffect } from "react";
 import {
   TextInput,
   Button,
-  Group,
   Select,
   Textarea,
   Card,
   Title,
   Grid,
-  Chip,
   MultiSelect,
+  NumberInput,
+  Text,
+  Divider,
 } from "@mantine/core";
 import PropTypes from "prop-types";
 import { DateTimePicker } from "@mantine/dates";
@@ -25,47 +26,35 @@ function AddPlacementEventForm({ onClose, onSuccess }) {
   const [placementType, setPlacementType] = useState("");
   const [description, setDescription] = useState("");
   const [jobrole, setRole] = useState("");
-  const [eligibility, setEligibility] = useState([]);
   const [passoutYear, setPassoutYear] = useState("");
   const [gender, setGender] = useState("");
   const [cpi, setCpi] = useState("");
-  const [branch, setBranch] = useState("");
-  const [showPassoutYearInput, setShowPassoutYearInput] = useState(false);
-  const [showGenderSelect, setShowGenderSelect] = useState(false);
-  const [showCpiInput, setShowCpiInput] = useState(false);
-  const [showBranchSelect, setShowBranchSelect] = useState(false);
+  const [branches, setBranches] = useState([]);
+  const [branchOptions, setBranchOptions] = useState([]);
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [companies, setCompanies] = useState([]);
   const [tpoFields, setTpoFields] = useState([]);
   const [selectedFields, setSelectedFields] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const getCompanyId = (companyName) => {
-    const _company = companies.find((c) => c.companyName === companyName);
-    return _company ? _company.id : null;
+    const company = companies.find((c) => c.companyName === companyName);
+    return company ? company.id : null;
   };
 
   useEffect(() => {
     const fetchRegistrationData = async () => {
       try {
         const response = await placementApi.getRegistrationList();
-
-        if (response.status !== 200) {
-          notifications.show({
-            title: "Error fetching data",
-            message: `Error fetching data: ${response.status}`,
-            color: "red",
-          });
-        } else {
+        if (response.status === 200) {
           const uniqueCompanies = [];
           const companyNames = new Set();
-
           response.data.forEach((comp) => {
             if (!companyNames.has(comp.companyName)) {
               companyNames.add(comp.companyName);
               uniqueCompanies.push(comp);
             }
           });
-
           setCompanies(uniqueCompanies);
         }
       } catch (error) {
@@ -76,7 +65,6 @@ function AddPlacementEventForm({ onClose, onSuccess }) {
           authorizationFallback:
             "Only placement officer users can load company registrations.",
         });
-        console.error(error);
       }
     };
     fetchRegistrationData();
@@ -86,20 +74,14 @@ function AddPlacementEventForm({ onClose, onSuccess }) {
     const fetchFieldsData = async () => {
       try {
         const response = await placementApi.getFields();
-
-        if (response.status !== 200) {
-          notifications.show({
-            title: "Error fetching data",
-            message: `Error fetching data: ${response.status}`,
-            color: "red",
-          });
-        } else {
-          const formattedFields = response.data.map((field) => ({
-            value: field.name,
-            label: field.name,
-            id: field.id,
-          }));
-          setTpoFields(formattedFields);
+        if (response.status === 200) {
+          setTpoFields(
+            response.data.map((field) => ({
+              value: field.name,
+              label: field.name,
+              id: field.id,
+            })),
+          );
         }
       } catch (error) {
         showApiError({
@@ -109,15 +91,40 @@ function AddPlacementEventForm({ onClose, onSuccess }) {
           authorizationFallback:
             "Only placement officer users can manage placement fields.",
         });
-        console.error(error);
       }
     };
     fetchFieldsData();
   }, []);
 
-  const handleSubmit = async () => {
-    console.log("Submitting form");
+  useEffect(() => {
+    const fetchBranches = async () => {
+      try {
+        const response = await placementApi.getBranches();
+        if (Array.isArray(response.data)) {
+          setBranchOptions(response.data);
+        }
+      } catch (error) {
+        showApiError({
+          error,
+          title: "Failed to fetch branches",
+          fallback: "Failed to fetch the list of branches.",
+        });
+      }
+    };
+    fetchBranches();
+  }, []);
 
+  // Build a human-readable eligibility summary shown to students on the drive.
+  const buildEligibilitySummary = () => {
+    const parts = [];
+    if (cpi) parts.push(`CPI ≥ ${cpi}`);
+    if (passoutYear) parts.push(`Passout ${passoutYear}`);
+    if (gender) parts.push(`${gender} only`);
+    if (branches.length) parts.push(`Branch: ${branches.join("/")}`);
+    return parts.join(", ");
+  };
+
+  const handleSubmit = async () => {
     if (!localStorage.getItem("authToken")) {
       notifications.show({
         title: "Unauthorized",
@@ -138,32 +145,20 @@ function AddPlacementEventForm({ onClose, onSuccess }) {
       notifications.show({
         title: "Missing details",
         message:
-          "Company, date, location, CTC, placement type, and role are required.",
+          "Company, start date, location, CTC, placement type, and role are required.",
         color: "red",
         position: "top-center",
       });
       return;
     }
+
     const companyId = getCompanyId(selectedCompany);
     const matchingIds = selectedFields
       .map((value) => {
         const field = tpoFields.find((f) => f.value === value);
-        if (!field) {
-          console.error(`Field not found for value: ${value}`);
-        }
         return field ? field.id : null;
       })
-      .filter((id) => id !== null); // Filter out invalid/null IDs
-
-    if (matchingIds.length === 0) {
-      notifications.show({
-        title: "Error",
-        message: "At least one valid application field must be selected.",
-        color: "red",
-        position: "top-center",
-      });
-      return;
-    }
+      .filter((id) => id !== null);
 
     const formData = new FormData();
     formData.append(
@@ -179,7 +174,7 @@ function AddPlacementEventForm({ onClose, onSuccess }) {
     formData.append("title", selectedCompany);
     formData.append("location", location);
     formData.append("role", jobrole);
-    formData.append("eligibility", eligibility.join(", "));
+    formData.append("eligibility", buildEligibilitySummary());
     if (passoutYear) {
       formData.append("passoutyr", passoutYear);
     }
@@ -189,18 +184,15 @@ function AddPlacementEventForm({ onClose, onSuccess }) {
     if (cpi) {
       formData.append("cpi", cpi);
     }
-    if (branch) {
-      formData.append("branch", branch);
+    if (branches.length) {
+      formData.append("branch", branches.join(", "));
     }
     formData.append(
       "schedule_at",
       date.toISOString().slice(0, 16).replace("T", " "),
     );
     matchingIds.forEach((id) => formData.append("fields", String(id)));
-
-    if (date) {
-      formData.append("placement_date", date.toISOString().split("T")[0]);
-    }
+    formData.append("placement_date", date.toISOString().split("T")[0]);
 
     if (endDate) {
       formData.append("end_date", endDate.toISOString().split("T")[0]);
@@ -210,10 +202,7 @@ function AddPlacementEventForm({ onClose, onSuccess }) {
       );
     }
 
-    formData.append("selected_fields", selectedFields.join(", "));
-
-    console.log("\n formData", formData);
-
+    setIsSubmitting(true);
     try {
       await placementApi.createPlacementEvent(formData);
       if (onSuccess) {
@@ -223,7 +212,7 @@ function AddPlacementEventForm({ onClose, onSuccess }) {
       }
       notifications.show({
         title: "Event Added",
-        message: "Placement Event has been added successfully.",
+        message: "Placement event has been added successfully.",
         color: "green",
         position: "top-center",
       });
@@ -242,11 +231,12 @@ function AddPlacementEventForm({ onClose, onSuccess }) {
           : error.message);
       showApiError({
         error,
-        fallback: `Failed to add Placement Event: ${errorMessage}`,
+        fallback: `Failed to add placement event: ${errorMessage}`,
         authorizationFallback:
           "Only placement officer users can create placement schedules.",
       });
-      console.error("Error adding schedule:", responseData || error.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -257,34 +247,39 @@ function AddPlacementEventForm({ onClose, onSuccess }) {
       </Title>
 
       <Grid gutter="lg">
-        <Grid.Col span={4} style={{ position: "relative" }}>
+        <Grid.Col span={4}>
           <Select
             label="Select Company"
             placeholder="Select a company"
-            data={companies.map((company_) => company_.companyName)}
+            data={companies.map((company) => company.companyName)}
             value={selectedCompany}
             onChange={setSelectedCompany}
+            searchable
             required
           />
         </Grid.Col>
 
-        <Grid.Col span={6} style={{ position: "relative" }}>
+        <Grid.Col span={4}>
           <DateTimePicker
             label="Start Date and Time"
             placeholder="Pick start date and time"
             value={date}
-            onChange={(selectedDate) => setDate(selectedDate)}
+            onChange={setDate}
+            popoverProps={{ withinPortal: true }}
+            clearable
             required
           />
         </Grid.Col>
 
-        <Grid.Col span={6} style={{ position: "relative" }}>
+        <Grid.Col span={4}>
           <DateTimePicker
             label="End Date and Time"
             placeholder="Pick end date and time"
             value={endDate}
-            onChange={(selectedDate) => setEndDate(selectedDate)}
-            required
+            onChange={setEndDate}
+            minDate={date || undefined}
+            popoverProps={{ withinPortal: true }}
+            clearable
           />
         </Grid.Col>
 
@@ -294,15 +289,19 @@ function AddPlacementEventForm({ onClose, onSuccess }) {
             placeholder="Enter location"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
+            required
           />
         </Grid.Col>
 
         <Grid.Col span={4}>
-          <TextInput
-            label="CTC In Lpa"
+          <NumberInput
+            label="CTC (LPA)"
             placeholder="Enter CTC"
             value={ctc}
-            onChange={(e) => setCtc(e.target.value)}
+            onChange={setCtc}
+            min={0}
+            decimalScale={2}
+            required
           />
         </Grid.Col>
 
@@ -313,6 +312,17 @@ function AddPlacementEventForm({ onClose, onSuccess }) {
             data={["Placement", "Internship"]}
             value={placementType}
             onChange={setPlacementType}
+            required
+          />
+        </Grid.Col>
+
+        <Grid.Col span={12}>
+          <TextInput
+            label="Role Offered"
+            placeholder="e.g. Software Engineer"
+            value={jobrole}
+            onChange={(e) => setRole(e.target.value)}
+            required
           />
         </Grid.Col>
 
@@ -327,84 +337,64 @@ function AddPlacementEventForm({ onClose, onSuccess }) {
         </Grid.Col>
 
         <Grid.Col span={12}>
-          <TextInput
-            label="Role Offered"
-            placeholder="Enter the role offered"
-            value={jobrole}
-            onChange={(e) => setRole(e.target.value)}
+          <Divider
+            my="xs"
+            label="Eligibility Criteria (optional)"
+            labelPosition="left"
           />
-        </Grid.Col>
-
-        <Grid.Col span={12}>
-          <b>Eligibility Criteria</b>
-          <Chip.Group
-            multiple
-            value={eligibility}
-            onChange={setEligibility}
-            style={{ marginTop: "10px" }}
-          >
-            {eligibility.map((criteria, index) => (
-              <Chip key={index} value={criteria}>
-                {criteria}
-              </Chip>
-            ))}
-          </Chip.Group>
-        </Grid.Col>
-
-        <Grid.Col span={12}>
-          <Group direction="column" spacing="xs">
-            <Button
-              onClick={() => setShowPassoutYearInput(!showPassoutYearInput)}
-            >
-              Passout Year
-            </Button>
-            {showPassoutYearInput && (
+          <Text size="xs" c="dimmed" mb="sm">
+            Leave a field blank to place no restriction on it. Students who do
+            not meet a set criterion will see the drive marked as ineligible.
+          </Text>
+          <Grid gutter="md">
+            <Grid.Col span={3}>
+              <NumberInput
+                label="Minimum CPI"
+                placeholder="e.g. 7.0"
+                value={cpi}
+                onChange={setCpi}
+                min={0}
+                max={10}
+                decimalScale={2}
+              />
+            </Grid.Col>
+            <Grid.Col span={3}>
               <TextInput
-                placeholder="Enter Passout Year"
+                label="Passout Year"
+                placeholder="e.g. 2026"
                 value={passoutYear}
                 onChange={(e) => setPassoutYear(e.target.value)}
               />
-            )}
-
-            <Button onClick={() => setShowGenderSelect(!showGenderSelect)}>
-              Gender
-            </Button>
-            {showGenderSelect && (
+            </Grid.Col>
+            <Grid.Col span={3}>
               <Select
-                value={gender}
-                onChange={setGender}
+                label="Gender"
+                placeholder="Any"
                 data={["Male", "Female"]}
-                placeholder="Select Gender"
+                value={gender}
+                onChange={(value) => setGender(value || "")}
+                clearable
               />
-            )}
-
-            <Button onClick={() => setShowCpiInput(!showCpiInput)}>CPI</Button>
-            {showCpiInput && (
-              <TextInput
-                placeholder="Enter CPI"
-                value={cpi}
-                onChange={(e) => setCpi(e.target.value)}
+            </Grid.Col>
+            <Grid.Col span={3}>
+              <MultiSelect
+                label="Branches"
+                placeholder="Any"
+                data={branchOptions}
+                value={branches}
+                onChange={setBranches}
+                searchable
+                clearable
               />
-            )}
-
-            <Button onClick={() => setShowBranchSelect(!showBranchSelect)}>
-              Branch
-            </Button>
-            {showBranchSelect && (
-              <Select
-                value={branch}
-                onChange={setBranch}
-                data={["CSE", "ECE", "MECH", "SM", "BDES"]}
-                placeholder="Select Branch"
-              />
-            )}
-          </Group>
+            </Grid.Col>
+          </Grid>
         </Grid.Col>
 
         <Grid.Col span={12}>
           <MultiSelect
-            label="Select Fields"
-            placeholder="Select fields"
+            label="Application fields"
+            description="Extra details each student must fill in when applying to this drive (e.g. cover letter, preferred location). Manage the available fields in the Fields tab. Optional."
+            placeholder="Select application fields"
             data={tpoFields}
             value={selectedFields}
             onChange={setSelectedFields}
@@ -414,7 +404,7 @@ function AddPlacementEventForm({ onClose, onSuccess }) {
         </Grid.Col>
 
         <Grid.Col span={12}>
-          <Button onClick={handleSubmit} fullWidth>
+          <Button onClick={handleSubmit} loading={isSubmitting} fullWidth>
             Submit
           </Button>
         </Grid.Col>
