@@ -17,7 +17,7 @@ import { notifications } from "@mantine/notifications";
 import { placementApi } from "../../services/api";
 import { showApiError } from "../../utils/authorization";
 
-function AddPlacementEventForm({ onClose, onSuccess }) {
+function AddPlacementEventForm({ onClose = undefined, onSuccess = undefined }) {
   const [date, setDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [location, setLocation] = useState("");
@@ -407,11 +407,6 @@ function AddPlacementEventForm({ onClose, onSuccess }) {
 AddPlacementEventForm.propTypes = {
   onClose: PropTypes.func,
   onSuccess: PropTypes.func,
-};
-
-AddPlacementEventForm.defaultProps = {
-  onClose: undefined,
-  onSuccess: undefined,
 };
 
 export default AddPlacementEventForm;

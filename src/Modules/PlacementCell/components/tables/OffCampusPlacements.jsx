@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
   ActionIcon,
+  Autocomplete,
   Button,
   Container,
   Grid,
@@ -47,6 +48,7 @@ function OffCampusPlacements() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [companyOptions, setCompanyOptions] = useState([]);
 
   const fetchPlacements = async () => {
     setIsLoading(true);
@@ -70,6 +72,28 @@ function OffCampusPlacements() {
 
   useEffect(() => {
     fetchPlacements();
+  }, []);
+
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        const response = await placementApi.getRegistrationList();
+        if (Array.isArray(response.data)) {
+          const names = Array.from(
+            new Set(
+              response.data
+                .map((company) => company.companyName)
+                .filter(Boolean),
+            ),
+          );
+          setCompanyOptions(names);
+        }
+      } catch {
+        // Suggestions are optional; the field still accepts free text.
+        setCompanyOptions([]);
+      }
+    };
+    fetchCompanies();
   }, []);
 
   const updateField = (key, value) =>
@@ -223,11 +247,12 @@ function OffCampusPlacements() {
             />
           </Grid.Col>
           <Grid.Col span={6}>
-            <TextInput
+            <Autocomplete
               label="Company"
-              placeholder="Company name"
+              placeholder="Type to search registered companies"
+              data={companyOptions}
               value={form.companyName}
-              onChange={(e) => updateField("companyName", e.target.value)}
+              onChange={(value) => updateField("companyName", value)}
               required
             />
           </Grid.Col>
