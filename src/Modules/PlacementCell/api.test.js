@@ -1,13 +1,24 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-vi.mock("axios", () => ({
-  default: {
+vi.mock("axios", () => {
+  // api.js uses a dedicated instance (axios.create()) with a response
+  // interceptor. The instance shares the same method spies as the default
+  // export so existing assertions on axios.get/post/... still observe the
+  // calls made through the instance.
+  const instance = {
     get: vi.fn(),
     post: vi.fn(),
     put: vi.fn(),
     delete: vi.fn(),
-  },
-}));
+    interceptors: {
+      response: { use: vi.fn() },
+      request: { use: vi.fn() },
+    },
+  };
+  return {
+    default: { ...instance, create: vi.fn(() => instance) },
+  };
+});
 
 // eslint-disable-next-line import/first
 import axios from "axios";

@@ -6,6 +6,61 @@ import {
   getCsrfToken,
 } from "./utils/helpers";
 
+// A clean, human-readable message for an HTTP status, used when the server
+// returns a non-JSON body (e.g. a Django DEBUG 404/500 HTML page) that must
+// never be shown to a user verbatim.
+function messageForStatus(status) {
+  switch (status) {
+    case 400:
+      return "Invalid request. Please check your input and try again.";
+    case 401:
+      return "Your session has expired. Please log in again.";
+    case 403:
+      return "You don't have permission to perform this action.";
+    case 404:
+      return "This placement service is unavailable. Please try again later.";
+    case 500:
+    case 502:
+    case 503:
+    case 504:
+      return "The placement service is temporarily unavailable. Please try again later.";
+    default:
+      return "Something went wrong. Please try again.";
+  }
+}
+
+// Dedicated axios instance for the placement module. Its response interceptor
+// guarantees that components (which read error.response.data.detail) always
+// receive a clean message instead of raw HTML or an empty body — so a backend
+// 404/500 can never dump Django's debug page into a toast.
+const client = axios.create();
+
+client.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      const { data, status } = error.response;
+      const isHtml =
+        typeof data === "string" &&
+        /<\s*(!doctype|html|head|body|pre)\b/i.test(data);
+      const isBlank =
+        data == null || (typeof data === "string" && data.trim() === "");
+      if (isHtml || isBlank) {
+        error.response.data = { detail: messageForStatus(status) };
+      }
+    } else {
+      // No response at all: network failure, timeout, DNS/CORS, etc.
+      error.response = {
+        data: {
+          detail:
+            "Cannot reach the placement service. Check your connection and try again.",
+        },
+      };
+    }
+    return Promise.reject(error);
+  },
+);
+
 const addPlacementEventForm = `${host}/placement/api/placement/`;
 const fetchApplicationsRoute = `${host}/placement/api/student-applications/`;
 const handleStatusChangeRoute = `${host}/placement/api/student-applications/`;
@@ -52,11 +107,11 @@ const calendarEventsCrudRoute = `${host}/placement/api/calendar-events/`;
 
 export const placementApi = {
   getOfferDetail(offerId) {
-    return axios.get(`${offerRoute}${offerId}/`, buildAuthConfig());
+    return client.get(`${offerRoute}${offerId}/`, buildAuthConfig());
   },
 
   respondToOffer(offerId, action) {
-    return axios.post(
+    return client.post(
       `${offerRoute}${offerId}/respond/`,
       { action },
       buildAuthConfig({
@@ -68,15 +123,15 @@ export const placementApi = {
   },
 
   getPlacementSchedule(params = {}) {
-    return axios.get(fetchPlacementScheduleRoute, buildAuthConfig({ params }));
+    return client.get(fetchPlacementScheduleRoute, buildAuthConfig({ params }));
   },
 
   getPlacementDetail(jobId) {
-    return axios.get(`${addPlacementEventForm}${jobId}/`, buildAuthConfig());
+    return client.get(`${addPlacementEventForm}${jobId}/`, buildAuthConfig());
   },
 
   createPlacementEvent(formData) {
-    return axios.post(
+    return client.post(
       addPlacementEventForm,
       formData,
       buildAuthConfig({
@@ -117,26 +172,26 @@ export const placementApi = {
   },
 
   getApplications(jobId) {
-    return axios.get(`${fetchApplicationsRoute}${jobId}/`, buildAuthConfig());
+    return client.get(`${fetchApplicationsRoute}${jobId}/`, buildAuthConfig());
   },
 
   getApplicationDetail(applicationId) {
-    return axios.get(
+    return client.get(
       `${applicationDetailRoute}${applicationId}/`,
       buildAuthConfig(),
     );
   },
 
   getMyApplications() {
-    return axios.get(myApplicationsRoute, buildAuthConfig());
+    return client.get(myApplicationsRoute, buildAuthConfig());
   },
 
   getMyOffers() {
-    return axios.get(myOffersRoute, buildAuthConfig());
+    return client.get(myOffersRoute, buildAuthConfig());
   },
 
   updateApplicationStatus(applicationId, status) {
-    return axios.put(
+    return client.put(
       `${handleStatusChangeRoute}${applicationId}/`,
       { status },
       buildAuthConfig({
@@ -148,7 +203,7 @@ export const placementApi = {
   },
 
   updateApplicationDetail(applicationId, payload) {
-    return axios.put(
+    return client.put(
       `${applicationDetailRoute}${applicationId}/`,
       payload,
       buildAuthConfig({
@@ -160,7 +215,7 @@ export const placementApi = {
   },
 
   scheduleApplicationInterview(applicationId, payload) {
-    return axios.post(
+    return client.post(
       `${applicationDetailRoute}${applicationId}/interview/`,
       payload,
       buildAuthConfig({
@@ -172,14 +227,14 @@ export const placementApi = {
   },
 
   deleteApplication(applicationId) {
-    return axios.delete(
+    return client.delete(
       `${handleStatusChangeRoute}${applicationId}/`,
       buildAuthConfig(),
     );
   },
 
   downloadApplicationsExcel(jobId) {
-    return axios.get(
+    return client.get(
       `${downloadExcelRoute}${jobId}/`,
       buildAuthConfig({
         responseType: "blob",
@@ -188,7 +243,7 @@ export const placementApi = {
   },
 
   submitNextRoundDetails(jobId, payload) {
-    return axios.post(
+    return client.post(
       `${submitNextRoundDetailsRoute}${jobId}/`,
       payload,
       buildAuthConfig({
@@ -200,19 +255,19 @@ export const placementApi = {
   },
 
   getTimeline(jobId) {
-    return axios.get(`${fetchTimeLineRoute}${jobId}/`, buildAuthConfig());
+    return client.get(`${fetchTimeLineRoute}${jobId}/`, buildAuthConfig());
   },
 
   getPlacementAppeals() {
-    return axios.get(placementAppealsRoute, buildAuthConfig());
+    return client.get(placementAppealsRoute, buildAuthConfig());
   },
 
   createPlacementAppeal(payload) {
-    return axios.post(placementAppealsRoute, payload, buildAuthConfig());
+    return client.post(placementAppealsRoute, payload, buildAuthConfig());
   },
 
   updatePlacementAppeal(appealId, payload) {
-    return axios.put(
+    return client.put(
       `${placementAppealsRoute}${appealId}/`,
       payload,
       buildAuthConfig({
@@ -224,11 +279,11 @@ export const placementApi = {
   },
 
   getRegistrationList() {
-    return axios.get(fetchRegistrationRoute, buildAuthConfig());
+    return client.get(fetchRegistrationRoute, buildAuthConfig());
   },
 
   createCompanyRegistration(payload) {
-    return axios.post(
+    return client.post(
       fetchRegistrationRoute,
       payload,
       buildAuthConfig({
@@ -240,27 +295,27 @@ export const placementApi = {
   },
 
   getCalendarEvents() {
-    return axios.get(calendarEventsRoute, buildAuthConfig());
+    return client.get(calendarEventsRoute, buildAuthConfig());
   },
 
   getFields() {
-    return axios.get(fetchFieldsSubmitformRoute, buildAuthConfig());
+    return client.get(fetchFieldsSubmitformRoute, buildAuthConfig());
   },
 
   createField(payload) {
-    return axios.post(fetchFieldsSubmitformRoute, payload, buildAuthConfig());
+    return client.post(fetchFieldsSubmitformRoute, payload, buildAuthConfig());
   },
 
   getPlacementStatistics() {
-    return axios.get(fetchPlacementStatsRoute, buildAuthConfig());
+    return client.get(fetchPlacementStatsRoute, buildAuthConfig());
   },
 
   getPlacementReport(params = {}) {
-    return axios.get(placementReportsRoute, buildAuthConfig({ params }));
+    return client.get(placementReportsRoute, buildAuthConfig({ params }));
   },
 
   exportPlacementReport(params = {}, format = "excel") {
-    return axios.get(
+    return client.get(
       placementReportsExportRoute,
       buildAuthConfig({
         params: { ...params, export_format: format },
@@ -270,11 +325,11 @@ export const placementApi = {
   },
 
   getPlacementReportSchedules() {
-    return axios.get(placementReportSchedulesRoute, buildAuthConfig());
+    return client.get(placementReportSchedulesRoute, buildAuthConfig());
   },
 
   createPlacementReportSchedule(payload) {
-    return axios.post(
+    return client.post(
       placementReportSchedulesRoute,
       payload,
       buildAuthConfig(),
@@ -282,7 +337,7 @@ export const placementApi = {
   },
 
   updatePlacementReportSchedule(scheduleId, payload) {
-    return axios.put(
+    return client.put(
       `${placementReportSchedulesRoute}${scheduleId}/`,
       payload,
       buildAuthConfig(),
@@ -290,7 +345,7 @@ export const placementApi = {
   },
 
   deletePlacementReportSchedule(scheduleId) {
-    return axios.delete(
+    return client.delete(
       `${placementReportSchedulesRoute}${scheduleId}/`,
       buildAuthConfig(),
     );
@@ -305,30 +360,34 @@ export const placementApi = {
   },
 
   deletePlacementStatistic(id) {
-    return axios.delete(
+    return client.delete(
       `${deletePlacementStatsRoute}${id}/`,
       buildAuthConfig(),
     );
   },
 
   getHigherStudiesRecords() {
-    return axios.get(higherStudiesRoute, buildAuthConfig());
+    return client.get(higherStudiesRoute, buildAuthConfig());
   },
 
   createHigherStudiesRecord(payload) {
-    return axios.post(higherStudiesRoute, payload, buildAuthConfig());
+    return client.post(higherStudiesRoute, payload, buildAuthConfig());
   },
 
   updateHigherStudiesRecord(id, payload) {
-    return axios.put(`${higherStudiesRoute}${id}/`, payload, buildAuthConfig());
+    return client.put(
+      `${higherStudiesRoute}${id}/`,
+      payload,
+      buildAuthConfig(),
+    );
   },
 
   deleteHigherStudiesRecord(id) {
-    return axios.delete(`${higherStudiesRoute}${id}/`, buildAuthConfig());
+    return client.delete(`${higherStudiesRoute}${id}/`, buildAuthConfig());
   },
 
   downloadCv(payload) {
-    return axios.post(
+    return client.post(
       downloadCVRoute,
       payload,
       buildAuthConfig({
@@ -341,11 +400,11 @@ export const placementApi = {
   },
 
   getPlacementProfile() {
-    return axios.get(placementProfileRoute, buildAuthConfig());
+    return client.get(placementProfileRoute, buildAuthConfig());
   },
 
   savePlacementProfile(payload) {
-    return axios.put(
+    return client.put(
       placementProfileRoute,
       payload,
       buildAuthConfig({
@@ -357,7 +416,7 @@ export const placementApi = {
   },
 
   uploadPlacementProfileDocument(payload) {
-    return axios.post(
+    return client.post(
       placementProfileRoute,
       payload,
       buildAuthConfig({
@@ -369,30 +428,33 @@ export const placementApi = {
   },
 
   getNotificationPreferences() {
-    return axios.get(notificationPreferencesRoute, buildAuthConfig());
+    return client.get(notificationPreferencesRoute, buildAuthConfig());
   },
 
   updateNotificationPreferences(payload) {
-    return axios.put(notificationPreferencesRoute, payload, buildAuthConfig());
+    return client.put(notificationPreferencesRoute, payload, buildAuthConfig());
   },
 
   getDebarredStudents() {
-    return axios.get(fetchDebaredlistRoute, buildAuthConfig());
+    return client.get(fetchDebaredlistRoute, buildAuthConfig());
   },
 
   getDebarredStatus(rollNumber) {
-    return axios.get(`${debarredStatusRoute}${rollNumber}/`, buildAuthConfig());
+    return client.get(
+      `${debarredStatusRoute}${rollNumber}/`,
+      buildAuthConfig(),
+    );
   },
 
   removeDebarredStatus(rollNumber) {
-    return axios.delete(
+    return client.delete(
       `${debarredStatusRoute}${rollNumber}/`,
       buildAuthConfig(),
     );
   },
 
   debarStudent(rollNumber, payload) {
-    return axios.post(
+    return client.post(
       `${debarredStatusRoute}${rollNumber}/`,
       payload,
       buildAuthConfig(),
@@ -400,19 +462,19 @@ export const placementApi = {
   },
 
   sendNotification(payload) {
-    return axios.post(sendNotificationRoute, payload, buildAuthConfig());
+    return client.post(sendNotificationRoute, payload, buildAuthConfig());
   },
 
   getPlacementPolicies() {
-    return axios.get(placementPoliciesRoute, buildAuthConfig());
+    return client.get(placementPoliciesRoute, buildAuthConfig());
   },
 
   createPlacementPolicy(payload) {
-    return axios.post(placementPoliciesRoute, payload, buildAuthConfig());
+    return client.post(placementPoliciesRoute, payload, buildAuthConfig());
   },
 
   updatePlacementPolicy(policyId, payload) {
-    return axios.put(
+    return client.put(
       `${placementPoliciesRoute}${policyId}/`,
       payload,
       buildAuthConfig({
@@ -424,7 +486,7 @@ export const placementApi = {
   },
 
   getFormFields(jobId) {
-    return axios.get(
+    return client.get(
       fetchFormFieldsRoute,
       buildAuthConfig({
         params: { jobId },
@@ -433,7 +495,7 @@ export const placementApi = {
   },
 
   submitPlacementResponses(jobId, responses) {
-    return axios.post(
+    return client.post(
       ApplyForPlacementRoute,
       { jobId, responses },
       buildAuthConfig(),
@@ -441,22 +503,22 @@ export const placementApi = {
   },
 
   withdrawApplication(jobId) {
-    return axios.delete(
+    return client.delete(
       `${ApplyForPlacementRoute}${jobId}/`,
       buildAuthConfig(),
     );
   },
 
   getRestrictions() {
-    return axios.get(fetchRestrictionsRoute, buildAuthConfig());
+    return client.get(fetchRestrictionsRoute, buildAuthConfig());
   },
 
   createRestriction(payload) {
-    return axios.post(fetchRestrictionsRoute, payload, buildAuthConfig());
+    return client.post(fetchRestrictionsRoute, payload, buildAuthConfig());
   },
 
   updateRestriction(id, payload) {
-    return axios.put(
+    return client.put(
       `${fetchRestrictionsRoute}${id}/`,
       payload,
       buildAuthConfig(),
@@ -464,15 +526,15 @@ export const placementApi = {
   },
 
   deleteRestriction(id) {
-    return axios.delete(`${fetchRestrictionsRoute}${id}/`, buildAuthConfig());
+    return client.delete(`${fetchRestrictionsRoute}${id}/`, buildAuthConfig());
   },
 
   getAlumniProfile() {
-    return axios.get(alumniProfileRoute, buildAuthConfig());
+    return client.get(alumniProfileRoute, buildAuthConfig());
   },
 
   saveAlumniProfile(payload) {
-    return axios.post(
+    return client.post(
       alumniProfileRoute,
       payload,
       buildAuthConfig({
@@ -484,7 +546,7 @@ export const placementApi = {
   },
 
   updateAlumniProfile(payload) {
-    return axios.put(
+    return client.put(
       alumniProfileRoute,
       payload,
       buildAuthConfig({
@@ -496,15 +558,15 @@ export const placementApi = {
   },
 
   getAlumniDirectory(params) {
-    return axios.get(alumniDirectoryRoute, buildAuthConfig({ params }));
+    return client.get(alumniDirectoryRoute, buildAuthConfig({ params }));
   },
 
   getAlumniVerificationQueue() {
-    return axios.get(alumniVerificationRoute, buildAuthConfig());
+    return client.get(alumniVerificationRoute, buildAuthConfig());
   },
 
   updateAlumniVerification(profileId, payload) {
-    return axios.put(
+    return client.put(
       `${alumniVerificationRoute}${profileId}/`,
       payload,
       buildAuthConfig(),
@@ -512,23 +574,23 @@ export const placementApi = {
   },
 
   getAlumniReferrals() {
-    return axios.get(alumniReferralsRoute, buildAuthConfig());
+    return client.get(alumniReferralsRoute, buildAuthConfig());
   },
 
   createAlumniReferral(payload) {
-    return axios.post(alumniReferralsRoute, payload, buildAuthConfig());
+    return client.post(alumniReferralsRoute, payload, buildAuthConfig());
   },
 
   getAlumniConnections() {
-    return axios.get(alumniConnectionsRoute, buildAuthConfig());
+    return client.get(alumniConnectionsRoute, buildAuthConfig());
   },
 
   createAlumniConnection(payload) {
-    return axios.post(alumniConnectionsRoute, payload, buildAuthConfig());
+    return client.post(alumniConnectionsRoute, payload, buildAuthConfig());
   },
 
   updateAlumniConnection(connectionId, payload) {
-    return axios.put(
+    return client.put(
       `${alumniConnectionsRoute}${connectionId}/`,
       payload,
       buildAuthConfig(),
@@ -536,15 +598,15 @@ export const placementApi = {
   },
 
   getAlumniSessions() {
-    return axios.get(alumniSessionsRoute, buildAuthConfig());
+    return client.get(alumniSessionsRoute, buildAuthConfig());
   },
 
   createAlumniSession(payload) {
-    return axios.post(alumniSessionsRoute, payload, buildAuthConfig());
+    return client.post(alumniSessionsRoute, payload, buildAuthConfig());
   },
 
   updateAlumniSession(sessionId, payload) {
-    return axios.put(
+    return client.put(
       `${alumniSessionsRoute}${sessionId}/`,
       payload,
       buildAuthConfig(),
@@ -552,48 +614,48 @@ export const placementApi = {
   },
 
   getAnnouncements() {
-    return axios.get(placementAnnouncementsRoute, buildAuthConfig());
+    return client.get(placementAnnouncementsRoute, buildAuthConfig());
   },
 
   createAnnouncement(payload) {
-    return axios.post(placementAnnouncementsRoute, payload, buildAuthConfig());
+    return client.post(placementAnnouncementsRoute, payload, buildAuthConfig());
   },
 
   deleteAnnouncement(announcementId) {
-    return axios.delete(
+    return client.delete(
       `${placementAnnouncementsRoute}${announcementId}/`,
       buildAuthConfig(),
     );
   },
 
   getOffCampusPlacements() {
-    return axios.get(offCampusPlacementsRoute, buildAuthConfig());
+    return client.get(offCampusPlacementsRoute, buildAuthConfig());
   },
 
   createOffCampusPlacement(payload) {
-    return axios.post(offCampusPlacementsRoute, payload, buildAuthConfig());
+    return client.post(offCampusPlacementsRoute, payload, buildAuthConfig());
   },
 
   deleteOffCampusPlacement(placementId) {
-    return axios.delete(
+    return client.delete(
       `${offCampusPlacementsRoute}${placementId}/`,
       buildAuthConfig(),
     );
   },
 
   getCpiBatches() {
-    return axios.get(cpiBatchesRoute, buildAuthConfig());
+    return client.get(cpiBatchesRoute, buildAuthConfig());
   },
 
   getCpiStudents(batchId) {
-    return axios.get(
+    return client.get(
       cpiStudentsRoute,
       buildAuthConfig({ params: { batch_id: batchId } }),
     );
   },
 
   exportCpiStudents(batchId) {
-    return axios.get(
+    return client.get(
       cpiStudentsRoute,
       buildAuthConfig({
         params: { batch_id: batchId, export: "excel" },
@@ -603,19 +665,19 @@ export const placementApi = {
   },
 
   getBranches() {
-    return axios.get(placementBranchesRoute, buildAuthConfig());
+    return client.get(placementBranchesRoute, buildAuthConfig());
   },
 
   listCalendarEvents() {
-    return axios.get(calendarEventsCrudRoute, buildAuthConfig());
+    return client.get(calendarEventsCrudRoute, buildAuthConfig());
   },
 
   createCalendarEvent(payload) {
-    return axios.post(calendarEventsCrudRoute, payload, buildAuthConfig());
+    return client.post(calendarEventsCrudRoute, payload, buildAuthConfig());
   },
 
   updateCalendarEvent(eventId, payload) {
-    return axios.patch(
+    return client.patch(
       `${calendarEventsCrudRoute}${eventId}/`,
       payload,
       buildAuthConfig(),
@@ -623,7 +685,7 @@ export const placementApi = {
   },
 
   deleteCalendarEvent(eventId) {
-    return axios.delete(
+    return client.delete(
       `${calendarEventsCrudRoute}${eventId}/`,
       buildAuthConfig(),
     );
