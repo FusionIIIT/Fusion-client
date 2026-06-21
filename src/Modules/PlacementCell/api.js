@@ -48,6 +48,7 @@ const offCampusPlacementsRoute = `${host}/placement/api/offcampus/`;
 const cpiBatchesRoute = `${host}/placement/api/cpi-batches/`;
 const cpiStudentsRoute = `${host}/placement/api/cpi-students/`;
 const placementBranchesRoute = `${host}/placement/api/branches/`;
+const calendarEventsCrudRoute = `${host}/placement/api/calendar-events/`;
 
 export const placementApi = {
   getOfferDetail(offerId) {
@@ -603,5 +604,28 @@ export const placementApi = {
 
   getBranches() {
     return axios.get(placementBranchesRoute, buildAuthConfig());
+  },
+
+  listCalendarEvents() {
+    return axios.get(calendarEventsCrudRoute, buildAuthConfig());
+  },
+
+  createCalendarEvent(payload) {
+    return axios.post(calendarEventsCrudRoute, payload, buildAuthConfig());
+  },
+
+  updateCalendarEvent(eventId, payload) {
+    return axios.patch(
+      `${calendarEventsCrudRoute}${eventId}/`,
+      payload,
+      buildAuthConfig(),
+    );
+  },
+
+  deleteCalendarEvent(eventId) {
+    return axios.delete(
+      `${calendarEventsCrudRoute}${eventId}/`,
+      buildAuthConfig(),
+    );
   },
 };
