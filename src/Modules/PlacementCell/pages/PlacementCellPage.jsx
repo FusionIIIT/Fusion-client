@@ -20,8 +20,10 @@ import AlumniMentorshipSessions from "../components/tables/AlumniMentorshipSessi
 import AlumniNetworkHub from "../components/tables/AlumniNetworkHub";
 import AlumniReferrals from "../components/tables/AlumniReferrals";
 import AlumniVerificationTable from "../components/tables/AlumniVerificationTable";
+import AnnouncementsPanel from "../components/tables/AnnouncementsPanel";
 import DebarredStudents from "../components/tables/DebarredStudents";
 import HigherStudiesTab from "../components/tables/HigherStudiesTab";
+import OffCampusPlacements from "../components/tables/OffCampusPlacements";
 import PlacementAppealsPanel from "../components/tables/PlacementAppealsPanel";
 import PlacementAppealsReviewTable from "../components/tables/PlacementAppealsReviewTable";
 import PlacementPoliciesTab from "../components/tables/PlacementPoliciesTab";
@@ -37,6 +39,11 @@ const studentTabs = [
     value: "schedule",
     label: "Placement Schedule",
     component: <PlacementSchedule />,
+  },
+  {
+    value: "announcements",
+    label: "Announcements",
+    component: <AnnouncementsPanel />,
   },
   {
     value: "stats",
@@ -88,6 +95,11 @@ const defaultTabs = [
     component: <PlacementSchedule />,
   },
   {
+    value: "announcements",
+    label: "Announcements",
+    component: <AnnouncementsPanel />,
+  },
+  {
     value: "stats",
     label: "Placement Stats",
     component: <PlacementRecordsTable />,
@@ -134,6 +146,11 @@ const chairmanTabs = [
     component: <PlacementSchedule />,
   },
   {
+    value: "announcements",
+    label: "Announcements",
+    component: <AnnouncementsPanel />,
+  },
+  {
     value: "stats",
     label: "Placement Stats",
     component: <PlacementRecordsTable />,
@@ -142,6 +159,11 @@ const chairmanTabs = [
     value: "placement-calendar",
     label: "Placement Calendar",
     component: <PlacementCalendar />,
+  },
+  {
+    value: "offcampus",
+    label: "Off-Campus Placements",
+    component: <OffCampusPlacements />,
   },
   {
     value: "debarred-students",
@@ -192,6 +214,11 @@ const tpoTabs = [
     component: <SendNotificationForm />,
   },
   {
+    value: "announcements",
+    label: "Announcements",
+    component: <AnnouncementsPanel />,
+  },
+  {
     value: "stats",
     label: "Placement Stats",
     component: <PlacementRecordsTable />,
@@ -200,6 +227,11 @@ const tpoTabs = [
     value: "placement-calendar",
     label: "Placement Calendar",
     component: <PlacementCalendar />,
+  },
+  {
+    value: "offcampus",
+    label: "Off-Campus Placements",
+    component: <OffCampusPlacements />,
   },
   {
     value: "company-registration",

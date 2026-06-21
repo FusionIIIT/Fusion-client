@@ -43,6 +43,8 @@ const alumniVerificationRoute = `${host}/placement/api/alumni/verification/`;
 const alumniReferralsRoute = `${host}/placement/api/alumni/referrals/`;
 const alumniConnectionsRoute = `${host}/placement/api/alumni/connections/`;
 const alumniSessionsRoute = `${host}/placement/api/alumni/sessions/`;
+const placementAnnouncementsRoute = `${host}/placement/api/announcements/`;
+const offCampusPlacementsRoute = `${host}/placement/api/offcampus/`;
 
 export const placementApi = {
   getOfferDetail(offerId) {
@@ -541,6 +543,36 @@ export const placementApi = {
     return axios.put(
       `${alumniSessionsRoute}${sessionId}/`,
       payload,
+      buildAuthConfig(),
+    );
+  },
+
+  getAnnouncements() {
+    return axios.get(placementAnnouncementsRoute, buildAuthConfig());
+  },
+
+  createAnnouncement(payload) {
+    return axios.post(placementAnnouncementsRoute, payload, buildAuthConfig());
+  },
+
+  deleteAnnouncement(announcementId) {
+    return axios.delete(
+      `${placementAnnouncementsRoute}${announcementId}/`,
+      buildAuthConfig(),
+    );
+  },
+
+  getOffCampusPlacements() {
+    return axios.get(offCampusPlacementsRoute, buildAuthConfig());
+  },
+
+  createOffCampusPlacement(payload) {
+    return axios.post(offCampusPlacementsRoute, payload, buildAuthConfig());
+  },
+
+  deleteOffCampusPlacement(placementId) {
+    return axios.delete(
+      `${offCampusPlacementsRoute}${placementId}/`,
       buildAuthConfig(),
     );
   },

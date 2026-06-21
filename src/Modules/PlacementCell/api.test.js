@@ -67,4 +67,38 @@ describe("placementApi endpoint + auth contract", () => {
       /\/placement\/api\/student-applications\/12\/$/,
     );
   });
+
+  it("announcement methods target the announcements endpoint", async () => {
+    await placementApi.getAnnouncements();
+    expect(axios.get.mock.calls[0][0]).toMatch(
+      /\/placement\/api\/announcements\/$/,
+    );
+
+    await placementApi.createAnnouncement({ title: "T", body: "B" });
+    const [postUrl, body] = axios.post.mock.calls[0];
+    expect(postUrl).toMatch(/\/placement\/api\/announcements\/$/);
+    expect(body).toEqual({ title: "T", body: "B" });
+
+    await placementApi.deleteAnnouncement(5);
+    expect(axios.delete.mock.calls[0][0]).toMatch(
+      /\/placement\/api\/announcements\/5\/$/,
+    );
+  });
+
+  it("off-campus methods target the offcampus endpoint", async () => {
+    await placementApi.getOffCampusPlacements();
+    expect(axios.get.mock.calls[0][0]).toMatch(
+      /\/placement\/api\/offcampus\/$/,
+    );
+
+    await placementApi.createOffCampusPlacement({ roll_no: "2023001" });
+    const [postUrl, body] = axios.post.mock.calls[0];
+    expect(postUrl).toMatch(/\/placement\/api\/offcampus\/$/);
+    expect(body).toEqual({ roll_no: "2023001" });
+
+    await placementApi.deleteOffCampusPlacement(9);
+    expect(axios.delete.mock.calls[0][0]).toMatch(
+      /\/placement\/api\/offcampus\/9\/$/,
+    );
+  });
 });
