@@ -2,38 +2,81 @@ import "@mantine/notifications/styles.css";
 import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css";
 import "mantine-react-table/styles.css";
+import "../styles/module.css";
 
-import React, { useEffect, useState } from "react";
-import { Container } from "@mantine/core";
+import React, { useEffect, useState, lazy, Suspense } from "react";
+import { Container, Center, Loader } from "@mantine/core";
 import { useSelector, useDispatch } from "react-redux";
 import CustomBreadcrumbs from "../../../components/Breadcrumbs";
 import ModuleTabs from "../../../components/moduleTabs";
 import { setActiveTab_ } from "../../../redux/moduleslice";
-import DownloadCV from "../components/common/DownloadCV";
-import PlacementCalendar from "../components/common/PlacementCalendar";
-import PlacementSchedule from "../components/common/PlacementSchedule";
-import AlumniRegistrationForm from "../components/forms/AlumniRegistrationForm";
-import CompanyRegistrationForm from "../components/forms/CompanyRegistrationForm";
-import FieldsForm from "../components/forms/FieldsForm";
-import SendNotificationForm from "../components/forms/SendNotificationForm";
-import AlumniMentorshipSessions from "../components/tables/AlumniMentorshipSessions";
-import AlumniNetworkHub from "../components/tables/AlumniNetworkHub";
-import AlumniReferrals from "../components/tables/AlumniReferrals";
-import AlumniVerificationTable from "../components/tables/AlumniVerificationTable";
-import AnnouncementsPanel from "../components/tables/AnnouncementsPanel";
-import DebarredStudents from "../components/tables/DebarredStudents";
-import HigherStudiesTab from "../components/tables/HigherStudiesTab";
-import OffCampusPlacements from "../components/tables/OffCampusPlacements";
-import PlacementAppealsPanel from "../components/tables/PlacementAppealsPanel";
-import PlacementAppealsReviewTable from "../components/tables/PlacementAppealsReviewTable";
-import PlacementPoliciesTab from "../components/tables/PlacementPoliciesTab";
-import PlacementRecordsTable from "../components/tables/PlacementRecordsTable";
-import PlacementReportsPanel from "../components/tables/PlacementReportsPanel";
-import RestrictionsTab from "../components/tables/RestrictionsTab";
-import StudentApplicationsTable from "../components/tables/StudentApplicationsTable";
-import StudentCpiTab from "../components/tables/StudentCpiTab";
-import StudentOffersTable from "../components/tables/StudentOffersTable";
-import "../styles/module.css";
+
+const DownloadCV = lazy(() => import("../components/common/DownloadCV"));
+const PlacementCalendar = lazy(
+  () => import("../components/common/PlacementCalendar"),
+);
+const PlacementSchedule = lazy(
+  () => import("../components/common/PlacementSchedule"),
+);
+const AlumniRegistrationForm = lazy(
+  () => import("../components/forms/AlumniRegistrationForm"),
+);
+const CompanyRegistrationForm = lazy(
+  () => import("../components/forms/CompanyRegistrationForm"),
+);
+const FieldsForm = lazy(() => import("../components/forms/FieldsForm"));
+const SendNotificationForm = lazy(
+  () => import("../components/forms/SendNotificationForm"),
+);
+const AlumniMentorshipSessions = lazy(
+  () => import("../components/tables/AlumniMentorshipSessions"),
+);
+const AlumniNetworkHub = lazy(
+  () => import("../components/tables/AlumniNetworkHub"),
+);
+const AlumniReferrals = lazy(
+  () => import("../components/tables/AlumniReferrals"),
+);
+const AlumniVerificationTable = lazy(
+  () => import("../components/tables/AlumniVerificationTable"),
+);
+const AnnouncementsPanel = lazy(
+  () => import("../components/tables/AnnouncementsPanel"),
+);
+const DebarredStudents = lazy(
+  () => import("../components/tables/DebarredStudents"),
+);
+const HigherStudiesTab = lazy(
+  () => import("../components/tables/HigherStudiesTab"),
+);
+const OffCampusPlacements = lazy(
+  () => import("../components/tables/OffCampusPlacements"),
+);
+const PlacementAppealsPanel = lazy(
+  () => import("../components/tables/PlacementAppealsPanel"),
+);
+const PlacementAppealsReviewTable = lazy(
+  () => import("../components/tables/PlacementAppealsReviewTable"),
+);
+const PlacementPoliciesTab = lazy(
+  () => import("../components/tables/PlacementPoliciesTab"),
+);
+const PlacementRecordsTable = lazy(
+  () => import("../components/tables/PlacementRecordsTable"),
+);
+const PlacementReportsPanel = lazy(
+  () => import("../components/tables/PlacementReportsPanel"),
+);
+const RestrictionsTab = lazy(
+  () => import("../components/tables/RestrictionsTab"),
+);
+const StudentApplicationsTable = lazy(
+  () => import("../components/tables/StudentApplicationsTable"),
+);
+const StudentCpiTab = lazy(() => import("../components/tables/StudentCpiTab"));
+const StudentOffersTable = lazy(
+  () => import("../components/tables/StudentOffersTable"),
+);
 
 const studentTabs = [
   {
@@ -326,7 +369,17 @@ function PlacementCellPage() {
           setActiveTab={setActiveTab}
         />
 
-        <div className="tabContent">{tabs[activeIndex]?.component}</div>
+        <div className="tabContent">
+          <Suspense
+            fallback={
+              <Center h="40vh">
+                <Loader />
+              </Center>
+            }
+          >
+            {tabs[activeIndex]?.component}
+          </Suspense>
+        </div>
       </Container>
     </div>
   );
