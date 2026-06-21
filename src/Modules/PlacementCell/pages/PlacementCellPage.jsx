@@ -142,14 +142,9 @@ const alumniTabs = [
 
 const chairmanTabs = [
   {
-    value: "schedule",
-    label: "Placement Schedule",
-    component: <PlacementSchedule />,
-  },
-  {
-    value: "announcements",
-    label: "Announcements",
-    component: <AnnouncementsPanel />,
+    value: "student-cpi",
+    label: "Student CPI",
+    component: <StudentCpiTab />,
   },
   {
     value: "stats",
@@ -157,19 +152,34 @@ const chairmanTabs = [
     component: <PlacementRecordsTable />,
   },
   {
-    value: "placement-calendar",
-    label: "Placement Calendar",
-    component: <PlacementCalendar />,
-  },
-  {
     value: "offcampus",
     label: "Off-Campus Placements",
     component: <OffCampusPlacements />,
   },
   {
-    value: "student-cpi",
-    label: "Student CPI",
-    component: <StudentCpiTab />,
+    value: "announcements",
+    label: "Announcements",
+    component: <AnnouncementsPanel />,
+  },
+  {
+    value: "schedule",
+    label: "Placement Schedule",
+    component: <PlacementSchedule />,
+  },
+  {
+    value: "reports",
+    label: "Placement Reports",
+    component: <PlacementReportsPanel />,
+  },
+  {
+    value: "policies",
+    label: "Placement Policies",
+    component: <PlacementPoliciesTab />,
+  },
+  {
+    value: "appeals-review",
+    label: "Placement Appeals",
+    component: <PlacementAppealsReviewTable />,
   },
   {
     value: "debarred-students",
@@ -187,27 +197,17 @@ const chairmanTabs = [
     component: <AlumniVerificationTable />,
   },
   {
-    value: "appeals-review",
-    label: "Placement Appeals",
-    component: <PlacementAppealsReviewTable />,
-  },
-  {
-    value: "reports",
-    label: "Placement Reports",
-    component: <PlacementReportsPanel />,
-  },
-  {
-    value: "policies",
-    label: "Placement Policies",
-    component: <PlacementPoliciesTab />,
+    value: "placement-calendar",
+    label: "Placement Calendar",
+    component: <PlacementCalendar />,
   },
 ];
 
 const tpoTabs = [
   {
-    value: "alumni-registration",
-    label: "Alumni Request",
-    component: <AlumniRegistrationForm />,
+    value: "student-cpi",
+    label: "Student CPI",
+    component: <StudentCpiTab />,
   },
   {
     value: "schedule",
@@ -215,9 +215,9 @@ const tpoTabs = [
     component: <PlacementSchedule />,
   },
   {
-    value: "send-notifications",
-    label: "Send Notifications",
-    component: <SendNotificationForm />,
+    value: "offcampus",
+    label: "Off-Campus Placements",
+    component: <OffCampusPlacements />,
   },
   {
     value: "announcements",
@@ -230,19 +230,9 @@ const tpoTabs = [
     component: <PlacementRecordsTable />,
   },
   {
-    value: "placement-calendar",
-    label: "Placement Calendar",
-    component: <PlacementCalendar />,
-  },
-  {
-    value: "offcampus",
-    label: "Off-Campus Placements",
-    component: <OffCampusPlacements />,
-  },
-  {
-    value: "student-cpi",
-    label: "Student CPI",
-    component: <StudentCpiTab />,
+    value: "send-notifications",
+    label: "Send Notifications",
+    component: <SendNotificationForm />,
   },
   {
     value: "company-registration",
@@ -250,9 +240,9 @@ const tpoTabs = [
     component: <CompanyRegistrationForm />,
   },
   {
-    value: "fields",
-    label: "Fields",
-    component: <FieldsForm />,
+    value: "reports",
+    label: "Placement Reports",
+    component: <PlacementReportsPanel />,
   },
   {
     value: "debarred-students",
@@ -265,9 +255,29 @@ const tpoTabs = [
     component: <RestrictionsTab />,
   },
   {
+    value: "fields",
+    label: "Fields",
+    component: <FieldsForm />,
+  },
+  {
+    value: "appeals-review",
+    label: "Placement Appeals",
+    component: <PlacementAppealsReviewTable />,
+  },
+  {
     value: "higher-studies",
     label: "Higher Studies",
     component: <HigherStudiesTab />,
+  },
+  {
+    value: "placement-calendar",
+    label: "Placement Calendar",
+    component: <PlacementCalendar />,
+  },
+  {
+    value: "alumni-registration",
+    label: "Alumni Request",
+    component: <AlumniRegistrationForm />,
   },
   {
     value: "alumni-verification",
@@ -278,16 +288,6 @@ const tpoTabs = [
     value: "alumni-referrals",
     label: "Alumni Referrals",
     component: <AlumniReferrals />,
-  },
-  {
-    value: "reports",
-    label: "Placement Reports",
-    component: <PlacementReportsPanel />,
-  },
-  {
-    value: "appeals-review",
-    label: "Placement Appeals",
-    component: <PlacementAppealsReviewTable />,
   },
 ];
 
