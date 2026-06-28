@@ -13,6 +13,7 @@ import {
   SimpleGrid,
   Stack,
   TextInput,
+  Badge,
 } from "@mantine/core";
 import { IconSearch, IconX } from "@tabler/icons-react";
 import { showNotification } from "@mantine/notifications";
@@ -315,17 +316,26 @@ export default function AnnounceResult() {
                 <td>{item.semester_label || item.semester}</td>
                 <td>{item.announced ? "Yes" : "No"}</td>
                 <td>
-                  <Button
-                    size="xs"
-                    variant="outline"
-                    onClick={() =>
-                      navigate(
-                        `/examination/result-announcement/${item.id}/publish`,
-                      )
-                    }
-                  >
-                    {item.announced ? "Edit" : "Publish"}
-                  </Button>
+                  <Group spacing="xs" noWrap>
+                    <Button
+                      size="xs"
+                      variant="outline"
+                      onClick={() =>
+                        navigate(
+                          `/examination/result-announcement/${item.id}/publish`,
+                        )
+                      }
+                    >
+                      {item.announced || item.per_student_selection
+                        ? "Edit"
+                        : "Publish"}
+                    </Button>
+                    {item.per_student_selection && !item.announced && (
+                      <Badge color="red" variant="light">
+                        Reverted
+                      </Badge>
+                    )}
+                  </Group>
                 </td>
               </tr>
             ))}
