@@ -75,6 +75,9 @@ function Admin_edit_programme_form() {
         `${host}/programme_curriculum/api/admin_edit_programme/${id}/`,
         {
           method: "POST",
+          headers: {
+            Authorization: `Token ${localStorage.getItem("authToken")}`,
+          },
           body: JSON.stringify(submitData),
         },
       );
