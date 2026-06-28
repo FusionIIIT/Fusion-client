@@ -128,7 +128,10 @@ function Admin_add_course_proposal_form() {
     try {
       const response = await fetch(apiUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${localStorage.getItem("authToken")}`,
+        },
         body: JSON.stringify(payload),
       });
 
