@@ -44,7 +44,8 @@ function buildCreditsDetailsHTML(semesters) {
       const cr    = Number(c.credits) || 0;
       const rem   = (c.remark || "Regular");
       const isSW  = (c.code || "").toUpperCase().startsWith("SW");
-      const isFail = !c.grade || ["F","I","X","AU","CD","S","—"].includes(c.grade);
+      // S earns credit (counted in total); X and failing/missing grades do not.
+      const isFail = !c.grade || ["F","I","X","AU","CD","—"].includes(c.grade);
 
       if (isFail) continue;          // no earned credit for failing/missing grades
 
