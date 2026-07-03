@@ -101,9 +101,15 @@ export default function StudentCourses() {
       setStudentData(data);
 
       if (data.current_semester) {
+        // Derive the semester type from the semester number's parity so the
+        // value always matches a dropdown option (odd no -> Odd Semester,
+        // even no -> Even Semester). The backend's month-based type can
+        // otherwise conflict with an even/odd semester number and leave the
+        // Select empty.
+        const no = Number(data.current_semester.semester_no);
         setSelectedSemester({
-          no: data.current_semester.semester_no,
-          type: data.current_semester.semester_type
+          no,
+          type: no % 2 === 1 ? "Odd Semester" : "Even Semester",
         });
       }
     } catch (err) {
