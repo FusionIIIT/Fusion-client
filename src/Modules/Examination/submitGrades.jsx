@@ -427,9 +427,13 @@ function SubmitGrades() {
         {showPreview && previewData && (
           <Box ref={previewRef} mt="md">
             <h2>Grades Preview</h2>
+            <Text fw={600} mb="sm">
+              Total Students: {previewData.length}
+            </Text>
             <Table highlightOnHover>
               <thead>
                 <tr>
+                  <th>S. No</th>
                   <th>Roll No</th>
                   <th>Name</th>
                   <th>Branch</th>
@@ -442,6 +446,7 @@ function SubmitGrades() {
               <tbody>
                 {previewData.map((row, index) => (
                   <tr key={index} style={{ backgroundColor: row.is_registered ? "inherit" : "#ffe6e6" }}>
+                    <td>{index + 1}</td>
                     <td>{row.roll_no}</td>
                     <td>{row.name}</td>
                     <td>{row.branch || '-'}</td>
