@@ -37,6 +37,7 @@ import StudentSeminarPage from "./StudentSeminarPage";
 import RPCDashboardPage from "./RPCDashboardPage";
 import StudentThesisSubmissionUploadForm from "./ThesisSubmission/StudentThesisSubmissionUploadForm";
 import DirectorDashboard from "./ThesisSubmission/DirectorDashboard";
+import DeanPanelDashboard from "./ThesisSubmission/DeanPanelDashboard";
 import SupervisorDashboardSub from "./ThesisSubmission/SupervisorDashboardSub";
 import AdminThesisEnrollments from "./AdminThesisEnrollments";
 import AdminThesisGrades from "./AdminThesisGrades";
@@ -168,8 +169,15 @@ function AcademicPage() {
 
     if (role === "Dean Academic") {
       return {
-        tabItems: [{ title: "Thesis" }, { title: "Thesis Submission List" }],
-        tabComponents: [DeanDashboard, DirectorDashboard],
+        tabItems: [{ title: "Thesis" }, { title: "Thesis Submission Panel" }],
+        tabComponents: [DeanDashboard, DeanPanelDashboard],
+      };
+    }
+
+    if (role === "Director") {
+      return {
+        tabItems: [{ title: "Thesis Submission - Prioritize Panel" }],
+        tabComponents: [DirectorDashboard],
       };
     }
 

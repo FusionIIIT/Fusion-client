@@ -1,20 +1,19 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Card,
   Title,
   Table,
   Select,
   Button,
-  Notification,
   Loader,
   Group,
   Alert,
-} from '@mantine/core';
-import { showNotification } from '@mantine/notifications';
-import { IconCheck, IconX } from '@tabler/icons-react';
-import axios from 'axios';
-import PropTypes from 'prop-types';
-import { directorApproveRoute } from '../../../routes/academicRoutes';
+} from "@mantine/core";
+import { showNotification } from "@mantine/notifications";
+import { IconCheck, IconX } from "@tabler/icons-react";
+import axios from "axios";
+import PropTypes from "prop-types";
+import { directorApproveRoute } from "../../../routes/academicRoutes";
 
 export default function DirectorPrioritiesPanel({
   submission,
@@ -23,8 +22,23 @@ export default function DirectorPrioritiesPanel({
 }) {
   const [prioMap, setPrioMap] = useState({});
   const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState(null);
-  const [saving, setSaving]   = useState(false);
+  const [error, setError] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  const indianInvites = useMemo(
+    () =>
+      (submission.invitations || []).filter(
+        (inv) => inv.examiner_type === "indian",
+      ),
+    [submission.invitations],
+  );
+  const foreignInvites = useMemo(
+    () =>
+      (submission.invitations || []).filter(
+        (inv) => inv.examiner_type === "foreign",
+      ),
+    [submission.invitations],
+  );
 
   useEffect(() => {
     if (!submission || !submission.invitations) {
@@ -48,7 +62,7 @@ export default function DirectorPrioritiesPanel({
   const handleSave = useCallback(async () => {
     setSaving(true);
     setError(null);
-    
+
     try {
       const payload = {
         submission_id: submission.id,
@@ -57,9 +71,9 @@ export default function DirectorPrioritiesPanel({
           priority: prioMap[inv.token],
         })),
       };
-      
-      const token = localStorage.getItem('authToken');
-      
+
+      const token = localStorage.getItem("authToken");
+
       if (!token) {
         throw new Error("Authentication required");
       }
@@ -74,19 +88,20 @@ export default function DirectorPrioritiesPanel({
 
       clearTimeout(timeoutId);
       showNotification({
-        title: 'Success',
-        message: 'Priorities saved successfully',
-        color: 'teal',
+        title: "Success",
+        message: "Priorities saved, sent back to Dean for invitations",
+        color: "teal",
         icon: <IconCheck />,
       });
       onClose();
     } catch (e) {
-      const errorMsg = e.response?.data?.detail || e.message || 'Failed to save priorities';
+      const errorMsg =
+        e.response?.data?.error || e.message || "Failed to save priorities";
       setError(errorMsg);
       showNotification({
-        title: 'Error',
+        title: "Error",
         message: errorMsg,
-        color: 'red',
+        color: "red",
         icon: <IconX />,
       });
     } finally {
@@ -110,47 +125,61 @@ export default function DirectorPrioritiesPanel({
     );
   }
 
-  const priorityOptions = (submission.invitations || []).map((_, i) => ({
-    value: String(i + 1),
-    label: String(i + 1),
-  }));
+  const renderCategory = (label, invites) => {
+    const rankOptions = invites.map((_, i) => ({
+      value: String(i + 1),
+      label: String(i + 1),
+    }));
+
+    return (
+      <>
+        <Title order={5} mt="md">
+          {label}
+        </Title>
+        <Table aria-label={`${label} priorities`}>
+          <thead>
+            <tr>
+              <th scope="col">Examiner</th>
+              <th scope="col">Email</th>
+              <th scope="col">Rank</th>
+            </tr>
+          </thead>
+          <tbody>
+            {invites.map((inv) => (
+              <tr key={inv.token}>
+                <td>{inv.prof_name || "N/A"}</td>
+                <td>{inv.prof_email || "N/A"}</td>
+                <td>
+                  <Select
+                    data={rankOptions}
+                    value={String(prioMap[inv.token] || 1)}
+                    onChange={(v) => handleChange(inv.token, v)}
+                    disabled={readOnly}
+                    aria-label={`Rank for ${inv.prof_name}`}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </>
+    );
+  };
 
   return (
     <Card shadow="xs" p="md" mt="lg" withBorder>
       <Title order={4} mb="md">
-        {readOnly ? `Priorities for "${submission.title}"` : `Set Priorities for "${submission.title}"`}
+        {readOnly
+          ? `Priorities for "${submission.title}"`
+          : `Set Priorities for "${submission.title}"`}
       </Title>
 
-      <Table aria-label="Examiner priorities">
-        <thead>
-          <tr>
-            <th scope="col">Examiner</th>
-            <th scope="col">Email</th>
-            <th scope="col">Priority</th>
-          </tr>
-        </thead>
-        <tbody>
-          {(submission.invitations || []).map((inv) => (
-            <tr key={inv.token}>
-              <td>{inv.prof_name || 'N/A'}</td>
-              <td>{inv.prof_email || 'N/A'}</td>
-              <td>
-                <Select
-                  data={priorityOptions}
-                  value={String(prioMap[inv.token] || 1)}
-                  onChange={(v) => handleChange(inv.token, v)}
-                  disabled={readOnly}
-                  aria-label={`Priority for ${inv.prof_name}`}
-                />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+      {renderCategory("Indian Examiners", indianInvites)}
+      {renderCategory("Foreign Examiners", foreignInvites)}
 
       <Group position="right" mt="md">
         <Button variant="default" onClick={onClose} disabled={saving}>
-          {readOnly ? 'Close' : 'Cancel'}
+          {readOnly ? "Close" : "Cancel"}
         </Button>
         {!readOnly && (
           <Button onClick={handleSave} loading={saving}>
@@ -171,8 +200,9 @@ DirectorPrioritiesPanel.propTypes = {
         token: PropTypes.string.isRequired,
         prof_name: PropTypes.string,
         prof_email: PropTypes.string,
+        examiner_type: PropTypes.string,
         priority: PropTypes.number,
-      })
+      }),
     ).isRequired,
   }).isRequired,
   readOnly: PropTypes.bool,
