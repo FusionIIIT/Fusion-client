@@ -1,4 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { useState, useEffect } from "react";
 import SubmitGrades from "./submitGrades.jsx";
 import VerifyGrades from "./verifyGrades.jsx";
 import GenerateTranscript from "./generateTranscript.jsx";
@@ -6,7 +8,6 @@ import GenerateGradeSheet from "./generateGradeSheet.jsx";
 import Nav from "./components/nav2.jsx";
 import { Layout } from "../../components/layout.jsx";
 import StudentTranscript from "./components/studentTranscript.jsx";
-import Announcement from "./announcement.jsx";
 import VerifyDean from "./verifyDean.jsx";
 import ValidateDean from "./validateDean.jsx";
 import CheckResult from "./checkResult.jsx";
@@ -14,11 +15,11 @@ import CheckResultProf from "./checkResultsProf.jsx";
 import CustomBreadExam from "./components/customBreadCrumbs.jsx";
 import SubmitGradesProf from "./submitGradesProf.jsx";
 import ProtectedRoute from "./routes/protectedRoutes.jsx";
-import { useSelector } from "react-redux";
-import { useState, useEffect } from "react";
 import AnnounceResult from "./AnnounceResult.jsx";
+import PublishResultSelection from "./PublishResultSelection.jsx";
 import GradeStatus from "./GradeStatus.jsx";
 import GradeSummary from "./GradeSummary.jsx";
+import GradeValidation from "./GradeValidation.jsx";
 
 export default function Examination() {
   const userRole = useSelector((state) => state.user.role);
@@ -134,7 +135,13 @@ export default function Examination() {
           <Route
             path="/submit-grades-prof"
             element={
-              <ProtectedRoute roles={["Associate Professor", "Assistant Professor", "Professor"]}>
+              <ProtectedRoute
+                roles={[
+                  "Associate Professor",
+                  "Assistant Professor",
+                  "Professor",
+                ]}
+              >
                 <SubmitGradesProf />
               </ProtectedRoute>
             }
@@ -142,7 +149,13 @@ export default function Examination() {
           <Route
             path="/download-grades-prof"
             element={
-              <ProtectedRoute roles={["Associate Professor", "Assistant Professor", "Professor"]}>
+              <ProtectedRoute
+                roles={[
+                  "Associate Professor",
+                  "Assistant Professor",
+                  "Professor",
+                ]}
+              >
                 <CheckResultProf />
               </ProtectedRoute>
             }
@@ -152,6 +165,14 @@ export default function Examination() {
             element={
               <ProtectedRoute roles={["acadadmin", "Dean Academic"]}>
                 <AnnounceResult />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/result-announcement/:id/publish"
+            element={
+              <ProtectedRoute roles={["acadadmin", "Dean Academic"]}>
+                <PublishResultSelection />
               </ProtectedRoute>
             }
           />
@@ -168,6 +189,14 @@ export default function Examination() {
             element={
               <ProtectedRoute roles={["acadadmin", "Dean Academic"]}>
                 <GradeSummary />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/grade-validation"
+            element={
+              <ProtectedRoute roles={["acadadmin"]}>
+                <GradeValidation />
               </ProtectedRoute>
             }
           />

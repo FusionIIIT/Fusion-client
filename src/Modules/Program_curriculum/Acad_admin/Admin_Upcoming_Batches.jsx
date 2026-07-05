@@ -3230,6 +3230,7 @@ const AdminUpcomingBatch = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Token ${localStorage.getItem("authToken")}`,
         },
         body: JSON.stringify({ academic_year: academicYear })
       });

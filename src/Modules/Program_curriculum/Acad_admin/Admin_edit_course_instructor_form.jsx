@@ -116,7 +116,10 @@ function Admin_edit_course_instructor() {
         `${host}/programme_curriculum/api/admin_update_course_instructor/${id}/`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Token ${localStorage.getItem("authToken")}`,
+          },
           body: JSON.stringify({
             course_id: values.courseName,
             instructor_id: values.instructor,

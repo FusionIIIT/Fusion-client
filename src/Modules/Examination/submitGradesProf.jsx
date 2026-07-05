@@ -56,7 +56,7 @@ export default function SubmitGradesProf() {
           get_course_reg_academic_years,
           { headers: { Authorization: `Token ${token}` } }
         );
-        setAcademicYears(data.academic_years.map((y) => ({ value: y, label: y })));
+        setAcademicYears(data.academic_years.slice().sort((a, b) => b.toString().localeCompare(a.toString())).map((y) => ({ value: y, label: y })));
       } catch {
         setError("Failed to load academic years.");
       } finally {
@@ -414,6 +414,9 @@ export default function SubmitGradesProf() {
       ) : (
         <Box ref={previewRef} mt="md">
           <Title order={3} mb="sm">Grades Preview</Title>
+          <Text fw={600} mb="sm">
+            Total Students: {previewData.length}
+          </Text>
           <Table highlightOnHover>
             <thead>
               <tr>

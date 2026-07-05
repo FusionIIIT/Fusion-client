@@ -97,10 +97,18 @@ export default function StudentCourses() {
         { headers: { Authorization: `Token ${token}` } }
       );
       setStudentData(data);
-      // Set initial semester selection from API data
-      if (data.semester_list && data.semester_list.length > 0) {
-        const firstSem = data.semester_list[0];
-        setSelectedSemester({ no: firstSem.semester_no, type: getSemesterType(firstSem.semester_no) });
+
+      if (data.current_semester) {
+        // Derive the semester type from the semester number's parity so the
+        // value always matches a dropdown option (odd no -> Odd Semester,
+        // even no -> Even Semester). The backend's month-based type can
+        // otherwise conflict with an even/odd semester number and leave the
+        // Select empty.
+        const no = Number(data.current_semester.semester_no);
+        setSelectedSemester({
+          no,
+          type: no % 2 === 1 ? "Odd Semester" : "Even Semester",
+        });
       }
     } catch (err) {
       setError(err.response?.data?.error || err.message || "Fetch failed");
