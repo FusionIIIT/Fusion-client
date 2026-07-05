@@ -213,7 +213,7 @@ const STUDENT_FIELDS_CONFIG = {
   },
   gateStream: {
     label: "GATE Stream",
-    placeholder: "Enter GATE stream (e.g., CS, EC)",
+    placeholder: "Enter GATE stream code (e.g., CS, EC, ME)",
     required: false,
     backendField: "gate_stream",
     showForProgrammes: ["PHD"],
@@ -221,7 +221,7 @@ const STUDENT_FIELDS_CONFIG = {
   },
   gateRank: {
     label: "GATE Rank",
-    placeholder: "Enter GATE rank",
+    placeholder: "Enter GATE rank (numeric value)",
     required: false,
     type: "number",
     backendField: "gate_rank",
@@ -375,8 +375,8 @@ const STUDENT_FIELDS_CONFIG = {
   },
 
   branch: {
-    label: "Branch",
-    placeholder: "Select branch",
+    label: "Discipline",
+    placeholder: "Select discipline",
     required: true,
     type: "select",
     backendField: "branch",
@@ -384,8 +384,11 @@ const STUDENT_FIELDS_CONFIG = {
       { value: "Computer Science and Engineering", label: "Computer Science and Engineering" },
       { value: "Electronics and Communication Engineering", label: "Electronics and Communication Engineering" },
       { value: "Mechanical Engineering", label: "Mechanical Engineering" },
-      { value: "Smart Manufacturing", label: "Smart Manufacturing" },
       { value: "Design", label: "Design" },
+      { value: "Natural Sciences-Mathematics", label: "Natural Sciences-Mathematics" },
+      { value: "Natural Sciences-Physics", label: "Natural Sciences-Physics" },
+      { value: "Humanities - English", label: "Humanities - English" },
+      { value: "Smart Manufacturing", label: "Smart Manufacturing" },
     ],
     excelColumns: [
       "discipline",
@@ -399,7 +402,7 @@ const STUDENT_FIELDS_CONFIG = {
 
   address: {
     label: "Address",
-    placeholder: "Enter complete address",
+    placeholder: "Enter complete address with pincode (e.g., House No., Street, City, State - Pincode)",
     required: true,
     type: "textarea",
     backendField: "address",
@@ -414,7 +417,7 @@ const STUDENT_FIELDS_CONFIG = {
 
   phoneNumber: {
     label: "Phone Number",
-    placeholder: "Enter phone number",
+    placeholder: "Enter 10-digit phone number",
     required: false,
     backendField: "phone_number",
     excelColumns: [
@@ -445,7 +448,7 @@ const STUDENT_FIELDS_CONFIG = {
   },
   jeeRank: {
     label: "AI Rank",
-    placeholder: "Enter AI rank",
+    placeholder: "Enter AI rank (numeric value)",
     required: false,
     type: "number",
     backendField: "ai_rank",
@@ -464,7 +467,7 @@ const STUDENT_FIELDS_CONFIG = {
   },
   categoryRank: {
     label: "Category Rank",
-    placeholder: "Enter category rank",
+    placeholder: "Enter category rank (numeric value)",
     required: false,
     type: "number",
     backendField: "category_rank",
@@ -481,9 +484,9 @@ const STUDENT_FIELDS_CONFIG = {
   },
   fatherMobile: {
     label: "Father's Mobile",
-    placeholder: "Enter father's mobile number",
+    placeholder: "Enter 10-digit mobile number",
     required: false,
-    backendField: "father_mobile", 
+    backendField: "father_mobile",
     excelColumns: ["father mobile number", "father mobile", "father phone"],
   },
   motherOccupation: {
@@ -495,17 +498,56 @@ const STUDENT_FIELDS_CONFIG = {
   },
   motherMobile: {
     label: "Mother's Mobile",
-    placeholder: "Enter mother's mobile number",
+    placeholder: "Enter 10-digit mobile number",
     required: false,
-    backendField: "mother_mobile", 
+    backendField: "mother_mobile",
     excelColumns: ["mother mobile number", "mother mobile", "mother phone"],
   },
   state: {
     label: "State",
-    placeholder: "Enter state",
+    placeholder: "Select state",
     required: false,
-    backendField: "state", 
+    type: "select",
+    backendField: "state",
     excelColumns: ["state", "state name"],
+    options: [
+      { value: "Andhra Pradesh", label: "Andhra Pradesh" },
+      { value: "Arunachal Pradesh", label: "Arunachal Pradesh" },
+      { value: "Assam", label: "Assam" },
+      { value: "Bihar", label: "Bihar" },
+      { value: "Chhattisgarh", label: "Chhattisgarh" },
+      { value: "Goa", label: "Goa" },
+      { value: "Gujarat", label: "Gujarat" },
+      { value: "Haryana", label: "Haryana" },
+      { value: "Himachal Pradesh", label: "Himachal Pradesh" },
+      { value: "Jharkhand", label: "Jharkhand" },
+      { value: "Karnataka", label: "Karnataka" },
+      { value: "Kerala", label: "Kerala" },
+      { value: "Madhya Pradesh", label: "Madhya Pradesh" },
+      { value: "Maharashtra", label: "Maharashtra" },
+      { value: "Manipur", label: "Manipur" },
+      { value: "Meghalaya", label: "Meghalaya" },
+      { value: "Mizoram", label: "Mizoram" },
+      { value: "Nagaland", label: "Nagaland" },
+      { value: "Odisha", label: "Odisha" },
+      { value: "Punjab", label: "Punjab" },
+      { value: "Rajasthan", label: "Rajasthan" },
+      { value: "Sikkim", label: "Sikkim" },
+      { value: "Tamil Nadu", label: "Tamil Nadu" },
+      { value: "Telangana", label: "Telangana" },
+      { value: "Tripura", label: "Tripura" },
+      { value: "Uttar Pradesh", label: "Uttar Pradesh" },
+      { value: "Uttarakhand", label: "Uttarakhand" },
+      { value: "West Bengal", label: "West Bengal" },
+      { value: "Andaman and Nicobar Islands", label: "Andaman and Nicobar Islands" },
+      { value: "Chandigarh", label: "Chandigarh" },
+      { value: "Dadra and Nagar Haveli and Daman and Diu", label: "Dadra and Nagar Haveli and Daman and Diu" },
+      { value: "Lakshadweep", label: "Lakshadweep" },
+      { value: "Delhi", label: "Delhi" },
+      { value: "Puducherry", label: "Puducherry" },
+      { value: "Ladakh", label: "Ladakh" },
+      { value: "Jammu and Kashmir", label: "Jammu and Kashmir" },
+    ],
   },
   rollNumber: {
     label: "Institute Roll Number",
@@ -524,10 +566,10 @@ const STUDENT_FIELDS_CONFIG = {
   },
   instituteEmail: {
     label: "Institute Email ID",
-    placeholder: "Enter institute email",
+    placeholder: "Enter valid email (e.g., name@institution.ac.in)",
     required: false,
     type: "email",
-    backendField: "institute_email", 
+    backendField: "institute_email",
     excelColumns: [
       "institute email id",
       "institute email",
@@ -540,7 +582,7 @@ const STUDENT_FIELDS_CONFIG = {
   },
   alternateEmail: {
     label: "Alternate Email",
-    placeholder: "Enter alternate email",
+    placeholder: "Enter valid personal email (e.g., name@gmail.com)",
     required: false,
     type: "email",
     backendField: "personal_email",
@@ -554,7 +596,7 @@ const STUDENT_FIELDS_CONFIG = {
   },
   parentEmail: {
     label: "Parent's Email",
-    placeholder: "Enter parent's email",
+    placeholder: "Enter valid parent email (e.g., parent@gmail.com)",
     required: false,
     type: "email",
     backendField: "parent_email",
@@ -715,14 +757,14 @@ const STUDENT_FIELDS_CONFIG = {
   },
   income: {
     label: "Income",
-    placeholder: "Enter income (whole numbers only)",
+    placeholder: "Enter annual income amount (e.g., 500000.00)",
     required: false,
     type: "number",
     backendField: "income",
     excelColumns: [
-      "Income",  
-      "income", 
-      "annual income", 
+      "Income",
+      "income",
+      "annual income",
       "family income"
     ],
   },
@@ -3224,7 +3266,7 @@ const AdminUpcomingBatch = () => {
   };
 
   // Enhanced Excel upload with workflow validation
-  const validateBatchPrerequisites = async (academicYear) => {
+  const validateBatchPrerequisites = async (academicYear, disciplines = []) => {
     try {
       const response = await fetch(`${host}/programme_curriculum/api/batches/validate_prerequisites/`, {
         method: 'POST',
@@ -3232,7 +3274,7 @@ const AdminUpcomingBatch = () => {
           'Content-Type': 'application/json',
           Authorization: `Token ${localStorage.getItem("authToken")}`,
         },
-        body: JSON.stringify({ academic_year: academicYear })
+        body: JSON.stringify({ academic_year: academicYear, disciplines })
       });
 
       const contentType = response.headers.get('content-type');
@@ -3271,14 +3313,14 @@ const AdminUpcomingBatch = () => {
       return true;
     } catch (error) {
       if (error.message.includes('Unexpected token') || error.message.includes('<!doctype')) {
-        return validateBatchPrerequisitesFrontend(academicYear);
+        return validateBatchPrerequisitesFrontend(academicYear, disciplines);
       }
       
       return true; 
     }
   };
 
-  const validateBatchPrerequisitesFrontend = (academicYear) => {
+  const validateBatchPrerequisitesFrontend = (academicYear, disciplines = []) => {
     const currentBatches = getCurrentBatches();
     
     if (!currentBatches || currentBatches.length === 0) {
@@ -3306,8 +3348,58 @@ const AdminUpcomingBatch = () => {
       });
       return false;
     }
+
+    const requiredDisciplines = disciplines.length > 0
+      ? disciplines
+      : batchesForYear.map(batch => batch.discipline || batch.branch).filter(Boolean);
+
+    for (const disciplineName of requiredDisciplines) {
+      const matchingBatch = batchesForYear.find(batch => {
+        const batchDiscipline = (batch.discipline || batch.branch || '').trim().toLowerCase();
+        return batchDiscipline === disciplineName.trim().toLowerCase();
+      });
+
+      if (!matchingBatch) {
+        notifications.show({
+          title: "Batches Required",
+          message: (
+            <div>
+              <Text size="sm" mb={8}>
+                <strong>Please create the required batch first:</strong>
+              </Text>
+              <Text size="xs" style={{ whiteSpace: 'pre-line', color: '#721c24' }}>
+                • {disciplineName} - Create batch for year {yearToCheck}
+              </Text>
+            </div>
+          ),
+          color: "red",
+          autoClose: false,
+        });
+        return false;
+      }
+    }
     
     return true;
+  };
+
+  const getUploadDisciplines = (students) => {
+    const disciplines = new Set();
+
+    (students || []).forEach((student) => {
+      const discipline = (
+        student.Discipline ||
+        student.discipline ||
+        student.branch ||
+        student.Branch ||
+        ""
+      ).toString().trim();
+
+      if (discipline) {
+        disciplines.add(discipline);
+      }
+    });
+
+    return Array.from(disciplines);
   };
 
   // Validate Excel data before upload
@@ -3459,7 +3551,8 @@ const AdminUpcomingBatch = () => {
       }
       // Use viewAcademicYear (the admin-selected year) for batch lookup.
       const currentAcademicYear = viewAcademicYear;
-      const canUpload = await validateBatchPrerequisites(currentAcademicYear);
+      const uploadDisciplines = getUploadDisciplines(dataToUpload);
+      const canUpload = await validateBatchPrerequisites(currentAcademicYear, uploadDisciplines);
       
       if (!canUpload) {
         return;
@@ -3732,7 +3825,16 @@ const AdminUpcomingBatch = () => {
         if (!editingStudent) {
           // Use viewAcademicYear (the admin-selected year) for batch lookup.
           const studentYear = viewAcademicYear;
-          const canUpload = await validateBatchPrerequisites(studentYear);
+          if (activeSection === 'phd' && !selectedPhdSemester) {
+            notifications.show({
+              title: "Semester Selection Required",
+              message: "Please select PhD semester (Odd or Even) before saving a manual student.",
+              color: "yellow",
+            });
+            return;
+          }
+          const uploadDisciplines = getUploadDisciplines([manualFormData]);
+          const canUpload = await validateBatchPrerequisites(studentYear, uploadDisciplines);
           
           if (!canUpload) {
             return;
@@ -5661,7 +5763,11 @@ const AdminUpcomingBatch = () => {
                     marginTop: "0",
                   }}
                 >
-                  Select Student Data Entry Method
+                  {activeSection === PROGRAMME_TYPES.UG
+                    ? "UG Student Data Entry Method"
+                    : activeSection === PROGRAMME_TYPES.PG
+                    ? "PG Student Data Entry Method"
+                    : "PhD Student Data Entry Method"}
                 </Text>
 
                 {/* Batch Year Selection */}
@@ -6684,7 +6790,7 @@ const AdminUpcomingBatch = () => {
                         <Grid>
                           <Grid.Col span={isMobile ? 12 : 6}>
                             <TextInput
-                              label={STUDENT_FIELDS_CONFIG.fname.label}
+                              label={`${STUDENT_FIELDS_CONFIG.fname.label}`}
                               placeholder={
                                 STUDENT_FIELDS_CONFIG.fname.placeholder
                               }
@@ -6701,7 +6807,7 @@ const AdminUpcomingBatch = () => {
                           </Grid.Col>
                           <Grid.Col span={isMobile ? 12 : 6}>
                             <TextInput
-                              label={STUDENT_FIELDS_CONFIG.mname.label}
+                              label={`${STUDENT_FIELDS_CONFIG.mname.label}`}
                               placeholder={
                                 STUDENT_FIELDS_CONFIG.mname.placeholder
                               }
@@ -6722,7 +6828,7 @@ const AdminUpcomingBatch = () => {
                         <Grid>
                           <Grid.Col span={isMobile ? 12 : 6}>
                             <Select
-                              label={STUDENT_FIELDS_CONFIG.gender.label}
+                              label={`${STUDENT_FIELDS_CONFIG.gender.label}`}
                               placeholder={
                                 STUDENT_FIELDS_CONFIG.gender.placeholder
                               }
@@ -6740,7 +6846,7 @@ const AdminUpcomingBatch = () => {
                           </Grid.Col>
                           <Grid.Col span={isMobile ? 12 : 6}>
                             <Select
-                              label={STUDENT_FIELDS_CONFIG.category.label}
+                              label={`${STUDENT_FIELDS_CONFIG.category.label}`}
                               placeholder={
                                 STUDENT_FIELDS_CONFIG.category.placeholder
                               }
@@ -6796,7 +6902,7 @@ const AdminUpcomingBatch = () => {
                           </Grid.Col>
                           <Grid.Col span={isMobile ? 12 : 6}>
                             <Select
-                              label={STUDENT_FIELDS_CONFIG.pwd.label}
+                              label={`${STUDENT_FIELDS_CONFIG.pwd.label}`}
                               placeholder={
                                 STUDENT_FIELDS_CONFIG.pwd.placeholder
                               }
@@ -6867,7 +6973,7 @@ const AdminUpcomingBatch = () => {
                         <Grid>
                           <Grid.Col span={isMobile ? 12 : 6}>
                             <TextInput
-                              label={STUDENT_FIELDS_CONFIG.phoneNumber.label}
+                              label={`${STUDENT_FIELDS_CONFIG.phoneNumber.label}`}
                               placeholder={
                                 STUDENT_FIELDS_CONFIG.phoneNumber.placeholder
                               }
@@ -7175,7 +7281,7 @@ const AdminUpcomingBatch = () => {
 
                         {/* Address */}
                         <Textarea
-                          label={STUDENT_FIELDS_CONFIG.address.label}
+                          label={`${STUDENT_FIELDS_CONFIG.address.label}`}
                           placeholder={
                             STUDENT_FIELDS_CONFIG.address.placeholder
                           }
@@ -7192,18 +7298,27 @@ const AdminUpcomingBatch = () => {
                         />
 
                         {/* State */}
-                        <TextInput
+                        <Select
                           label={STUDENT_FIELDS_CONFIG.state.label}
                           placeholder={STUDENT_FIELDS_CONFIG.state.placeholder}
                           value={manualFormData.state}
-                          onChange={(e) =>
+                          onChange={(value) => {
+                            if (editingStudent) {
+                              setEditingStudent({
+                                ...editingStudent,
+                                state: value,
+                              });
+                            }
                             setManualFormData({
                               ...manualFormData,
-                              state: e.target.value,
-                            })
-                          }
+                              state: value,
+                            });
+                          }}
+                          data={STUDENT_FIELDS_CONFIG.state.options}
                           required={STUDENT_FIELDS_CONFIG.state.required}
                           error={errors.state}
+                          searchable
+                          clearable
                         />
 
                         {/* Father's Details */}
@@ -7310,7 +7425,7 @@ const AdminUpcomingBatch = () => {
 
                         {/* Branch Selection */}
                         <Select
-                          label={STUDENT_FIELDS_CONFIG.branch.label}
+                          label={`${STUDENT_FIELDS_CONFIG.branch.label}`}
                           placeholder={STUDENT_FIELDS_CONFIG.branch.placeholder}
                           value={manualFormData.branch || ""}
                           onChange={(value) => {
@@ -7334,7 +7449,7 @@ const AdminUpcomingBatch = () => {
                         {/* Specialization - Only for PG programmes (not PhD or UG) */}
                         {activeSection === "pg" && (
                           <Select
-                            label={STUDENT_FIELDS_CONFIG.specialization.label}
+                            label={`${STUDENT_FIELDS_CONFIG.specialization.label}`}
                             placeholder={
                               STUDENT_FIELDS_CONFIG.specialization.placeholder
                             }
