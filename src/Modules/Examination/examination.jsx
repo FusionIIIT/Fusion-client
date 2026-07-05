@@ -1,7 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useState, useEffect } from "react";
-import SubmitGrades from "./submitGrades.jsx";
 import VerifyGrades from "./verifyGrades.jsx";
 import GenerateTranscript from "./generateTranscript.jsx";
 import GenerateGradeSheet from "./generateGradeSheet.jsx";
@@ -40,13 +39,13 @@ export default function Examination() {
       case "Professor":
         return "/examination/submit-grades-prof";
       case "acadadmin":
-        return "/examination/submit-grades";
+        return "/examination/verify-grades";
       case "student":
         return "/examination/result";
       case "Dean Academic":
         return "/examination/update";
       default:
-        return "/examination/submit-grades"; // Fallback
+        return "/examination/verify-grades"; // Fallback
     }
   };
 
@@ -60,14 +59,8 @@ export default function Examination() {
             path="/"
             element={<Navigate to={defaultRedirectPath()} replace />}
           />
-          <Route
-            path="/submit-grades"
-            element={
-              <ProtectedRoute roles={["acadadmin"]}>
-                <SubmitGrades />
-              </ProtectedRoute>
-            }
-          />
+          {/* /submit-grades route removed: acadadmin no longer submits grades
+              (per-section faculty submission only). */}
           <Route
             path="/verify-grades"
             element={

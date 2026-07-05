@@ -180,6 +180,7 @@ function Admin_view_all_course_instructors() {
     { key: "faculty", label: "Instructor" },
     { key: "academic_year", label: "Academic Year" },
     { key: "semester_type", label: "Semester Type" },
+    { key: "section_label", label: "Section" },
   ];
 
   const tableColumns = isAcadAdmin
@@ -196,6 +197,7 @@ function Admin_view_all_course_instructors() {
         </td>
         <td style={cellStyle}>{element.academic_year}</td>
         <td style={cellStyle}>{element.semester_type}</td>
+        <td style={cellStyle}>{element.section_label || "—"}</td>
       </>
     );
     const actionCell = isAcadAdmin ? (

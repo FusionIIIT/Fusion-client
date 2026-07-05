@@ -70,6 +70,7 @@ export default function GenerateStudentList() {
   const [semesterType, setSemesterType] = useState("");
   const [programmeType, setProgrammeType] = useState("All");
   const [listType, setListType]         = useState("");
+  const [section, setSection]           = useState("");
   const [course, setCourse]             = useState("");
   const [courseOptions, setCourseOptions] = useState([]);
   const [showPreview, setShowPreview] = useState(false);
@@ -156,6 +157,9 @@ export default function GenerateStudentList() {
       }
       if (programmeType && programmeType !== 'All') {
         payload.programme_type = programmeType;
+      }
+      if (section && section.trim() !== '') {
+        payload.section = section;
       }
 
       const res = await axios.post(generatexlsheet, payload, {
@@ -247,6 +251,9 @@ export default function GenerateStudentList() {
       }
       if (programmeType && programmeType !== 'All') {
         payload.programme_type = programmeType;
+      }
+      if (section && section.trim() !== '') {
+        payload.section = section;
       }
 
       const res = await axios.post(generatexlsheet, payload, {
@@ -506,6 +513,19 @@ export default function GenerateStudentList() {
               value={course}
               onChange={setCourse}
               searchable
+              clearable
+              mb="md"
+            />
+          )}
+
+          {course && (
+            <Select
+              label="Section (Optional)"
+              placeholder="All sections"
+              description="Filter the roll list to one section (A–F). Leave empty for the full course list."
+              data={["A", "B", "C", "D", "E", "F"].map((s) => ({ value: s, label: s }))}
+              value={section}
+              onChange={(v) => setSection(v || "")}
               clearable
               mb="md"
             />

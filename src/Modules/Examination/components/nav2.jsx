@@ -50,11 +50,8 @@ export default function Nav() {
 
   // Tabs data
   const tabItems = [
-    {
-      title: "Submit",
-      path: "/examination/submit-grades",
-      roles: ["acadadmin"],
-    },
+    // acadadmin "Submit" tab removed: grades are submitted per-section by the
+    // assigned faculty (below); acadadmin verifies/moderates.
     {
       title: "Submit",
       path: "/examination/submit-grades-prof",
