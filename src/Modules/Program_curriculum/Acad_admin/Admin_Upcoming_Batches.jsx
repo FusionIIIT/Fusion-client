@@ -674,9 +674,21 @@ const STUDENT_FIELDS_CONFIG = {
     ],
     excelColumns: [
       "Status",
-      "status", 
-      "reported status", 
+      "status",
+      "reported status",
       "reporting status"
+    ],
+  },
+  section: {
+    label: "Section",
+    placeholder: "Auto-assigned (A-F)",
+    required: false,
+    backendField: "section",
+    systemField: true,
+    systemGenerated: true,
+    excelColumns: [
+      "Section",
+      "section",
     ],
   },
 };
