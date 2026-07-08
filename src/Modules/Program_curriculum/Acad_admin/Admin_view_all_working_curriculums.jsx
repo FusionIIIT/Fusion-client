@@ -24,39 +24,40 @@ function Admin_view_all_working_curriculums() {
   const [curriculumToDelete, setCurriculumToDelete] = useState(null);
 
   const fetchData = async () => {
-    try {
-      const cachedData = localStorage.getItem("AdminCurriculumsCache");
-      const timestamp = localStorage.getItem("AdminCurriculumsTimestamp");
-      const isCacheValid =
-        timestamp && Date.now() - parseInt(timestamp, 10) < 10 * 60 * 1000;
-      const cachedDatachange = localStorage.getItem(
-        "AdminCurriculumsCachechange",
-      );
-      if (cachedData && isCacheValid && cachedDatachange === "false") {
+    // Show cached data instantly for perceived speed, but always revalidate from
+    // the server below so batch-curriculum links can never be stale (regardless
+    // of which screen changed them). Cache is a display hint, never the source.
+    const cachedData = localStorage.getItem("AdminCurriculumsCache");
+    if (cachedData) {
+      try {
         setCurriculums(JSON.parse(cachedData));
-      } else {
-        const token = localStorage.getItem("authToken");
-        if (!token) throw new Error("Authorization token not found");
-
-        const data = await fetchWorkingCurriculumsData(token);
-        localStorage.setItem("AdminCurriculumsCachechange", "false");
-        setCurriculums(data.curriculums);
-        localStorage.setItem(
-          "AdminCurriculumsCache",
-          JSON.stringify(data.curriculums),
-        );
-        localStorage.setItem(
-          "AdminCurriculumsTimestamp",
-          Date.now().toString(),
-        );
+        setLoading(false);
+      } catch (e) {
+        localStorage.removeItem("AdminCurriculumsCache");
       }
+    }
+
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) throw new Error("Authorization token not found");
+
+      const data = await fetchWorkingCurriculumsData(token);
+      setCurriculums(data.curriculums);
+      localStorage.setItem(
+        "AdminCurriculumsCache",
+        JSON.stringify(data.curriculums),
+      );
+      localStorage.setItem("AdminCurriculumsTimestamp", Date.now().toString());
+      localStorage.setItem("AdminCurriculumsCachechange", "false");
     } catch (error) {
-      notifications.show({
-        title: "Load Error",
-        message: "Failed to load curriculums. Please refresh the page.",
-        color: "red",
-        autoClose: 3000,
-      });
+      if (!cachedData) {
+        notifications.show({
+          title: "Load Error",
+          message: "Failed to load curriculums. Please refresh the page.",
+          color: "red",
+          autoClose: 3000,
+        });
+      }
     } finally {
       setLoading(false);
     }
