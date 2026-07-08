@@ -92,6 +92,10 @@ export default function GenerateStudentList() {
   const [error, setError]               = useState(null);
   const [exportAllLoading, setExportAllLoading] = useState(false);
 
+  // Sections the currently-selected course is split into (empty => no sections).
+  const selectedCourseSections =
+    courseOptions.find((c) => c.value === course)?.sections || [];
+
   // 1) Fetch available courses once year+semester are set
   const fetchCourses = useCallback(async () => {
     if (!academicYear || !semesterType) return;
@@ -110,12 +114,13 @@ export default function GenerateStudentList() {
         params: { academic_year: academicYear, semester_type: semesterType },
         headers: { Authorization: `Token ${token}` },
       });
-      // Expect [{ id, code, name, instructor }, ...]
+      // Expect [{ id, code, name, instructor, sections }, ...]
       setCourseOptions(
         res.data.map(c => ({
           value: String(c.id),
           label: `${c.code} - ${c.name}`,
           instructor: c.instructor || 'TBA',
+          sections: c.sections || [],
         }))
       );
     } catch (err) {
@@ -511,19 +516,23 @@ export default function GenerateStudentList() {
               placeholder="Select course (leave empty to export all)"
               data={courseOptions}
               value={course}
-              onChange={setCourse}
+              onChange={(v) => {
+                setCourse(v);
+                setSection("");
+              }}
               searchable
               clearable
               mb="md"
             />
           )}
 
-          {course && (
+          {/* Section filter shows only when the selected course has sections. */}
+          {course && selectedCourseSections.length > 0 && (
             <Select
               label="Section (Optional)"
               placeholder="All sections"
-              description="Filter the roll list to one section (A–F). Leave empty for the full course list."
-              data={["A", "B", "C", "D", "E", "F"].map((s) => ({ value: s, label: s }))}
+              description="Filter the roll list to one section. Leave empty for the full course list."
+              data={selectedCourseSections.map((s) => ({ value: s, label: s }))}
               value={section}
               onChange={(v) => setSection(v || "")}
               clearable

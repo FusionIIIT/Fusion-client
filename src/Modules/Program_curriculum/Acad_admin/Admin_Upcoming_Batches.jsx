@@ -681,7 +681,7 @@ const STUDENT_FIELDS_CONFIG = {
   },
   section: {
     label: "Section",
-    placeholder: "Auto-assigned (A-F)",
+    placeholder: "Assigned in Academics > Section Assignment",
     required: false,
     backendField: "section",
     systemField: true,

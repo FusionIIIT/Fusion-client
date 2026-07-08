@@ -12,6 +12,7 @@ import StudentCourses from "./StudentCourses";
 import DeletePreRegistration from "./DeletePreRegistration";
 import AcademicCalendar from "./AcademicCalendar";
 import GenerateStudentList from "./GenerateStudentList";
+import SectionAssignment from "./SectionAssignment";
 import ViewRollList from "./ViewRollList";
 import AllocateCourses from "./AllocateCourses";
 import VerifyStudentRegistration from "./VerifyStudentRegistration";
@@ -50,6 +51,7 @@ function AcademicPage() {
       { title: "Delete Pre-Registration" },
       { title: "Academic Calendar" },
       { title: "Generate Student List" },
+      { title: "Section Assignment" },
       { title: "Allocate Courses" },
       { title: "Verify Student Registration" },
       { title: "Allot Courses" },
@@ -67,6 +69,7 @@ function AcademicPage() {
       DeletePreRegistration,
       AcademicCalendar,
       GenerateStudentList,
+      SectionAssignment,
       AllocateCourses,
       VerifyStudentRegistration,
       AllotCourses,
