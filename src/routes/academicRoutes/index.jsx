@@ -139,13 +139,9 @@ export const adminThesisEnrollmentListRoute = `${host}/academic-procedures/api/a
 export const adminVerifyEnrollmentsRoute = `${host}/academic-procedures/api/acadadmin/thesis-enrollments/verify/`;
 export const adminRejectEnrollmentsRoute = `${host}/academic-procedures/api/acadadmin/thesis-enrollments/reject/`;
 
-// PhD Thesis Evaluation (block-based S/X grades)
+// PhD Thesis Evaluation (block-based S/X grades) — all blocks for a student
+// are graded and submitted together (manually, or via Excel upload below)
 export const supervisorThesisGradesRoute = `${host}/academic-procedures/api/supervisor/thesis-grades/`;
-export const supervisorSubmitThesisGradeRoute = `${host}/academic-procedures/api/supervisor/thesis-grade/submit/`;
-export const supervisorDownloadThesisGradesTemplateRoute = `${host}/academic-procedures/api/supervisor/thesis-grades-template/`;
-export const supervisorGetUngradedBlocksRoute = `${host}/academic-procedures/api/supervisor/thesis-grades/ungraded-blocks/`;
-export const supervisorUploadThesisGradesRoute = `${host}/academic-procedures/api/supervisor/thesis-grades/upload/`;
-export const supervisorBulkSubmitThesisGradesRoute = `${host}/academic-procedures/api/supervisor/thesis-grades/bulk-submit/`;
 // All blocks comprehensive upload
 export const supervisorDownloadAllThesisGradesTemplateRoute = `${host}/academic-procedures/api/supervisor/thesis-grades-all-template/`;
 export const supervisorUploadAllThesisGradesRoute = `${host}/academic-procedures/api/supervisor/thesis-grades-all/upload/`;

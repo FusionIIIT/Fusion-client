@@ -20,7 +20,7 @@ import {
   facultyListRoute,
 } from "../../routes/academicRoutes";
 
-export default function SupervisorReviewModal({ thesis, onClose }) {
+export default function SupervisorReviewModal({ thesis, onClose, refresh }) {
   const [form, setForm] = useState(null);
   const [facOpts, setFacOpts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -131,8 +131,7 @@ export default function SupervisorReviewModal({ thesis, onClose }) {
         { headers }
       );
       showNotification({ title: "Success", message: res.data.message, color: "green" });
-      await load();
-      onClose();
+      refresh();
     } catch (e) {
       showNotification({
         title: "Error",

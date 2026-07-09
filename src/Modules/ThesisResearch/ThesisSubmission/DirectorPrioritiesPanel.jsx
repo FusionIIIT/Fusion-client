@@ -2,11 +2,13 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Card,
   Title,
+  Text,
   Table,
   Select,
   Button,
   Loader,
   Group,
+  Badge,
   Alert,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
@@ -14,6 +16,11 @@ import { IconCheck, IconX } from "@tabler/icons-react";
 import axios from "axios";
 import PropTypes from "prop-types";
 import { directorApproveRoute } from "../../../routes/academicRoutes";
+
+const CATEGORY_COLOR = {
+  indian: "grape",
+  foreign: "cyan",
+};
 
 export default function DirectorPrioritiesPanel({
   submission,
@@ -55,9 +62,32 @@ export default function DirectorPrioritiesPanel({
     setLoading(false);
   }, [submission]);
 
-  const handleChange = useCallback((token, value) => {
-    setPrioMap((m) => ({ ...m, [token]: Number(value) }));
-  }, []);
+  const handleChange = useCallback(
+    (token, value) => {
+      const newPriority = Number(value);
+      const category = submission.invitations.find(
+        (inv) => inv.token === token,
+      )?.examiner_type;
+      setPrioMap((m) => {
+        const oldPriority = m[token];
+        const next = { ...m, [token]: newPriority };
+        // Swap with whichever other examiner in the same category currently
+        // holds the target rank, so ranks always stay a valid 1..N
+        // permutation instead of two examiners ending up with the same rank.
+        const swapWith = submission.invitations.find(
+          (inv) =>
+            inv.examiner_type === category &&
+            inv.token !== token &&
+            m[inv.token] === newPriority,
+        );
+        if (swapWith) {
+          next[swapWith.token] = oldPriority;
+        }
+        return next;
+      });
+    },
+    [submission.invitations],
+  );
 
   const handleSave = useCallback(async () => {
     setSaving(true);
@@ -125,18 +155,24 @@ export default function DirectorPrioritiesPanel({
     );
   }
 
-  const renderCategory = (label, invites) => {
+  const renderCategory = (label, category, invites) => {
+    const color = CATEGORY_COLOR[category];
     const rankOptions = invites.map((_, i) => ({
       value: String(i + 1),
       label: String(i + 1),
     }));
 
     return (
-      <>
-        <Title order={5} mt="md">
-          {label}
-        </Title>
-        <Table aria-label={`${label} priorities`}>
+      <Card withBorder radius="md" p="sm" mt="md" bg={`${color}.0`}>
+        <Group spacing="xs" mb="xs">
+          <Badge color={color} size="lg">
+            {label}
+          </Badge>
+          <Text size="sm" c="dimmed">
+            {invites.length} nominated
+          </Text>
+        </Group>
+        <Table aria-label={`${label} priorities`} withBorder bg="white">
           <thead>
             <tr>
               <th scope="col">Examiner</th>
@@ -162,7 +198,7 @@ export default function DirectorPrioritiesPanel({
             ))}
           </tbody>
         </Table>
-      </>
+      </Card>
     );
   };
 
@@ -174,8 +210,8 @@ export default function DirectorPrioritiesPanel({
           : `Set Priorities for "${submission.title}"`}
       </Title>
 
-      {renderCategory("Indian Examiners", indianInvites)}
-      {renderCategory("Foreign Examiners", foreignInvites)}
+      {renderCategory("Indian Examiners", "indian", indianInvites)}
+      {renderCategory("Foreign Examiners", "foreign", foreignInvites)}
 
       <Group position="right" mt="md">
         <Button variant="default" onClick={onClose} disabled={saving}>

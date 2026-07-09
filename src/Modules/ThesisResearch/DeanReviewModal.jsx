@@ -10,11 +10,15 @@ import {
   Group,
   Stack,
 } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
+import { showNotification } from "@mantine/notifications";
 import axios from "axios";
-import { hodReviewRoute } from "../../routes/academicRoutes";
+import {
+  deanReviewRoute,
+  deanGeneratePdfRoute,
+} from "../../routes/academicRoutes";
 
-export default function HODReviewModal({ thesis, onClose }) {
+export default function DeanReviewModal({ thesis, onClose, refresh }) {
+  console.log('rendered');
   const [form, setForm] = useState(null);
   const [remarks, setRemarks] = useState("");
   const [loading, setLoading] = useState(true);
@@ -25,11 +29,10 @@ export default function HODReviewModal({ thesis, onClose }) {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await axios.get(hodReviewRoute(thesis.id), { headers });
+      const res = await axios.get(deanReviewRoute(thesis.id), { headers });
       setForm(res.data);
-      setRemarks(res.data.hod_remarks || "");
     } catch {
-      notifications.show({
+      showNotification({
         title: "Error",
         message: "Failed to load thesis details.",
         color: "red",
@@ -42,7 +45,7 @@ export default function HODReviewModal({ thesis, onClose }) {
 
   useEffect(() => {
     if (!token) {
-      notifications.show({
+      showNotification({
         title: "Authentication Error",
         message: "You are not authenticated.",
         color: "red",
@@ -63,34 +66,93 @@ export default function HODReviewModal({ thesis, onClose }) {
 
   if (!form) return null;
 
-  const handle = async (approve) => {
+  const handleApprove = async () => {
     setLoading(true);
     try {
       await axios.post(
-        hodReviewRoute(thesis.id),
-        { approve, remarks },
+        deanReviewRoute(thesis.id),
+        { approve: true },
         { headers }
       );
-      notifications.show({
+      showNotification({
         title: "Success",
-        message: approve
-          ? "Thesis approved successfully."
-          : "Thesis rejected and sent back to Dean.",
-        color: approve ? "green" : "yellow",
+        message: "Thesis approved successfully.",
+        color: "green",
       });
-      await load();
+      refresh();
     } catch (e) {
-      notifications.show({
+      showNotification({
         title: "Error",
-        message: e.response?.data?.error || "Action failed",
+        message: e.response?.data?.error || "Approve failed",
         color: "red",
       });
       setLoading(false);
     }
   };
 
+  const handleReject = async () => {
+    setLoading(true);
+    try {
+      await axios.post(
+        deanReviewRoute(thesis.id),
+        { approve: false, remarks },
+        { headers }
+      );
+      showNotification({
+        title: "Success",
+        message: "Thesis rejected and sent back to HOD.",
+        color: "yellow",
+      });
+      setRemarks("");
+      refresh();
+    } catch (e) {
+      showNotification({
+        title: "Error",
+        message: e.response?.data?.error || "Reject failed",
+        color: "red",
+      });
+      setLoading(false);
+    }
+  };
+
+  const handleDownload = async () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      showNotification({
+        title: "Auth Error",
+        message: "No auth token found. Please log in.",
+        color: "red",
+      });
+      return;
+    }
+
+    try {
+      const res = await axios.get(deanGeneratePdfRoute(thesis.id), {
+        headers: { Authorization: `Token ${token}` },
+        responseType: "blob",
+      });
+
+      const url = window.URL.createObjectURL(
+        new Blob([res.data], { type: "application/pdf" })
+      );
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "approved_thesis.pdf");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (e) {
+      showNotification({
+        title: "Download Error",
+        message: e.response?.data?.error || "Could not download PDF",
+        color: "red",
+      });
+    }
+  };
+
   return (
-    <Modal opened onClose={onClose} title="HOD Review" size="90%">
+    <Modal opened onClose={onClose} title="Dean Final Review" size="90%">
       <Stack spacing="lg">
         <Table striped highlightOnHover>
           <tbody>
@@ -117,11 +179,7 @@ export default function HODReviewModal({ thesis, onClose }) {
             <tr>
               <td><Text weight={500}>Research Theme</Text></td>
               <td>
-                <Textarea
-                  value={form.research_theme}
-                  readOnly
-                  minRows={3}
-                />
+                <Textarea value={form.research_theme} readOnly minRows={3} />
               </td>
             </tr>
             {form.external.ext_name && (
@@ -135,7 +193,7 @@ export default function HODReviewModal({ thesis, onClose }) {
                   <td>{form.external.ext_email}</td>
                 </tr>
                 <tr>
-                  <td><Text weight={500}>External Discipline</Text></td>
+                  <td><Text weight={500}>Discipline</Text></td>
                   <td>{form.external.ext_discipline}</td>
                 </tr>
                 <tr>
@@ -150,14 +208,10 @@ export default function HODReviewModal({ thesis, onClose }) {
         <Text weight={500}>Supervisor Load</Text>
         <Table striped highlightOnHover>
           <thead>
-            <tr>
-              <th />
-              <th>Single</th>
-              <th>Shared</th>
-            </tr>
+            <tr><th /><th>Single</th><th>Shared</th></tr>
           </thead>
           <tbody>
-            {["PG", "PhD"].map((cat) => (
+            {['PG', 'PhD'].map(cat => (
               <tr key={cat}>
                 <td><Text weight={500}>{cat}</Text></td>
                 <td>{form.load[`${cat.toLowerCase()}_single`]}</td>
@@ -182,48 +236,40 @@ export default function HODReviewModal({ thesis, onClose }) {
           </tbody>
         </Table>
 
-        {form.dean_remarks && form.status === "dean_rejected" && (
+        {form.dean_remarks && (
           <Text
             color="blue"
             style={{ backgroundColor: "#e6f0ff", padding: 10, borderRadius: 4 }}
           >
-            <Text weight={500} component="span">Dean's Remarks:</Text>{" "}
-            {form.dean_remarks}
+            <Text weight={500} component="span">Existing Dean's Remarks:</Text> {form.dean_remarks}
           </Text>
         )}
 
-        {form.hod_remarks && (
-          <Text
-            color="red"
-            style={{ backgroundColor: "#ffe6e6", padding: 10, borderRadius: 4 }}
-          >
-            <Text weight={500} component="span">Previous HOD Remarks:</Text>{" "}
-            {form.hod_remarks}
-          </Text>
-        )}
-
-        {form.status === "hod_pending" && (
+        {form.status === 'dean_pending' && (
           <Textarea
             label="Remarks (if rejecting)"
             placeholder="Enter your remarks here"
             value={remarks}
-            onChange={(e) => setRemarks(e.target.value)}
-            minRows={2}
+            onChange={e => setRemarks(e.target.value)}
+            minRows={3}
           />
         )}
 
-        {form.status === "hod_pending" && (
+        {(form.status === 'dean_pending' || form.status === 'hod_approved') && (
           <Group grow>
-            <Button fullWidth onClick={() => handle(true)} loading={loading}>
-              Approve
+            <Button fullWidth onClick={handleApprove} loading={loading}>
+              Approve Thesis
             </Button>
-            <Button
-              fullWidth
-              color="red"
-              onClick={() => handle(false)}
-              loading={loading}
-            >
-              Reject
+            <Button fullWidth color="red" onClick={handleReject} loading={loading}>
+              Reject & Send Back to HOD
+            </Button>
+          </Group>
+        )}
+
+        {form.status === 'dean_approved' && (
+          <Group>
+            <Button fullWidth variant="outline" onClick={handleDownload}>
+              Download Full Approved PDF
             </Button>
           </Group>
         )}

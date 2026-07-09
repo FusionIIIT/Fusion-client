@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Card, Title, Table, Button, Group, Badge } from "@mantine/core";
+import { Card, Title, Text, Table, Button, Group, Badge } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import { IconCheck, IconX } from "@tabler/icons-react";
 import axios from "axios";
@@ -17,13 +17,24 @@ const STATUS_COLOR = {
   expired: "orange",
 };
 
-function ExaminerTable({ title, examiners }) {
+const CATEGORY_COLOR = {
+  indian: "grape",
+  foreign: "cyan",
+};
+
+function ExaminerTable({ title, category, examiners }) {
+  const color = CATEGORY_COLOR[category];
   return (
-    <>
-      <Title order={5} mt="md">
-        {title}
-      </Title>
-      <Table>
+    <Card withBorder radius="md" p="sm" mt="md" bg={`${color}.0`}>
+      <Group spacing="xs" mb="xs">
+        <Badge color={color} size="lg">
+          {title}
+        </Badge>
+        <Text size="sm" c="dimmed">
+          {examiners.length} nominated
+        </Text>
+      </Group>
+      <Table striped={false} withBorder bg="white">
         <thead>
           <tr>
             <th>Rank</th>
@@ -49,7 +60,7 @@ function ExaminerTable({ title, examiners }) {
           ))}
         </tbody>
       </Table>
-    </>
+    </Card>
   );
 }
 
@@ -64,6 +75,7 @@ const examinerShape = PropTypes.shape({
 
 ExaminerTable.propTypes = {
   title: PropTypes.string.isRequired,
+  category: PropTypes.oneOf(["indian", "foreign"]).isRequired,
   examiners: PropTypes.arrayOf(examinerShape).isRequired,
 };
 
@@ -134,10 +146,12 @@ export default function DeanPanelReviewPanel({ submission, onClose }) {
 
       <ExaminerTable
         title="Indian Examiners"
+        category="indian"
         examiners={submission.indian_examiners || []}
       />
       <ExaminerTable
         title="Foreign Examiners"
+        category="foreign"
         examiners={submission.foreign_examiners || []}
       />
 

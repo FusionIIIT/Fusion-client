@@ -9,7 +9,7 @@
  *   • "Announce" — bulk-announce selected verified blocks
  */
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Card,
   Title,
@@ -25,6 +25,7 @@ import {
   Stack,
   Alert,
   Divider,
+  Tooltip,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import {
@@ -45,11 +46,36 @@ import {
 const gradeColor = (g) => (g === "S" ? "green" : g === "X" ? "red" : "gray");
 const gradeLabel = (g) => (g === "S" ? "S — Satisfactory" : g === "X" ? "X — Unsatisfactory" : "—");
 
-function lifecycleBadge(ev) {
-  if (ev.announced) return <Badge color="teal">Announced</Badge>;
-  if (ev.verified)  return <Badge color="blue">Verified</Badge>;
-  if (ev.grade)     return <Badge color="yellow">Submitted</Badge>;
-  return                     <Badge color="gray">Ungraded</Badge>;
+// One block within a registration row: a checkbox (for the bulk verify/announce
+// action) plus its grade badge. Remarks/submitted-by are shown on hover
+// instead of dedicated columns, since they're read-only here. No lifecycle
+// badge here — the Status filter always narrows to one specific status
+// (there's no "All" option), so every visible block already matches it and
+// repeating that status on every cell would just be noise.
+function AdminBlockCell({ ev, isSelected, onToggle }) {
+  if (!ev) {
+    return (
+      <Table.Td ta="center">
+        <Text size="xs" c="dimmed">—</Text>
+      </Table.Td>
+    );
+  }
+
+  return (
+    <Table.Td>
+      <Group gap={6} wrap="nowrap" justify="center">
+        <Checkbox size="xs" checked={isSelected} onChange={() => onToggle(ev.id)} />
+        <Tooltip
+          label={`Submitted by ${ev.submitted_by || "—"}${ev.remarks ? ` — ${ev.remarks}` : ""}`}
+          withArrow
+          multiline
+          w={220}
+        >
+          <Badge size="xs" color={gradeColor(ev.grade)}>{gradeLabel(ev.grade)}</Badge>
+        </Tooltip>
+      </Group>
+    </Table.Td>
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -98,6 +124,33 @@ export default function AdminThesisGrades() {
   };
   const toggleOne = (id) =>
     setSelected((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+
+  // Toggle every block belonging to one registration row at once.
+  const toggleRow = (rowBlockIds) => {
+    const allSelected = rowBlockIds.every((id) => selected.includes(id));
+    setSelected((prev) =>
+      allSelected
+        ? prev.filter((id) => !rowBlockIds.includes(id))
+        : [...new Set([...prev, ...rowBlockIds])],
+    );
+  };
+
+  // Group the flat block list into one entry per thesis registration, so the
+  // table shows one row per student instead of one row per block.
+  const groupedRegistrations = useMemo(() => {
+    const map = new Map();
+    evaluations.forEach((ev) => {
+      const key = ev.registration.id;
+      if (!map.has(key)) map.set(key, {});
+      map.get(key)[ev.block_number] = ev;
+    });
+    return Array.from(map.entries());
+  }, [evaluations]);
+
+  const maxBlocks = useMemo(
+    () => evaluations.reduce((max, ev) => Math.max(max, ev.total_blocks || 1), 1),
+    [evaluations],
+  );
 
   // ── Bulk actions ───────────────────────────────────────────────────────────
   const bulkAction = async (url, actionName) => {
@@ -234,45 +287,48 @@ export default function AdminThesisGrades() {
                 <Table.Th>Semester</Table.Th>
                 <Table.Th>Thesis Slot</Table.Th>
                 <Table.Th>Credits</Table.Th>
-                <Table.Th>Block</Table.Th>
-                <Table.Th>Grade</Table.Th>
-                <Table.Th>Remarks</Table.Th>
-                <Table.Th>Submitted By</Table.Th>
-                <Table.Th>Status</Table.Th>
+                {Array.from({ length: maxBlocks }, (_, i) => i + 1).map((n) => (
+                  <Table.Th key={n} ta="center">Block {n}</Table.Th>
+                ))}
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
-              {evaluations.map((ev) => (
-                <Table.Tr key={ev.id} bg={selected.includes(ev.id) ? "blue.0" : undefined}>
-                  <Table.Td>
-                    <Checkbox
-                      checked={selected.includes(ev.id)}
-                      onChange={() => toggleOne(ev.id)}
-                    />
-                  </Table.Td>
-                  <Table.Td>{ev.registration.student.name}</Table.Td>
-                  <Table.Td>Sem {ev.registration.semester_no}</Table.Td>
-                  <Table.Td>{ev.registration.thesis_slot}</Table.Td>
-                  <Table.Td>{ev.registration.credits} Cr</Table.Td>
-                  <Table.Td>
-                    {ev.block_number} / {ev.total_blocks}
-                  </Table.Td>
-                  <Table.Td>
-                    {ev.grade ? (
-                      <Badge color={gradeColor(ev.grade)}>{gradeLabel(ev.grade)}</Badge>
-                    ) : (
-                      <Text size="xs" c="dimmed">—</Text>
-                    )}
-                  </Table.Td>
-                  <Table.Td>
-                    <Text size="xs">{ev.remarks || "—"}</Text>
-                  </Table.Td>
-                  <Table.Td>
-                    <Text size="xs">{ev.submitted_by || "—"}</Text>
-                  </Table.Td>
-                  <Table.Td>{lifecycleBadge(ev)}</Table.Td>
-                </Table.Tr>
-              ))}
+              {groupedRegistrations.map(([registrationId, blocksByNumber]) => {
+                const blocks = Object.values(blocksByNumber);
+                const reg = blocks[0].registration;
+                const totalBlocks = blocks[0].total_blocks;
+                const rowBlockIds = blocks.map((ev) => ev.id);
+                const allSelected = rowBlockIds.every((id) => selected.includes(id));
+                const someSelected = rowBlockIds.some((id) => selected.includes(id));
+
+                return (
+                  <Table.Tr key={registrationId}>
+                    <Table.Td>
+                      <Checkbox
+                        checked={allSelected}
+                        indeterminate={someSelected && !allSelected}
+                        onChange={() => toggleRow(rowBlockIds)}
+                      />
+                    </Table.Td>
+                    <Table.Td>{reg.student.name}</Table.Td>
+                    <Table.Td>Sem {reg.semester_no}</Table.Td>
+                    <Table.Td>{reg.thesis_slot}</Table.Td>
+                    <Table.Td>{reg.credits} Cr</Table.Td>
+                    {Array.from({ length: maxBlocks }, (_, i) => i + 1).map((blockNum) => (
+                      <AdminBlockCell
+                        key={blockNum}
+                        ev={blockNum <= totalBlocks ? blocksByNumber[blockNum] : undefined}
+                        isSelected={
+                          blocksByNumber[blockNum]
+                            ? selected.includes(blocksByNumber[blockNum].id)
+                            : false
+                        }
+                        onToggle={toggleOne}
+                      />
+                    ))}
+                  </Table.Tr>
+                );
+              })}
             </Table.Tbody>
           </Table>
         )}

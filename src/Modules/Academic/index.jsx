@@ -1,7 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
-import { Flex, Center, Loader } from "@mantine/core";
+import { Flex } from "@mantine/core";
 import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
 
 import CustomBreadcrumbs from "../../components/Breadcrumbs";
 import ModuleTabs from "../../components/moduleTabs";
@@ -28,62 +27,11 @@ import AdminFeedbackView from "./FeedbackForm/AdminFeedbackView";
 import AdminBatchChange from "./AdminBatchChange";
 import AdminPromoteSemester from "./AdminPromoteSemester";
 import InstructorDashboard from "./FeedbackForm/InstructorDashboard";
-// PhD-specific imports
-import StudentThesisPage from "./StudentThesisPage";
-import SupervisorDashboard from "./SupervisorDashboard";
-import DeanDashboard from "./DeanDashboard";
-import HODDashboard from "./HODDashboard";
-import StudentSeminarPage from "./StudentSeminarPage";
-import RPCDashboardPage from "./RPCDashboardPage";
-import StudentThesisSubmissionUploadForm from "./ThesisSubmission/StudentThesisSubmissionUploadForm";
-import DirectorDashboard from "./ThesisSubmission/DirectorDashboard";
-import DeanPanelDashboard from "./ThesisSubmission/DeanPanelDashboard";
-import SupervisorDashboardSub from "./ThesisSubmission/SupervisorDashboardSub";
-import AdminThesisEnrollments from "./AdminThesisEnrollments";
-import AdminThesisGrades from "./AdminThesisGrades";
-import SupervisorThesisGrading from "./SupervisorThesisGrading";
-import { getProfileDataRoute } from "../../routes/dashboardRoutes";
 
 function AcademicPage() {
   const [activeTab, setActiveTab] = useState("0");
-  const [studentProgramme, setStudentProgramme] = useState(null);
-  const [loading, setLoading] = useState(true);
   const role = useSelector((state) => state.user.role);
   const dispatch = useDispatch();
-
-  useEffect(() => {
-    const fetchStudentProgramme = async () => {
-      if (role === "student") {
-        try {
-          const token = localStorage.getItem("authToken");
-          if (!token) {
-            setStudentProgramme("UG");
-            setLoading(false);
-            return;
-          }
-
-          const response = await axios.get(getProfileDataRoute, {
-            headers: { Authorization: `Token ${token}` },
-          });
-
-          const profileData = Array.isArray(response.data)
-            ? response.data[0]
-            : response.data;
-          const programmeType = profileData?.programme_type || "UG";
-
-          setStudentProgramme(programmeType);
-        } catch (error) {
-          console.error("Error fetching student programme:", error);
-          setStudentProgramme("UG");
-        } finally {
-          setLoading(false);
-        }
-      } else {
-        setLoading(false);
-      }
-    };
-    fetchStudentProgramme();
-  }, [role]);
 
   // Memoize tab configuration to avoid unnecessary recalculations
   const { tabItems, tabComponents } = useMemo(() => {
@@ -102,8 +50,6 @@ function AcademicPage() {
           { title: "Feedback Responses" },
           { title: "Batch/Branch Change" },
           { title: "Promote Students" },
-          { title: "Thesis Enrollments" },
-          { title: "Thesis Grades" },
         ],
         tabComponents: [
           StudentCourses,
@@ -118,73 +64,30 @@ function AcademicPage() {
           AdminFeedbackView,
           AdminBatchChange,
           AdminPromoteSemester,
-          AdminThesisEnrollments,
-          AdminThesisGrades,
         ],
       };
     }
 
     if (role === "student") {
-      const isUG = studentProgramme === "UG";
-
-      const baseTabs = [
-        { title: "Registered Courses" },
-        { title: "Available Courses" },
-        { title: "Academic Calender" },
-        { title: "Pre-Registration" },
-        { title: "Final-Registration" },
-        { title: "Swayam Registration" },
-        { title: "Add / Drop" },
-      ];
-
-      const baseComponents = [
-        RegisteredCourses,
-        AvailableCourses,
-        StudentCalendar,
-        PreRegistration,
-        FinalRegistration,
-        SwayamRegistration,
-        StudentAddDropReplace,
-      ];
-
-      if (isUG) {
-        return { tabItems: baseTabs, tabComponents: baseComponents };
-      }
-
       return {
         tabItems: [
-          ...baseTabs,
-          { title: "Thesis Registration" },
-          { title: "Seminar" },
-          { title: "Student Thesis Submission" },
+          { title: "Registered Courses" },
+          { title: "Available Courses" },
+          { title: "Academic Calender" },
+          { title: "Pre-Registration" },
+          { title: "Final-Registration" },
+          { title: "Swayam Registration" },
+          { title: "Add / Drop" },
         ],
         tabComponents: [
-          ...baseComponents,
-          StudentThesisPage,
-          StudentSeminarPage,
-          StudentThesisSubmissionUploadForm,
+          RegisteredCourses,
+          AvailableCourses,
+          StudentCalendar,
+          PreRegistration,
+          FinalRegistration,
+          SwayamRegistration,
+          StudentAddDropReplace,
         ],
-      };
-    }
-
-    if (role === "Dean Academic") {
-      return {
-        tabItems: [{ title: "Thesis" }, { title: "Thesis Submission Panel" }],
-        tabComponents: [DeanDashboard, DeanPanelDashboard],
-      };
-    }
-
-    if (role === "Director") {
-      return {
-        tabItems: [{ title: "Thesis Submission - Prioritize Panel" }],
-        tabComponents: [DirectorDashboard],
-      };
-    }
-
-    if (role && role.startsWith("HOD")) {
-      return {
-        tabItems: [{ title: "Thesis" }],
-        tabComponents: [HODDashboard],
       };
     }
 
@@ -198,19 +101,11 @@ function AcademicPage() {
         tabItems: [
           { title: "View Roll List" },
           { title: "TA management" },
-          { title: "Thesis Supervisor" },
-          { title: "Thesis Grading" },
-          { title: "Seminar" },
-          { title: "Supervisor Thesis Examinar" },
           { title: "Course Feedback" },
         ],
         tabComponents: [
           ViewRollList,
           Faculty_TA_Dashboard,
-          SupervisorDashboard,
-          SupervisorThesisGrading,
-          RPCDashboardPage,
-          SupervisorDashboardSub,
           InstructorDashboard,
         ],
       };
@@ -220,7 +115,7 @@ function AcademicPage() {
       tabItems: [{ title: "Registered Courses" }],
       tabComponents: [RegisteredCourses],
     };
-  }, [role, studentProgramme]);
+  }, [role]);
 
   useEffect(() => {
     if (tabItems?.[activeTab]) {
@@ -232,17 +127,6 @@ function AcademicPage() {
     () => tabComponents[parseInt(activeTab, 10)],
     [tabComponents, activeTab],
   );
-
-  if (loading && role === "student") {
-    return (
-      <>
-        <CustomBreadcrumbs />
-        <Center mt="xl">
-          <Loader />
-        </Center>
-      </>
-    );
-  }
 
   return (
     <>

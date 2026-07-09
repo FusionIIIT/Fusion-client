@@ -9,6 +9,7 @@ import {
 import {
   House as HomeIcon,
   Books as AcademicsIcon,
+  BookOpenText as ThesisResearchIcon,
   CalendarBlank as CurriculumIcon,
   ForkKnife as MessIcon,
   Bed as GuestIcon,
@@ -67,6 +68,12 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
           : role === "student"
             ? "/programme_curriculum/view_all_programmes"
             : "/programme_curriculum/faculty_view_all_programmes",
+    },
+    {
+      label: "Doctoral & PG Research",
+      id: "thesis_research",
+      icon: <ThesisResearchIcon size={18} />,
+      url: "/thesis-research",
     },
     {
       label: "Mess Management",
