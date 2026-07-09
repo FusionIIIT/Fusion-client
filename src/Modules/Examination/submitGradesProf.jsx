@@ -54,6 +54,9 @@ export default function SubmitGradesProf() {
   const selectedCourseSections =
     courseOptions.find((c) => c.value === course)?.sections || [];
 
+  // A sectioned course needs a section chosen before submit.
+  const sectionMissing = selectedCourseSections.length > 0 && !section;
+
   // Faculty automatically get their assigned section once a course is picked;
   // acadadmin selects manually. (If a faculty teaches multiple sections of the
   // same course, they still choose which one.)
@@ -134,7 +137,11 @@ export default function SubmitGradesProf() {
       setError("Please select academic year, semester type, and course.");
       return;
     }
-    
+    if (sectionMissing) {
+      setError("Please select a section for this course.");
+      return;
+    }
+
     setLoading(true);
     setError(""); setErrorList([]);
     
@@ -196,6 +203,10 @@ export default function SubmitGradesProf() {
       setError("Please fill all fields and upload a CSV file to preview.");
       return;
     }
+    if (sectionMissing) {
+      setError("Please select a section for this course.");
+      return;
+    }
     setLoading(true);
     setError(""); setErrorList([]);
     try {
@@ -232,6 +243,10 @@ export default function SubmitGradesProf() {
   };
 
   const handleSubmitGrades = async () => {
+    if (sectionMissing) {
+      setError("Please select a section for this course.");
+      return;
+    }
     setLoading(true);
     setError(""); setErrorList([]); setSuccess("");
     try {
@@ -443,7 +458,7 @@ export default function SubmitGradesProf() {
               color="green"
               onClick={handleTemplateDownload}
               loading={loading}
-              disabled={!year || !semesterType || !course || loading}
+              disabled={!year || !semesterType || !course || sectionMissing || loading}
             >
               Download Template
             </Button>
@@ -453,7 +468,7 @@ export default function SubmitGradesProf() {
               color="blue"
               onClick={handlePreview}
               loading={loading}
-              disabled={!year || !semesterType || !course || !excelFile || loading}
+              disabled={!year || !semesterType || !course || !excelFile || sectionMissing || loading}
             >
               Preview
             </Button>
