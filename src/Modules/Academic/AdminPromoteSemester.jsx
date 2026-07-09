@@ -19,6 +19,7 @@ import {
   listBatchesRoute,
   listStudentsPromoteRoute,
   applyPromoteRoute,
+  applyDemoteRoute,
 } from "../../routes/academicRoutes";
 
 export default function AdminPromoteSemester() {
@@ -32,6 +33,7 @@ export default function AdminPromoteSemester() {
   const [successMessage, setSuccessMessage] = useState("");
   const [selected, setSelected] = useState({});
   const [modalOpen, setModalOpen] = useState(false);
+  const [mode, setMode] = useState("promote"); // "promote" | "demote"
 
   // Load batch list
   useEffect(() => {
@@ -107,24 +109,39 @@ export default function AdminPromoteSemester() {
   };
 
   const toConfirm = students.filter((st) => selected[st.id]);
+  const isDemote = mode === "demote";
 
-  const submitChanges = () => setModalOpen(true);
+  const submitChanges = (m) => {
+    setMode(m);
+    setModalOpen(true);
+  };
 
   const confirmApply = () => {
     setLoadingApply(true);
     const payload = toConfirm.map((st) => st.id);
     const token = localStorage.getItem("authToken");
+    const route = isDemote ? applyDemoteRoute : applyPromoteRoute;
     axios
-      .post(applyPromoteRoute, payload, {
+      .post(route, payload, {
         headers: { Authorization: `Token ${token}` },
       })
       .then(() => {
         setModalOpen(false);
-        setSuccessMessage("Selected students have been successfully promoted.");
+        setSuccessMessage(
+          isDemote
+            ? "Selected students have been successfully demoted."
+            : "Selected students have been successfully promoted."
+        );
         setError("");
         fetchStudents(sourceBatch);
       })
-      .catch(() => setError("Failed to promote students."))
+      .catch(() =>
+        setError(
+          isDemote
+            ? "Failed to demote students."
+            : "Failed to promote students.",
+        ),
+      )
       .finally(() => setLoadingApply(false));
   };
 
@@ -198,7 +215,18 @@ export default function AdminPromoteSemester() {
             </Table>
           </ScrollArea>
           <Group position="right" mt="md">
-            <Button onClick={submitChanges} disabled={toConfirm.length === 0 || loadingApply}>
+            <Button
+              color="orange"
+              variant="outline"
+              onClick={() => submitChanges("demote")}
+              disabled={toConfirm.length === 0 || loadingApply}
+            >
+              Demote Selected
+            </Button>
+            <Button
+              onClick={() => submitChanges("promote")}
+              disabled={toConfirm.length === 0 || loadingApply}
+            >
               Promote Selected
             </Button>
           </Group>
@@ -208,9 +236,11 @@ export default function AdminPromoteSemester() {
       <Modal
         opened={modalOpen}
         onClose={() => setModalOpen(false)}
-        title="Confirm Promotion"
+        title={isDemote ? "Confirm Demotion" : "Confirm Promotion"}
       >
-        <Text mb="sm">You are promoting these students:</Text>
+        <Text mb="sm">
+          You are {isDemote ? "demoting" : "promoting"} these students:
+        </Text>
         <ScrollArea>
           <Table verticalSpacing="xs">
             <thead>
@@ -225,7 +255,11 @@ export default function AdminPromoteSemester() {
                 <tr key={st.id}>
                   <td>{st.username}</td>
                   <td>{st.current_semester_no}</td>
-                  <td>{st.current_semester_no + 1}</td>
+                  <td>
+                    {isDemote
+                      ? Math.max(1, st.current_semester_no - 1)
+                      : st.current_semester_no + 1}
+                  </td>
                 </tr>
               ))}
             </tbody>
