@@ -91,7 +91,7 @@ function AcademicPage() {
       { title: "Final-Registration" },
       { title: "Swayam" },
       { title: "Add / Drop" },
-      // { title: "Feedback Form" },
+      { title: "Feedback Form" },
     ];
     tabComponents = [
       RegisteredCourses,
@@ -101,7 +101,7 @@ function AcademicPage() {
       FinalRegistration,
       SwayamRegistration,
       StudentAddDropReplace,
-      // StudentCourseFeedbackForm
+      StudentCourseFeedbackForm,
     ];
   } else if (
     role === "faculty" ||
