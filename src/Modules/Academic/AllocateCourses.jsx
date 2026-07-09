@@ -108,7 +108,9 @@ function AllocateCourses() {
       const r = res.data;
       if (r.status === 2) {
         setSuccess("Courses are successfully allocated.");
+        setLoading(false);                 // stop this spinner before the results spinner starts
         await fetchAllocationResults();
+        return;
       } else if (r.status === 1) {
         setError("Courses not yet allocated. Start allocation.");
         setShowStartButton(true);
@@ -144,7 +146,9 @@ function AllocateCourses() {
       if (res.data.status === 1) {
         setSuccess("Course allocation successful!");
         setShowStartButton(false);
+        setLoading(false);                 // stop this spinner before the results spinner starts
         await fetchAllocationResults();
+        return;
       } else {
         setError(res.data.message || "Allocation failed");
       }
@@ -424,6 +428,7 @@ function AllocateCourses() {
           data={[
             { value: "UG", label: "Undergraduate (UG)" },
             { value: "PG", label: "Postgraduate (PG)" },
+            { value: "PHD", label: "PhD" },
           ]}
         />
         <Select

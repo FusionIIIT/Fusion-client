@@ -9,7 +9,10 @@ import { Layout } from "./components/layout";
 import Dashboard from "./Modules/Dashboard/dashboardNotifications";
 import Profile from "./Modules/Dashboard/StudentProfile/profilePage";
 import LoginPage from "./pages/login";
+import ThesisInvitationResponse from "./pages/thesisInvitationResponse";
+import ThesisEvaluationForm from "./pages/thesisEvaluationForm";
 import AcademicPage from "./Modules/Academic/index";
+import ThesisResearchPage from "./Modules/ThesisResearch/index";
 import ValidateAuth from "./helper/validateauth";
 import FacultyProfessionalProfile from "./Modules/facultyProfessionalProfile/facultyProfessionalProfile";
 import InactivityHandler from "./helper/inactivityhandler";
@@ -133,6 +136,14 @@ export default function App() {
     );
   }
 
+  // Public, token-authenticated pages reached from emailed links (external
+  // thesis examiners have no Fusion account) must skip the session-token
+  // guard and inactivity timeout, same as the login page.
+  const isPublicRoute = location.pathname === "/accounts/login"
+    || location.pathname === "/reset-password"
+    || location.pathname.startsWith("/thesis-invitation/")
+    || location.pathname.startsWith("/thesis-evaluation/");
+
   return (
     <MantineProvider theme={theme}>
       <Notifications position="top-center" autoClose={2000} limit={1} />
@@ -156,6 +167,14 @@ export default function App() {
           element={
             <Layout>
               <AcademicPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/thesis-research"
+          element={
+            <Layout>
+              <ThesisResearchPage />
             </Layout>
           }
         />
@@ -184,10 +203,9 @@ export default function App() {
           }
         />
         <Route path="/accounts/login" element={<LoginPage />} />
-        <Route
-          path="/reset-password"
-          element={<Navigate to="/accounts/login" replace />}
-        />
+        <Route path="/reset-password" element={<Navigate to="/accounts/login" replace />} />
+        <Route path="/thesis-invitation/:token/:action" element={<ThesisInvitationResponse />} />
+        <Route path="/thesis-evaluation/:token" element={<ThesisEvaluationForm />} />
         <Route path="/examination/*" element={<Examination />} />
         <Route path="/database/*" element={<Database />} />
         <Route

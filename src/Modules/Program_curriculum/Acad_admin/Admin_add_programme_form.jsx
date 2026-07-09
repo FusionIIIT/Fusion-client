@@ -107,8 +107,7 @@ function Admin_add_programme_form() {
 
   const handleSubmit = async (values) => {
     const apiUrl = `${host}/programme_curriculum/api/admin_add_programme/`;
-    const token = localStorage.getItem("token");
-    
+
     localStorage.removeItem("AdminProgrammesCache");
     localStorage.removeItem("AdminProgrammesTimestamp");
     localStorage.setItem("AdminProgrammesCachechange", "true");
@@ -117,6 +116,9 @@ function Admin_add_programme_form() {
       setLoading(true);
       const response = await fetch(apiUrl, {
         method: "POST",
+        headers: {
+          Authorization: `Token ${localStorage.getItem("authToken")}`,
+        },
         body: JSON.stringify(values),
       });
 

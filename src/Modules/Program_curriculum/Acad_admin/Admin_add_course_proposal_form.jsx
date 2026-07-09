@@ -128,7 +128,10 @@ function Admin_add_course_proposal_form() {
     try {
       const response = await fetch(apiUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${localStorage.getItem("authToken")}`,
+        },
         body: JSON.stringify(payload),
       });
 
@@ -162,18 +165,56 @@ function Admin_add_course_proposal_form() {
           navigate("/programme_curriculum/admin_courses");
         }, 1500);
       } else {
-        const errorText = await response.text();
-        
+        let errorMessages = [];
+        try {
+          const errorData = await response.json();
+          if (errorData?.errors) {
+            errorMessages = [
+              ...new Set(Object.values(errorData.errors).flat()),
+            ];
+          } else if (errorData?.message) {
+            errorMessages = [errorData.message];
+          } else if (errorData?.error) {
+            errorMessages = [errorData.error];
+          }
+        } catch (parseError) {
+          // response body wasn't JSON; fall back to the generic message below
+        }
+
+        const isDuplicate = errorMessages.some((msg) =>
+          msg.toLowerCase().includes("already exists"),
+        );
+
         notifications.show({
-          title: "❌ Failed to Add Course",
+          title: isDuplicate
+            ? "⚠️ Course Already Exists"
+            : "❌ Failed to Add Course",
           message: (
             <div>
               <Text size="sm" mb={8}>
-                <strong>Unable to create course. Please try again.</strong>
+                <strong>
+                  {isDuplicate
+                    ? `A course with code "${values.courseCode}" and version "${values.courseVersion}" already exists.`
+                    : "Unable to create course."}
+                </strong>
               </Text>
-              <Text size="xs" color="gray.7">
-                Please check your inputs and try again.
-              </Text>
+              {isDuplicate ? (
+                <Text size="xs" color="gray.7">
+                  Use a different version number, or a different course code,
+                  and try again.
+                </Text>
+              ) : (
+                errorMessages.map((msg) => (
+                  <Text size="xs" color="gray.7" key={msg}>
+                    {msg}
+                  </Text>
+                ))
+              )}
+              {!isDuplicate && errorMessages.length === 0 && (
+                <Text size="xs" color="gray.7">
+                  Please check your inputs and try again.
+                </Text>
+              )}
             </div>
           ),
           color: "red",

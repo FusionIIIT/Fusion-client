@@ -220,6 +220,40 @@ export const fetchCourseDetails = async (id) => {
   }
 };
 
+export const fetchThesisDetails = async (id) => {
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await axios.get(
+      `${BASE_URL}/programme_curriculum/api/admin_update_thesis/${id}/`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const fetchProgressSeminarDetails = async (id) => {
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await axios.get(
+      `${BASE_URL}/programme_curriculum/api/admin_update_progress_seminar/${id}/`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const fetchAllCourses = async () => {
   try {
     const token = localStorage.getItem("authToken");
@@ -232,6 +266,40 @@ export const fetchAllCourses = async () => {
       },
     );
     return response.data.courses;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const fetchAllTheses = async () => {
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await axios.get(
+      `${BASE_URL}/programme_curriculum/api/admin_theses/`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+    return response.data.theses;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const fetchAllProgressSeminars = async () => {
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await axios.get(
+      `${BASE_URL}/programme_curriculum/api/admin_progress_seminars/`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+    return response.data.progress_seminars;
   } catch (error) {
     throw error;
   }
@@ -266,8 +334,14 @@ export const adminFetchCurriculumData = async (id) => {
 
 export const adminFetchCourseInstructorData = async () => {
   try {
+    const token = localStorage.getItem("authToken");
     const response = await axios.get(
       `${BASE_URL}/programme_curriculum/api/admin_instructor/`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
     );
     return response.data.course_instructors;
   } catch (error) {
@@ -418,8 +492,14 @@ export const fetchBatchData = async (batch_id) => {
 
 export const fetchFacultiesData = async () => {
   try {
+    const token = localStorage.getItem("authToken");
     const response = await axios.get(
       `${BASE_URL}/programme_curriculum/api/admin_faculties/`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
     );
     return response.data.faculties;
   } catch (error) {
@@ -576,7 +656,7 @@ export const processExcelUpload = async (file, programmeType) => {
 };
 
 // Save Students Batch - POST /programme_curriculum/api/save_students_batch/
-export const saveStudentsBatch = async (studentsData, programmeType) => {
+export const saveStudentsBatch = async (studentsData, programmeType, phdSemester = null, academicYear = null) => {
   try {
     const token = localStorage.getItem("authToken");
     if (!token) {
@@ -586,6 +666,8 @@ export const saveStudentsBatch = async (studentsData, programmeType) => {
     const payload = {
       students: studentsData,
       programme_type: programmeType,
+      phd_semester: phdSemester,
+      academic_year: academicYear,
     };
 
     const response = await axios.post(
@@ -606,7 +688,7 @@ export const saveStudentsBatch = async (studentsData, programmeType) => {
 };
 
 // Add Single Student - POST /programme_curriculum/api/admin_add_single_student/
-export const addSingleStudent = async (studentData, programmeType) => {
+export const addSingleStudent = async (studentData, programmeType, phdSemester = null, academicYear = null) => {
   try {
     const token = localStorage.getItem("authToken");
 
@@ -623,6 +705,8 @@ export const addSingleStudent = async (studentData, programmeType) => {
       pwd: studentData.pwd,
       address: studentData.address,
       programme_type: programmeType || "ug",
+      phd_semester: phdSemester,
+      academic_year: academicYear,
       phone_number: studentData.phoneNumber || studentData.phone_number,
       personal_email: studentData.email || studentData.personal_email,
       date_of_birth: studentData.dob || studentData.date_of_birth,
@@ -633,6 +717,12 @@ export const addSingleStudent = async (studentData, programmeType) => {
       roll_number: studentData.rollNumber || studentData.roll_number,
       institute_email:
         studentData.instituteEmail || studentData.institute_email,
+      // PhD-specific fields
+      application_no: studentData.applicationNo || studentData.application_no,
+      admission_type: studentData.admissionType || studentData.admission_type,
+      gate_qualified: studentData.gateQualified || studentData.gate_qualified,
+      gate_stream: studentData.gateStream || studentData.gate_stream,
+      gate_rank: studentData.gateRank || studentData.gate_rank,
 
       allotted_category:
         studentData.allottedCategory || studentData.allotted_category,
@@ -673,18 +763,21 @@ export const addSingleStudent = async (studentData, programmeType) => {
       }
     });
 
-    // Validate required fields
-    const requiredFields = [
-      "name",
-      "father_name",
-      "mother_name",
-      "jee_app_no",
-      "branch",
-      "gender",
-      "category",
-      "pwd",
-      "address",
-    ];
+    // Required fields differ by programme type:
+    // PhD does not require father/mother names, JEE app number or address.
+    const requiredFields = programmeType === 'phd'
+      ? ["name", "branch", "gender", "category", "pwd"]
+      : [
+          "name",
+          "father_name",
+          "mother_name",
+          "jee_app_no",
+          "branch",
+          "gender",
+          "category",
+          "pwd",
+          "address",
+        ];
     const missingFields = requiredFields.filter(
       (field) => !mappedStudent[field],
     );
@@ -926,7 +1019,7 @@ export const updateStudent = async (studentId, studentData) => {
 };
 
 // Delete Student - DELETE /programme_curriculum/api/student/<int:student_id>/delete/
-export const deleteStudent = async (studentId) => {
+export const deleteStudent = async (studentId, programmeType = null) => {
   try {
     const token = localStorage.getItem("authToken");
     if (!token) {
@@ -934,11 +1027,13 @@ export const deleteStudent = async (studentId) => {
     }
 
     const url = `${BASE_URL}/programme_curriculum/api/student/${studentId}/delete/`;
+    const params = programmeType ? { programme_type: programmeType } : {};
 
     const response = await axios.delete(url, {
       headers: {
         Authorization: `Token ${token}`,
       },
+      params,
     });
 
     return response.data;
@@ -1085,6 +1180,74 @@ export const adminSaveStudentsBatch = async (batchData) => {
       },
     );
     return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const fetchThesisSlotData = async (thesisSlotId) => {
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await axios.get(
+      `${BASE_URL}/programme_curriculum/api/admin_thesis_slot/${thesisSlotId}/`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const fetchProgressSeminarSlotData = async (psSlotId) => {
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await axios.get(
+      `${BASE_URL}/programme_curriculum/api/admin_progress_seminar_slot/${psSlotId}/`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const fetchThesisSlotEditData = async (thesisSlotId) => {
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await axios.get(
+      `${BASE_URL}/programme_curriculum/api/admin_edit_thesis_slot/${thesisSlotId}/`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+    return response.data.thesis_slot;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const fetchProgressSeminarSlotEditData = async (psSlotId) => {
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await axios.get(
+      `${BASE_URL}/programme_curriculum/api/admin_edit_progress_seminar_slot/${psSlotId}/`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+    return response.data.progress_seminar_slot;
   } catch (error) {
     throw error;
   }

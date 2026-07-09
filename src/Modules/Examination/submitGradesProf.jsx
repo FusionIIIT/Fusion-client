@@ -414,6 +414,9 @@ export default function SubmitGradesProf() {
       ) : (
         <Box ref={previewRef} mt="md">
           <Title order={3} mb="sm">Grades Preview</Title>
+          <Text fw={600} mb="sm">
+            Total Students: {previewData.length}
+          </Text>
           <Table highlightOnHover>
             <thead>
               <tr>

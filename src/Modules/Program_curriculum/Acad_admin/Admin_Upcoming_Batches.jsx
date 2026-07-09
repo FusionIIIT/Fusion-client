@@ -148,6 +148,7 @@ const STUDENT_FIELDS_CONFIG = {
     placeholder: "Enter JEE application number or CCMT roll number",
     required: false,
     backendField: "jee_app_no",
+    showForProgrammes: ["UG", "PG"],
     excelColumns: [
       "jee app. no / ccmt roll no",
       "jee app. no / ccmt roll no.",
@@ -163,13 +164,69 @@ const STUDENT_FIELDS_CONFIG = {
       "jeeprep",
       "jee app no",
       "isprep",
-      "application number",
-      "app no",
-      "app. no.",
-      "application no",
       "jee roll no",
       "jee roll number",
     ],
+  },
+  applicationNo: {
+    label: "Application No.",
+    placeholder: "Enter PhD application number",
+    required: false,
+    backendField: "application_no",
+    showForProgrammes: ["PHD"],
+    excelColumns: [
+      "application no.",
+      "application no",
+      "app no.",
+      "app no",
+    ],
+  },
+  admissionType: {
+    label: "Admission Type",
+    placeholder: "Select admission type",
+    required: false,
+    type: "select",
+    backendField: "admission_type",
+    showForProgrammes: ["PHD"],
+    options: [
+      { value: "FULL TIME with Institute Assistantship", label: "FULL TIME with Institute Assistantship" },
+      { value: "FULL TIME with Govt. / Semi Govt. Fellowship Award", label: "FULL TIME with Govt. / Semi Govt. Fellowship Award" },
+      { value: "FULL TIME Self Financed", label: "FULL TIME Self Financed" },
+      { value: "PART TIME (External)", label: "PART TIME (External)" },
+      { value: "QIP", label: "QIP" },
+      { value: "Any other (remarks)", label: "Any other (remarks)" },
+    ],
+    excelColumns: ["admission type"],
+  },
+  gateQualified: {
+    label: "GATE Qualified",
+    placeholder: "Select GATE qualification status",
+    required: false,
+    type: "select",
+    backendField: "gate_qualified",
+    showForProgrammes: ["PHD"],
+    options: [
+      { value: "YES", label: "Yes" },
+      { value: "NO", label: "No" },
+    ],
+    excelColumns: ["gate qualaified", "gate qualified"],
+  },
+  gateStream: {
+    label: "GATE Stream",
+    placeholder: "Enter GATE stream code (e.g., CS, EC, ME)",
+    required: false,
+    backendField: "gate_stream",
+    showForProgrammes: ["PHD"],
+    excelColumns: ["gate stream"],
+  },
+  gateRank: {
+    label: "GATE Rank",
+    placeholder: "Enter GATE rank (numeric value)",
+    required: false,
+    type: "number",
+    backendField: "gate_rank",
+    showForProgrammes: ["PHD"],
+    excelColumns: ["gate rank"],
   },
   specialization: {
     label: "Specialization",
@@ -194,7 +251,7 @@ const STUDENT_FIELDS_CONFIG = {
       "stream",
       "track",
     ],
-    showForProgrammes: ["PG", "PHD"],
+    showForProgrammes: ["PG"],
   },
   name: {
     label: "Full Name",
@@ -207,6 +264,7 @@ const STUDENT_FIELDS_CONFIG = {
     label: "Father Name",
     placeholder: "Enter father's name",
     required: true,
+    showForProgrammes: ["UG", "PG"],
     backendField: "father_name",
     excelColumns: [
       "father's name",
@@ -222,6 +280,7 @@ const STUDENT_FIELDS_CONFIG = {
     label: "Mother Name",
     placeholder: "Enter mother's name",
     required: true,
+    showForProgrammes: ["UG", "PG"],
     backendField: "mother_name",
     excelColumns: [
       "mother's name",
@@ -280,6 +339,7 @@ const STUDENT_FIELDS_CONFIG = {
       { value: "Female-Only (including Supernumerary)", label: "Female-Only (including Supernumerary)" },
     ],
     excelColumns: ["allotted gender"],
+    showForProgrammes: ["UG", "PG"],
   },
   allottedCategory: {
     label: "Allotted Category",
@@ -299,6 +359,7 @@ const STUDENT_FIELDS_CONFIG = {
       { value: "STNO", label: "STNO" },
     ],
     excelColumns: ["allottedcat", "allotted category"],
+    showForProgrammes: ["UG", "PG"],
   },
   pwd: {
     label: "PWD (Person with Disability)",
@@ -314,8 +375,8 @@ const STUDENT_FIELDS_CONFIG = {
   },
 
   branch: {
-    label: "Branch",
-    placeholder: "Select branch",
+    label: "Discipline",
+    placeholder: "Select discipline",
     required: true,
     type: "select",
     backendField: "branch",
@@ -323,8 +384,11 @@ const STUDENT_FIELDS_CONFIG = {
       { value: "Computer Science and Engineering", label: "Computer Science and Engineering" },
       { value: "Electronics and Communication Engineering", label: "Electronics and Communication Engineering" },
       { value: "Mechanical Engineering", label: "Mechanical Engineering" },
-      { value: "Smart Manufacturing", label: "Smart Manufacturing" },
       { value: "Design", label: "Design" },
+      { value: "Natural Sciences-Mathematics", label: "Natural Sciences-Mathematics" },
+      { value: "Natural Sciences-Physics", label: "Natural Sciences-Physics" },
+      { value: "Humanities - English", label: "Humanities - English" },
+      { value: "Smart Manufacturing", label: "Smart Manufacturing" },
     ],
     excelColumns: [
       "discipline",
@@ -338,11 +402,12 @@ const STUDENT_FIELDS_CONFIG = {
 
   address: {
     label: "Address",
-    placeholder: "Enter complete address",
+    placeholder: "Enter complete address with pincode (e.g., House No., Street, City, State - Pincode)",
     required: true,
     type: "textarea",
     backendField: "address",
     excelColumns: [
+      "full address (with pincode)",
       "full address",
       "address",
       "permanent address",
@@ -352,7 +417,7 @@ const STUDENT_FIELDS_CONFIG = {
 
   phoneNumber: {
     label: "Phone Number",
-    placeholder: "Enter phone number",
+    placeholder: "Enter 10-digit phone number",
     required: false,
     backendField: "phone_number",
     excelColumns: [
@@ -383,7 +448,7 @@ const STUDENT_FIELDS_CONFIG = {
   },
   jeeRank: {
     label: "AI Rank",
-    placeholder: "Enter AI rank",
+    placeholder: "Enter AI rank (numeric value)",
     required: false,
     type: "number",
     backendField: "ai_rank",
@@ -398,14 +463,16 @@ const STUDENT_FIELDS_CONFIG = {
       "aiRank",
       "JEE Rank",
     ],
+    showForProgrammes: ["UG", "PG"],
   },
   categoryRank: {
     label: "Category Rank",
-    placeholder: "Enter category rank",
+    placeholder: "Enter category rank (numeric value)",
     required: false,
     type: "number",
     backendField: "category_rank",
     excelColumns: ["category rank", "cat rank"],
+    showForProgrammes: ["UG", "PG"],
   },
 
   fatherOccupation: {
@@ -417,9 +484,9 @@ const STUDENT_FIELDS_CONFIG = {
   },
   fatherMobile: {
     label: "Father's Mobile",
-    placeholder: "Enter father's mobile number",
+    placeholder: "Enter 10-digit mobile number",
     required: false,
-    backendField: "father_mobile", 
+    backendField: "father_mobile",
     excelColumns: ["father mobile number", "father mobile", "father phone"],
   },
   motherOccupation: {
@@ -431,17 +498,56 @@ const STUDENT_FIELDS_CONFIG = {
   },
   motherMobile: {
     label: "Mother's Mobile",
-    placeholder: "Enter mother's mobile number",
+    placeholder: "Enter 10-digit mobile number",
     required: false,
-    backendField: "mother_mobile", 
+    backendField: "mother_mobile",
     excelColumns: ["mother mobile number", "mother mobile", "mother phone"],
   },
   state: {
     label: "State",
-    placeholder: "Enter state",
+    placeholder: "Select state",
     required: false,
-    backendField: "state", 
+    type: "select",
+    backendField: "state",
     excelColumns: ["state", "state name"],
+    options: [
+      { value: "Andhra Pradesh", label: "Andhra Pradesh" },
+      { value: "Arunachal Pradesh", label: "Arunachal Pradesh" },
+      { value: "Assam", label: "Assam" },
+      { value: "Bihar", label: "Bihar" },
+      { value: "Chhattisgarh", label: "Chhattisgarh" },
+      { value: "Goa", label: "Goa" },
+      { value: "Gujarat", label: "Gujarat" },
+      { value: "Haryana", label: "Haryana" },
+      { value: "Himachal Pradesh", label: "Himachal Pradesh" },
+      { value: "Jharkhand", label: "Jharkhand" },
+      { value: "Karnataka", label: "Karnataka" },
+      { value: "Kerala", label: "Kerala" },
+      { value: "Madhya Pradesh", label: "Madhya Pradesh" },
+      { value: "Maharashtra", label: "Maharashtra" },
+      { value: "Manipur", label: "Manipur" },
+      { value: "Meghalaya", label: "Meghalaya" },
+      { value: "Mizoram", label: "Mizoram" },
+      { value: "Nagaland", label: "Nagaland" },
+      { value: "Odisha", label: "Odisha" },
+      { value: "Punjab", label: "Punjab" },
+      { value: "Rajasthan", label: "Rajasthan" },
+      { value: "Sikkim", label: "Sikkim" },
+      { value: "Tamil Nadu", label: "Tamil Nadu" },
+      { value: "Telangana", label: "Telangana" },
+      { value: "Tripura", label: "Tripura" },
+      { value: "Uttar Pradesh", label: "Uttar Pradesh" },
+      { value: "Uttarakhand", label: "Uttarakhand" },
+      { value: "West Bengal", label: "West Bengal" },
+      { value: "Andaman and Nicobar Islands", label: "Andaman and Nicobar Islands" },
+      { value: "Chandigarh", label: "Chandigarh" },
+      { value: "Dadra and Nagar Haveli and Daman and Diu", label: "Dadra and Nagar Haveli and Daman and Diu" },
+      { value: "Lakshadweep", label: "Lakshadweep" },
+      { value: "Delhi", label: "Delhi" },
+      { value: "Puducherry", label: "Puducherry" },
+      { value: "Ladakh", label: "Ladakh" },
+      { value: "Jammu and Kashmir", label: "Jammu and Kashmir" },
+    ],
   },
   rollNumber: {
     label: "Institute Roll Number",
@@ -460,10 +566,10 @@ const STUDENT_FIELDS_CONFIG = {
   },
   instituteEmail: {
     label: "Institute Email ID",
-    placeholder: "Enter institute email",
+    placeholder: "Enter valid email (e.g., name@institution.ac.in)",
     required: false,
     type: "email",
-    backendField: "institute_email", 
+    backendField: "institute_email",
     excelColumns: [
       "institute email id",
       "institute email",
@@ -476,7 +582,7 @@ const STUDENT_FIELDS_CONFIG = {
   },
   alternateEmail: {
     label: "Alternate Email",
-    placeholder: "Enter alternate email",
+    placeholder: "Enter valid personal email (e.g., name@gmail.com)",
     required: false,
     type: "email",
     backendField: "personal_email",
@@ -490,7 +596,7 @@ const STUDENT_FIELDS_CONFIG = {
   },
   parentEmail: {
     label: "Parent's Email",
-    placeholder: "Enter parent's email",
+    placeholder: "Enter valid parent email (e.g., parent@gmail.com)",
     required: false,
     type: "email",
     backendField: "parent_email",
@@ -567,6 +673,7 @@ const STUDENT_FIELDS_CONFIG = {
     placeholder: "Select admission mode",
     required: false,
     type: "select",
+    showForProgrammes: ["UG", "PG"],
     backendField: "admission_mode",
     options: [
       { value: "Direct Institute advertisement", label: "Direct Institute advertisement" },
@@ -588,6 +695,7 @@ const STUDENT_FIELDS_CONFIG = {
     label: "Admission Mode Remarks",
     placeholder: "Enter admission mode remarks",
     required: false,
+    showForProgrammes: ["UG", "PG"],
     backendField: "admission_mode_remarks",
     excelColumns: [
       "Admission Mode Remarks",
@@ -649,14 +757,14 @@ const STUDENT_FIELDS_CONFIG = {
   },
   income: {
     label: "Income",
-    placeholder: "Enter income (whole numbers only)",
+    placeholder: "Enter annual income amount (e.g., 500000.00)",
     required: false,
     type: "number",
     backendField: "income",
     excelColumns: [
-      "Income",  
-      "income", 
-      "annual income", 
+      "Income",
+      "income",
+      "annual income",
       "family income"
     ],
   },
@@ -682,7 +790,14 @@ const STUDENT_FIELDS_CONFIG = {
 };
 
 const INITIAL_FORM_DATA = {
+  // UG / PG identifier
   jeeAppNo: "",
+  // PhD identifier
+  applicationNo: "",
+  admissionType: "",
+  gateQualified: "",
+  gateStream: "",
+  gateRank: "",
   specialization: "",
   name: "",
   fname: "",
@@ -724,7 +839,7 @@ const INITIAL_FORM_DATA = {
 
 const AdminUpcomingBatch = () => {
   const getCurrentBatchYear = () => {
-    const now = new Date();
+        const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth() + 1;
     if (currentMonth >= 7) {
@@ -752,6 +867,8 @@ const AdminUpcomingBatch = () => {
         break;
       case PROGRAMME_TYPES.PHD:
         startYear = Math.max(baseStartYear, currentBatchYear - 5);
+        // PhD Even and Odd batches both use batch_year = academic year start.
+        // e.g. Jan 2026 intake → batch_year=2025 (academic year 2025-26).
         endYear = currentBatchYear;
         break;
       default:
@@ -773,8 +890,10 @@ const AdminUpcomingBatch = () => {
   const getViewAcademicYearOptions = () => {
     const currentBatchYear = getCurrentBatchYear();
     const options = [];
+    // Show one year ahead so admins can browse upcoming academic years.
+    const displayEndYear = currentBatchYear + 1;
 
-    for (let year = currentBatchYear; year >= currentBatchYear - 5; year--) {
+    for (let year = displayEndYear; year >= currentBatchYear - 5; year--) {
       const academicYear = batchYearToAcademicYear(year);
       options.push({
         value: year.toString(),
@@ -787,7 +906,9 @@ const AdminUpcomingBatch = () => {
 
   const isViewingCurrentYear = () => {
     const currentYear = getCurrentBatchYear();
-    return viewAcademicYear === currentYear;
+    const viewYear = parseInt(viewAcademicYear, 10);
+    // Allow reporting for the current academic year (and future years if navigated).
+    return viewYear >= currentYear;
   };
 
   const batchYearToAcademicYear = (batchYear) => {
@@ -828,7 +949,7 @@ const AdminUpcomingBatch = () => {
     switch (errorType) {
       case 'curriculum_required':
         notifications.show({
-          title: "🎯 Setup Required: Step 1 of 3",
+          title: " Setup Required: Step 1 of 3",
           message: (
             <div>
               <Text size="sm" mb={8}>
@@ -854,7 +975,7 @@ const AdminUpcomingBatch = () => {
         
       case 'batches_required':
         notifications.show({
-          title: "Setup Required: Step 2 of 3", 
+          title: "🎯 Setup Required: Step 2 of 3", 
           message: (
             <div>
               <Text size="sm" mb={8}>
@@ -952,23 +1073,39 @@ const AdminUpcomingBatch = () => {
     return BRANCH_MAPPINGS[normalized] || [branchName];
   };
 
-  const getBatchForBranch = (targetBranch, batchesToSearch) => {
+  const getBatchForBranch = (targetBranch, batchesToSearch, phdSemester = null) => {
     if (!targetBranch || !batchesToSearch || batchesToSearch.length === 0) return null;
     
     const targetVariants = normalizeBranchName(targetBranch);
     
-    return batchesToSearch.find(batch => {
+    const matchedBatch = batchesToSearch.find(batch => {
       const batchBranch = (batch.discipline || batch.branch || '').trim();
       if (!batchBranch) return false;
       
       const batchVariants = normalizeBranchName(batchBranch);
 
-      return targetVariants.some(target => 
+      const branchMatches = targetVariants.some(target => 
         batchVariants.some(batchVar => 
           target.toLowerCase() === batchVar.toLowerCase()
         )
       );
+      
+      // If PhD and semester is specified, also check batch name
+      if (phdSemester && batch.name) {
+        const batchName = batch.name.toLowerCase();
+        const semesterMatches = batchName.includes(phdSemester.toLowerCase());
+        console.log(`PhD Batch matching: Branch=${batchBranch}, BatchName=${batch.name}, Semester=${phdSemester}, BranchMatch=${branchMatches}, SemesterMatch=${semesterMatches}`);
+        return branchMatches && semesterMatches;
+      }
+      
+      return branchMatches;
     });
+    
+    if (!matchedBatch && phdSemester) {
+      console.log(`No batch found for: Branch=${targetBranch}, Semester=${phdSemester}. Available batches:`, batchesToSearch.map(b => ({ name: b.name, discipline: b.discipline, branch: b.branch })));
+    }
+    
+    return matchedBatch;
   };
 
   const getBatchForBranchTransfer = (targetBranch, targetYear = null, programmeType = null, allBatches = null) => {
@@ -1245,7 +1382,12 @@ const AdminUpcomingBatch = () => {
   useEffect(() => {
     const currentYear = getCurrentBatchYear();
     setSelectedBatchYear(currentYear);
+    // All PhD batches (Odd and Even) use batch_year = academic year start.
+    // e.g. PhD Even January 2026 intake → batch_year=2025 (academic year 2025-26).
+    // So the default view year is always currentBatchYear, same as UG/PG.
     setViewAcademicYear(currentYear);
+    setPhdSemesterFilter(""); // Reset PhD filter when switching sections
+    setSelectedPhdSemester(""); // Reset PhD semester selection for data entry
   }, [activeSection]);
 
   useEffect(() => {
@@ -1467,8 +1609,15 @@ const AdminUpcomingBatch = () => {
 
     fieldsToValidate.forEach((fieldKey) => {
       const fieldConfig = STUDENT_FIELDS_CONFIG[fieldKey];
+      if (!fieldConfig) return;
+
+      // Skip fields not applicable to the current programme type
+      if (fieldConfig.showForProgrammes) {
+        const currentProgramType = activeSection.toUpperCase();
+        if (!fieldConfig.showForProgrammes.includes(currentProgramType)) return;
+      }
+
       if (
-        fieldConfig &&
         fieldConfig.required &&
         (!formData[fieldKey] || formData[fieldKey].trim() === "")
       ) {
@@ -1671,10 +1820,11 @@ const AdminUpcomingBatch = () => {
 
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterYear, setFilterYear] = useState(
-    selectedBatchYear.toString(),
-  );
+  // filterYear is kept as "" (no-op) — year filtering is handled by viewAcademicYear / matchesViewYear
+  const [filterYear, setFilterYear] = useState("");
   const [filterProgramme, setFilterProgramme] = useState("");
+  const [phdSemesterFilter, setPhdSemesterFilter] = useState("");
+  const [selectedPhdSemester, setSelectedPhdSemester] = useState(""); // For student data entry
 
   const [modalOpened, setModalOpened] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -2200,8 +2350,14 @@ const AdminUpcomingBatch = () => {
       filterProgramme === "" || batch.programme === filterProgramme;
 
     const matchesViewYear = batch.year === viewAcademicYear;
+    
+    // PhD semester filter
+    const matchesPhdSemester = 
+      activeSection !== "phd" || 
+      phdSemesterFilter === "" || 
+      (batch.name && batch.name.toLowerCase().includes(phdSemesterFilter.toLowerCase()));
 
-    return matchesSearch && matchesYear && matchesProgramme && matchesViewYear;
+    return matchesSearch && matchesProgramme && matchesViewYear && matchesPhdSemester;
   });
 
   // Constants for field mapping
@@ -2980,7 +3136,8 @@ const AdminUpcomingBatch = () => {
   };
 
   const PREVIEW_FIELD_ORDER = [
-    'jeeAppNo',          // 1. JEE App No
+    'jeeAppNo',          // 1. JEE App No (UG/PG)
+    'applicationNo',     // 1. Application No (PhD)
     'rollNumber',        // 2. Roll Number  
     'name',              // 3. Name
     'gender',            // 4. Gender
@@ -2992,8 +3149,13 @@ const AdminUpcomingBatch = () => {
     'pwdCategory',       // 10. PWD Category
     'pwdCategoryRemarks',// 11. PWD Category Remarks
     'branch',            // 12. Branch/Discipline
-    'specialization',    // 13. Specialization (PG/PhD only)
-    'phoneNumber',       // 14. Mobile Number
+    'specialization',    // 13. Specialization (PG only)
+    'admissionType',     // 14. Admission Type (PhD)
+    'gateQualified',     // 15. GATE Qualified (PhD)
+    'gateStream',        // 16. GATE Stream (PhD)
+    'gateRank',          // 17. GATE Rank (PhD)
+
+    'phoneNumber',       // 15. Mobile Number
     'instituteEmail',    // 15. Institute Email
     'alternateEmail',    // 16. Alternate Email
     'parentEmail',       // 17. Parent Email
@@ -3014,17 +3176,23 @@ const AdminUpcomingBatch = () => {
     'admissionModeRemarks', // 31. Admission Mode Remarks
     'incomeGroup',       // 32. Income Group
     'income',            // 33. Income
-    'jeeRank',           // 34. JEE Rank
+    'jeeRank',           // 34. JEE Rank (UG/PG)
     'categoryRank',      // 35. Category Rank
   ];
 
   // Student table column configuration for organized display
   const STUDENT_TABLE_COLUMNS = [
     { key: 'jeeAppNo', label: 'JEE Application', minWidth: '140px', fields: ['jeeAppNo', 'jee_app_no', 'Jee Main Application Number'] },
+    { key: 'applicationNo', label: 'Application No.', minWidth: '130px', fields: ['applicationNo', 'application_no', 'Application No.'] },
     { key: 'rollNumber', label: 'Roll Number', minWidth: '120px', fields: ['rollNumber', 'roll_number', 'Institute Roll Number'] },
     { key: 'name', label: 'Name', minWidth: '180px', fields: ['name', 'Name'] },
     { key: 'branch', label: 'Discipline', minWidth: '200px', fields: ['discipline', 'branch', 'Discipline'] },
     { key: 'specialization', label: 'Specialization', minWidth: '180px', fields: ['specialization', 'Specialization'] },
+    { key: 'admissionType', label: 'Admission Type', minWidth: '180px', fields: ['admissionType', 'admission_type', 'Admission Type'] },
+    { key: 'gateQualified', label: 'GATE Qualified', minWidth: '120px', fields: ['gateQualified', 'gate_qualified', 'GATE Qualaified', 'GATE Qualified'] },
+    { key: 'gateStream', label: 'GATE Stream', minWidth: '110px', fields: ['gateStream', 'gate_stream', 'GATE Stream'] },
+    { key: 'gateRank', label: 'GATE Rank', minWidth: '90px', fields: ['gateRank', 'gate_rank', 'GATE Rank'] },
+
     { key: 'gender', label: 'Gender', minWidth: '80px', fields: ['gender', 'Gender'] },
     { key: 'category', label: 'Category', minWidth: '90px', fields: ['category', 'Category'] },
     { key: 'allottedCategory', label: 'Allotted Cat', minWidth: '100px', fields: ['allottedcat', 'allotted_category', 'Allotted Category'] },
@@ -3080,15 +3248,32 @@ const AdminUpcomingBatch = () => {
     return "-";
   };
 
+  // Filter table columns based on programme type
+  const getVisibleColumns = (programmeType) => {
+    // Fields to hide for PhD students
+    const phdHiddenFields = ['specialization', 'allottedCategory', 'allottedGender', 'jeeRank', 'categoryRank'];
+    
+    // Fields to hide for UG/PG students
+    const ugPgHiddenFields = [];
+    
+    if (programmeType === 'phd') {
+      return STUDENT_TABLE_COLUMNS.filter(column => !phdHiddenFields.includes(column.key));
+    } else if (programmeType === 'ug' || programmeType === 'pg') {
+      return STUDENT_TABLE_COLUMNS.filter(column => !ugPgHiddenFields.includes(column.key));
+    }
+    
+    return STUDENT_TABLE_COLUMNS;
+  };
+
   // Enhanced Excel upload with workflow validation
-  const validateBatchPrerequisites = async (academicYear) => {
+  const validateBatchPrerequisites = async (academicYear, disciplines = []) => {
     try {
       const response = await fetch(`${host}/programme_curriculum/api/batches/validate_prerequisites/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ academic_year: academicYear })
+        body: JSON.stringify({ academic_year: academicYear, disciplines })
       });
 
       const contentType = response.headers.get('content-type');
@@ -3127,14 +3312,14 @@ const AdminUpcomingBatch = () => {
       return true;
     } catch (error) {
       if (error.message.includes('Unexpected token') || error.message.includes('<!doctype')) {
-        return validateBatchPrerequisitesFrontend(academicYear);
+        return validateBatchPrerequisitesFrontend(academicYear, disciplines);
       }
       
       return true; 
     }
   };
 
-  const validateBatchPrerequisitesFrontend = () => {
+  const validateBatchPrerequisitesFrontend = (academicYear, disciplines = []) => {
     const currentBatches = getCurrentBatches();
     
     if (!currentBatches || currentBatches.length === 0) {
@@ -3147,20 +3332,73 @@ const AdminUpcomingBatch = () => {
       return false;
     }
 
-    const currentYear = getCurrentBatchYear();
-    const batchesForYear = currentBatches.filter(batch => batch.year === currentYear);
+    // Use the passed academicYear (e.g. 2025 for PhD Even Jan-2026 intake, same as
+    // for PhD Odd Aug-2025, both map to academic year 2025-26) to avoid defaulting
+    // to getCurrentBatchYear() which returns currentYear-1 in Jan-June.
+    const yearToCheck = academicYear || getCurrentBatchYear();
+    const batchesForYear = currentBatches.filter(batch => batch.year === yearToCheck);
     
     if (batchesForYear.length === 0) {
       notifications.show({
         title: "No Batches for Current Year",
-        message: `Please create batches for year ${currentYear} first.`,
+        message: `Please create batches for year ${yearToCheck} first.`,
         color: "red",
         autoClose: false,
       });
       return false;
     }
+
+    const requiredDisciplines = disciplines.length > 0
+      ? disciplines
+      : batchesForYear.map(batch => batch.discipline || batch.branch).filter(Boolean);
+
+    for (const disciplineName of requiredDisciplines) {
+      const matchingBatch = batchesForYear.find(batch => {
+        const batchDiscipline = (batch.discipline || batch.branch || '').trim().toLowerCase();
+        return batchDiscipline === disciplineName.trim().toLowerCase();
+      });
+
+      if (!matchingBatch) {
+        notifications.show({
+          title: "Batches Required",
+          message: (
+            <div>
+              <Text size="sm" mb={8}>
+                <strong>Please create the required batch first:</strong>
+              </Text>
+              <Text size="xs" style={{ whiteSpace: 'pre-line', color: '#721c24' }}>
+                • {disciplineName} - Create batch for year {yearToCheck}
+              </Text>
+            </div>
+          ),
+          color: "red",
+          autoClose: false,
+        });
+        return false;
+      }
+    }
     
     return true;
+  };
+
+  const getUploadDisciplines = (students) => {
+    const disciplines = new Set();
+
+    (students || []).forEach((student) => {
+      const discipline = (
+        student.Discipline ||
+        student.discipline ||
+        student.branch ||
+        student.Branch ||
+        ""
+      ).toString().trim();
+
+      if (discipline) {
+        disciplines.add(discipline);
+      }
+    });
+
+    return Array.from(disciplines);
   };
 
   // Validate Excel data before upload
@@ -3258,6 +3496,19 @@ const AdminUpcomingBatch = () => {
 
   const handleExcelUpload = async () => {
     try {
+      // Check if PhD semester is selected for PhD section
+      console.log('handleExcelUpload called:', { activeSection, selectedPhdSemester });
+      
+      if (activeSection === 'phd' && !selectedPhdSemester) {
+        console.log('Blocked: PhD semester not selected');
+        notifications.show({
+          title: "Semester Selection Required",
+          message: "Please select PhD semester (Odd or Even) before uploading students.",
+          color: "yellow",
+        });
+        return;
+      }
+
       const dataToUpload = extractedData;
 
       if (!dataToUpload || dataToUpload.length === 0) {
@@ -3297,8 +3548,10 @@ const AdminUpcomingBatch = () => {
         });
         return;
       }
-      const currentAcademicYear = getCurrentBatchYear();
-      const canUpload = await validateBatchPrerequisites(currentAcademicYear);
+      // Use viewAcademicYear (the admin-selected year) for batch lookup.
+      const currentAcademicYear = viewAcademicYear;
+      const uploadDisciplines = getUploadDisciplines(dataToUpload);
+      const canUpload = await validateBatchPrerequisites(currentAcademicYear, uploadDisciplines);
       
       if (!canUpload) {
         return;
@@ -3310,9 +3563,13 @@ const AdminUpcomingBatch = () => {
       
       for (const student of dataToUpload) {
         const studentBranch = student.branch || student.discipline || student.Branch || student.Discipline;
-        const studentYear = getCurrentBatchYear(); 
+        const studentYear = viewAcademicYear; // Must match getCurrentBatches() which filters by viewAcademicYear
 
-        const matchingBatch = getBatchForBranch(studentBranch, currentBatches);
+        const matchingBatch = getBatchForBranch(
+          studentBranch, 
+          currentBatches,
+          activeSection === 'phd' ? selectedPhdSemester : null
+        );
 
         let finalMatchingBatch = matchingBatch;
         if (!finalMatchingBatch) {
@@ -3330,11 +3587,12 @@ const AdminUpcomingBatch = () => {
         }
         
         if (!finalMatchingBatch) {
+          const semesterInfo = activeSection === 'phd' && selectedPhdSemester ? ` (${selectedPhdSemester.toUpperCase()} semester)` : '';
           batchValidationErrors.push({
             student: student.name || student.Name || 'Unknown',
             branch: studentBranch,
             year: studentYear,
-            message: `No existing batch found for ${studentBranch} ${studentYear}`
+            message: `No existing batch found for ${studentBranch} ${studentYear}${semesterInfo}`
           });
         } else {
           const studentsForThisBatch = studentBatchMap.get(finalMatchingBatch.id) || [];
@@ -3380,35 +3638,77 @@ const AdminUpcomingBatch = () => {
       }
 
       const transformedData = transformDataForDatabase(dataToUpload);
-      const response = await saveStudentsBatch(transformedData, activeSection);
+      
+      // Debug logging
+      console.log('PhD Upload Debug:', {
+        activeSection,
+        selectedPhdSemester,
+        sendingValue: activeSection === 'phd' ? selectedPhdSemester : null
+      });
+      
+      const response = await saveStudentsBatch(
+        transformedData, 
+        activeSection,
+        activeSection === 'phd' ? selectedPhdSemester : null,
+        viewAcademicYear  // Pass the current view year so backend targets the right batch year
+      );
 
       if (response.success) {
         const uploadCount =
-          response.data.successful_uploads || response.data.saved_count || 0;
+          response.data?.successful_uploads || response.data?.saved_count || 0;
 
-        notifications.show({
-          title: "✅ Upload Successful",
-          message: `${uploadCount} students uploaded to existing batches successfully!`,
-          color: "green",
-        });
+        if (uploadCount === 0) {
+          // Backend returned success but nothing was saved — treat as failure
+          const errorDetail = response.error_detail || response.message || 'No students were saved.';
+          const errorList = response.errors;
+          let displayMsg = errorDetail;
+          if (Array.isArray(errorList) && errorList.length > 0) {
+            const firstErr = errorList[0];
+            const errText = typeof firstErr === 'string' ? firstErr
+              : (firstErr.required_action || firstErr.error || JSON.stringify(firstErr));
+            displayMsg = errText || errorDetail;
+          }
+          notifications.show({
+            title: "❌ Upload Failed",
+            message: displayMsg,
+            color: "red",
+            autoClose: false,
+          });
+        } else {
+          notifications.show({
+            title: "✅ Upload Successful",
+            message: `${uploadCount} student${uploadCount !== 1 ? 's' : ''} uploaded to existing batches successfully!`,
+            color: "green",
+          });
 
-        setShowAddModal(false);
-        setAddMode(null);
-        setUploadedFile(null);
-        setExtractedData([]);
-        setProcessedBatchData(null);
-        setAllocationSummary(null);
-        setShowBatchPreview(false);
-        setShowPreview(false);
+          setShowAddModal(false);
+          setAddMode(null);
+          setUploadedFile(null);
+          setExtractedData([]);
+          setProcessedBatchData(null);
+          setAllocationSummary(null);
+          setShowBatchPreview(false);
+          setShowPreview(false);
 
-        setTimeout(() => {
-          forceRefreshData();
-        }, 500);
+          setTimeout(() => {
+            forceRefreshData();
+          }, 500);
+        }
       } else {
+        // Show the actual error from backend
+        const errorDetail = response.error_detail || response.message;
+        const errorList = response.errors;
+        let displayMsg = errorDetail;
+        if (Array.isArray(errorList) && errorList.length > 0) {
+          const firstErr = errorList[0];
+          const errText = typeof firstErr === 'string' ? firstErr
+            : (firstErr.required_action || firstErr.error || JSON.stringify(firstErr));
+          displayMsg = errText || errorDetail;
+        }
         if (response.error_code === 'BATCH_NOT_FOUND') {
           notifications.show({
             title: "Batch Required",
-            message: response.required_action || response.message,
+            message: response.required_action || displayMsg,
             color: "red",
             autoClose: false,
           });
@@ -3420,7 +3720,12 @@ const AdminUpcomingBatch = () => {
             autoClose: false,
           });
         } else {
-          throw new Error(response.message || "Failed to upload students");
+          notifications.show({
+            title: "❌ Upload Failed",
+            message: displayMsg || "Failed to upload students",
+            color: "red",
+            autoClose: false,
+          });
         }
       }
     } catch (error) {
@@ -3517,8 +3822,18 @@ const AdminUpcomingBatch = () => {
         const transformedData = transformDataForDatabase([manualFormData]);
 
         if (!editingStudent) {
-          const studentYear = selectedBatchYear;
-          const canUpload = await validateBatchPrerequisites(studentYear);
+          // Use viewAcademicYear (the admin-selected year) for batch lookup.
+          const studentYear = viewAcademicYear;
+          if (activeSection === 'phd' && !selectedPhdSemester) {
+            notifications.show({
+              title: "Semester Selection Required",
+              message: "Please select PhD semester (Odd or Even) before saving a manual student.",
+              color: "yellow",
+            });
+            return;
+          }
+          const uploadDisciplines = getUploadDisciplines([manualFormData]);
+          const canUpload = await validateBatchPrerequisites(studentYear, uploadDisciplines);
           
           if (!canUpload) {
             return;
@@ -3532,7 +3847,11 @@ const AdminUpcomingBatch = () => {
           const batchesForYear = allBatches.filter(batch => batch.year === studentYear);
           const studentBranch = manualFormData.branch;
 
-          const matchingBatch = getBatchForBranch(studentBranch, batchesForYear);
+          const matchingBatch = getBatchForBranch(
+            studentBranch, 
+            batchesForYear,
+            activeSection === 'phd' ? selectedPhdSemester : null
+          );
           
           if (!matchingBatch) {
             const academicYearStr = batchYearToAcademicYear(studentYear);
@@ -3575,13 +3894,17 @@ const AdminUpcomingBatch = () => {
           const oldBranch = editingStudent.branch || editingStudent.Branch || editingStudent.discipline || editingStudent.Discipline;
           const newBranch = manualFormData.branch;
           const branchChanged = oldBranch && newBranch && oldBranch.toLowerCase().trim() !== newBranch.toLowerCase().trim();
-          const updateData = { ...transformedData[0] };
+          const updateData = { ...transformedData[0], programmeType: activeSection };
 
           let targetBatch = null;
           if (branchChanged) {
             const currentBatches = activeSection === 'ug' ? ugBatches : 
                                  activeSection === 'pg' ? pgBatches : phdBatches;
-            targetBatch = getBatchForBranch(newBranch, currentBatches);
+            targetBatch = getBatchForBranch(
+              newBranch, 
+              currentBatches,
+              activeSection === 'phd' ? selectedPhdSemester : null
+            );
             
             if (!targetBatch) {
               notifications.show({
@@ -3647,6 +3970,8 @@ const AdminUpcomingBatch = () => {
           const response = await addSingleStudent(
             transformedData[0],
             activeSection,
+            activeSection === 'phd' ? selectedPhdSemester : null,
+            viewAcademicYear  // Pass current view year so backend uses the right batch year
           );
 
           if (response.success) {
@@ -3961,6 +4286,109 @@ const AdminUpcomingBatch = () => {
 
   // Generate Excel template with all unified fields
   const generateExcelTemplate = () => {
+    const isPhd = activeSection === 'phd';
+
+    // ── PhD template ────────────────────────────────────────────────────────
+    if (isPhd) {
+      const headers = [
+        "Sno",
+        "Application No.",
+        "Institute Roll Number",
+        "Name",
+        "Discipline",
+        "Admission Type",
+        "Gender",
+        "Category",
+        "Minority",
+        "PwD",
+        "PwD Category",
+        "PwD Category Remarks",
+        "MobileNo",
+        "Institute Email ID",
+        "Alternate Email ID",
+        "Parent Email",
+        "Father's Name",
+        "Father's Occupation",
+        "Father Mobile Number",
+        "Mother's Name",
+        "Mother's Occupation",
+        "Mother Mobile Number",
+        "Date of Birth",
+        "Blood Group",
+        "Blood Group Remarks",
+        "Country",
+        "Nationality",
+        "Admission Mode",
+        "Admission Mode Remarks",
+        "Income Group",
+        "Income",
+        "GATE Qualaified",
+        "GATE Stream",
+        "GATE Rank",
+        "allottedcat",
+        "State",
+        "Full Address (with pincode)",
+      ];
+
+      const sampleData = [
+        [
+          1,
+          "PHD2025001",
+          "25PHD001",
+          "SAMPLE STUDENT",
+          "Computer Science and Engineering",
+          "FULL TIME with Institute Assistantship",
+          "Female",
+          "General",
+          "",
+          "NO",
+          "",
+          "",
+          "9229109424",
+          "25phd001@iiitdmj.ac.in",
+          "student@gmail.com",
+          "parent@gmail.com",
+          "FATHER NAME",
+          "Engineer",
+          "9876543210",
+          "MOTHER NAME",
+          "Teacher",
+          "9876543211",
+          "15/05/1998",
+          "O+",
+          "",
+          "India",
+          "Indian",
+          "Institute Level",
+          "",
+          "Between 4 to 6 Lakh",
+          "500000",
+          "YES",
+          "CS",
+          "1234",
+          "OPNO",
+          "MADHYA PRADESH",
+          "House No. 123, Street Name, City, State, 452001",
+        ],
+      ];
+
+      const worksheet = XLSX.utils.aoa_to_sheet([headers, ...sampleData]);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Student Data Template");
+
+      worksheet["!cols"] = headers.map((h) => ({ wch: Math.max(h.length + 4, 22) }));
+
+      XLSX.writeFile(workbook, "student_data_template_PHD.xlsx");
+
+      notifications.show({
+        title: "Template Downloaded",
+        message: "PhD Excel template with all required fields has been downloaded",
+        color: "green",
+      });
+      return;
+    }
+
+    // ── UG / PG template ────────────────────────────────────────────────────
     const headers = [
       "Sno",
       "JEE App. No. / CCMT Roll No.",
@@ -4318,7 +4746,10 @@ const AdminUpcomingBatch = () => {
       const payload = {
         studentId: requestData.studentId,  
         reportedStatus: requestData.newStatus || requestData.reportedStatus, 
-        batchId: requestData.batchId || selectedBatch?.id           
+        batchId: requestData.batchId || selectedBatch?.id,
+        // Pass programmeType so the backend can disambiguate between
+        // StudentBatchUpload and PhdStudentBatchUpload when IDs collide.
+        programmeType: requestData.programmeType || (selectedBatch ? getCurrentProgrammeType(selectedBatch) : undefined),
       };
 
       const response = await fetch(
@@ -4641,18 +5072,18 @@ const AdminUpcomingBatch = () => {
     }
 
     // Store student data and show confirmation modal
-    setStudentToDelete({ id: studentId, name: studentName });
+    setStudentToDelete({ id: studentId, name: studentName, programmeType: activeSection });
     setShowDeleteStudentConfirm(true);
   };
 
   const confirmDeleteStudent = async () => {
     if (!studentToDelete) return;
 
-    const { id: studentId, name: studentName } = studentToDelete;
+    const { id: studentId, name: studentName, programmeType: studentProgrammeType } = studentToDelete;
     setDeletingStudent(studentId);
 
     try {
-      const response = await deleteStudent(studentId);
+      const response = await deleteStudent(studentId, studentProgrammeType);
 
       if (response.success) {
         setStudentList((prev) => {
@@ -4879,27 +5310,46 @@ const AdminUpcomingBatch = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{ minWidth: "250px" }}
             />
-            <Select
-              placeholder="Filter by Programme"
-              icon={<Funnel size={16} />}
-              data={
-                activeSection === "ug"
-                  ? [
-                      { value: "", label: "All Programmes" },
-                      { value: "B.Tech", label: "B.Tech" },
-                      { value: "B.Des", label: "B.Des" },
-                    ]
-                  : [
-                      { value: "", label: "All Programmes" },
-                      { value: "M.Tech", label: "M.Tech" },
-                      { value: "M.Des", label: "M.Des" },
-                      { value: "PhD", label: "PhD" },
-                    ]
-              }
-              value={filterProgramme}
-              onChange={setFilterProgramme}
-              style={{ minWidth: 150 }}
-            />
+            
+            {/* Programme Filter - Only show for UG and PG sections, not PhD */}
+            {activeSection !== "phd" && (
+              <Select
+                placeholder="Filter by Programme"
+                icon={<Funnel size={16} />}
+                data={
+                  activeSection === "ug"
+                    ? [
+                        { value: "", label: "All Programmes" },
+                        { value: "B.Tech", label: "B.Tech" },
+                        { value: "B.Des", label: "B.Des" },
+                      ]
+                    : [
+                        { value: "", label: "All Programmes" },
+                        { value: "M.Tech", label: "M.Tech" },
+                        { value: "M.Des", label: "M.Des" },
+                      ]
+                }
+                value={filterProgramme}
+                onChange={setFilterProgramme}
+                style={{ minWidth: 150 }}
+              />
+            )}
+            
+            {/* PhD Semester Filter - Only show for PhD section */}
+            {activeSection === "phd" && (
+              <Select
+                placeholder="Odd / Even"
+                icon={<Funnel size={16} />}
+                data={[
+                  { value: "odd", label: "Odd" },
+                  { value: "even", label: "Even" },
+                ]}
+                value={phdSemesterFilter}
+                onChange={setPhdSemesterFilter}
+                style={{ minWidth: 150 }}
+                clearable
+              />
+            )}
 
             {/* Academic Year Selector */}
             <div
@@ -5265,6 +5715,7 @@ const AdminUpcomingBatch = () => {
             setProcessedBatchData(null);
             setAllocationSummary(null);
             setShowBatchPreview(false);
+            setSelectedPhdSemester(''); // Reset PhD semester selection
           }}
           closeOnClickOutside={false}
           size="90vw"
@@ -5311,7 +5762,11 @@ const AdminUpcomingBatch = () => {
                     marginTop: "0",
                   }}
                 >
-                  Select Student Data Entry Method
+                  {activeSection === PROGRAMME_TYPES.UG
+                    ? "UG Student Data Entry Method"
+                    : activeSection === PROGRAMME_TYPES.PG
+                    ? "PG Student Data Entry Method"
+                    : "PhD Student Data Entry Method"}
                 </Text>
 
                 {/* Batch Year Selection */}
@@ -5330,6 +5785,41 @@ const AdminUpcomingBatch = () => {
                     {selectedBatchYear && `Academic Year: ${batchYearToAcademicYear(selectedBatchYear)}`}
                   </Text>
                 </Stack>
+                
+                {/* PhD Semester Selection - Only for PhD section */}
+                {activeSection === "phd" && (
+                  <Stack spacing="xs" style={{ width: "100%", marginBottom: "20px" }}>
+                    <Group position="center" spacing="md">
+                      <Select
+                        label="Select PhD Semester"
+                        value={selectedPhdSemester}
+                        onChange={(value) => {
+                          console.log('PhD Semester selected:', value);
+                          setSelectedPhdSemester(value);
+                        }}
+                        data={[
+                          { value: "odd", label: "PhD (Odd)" },
+                          { value: "even", label: "PhD (Even)" },
+                        ]}
+                        style={{ width: isMobile ? "250px" : "300px" }}
+                        placeholder="Select semester - Odd or Even"
+                        size="sm"
+                        required
+                        error={!selectedPhdSemester ? "Please select PhD semester" : null}
+                        styles={{
+                          label: {
+                            fontWeight: 600,
+                            color: "#2c5282",
+                            marginBottom: 8,
+                          }
+                        }}
+                      />
+                    </Group>
+                    <Text size="xs" color="dimmed" ta="center">
+                      Select whether you want to add students to Odd or Even semester batch
+                    </Text>
+                  </Stack>
+                )}
 
                 <Grid
                   gutter={isMobile ? "md" : "lg"}
@@ -5342,16 +5832,27 @@ const AdminUpcomingBatch = () => {
                       padding={isMobile ? "md" : "xl"}
                       style={{
                         height: isMobile ? "180px" : "240px",
-                        cursor: "pointer",
+                        cursor: (activeSection === "phd" && !selectedPhdSemester) ? "not-allowed" : "pointer",
                         border: "2px solid transparent",
                         transition: "all 0.3s ease",
+                        opacity: (activeSection === "phd" && !selectedPhdSemester) ? 0.5 : 1,
                       }}
-                      onClick={() => setAddMode("excel")}
+                      onClick={() => {
+                        if (activeSection === "phd" && !selectedPhdSemester) {
+                          notifications.show({
+                            title: "Semester Selection Required",
+                            message: "Please select PhD semester (Odd or Even) before proceeding",
+                            color: "yellow",
+                          });
+                          return;
+                        }
+                        setAddMode("excel");
+                      }}
                       sx={() => ({
                         "&:hover": {
-                          transform: "translateY(-2px)",
-                          boxShadow: "0 8px 32px rgba(52, 152, 219, 0.15)",
-                          borderColor: "#3498db",
+                          transform: (activeSection === "phd" && !selectedPhdSemester) ? "none" : "translateY(-2px)",
+                          boxShadow: (activeSection === "phd" && !selectedPhdSemester) ? "none" : "0 8px 32px rgba(52, 152, 219, 0.15)",
+                          borderColor: (activeSection === "phd" && !selectedPhdSemester) ? "transparent" : "#3498db",
                         },
                       })}
                     >
@@ -5399,16 +5900,27 @@ const AdminUpcomingBatch = () => {
                       padding={isMobile ? "md" : "xl"}
                       style={{
                         height: isMobile ? "180px" : "240px",
-                        cursor: "pointer",
+                        cursor: (activeSection === "phd" && !selectedPhdSemester) ? "not-allowed" : "pointer",
                         border: "2px solid transparent",
                         transition: "all 0.3s ease",
+                        opacity: (activeSection === "phd" && !selectedPhdSemester) ? 0.5 : 1,
                       }}
-                      onClick={() => setAddMode("manual")}
+                      onClick={() => {
+                        if (activeSection === "phd" && !selectedPhdSemester) {
+                          notifications.show({
+                            title: "Semester Selection Required",
+                            message: "Please select PhD semester (Odd or Even) before proceeding",
+                            color: "yellow",
+                          });
+                          return;
+                        }
+                        setAddMode("manual");
+                      }}
                       sx={() => ({
                         "&:hover": {
-                          transform: "translateY(-2px)",
-                          boxShadow: "0 8px 32px rgba(52, 152, 219, 0.15)",
-                          borderColor: "#3498db",
+                          transform: (activeSection === "phd" && !selectedPhdSemester) ? "none" : "translateY(-2px)",
+                          boxShadow: (activeSection === "phd" && !selectedPhdSemester) ? "none" : "0 8px 32px rgba(52, 152, 219, 0.15)",
+                          borderColor: (activeSection === "phd" && !selectedPhdSemester) ? "transparent" : "#3498db",
                         },
                       })}
                     >
@@ -6109,12 +6621,15 @@ const AdminUpcomingBatch = () => {
                                   const response = await saveStudentsBatch(
                                     transformedData,
                                     activeSection,
+                                    activeSection === 'phd' ? selectedPhdSemester : null,
+                                    viewAcademicYear  // Pass the current view year so backend targets the right batch year
                                   );
 
                                   if (response.success) {
+                                    const uploadCount = response.data?.successful_uploads || response.data?.saved_count || 0;
                                     notifications.show({
-                                      title: "Success",
-                                      message: `${response.data.successful_uploads || response.data.saved_count || extractedData.length} students saved to database successfully!`,
+                                      title: "✅ Upload Successful",
+                                      message: `${uploadCount} student${uploadCount !== 1 ? 's' : ''} saved to database successfully!`,
                                       color: "green",
                                     });
 
@@ -6123,10 +6638,22 @@ const AdminUpcomingBatch = () => {
                                     setShowAddModal(false);
                                     forceRefreshData();
                                   } else {
-                                    throw new Error(
-                                      response.message ||
-                                        "Failed to save students",
-                                    );
+                                    // Show the actual error from backend (batch not found, etc.)
+                                    const errorDetail = response.error_detail || response.message || "Failed to save students";
+                                    const errorList = response.errors;
+                                    let displayMsg = errorDetail;
+                                    if (Array.isArray(errorList) && errorList.length > 0) {
+                                      const firstErr = errorList[0];
+                                      const errText = typeof firstErr === 'string' ? firstErr
+                                        : (firstErr.required_action || firstErr.error || JSON.stringify(firstErr));
+                                      displayMsg = errText || errorDetail;
+                                    }
+                                    notifications.show({
+                                      title: "❌ Upload Failed",
+                                      message: displayMsg,
+                                      color: "red",
+                                      autoClose: false,
+                                    });
                                   }
                                 } catch (error) {
                                   const { title, message } =
@@ -6262,7 +6789,7 @@ const AdminUpcomingBatch = () => {
                         <Grid>
                           <Grid.Col span={isMobile ? 12 : 6}>
                             <TextInput
-                              label={STUDENT_FIELDS_CONFIG.fname.label}
+                              label={`${STUDENT_FIELDS_CONFIG.fname.label}`}
                               placeholder={
                                 STUDENT_FIELDS_CONFIG.fname.placeholder
                               }
@@ -6279,7 +6806,7 @@ const AdminUpcomingBatch = () => {
                           </Grid.Col>
                           <Grid.Col span={isMobile ? 12 : 6}>
                             <TextInput
-                              label={STUDENT_FIELDS_CONFIG.mname.label}
+                              label={`${STUDENT_FIELDS_CONFIG.mname.label}`}
                               placeholder={
                                 STUDENT_FIELDS_CONFIG.mname.placeholder
                               }
@@ -6300,7 +6827,7 @@ const AdminUpcomingBatch = () => {
                         <Grid>
                           <Grid.Col span={isMobile ? 12 : 6}>
                             <Select
-                              label={STUDENT_FIELDS_CONFIG.gender.label}
+                              label={`${STUDENT_FIELDS_CONFIG.gender.label}`}
                               placeholder={
                                 STUDENT_FIELDS_CONFIG.gender.placeholder
                               }
@@ -6318,7 +6845,7 @@ const AdminUpcomingBatch = () => {
                           </Grid.Col>
                           <Grid.Col span={isMobile ? 12 : 6}>
                             <Select
-                              label={STUDENT_FIELDS_CONFIG.category.label}
+                              label={`${STUDENT_FIELDS_CONFIG.category.label}`}
                               placeholder={
                                 STUDENT_FIELDS_CONFIG.category.placeholder
                               }
@@ -6374,7 +6901,7 @@ const AdminUpcomingBatch = () => {
                           </Grid.Col>
                           <Grid.Col span={isMobile ? 12 : 6}>
                             <Select
-                              label={STUDENT_FIELDS_CONFIG.pwd.label}
+                              label={`${STUDENT_FIELDS_CONFIG.pwd.label}`}
                               placeholder={
                                 STUDENT_FIELDS_CONFIG.pwd.placeholder
                               }
@@ -6445,7 +6972,7 @@ const AdminUpcomingBatch = () => {
                         <Grid>
                           <Grid.Col span={isMobile ? 12 : 6}>
                             <TextInput
-                              label={STUDENT_FIELDS_CONFIG.phoneNumber.label}
+                              label={`${STUDENT_FIELDS_CONFIG.phoneNumber.label}`}
                               placeholder={
                                 STUDENT_FIELDS_CONFIG.phoneNumber.placeholder
                               }
@@ -6469,7 +6996,7 @@ const AdminUpcomingBatch = () => {
 
                     <Stepper.Step
                       label="Additional Info"
-                      description="PWD, JEE & Address details"
+                      description={activeSection === 'phd' ? 'PWD, App No. & Address details' : 'PWD, JEE & Address details'}
                       icon={<GraduationCap size={18} />}
                     >
                       <Stack spacing="md" mt="lg">
@@ -6610,7 +7137,17 @@ const AdminUpcomingBatch = () => {
                                   admissionMode: value,
                                 });
                               }}
-                              data={STUDENT_FIELDS_CONFIG.admissionMode.options}
+                              data={activeSection === 'phd'
+                                ? [
+                                    { value: 'Institute Level', label: 'Institute Level' },
+                                    { value: 'QIP', label: 'QIP' },
+                                    { value: 'GATE', label: 'GATE' },
+                                    { value: 'Sponsored', label: 'Sponsored' },
+                                    { value: 'Foreign National', label: 'Foreign National' },
+                                    { value: 'Any other (remarks)', label: 'Any other (remarks)' },
+                                  ]
+                                : STUDENT_FIELDS_CONFIG.admissionMode.options
+                              }
                               error={errors.admissionMode}
                             />
                           </Grid.Col>
@@ -6711,26 +7248,39 @@ const AdminUpcomingBatch = () => {
                           </Grid.Col>
                         </Grid>
 
-                        {/* JEE App No */}
-                        <TextInput
-                          label={STUDENT_FIELDS_CONFIG.jeeAppNo.label}
-                          placeholder={
-                            STUDENT_FIELDS_CONFIG.jeeAppNo.placeholder
-                          }
-                          value={manualFormData.jeeAppNo}
-                          onChange={(e) =>
-                            setManualFormData({
-                              ...manualFormData,
-                              jeeAppNo: e.target.value,
-                            })
-                          }
-                          required={STUDENT_FIELDS_CONFIG.jeeAppNo.required}
-                          error={errors.jeeAppNo}
-                        />
+                        {/* Application No (PhD) / JEE App No (UG/PG) */}
+                        {activeSection === 'phd' ? (
+                          <TextInput
+                            label={STUDENT_FIELDS_CONFIG.applicationNo.label}
+                            placeholder={STUDENT_FIELDS_CONFIG.applicationNo.placeholder}
+                            value={manualFormData.applicationNo || ''}
+                            onChange={(e) =>
+                              setManualFormData({
+                                ...manualFormData,
+                                applicationNo: e.target.value,
+                              })
+                            }
+                            error={errors.applicationNo}
+                          />
+                        ) : (
+                          <TextInput
+                            label={STUDENT_FIELDS_CONFIG.jeeAppNo.label}
+                            placeholder={STUDENT_FIELDS_CONFIG.jeeAppNo.placeholder}
+                            value={manualFormData.jeeAppNo}
+                            onChange={(e) =>
+                              setManualFormData({
+                                ...manualFormData,
+                                jeeAppNo: e.target.value,
+                              })
+                            }
+                            required={STUDENT_FIELDS_CONFIG.jeeAppNo.required}
+                            error={errors.jeeAppNo}
+                          />
+                        )}
 
                         {/* Address */}
                         <Textarea
-                          label={STUDENT_FIELDS_CONFIG.address.label}
+                          label={`${STUDENT_FIELDS_CONFIG.address.label}`}
                           placeholder={
                             STUDENT_FIELDS_CONFIG.address.placeholder
                           }
@@ -6747,18 +7297,27 @@ const AdminUpcomingBatch = () => {
                         />
 
                         {/* State */}
-                        <TextInput
+                        <Select
                           label={STUDENT_FIELDS_CONFIG.state.label}
                           placeholder={STUDENT_FIELDS_CONFIG.state.placeholder}
                           value={manualFormData.state}
-                          onChange={(e) =>
+                          onChange={(value) => {
+                            if (editingStudent) {
+                              setEditingStudent({
+                                ...editingStudent,
+                                state: value,
+                              });
+                            }
                             setManualFormData({
                               ...manualFormData,
-                              state: e.target.value,
-                            })
-                          }
+                              state: value,
+                            });
+                          }}
+                          data={STUDENT_FIELDS_CONFIG.state.options}
                           required={STUDENT_FIELDS_CONFIG.state.required}
                           error={errors.state}
+                          searchable
+                          clearable
                         />
 
                         {/* Father's Details */}
@@ -6865,7 +7424,7 @@ const AdminUpcomingBatch = () => {
 
                         {/* Branch Selection */}
                         <Select
-                          label={STUDENT_FIELDS_CONFIG.branch.label}
+                          label={`${STUDENT_FIELDS_CONFIG.branch.label}`}
                           placeholder={STUDENT_FIELDS_CONFIG.branch.placeholder}
                           value={manualFormData.branch || ""}
                           onChange={(value) => {
@@ -6886,10 +7445,10 @@ const AdminUpcomingBatch = () => {
                           searchable
                         />
 
-                        {/* Specialization - Only for PG and PhD programmes */}
-                        {(activeSection === "pg" || activeSection === "phd") && (
+                        {/* Specialization - Only for PG programmes (not PhD or UG) */}
+                        {activeSection === "pg" && (
                           <Select
-                            label={STUDENT_FIELDS_CONFIG.specialization.label}
+                            label={`${STUDENT_FIELDS_CONFIG.specialization.label}`}
                             placeholder={
                               STUDENT_FIELDS_CONFIG.specialization.placeholder
                             }
@@ -6913,101 +7472,168 @@ const AdminUpcomingBatch = () => {
                             clearable
                           />
                         )}
-                        {/* AI Rank and Category Rank */}
-                        <Grid>
-                          <Grid.Col span={isMobile ? 12 : 6}>
-                            <TextInput
-                              type="number"
-                              label="AI Rank"
-                              placeholder="Enter AI rank"
-                              value={manualFormData.jeeRank}
-                              onChange={(e) =>
-                                setManualFormData({
-                                  ...manualFormData,
-                                  jeeRank: e.target.value,
-                                })
-                              }
-                              required={STUDENT_FIELDS_CONFIG.jeeRank.required}
-                              error={errors.jeeRank}
-                              min={1}
-                            />
-                          </Grid.Col>
-                          <Grid.Col span={isMobile ? 12 : 6}>
-                            <TextInput
-                              type="number"
-                              label={STUDENT_FIELDS_CONFIG.categoryRank.label}
-                              placeholder={
-                                STUDENT_FIELDS_CONFIG.categoryRank.placeholder
-                              }
-                              value={manualFormData.categoryRank}
-                              onChange={(e) =>
-                                setManualFormData({
-                                  ...manualFormData,
-                                  categoryRank: e.target.value,
-                                })
-                              }
-                              required={
-                                STUDENT_FIELDS_CONFIG.categoryRank.required
-                              }
-                              error={errors.categoryRank}
-                              min={1}
-                            />
-                          </Grid.Col>
-                        </Grid>
 
-                        {/* Allotted Category and Gender */}
-                        <Grid>
-                          <Grid.Col span={isMobile ? 12 : 6}>
+                        {/* Admission Type + GATE fields - PhD only */}
+                        {activeSection === 'phd' && (
+                          <>
                             <Select
-                              key="allotted-category-field"
-                              label={STUDENT_FIELDS_CONFIG.allottedCategory.label}
-                              placeholder={
-                                STUDENT_FIELDS_CONFIG.allottedCategory.placeholder
-                              }
-                              value={manualFormData.allottedCategory || ""}
+                              label={STUDENT_FIELDS_CONFIG.admissionType.label}
+                              placeholder={STUDENT_FIELDS_CONFIG.admissionType.placeholder}
+                              value={manualFormData.admissionType || ''}
                               onChange={(value) => {
-                                setManualFormData({
-                                  ...manualFormData,
-                                  allottedCategory: value,
-                                });
+                                if (editingStudent) setEditingStudent({ ...editingStudent, admissionType: value });
+                                setManualFormData({ ...manualFormData, admissionType: value });
                               }}
-                              data={STUDENT_FIELDS_CONFIG.allottedCategory.options.map(option => ({
-                                value: option.value,
-                                label: option.label
-                              }))}
-                              required={
-                                STUDENT_FIELDS_CONFIG.allottedCategory.required
-                              }
-                              error={errors.allottedCategory}
-                              searchable
+                              data={STUDENT_FIELDS_CONFIG.admissionType.options}
+                              error={errors.admissionType}
                               clearable
                             />
-                          </Grid.Col>
-                          <Grid.Col span={isMobile ? 12 : 6}>
-                            <Select
-                              label={
-                                STUDENT_FIELDS_CONFIG.allottedGender.label
-                              }
-                              placeholder={
-                                STUDENT_FIELDS_CONFIG.allottedGender.placeholder
-                              }
-                              value={manualFormData.allottedGender || ""}
-                              onChange={(value) =>
-                                setManualFormData({
-                                  ...manualFormData,
-                                  allottedGender: value,
-                                })
-                              }
-                              data={
-                                STUDENT_FIELDS_CONFIG.allottedGender.options
-                              }
-                              required={
-                                STUDENT_FIELDS_CONFIG.allottedGender.required
-                              }
-                              error={errors.allottedGender}
-                            />
-                          </Grid.Col>
-                        </Grid>
+                            <Grid>
+                              <Grid.Col span={isMobile ? 12 : 4}>
+                                <Select
+                                  label={STUDENT_FIELDS_CONFIG.gateQualified.label}
+                                  placeholder={STUDENT_FIELDS_CONFIG.gateQualified.placeholder}
+                                  value={manualFormData.gateQualified || ''}
+                                  onChange={(value) => {
+                                    if (editingStudent) setEditingStudent({ ...editingStudent, gateQualified: value });
+                                    setManualFormData({ ...manualFormData, gateQualified: value });
+                                  }}
+                                  data={STUDENT_FIELDS_CONFIG.gateQualified.options}
+                                  error={errors.gateQualified}
+                                  clearable
+                                />
+                              </Grid.Col>
+                              <Grid.Col span={isMobile ? 12 : 4}>
+                                <TextInput
+                                  label={STUDENT_FIELDS_CONFIG.gateStream.label}
+                                  placeholder={STUDENT_FIELDS_CONFIG.gateStream.placeholder}
+                                  value={manualFormData.gateStream || ''}
+                                  onChange={(e) => {
+                                    if (editingStudent) setEditingStudent({ ...editingStudent, gateStream: e.target.value });
+                                    setManualFormData({ ...manualFormData, gateStream: e.target.value });
+                                  }}
+                                  error={errors.gateStream}
+                                  disabled={manualFormData.gateQualified === 'NO'}
+                                />
+                              </Grid.Col>
+                              <Grid.Col span={isMobile ? 12 : 4}>
+                                <TextInput
+                                  type="number"
+                                  label={STUDENT_FIELDS_CONFIG.gateRank.label}
+                                  placeholder={STUDENT_FIELDS_CONFIG.gateRank.placeholder}
+                                  value={manualFormData.gateRank || ''}
+                                  onChange={(e) => {
+                                    if (editingStudent) setEditingStudent({ ...editingStudent, gateRank: e.target.value });
+                                    setManualFormData({ ...manualFormData, gateRank: e.target.value });
+                                  }}
+                                  error={errors.gateRank}
+                                  min={1}
+                                  disabled={manualFormData.gateQualified === 'NO'}
+                                />
+                              </Grid.Col>
+                            </Grid>
+                          </>
+                        )}
+
+                        {/* AI Rank and Category Rank - Only for UG and PG, not PhD */}
+                        {(activeSection === "ug" || activeSection === "pg") && (
+                          <Grid>
+                            <Grid.Col span={isMobile ? 12 : 6}>
+                              <TextInput
+                                type="number"
+                                label="AI Rank"
+                                placeholder="Enter AI rank"
+                                value={manualFormData.jeeRank}
+                                onChange={(e) =>
+                                  setManualFormData({
+                                    ...manualFormData,
+                                    jeeRank: e.target.value,
+                                  })
+                                }
+                                required={STUDENT_FIELDS_CONFIG.jeeRank.required}
+                                error={errors.jeeRank}
+                                min={1}
+                              />
+                            </Grid.Col>
+                            <Grid.Col span={isMobile ? 12 : 6}>
+                              <TextInput
+                                type="number"
+                                label={STUDENT_FIELDS_CONFIG.categoryRank.label}
+                                placeholder={
+                                  STUDENT_FIELDS_CONFIG.categoryRank.placeholder
+                                }
+                                value={manualFormData.categoryRank}
+                                onChange={(e) =>
+                                  setManualFormData({
+                                    ...manualFormData,
+                                    categoryRank: e.target.value,
+                                  })
+                                }
+                                required={
+                                  STUDENT_FIELDS_CONFIG.categoryRank.required
+                                }
+                                error={errors.categoryRank}
+                                min={1}
+                              />
+                            </Grid.Col>
+                          </Grid>
+                        )}
+
+                        {/* Allotted Category and Gender - Only for UG and PG, not PhD */}
+                        {(activeSection === "ug" || activeSection === "pg") && (
+                          <Grid>
+                            <Grid.Col span={isMobile ? 12 : 6}>
+                              <Select
+                                key="allotted-category-field"
+                                label={STUDENT_FIELDS_CONFIG.allottedCategory.label}
+                                placeholder={
+                                  STUDENT_FIELDS_CONFIG.allottedCategory.placeholder
+                                }
+                                value={manualFormData.allottedCategory || ""}
+                                onChange={(value) => {
+                                  setManualFormData({
+                                    ...manualFormData,
+                                    allottedCategory: value,
+                                  });
+                                }}
+                                data={STUDENT_FIELDS_CONFIG.allottedCategory.options.map(option => ({
+                                  value: option.value,
+                                  label: option.label
+                                }))}
+                                required={
+                                  STUDENT_FIELDS_CONFIG.allottedCategory.required
+                                }
+                                error={errors.allottedCategory}
+                                searchable
+                                clearable
+                              />
+                            </Grid.Col>
+                            <Grid.Col span={isMobile ? 12 : 6}>
+                              <Select
+                                label={
+                                  STUDENT_FIELDS_CONFIG.allottedGender.label
+                                }
+                                placeholder={
+                                  STUDENT_FIELDS_CONFIG.allottedGender.placeholder
+                                }
+                                value={manualFormData.allottedGender || ""}
+                                onChange={(value) =>
+                                  setManualFormData({
+                                    ...manualFormData,
+                                    allottedGender: value,
+                                  })
+                                }
+                                data={
+                                  STUDENT_FIELDS_CONFIG.allottedGender.options
+                                }
+                                required={
+                                  STUDENT_FIELDS_CONFIG.allottedGender.required
+                                }
+                                error={errors.allottedGender}
+                              />
+                            </Grid.Col>
+                          </Grid>
+                        )}
 
                         {/* Institute Details */}
                         <Grid>
@@ -7255,11 +7881,24 @@ const AdminUpcomingBatch = () => {
                                 <Text size="sm" weight={500}>₹{parseInt(manualFormData.income).toLocaleString('en-IN')}</Text>
                               </div>
                             )}
-                            <div style={{ padding: "8px", backgroundColor: "#f8f9fa", borderRadius: "6px" }}>
-                              <Text size="xs" weight={600} color="dimmed" mb={2}>JEE APPLICATION NO.</Text>
-                              <Text size="sm" weight={500}>{manualFormData.jeeAppNo || "Not provided"}</Text>
-                            </div>
-                            {(activeSection === "pg" || activeSection === "phd") && manualFormData.specialization && (
+                            {activeSection === 'phd' ? (
+                              <div style={{ padding: "8px", backgroundColor: "#f8f9fa", borderRadius: "6px" }}>
+                                <Text size="xs" weight={600} color="dimmed" mb={2}>APPLICATION NO.</Text>
+                                <Text size="sm" weight={500}>{manualFormData.applicationNo || "Not provided"}</Text>
+                              </div>
+                            ) : (
+                              <div style={{ padding: "8px", backgroundColor: "#f8f9fa", borderRadius: "6px" }}>
+                                <Text size="xs" weight={600} color="dimmed" mb={2}>JEE APPLICATION NO.</Text>
+                                <Text size="sm" weight={500}>{manualFormData.jeeAppNo || "Not provided"}</Text>
+                              </div>
+                            )}
+                            {activeSection === 'phd' && manualFormData.admissionType && (
+                              <div style={{ padding: "8px", backgroundColor: "#f8f9fa", borderRadius: "6px" }}>
+                                <Text size="xs" weight={600} color="dimmed" mb={2}>ADMISSION TYPE</Text>
+                                <Text size="sm" weight={500}>{manualFormData.admissionType}</Text>
+                              </div>
+                            )}
+                            {(activeSection === "pg") && manualFormData.specialization && (
                               <div style={{ padding: "8px", backgroundColor: "#f8f9fa", borderRadius: "6px" }}>
                                 <Text size="xs" weight={600} color="dimmed" mb={2}>SPECIALIZATION</Text>
                                 <Text size="sm" weight={500}>{manualFormData.specialization}</Text>
@@ -7369,10 +8008,34 @@ const AdminUpcomingBatch = () => {
                               <Text size="xs" weight={600} color="dimmed" mb={2}>BRANCH</Text>
                               <Text size="sm" weight={500}>{manualFormData.branch || "Not selected"}</Text>
                             </div>
-                            {(activeSection === "pg" || activeSection === "phd") && manualFormData.specialization && (
+                            {activeSection === "pg" && manualFormData.specialization && (
                               <div style={{ padding: "8px", backgroundColor: "#e8f4fd", borderRadius: "6px" }}>
                                 <Text size="xs" weight={600} color="dimmed" mb={2}>SPECIALIZATION</Text>
                                 <Text size="sm" weight={500}>{manualFormData.specialization}</Text>
+                              </div>
+                            )}
+                            {activeSection === 'phd' && manualFormData.admissionType && (
+                              <div style={{ padding: "8px", backgroundColor: "#e8f4fd", borderRadius: "6px" }}>
+                                <Text size="xs" weight={600} color="dimmed" mb={2}>ADMISSION TYPE</Text>
+                                <Text size="sm" weight={500}>{manualFormData.admissionType}</Text>
+                              </div>
+                            )}
+                            {activeSection === 'phd' && manualFormData.gateQualified && (
+                              <div style={{ padding: "8px", backgroundColor: "#f8f9fa", borderRadius: "6px" }}>
+                                <Text size="xs" weight={600} color="dimmed" mb={2}>GATE QUALIFIED</Text>
+                                <Text size="sm" weight={500}>{manualFormData.gateQualified}</Text>
+                              </div>
+                            )}
+                            {activeSection === 'phd' && manualFormData.gateStream && (
+                              <div style={{ padding: "8px", backgroundColor: "#f8f9fa", borderRadius: "6px" }}>
+                                <Text size="xs" weight={600} color="dimmed" mb={2}>GATE STREAM</Text>
+                                <Text size="sm" weight={500}>{manualFormData.gateStream}</Text>
+                              </div>
+                            )}
+                            {activeSection === 'phd' && manualFormData.gateRank && (
+                              <div style={{ padding: "8px", backgroundColor: "#f8f9fa", borderRadius: "6px" }}>
+                                <Text size="xs" weight={600} color="dimmed" mb={2}>GATE RANK</Text>
+                                <Text size="sm" weight={500}>{manualFormData.gateRank}</Text>
                               </div>
                             )}
                             {manualFormData.jeeRank && (
@@ -7482,7 +8145,7 @@ const AdminUpcomingBatch = () => {
           title={
             <Text size="lg" weight={600} color="#3498db">
               📋 Students in {selectedBatch?.displayBranch || "Branch"} -{" "}
-              {selectedBatch?.programme} ({getCurrentAcademicYear()})
+              {selectedBatch?.programme} ({selectedBatch ? batchYearToAcademicYear(selectedBatch.year) : getCurrentAcademicYear()})
             </Text>
           }
           size="90vw"
@@ -7516,7 +8179,7 @@ const AdminUpcomingBatch = () => {
                       <strong>Branch:</strong> {selectedBatch.displayBranch}
                     </Text>
                     <Text size="sm">
-                      <strong>Academic Year:</strong> {getCurrentAcademicYear()}
+                      <strong>Academic Year:</strong> {selectedBatch ? batchYearToAcademicYear(selectedBatch.year) : getCurrentAcademicYear()}
                     </Text>
                   </Grid.Col>
                   <Grid.Col span={6}>
@@ -7689,7 +8352,7 @@ const AdminUpcomingBatch = () => {
                           S.No
                         </th>
                         {/* Dynamic Column Headers from STUDENT_TABLE_COLUMNS */}
-                        {STUDENT_TABLE_COLUMNS.map((column, index) => (
+                        {getVisibleColumns(selectedBatch ? getCurrentProgrammeType(selectedBatch) : 'ug').map((column, index) => (
                           <th
                             key={column.key}
                             style={{
@@ -7807,7 +8470,7 @@ const AdminUpcomingBatch = () => {
                             {index + 1}
                           </td>
                           {/* Dynamic Data Columns from STUDENT_TABLE_COLUMNS */}
-                          {STUDENT_TABLE_COLUMNS.map((column, colIndex) => (
+                          {getVisibleColumns(selectedBatch ? getCurrentProgrammeType(selectedBatch) : 'ug').map((column, colIndex) => (
                             <td
                               key={column.key}
                               style={{

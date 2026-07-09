@@ -23,6 +23,7 @@ const PROGRAMME_TYPE_CHOICES = [
   { value: "All", label: "All Programmes" },
   { value: "UG", label: "Undergraduate (UG)" },
   { value: "PG", label: "Postgraduate (PG)" },
+  { value: "PHD", label: "PhD" },
 ];
 
 const SEMESTER_TYPE_CHOICES = [

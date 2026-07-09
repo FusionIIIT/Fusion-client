@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Card,
   Text,
@@ -22,7 +22,7 @@ import {
   getCoursesRoute,
 } from "../../routes/academicRoutes";
 
-const semesterOptions = [
+const defaultSemesterOptions = [
   { value: JSON.stringify({ no: 1, type: "Odd Semester" }), label: "Semester 1 (Odd)" },
   { value: JSON.stringify({ no: 2, type: "Even Semester" }), label: "Semester 2 (Even)" },
   { value: JSON.stringify({ no: 2, type: "Summer Semester" }), label: "Summer Term 1" },
@@ -55,9 +55,7 @@ export default function StudentCourses() {
   const [semSlots, setSemSlots] = useState([]);
   const [slotCourses, setSlotCourses] = useState([]);
   const [academicYears, setAcademicYears] = useState([]);
-  const [selectedSemester, setSelectedSemester] = useState(
-    JSON.parse(semesterOptions[0].value)
-  );
+  const [selectedSemester, setSelectedSemester] = useState(null);
   const [newCourse, setNewCourse] = useState({
     semester_id: null,
     semester_no: null,
@@ -101,9 +99,15 @@ export default function StudentCourses() {
       setStudentData(data);
 
       if (data.current_semester) {
+        // Derive the semester type from the semester number's parity so the
+        // value always matches a dropdown option (odd no -> Odd Semester,
+        // even no -> Even Semester). The backend's month-based type can
+        // otherwise conflict with an even/odd semester number and leave the
+        // Select empty.
+        const no = Number(data.current_semester.semester_no);
         setSelectedSemester({
-          no: data.current_semester.semester_no,
-          type: data.current_semester.semester_type
+          no,
+          type: no % 2 === 1 ? "Odd Semester" : "Even Semester",
         });
       }
     } catch (err) {
@@ -112,6 +116,31 @@ export default function StudentCourses() {
       setLoading(false);
     }
   };
+
+  // Helper function to determine semester type
+  const getSemesterType = (semNo) => {
+    if (semNo % 2 === 1) return "Odd Semester";
+    return "Even Semester";
+  };
+
+  // Generate semester options from API data or use defaults
+  const semesterOptions = useMemo(() => {
+    // Check if this is a PhD student by checking batch name from response
+    const isPhdStudent = studentData?.dict2?.roll_no?.toUpperCase().includes('PCS') || 
+                        (studentData?.details && studentData.details.length > 0 && 
+                         studentData.details[0]?.course_name?.includes('PhD'));
+    
+    // For PhD students, use the filtered list from API
+    if (isPhdStudent && studentData?.semester_list && studentData.semester_list.length > 0) {
+      return studentData.semester_list.map(sem => ({
+        value: JSON.stringify({ no: sem.semester_no, type: getSemesterType(sem.semester_no) }),
+        label: `Semester ${sem.semester_no} (${sem.semester_no % 2 === 1 ? 'Odd' : 'Even'})`
+      }));
+    }
+    
+    // For UG/PG students, use the full default list with summer terms
+    return defaultSemesterOptions;
+  }, [studentData]);
 
   const confirmDrop = (rid, name) => {
     setCourseToDrop(rid);

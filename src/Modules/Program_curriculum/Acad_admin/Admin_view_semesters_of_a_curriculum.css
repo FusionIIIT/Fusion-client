@@ -89,6 +89,10 @@
 }
 
 /* Add Course Slot and Semester Dropdown */
+.add-course-slot {
+  margin-top: 10px;
+}
+
 .add-course-slot-button {
   background-color: #62b6cb;
   color: black;
