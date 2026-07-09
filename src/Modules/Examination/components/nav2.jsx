@@ -50,12 +50,11 @@ export default function Nav() {
 
   // Tabs data
   const tabItems = [
-    // acadadmin "Submit" tab removed: grades are submitted per-section by the
-    // assigned faculty (below); acadadmin verifies/moderates.
+    // Faculty submit per section; acadadmin may also submit (any section).
     {
       title: "Submit",
       path: "/examination/submit-grades-prof",
-      roles: ["Professor","Assistant Professor","Associate Professor"],
+      roles: ["acadadmin","Professor","Assistant Professor","Associate Professor"],
     },
     {
       title: "Verify",

@@ -130,6 +130,7 @@ export default function Examination() {
             element={
               <ProtectedRoute
                 roles={[
+                  "acadadmin",
                   "Associate Professor",
                   "Assistant Professor",
                   "Professor",

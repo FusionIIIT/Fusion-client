@@ -34,6 +34,7 @@ export default function SubmitGradesProf() {
   const [programmeType, setProgrammeType] = useState("UG");
   const [course, setCourse] = useState("");
   const [courseOptions, setCourseOptions] = useState([]);
+  const [section, setSection] = useState("");
   const [excelFile, setExcelFile] = useState(null);
   const [previewData, setPreviewData] = useState([]);
   const [showPreview, setShowPreview] = useState(false);
@@ -45,6 +46,22 @@ export default function SubmitGradesProf() {
   const [success, setSuccess] = useState("");
 
   const previewRef = useRef();
+
+  const isAcadadmin = userRole === "acadadmin";
+
+  // Sections the selected course is allotted in (empty => elective, no section).
+  // For faculty this is their own assigned section(s); for acadadmin, all of them.
+  const selectedCourseSections =
+    courseOptions.find((c) => c.value === course)?.sections || [];
+
+  // Faculty automatically get their assigned section once a course is picked;
+  // acadadmin selects manually. (If a faculty teaches multiple sections of the
+  // same course, they still choose which one.)
+  useEffect(() => {
+    if (isAcadadmin) return;
+    const secs = courseOptions.find((c) => c.value === course)?.sections || [];
+    if (secs.length === 1) setSection(secs[0]);
+  }, [course, courseOptions, isAcadadmin]);
 
   useEffect(() => {
     async function fetchAcademicYears() {
@@ -85,10 +102,12 @@ export default function SubmitGradesProf() {
           { headers: { Authorization: `Token ${token}` } }
         );
         setCourse(null);
+        setSection("");
         const courses = data.courses_info.map((c) => ({
           value: c.id.toString(),
           label: `${c.code} - ${c.name}`,
-          student_count: c.student_count || 0
+          student_count: c.student_count || 0,
+          sections: c.sections || [],
         }));
         setCourseOptions(courses);
       } catch (err) {
@@ -126,7 +145,8 @@ export default function SubmitGradesProf() {
       if (programmeType && programmeType !== '' && programmeType !== 'All') {
         payload.programme_type = programmeType;
       }
-      
+      if (section) payload.section = section;
+
       const resp = await axios.post(
         download_template,
         payload,
@@ -191,6 +211,7 @@ export default function SubmitGradesProf() {
       if (programmeType && programmeType !== '' && programmeType !== 'All') {
         form.append("programme_type", programmeType);
       }
+      if (section) form.append("section", section);
 
       const { data } = await axios.post(preview_grades, form, {
         headers: {
@@ -223,6 +244,7 @@ export default function SubmitGradesProf() {
       form.append("csv_file", excelFile);
       form.append("reSubmit", "false");  // always false
       form.append("programme_type", programmeType); // Always include programme_type
+      if (section) form.append("section", section);
 
       await axios.post(upload_grades_prof, form, {
         headers: {
@@ -319,12 +341,38 @@ export default function SubmitGradesProf() {
                 placeholder={loading ? "Loading courses..." : "Select Course"}
                 data={courseOptions}
                 value={course}
-                onChange={setCourse}
+                onChange={(v) => {
+                  setCourse(v);
+                  setSection("");
+                }}
                 disabled={!year || !semesterType || !programmeType || loading}
                 required
                 searchable
               />
             </Grid.Col>
+            {course && selectedCourseSections.length > 0 && (
+              <Grid.Col xs={12} sm={6}>
+                <Select
+                  label="Section"
+                  placeholder="Select Section"
+                  description={
+                    isAcadadmin
+                      ? "This course is allotted in sections; pick one to grade."
+                      : "Your assigned section for this course."
+                  }
+                  data={selectedCourseSections.map((s) => ({ value: s, label: s }))}
+                  value={section}
+                  onChange={(v) => setSection(v || "")}
+                  // Faculty with a single assigned section see it auto-filled and locked;
+                  // acadadmin (and multi-section faculty) choose manually.
+                  disabled={
+                    loading ||
+                    (!isAcadadmin && selectedCourseSections.length === 1)
+                  }
+                  clearable={isAcadadmin}
+                />
+              </Grid.Col>
+            )}
             <Grid.Col xs={12} sm={6}>
               <FileInput
                 label="Upload CSV File"
