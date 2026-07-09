@@ -138,7 +138,7 @@ function ViewRollList() {
     const token = localStorage.getItem("authToken");
     if (!token) { setFetchError("No authentication token found."); return; }
     try {
-      setDownloadingCourseId(courseId);
+      setDownloadingCourseId(`${courseId}-${section || ""}`);
       setLoading(true);
       const payload = { course: courseId, semester_type: semesterType, academic_year: academicYear };
       if (programmeType !== "All") payload.programme_type = programmeType;
@@ -195,26 +195,29 @@ function ViewRollList() {
     "Action",
   ];
 
-  const elements = displayCourses.map((course) => ({
-    "Course Name": course.course_name,
-    "Course Code": course.course_code,
-    Version: course.version,
-    "Academic Year": course.academic_year,
-    "Semester Type": course.semester_type,
-    ...(hasAnySection ? { Section: course.section || "—" } : {}),
-    Action: (
-      <Button
-        onClick={() => handleDownloadRollList(course.course_id, course.course_code, course.semester_type, course.academic_year, course.section)}
-        variant="outline"
-        color="blue"
-        size="xs"
-        disabled={loading && downloadingCourseId === course.course_id}
-        rightSection={loading && downloadingCourseId === course.course_id ? <Loader size="xs" color="blue" /> : null}
-      >
-        {loading && downloadingCourseId === course.course_id ? "Downloading..." : `Download ${programmeType !== "All" ? programmeType + " " : ""}${course.section ? `Section ${course.section} ` : ""}Roll List`}
-      </Button>
-    ),
-  }));
+  const elements = displayCourses.map((course) => {
+    const busy = loading && downloadingCourseId === `${course.course_id}-${course.section || ""}`;
+    return {
+      "Course Name": course.course_name,
+      "Course Code": course.course_code,
+      Version: course.version,
+      "Academic Year": course.academic_year,
+      "Semester Type": course.semester_type,
+      ...(hasAnySection ? { Section: course.section || "—" } : {}),
+      Action: (
+        <Button
+          onClick={() => handleDownloadRollList(course.course_id, course.course_code, course.semester_type, course.academic_year, course.section)}
+          variant="outline"
+          color="blue"
+          size="xs"
+          disabled={busy}
+          rightSection={busy ? <Loader size="xs" color="blue" /> : null}
+        >
+          {busy ? "Downloading..." : `Download ${programmeType !== "All" ? programmeType + " " : ""}${course.section ? `Section ${course.section} ` : ""}Roll List`}
+        </Button>
+      ),
+    };
+  });
 
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
