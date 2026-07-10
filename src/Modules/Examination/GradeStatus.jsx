@@ -205,12 +205,13 @@ export default function GradeStatus() {
     const filteredData = getFilteredData();
     
     // Create CSV content
-    const headers = ["Course Code", "Course Name", "Professor Name", "Credits", "Submitted", "Verified", "Validated"];
+    const headers = ["Course Code", "Course Name", "Section", "Professor Name", "Credits", "Submitted", "Verified", "Validated"];
     const csvContent = [
       headers.join(","),
       ...filteredData.map(course => [
         course.course_code,
         `"${course.course_name}"`,
+        course.section_label || "-",
         `"${course.professor_name}"`,
         course.credits,
         course.submitted,
@@ -250,7 +251,7 @@ export default function GradeStatus() {
     }
 
     const rows = filteredData.map((course) => (
-      <Table.Tr key={course.course_id}>
+      <Table.Tr key={`${course.course_id}-${course.section_label || "x"}`}>
         <Table.Td>
           <Text fw={500}>{course.course_code}</Text>
         </Table.Td>
@@ -259,6 +260,9 @@ export default function GradeStatus() {
           <Text size="xs" c="dimmed">
             Credits: {course.credits} | Version: {course.version}
           </Text>
+        </Table.Td>
+        <Table.Td>
+          <Text size="sm">{course.section_label || "—"}</Text>
         </Table.Td>
         <Table.Td>
           <Text size="sm">{course.professor_name}</Text>
@@ -292,6 +296,7 @@ export default function GradeStatus() {
           <Table.Tr>
             <Table.Th>Course Code</Table.Th>
             <Table.Th>Course Name</Table.Th>
+            <Table.Th>Section</Table.Th>
             <Table.Th>Professor Name</Table.Th>
             <Table.Th>View</Table.Th>
             <Table.Th>Submitted</Table.Th>

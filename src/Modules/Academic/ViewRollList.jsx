@@ -135,22 +135,24 @@ function ViewRollList() {
     return [{ value: "All", label: "All Years" }, ...sorted.map((y) => ({ value: y, label: y }))];
   }, [filteredCourses]);
 
-  const handleDownloadRollList = async (courseId, courseCode, semesterType, academicYear) => {
+  const handleDownloadRollList = async (courseId, courseCode, semesterType, academicYear, section) => {
     const token = localStorage.getItem("authToken");
     if (!token) { setFetchError("No authentication token found."); return; }
     try {
-      setDownloadingCourseId(courseId);
+      setDownloadingCourseId(`${courseId}-${section || ""}`);
       setLoading(true);
       const payload = { course: courseId, semester_type: semesterType, academic_year: academicYear };
       if (programmeType !== "All") payload.programme_type = programmeType;
+      // Scope to this offering's section if it has one (else download unchanged).
+      if (section) payload.section = section;
       const response = await axios.post(generatexlsheet, payload, {
         headers: { Authorization: `Token ${token}`, "Content-Type": "application/json" },
         responseType: "blob",
       });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
+      link.setAttribute("download", `${courseCode}${programmeType !== "All" ? `_${programmeType}` : ""}${section ? `_Section_${section}` : ""}.xlsx`);
       link.href = url;
-      link.setAttribute("download", `${courseCode}${programmeType !== "All" ? `_${programmeType}` : ""}.xlsx`);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -182,27 +184,41 @@ function ViewRollList() {
     })
   );
 
-  const columnNames = ["Course Name", "Course Code", "Version", "Academic Year", "Semester Type", "Action"];
+  // Show the Section column only if at least one assigned offering has a section.
+  const hasAnySection = displayCourses.some((c) => c.section);
+  const columnNames = [
+    "Course Name",
+    "Course Code",
+    "Version",
+    "Academic Year",
+    "Semester Type",
+    ...(hasAnySection ? ["Section"] : []),
+    "Action",
+  ];
 
-  const elements = displayCourses.map((course) => ({
-    "Course Name": course.course_name,
-    "Course Code": course.course_code,
-    Version: course.version,
-    "Academic Year": course.academic_year,
-    "Semester Type": course.semester_type,
-    Action: (
-      <Button
-        onClick={() => handleDownloadRollList(course.course_id, course.course_code, course.semester_type, course.academic_year)}
-        variant="outline"
-        color="blue"
-        size="xs"
-        disabled={loading && downloadingCourseId === course.course_id}
-        rightSection={loading && downloadingCourseId === course.course_id ? <Loader size="xs" color="blue" /> : null}
-      >
-        {loading && downloadingCourseId === course.course_id ? "Downloading..." : `Download ${programmeType !== "All" ? programmeType + " " : ""}Roll List`}
-      </Button>
-    ),
-  }));
+  const elements = displayCourses.map((course) => {
+    const busy = loading && downloadingCourseId === `${course.course_id}-${course.section || ""}`;
+    return {
+      "Course Name": course.course_name,
+      "Course Code": course.course_code,
+      Version: course.version,
+      "Academic Year": course.academic_year,
+      "Semester Type": course.semester_type,
+      ...(hasAnySection ? { Section: course.section || "—" } : {}),
+      Action: (
+        <Button
+          onClick={() => handleDownloadRollList(course.course_id, course.course_code, course.semester_type, course.academic_year, course.section)}
+          variant="outline"
+          color="blue"
+          size="xs"
+          disabled={busy}
+          rightSection={busy ? <Loader size="xs" color="blue" /> : null}
+        >
+          {busy ? "Downloading..." : `Download ${programmeType !== "All" ? programmeType + " " : ""}${course.section ? `Section ${course.section} ` : ""}Roll List`}
+        </Button>
+      ),
+    };
+  });
 
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
