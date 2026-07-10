@@ -244,6 +244,8 @@ function VerifyGrades() {
         grades: grades,
         allow_resubmission: allowResubmission,
         remarks: remarks,
+        academic_year: selectedAcademicYear,
+        semester_type: selectedSemesterType,
       };
       const response = await axios.post(moderate_student_grades, requestData, {
         headers: { Authorization: `Token ${token}` },

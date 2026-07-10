@@ -122,6 +122,11 @@ export const applyBatchRoute = `${host}/academic-procedures/api/acad/batch_chang
 export const listStudentsPromoteRoute = `${host}/academic-procedures/api/acad/promote/students/`;
 export const applyPromoteRoute = `${host}/academic-procedures/api/acad/promote/apply/`;
 
+// Section assignment (Academics > Section Assignment)
+export const sectionBatchesRoute  = `${host}/aims/api/section/batches/`;
+export const sectionStudentsRoute = `${host}/aims/api/section/students/`;
+export const assignSectionRoute   = `${host}/aims/api/section/assign/`;
+
 export const courseRegistrationReceiptRoute = `${host}/academic-procedures/course_reg_receipt/`;
 
 // ============================================================================

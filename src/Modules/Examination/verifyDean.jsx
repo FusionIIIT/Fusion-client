@@ -229,6 +229,8 @@ export default function VerifyDean() {
       grades: registrations.map((r) => r.grade),
       remarks: registrations.map((r) => r.remarks),
       allow_resubmission: allowResub ? "YES" : "NO",
+      academic_year: selectedYear,
+      semester_type: selectedSemester,
     };
 
     axios

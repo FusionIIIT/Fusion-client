@@ -45,6 +45,7 @@ export default function Admin_add_course_instructor() {
       instructorId: "",
       academicYear: academicYearOptions[4].value,
       semesterType: "Odd Semester",
+      sectionLabel: "",
     },
   });
 
@@ -86,6 +87,7 @@ export default function Admin_add_course_instructor() {
       instructor_id: values.instructorId,
       academic_year: values.academicYear,
       semester_type: values.semesterType,
+      section_label: values.sectionLabel || "",
       form_submit: true,
     };
 
@@ -344,6 +346,17 @@ export default function Admin_add_course_instructor() {
                       data={semesterTypeOptions}
                       {...form.getInputProps("semesterType")}
                       required
+                    />
+                    <Select
+                      label="Section"
+                      description="Section this faculty teaches (A–F). Leave blank for a single-offering elective."
+                      placeholder="No section (elective)"
+                      data={["A", "B", "C", "D", "E", "F"].map((s) => ({
+                        value: s,
+                        label: s,
+                      }))}
+                      {...form.getInputProps("sectionLabel")}
+                      clearable
                     />
 
                     <Group position="right" mt="lg">

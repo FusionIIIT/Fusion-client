@@ -188,7 +188,30 @@ export default function StudentFeedback() {
 
       {qs.map((q) => (
         <div key={q.id} style={{ marginBottom: 24 }}>
-          <Text weight={500}>
+          <Text
+            weight={600}
+            style={{
+              display: "inline-block",
+              maxWidth: "100%",
+              backgroundColor: "#eef6ff",
+              border: "1px solid #d0e4ff",
+              borderLeft: "5px solid #4dabf7",
+              padding: "10px 16px",
+              borderRadius: 8,
+              lineHeight: 1.45,
+              color: "#1c4b82",
+            }}
+          >
+            <Text
+              component="span"
+              size="xs"
+              tt="uppercase"
+              c="blue.6"
+              fw={700}
+              mr={8}
+            >
+              Q.
+            </Text>
             {q.text}{" "}
             {sec.required && q.options.length > 0 && (
               <Text component="span" color="red">
