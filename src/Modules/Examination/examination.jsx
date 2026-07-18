@@ -39,7 +39,7 @@ export default function Examination() {
       case "Professor":
         return "/examination/submit-grades-prof";
       case "acadadmin":
-        return "/examination/verify-grades";
+        return "/examination/submit-grades-prof";
       case "student":
         return "/examination/result";
       case "Dean Academic":
