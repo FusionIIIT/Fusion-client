@@ -24,6 +24,7 @@ import {
   announce_result,
   create_announcemet,
 } from "./routes/examinationRoutes.jsx";
+import { buildSemesterNumberOptions } from "./constants/semesterOptions.jsx";
 
 export default function AnnounceResult() {
   const userRole = useSelector((state) => state.user.role);
@@ -46,23 +47,7 @@ export default function AnnounceResult() {
     { value: "Summer Semester", label: "Summer Semester" },
   ];
 
-  const semesterNoOptions = (() => {
-    if (!semesterType) return [];
-    if (semesterType === "Odd Semester")
-      return Array.from({ length: 6 }, (_, i) => ({
-        value: String(2 * i + 1),
-        label: `Semester ${2 * i + 1}`,
-      }));
-    if (semesterType === "Even Semester")
-      return Array.from({ length: 6 }, (_, i) => ({
-        value: String(2 * i + 2),
-        label: `Semester ${2 * i + 2}`,
-      }));
-    return Array.from({ length: 6 }, (_, i) => ({
-      value: String(2 * i + 2),
-      label: `Summer ${i + 1}`,
-    }));
-  })();
+  const semesterNoOptions = buildSemesterNumberOptions(semesterType);
 
   const handleSemesterTypeChange = (val) => {
     setSemesterType(val);

@@ -1,21 +1,52 @@
-/** Shared semester dropdown options used by Grade Sheet and Transcript forms. */
-export const SEMESTER_OPTIONS = [
-  { value: JSON.stringify({ no: 1,  type: "Odd Semester"    }), label: "Semester 1"  },
-  { value: JSON.stringify({ no: 2,  type: "Even Semester"   }), label: "Semester 2"  },
-  { value: JSON.stringify({ no: 2,  type: "Summer Semester" }), label: "Summer 1"    },
-  { value: JSON.stringify({ no: 3,  type: "Odd Semester"    }), label: "Semester 3"  },
-  { value: JSON.stringify({ no: 4,  type: "Even Semester"   }), label: "Semester 4"  },
-  { value: JSON.stringify({ no: 4,  type: "Summer Semester" }), label: "Summer 2"    },
-  { value: JSON.stringify({ no: 5,  type: "Odd Semester"    }), label: "Semester 5"  },
-  { value: JSON.stringify({ no: 6,  type: "Even Semester"   }), label: "Semester 6"  },
-  { value: JSON.stringify({ no: 6,  type: "Summer Semester" }), label: "Summer 3"    },
-  { value: JSON.stringify({ no: 7,  type: "Odd Semester"    }), label: "Semester 7"  },
-  { value: JSON.stringify({ no: 8,  type: "Even Semester"   }), label: "Semester 8"  },
-  { value: JSON.stringify({ no: 8,  type: "Summer Semester" }), label: "Summer 4"    },
-  { value: JSON.stringify({ no: 9,  type: "Odd Semester"    }), label: "Semester 9"  },
-  { value: JSON.stringify({ no: 10, type: "Even Semester"   }), label: "Semester 10" },
-  { value: JSON.stringify({ no: 10, type: "Summer Semester" }), label: "Summer 5"    },
-  { value: JSON.stringify({ no: 11, type: "Odd Semester"    }), label: "Semester 11" },
-  { value: JSON.stringify({ no: 12, type: "Even Semester"   }), label: "Semester 12" },
-  { value: JSON.stringify({ no: 12, type: "Summer Semester" }), label: "Summer 6"    },
-];
+/** Shared semester dropdown options used by Grade Sheet, Transcript, and Announce Result forms.
+ *  Generated (rather than hand-listed) so the range comfortably covers PhD students, whose
+ *  registered semesters can run well past a 4-year UG/2-year PG horizon. */
+export const MAX_SEMESTER = 20;
+
+export function buildSemesterOptions(maxSemester = MAX_SEMESTER) {
+  const options = [];
+  for (let no = 1; no <= maxSemester; no += 1) {
+    const type = no % 2 === 0 ? "Even Semester" : "Odd Semester";
+    options.push({
+      value: JSON.stringify({ no, type }),
+      label: `Semester ${no}`,
+    });
+    if (no % 2 === 0) {
+      options.push({
+        value: JSON.stringify({ no, type: "Summer Semester" }),
+        label: `Summer ${no / 2}`,
+      });
+    }
+  }
+  return options;
+}
+
+export function buildSemesterNumberOptions(
+  semesterType,
+  maxSemester = MAX_SEMESTER,
+) {
+  if (!semesterType) return [];
+  if (semesterType === "Odd Semester") {
+    const options = [];
+    for (let no = 1; no <= maxSemester; no += 2) {
+      options.push({ value: String(no), label: `Semester ${no}` });
+    }
+    return options;
+  }
+  if (semesterType === "Even Semester") {
+    const options = [];
+    for (let no = 2; no <= maxSemester; no += 2) {
+      options.push({ value: String(no), label: `Semester ${no}` });
+    }
+    return options;
+  }
+  const options = [];
+  let summerNo = 1;
+  for (let no = 2; no <= maxSemester; no += 2) {
+    options.push({ value: String(no), label: `Summer ${summerNo}` });
+    summerNo += 1;
+  }
+  return options;
+}
+
+export const SEMESTER_OPTIONS = buildSemesterOptions();

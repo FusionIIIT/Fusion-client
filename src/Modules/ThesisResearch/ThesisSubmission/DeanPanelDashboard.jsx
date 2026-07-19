@@ -16,6 +16,7 @@ import { deanThesisPanelDashboardRoute } from "../../../routes/academicRoutes";
 
 const ACTION_COLOR = {
   approve_panel: "yellow",
+  reconsider_panel: "red",
   send_invitations: "indigo",
 };
 
@@ -59,6 +60,8 @@ export default function DeanPanelDashboard() {
 
   const actionRows = data.action_required.map((s) => (
     <tr key={s.id}>
+      <td>{s.student_name || "N/A"}</td>
+      <td>{s.student_roll || "N/A"}</td>
       <td>{s.title}</td>
       <td>
         <Badge color={ACTION_COLOR[s.action] || "gray"}>{s.action_label}</Badge>
@@ -78,8 +81,10 @@ export default function DeanPanelDashboard() {
 
   const historyRows = data.history.map((s) => (
     <tr key={s.id}>
+      <td>{s.student_name || "N/A"}</td>
+      <td>{s.student_roll || "N/A"}</td>
       <td>{s.title}</td>
-      <td>{s.status}</td>
+      <td>{s.status_label || s.status}</td>
       <td>
         <Button size="xs" variant="default" onClick={() => setSelected(s)}>
           View Details
@@ -106,6 +111,8 @@ export default function DeanPanelDashboard() {
           <Table highlightOnHover>
             <thead>
               <tr>
+                <th>Name</th>
+                <th>Roll No</th>
                 <th>Title</th>
                 <th>Action Needed</th>
                 <th>Waiting Since</th>
@@ -120,6 +127,8 @@ export default function DeanPanelDashboard() {
           <Table highlightOnHover>
             <thead>
               <tr>
+                <th>Name</th>
+                <th>Roll No</th>
                 <th>Title</th>
                 <th>Status</th>
                 <th>Action</th>

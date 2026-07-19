@@ -1,7 +1,6 @@
 import { React, useEffect, useState } from "react";
 import {
   Select,
-  NumberInput,
   Textarea,
   TextInput,
   Button,
@@ -14,17 +13,21 @@ import {
 import { useForm } from "@mantine/form";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { notifications } from "@mantine/notifications";
 import {
   fetchAllTheses,
   fetchSemesterDetails,
 } from "../api/api";
 import { host } from "../../../routes/globalRoutes";
 
+const SLOT_NAME_PREFIX = "TH";
+
 function Admin_add_thesis_slot_form() {
   const [theses, setTheses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [semesterOptions, setSemesterOptions] = useState([]);
+  const [semesterNumberById, setSemesterNumberById] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -70,8 +73,17 @@ function Admin_add_thesis_slot_form() {
             label: `${data.curriculum_name} v${data.curriculum_version} Sem-${semester.semester_number}`,
           }));
           setSemesterOptions(formattedOptions);
+          const numberById = {};
+          data.semesters.forEach((semester) => {
+            numberById[semester.semester_id.toString()] = semester.semester_number;
+          });
+          setSemesterNumberById(numberById);
           if (semesterid) {
             form.setFieldValue("semester", semesterid.toString());
+            const semNum = numberById[semesterid.toString()];
+            if (semNum) {
+              form.setFieldValue("slotName", `${SLOT_NAME_PREFIX}${semNum}`);
+            }
           }
         }
       } catch (err) {
@@ -80,6 +92,12 @@ function Admin_add_thesis_slot_form() {
     };
     loadSemesterDetails();
   }, [semesterid, curriculumid]);
+
+  const handleSemesterChange = (value) => {
+    form.setFieldValue("semester", value);
+    const semNum = semesterNumberById[value];
+    form.setFieldValue("slotName", semNum ? `${SLOT_NAME_PREFIX}${semNum}` : "");
+  };
 
   const handleThesisSelect = (selectedId) => {
     form.setFieldValue("theses", selectedId);
@@ -116,7 +134,15 @@ function Admin_add_thesis_slot_form() {
         );
       }
     } catch (err) {
-      console.error("Error submitting thesis slot:", err);
+      notifications.show({
+        title: "Failed to Create Thesis Slot",
+        message:
+          err.response?.data?.message ||
+          err.response?.data?.error ||
+          "Unable to create thesis slot. Please try again.",
+        color: "red",
+        autoClose: 5000,
+      });
     } finally {
       setLoading(false);
     }
@@ -172,21 +198,15 @@ function Admin_add_thesis_slot_form() {
                   placeholder="Select Semester"
                   data={semesterOptions}
                   value={form.values.semester}
-                  onChange={(value) => form.setFieldValue("semester", value)}
+                  onChange={handleSemesterChange}
                   required
                 />
 
                 <TextInput
                   label="Thesis Slot Name"
-                  placeholder="Enter Name/Code"
                   value={form.values.slotName}
-                  onChange={(event) =>
-                    form.setFieldValue(
-                      "slotName",
-                      event.currentTarget.value,
-                    )
-                  }
-                  required
+                  description="Automatically set based on the selected semester"
+                  disabled
                 />
 
                 <Textarea
@@ -210,30 +230,6 @@ function Admin_add_thesis_slot_form() {
                   onChange={handleThesisSelect}
                   searchable
                   nothingFound="No theses available"
-                  required
-                />
-
-                <NumberInput
-                  label="Duration (hours)"
-                  min={1}
-                  value={form.values.duration}
-                  onChange={(value) => form.setFieldValue("duration", value)}
-                  required
-                />
-
-                <NumberInput
-                  label="Min Registration Limit"
-                  min={0}
-                  value={form.values.minLimit}
-                  onChange={(value) => form.setFieldValue("minLimit", value)}
-                  required
-                />
-
-                <NumberInput
-                  label="Max Registration Limit"
-                  min={1}
-                  value={form.values.maxLimit}
-                  onChange={(value) => form.setFieldValue("maxLimit", value)}
                   required
                 />
               </Stack>

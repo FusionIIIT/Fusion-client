@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Card, Title, Text, Table, Button, Group, Badge } from "@mantine/core";
+import { Card, Title, Text, Table, Button, Group, Badge, Textarea } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import { IconCheck, IconX } from "@tabler/icons-react";
 import axios from "axios";
@@ -81,19 +81,32 @@ ExaminerTable.propTypes = {
 
 export default function DeanPanelReviewPanel({ submission, onClose }) {
   const [submitting, setSubmitting] = useState(false);
+  const [remarks, setRemarks] = useState("");
   const authToken = () => localStorage.getItem("authToken");
 
   const handlePanelAction = async (action) => {
+    if (action === "reject" && !remarks.trim()) {
+      showNotification({
+        title: "Remarks required",
+        message: "Enter a remark explaining why the panel is being sent back.",
+        color: "yellow",
+      });
+      return;
+    }
     setSubmitting(true);
     try {
       await axios.post(
         deanPanelApproveRoute,
-        { submission_id: submission.id, action },
+        {
+          submission_id: submission.id,
+          action,
+          ...(action === "reject" ? { remarks } : {}),
+        },
         { headers: { Authorization: `Token ${authToken()}` } },
       );
       showNotification({
         title: "Success",
-        message: action === "approve" ? "Panel approved" : "Panel rejected",
+        message: action === "approve" ? "Panel forwarded" : "Sent back to supervisor",
         color: "teal",
         icon: <IconCheck />,
       });
@@ -140,9 +153,12 @@ export default function DeanPanelReviewPanel({ submission, onClose }) {
 
   return (
     <Card shadow="xs" p="md" mt="lg" withBorder>
-      <Title order={4} mb="sm">
+      <Title order={4} mb={4}>
         {submission.title}
       </Title>
+      <Text size="sm" c="dimmed" mb="sm">
+        {submission.student_name || "N/A"} &middot; Roll No: {submission.student_roll || "N/A"}
+      </Text>
 
       <ExaminerTable
         title="Indian Examiners"
@@ -155,6 +171,31 @@ export default function DeanPanelReviewPanel({ submission, onClose }) {
         examiners={submission.foreign_examiners || []}
       />
 
+      {submission.dean_panel_remarks && (
+        <Text size="sm" mt="md" p="sm" style={{ backgroundColor: "#ffe6e6", borderRadius: 4 }}>
+          <Text component="span" fw={500}>Previous remarks (sent back to supervisor): </Text>
+          {submission.dean_panel_remarks}
+        </Text>
+      )}
+
+      {submission.director_remarks && (
+        <Text size="sm" mt="md" p="sm" style={{ backgroundColor: "#fff3cd", borderRadius: 4 }}>
+          <Text component="span" fw={500}>Remarks from Director: </Text>
+          {submission.director_remarks}
+        </Text>
+      )}
+
+      {submission.status === "dean_panel_review" && (
+        <Textarea
+          label="Remarks (required to send back to supervisor)"
+          placeholder="Enter your remarks here"
+          value={remarks}
+          onChange={(e) => setRemarks(e.target.value)}
+          minRows={2}
+          mt="md"
+        />
+      )}
+
       <Group position="right" mt="md">
         <Button variant="default" onClick={onClose} disabled={submitting}>
           Close
@@ -166,14 +207,14 @@ export default function DeanPanelReviewPanel({ submission, onClose }) {
               onClick={() => handlePanelAction("reject")}
               loading={submitting}
             >
-              Reject Panel
+              Send Back to Supervisor
             </Button>
             <Button
               color="teal"
               onClick={() => handlePanelAction("approve")}
               loading={submitting}
             >
-              Approve Panel
+              Forward Panel
             </Button>
           </>
         )}
@@ -195,7 +236,11 @@ DeanPanelReviewPanel.propTypes = {
   submission: PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     title: PropTypes.string,
+    student_name: PropTypes.string,
+    student_roll: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     status: PropTypes.string,
+    dean_panel_remarks: PropTypes.string,
+    director_remarks: PropTypes.string,
     indian_examiners: PropTypes.arrayOf(examinerShape),
     foreign_examiners: PropTypes.arrayOf(examinerShape),
   }).isRequired,

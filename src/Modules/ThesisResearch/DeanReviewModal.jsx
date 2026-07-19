@@ -247,7 +247,7 @@ export default function DeanReviewModal({ thesis, onClose, refresh }) {
 
         {form.status === 'dean_pending' && (
           <Textarea
-            label="Remarks (if rejecting)"
+            label="Remarks (if sending back to HOD)"
             placeholder="Enter your remarks here"
             value={remarks}
             onChange={e => setRemarks(e.target.value)}
@@ -261,7 +261,7 @@ export default function DeanReviewModal({ thesis, onClose, refresh }) {
               Approve Thesis
             </Button>
             <Button fullWidth color="red" onClick={handleReject} loading={loading}>
-              Reject & Send Back to HOD
+              Send Back to HOD
             </Button>
           </Group>
         )}

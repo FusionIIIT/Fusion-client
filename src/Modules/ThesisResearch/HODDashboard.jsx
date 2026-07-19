@@ -63,11 +63,12 @@ export default function HODDashboard() {
     fetchData();
   }, [fetchData]);
 
-  const cols = useMemo(() => ["Student", "Theme", "Action"], []);
-  
+  const cols = useMemo(() => ["Roll No", "Student", "Theme", "Action"], []);
+
   const makeRows = useCallback(
     (list) =>
       list.map((t) => ({
+        "Roll No": t.student_roll || "N/A",
         Student: t.student_name || "N/A",
         Theme: t.research_theme ? t.research_theme.slice(0, 30) + "..." : "N/A",
         Action: (

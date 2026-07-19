@@ -145,6 +145,28 @@ export const adminThesisEnrollmentListRoute = `${host}/academic-procedures/api/a
 export const adminVerifyEnrollmentsRoute = `${host}/academic-procedures/api/acadadmin/thesis-enrollments/verify/`;
 export const adminRejectEnrollmentsRoute = `${host}/academic-procedures/api/acadadmin/thesis-enrollments/reject/`;
 
+// PhD Progress Seminar Enrollment (semester-level registration)
+export const studentProgressSeminarEnrollmentRoute = `${host}/academic-procedures/api/stu/progress-seminar-enrollment/`;
+export const adminProgressSeminarEnrollmentListRoute = `${host}/academic-procedures/api/acadadmin/progress-seminar-enrollments/`;
+export const adminVerifyProgressSeminarEnrollmentsRoute = `${host}/academic-procedures/api/acadadmin/progress-seminar-enrollments/verify/`;
+export const adminRejectProgressSeminarEnrollmentsRoute = `${host}/academic-procedures/api/acadadmin/progress-seminar-enrollments/reject/`;
+
+// PhD Teaching Credit Enrollment (semester-level registration)
+export const studentTeachingCreditEnrollmentRoute = `${host}/academic-procedures/api/stu/teaching-credit-enrollment/`;
+export const adminTeachingCreditEnrollmentListRoute = `${host}/academic-procedures/api/acadadmin/teaching-credit-enrollments/`;
+export const adminVerifyTeachingCreditEnrollmentsRoute = `${host}/academic-procedures/api/acadadmin/teaching-credit-enrollments/verify/`;
+export const adminRejectTeachingCreditEnrollmentsRoute = `${host}/academic-procedures/api/acadadmin/teaching-credit-enrollments/reject/`;
+
+// PhD Course (Coursework) Registration — standalone workflow, independent
+// of the UG/PG backlog add-course flow (studentAddCourseRoute etc. above)
+export const phdStudentStatusRoute = `${host}/academic-procedures/api/stu/phd/status/`;
+export const phdCourseSlotsRoute = `${host}/academic-procedures/api/stu/phd/course-slots/`;
+export const phdCourseSlotCoursesRoute = `${host}/academic-procedures/api/stu/phd/course-slots/courses/`;
+export const phdSubmitCourseRequestRoute = `${host}/academic-procedures/api/stu/phd/course-request/`;
+export const phdMyCourseRequestsRoute = `${host}/academic-procedures/api/stu/phd/my-course-requests/`;
+export const phdAdminListCourseRequestsRoute = `${host}/academic-procedures/api/acadadmin/phd/course-requests/`;
+export const phdAdminProcessCourseRequestsRoute = `${host}/academic-procedures/api/acadadmin/phd/course-requests/process/`;
+
 // PhD Thesis Evaluation (block-based S/X grades) — all blocks for a student
 // are graded and submitted together (manually, or via Excel upload below)
 export const supervisorThesisGradesRoute = `${host}/academic-procedures/api/supervisor/thesis-grades/`;
@@ -212,3 +234,107 @@ export const invitationActionRoute = (token, action) =>
   `${host}/academic-procedures/api/invitation/${token}/${action}/`;
 export const reviewDetailRoute = (token) =>
   `${host}/academic-procedures/api/review/${token}/`;
+
+// ============================================================================
+// PhD Comprehensive Examination
+// ============================================================================
+
+// Student
+export const studentComprehensiveExamRoute = `${host}/academic-procedures/api/stu/comprehensive-exam/`;
+export const studentOptSubjectsRoute = (attemptId) =>
+  `${host}/academic-procedures/api/stu/comprehensive-exam/attempt/${attemptId}/opt-subjects/`;
+
+// Supervisor
+export const supervisorComprehensiveExamDashboardRoute = `${host}/academic-procedures/api/supervisor/comprehensive-exam/dashboard/`;
+export const supervisorStudentAcademicInfoRoute = (rollNo) =>
+  `${host}/academic-procedures/api/supervisor/comprehensive-exam/student-info/${rollNo}/`;
+export const supervisorProposeComprehensiveExamRoute = `${host}/academic-procedures/api/supervisor/comprehensive-exam/propose/`;
+export const supervisorComprehensiveExamDetailRoute = (id) =>
+  `${host}/academic-procedures/api/supervisor/comprehensive-exam/${id}/`;
+export const supervisorResubmitComprehensiveExamRoute = (id) =>
+  `${host}/academic-procedures/api/supervisor/comprehensive-exam/${id}/resubmit/`;
+export const supervisorFloatSubjectsRoute = (id) =>
+  `${host}/academic-procedures/api/supervisor/comprehensive-exam/${id}/float-subjects/`;
+export const supervisorConfirmOptedSubjectsRoute = (attemptId) =>
+  `${host}/academic-procedures/api/supervisor/comprehensive-exam/attempt/${attemptId}/confirm-subjects/`;
+
+// Academic Office (acadadmin)
+export const academicOfficeComprehensiveExamListRoute = `${host}/academic-procedures/api/acadadmin/comprehensive-exam/`;
+export const academicOfficeVerifyComprehensiveExamRoute = (id) =>
+  `${host}/academic-procedures/api/acadadmin/comprehensive-exam/${id}/verify/`;
+
+// Convener (Dean Academic stands in for DPGC/PGCS for now)
+export const convenerComprehensiveExamDashboardRoute = `${host}/academic-procedures/api/dean/comprehensive-exam/dashboard/`;
+export const convenerApproveCommitteeRoute = (id) =>
+  `${host}/academic-procedures/api/dean/comprehensive-exam/${id}/approve-committee/`;
+export const convenerSubmitResultRoute = (attemptId) =>
+  `${host}/academic-procedures/api/dean/comprehensive-exam/attempt/${attemptId}/report/`;
+
+// HOD (as discipline coordinator)
+export const hodComprehensiveExamDashboardRoute = `${host}/academic-procedures/api/hod/comprehensive-exam/dashboard/`;
+export const hodReviewSubjectsRoute = (attemptId) =>
+  `${host}/academic-procedures/api/hod/comprehensive-exam/attempt/${attemptId}/review-subjects/`;
+
+// Course catalog (for floating subjects from real courses, not free text)
+export const listCoursesForDropdownRoute = `${host}/academic-procedures/api/courses/dropdown/`;
+
+// ============================================================================
+// PhD Open Seminar
+// ============================================================================
+
+// Student
+export const studentOpenSeminarRoute = `${host}/academic-procedures/api/stu/open-seminar/`;
+
+// Shared
+export const openSeminarEligibilityPreviewRoute = (rollNo) =>
+  `${host}/academic-procedures/api/supervisor/open-seminar/eligibility/${rollNo}/`;
+
+// Supervisor
+export const supervisorOpenSeminarDashboardRoute = `${host}/academic-procedures/api/supervisor/open-seminar/dashboard/`;
+export const supervisorProposeOpenSeminarRoute = `${host}/academic-procedures/api/supervisor/open-seminar/propose/`;
+export const supervisorOpenSeminarDetailRoute = (id) =>
+  `${host}/academic-procedures/api/supervisor/open-seminar/${id}/`;
+export const supervisorResubmitOpenSeminarRoute = (id) =>
+  `${host}/academic-procedures/api/supervisor/open-seminar/${id}/resubmit/`;
+export const supervisorRetryOpenSeminarRoute = (id) =>
+  `${host}/academic-procedures/api/supervisor/open-seminar/${id}/retry/`;
+
+// Convener (Dean Academic stands in for DPGC/PGCS for now)
+export const convenerOpenSeminarDashboardRoute = `${host}/academic-procedures/api/dean/open-seminar/dashboard/`;
+export const convenerApproveOpenSeminarCommitteeRoute = (attemptId) =>
+  `${host}/academic-procedures/api/dean/open-seminar/attempt/${attemptId}/approve-committee/`;
+export const convenerSubmitOpenSeminarReportRoute = (attemptId) =>
+  `${host}/academic-procedures/api/dean/open-seminar/attempt/${attemptId}/report/`;
+
+// Dean Nominee (ad-hoc faculty appointment)
+export const deanNomineeOpenSeminarDashboardRoute = `${host}/academic-procedures/api/faculty/open-seminar-nominee/dashboard/`;
+export const deanNomineeSubmitOpenSeminarReportRoute = (attemptId) =>
+  `${host}/academic-procedures/api/faculty/open-seminar-nominee/attempt/${attemptId}/report/`;
+
+// ============================================================================
+// PhD Teaching Credit
+// ============================================================================
+
+// Student
+export const studentTeachingCreditRoute = `${host}/academic-procedures/api/stu/teaching-credit/`;
+export const studentProposeTeachingCreditRoute = `${host}/academic-procedures/api/stu/teaching-credit/propose/`;
+export const studentTeachingCreditDetailRoute = (id) =>
+  `${host}/academic-procedures/api/stu/teaching-credit/${id}/`;
+export const studentResubmitTeachingCreditRoute = (id) =>
+  `${host}/academic-procedures/api/stu/teaching-credit/${id}/resubmit/`;
+export const studentTeachingCreditEvaluationTargetsRoute = `${host}/academic-procedures/api/stu/teaching-credit/evaluation-targets/`;
+export const studentSubmitTeachingCreditEvaluationRoute = (id) =>
+  `${host}/academic-procedures/api/stu/teaching-credit/${id}/evaluate/`;
+
+// HOD
+export const hodTeachingCreditDashboardRoute = `${host}/academic-procedures/api/hod/teaching-credit/dashboard/`;
+export const hodDecideTeachingCreditRoute = (id) =>
+  `${host}/academic-procedures/api/hod/teaching-credit/${id}/decide/`;
+export const hodCompleteTeachingCreditRoute = (id) =>
+  `${host}/academic-procedures/api/hod/teaching-credit/${id}/complete/`;
+
+// Supervisor (read-only)
+export const supervisorTeachingCreditListRoute = `${host}/academic-procedures/api/supervisor/teaching-credit/`;
+
+// Academic Office (read-only)
+export const academicOfficeTeachingCreditListRoute = `${host}/academic-procedures/api/acadadmin/teaching-credit/`;

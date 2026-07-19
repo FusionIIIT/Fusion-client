@@ -21,8 +21,6 @@ import { showNotification } from '@mantine/notifications';
 import {
   IconPlus,
   IconTrash,
-  IconChevronUp,
-  IconChevronDown,
   IconCheck,
   IconX,
 } from '@tabler/icons-react';
@@ -45,7 +43,7 @@ const EMPTY_EXAMINER = {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function ExaminerCard({ examiner, index, total, category, readOnly, onChange, onRemove, onMove }) {
+function ExaminerCard({ examiner, index, total, category, readOnly, onChange, onRemove }) {
   const isForeign = category === 'foreign';
   const nameError = !readOnly && !examiner.name ? 'Name is required' : null;
   const emailError = !readOnly && examiner.email && !EMAIL_RE.test(examiner.email)
@@ -55,32 +53,16 @@ function ExaminerCard({ examiner, index, total, category, readOnly, onChange, on
   return (
     <Card withBorder p="md" radius="md">
       <Group position="apart" mb="sm">
-        <Badge size="lg" variant="light">Rank {index + 1}</Badge>
+        <Badge size="lg" variant="light">Examiner {index + 1}</Badge>
         {!readOnly && (
-          <Group spacing="xs">
-            <ActionIcon
-              aria-label={`Move ${category} examiner ${index + 1} up`}
-              disabled={index === 0}
-              onClick={() => onMove(index, -1)}
-            >
-              <IconChevronUp size={16} />
-            </ActionIcon>
-            <ActionIcon
-              aria-label={`Move ${category} examiner ${index + 1} down`}
-              disabled={index === total - 1}
-              onClick={() => onMove(index, 1)}
-            >
-              <IconChevronDown size={16} />
-            </ActionIcon>
-            <ActionIcon
-              aria-label={`Remove ${category} examiner ${index + 1}`}
-              color="red"
-              disabled={total <= 1}
-              onClick={() => onRemove(index)}
-            >
-              <IconTrash size={16} />
-            </ActionIcon>
-          </Group>
+          <ActionIcon
+            aria-label={`Remove ${category} examiner ${index + 1}`}
+            color="red"
+            disabled={total <= 1}
+            onClick={() => onRemove(index)}
+          >
+            <IconTrash size={16} />
+          </ActionIcon>
         )}
       </Group>
 
@@ -166,10 +148,9 @@ ExaminerCard.propTypes = {
   readOnly: PropTypes.bool.isRequired,
   onChange: PropTypes.func.isRequired,
   onRemove: PropTypes.func.isRequired,
-  onMove: PropTypes.func.isRequired,
 };
 
-function ExaminerList({ category, examiners, readOnly, onChange, onRemove, onMove, onAdd }) {
+function ExaminerList({ category, examiners, readOnly, onChange, onRemove, onAdd }) {
   const label = category === 'indian' ? 'Indian' : 'Foreign';
   return (
     <Stack spacing="md" mt="md">
@@ -184,7 +165,6 @@ function ExaminerList({ category, examiners, readOnly, onChange, onRemove, onMov
           readOnly={readOnly}
           onChange={onChange}
           onRemove={onRemove}
-          onMove={onMove}
         />
       ))}
       {!readOnly && (
@@ -218,23 +198,21 @@ ExaminerList.propTypes = {
   readOnly: PropTypes.bool.isRequired,
   onChange: PropTypes.func.isRequired,
   onRemove: PropTypes.func.isRequired,
-  onMove: PropTypes.func.isRequired,
   onAdd: PropTypes.func.isRequired,
 };
 
 export default function SupervisorAssignmentPanel({ submission, readOnly = false, onClose }) {
   const [indian, setIndian] = useState([{ ...EMPTY_EXAMINER }]);
   const [foreign, setForeign] = useState([{ ...EMPTY_EXAMINER }]);
+  const [deanRemarks, setDeanRemarks] = useState('');
   const [activeTab, setActiveTab] = useState('indian');
-  const [loading, setLoading] = useState(readOnly);
+  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // If readOnly, fetch existing examiners
+  // Always fetch whatever was previously assigned — both for the read-only
+  // view, and so a resubmission after the Dean sends the panel back starts
+  // from the supervisor's earlier list instead of a blank form.
   useEffect(() => {
-    if (!readOnly) {
-      setLoading(false);
-      return;
-    }
     (async () => {
       try {
         const token = localStorage.getItem('authToken');
@@ -243,13 +221,14 @@ export default function SupervisorAssignmentPanel({ submission, readOnly = false
         });
         setIndian(res.data.indian_examiners?.length ? res.data.indian_examiners : [{ ...EMPTY_EXAMINER }]);
         setForeign(res.data.foreign_examiners?.length ? res.data.foreign_examiners : [{ ...EMPTY_EXAMINER }]);
+        setDeanRemarks(res.data.dean_panel_remarks || '');
       } catch (e) {
         showNotification({ title: 'Error', message: 'Failed to load examiners', color: 'red', icon: <IconX /> });
       } finally {
         setLoading(false);
       }
     })();
-  }, [readOnly, submission.id]);
+  }, [submission.id]);
 
   const updateExaminer = (setList) => (index, field, value) => {
     setList((prev) => {
@@ -261,16 +240,6 @@ export default function SupervisorAssignmentPanel({ submission, readOnly = false
 
   const removeExaminer = (setList) => (index) => {
     setList((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev));
-  };
-
-  const moveExaminer = (setList) => (index, direction) => {
-    setList((prev) => {
-      const target = index + direction;
-      if (target < 0 || target >= prev.length) return prev;
-      const next = [...prev];
-      [next[index], next[target]] = [next[target], next[index]];
-      return next;
-    });
   };
 
   const addExaminer = (setList) => () => {
@@ -336,6 +305,13 @@ export default function SupervisorAssignmentPanel({ submission, readOnly = false
         </Text>
       )}
 
+      {deanRemarks && (
+        <Card withBorder p="sm" mb="md" style={{ backgroundColor: '#fff4e6' }}>
+          <Text size="sm" fw={500}>Dean&apos;s remarks (sent back for changes):</Text>
+          <Text size="sm">{deanRemarks}</Text>
+        </Card>
+      )}
+
       <Tabs value={activeTab} onChange={setActiveTab}>
         <Tabs.List>
           <Tabs.Tab value="indian">Indian Examiners ({indian.length})</Tabs.Tab>
@@ -349,7 +325,6 @@ export default function SupervisorAssignmentPanel({ submission, readOnly = false
             readOnly={readOnly}
             onChange={updateExaminer(setIndian)}
             onRemove={removeExaminer(setIndian)}
-            onMove={moveExaminer(setIndian)}
             onAdd={addExaminer(setIndian)}
           />
         </Tabs.Panel>
@@ -361,7 +336,6 @@ export default function SupervisorAssignmentPanel({ submission, readOnly = false
             readOnly={readOnly}
             onChange={updateExaminer(setForeign)}
             onRemove={removeExaminer(setForeign)}
-            onMove={moveExaminer(setForeign)}
             onAdd={addExaminer(setForeign)}
           />
         </Tabs.Panel>

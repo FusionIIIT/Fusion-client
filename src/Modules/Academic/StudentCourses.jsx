@@ -9,7 +9,6 @@ import {
   Group,
   Select,
   Loader,
-  Stack,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import axios from "axios";
@@ -20,27 +19,178 @@ import {
   getStudentCourseRoute,
   getCourseSlotsRoute,
   getCoursesRoute,
+  adminThesisEnrollmentListRoute,
+  adminProgressSeminarEnrollmentListRoute,
+  adminTeachingCreditEnrollmentListRoute,
 } from "../../routes/academicRoutes";
 
+function authHeaders() {
+  return { Authorization: `Token ${localStorage.getItem("authToken")}` };
+}
+
+// Thesis/progress-seminar/teaching-credit registrations never land in
+// course_registration (see project notes), so this admin lookup -- which is
+// entirely driven by course_registration via getStudentCourseRoute -- has no
+// way to see them otherwise. The admin list endpoints return every student's
+// entries; filter down to this one roll number and synthesize rows shaped
+// like a normal course_registration detail so the existing table/Add/Drop
+// code needs no special-casing (Drop is disabled for these since there's no
+// equivalent "drop a thesis enrollment" action).
+async function fetchPhdExtraDetails(rollNo) {
+  try {
+    const [thesisRes, seminarRes, teachingCreditRes] = await Promise.all([
+      axios.get(adminThesisEnrollmentListRoute, { headers: authHeaders() }),
+      axios.get(adminProgressSeminarEnrollmentListRoute, {
+        headers: authHeaders(),
+      }),
+      axios.get(adminTeachingCreditEnrollmentListRoute, {
+        headers: authHeaders(),
+      }),
+    ]);
+    const rollUpper = rollNo.toUpperCase();
+    const semType = (semNo) =>
+      semNo % 2 === 1 ? "Odd Semester" : "Even Semester";
+
+    const extras = [];
+    (thesisRes.data.registrations || [])
+      .filter(
+        (r) =>
+          r.student?.id?.toUpperCase() === rollUpper && r.status === "verified",
+      )
+      .forEach((r) => {
+        const t = r.thesis_slot?.resolved_thesis;
+        extras.push({
+          id: `thesis-${r.id}`,
+          isPhdExtra: true,
+          rid: "THESIS",
+          course_id: t?.code || "THESIS",
+          course_name: t?.name || "Thesis",
+          credits: r.credits,
+          sem: r.semester_no,
+          semester_type: semType(r.semester_no),
+          registration_type: "Thesis",
+          replaced_by: [],
+        });
+      });
+    (seminarRes.data.registrations || [])
+      .filter(
+        (r) =>
+          r.student?.id?.toUpperCase() === rollUpper && r.status === "verified",
+      )
+      .forEach((r) => {
+        const s = r.progress_seminar_slot?.resolved_seminar;
+        extras.push({
+          id: `seminar-${r.id}`,
+          isPhdExtra: true,
+          rid: "SEMINAR",
+          course_id: s?.code || "SEMINAR",
+          course_name: s?.name || "Progress Seminar",
+          credits: s?.credit ?? 0,
+          sem: r.semester_no,
+          semester_type: semType(r.semester_no),
+          registration_type: "Progress Seminar",
+          replaced_by: [],
+        });
+      });
+    (teachingCreditRes.data.registrations || [])
+      .filter(
+        (r) =>
+          r.student?.id?.toUpperCase() === rollUpper && r.status === "verified",
+      )
+      .forEach((r) => {
+        const t = r.teaching_credit_slot?.resolved_teaching_credit;
+        extras.push({
+          id: `teaching-credit-${r.id}`,
+          isPhdExtra: true,
+          rid: "TEACHCR",
+          course_id: t?.code || "TEACHCR",
+          course_name: t?.name || "Teaching Credit",
+          credits: t?.credit ?? 0,
+          sem: r.semester_no,
+          semester_type: semType(r.semester_no),
+          registration_type: "Teaching Credit",
+          replaced_by: [],
+        });
+      });
+    return extras;
+  } catch {
+    return [];
+  }
+}
+
 const defaultSemesterOptions = [
-  { value: JSON.stringify({ no: 1, type: "Odd Semester" }), label: "Semester 1 (Odd)" },
-  { value: JSON.stringify({ no: 2, type: "Even Semester" }), label: "Semester 2 (Even)" },
-  { value: JSON.stringify({ no: 2, type: "Summer Semester" }), label: "Summer Term 1" },
-  { value: JSON.stringify({ no: 3, type: "Odd Semester" }), label: "Semester 3 (Odd)" },
-  { value: JSON.stringify({ no: 4, type: "Even Semester" }), label: "Semester 4 (Even)" },
-  { value: JSON.stringify({ no: 4, type: "Summer Semester" }), label: "Summer Term 2" },
-  { value: JSON.stringify({ no: 5, type: "Odd Semester" }), label: "Semester 5 (Odd)" },
-  { value: JSON.stringify({ no: 6, type: "Even Semester" }), label: "Semester 6 (Even)" },
-  { value: JSON.stringify({ no: 6, type: "Summer Semester" }), label: "Summer Term 3" },
-  { value: JSON.stringify({ no: 7, type: "Odd Semester" }), label: "Semester 7 (Odd)" },
-  { value: JSON.stringify({ no: 8, type: "Even Semester" }), label: "Semester 8 (Even)" },
-  { value: JSON.stringify({ no: 8, type: "Summer Semester" }), label: "Summer Term 4" },
-  { value: JSON.stringify({ no: 9, type: "Odd Semester" }), label: "Semester 9 (Odd)" },
-  { value: JSON.stringify({ no: 10, type: "Even Semester" }), label: "Semester 10 (Even)" },
-  { value: JSON.stringify({ no: 10, type: "Summer Semester" }), label: "Summer Term 5" },
-  { value: JSON.stringify({ no: 11, type: "Odd Semester" }), label: "Semester 11 (Odd)" },
-  { value: JSON.stringify({ no: 12, type: "Even Semester" }), label: "Semester 12 (Even)" },
-  { value: JSON.stringify({ no: 12, type: "Summer Semester" }), label: "Summer Term 6" },
+  {
+    value: JSON.stringify({ no: 1, type: "Odd Semester" }),
+    label: "Semester 1 (Odd)",
+  },
+  {
+    value: JSON.stringify({ no: 2, type: "Even Semester" }),
+    label: "Semester 2 (Even)",
+  },
+  {
+    value: JSON.stringify({ no: 2, type: "Summer Semester" }),
+    label: "Summer Term 1",
+  },
+  {
+    value: JSON.stringify({ no: 3, type: "Odd Semester" }),
+    label: "Semester 3 (Odd)",
+  },
+  {
+    value: JSON.stringify({ no: 4, type: "Even Semester" }),
+    label: "Semester 4 (Even)",
+  },
+  {
+    value: JSON.stringify({ no: 4, type: "Summer Semester" }),
+    label: "Summer Term 2",
+  },
+  {
+    value: JSON.stringify({ no: 5, type: "Odd Semester" }),
+    label: "Semester 5 (Odd)",
+  },
+  {
+    value: JSON.stringify({ no: 6, type: "Even Semester" }),
+    label: "Semester 6 (Even)",
+  },
+  {
+    value: JSON.stringify({ no: 6, type: "Summer Semester" }),
+    label: "Summer Term 3",
+  },
+  {
+    value: JSON.stringify({ no: 7, type: "Odd Semester" }),
+    label: "Semester 7 (Odd)",
+  },
+  {
+    value: JSON.stringify({ no: 8, type: "Even Semester" }),
+    label: "Semester 8 (Even)",
+  },
+  {
+    value: JSON.stringify({ no: 8, type: "Summer Semester" }),
+    label: "Summer Term 4",
+  },
+  {
+    value: JSON.stringify({ no: 9, type: "Odd Semester" }),
+    label: "Semester 9 (Odd)",
+  },
+  {
+    value: JSON.stringify({ no: 10, type: "Even Semester" }),
+    label: "Semester 10 (Even)",
+  },
+  {
+    value: JSON.stringify({ no: 10, type: "Summer Semester" }),
+    label: "Summer Term 5",
+  },
+  {
+    value: JSON.stringify({ no: 11, type: "Odd Semester" }),
+    label: "Semester 11 (Odd)",
+  },
+  {
+    value: JSON.stringify({ no: 12, type: "Even Semester" }),
+    label: "Semester 12 (Even)",
+  },
+  {
+    value: JSON.stringify({ no: 12, type: "Summer Semester" }),
+    label: "Summer Term 6",
+  },
 ];
 
 export default function StudentCourses() {
@@ -73,8 +223,8 @@ export default function StudentCourses() {
     const start = now.getMonth() >= 6 ? year : year - 1;
     const yrs = [];
     for (let i = 0; i < 5; i++) {
-      const y1 = start - i,
-        y2 = y1 + 1;
+      const y1 = start - i;
+      const y2 = y1 + 1;
       yrs.push(`${y1}-${String(y2).slice(-2)}`);
     }
     setAcademicYears(yrs);
@@ -94,8 +244,11 @@ export default function StudentCourses() {
       const { data } = await axios.post(
         getStudentCourseRoute,
         { rollno: rollNo },
-        { headers: { Authorization: `Token ${token}` } }
+        { headers: { Authorization: `Token ${token}` } },
       );
+
+      const phdExtras = await fetchPhdExtraDetails(rollNo);
+      data.details = [...(data.details || []), ...phdExtras];
       setStudentData(data);
 
       if (data.current_semester) {
@@ -126,18 +279,27 @@ export default function StudentCourses() {
   // Generate semester options from API data or use defaults
   const semesterOptions = useMemo(() => {
     // Check if this is a PhD student by checking batch name from response
-    const isPhdStudent = studentData?.dict2?.roll_no?.toUpperCase().includes('PCS') || 
-                        (studentData?.details && studentData.details.length > 0 && 
-                         studentData.details[0]?.course_name?.includes('PhD'));
-    
+    const isPhdStudent =
+      studentData?.dict2?.roll_no?.toUpperCase().includes("PCS") ||
+      (studentData?.details &&
+        studentData.details.length > 0 &&
+        studentData.details[0]?.course_name?.includes("PhD"));
+
     // For PhD students, use the filtered list from API
-    if (isPhdStudent && studentData?.semester_list && studentData.semester_list.length > 0) {
-      return studentData.semester_list.map(sem => ({
-        value: JSON.stringify({ no: sem.semester_no, type: getSemesterType(sem.semester_no) }),
-        label: `Semester ${sem.semester_no} (${sem.semester_no % 2 === 1 ? 'Odd' : 'Even'})`
+    if (
+      isPhdStudent &&
+      studentData?.semester_list &&
+      studentData.semester_list.length > 0
+    ) {
+      return studentData.semester_list.map((sem) => ({
+        value: JSON.stringify({
+          no: sem.semester_no,
+          type: getSemesterType(sem.semester_no),
+        }),
+        label: `Semester ${sem.semester_no} (${sem.semester_no % 2 === 1 ? "Odd" : "Even"})`,
       }));
     }
-    
+
     // For UG/PG students, use the full default list with summer terms
     return defaultSemesterOptions;
   }, [studentData]);
@@ -159,7 +321,7 @@ export default function StudentCourses() {
       await axios.post(
         dropStudentCourseRoute,
         { id: courseToDrop, roll_no: rollNo },
-        { headers: { Authorization: `Token ${token}` } }
+        { headers: { Authorization: `Token ${token}` } },
       );
       showNotification({
         title: "Course Dropped",
@@ -244,31 +406,31 @@ export default function StudentCourses() {
     clearError();
     if (!val) return;
     const semObj = JSON.parse(val);
-    
-  let semesterId = semObj.no;
-  if (studentData && studentData.semester_list) {
-    const found = studentData.semester_list.find(
-      (s) => s.semester_no == semObj.no
-    );
-    if (found) {
-      semesterId = found.id;
+
+    let semesterId = semObj.no;
+    if (studentData && studentData.semester_list) {
+      const found = studentData.semester_list.find(
+        (s) => s.semester_no == semObj.no,
+      );
+      if (found) {
+        semesterId = found.id;
+      }
     }
-  }
     setNewCourse((p) => ({
-    ...p,
-    semester_id: semesterId,
-    semester_no: semObj.no, 
-    semester_type: semObj.type,
-    courseslot_id: null,
-    course_id: null,
-  }));
+      ...p,
+      semester_id: semesterId,
+      semester_no: semObj.no,
+      semester_type: semObj.type,
+      courseslot_id: null,
+      course_id: null,
+    }));
     setSlotCourses([]);
     setSemSlots([]);
     const token = localStorage.getItem("authToken");
     try {
       const { data } = await axios.get(
         `${getCourseSlotsRoute}?semester_id=${semesterId}`,
-        { headers: { Authorization: `Token ${token}` } }
+        { headers: { Authorization: `Token ${token}` } },
       );
       setSemSlots(data);
     } catch {
@@ -282,7 +444,7 @@ export default function StudentCourses() {
     try {
       const { data } = await axios.get(
         `${getCoursesRoute}?courseslot_id=${slotId}`,
-        { headers: { Authorization: `Token ${token}` } }
+        { headers: { Authorization: `Token ${token}` } },
       );
       setSlotCourses(data);
     } catch {
@@ -294,7 +456,7 @@ export default function StudentCourses() {
     studentData?.details.filter(
       (c) =>
         c.sem === selectedSemester.no &&
-        c.semester_type === selectedSemester.type
+        c.semester_type === selectedSemester.type,
     ) || [];
   const totalCredits = filteredDetails.reduce((sum, c) => sum + c.credits, 0);
 
@@ -319,10 +481,17 @@ export default function StudentCourses() {
     "Replaced By":
       c.replaced_by && c.replaced_by.length > 0
         ? c.replaced_by
-            .map((r) => `${r.course_id.code} - ${r.course_id.name} (Sem ${r.semester_id.semester_no})`)
+            .map(
+              (r) =>
+                `${r.course_id.code} - ${r.course_id.name} (Sem ${r.semester_id.semester_no})`,
+            )
             .join(", ")
         : "NA",
-    Actions: (
+    Actions: c.isPhdExtra ? (
+      <Text size="xs" c="dimmed">
+        N/A
+      </Text>
+    ) : (
       <Button
         size="xs"
         variant="outline"
@@ -408,10 +577,13 @@ export default function StudentCourses() {
           placeholder="Select semester"
           data={semesterOptions}
           value={
-          newCourse.semester_no && newCourse.semester_type
-          ? JSON.stringify({ no: newCourse.semester_no, type: newCourse.semester_type })
-          : ""
-        }
+            newCourse.semester_no && newCourse.semester_type
+              ? JSON.stringify({
+                  no: newCourse.semester_no,
+                  type: newCourse.semester_type,
+                })
+              : ""
+          }
           onChange={handleSemesterSelect}
           mb="sm"
         />
@@ -462,10 +634,12 @@ export default function StudentCourses() {
           placeholder="Select the course to replace"
           data={
             studentData
-              ? studentData.details.map((course) => ({
-                  value: course.reg_id.toString(),
-                  label: `${course.course_id} - sem ${course.sem}`,
-                }))
+              ? studentData.details
+                  .filter((course) => !course.isPhdExtra)
+                  .map((course) => ({
+                    value: course.reg_id.toString(),
+                    label: `${course.course_id} - sem ${course.sem}`,
+                  }))
               : []
           }
           value={newCourse.old_course}

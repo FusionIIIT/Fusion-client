@@ -52,106 +52,141 @@ import {
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────────
 const gradeColor = (g) => (g === "S" ? "green" : g === "X" ? "red" : "gray");
-const gradeLabel = (g) => (g === "S" ? "Satisfactory" : g === "X" ? "Unsatisfactory" : "—");
+const gradeLabel = (g) =>
+  g === "S" ? "Satisfactory" : g === "X" ? "Unsatisfactory" : "—";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Sub-component: one block's grade dropdown (or a locked badge), within a
-// registration row.
-// ─────────────────────────────────────────────────────────────────────────────
-function BlockCell({ ev, draft, onDraftChange }) {
-  if (!ev) {
+function ThesisTitleCell({ title }) {
+  if (!title) {
     return (
-      <Table.Td ta="center">
-        <Text size="xs" c="dimmed">—</Text>
-      </Table.Td>
+      <Text size="xs" c="dimmed">
+        —
+      </Text>
     );
   }
-
-  const locked = ev.verified || ev.announced;
-
-  if (locked) {
-    return (
-      <Table.Td>
-        <Tooltip label={ev.remarks || "No remarks"} disabled={!ev.remarks} withArrow>
-          <Badge color={gradeColor(ev.grade)}>{gradeLabel(ev.grade)}</Badge>
-        </Tooltip>
-      </Table.Td>
-    );
+  if (title.length <= 50) {
+    return <Text size="xs">{title}</Text>;
   }
-
   return (
-    <Table.Td>
-      <Group gap={4} wrap="nowrap">
-        <Select
-          size="xs"
-          placeholder="— Not graded —"
-          value={draft?.grade ?? null}
-          onChange={(v) => onDraftChange(ev.block_number, { grade: v })}
-          data={[
-            { value: "S", label: "S — Satisfactory" },
-            { value: "X", label: "X — Unsatisfactory" },
-          ]}
-          clearable
-          w={150}
-        />
-        <Popover width={240} withArrow trapFocus shadow="md">
-          <Popover.Target>
-            <ActionIcon
-              variant="subtle"
-              size="sm"
-              color={draft?.remarks ? "blue" : "gray"}
-              aria-label={`Remarks for block ${ev.block_number}`}
-            >
-              <IconNote size={14} />
-            </ActionIcon>
-          </Popover.Target>
-          <Popover.Dropdown>
-            <Textarea
-              size="xs"
-              label="Optional remarks"
-              placeholder="Add a remark for this block"
-              value={draft?.remarks || ""}
-              onChange={(e) =>
-                onDraftChange(ev.block_number, { remarks: e.currentTarget.value })
-              }
-              autosize
-              minRows={2}
-              maxRows={4}
-            />
-          </Popover.Dropdown>
-        </Popover>
-      </Group>
-    </Table.Td>
+    <Tooltip label={title} multiline w={300} withArrow>
+      <Text size="xs" style={{ cursor: "help" }}>
+        {title.slice(0, 50)}…
+      </Text>
+    </Tooltip>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Sub-component: one row per thesis registration, with one column per block.
-// Submit is only enabled once every unlocked block has a grade chosen, and
-// sends them all together in a single bulk request — no partial submission.
+// Sub-component: one grade dropdown (or a locked badge) for a single
+// evaluation, rendered inline alongside its siblings inside one shared
+// "Grades" cell — not its own column.
 // ─────────────────────────────────────────────────────────────────────────────
-function RegistrationGradeRow({ blocksByNumber, maxBlocks, submittedByName, onGraded }) {
-  const blocks = Object.values(blocksByNumber);
+function GradeCell({ ev, draft, onDraftChange }) {
+  const locked = ev.verified || ev.announced;
+
+  if (locked) {
+    return (
+      <Tooltip
+        label={ev.remarks || "No remarks"}
+        disabled={!ev.remarks}
+        withArrow
+      >
+        <Badge color={gradeColor(ev.grade)}>{gradeLabel(ev.grade)}</Badge>
+      </Tooltip>
+    );
+  }
+
+  return (
+    <Group gap={4} wrap="nowrap">
+      <Select
+        size="xs"
+        placeholder="— Not graded —"
+        value={draft?.grade ?? null}
+        onChange={(v) => onDraftChange(ev.block_number, { grade: v })}
+        data={[
+          { value: "S", label: "S — Satisfactory" },
+          { value: "X", label: "X — Unsatisfactory" },
+        ]}
+        clearable
+        w={150}
+      />
+      <Popover width={240} withArrow trapFocus shadow="md">
+        <Popover.Target>
+          <ActionIcon
+            variant="subtle"
+            size="sm"
+            color={draft?.remarks ? "blue" : "gray"}
+            aria-label={`Remarks for grade ${ev.block_number}`}
+          >
+            <IconNote size={14} />
+          </ActionIcon>
+        </Popover.Target>
+        <Popover.Dropdown>
+          <Textarea
+            size="xs"
+            label="Optional remarks"
+            placeholder="Add a remark for this grade"
+            value={draft?.remarks || ""}
+            onChange={(e) =>
+              onDraftChange(ev.block_number, {
+                remarks: e.currentTarget.value,
+              })
+            }
+            autosize
+            minRows={2}
+            maxRows={4}
+          />
+        </Popover.Dropdown>
+      </Popover>
+    </Group>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sub-component: one row per thesis registration, with every grade shown
+// together in a single "Grades" cell. Submit is only enabled once every
+// unlocked grade is chosen, and sends them all together in a single bulk
+// request — no partial submission.
+// ─────────────────────────────────────────────────────────────────────────────
+function RegistrationGradeRow({ blocksByNumber, submittedByName, onGraded }) {
+  const blocks = Object.values(blocksByNumber).sort(
+    (a, b) => a.block_number - b.block_number,
+  );
   const reg = blocks[0].registration;
-  const totalBlocks = blocks[0].total_blocks;
 
   const [drafts, setDrafts] = useState(() => {
     const init = {};
     blocks.forEach((ev) => {
-      init[ev.block_number] = { grade: ev.grade || null, remarks: ev.remarks || "" };
+      init[ev.block_number] = {
+        grade: ev.grade || null,
+        remarks: ev.remarks || "",
+      };
     });
     return init;
   });
   const [saving, setSaving] = useState(false);
 
   const updateDraft = useCallback((blockNum, patch) => {
-    setDrafts((prev) => ({ ...prev, [blockNum]: { ...prev[blockNum], ...patch } }));
+    setDrafts((prev) => ({
+      ...prev,
+      [blockNum]: { ...prev[blockNum], ...patch },
+    }));
   }, []);
 
   const unlockedBlocks = blocks.filter((ev) => !(ev.verified || ev.announced));
   const allGraded =
     unlockedBlocks.length > 0 &&
     unlockedBlocks.every((ev) => !!drafts[ev.block_number]?.grade);
+  // True once every draft matches what's already saved server-side — used to
+  // keep Submit disabled after a successful save instead of letting the same
+  // grades be resubmitted on every click until the admin verifies them.
+  const isDirty = unlockedBlocks.some((ev) => {
+    const draft = drafts[ev.block_number];
+    return (
+      (draft?.grade ?? null) !== (ev.grade ?? null) ||
+      (draft?.remarks ?? "") !== (ev.remarks ?? "")
+    );
+  });
+  const canSubmit = allGraded && isDirty;
 
   const handleSubmit = async () => {
     setSaving(true);
@@ -169,7 +204,9 @@ function RegistrationGradeRow({ blocksByNumber, maxBlocks, submittedByName, onGr
         { headers: { Authorization: `Token ${token}` } },
       );
 
-      const failedIds = new Set((res.data.errors || []).map((e) => e.evaluation_id));
+      const failedIds = new Set(
+        (res.data.errors || []).map((e) => e.evaluation_id),
+      );
       let successCount = 0;
 
       unlockedBlocks.forEach((ev) => {
@@ -187,14 +224,14 @@ function RegistrationGradeRow({ blocksByNumber, maxBlocks, submittedByName, onGr
       if (successCount > 0) {
         showNotification({
           title: "Grades saved",
-          message: `${successCount} block${successCount > 1 ? "s" : ""} submitted for ${reg.student.name}`,
+          message: `${successCount} grade${successCount > 1 ? "s" : ""} submitted for ${reg.student.name}`,
           color: "green",
           icon: <IconCheck size={16} />,
         });
       }
       if (res.data.error_count > 0) {
         showNotification({
-          title: "Some blocks failed",
+          title: "Some grades failed",
           message: res.data.errors.map((e) => e.error).join("; "),
           color: "red",
           icon: <IconAlertCircle size={16} />,
@@ -214,25 +251,47 @@ function RegistrationGradeRow({ blocksByNumber, maxBlocks, submittedByName, onGr
 
   return (
     <Table.Tr>
+      <Table.Td>{reg.student.id}</Table.Td>
       <Table.Td>{reg.student.name}</Table.Td>
-      <Table.Td>Sem {reg.semester_no}</Table.Td>
-      <Table.Td>{reg.thesis_slot}</Table.Td>
-      {Array.from({ length: maxBlocks }, (_, i) => i + 1).map((blockNum) => (
-        <BlockCell
-          key={blockNum}
-          ev={blockNum <= totalBlocks ? blocksByNumber[blockNum] : undefined}
-          draft={drafts[blockNum]}
-          onDraftChange={updateDraft}
-        />
-      ))}
+      <Table.Td>{reg.semester_no}</Table.Td>
+      <Table.Td>{reg.thesis_code}</Table.Td>
+      <Table.Td>
+        <ThesisTitleCell title={reg.thesis_title} />
+      </Table.Td>
+      <Table.Td>
+        <Group gap="sm" wrap="wrap">
+          {blocks.map((ev) => (
+            <GradeCell
+              key={ev.block_number}
+              ev={ev}
+              draft={drafts[ev.block_number]}
+              onDraftChange={updateDraft}
+            />
+          ))}
+        </Group>
+      </Table.Td>
       <Table.Td>
         <Tooltip
-          label="Grade every block above before submitting"
-          disabled={allGraded || unlockedBlocks.length === 0}
+          label={
+            !allGraded
+              ? "Grade every entry above before submitting"
+              : "No changes to submit — already graded"
+          }
+          disabled={canSubmit || unlockedBlocks.length === 0}
           withArrow
         >
-          <Button size="xs" loading={saving} disabled={!allGraded} onClick={handleSubmit}>
-            {unlockedBlocks.length > 0 ? `Submit All (${unlockedBlocks.length})` : "Submit"}
+          <Button
+            size="xs"
+            color={allGraded && !isDirty ? "gray" : "blue"}
+            loading={saving}
+            disabled={!canSubmit}
+            onClick={handleSubmit}
+          >
+            {unlockedBlocks.length === 0
+              ? "Submit"
+              : allGraded && !isDirty
+                ? "Graded"
+                : `Submit All (${unlockedBlocks.length})`}
           </Button>
         </Tooltip>
       </Table.Td>
@@ -245,20 +304,20 @@ function RegistrationGradeRow({ blocksByNumber, maxBlocks, submittedByName, onGr
 // ─────────────────────────────────────────────────────────────────────────────
 export default function SupervisorThesisGrading() {
   const [evaluations, setEvaluations] = useState([]);
-  const [loading, setLoading]         = useState(true);
-  const [error, setError]             = useState(null);
-  const [semFilter, setSemFilter]     = useState("");
-  const [gradedFilter, setGradedFilter] = useState("");   // "" | "false" | "true"
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [semFilter, setSemFilter] = useState("");
+  const [gradedFilter, setGradedFilter] = useState(""); // "" | "false" | "true"
 
   // Excel upload (all blocks at once) state
-  const [uploadAllFile, setUploadAllFile]             = useState(null);
-  const [uploadingAll, setUploadingAll]               = useState(false);
-  const [previewAllData, setPreviewAllData]           = useState(null);
+  const [uploadAllFile, setUploadAllFile] = useState(null);
+  const [uploadingAll, setUploadingAll] = useState(false);
+  const [previewAllData, setPreviewAllData] = useState(null);
   const [previewAllModalOpen, setPreviewAllModalOpen] = useState(false);
-  const [submittingAll, setSubmittingAll]             = useState(false);
+  const [submittingAll, setSubmittingAll] = useState(false);
 
   // Upload method selection
-  const [uploadMethod, setUploadMethod]               = useState("manual");
+  const [uploadMethod, setUploadMethod] = useState("manual");
 
   // Get user information
   const getUserName = () => {
@@ -283,8 +342,8 @@ export default function SupervisorThesisGrading() {
     setError(null);
     try {
       const params = {};
-      if (semFilter)    params.semester = semFilter;
-      if (gradedFilter) params.graded   = gradedFilter;
+      if (semFilter) params.semester = semFilter;
+      if (gradedFilter) params.graded = gradedFilter;
       const res = await axios.get(supervisorThesisGradesRoute, {
         headers: authHeaders(),
         params,
@@ -295,10 +354,12 @@ export default function SupervisorThesisGrading() {
     } finally {
       setLoading(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [semFilter, gradedFilter]);
 
-  useEffect(() => { fetchEvaluations(); }, [fetchEvaluations]);
+  useEffect(() => {
+    fetchEvaluations();
+  }, [fetchEvaluations]);
 
   // Update one evaluation in the list after supervisor submits
   const handleGraded = useCallback((updated) => {
@@ -310,10 +371,13 @@ export default function SupervisorThesisGrading() {
   // All Blocks (Excel) Handlers
   const handleDownloadAllTemplate = async () => {
     try {
-      const res = await axios.get(supervisorDownloadAllThesisGradesTemplateRoute, {
-        headers: authHeaders(),
-        responseType: "blob",
-      });
+      const res = await axios.get(
+        supervisorDownloadAllThesisGradesTemplateRoute,
+        {
+          headers: authHeaders(),
+          responseType: "blob",
+        },
+      );
 
       const blob = new Blob([res.data], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -321,14 +385,14 @@ export default function SupervisorThesisGrading() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `Thesis_Grades_All_Blocks_${new Date().toISOString().split('T')[0]}.xlsx`;
+      link.download = `Thesis_Grades_All_${new Date().toISOString().split("T")[0]}.xlsx`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (e) {
       const errorMsg = e.response?.data?.error || "Failed to download template";
-      console.error('Download all blocks template error:', e);
+      console.error("Download all grades template error:", e);
       showNotification({
         title: "Error",
         message: errorMsg,
@@ -354,12 +418,16 @@ export default function SupervisorThesisGrading() {
       const formData = new FormData();
       formData.append("file", uploadAllFile);
 
-      const res = await axios.post(supervisorUploadAllThesisGradesRoute, formData, {
-        headers: {
-          ...authHeaders(),
-          "Content-Type": "multipart/form-data",
+      const res = await axios.post(
+        supervisorUploadAllThesisGradesRoute,
+        formData,
+        {
+          headers: {
+            ...authHeaders(),
+            "Content-Type": "multipart/form-data",
+          },
         },
-      });
+      );
 
       setPreviewAllData(res.data);
       setPreviewAllModalOpen(true);
@@ -377,7 +445,11 @@ export default function SupervisorThesisGrading() {
   };
 
   const handleBulkSubmitAll = async () => {
-    if (!previewAllData || !previewAllData.valid_rows || previewAllData.valid_rows.length === 0) {
+    if (
+      !previewAllData ||
+      !previewAllData.valid_rows ||
+      previewAllData.valid_rows.length === 0
+    ) {
       return;
     }
 
@@ -391,14 +463,18 @@ export default function SupervisorThesisGrading() {
 
       showNotification({
         title: "Grades submitted",
-        message: `Successfully submitted ${res.data.success_count} grades across all blocks.`,
+        message: `Successfully submitted ${res.data.success_count} grades.`,
         color: "green",
         icon: <IconCheck size={16} />,
       });
 
       // Update evaluations
-      const submittedIds = new Set(previewAllData.valid_rows.map(r => r.evaluation_id));
-      const submissionMap = new Map(previewAllData.valid_rows.map(r => [r.evaluation_id, r]));
+      const submittedIds = new Set(
+        previewAllData.valid_rows.map((r) => r.evaluation_id),
+      );
+      const submissionMap = new Map(
+        previewAllData.valid_rows.map((r) => [r.evaluation_id, r]),
+      );
 
       setEvaluations((prev) =>
         prev.map((ev) => {
@@ -411,7 +487,7 @@ export default function SupervisorThesisGrading() {
             submitted_at: new Date().toISOString(),
             submitted_by: getUserName(),
           };
-        })
+        }),
       );
 
       setPreviewAllModalOpen(false);
@@ -440,11 +516,6 @@ export default function SupervisorThesisGrading() {
     return Array.from(map.entries());
   }, [evaluations]);
 
-  const maxBlocks = useMemo(
-    () => evaluations.reduce((max, ev) => Math.max(max, ev.total_blocks || 1), 1),
-    [evaluations],
-  );
-
   // Build unique semester options from loaded data
   const semOptions = [
     { value: "", label: "All Semesters" },
@@ -456,17 +527,16 @@ export default function SupervisorThesisGrading() {
   ];
 
   return (
-    <Card shadow="sm" p="lg" radius="md" withBorder>
+    <Card shadow="sm" p="lg" radius="md" withBorder mb="xl">
       <Stack gap="md">
         {/* Header */}
         <Title order={3} c="blue" fw={700} ta="center">
           Thesis Grade Submission
         </Title>
         <Text size="sm" c="dimmed" ta="center">
-          Submit S (Satisfactory) or X (Unsatisfactory) grades for each
-          evaluation block of your supervised PhD students. All of a
-          student&apos;s blocks must be submitted together — no partial
-          submission.
+          Submit S (Satisfactory) or X (Unsatisfactory) grades for your
+          supervised PhD students. All of a student&apos;s grades must be
+          submitted together — no partial submission.
         </Text>
 
         <Divider />
@@ -479,7 +549,11 @@ export default function SupervisorThesisGrading() {
             color="blue"
             size="md"
             radius="md"
-            bd={uploadMethod === "manual" ? "1px solid var(--mantine-color-blue-6)" : "1px solid var(--mantine-color-blue-2)"}
+            bd={
+              uploadMethod === "manual"
+                ? "1px solid var(--mantine-color-blue-6)"
+                : "1px solid var(--mantine-color-blue-2)"
+            }
           >
             Manual Entry
           </Button>
@@ -489,7 +563,11 @@ export default function SupervisorThesisGrading() {
             color="blue"
             size="md"
             radius="md"
-            bd={uploadMethod === "complete" ? "1px solid var(--mantine-color-blue-6)" : "1px solid var(--mantine-color-blue-2)"}
+            bd={
+              uploadMethod === "complete"
+                ? "1px solid var(--mantine-color-blue-6)"
+                : "1px solid var(--mantine-color-blue-2)"
+            }
           >
             Excel Upload
           </Button>
@@ -503,7 +581,7 @@ export default function SupervisorThesisGrading() {
                 Manual Grade Entry
               </Text>
               <Text size="sm" c="dimmed" mb="md">
-                Grade every block for a student, then submit them all at once
+                Grade every entry for a student, then submit them all at once
                 with the button at the end of the row.
               </Text>
             </div>
@@ -525,9 +603,9 @@ export default function SupervisorThesisGrading() {
                 value={gradedFilter}
                 onChange={(v) => setGradedFilter(v || "")}
                 data={[
-                  { value: "",      label: "All" },
+                  { value: "", label: "All" },
                   { value: "false", label: "Pending (not yet graded)" },
-                  { value: "true",  label: "Graded" },
+                  { value: "true", label: "Graded" },
                 ]}
                 w={220}
               />
@@ -552,31 +630,32 @@ export default function SupervisorThesisGrading() {
               </Alert>
             ) : evaluations.length === 0 ? (
               <Text ta="center" c="dimmed" py="xl">
-                No evaluation blocks found for the selected filters.
+                No grade entries found for the selected filters.
               </Text>
             ) : (
               <Table striped highlightOnHover withTableBorder withColumnBorders>
                 <Table.Thead>
                   <Table.Tr>
+                    <Table.Th>Roll No</Table.Th>
                     <Table.Th>Student</Table.Th>
                     <Table.Th>Semester</Table.Th>
-                    <Table.Th>Thesis Slot</Table.Th>
-                    {Array.from({ length: maxBlocks }, (_, i) => i + 1).map((n) => (
-                      <Table.Th key={n}>Block {n}</Table.Th>
-                    ))}
+                    <Table.Th>Thesis Code</Table.Th>
+                    <Table.Th>Thesis Title</Table.Th>
+                    <Table.Th>Grades</Table.Th>
                     <Table.Th>Action</Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
-                  {groupedRegistrations.map(([registrationId, blocksByNumber]) => (
-                    <RegistrationGradeRow
-                      key={registrationId}
-                      blocksByNumber={blocksByNumber}
-                      maxBlocks={maxBlocks}
-                      submittedByName={getUserName()}
-                      onGraded={handleGraded}
-                    />
-                  ))}
+                  {groupedRegistrations.map(
+                    ([registrationId, blocksByNumber]) => (
+                      <RegistrationGradeRow
+                        key={registrationId}
+                        blocksByNumber={blocksByNumber}
+                        submittedByName={getUserName()}
+                        onGraded={handleGraded}
+                      />
+                    ),
+                  )}
                 </Table.Tbody>
               </Table>
             )}
@@ -588,20 +667,21 @@ export default function SupervisorThesisGrading() {
           <Stack gap="md">
             <div>
               <Text size="sm" fw={600} mb="sm" c="green">
-                Excel Upload (All Blocks at Once)
+                Excel Upload (All Grades at Once)
               </Text>
               <Text size="sm" c="dimmed" mb="md">
-                Download a single template with all ungraded blocks and
-                students, fill in every block for each student, and submit in
-                bulk. A row missing a grade for any of that student&apos;s
-                blocks is rejected — there is no partial submission here
-                either.
+                Download a single template with all ungraded entries and
+                students, fill in every grade for each student, and submit in
+                bulk. A row missing any of that student&apos;s grades is
+                rejected — there is no partial submission here either.
               </Text>
             </div>
 
             {/* Download Template */}
             <div>
-              <Text size="sm" fw={500} mb="xs">Step 1: Download Template</Text>
+              <Text size="sm" fw={500} mb="xs">
+                Step 1: Download Template
+              </Text>
               <Group>
                 <Button
                   variant="default"
@@ -616,7 +696,9 @@ export default function SupervisorThesisGrading() {
 
             {/* Upload File */}
             <div>
-              <Text size="sm" fw={500} mb="xs">Step 2: Upload Grades</Text>
+              <Text size="sm" fw={500} mb="xs">
+                Step 2: Upload Grades
+              </Text>
               <Group>
                 <FileInput
                   label="Select Excel File"
@@ -655,13 +737,14 @@ export default function SupervisorThesisGrading() {
               <Text fw={700} size="sm" mb="xs">
                 Valid Rows ({previewAllData.valid_rows?.length || 0})
               </Text>
-              {previewAllData.valid_rows && previewAllData.valid_rows.length > 0 ? (
+              {previewAllData.valid_rows &&
+              previewAllData.valid_rows.length > 0 ? (
                 <ScrollArea>
                   <Table size="xs" striped>
                     <Table.Thead>
                       <Table.Tr>
                         <Table.Th>Roll Number</Table.Th>
-                        <Table.Th>Block</Table.Th>
+                        <Table.Th>Grade #</Table.Th>
                         <Table.Th>Grade</Table.Th>
                         <Table.Th>Remarks</Table.Th>
                       </Table.Tr>
@@ -670,7 +753,7 @@ export default function SupervisorThesisGrading() {
                       {previewAllData.valid_rows.map((row, idx) => (
                         <Table.Tr key={idx} bg="green.0">
                           <Table.Td>{row.roll_no}</Table.Td>
-                          <Table.Td>Block {row.block_number}</Table.Td>
+                          <Table.Td>{row.block_number}</Table.Td>
                           <Table.Td>
                             <Badge color={row.grade === "S" ? "green" : "red"}>
                               {row.grade}
@@ -689,41 +772,42 @@ export default function SupervisorThesisGrading() {
               )}
             </div>
 
-            {previewAllData.invalid_rows && previewAllData.invalid_rows.length > 0 && (
-              <div>
-                <Text fw={700} size="sm" mb="xs" c="red">
-                  Invalid Rows ({previewAllData.invalid_rows.length})
-                </Text>
-                <ScrollArea>
-                  <Table size="xs" striped>
-                    <Table.Thead>
-                      <Table.Tr>
-                        <Table.Th>Row #</Table.Th>
-                        <Table.Th>Roll Number</Table.Th>
-                        <Table.Th>Errors</Table.Th>
-                      </Table.Tr>
-                    </Table.Thead>
-                    <Table.Tbody>
-                      {previewAllData.invalid_rows.map((row, idx) => (
-                        <Table.Tr key={idx} bg="red.0">
-                          <Table.Td>{row.row_num}</Table.Td>
-                          <Table.Td>{row.roll_no}</Table.Td>
-                          <Table.Td>
-                            <Stack gap={0}>
-                              {row.errors.map((err, i) => (
-                                <Text key={i} size="xs" c="red">
-                                  • {err}
-                                </Text>
-                              ))}
-                            </Stack>
-                          </Table.Td>
+            {previewAllData.invalid_rows &&
+              previewAllData.invalid_rows.length > 0 && (
+                <div>
+                  <Text fw={700} size="sm" mb="xs" c="red">
+                    Invalid Rows ({previewAllData.invalid_rows.length})
+                  </Text>
+                  <ScrollArea>
+                    <Table size="xs" striped>
+                      <Table.Thead>
+                        <Table.Tr>
+                          <Table.Th>Row #</Table.Th>
+                          <Table.Th>Roll Number</Table.Th>
+                          <Table.Th>Errors</Table.Th>
                         </Table.Tr>
-                      ))}
-                    </Table.Tbody>
-                  </Table>
-                </ScrollArea>
-              </div>
-            )}
+                      </Table.Thead>
+                      <Table.Tbody>
+                        {previewAllData.invalid_rows.map((row, idx) => (
+                          <Table.Tr key={idx} bg="red.0">
+                            <Table.Td>{row.row_num}</Table.Td>
+                            <Table.Td>{row.roll_no}</Table.Td>
+                            <Table.Td>
+                              <Stack gap={0}>
+                                {row.errors.map((err, i) => (
+                                  <Text key={i} size="xs" c="red">
+                                    • {err}
+                                  </Text>
+                                ))}
+                              </Stack>
+                            </Table.Td>
+                          </Table.Tr>
+                        ))}
+                      </Table.Tbody>
+                    </Table>
+                  </ScrollArea>
+                </div>
+              )}
 
             <Group grow>
               <Button

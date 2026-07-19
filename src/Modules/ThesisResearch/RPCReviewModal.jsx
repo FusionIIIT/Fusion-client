@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Modal,
   Card,
@@ -13,56 +13,62 @@ import {
   Anchor,
   Space,
   Checkbox,
-} from '@mantine/core';
-import { showNotification } from '@mantine/notifications';
-import axios from 'axios';
+} from "@mantine/core";
+import { showNotification } from "@mantine/notifications";
+import axios from "axios";
 
 import {
   rpcSeminarDetailRoute,
   rpcSeminarConsentRoute,
   rpcSeminarFinalizeRoute,
-} from '../../routes/academicRoutes';
+} from "../../routes/academicRoutes";
+import { host } from "../../routes/globalRoutes";
 
 const QUALITY_OPTIONS = [
-  { value: 'Excellent', label: 'Excellent' },
-  { value: 'Good',      label: 'Good' },
-  { value: 'Sat',       label: 'Satisfactory' },
-  { value: 'Unsat',     label: 'Unsatisfactory' },
+  { value: "Excellent", label: "Excellent" },
+  { value: "Good", label: "Good" },
+  { value: "Sat", label: "Satisfactory" },
+  { value: "Unsat", label: "Unsatisfactory" },
 ];
 const QUANTITY_OPTIONS = [
-  { value: 'Enough', label: 'Enough' },
-  { value: 'Just',   label: 'Just Sufficient' },
-  { value: 'Insuff', label: 'Insufficient' },
+  { value: "Enough", label: "Enough" },
+  { value: "Just", label: "Just Sufficient" },
+  { value: "Insuff", label: "Insufficient" },
 ];
 const GRADE_OPTIONS = [
-  { value: 'S', label: 'S' },
-  { value: 'X', label: 'X' },
+  { value: "S", label: "S" },
+  { value: "X", label: "X" },
 ];
 const PERIOD_OPTIONS = [
-  { value: '1', label: '1 year' },
-  { value: '2', label: '2 years' },
-  { value: '3', label: '3 years' },
-  { value: '4', label: '4 years' },
+  { value: "1", label: "1 year" },
+  { value: "2", label: "2 years" },
+  { value: "3", label: "3 years" },
+  { value: "4", label: "4 years" },
 ];
 const YES_NO_NA = [
-  { value: 'Yes', label: 'Yes' },
-  { value: 'No',  label: 'No' },
-  { value: 'NA',  label: 'Not Applicable' },
+  { value: "Yes", label: "Yes" },
+  { value: "No", label: "No" },
+  { value: "NA", label: "Not Applicable" },
 ];
 
 export default function RPCReviewModal({ seminarId, onClose }) {
-  const [data, setData]   = useState(null);
-  const token             = localStorage.getItem('authToken');
+  const [data, setData] = useState(null);
+  const token = localStorage.getItem("authToken");
 
   useEffect(() => {
-    axios.get(rpcSeminarDetailRoute(seminarId), {
-      headers: { Authorization: `Token ${token}` },
-    })
-    .then(r => setData(r.data))
-    .catch(() => {
-      showNotification({ title: 'Error', message: 'Failed to load seminar', color: 'red' });
-      onClose();
-    });
+    axios
+      .get(rpcSeminarDetailRoute(seminarId), {
+        headers: { Authorization: `Token ${token}` },
+      })
+      .then((r) => setData(r.data))
+      .catch(() => {
+        showNotification({
+          title: "Error",
+          message: "Failed to load seminar",
+          color: "red",
+        });
+        onClose();
+      });
   }, [seminarId, token, onClose]);
 
   if (!data) {
@@ -74,25 +80,43 @@ export default function RPCReviewModal({ seminarId, onClose }) {
   }
 
   const {
-    version,
+    semester_no,
     studentName,
     rollNumber,
     discipline,
     thesisTitle,
-    date, time, venue,
-    prev, curr, future, doc_url,
-    publications,
-    committee, committeeSize, consentedCount,
-    quality, quantity, overall_grade, expected_period,
-    rec_assist, rec_enhance, rec_repeat, rec_open,
-    comments, status, myComment, isConsented,
+    date,
+    time,
+    venue,
+    prev,
+    curr,
+    future,
+    doc_url,
+    pub_published_or_accepted,
+    pub_presented_unpublished,
+    pub_submitted_under_review,
+    committee,
+    committeeSize,
+    consentedCount,
+    quality,
+    quantity,
+    overall_grade,
+    expected_period,
+    rec_assist,
+    rec_enhance,
+    rec_repeat,
+    rec_open,
+    comments,
+    status,
+    myComment,
+    isConsented,
   } = data;
 
-  const approved       = status === 'rpc_approved';
+  const approved = status === "rpc_approved";
   const iHaveConsented = isConsented;
 
   const updateField = (field, value) => {
-    setData(d => ({
+    setData((d) => ({
       ...d,
       [field]: value,
       isConsented: false,
@@ -100,54 +124,101 @@ export default function RPCReviewModal({ seminarId, onClose }) {
   };
 
   const saveConsent = () => {
-    axios.post(rpcSeminarConsentRoute(seminarId), {
-      quality, quantity, overall_grade, expected_period,
-      rec_assist, rec_enhance, rec_repeat, rec_open,
-      comment: myComment || '',
-    }, {
-      headers: { Authorization: `Token ${token}` },
-    })
-    .then(() => axios.get(rpcSeminarDetailRoute(seminarId), {
-      headers: { Authorization: `Token ${token}` },
-    }))
-    .then(r => {
-      setData(r.data);
-      showNotification({ title: 'Saved', message: 'Consent recorded', color: 'green' });
-    })
-    .catch(() => {
-      showNotification({ title: 'Error', message: 'Consent failed', color: 'red' });
-    });
+    axios
+      .post(
+        rpcSeminarConsentRoute(seminarId),
+        {
+          quality,
+          quantity,
+          overall_grade,
+          expected_period,
+          rec_assist,
+          rec_enhance,
+          rec_repeat,
+          rec_open,
+          comment: myComment || "",
+        },
+        {
+          headers: { Authorization: `Token ${token}` },
+        },
+      )
+      .then(() =>
+        axios.get(rpcSeminarDetailRoute(seminarId), {
+          headers: { Authorization: `Token ${token}` },
+        }),
+      )
+      .then((r) => {
+        setData(r.data);
+        showNotification({
+          title: "Saved",
+          message: "Consent recorded",
+          color: "green",
+        });
+      })
+      .catch(() => {
+        showNotification({
+          title: "Error",
+          message: "Consent failed",
+          color: "red",
+        });
+      });
   };
 
   const finalize = () => {
-    axios.post(rpcSeminarFinalizeRoute(seminarId), {}, {
-      headers: { Authorization: `Token ${token}` },
-    })
-    .then(r => {
-      setData(d => ({ ...d, status: 'rpc_approved' }));
-      showNotification({ title: 'Success', message: r.data.message, color: 'green' });
-    })
-    .catch(() => {
-      showNotification({ title: 'Error', message: 'Finalize failed', color: 'red' });
-    });
+    axios
+      .post(
+        rpcSeminarFinalizeRoute(seminarId),
+        {},
+        {
+          headers: { Authorization: `Token ${token}` },
+        },
+      )
+      .then((r) => {
+        setData((d) => ({ ...d, status: "rpc_approved" }));
+        showNotification({
+          title: "Success",
+          message: r.data.message,
+          color: "green",
+        });
+      })
+      .catch(() => {
+        showNotification({
+          title: "Error",
+          message: "Finalize failed",
+          color: "red",
+        });
+      });
   };
 
   return (
-    <Modal opened onClose={onClose} title={`Review Seminar #${version}`} size="90%">
+    <Modal
+      opened
+      onClose={onClose}
+      title={`Review Progress Seminar${semester_no ? ` — Semester ${semester_no}` : ""}`}
+      size="90%"
+    >
       <Card shadow="sm" padding="lg">
         <Stack spacing="md">
-        <Table verticalSpacing="sm" fontSize="sm">
+          <Table verticalSpacing="sm" fontSize="sm">
             <tbody>
               <tr>
-                <td><b>Student Name</b></td>
+                <td>
+                  <b>Student Name</b>
+                </td>
                 <td>{studentName}</td>
-                <td><b>Roll No.</b></td>
+                <td>
+                  <b>Roll No.</b>
+                </td>
                 <td>{rollNumber}</td>
               </tr>
               <tr>
-                <td><b>Discipline</b></td>
+                <td>
+                  <b>Discipline</b>
+                </td>
                 <td>{discipline}</td>
-                <td><b>Thesis Title</b></td>
+                <td>
+                  <b>Thesis Title</b>
+                </td>
                 <td>{thesisTitle}</td>
               </tr>
             </tbody>
@@ -158,21 +229,33 @@ export default function RPCReviewModal({ seminarId, onClose }) {
           <Table verticalSpacing="sm" fontSize="sm">
             <tbody>
               <tr>
-                <td><b>Date</b></td>
+                <td>
+                  <b>Date</b>
+                </td>
                 <td>{date}</td>
-                <td><b>Time</b></td>
+                <td>
+                  <b>Time</b>
+                </td>
                 <td>{time}</td>
               </tr>
               <tr>
-                <td><b>Venue</b></td>
+                <td>
+                  <b>Venue</b>
+                </td>
                 <td>{venue}</td>
-                <td><b>Prev Sem Work</b></td>
+                <td>
+                  <b>Prev Sem Work</b>
+                </td>
                 <td>{prev}</td>
               </tr>
               <tr>
-                <td><b>Current Contrib</b></td>
+                <td>
+                  <b>Current Contrib</b>
+                </td>
                 <td>{curr}</td>
-                <td><b>Future Plan</b></td>
+                <td>
+                  <b>Future Plan</b>
+                </td>
                 <td>{future}</td>
               </tr>
             </tbody>
@@ -180,28 +263,42 @@ export default function RPCReviewModal({ seminarId, onClose }) {
           <Space h="md" />
 
           {/* Download PDF link */}
-          {doc_url && <Anchor href={doc_url} target="_blank">Download Submission PDF</Anchor>}
+          {doc_url && (
+            <Anchor
+              href={
+                doc_url.startsWith("http")
+                  ? doc_url
+                  : `${host}${doc_url.startsWith("/") ? "" : "/"}${doc_url}`
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Download Submission PDF
+            </Anchor>
+          )}
           <Space h="md" />
 
           {/* Publications */}
-          <Table striped highlightOnHover>
-            <thead>
-              <tr>
-                <th>Category</th>
-                <th>Submitted</th>
-                <th>Accepted</th>
-                <th>Published</th>
-              </tr>
-            </thead>
+          <Table verticalSpacing="sm" fontSize="sm">
             <tbody>
-              {publications.map(p => (
-                <tr key={p.category}>
-                  <td>{p.category}</td>
-                  <td>{p.submitted}</td>
-                  <td>{p.accepted}</td>
-                  <td>{p.published}</td>
-                </tr>
-              ))}
+              <tr>
+                <td>
+                  <b>Published/accepted (journals or conference proceedings)</b>
+                </td>
+                <td>{pub_published_or_accepted}</td>
+              </tr>
+              <tr>
+                <td>
+                  <b>Presented in conferences/workshops (unpublished)</b>
+                </td>
+                <td>{pub_presented_unpublished}</td>
+              </tr>
+              <tr>
+                <td>
+                  <b>Submitted (under review)</b>
+                </td>
+                <td>{pub_submitted_under_review}</td>
+              </tr>
             </tbody>
           </Table>
           <Space h="md" />
@@ -212,14 +309,20 @@ export default function RPCReviewModal({ seminarId, onClose }) {
           </Text>
           <Table striped>
             <thead>
-              <tr><th>Name</th><th>Discipline</th><th>Consented?</th></tr>
+              <tr>
+                <th>Name</th>
+                <th>Discipline</th>
+                <th>Consented?</th>
+              </tr>
             </thead>
             <tbody>
-              {committee.map(m => (
+              {committee.map((m) => (
                 <tr key={m.id}>
                   <td>{m.name}</td>
                   <td>{m.discipline}</td>
-                  <td><Checkbox checked={m.consented} readOnly /></td>
+                  <td>
+                    <Checkbox checked={m.consented} readOnly />
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -231,56 +334,62 @@ export default function RPCReviewModal({ seminarId, onClose }) {
             label="Quality of work done"
             data={QUALITY_OPTIONS}
             value={quality}
-            onChange={v => updateField('quality', v)}
+            onChange={(v) => updateField("quality", v)}
             disabled={approved || iHaveConsented}
           />
           <Select
             label="Quantity of work done"
             data={QUANTITY_OPTIONS}
             value={quantity}
-            onChange={v => updateField('quantity', v)}
+            onChange={(v) => updateField("quantity", v)}
             disabled={approved || iHaveConsented}
           />
           <Select
             label="Overall grade"
             data={GRADE_OPTIONS}
             value={overall_grade}
-            onChange={v => updateField('overall_grade', v)}
+            onChange={(v) => updateField("overall_grade", v)}
             disabled={approved || iHaveConsented}
           />
           <Select
             label="Expected period"
             data={PERIOD_OPTIONS}
             value={expected_period}
-            onChange={v => updateField('expected_period', v)}
+            onChange={(v) => updateField("expected_period", v)}
             disabled={approved || iHaveConsented}
           />
           <Select
             label="Continue assistantship?"
             data={YES_NO_NA}
             value={rec_assist}
-            onChange={v => updateField('rec_assist', v)}
+            onChange={(v) => updateField("rec_assist", v)}
             disabled={approved || iHaveConsented}
           />
           <Select
             label="Enhancement after 2 years?"
             data={YES_NO_NA}
             value={rec_enhance}
-            onChange={v => updateField('rec_enhance', v)}
+            onChange={(v) => updateField("rec_enhance", v)}
             disabled={approved || iHaveConsented}
           />
           <Select
             label="Must repeat seminar?"
-            data={[{ value: 'Yes', label: 'Yes' }, { value: 'NA', label: 'Not Applicable' }]}
+            data={[
+              { value: "Yes", label: "Yes" },
+              { value: "NA", label: "Not Applicable" },
+            ]}
             value={rec_repeat}
-            onChange={v => updateField('rec_repeat', v)}
+            onChange={(v) => updateField("rec_repeat", v)}
             disabled={approved || iHaveConsented}
           />
           <Select
             label="Recommend open seminar?"
-            data={[{ value: 'Yes', label: 'Yes' }, { value: 'No', label: 'No' }]}
+            data={[
+              { value: "Yes", label: "Yes" },
+              { value: "No", label: "No" },
+            ]}
             value={rec_open}
-            onChange={v => updateField('rec_open', v)}
+            onChange={(v) => updateField("rec_open", v)}
             disabled={approved || iHaveConsented}
           />
           <Space h="md" />
@@ -312,7 +421,7 @@ export default function RPCReviewModal({ seminarId, onClose }) {
             label="Your Comment"
             placeholder="Enter your suggestions"
             value={myComment}
-            onChange={e => updateField('myComment', e.currentTarget.value)}
+            onChange={(e) => updateField("myComment", e.currentTarget.value)}
             disabled={approved || iHaveConsented}
           />
           <Space h="md" />
@@ -324,7 +433,7 @@ export default function RPCReviewModal({ seminarId, onClose }) {
               onClick={saveConsent}
               disabled={approved || iHaveConsented}
             >
-              {iHaveConsented ? 'Already Consented' : 'Save & Consent'}
+              {iHaveConsented ? "Already Consented" : "Save & Consent"}
             </Button>
           )}
 

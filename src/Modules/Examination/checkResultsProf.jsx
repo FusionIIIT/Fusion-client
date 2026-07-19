@@ -32,6 +32,7 @@ export default function GradesDownloadPage() {
   const programmeTypes = [
     { value: "UG", label: "UG (Undergraduate)" },
     { value: "PG", label: "PG (Postgraduate)" },
+    { value: "PHD", label: "PhD" },
   ];
 
   const [year, setYear] = useState("");
@@ -132,7 +133,18 @@ export default function GradesDownloadPage() {
       a.remove();
       showNotification({ title: "Downloaded", message: "PDF saved", color: "green" });
     } catch (err) {
-      const msg = err.response?.data?.error || "Download failed";
+      let serverMessage = null;
+      if (err.response?.data instanceof Blob) {
+        try {
+          const text = await err.response.data.text();
+          serverMessage = JSON.parse(text)?.error;
+        } catch {
+          serverMessage = null;
+        }
+      } else {
+        serverMessage = err.response?.data?.error;
+      }
+      const msg = serverMessage || "Download failed";
       setError(msg);
       showNotification({ title: "Error", message: msg, color: "red" });
     } finally {

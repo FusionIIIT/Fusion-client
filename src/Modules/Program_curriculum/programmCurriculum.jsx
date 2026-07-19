@@ -28,7 +28,8 @@ import FacultyCourseProposal from "./Faculty/Faculty_course_proposal";
 import VCourseProposalForm from "./Faculty/VCourseProposalForm";
 import CourseSlotDetails from "./CourseSlotDetails";
 import ThesisSlotDetails from "./ThesisSlotDetails";
-import ProgressSeminarSlotDetails from "./ProgressSeminarSlotDetails";
+import SeminarSlotDetails from "./SeminarSlotDetails";
+import TeachingCreditSlotDetails from "./TeachingCreditSlotDetails";
 import SemesterInfo from "./SemesterInfo";
 import AdminViewAllProgrammes from "./Acad_admin/Admin_view_all_programmes";
 import AdminViewAllWorkingCurriculum from "./Acad_admin/Admin_view_all_working_curriculums";
@@ -50,11 +51,13 @@ import AdminAddBatchForm from "./Acad_admin/Admin_add_batch_form";
 import AdminAddCourseProposalForm from "./Acad_admin/Admin_add_course_proposal_form";
 import AdminAddCourseSlotForm from "./Acad_admin/Admin_add_course_slot_form";
 import AdminAddThesisSlotForm from "./Acad_admin/Admin_add_thesis_slot_form";
-import AdminAddProgressSeminarSlotForm from "./Acad_admin/Admin_add_progress_seminar_slot_form";
+import AdminAddSeminarSlotForm from "./Acad_admin/Admin_add_seminar_slot_form";
+import AdminAddTeachingCreditSlotForm from "./Acad_admin/Admin_add_teaching_credit_slot_form";
 import AdminAddCurriculumForm from "./Acad_admin/Admin_add_curriculum_form";
 import AdminAddCourseInstructor from "./Acad_admin/Admin_add_course_instructor_form";
 import AdminAddThesisForm from "./Acad_admin/Admin_add_thesis_form";
-import AdminAddProgressSeminarForm from "./Acad_admin/Admin_add_progress_seminar_form";
+import AdminAddSeminarForm from "./Acad_admin/Admin_add_seminar_form";
+import AdminAddTeachingCreditForm from "./Acad_admin/Admin_add_teaching_credit_form";
 import AdminAddDisciplineForm from "./Acad_admin/Admin_add_discipline_form";
 import AdminAddProgrammeForm from "./Acad_admin/Admin_add_programme_form";
 import InstigateForm from "./Acad_admin/Instigate_form";
@@ -63,11 +66,13 @@ import AdminEditCurriculumForm from "./Acad_admin/Admin_edit_curriculum_form";
 import AdminReplicateCurriculumform from "./Acad_admin/Acad_admin_replicate_curriculum";
 import AdminEditCourseSlotForm from "./Acad_admin/Admin_edit_course_slot_form";
 import AdminEditThesisSlotForm from "./Acad_admin/Admin_edit_thesis_slot_form";
-import AdminEditProgressSeminarSlotForm from "./Acad_admin/Admin_edit_progress_seminar_slot_form";
+import AdminEditSeminarSlotForm from "./Acad_admin/Admin_edit_seminar_slot_form";
+import AdminEditTeachingCreditSlotForm from "./Acad_admin/Admin_edit_teaching_credit_slot_form";
 import AdminEditDisciplineForm from "./Acad_admin/Admin_edit_discipline_form";
 import AdminEditCourseForm from "./Acad_admin/Admin_edit_course_form";
 import AdminEditThesisForm from "./Acad_admin/Admin_edit_thesis_form";
-import AdminEditProgressSeminarForm from "./Acad_admin/Admin_edit_progress_seminar_form";
+import AdminEditSeminarForm from "./Acad_admin/Admin_edit_seminar_form";
+import AdminEditTeachingCreditForm from "./Acad_admin/Admin_edit_teaching_credit_form";
 import AdminEditBatchForm from "./Acad_admin/Admin_edit_batch_form";
 import AdminEditCourseInstructor from "./Acad_admin/Admin_edit_course_instructor_form";
 import Breadcrumb from "./BreadCrumbs";
@@ -282,12 +287,24 @@ export default function ProgrammeCurriculumRoutes() {
       />
 
       <Route
-        path="/admin_add_progress_seminar"
+        path="/admin_add_seminar"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
             <Layout>
               <NavTab />
-              <AdminAddProgressSeminarForm />
+              <AdminAddSeminarForm />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin_add_teaching_credit"
+        element={
+          <ProtectedRoute allowedRoles={ADMIN_ROLES}>
+            <Layout>
+              <NavTab />
+              <AdminAddTeachingCreditForm />
             </Layout>
           </ProtectedRoute>
         }
@@ -651,12 +668,23 @@ export default function ProgrammeCurriculumRoutes() {
         }
       />
       <Route
-        path="/progress_seminar_slot_details"
+        path="/seminar_slot_details"
         element={
           <ProtectedRoute allowedRoles={[...FACULTY_ROLES, ...ADMIN_ROLES]}>
             <Layout>
               <NavTab />
-              <ProgressSeminarSlotDetails />
+              <SeminarSlotDetails />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/teaching_credit_slot_details"
+        element={
+          <ProtectedRoute allowedRoles={[...FACULTY_ROLES, ...ADMIN_ROLES]}>
+            <Layout>
+              <NavTab />
+              <TeachingCreditSlotDetails />
             </Layout>
           </ProtectedRoute>
         }
@@ -673,12 +701,23 @@ export default function ProgrammeCurriculumRoutes() {
         }
       />
       <Route
-        path="/acad_admin_add_progress_seminar_slot_form"
+        path="/acad_admin_add_seminar_slot_form"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
             <Layout>
               <NavTab />
-              <AdminAddProgressSeminarSlotForm />
+              <AdminAddSeminarSlotForm />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/acad_admin_add_teaching_credit_slot_form"
+        element={
+          <ProtectedRoute allowedRoles={ADMIN_ROLES}>
+            <Layout>
+              <NavTab />
+              <AdminAddTeachingCreditSlotForm />
             </Layout>
           </ProtectedRoute>
         }
@@ -783,12 +822,23 @@ export default function ProgrammeCurriculumRoutes() {
         }
       />
       <Route
-        path="/admin_edit_progress_seminar_slot_form/:psslotid"
+        path="/admin_edit_seminar_slot_form/:seminarslotid"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
             <Layout>
               <NavTab />
-              <AdminEditProgressSeminarSlotForm />
+              <AdminEditSeminarSlotForm />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin_edit_teaching_credit_slot_form/:tcslotid"
+        element={
+          <ProtectedRoute allowedRoles={ADMIN_ROLES}>
+            <Layout>
+              <NavTab />
+              <AdminEditTeachingCreditSlotForm />
             </Layout>
           </ProtectedRoute>
         }
@@ -849,12 +899,23 @@ export default function ProgrammeCurriculumRoutes() {
         }
       />
       <Route
-        path="/admin_edit_progress_seminar_form/:id"
+        path="/admin_edit_seminar_form/:id"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
             <Layout>
               <NavTab />
-              <AdminEditProgressSeminarForm />
+              <AdminEditSeminarForm />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin_edit_teaching_credit_form/:id"
+        element={
+          <ProtectedRoute allowedRoles={ADMIN_ROLES}>
+            <Layout>
+              <NavTab />
+              <AdminEditTeachingCreditForm />
             </Layout>
           </ProtectedRoute>
         }
