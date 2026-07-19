@@ -16,7 +16,7 @@ import { notifications } from "@mantine/notifications";
 import { fetchDisciplinesData } from "../api/api";
 import { host } from "../../../routes/globalRoutes";
 
-function Admin_add_progress_seminar_form() {
+function Admin_add_seminar_form() {
   const form = useForm({
     initialValues: {
       code: "",
@@ -26,8 +26,8 @@ function Admin_add_progress_seminar_form() {
       programme_type: "",
     },
     validate: {
-      code: (value) => (!value ? "Progress seminar code is required" : null),
-      name: (value) => (!value ? "Progress seminar name is required" : null),
+      code: (value) => (!value ? "Seminar code is required" : null),
+      name: (value) => (!value ? "Seminar name is required" : null),
       credit: (value) =>
         value === null || value === undefined || value < 0
           ? "Credits must be 0 or more"
@@ -69,7 +69,7 @@ function Admin_add_progress_seminar_form() {
   ];
 
   const handleSubmit = async (values) => {
-    const apiUrl = `${host}/programme_curriculum/api/admin_add_progress_seminar/`;
+    const apiUrl = `${host}/programme_curriculum/api/admin_add_seminar/`;
     const token = localStorage.getItem("authToken");
 
     const payload = {
@@ -91,15 +91,13 @@ function Admin_add_progress_seminar_form() {
       });
 
       if (response.ok) {
-        const data = await response.json();
-
         notifications.show({
-          title: "Progress Seminar Added Successfully!",
+          title: "Seminar Added Successfully!",
           message: (
             <div>
               <Text size="sm" mb={8}>
                 <strong>
-                  Progress Seminar "{values.name}" ({values.code}) has been
+                  Seminar "{values.name}" ({values.code}) has been
                   created.
                 </strong>
               </Text>
@@ -125,13 +123,13 @@ function Admin_add_progress_seminar_form() {
         const errorData = await response.json();
 
         notifications.show({
-          title: "Failed to Add Progress Seminar",
+          title: "Failed to Add Seminar",
           message: (
             <div>
               <Text size="sm" mb={8}>
                 <strong>
                   {errorData.error ||
-                    "Unable to create progress seminar. Please try again."}
+                    "Unable to create seminar. Please try again."}
                 </strong>
               </Text>
             </div>
@@ -151,7 +149,7 @@ function Admin_add_progress_seminar_form() {
         message: (
           <div>
             <Text size="sm" mb={8}>
-              <strong>Connection error occurred while adding progress seminar.</strong>
+              <strong>Connection error occurred while adding seminar.</strong>
             </Text>
             <Text size="xs" c="gray.7">
               Please check your internet connection and try again.
@@ -210,7 +208,7 @@ function Admin_add_progress_seminar_form() {
                   align="center"
                   style={{ padding: "10px", borderRadius: "5px" }}
                 >
-                  Progress Seminar Form
+                  Seminar Form
                 </Text>
 
                 <Table
@@ -273,7 +271,7 @@ function Admin_add_progress_seminar_form() {
                         style={{ border: "2px solid #1976d2", padding: "10px" }}
                       >
                         <TextInput
-                          placeholder="e.g. PhD Progress Seminar in Computer Science"
+                          placeholder="e.g. PhD Seminar in Computer Science"
                           value={form.values.name}
                           onChange={(event) =>
                             form.setFieldValue(
@@ -418,7 +416,7 @@ function Admin_add_progress_seminar_form() {
                     Cancel
                   </Button>
                   <Button type="submit" style={{ minWidth: "120px" }}>
-                    Add Progress Seminar
+                    Add Seminar
                   </Button>
                 </Group>
               </Stack>
@@ -430,4 +428,4 @@ function Admin_add_progress_seminar_form() {
   );
 }
 
-export default Admin_add_progress_seminar_form;
+export default Admin_add_seminar_form;

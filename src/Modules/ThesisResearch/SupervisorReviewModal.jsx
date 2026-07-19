@@ -24,6 +24,7 @@ export default function SupervisorReviewModal({ thesis, onClose, refresh }) {
   const [form, setForm] = useState(null);
   const [facOpts, setFacOpts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [initialCoConsented, setInitialCoConsented] = useState(false);
 
   const token = localStorage.getItem("authToken");
   const headers = token ? { Authorization: `Token ${token}` } : {};
@@ -35,7 +36,7 @@ export default function SupervisorReviewModal({ thesis, onClose, refresh }) {
         axios.get(supervisorReviewRoute(thesis.id), { headers }),
         axios.get(facultyListRoute, { headers }),
       ]);
-      const data = tRes.data;
+      const { data } = tRes;
       const supId = data.supervisor.id;
       const coId = data.co_supervisor?.id;
       const allIds = data.committee.map((m) => m.id);
@@ -45,12 +46,13 @@ export default function SupervisorReviewModal({ thesis, onClose, refresh }) {
       const padded = extras.slice(0, numSelectables);
       while (padded.length < numSelectables) padded.push(null);
       setForm({ ...data, committee: padded });
+      setInitialCoConsented(!!data.co_supervisor_consented);
       setFacOpts(
         fRes.data.map((f) => ({
           value: f.id,
           label: f.name,
           discipline: f.discipline,
-        }))
+        })),
       );
     } catch {
       showNotification({
@@ -77,7 +79,12 @@ export default function SupervisorReviewModal({ thesis, onClose, refresh }) {
     load();
   }, [token, load]);
 
-  if (loading) return <Center style={{ height: 200 }}><Loader size="lg" /></Center>;
+  if (loading)
+    return (
+      <Center style={{ height: 200 }}>
+        <Loader size="lg" />
+      </Center>
+    );
   if (!form) return null;
 
   const {
@@ -108,7 +115,8 @@ export default function SupervisorReviewModal({ thesis, onClose, refresh }) {
     supervisor_consented &&
     (!coId || co_supervisor_consented) &&
     totalMembers >= 3;
-  const coCanSubmit = is_co_supervisor && co_supervisor_consented;
+  const coCanSubmit =
+    is_co_supervisor && co_supervisor_consented && !initialCoConsented;
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -125,12 +133,14 @@ export default function SupervisorReviewModal({ thesis, onClose, refresh }) {
       payload.co_supervisor_consented = co_supervisor_consented;
     }
     try {
-      const res = await axios.post(
-        supervisorReviewRoute(thesis.id),
-        payload,
-        { headers }
-      );
-      showNotification({ title: "Success", message: res.data.message, color: "green" });
+      const res = await axios.post(supervisorReviewRoute(thesis.id), payload, {
+        headers,
+      });
+      showNotification({
+        title: "Success",
+        message: res.data.message,
+        color: "green",
+      });
       refresh();
     } catch (e) {
       showNotification({
@@ -143,23 +153,55 @@ export default function SupervisorReviewModal({ thesis, onClose, refresh }) {
   };
 
   return (
-    <Modal opened onClose={onClose} title="Supervisor / Co-Supervisor Review" size="90%">
+    <Modal
+      opened
+      onClose={onClose}
+      title="Supervisor / Co-Supervisor Review"
+      size="90%"
+    >
       <Stack spacing="lg">
         {/* Student Info */}
         <Table striped highlightOnHover>
           <tbody>
-            <tr><td><Text weight={500}>Roll No</Text></td><td>{student_roll}</td></tr>
-            <tr><td><Text weight={500}>Name</Text></td><td>{student_name}</td></tr>
-            <tr><td><Text weight={500}>Discipline</Text></td><td>{student_discipline}</td></tr>
-            <tr><td><Text weight={500}>Category</Text></td><td>{category}</td></tr>
-            <tr><td><Text weight={500}>Broad Area</Text></td><td>{broad_area}</td></tr>
+            <tr>
+              <td>
+                <Text weight={500}>Roll No</Text>
+              </td>
+              <td>{student_roll}</td>
+            </tr>
+            <tr>
+              <td>
+                <Text weight={500}>Name</Text>
+              </td>
+              <td>{student_name}</td>
+            </tr>
+            <tr>
+              <td>
+                <Text weight={500}>Discipline</Text>
+              </td>
+              <td>{student_discipline}</td>
+            </tr>
+            <tr>
+              <td>
+                <Text weight={500}>Category</Text>
+              </td>
+              <td>{category}</td>
+            </tr>
+            <tr>
+              <td>
+                <Text weight={500}>Broad Area</Text>
+              </td>
+              <td>{broad_area}</td>
+            </tr>
           </tbody>
         </Table>
 
         <Textarea
           label="Theme of Proposed Research"
           value={research_theme}
-          onChange={(e) => setForm(f => ({ ...f, research_theme: e.target.value }))}
+          onChange={(e) =>
+            setForm((f) => ({ ...f, research_theme: e.target.value }))
+          }
           disabled={readOnly}
           minRows={3}
         />
@@ -170,7 +212,7 @@ export default function SupervisorReviewModal({ thesis, onClose, refresh }) {
             value={hod_remarks}
             readOnly
             minRows={2}
-            styles={{ root: { backgroundColor: '#ffe6e6' } }}
+            styles={{ root: { backgroundColor: "#ffe6e6" } }}
           />
         )}
 
@@ -178,20 +220,33 @@ export default function SupervisorReviewModal({ thesis, onClose, refresh }) {
           <>
             <Text weight={500}>Supervisor Load</Text>
             <Table striped highlightOnHover>
-              <thead><tr><th/><th>Single</th><th>Shared</th></tr></thead>
+              <thead>
+                <tr>
+                  <th />
+                  <th>Single</th>
+                  <th>Shared</th>
+                </tr>
+              </thead>
               <tbody>
-                {['PG','PhD'].map(cat => (
+                {["PG", "PhD"].map((cat) => (
                   <tr key={cat}>
-                    <td><Text weight={500}>{cat}</Text></td>
+                    <td>
+                      <Text weight={500}>{cat}</Text>
+                    </td>
                     <td>
                       <NumberInput
                         required
                         value={supLoad[`${cat.toLowerCase()}_single`]}
                         disabled={readOnly}
-                        onChange={v => setForm(f => ({
-                          ...f,
-                          load: { ...f.load, [`${cat.toLowerCase()}_single`]: v }
-                        }))}
+                        onChange={(v) =>
+                          setForm((f) => ({
+                            ...f,
+                            load: {
+                              ...f.load,
+                              [`${cat.toLowerCase()}_single`]: v,
+                            },
+                          }))
+                        }
                       />
                     </td>
                     <td>
@@ -199,10 +254,15 @@ export default function SupervisorReviewModal({ thesis, onClose, refresh }) {
                         required
                         value={supLoad[`${cat.toLowerCase()}_shared`]}
                         disabled={readOnly}
-                        onChange={v => setForm(f => ({
-                          ...f,
-                          load: { ...f.load, [`${cat.toLowerCase()}_shared`]: v }
-                        }))}
+                        onChange={(v) =>
+                          setForm((f) => ({
+                            ...f,
+                            load: {
+                              ...f.load,
+                              [`${cat.toLowerCase()}_shared`]: v,
+                            },
+                          }))
+                        }
                       />
                     </td>
                   </tr>
@@ -214,7 +274,12 @@ export default function SupervisorReviewModal({ thesis, onClose, refresh }) {
               label="I consent as Supervisor"
               checked={supervisor_consented}
               disabled={readOnly || supervisor_consented}
-              onChange={e => setForm(f => ({ ...f, supervisor_consented: e.target.checked }))}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  supervisor_consented: e.target.checked,
+                }))
+              }
             />
 
             {coId && (
@@ -231,19 +296,32 @@ export default function SupervisorReviewModal({ thesis, onClose, refresh }) {
               coSupervisor={form.co_supervisor}
               facultyOptions={facOpts}
               committee={form.committee}
-              onChange={c => setForm(f => ({ ...f, committee: c }))}
+              onChange={(c) => setForm((f) => ({ ...f, committee: c }))}
               readOnly={readOnly}
             />
           </>
         )}
 
         {!is_supervisor && is_co_supervisor && (
-          <Checkbox
-            label="I consent as Co-Supervisor"
-            checked={co_supervisor_consented}
-            disabled={readOnly || co_supervisor_consented}
-            onChange={e => setForm(f => ({ ...f, co_supervisor_consented: e.target.checked }))}
-          />
+          <>
+            <Checkbox
+              label="I consent as Co-Supervisor"
+              checked={co_supervisor_consented}
+              disabled={readOnly || co_supervisor_consented}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  co_supervisor_consented: e.target.checked,
+                }))
+              }
+            />
+            {initialCoConsented && (
+              <Text size="sm" c="dimmed">
+                Your consent has already been recorded — waiting for the
+                supervisor to forward this to the HOD.
+              </Text>
+            )}
+          </>
         )}
 
         <Group>
@@ -251,7 +329,7 @@ export default function SupervisorReviewModal({ thesis, onClose, refresh }) {
             fullWidth
             onClick={handleSubmit}
             loading={loading}
-            disabled={readOnly || (!(supCanSubmit || coCanSubmit))}
+            disabled={readOnly || !(supCanSubmit || coCanSubmit)}
           >
             {is_supervisor ? "Forward to HOD" : "Submit Consent"}
           </Button>

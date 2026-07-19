@@ -19,7 +19,8 @@ function Admin_view_semesters_of_a_curriculum() {
   const [isHovered, setIsHovered] = useState(false);
   const [isAddCourseSlotHovered, setIsAddCourseSlotHovered] = useState(false);
   const [isAddThesisSlotHovered, setIsAddThesisSlotHovered] = useState(false);
-  const [isAddPSSlotHovered, setIsAddPSSlotHovered] = useState(false);
+  const [isAddSeminarSlotHovered, setIsAddSeminarSlotHovered] = useState(false);
+  const [isAddTCSlotHovered, setIsAddTCSlotHovered] = useState(false);
   const [isEditBatchHovered, setIsEditBatchHovered] = useState(false);
   const [isLinkedBatchHovered, setIsLinkedBatchHovered] = useState(false);
 
@@ -214,18 +215,47 @@ function Admin_view_semesters_of_a_curriculum() {
 
             <div
               className="add-course-slot"
-              onMouseEnter={() => setIsAddPSSlotHovered(true)}
-              onMouseLeave={() => setIsAddPSSlotHovered(false)}
+              onMouseEnter={() => setIsAddSeminarSlotHovered(true)}
+              onMouseLeave={() => setIsAddSeminarSlotHovered(false)}
             >
               <button className="add-course-slot-button">
-                ADD PROGRESS SEMINAR SLOT
+                ADD SEMINAR SLOT
               </button>
 
-              {isAddPSSlotHovered && (
+              {isAddSeminarSlotHovered && (
                 <div className="semester-dropdown">
                   {semesterscnt.map((semester, index) => (
                     <Link
-                      to={`/programme_curriculum/acad_admin_add_progress_seminar_slot_form?semester=${
+                      to={`/programme_curriculum/acad_admin_add_seminar_slot_form?semester=${
+                        semester.value
+                      }&curriculum=${curriculumId}`}
+                      style={{ textDecoration: "none" }}
+                      key={index}
+                    >
+                      <div key={index} className="semester-option">
+                        <text>{semester.label}</text>
+                        <text>+</text>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div
+              className="add-course-slot"
+              onMouseEnter={() => setIsAddTCSlotHovered(true)}
+              onMouseLeave={() => setIsAddTCSlotHovered(false)}
+            >
+              <button className="add-course-slot-button">
+                ADD TEACHING CREDIT SLOT
+              </button>
+
+              {isAddTCSlotHovered && (
+                <div className="semester-dropdown">
+                  {semesterscnt.map((semester, index) => (
+                    <Link
+                      to={`/programme_curriculum/acad_admin_add_teaching_credit_slot_form?semester=${
                         semester.value
                       }&curriculum=${curriculumId}`}
                       style={{ textDecoration: "none" }}
@@ -429,10 +459,10 @@ function Admin_view_semesters_of_a_curriculum() {
                                 )}
                               </Link>
                             </div>
-                          ) : slot.slot_type === 'progress_seminar' ? (
+                          ) : slot.slot_type === 'seminar' ? (
                             <div>
                               <Link
-                                to={`/programme_curriculum/progress_seminar_slot_details?ps_slot=${slot.id}&curriculum=${curriculumId}&semester=${semesters[semesterIndex].id}`}
+                                to={`/programme_curriculum/seminar_slot_details?seminar_slot=${slot.id}&curriculum=${curriculumId}&semester=${semesters[semesterIndex].id}`}
                                 style={{ textDecoration: "none" }}
                               >
                                 {slot.courses.length === 1 ? (
@@ -446,6 +476,27 @@ function Admin_view_semesters_of_a_curriculum() {
                                 ) : (
                                   <strong style={{ fontSize: "10px", color: "#0d9488" }}>
                                     {slot.name} <span style={{ fontSize: "9px" }}>(Seminar)</span>
+                                  </strong>
+                                )}
+                              </Link>
+                            </div>
+                          ) : slot.slot_type === 'teaching_credit' ? (
+                            <div>
+                              <Link
+                                to={`/programme_curriculum/teaching_credit_slot_details?tc_slot=${slot.id}&curriculum=${curriculumId}&semester=${semesters[semesterIndex].id}`}
+                                style={{ textDecoration: "none" }}
+                              >
+                                {slot.courses.length === 1 ? (
+                                  <p>
+                                    <strong style={{ fontSize: "10px", color: "#b45309" }}>
+                                      {slot.courses[0].code}
+                                    </strong>
+                                    <br />
+                                    <span style={{ fontSize: "9px" }}>(Teaching Credit, C: {slot.courses[0].credit})</span>
+                                  </p>
+                                ) : (
+                                  <strong style={{ fontSize: "10px", color: "#b45309" }}>
+                                    {slot.name} <span style={{ fontSize: "9px" }}>(Teaching Credit)</span>
                                   </strong>
                                 )}
                               </Link>

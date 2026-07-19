@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { Flex } from "@mantine/core";
 import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
 
 import CustomBreadcrumbs from "../../components/Breadcrumbs";
 import ModuleTabs from "../../components/moduleTabs";
@@ -24,21 +25,42 @@ import StudentAddDropReplace from "./StudentAddDropReplace";
 import AdminReplacementDashboard from "./AdminReplacementDashboard";
 import AdminAddDashboard from "./AdminAddDashboard";
 import AdminDropDashboard from "./AdminDropDashboard";
-import AdminSwayamDashboard from "./AdminSwayamDashboard";
 import StudentCalendar from "./StudentCalendar";
 import AdminStudentDashboard from "./AdminStudentDashboard";
-import AdminFeedbackView from "./FeedbackForm/AdminFeedbackView";
 import StudentCourseFeedbackForm from "./FeedbackForm/StudentCourseFeedbackForm";
+import AdminFeedbackView from "./FeedbackForm/AdminFeedbackView";
 import AdminBatchChange from "./AdminBatchChange";
 import AdminPromoteSemester from "./AdminPromoteSemester";
 import InstructorDashboard from "./FeedbackForm/InstructorDashboard";
+import AdminSwayamDashboard from "./AdminSwayamDashboard";
+import PhDCourseRegistration from "./PhDCourseRegistration";
+import AdminPhDCourseRequests from "./AdminPhDCourseRequests";
+import TeachingCreditFeedback from "./TeachingCreditFeedback";
+import { phdStudentStatusRoute } from "../../routes/academicRoutes";
 
 function AcademicPage() {
   const [activeTab, setActiveTab] = useState("0");
+  const [isPhdStudent, setIsPhdStudent] = useState(false);
   const role = useSelector((state) => state.user.role);
   const dispatch = useDispatch();
 
-  // Memoize tab configuration to avoid unnecessary recalculations
+  // Only PhD students get the "PhD Course Registration" tab; check once so
+  // the tab list doesn't have to show/hide after an initial flash.
+  useEffect(() => {
+    if (role !== "student") return;
+    const token = localStorage.getItem("authToken");
+    if (!token) return;
+    axios
+      .get(phdStudentStatusRoute, {
+        headers: { Authorization: `Token ${token}` },
+      })
+      .then(({ data }) => setIsPhdStudent(Boolean(data?.is_phd)))
+      .catch(() => setIsPhdStudent(false));
+  }, [role]);
+
+  // Memoize tab configuration to avoid unnecessary recalculations.
+  // PhD thesis/seminar UI lives in the ThesisResearch module (/thesis-research),
+  // so the Academic module is course-registration only.
   const { tabItems, tabComponents } = useMemo(() => {
     if (role === "acadadmin" || role === "studentacadadmin") {
       return {
@@ -59,6 +81,7 @@ function AcademicPage() {
           { title: "Feedback Responses" },
           { title: "Batch/Branch Change" },
           { title: "Promote Students" },
+          { title: "PhD Course Requests" },
         ],
         tabComponents: [
           StudentCourses,
@@ -77,6 +100,7 @@ function AcademicPage() {
           AdminFeedbackView,
           AdminBatchChange,
           AdminPromoteSemester,
+          AdminPhDCourseRequests,
         ],
       };
     }
@@ -89,9 +113,11 @@ function AcademicPage() {
           { title: "Academic Calender" },
           { title: "Pre-Registration" },
           { title: "Final-Registration" },
-          { title: "Swayam Registration" },
+          { title: "Swayam" },
           { title: "Add / Drop" },
           { title: "Feedback Form" },
+          { title: "Teaching Credit Feedback" },
+          ...(isPhdStudent ? [{ title: "PhD Course Registration" }] : []),
         ],
         tabComponents: [
           RegisteredCourses,
@@ -102,6 +128,8 @@ function AcademicPage() {
           SwayamRegistration,
           StudentAddDropReplace,
           StudentCourseFeedbackForm,
+          TeachingCreditFeedback,
+          ...(isPhdStudent ? [PhDCourseRegistration] : []),
         ],
       };
     }
@@ -130,7 +158,7 @@ function AcademicPage() {
       tabItems: [{ title: "Registered Courses" }],
       tabComponents: [RegisteredCourses],
     };
-  }, [role]);
+  }, [role, isPhdStudent]);
 
   useEffect(() => {
     if (tabItems?.[activeTab]) {

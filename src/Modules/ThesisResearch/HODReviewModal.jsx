@@ -204,7 +204,7 @@ export default function HODReviewModal({ thesis, onClose, refresh }) {
 
         {form.status === "hod_pending" && (
           <Textarea
-            label="Remarks (if rejecting)"
+            label="Remarks (if sending back to supervisor)"
             placeholder="Enter your remarks here"
             value={remarks}
             onChange={(e) => setRemarks(e.target.value)}
@@ -223,7 +223,7 @@ export default function HODReviewModal({ thesis, onClose, refresh }) {
               onClick={() => handle(false)}
               loading={loading}
             >
-              Reject
+              Send Back to Supervisor
             </Button>
           </Group>
         )}

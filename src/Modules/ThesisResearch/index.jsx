@@ -9,7 +9,6 @@ import { setActiveTab_ } from "../../redux/moduleslice";
 import { getProfileDataRoute } from "../../routes/dashboardRoutes";
 
 import StudentThesisPage from "./StudentThesisPage";
-import StudentThesisEnrollment from "./StudentThesisEnrollment";
 import StudentSeminarPage from "./StudentSeminarPage";
 import StudentThesisSubmissionUploadForm from "./ThesisSubmission/StudentThesisSubmissionUploadForm";
 import SupervisorDashboard from "./SupervisorDashboard";
@@ -20,8 +19,20 @@ import HODDashboard from "./HODDashboard";
 import DeanDashboard from "./DeanDashboard";
 import DeanPanelDashboard from "./ThesisSubmission/DeanPanelDashboard";
 import DirectorDashboard from "./ThesisSubmission/DirectorDashboard";
-import AdminThesisEnrollments from "./AdminThesisEnrollments";
 import AdminThesisGrades from "./AdminThesisGrades";
+import StudentComprehensiveExamPage from "./ComprehensiveExam/StudentComprehensiveExamPage";
+import SupervisorComprehensiveExamDashboard from "./ComprehensiveExam/SupervisorComprehensiveExamDashboard";
+import HODComprehensiveExamDashboard from "./ComprehensiveExam/HODComprehensiveExamDashboard";
+import ConvenerComprehensiveExamDashboard from "./ComprehensiveExam/ConvenerComprehensiveExamDashboard";
+import AcademicOfficeComprehensiveExamList from "./ComprehensiveExam/AcademicOfficeComprehensiveExamList";
+import StudentOpenSeminarPage from "./OpenSeminar/StudentOpenSeminarPage";
+import SupervisorOpenSeminarDashboard from "./OpenSeminar/SupervisorOpenSeminarDashboard";
+import DeanNomineeDashboard from "./OpenSeminar/DeanNomineeDashboard";
+import ConvenerOpenSeminarDashboard from "./OpenSeminar/ConvenerOpenSeminarDashboard";
+import StudentTeachingCreditPage from "./TeachingCredit/StudentTeachingCreditPage";
+import SupervisorTeachingCreditList from "./TeachingCredit/SupervisorTeachingCreditList";
+import HODTeachingCreditDashboard from "./TeachingCredit/HODTeachingCreditDashboard";
+import AcademicOfficeTeachingCreditList from "./TeachingCredit/AcademicOfficeTeachingCreditList";
 
 function ThesisResearchPage() {
   const [activeTab, setActiveTab] = useState("0");
@@ -69,14 +80,18 @@ function ThesisResearchPage() {
       return {
         tabItems: [
           { title: "Thesis Supervisor Registration" },
-          { title: "Semester Enrollment" },
+          { title: "Comprehensive Examination" },
           { title: "Progress Seminar" },
+          { title: "Open Seminar" },
+          { title: "Teaching Credit" },
           { title: "Final Submission" },
         ],
         tabComponents: [
           StudentThesisPage,
-          StudentThesisEnrollment,
+          StudentComprehensiveExamPage,
           StudentSeminarPage,
+          StudentOpenSeminarPage,
+          StudentTeachingCreditPage,
           StudentThesisSubmissionUploadForm,
         ],
       };
@@ -91,14 +106,22 @@ function ThesisResearchPage() {
       return {
         tabItems: [
           { title: "Thesis Review" },
+          { title: "Comprehensive Exam" },
           { title: "Thesis Grading" },
           { title: "RPC / Seminar Review" },
+          { title: "Open Seminar" },
+          { title: "Dean Nominee Reports" },
+          { title: "Teaching Credit" },
           { title: "Examiner Assignment" },
         ],
         tabComponents: [
           SupervisorDashboard,
+          SupervisorComprehensiveExamDashboard,
           SupervisorThesisGrading,
           RPCDashboardPage,
+          SupervisorOpenSeminarDashboard,
+          DeanNomineeDashboard,
+          SupervisorTeachingCreditList,
           SupervisorDashboardSub,
         ],
       };
@@ -106,15 +129,33 @@ function ThesisResearchPage() {
 
     if (role && role.startsWith("HOD")) {
       return {
-        tabItems: [{ title: "Thesis Review" }],
-        tabComponents: [HODDashboard],
+        tabItems: [
+          { title: "Thesis Review" },
+          { title: "Comprehensive Exam Subjects" },
+          { title: "Teaching Credit" },
+        ],
+        tabComponents: [
+          HODDashboard,
+          HODComprehensiveExamDashboard,
+          HODTeachingCreditDashboard,
+        ],
       };
     }
 
     if (role === "Dean Academic") {
       return {
-        tabItems: [{ title: "Thesis Approval" }, { title: "Examiner Panel" }],
-        tabComponents: [DeanDashboard, DeanPanelDashboard],
+        tabItems: [
+          { title: "Thesis Approval" },
+          { title: "Comprehensive Exam" },
+          { title: "Open Seminar" },
+          { title: "Examiner Panel" },
+        ],
+        tabComponents: [
+          DeanDashboard,
+          ConvenerComprehensiveExamDashboard,
+          ConvenerOpenSeminarDashboard,
+          DeanPanelDashboard,
+        ],
       };
     }
 
@@ -127,8 +168,16 @@ function ThesisResearchPage() {
 
     if (role === "acadadmin" || role === "studentacadadmin") {
       return {
-        tabItems: [{ title: "Thesis Enrollments" }, { title: "Thesis Grades" }],
-        tabComponents: [AdminThesisEnrollments, AdminThesisGrades],
+        tabItems: [
+          { title: "Thesis Grades" },
+          { title: "Comprehensive Exam Eligibility" },
+          { title: "Teaching Credit" },
+        ],
+        tabComponents: [
+          AdminThesisGrades,
+          AcademicOfficeComprehensiveExamList,
+          AcademicOfficeTeachingCreditList,
+        ],
       };
     }
 

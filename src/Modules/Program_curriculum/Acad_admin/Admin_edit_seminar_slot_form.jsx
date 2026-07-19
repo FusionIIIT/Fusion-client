@@ -1,7 +1,6 @@
 import { React, useEffect, useState } from "react";
 import {
   Select,
-  NumberInput,
   Textarea,
   TextInput,
   Button,
@@ -14,21 +13,25 @@ import {
 import { useForm } from "@mantine/form";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { notifications } from "@mantine/notifications";
 import {
-  fetchAllProgressSeminars,
+  fetchAllSeminars,
   fetchSemesterDetails,
-  fetchProgressSeminarSlotEditData,
+  fetchSeminarSlotEditData,
 } from "../api/api";
 import { host } from "../../../routes/globalRoutes";
 
-function Admin_edit_progress_seminar_slot_form() {
-  const { psslotid } = useParams();
-  const [progressSeminars, setProgressSeminars] = useState([]);
+const SLOT_NAME_PREFIX = "SEM";
+
+function Admin_edit_seminar_slot_form() {
+  const { seminarslotid } = useParams();
+  const [seminars, setSeminars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [semesterid, setSemesterid] = useState("");
   const [curriculumid, setCurriculumid] = useState("");
   const [semesterOptions, setSemesterOptions] = useState([]);
+  const [semesterNumberById, setSemesterNumberById] = useState({});
   const navigate = useNavigate();
 
   const form = useForm({
@@ -36,51 +39,51 @@ function Admin_edit_progress_seminar_slot_form() {
       semester: "",
       slotName: "",
       information: "",
-      progressSeminars: [],
+      seminars: [],
       duration: 1,
       minLimit: 0,
       maxLimit: 1000,
     },
     validate: {
       slotName: (value) =>
-        !value ? "Progress seminar slot name is required" : null,
+        !value ? "Seminar slot name is required" : null,
     },
   });
 
   useEffect(() => {
-    const loadProgressSeminars = async () => {
+    const loadSeminars = async () => {
       try {
-        const data = await fetchAllProgressSeminars();
-        setProgressSeminars(data);
+        const data = await fetchAllSeminars();
+        setSeminars(data);
       } catch (err) {
-        setError("Failed to load progress seminars.");
+        setError("Failed to load seminars.");
       }
     };
 
     const loadSlotDetails = async () => {
       try {
-        const data = await fetchProgressSeminarSlotEditData(psslotid);
+        const data = await fetchSeminarSlotEditData(seminarslotid);
         setSemesterid(data.semester);
         setCurriculumid(data.curriculum_id);
         form.setValues({
           semester: data.semester,
           slotName: data.name,
-          information: data.progress_seminar_slot_info,
-          progressSeminars: data.progress_seminars.map((ps) => ps.toString()),
+          information: data.seminar_slot_info,
+          seminars: data.seminars.map((s) => s.toString()),
           duration: data.duration,
           minLimit: data.min_registration_limit,
           maxLimit: data.max_registration_limit,
         });
       } catch (err) {
-        setError("Failed to load progress seminar slot details.");
+        setError("Failed to load seminar slot details.");
       } finally {
         setLoading(false);
       }
     };
 
-    loadProgressSeminars();
+    loadSeminars();
     loadSlotDetails();
-  }, [psslotid]);
+  }, [seminarslotid]);
 
   useEffect(() => {
     const loadSemesterDetails = async () => {
@@ -92,6 +95,11 @@ function Admin_edit_progress_seminar_slot_form() {
             label: `${data.curriculum_name} v${data.curriculum_version} Sem-${semester.semester_number}`,
           }));
           setSemesterOptions(formattedOptions);
+          const numberById = {};
+          data.semesters.forEach((semester) => {
+            numberById[semester.semester_id.toString()] = semester.semester_number;
+          });
+          setSemesterNumberById(numberById);
           if (semesterid) {
             form.setFieldValue("semester", semesterid.toString());
           }
@@ -103,8 +111,14 @@ function Admin_edit_progress_seminar_slot_form() {
     loadSemesterDetails();
   }, [semesterid, curriculumid]);
 
-  const handlePSSelect = (selectedId) => {
-    form.setFieldValue("progressSeminars", selectedId);
+  const handleSemesterChange = (value) => {
+    form.setFieldValue("semester", value);
+    const semNum = semesterNumberById[value];
+    form.setFieldValue("slotName", semNum ? `${SLOT_NAME_PREFIX}${semNum}` : "");
+  };
+
+  const handleSeminarSelect = (selectedId) => {
+    form.setFieldValue("seminars", selectedId);
   };
 
   const handleSubmit = async (values) => {
@@ -115,15 +129,15 @@ function Admin_edit_progress_seminar_slot_form() {
       const formData = {
         semester: values.semester,
         name: values.slotName,
-        progress_seminar_slot_info: values.information,
-        progress_seminars: values.progressSeminars,
+        seminar_slot_info: values.information,
+        seminars: values.seminars,
         duration: values.duration,
         min_registration_limit: values.minLimit,
         max_registration_limit: values.maxLimit,
       };
       const token = localStorage.getItem("authToken");
       const response = await axios.put(
-        `${host}/programme_curriculum/api/admin_edit_progress_seminar_slot/${psslotid}/`,
+        `${host}/programme_curriculum/api/admin_edit_seminar_slot/${seminarslotid}/`,
         formData,
         {
           headers: {
@@ -138,7 +152,18 @@ function Admin_edit_progress_seminar_slot_form() {
         );
       }
     } catch (err) {
-      console.error("Error updating progress seminar slot:", err);
+      const responseData = err.response?.data;
+      notifications.show({
+        title: "Failed to Update Seminar Slot",
+        message:
+          responseData?.message ||
+          responseData?.error ||
+          (responseData?.errors &&
+            Object.values(responseData.errors).flat().join(", ")) ||
+          "Unable to update seminar slot. Please try again.",
+        color: "red",
+        autoClose: 5000,
+      });
     } finally {
       setLoading(false);
     }
@@ -189,7 +214,7 @@ function Admin_edit_progress_seminar_slot_form() {
             >
               <Stack spacing="lg">
                 <Text size="xl" weight={700} align="center">
-                  Edit Progress Seminar Slot Form
+                  Edit Seminar Slot Form
                 </Text>
 
                 <Select
@@ -197,23 +222,20 @@ function Admin_edit_progress_seminar_slot_form() {
                   placeholder="Select Semester"
                   data={semesterOptions}
                   value={form.values.semester}
-                  onChange={(value) => form.setFieldValue("semester", value)}
+                  onChange={handleSemesterChange}
                   required
                 />
 
                 <TextInput
-                  label="Progress Seminar Slot Name"
-                  placeholder="Enter Name/Code"
+                  label="Seminar Slot Name"
                   value={form.values.slotName}
-                  onChange={(event) =>
-                    form.setFieldValue("slotName", event.currentTarget.value)
-                  }
-                  required
+                  description="Automatically set based on the selected semester"
+                  disabled
                 />
 
                 <Textarea
                   label="Information"
-                  placeholder="Enter information about this progress seminar slot"
+                  placeholder="Enter information about this seminar slot"
                   value={form.values.information}
                   onChange={(event) =>
                     form.setFieldValue("information", event.currentTarget.value)
@@ -223,40 +245,16 @@ function Admin_edit_progress_seminar_slot_form() {
                 />
 
                 <MultiSelect
-                  label="Progress Seminars"
-                  placeholder="Search and select progress seminars"
-                  data={progressSeminars.map((ps) => ({
-                    value: `${ps.id}`,
-                    label: `${ps.code} - ${ps.name}`,
+                  label="Seminars"
+                  placeholder="Search and select seminars"
+                  data={seminars.map((seminar) => ({
+                    value: `${seminar.id}`,
+                    label: `${seminar.code} - ${seminar.name}`,
                   }))}
-                  value={form.values.progressSeminars}
-                  onChange={handlePSSelect}
+                  value={form.values.seminars}
+                  onChange={handleSeminarSelect}
                   searchable
-                  nothingFound="No progress seminars available"
-                  required
-                />
-
-                <NumberInput
-                  label="Duration (semesters)"
-                  min={1}
-                  value={form.values.duration}
-                  onChange={(value) => form.setFieldValue("duration", value)}
-                  required
-                />
-
-                <NumberInput
-                  label="Min Registration Limit"
-                  min={0}
-                  value={form.values.minLimit}
-                  onChange={(value) => form.setFieldValue("minLimit", value)}
-                  required
-                />
-
-                <NumberInput
-                  label="Max Registration Limit"
-                  min={1}
-                  value={form.values.maxLimit}
-                  onChange={(value) => form.setFieldValue("maxLimit", value)}
+                  nothingFound="No seminars available"
                   required
                 />
               </Stack>
@@ -281,4 +279,4 @@ function Admin_edit_progress_seminar_slot_form() {
   );
 }
 
-export default Admin_edit_progress_seminar_slot_form;
+export default Admin_edit_seminar_slot_form;

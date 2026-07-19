@@ -44,37 +44,56 @@ import {
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────────
 const gradeColor = (g) => (g === "S" ? "green" : g === "X" ? "red" : "gray");
-const gradeLabel = (g) => (g === "S" ? "S — Satisfactory" : g === "X" ? "X — Unsatisfactory" : "—");
+const gradeLabel = (g) =>
+  g === "S" ? "S — Satisfactory" : g === "X" ? "X — Unsatisfactory" : "—";
 
-// One block within a registration row: a checkbox (for the bulk verify/announce
-// action) plus its grade badge. Remarks/submitted-by are shown on hover
-// instead of dedicated columns, since they're read-only here. No lifecycle
-// badge here — the Status filter always narrows to one specific status
-// (there's no "All" option), so every visible block already matches it and
-// repeating that status on every cell would just be noise.
-function AdminBlockCell({ ev, isSelected, onToggle }) {
-  if (!ev) {
+function ThesisTitleCell({ title }) {
+  if (!title) {
     return (
-      <Table.Td ta="center">
-        <Text size="xs" c="dimmed">—</Text>
-      </Table.Td>
+      <Text size="xs" c="dimmed">
+        —
+      </Text>
     );
   }
-
+  if (title.length <= 50) {
+    return <Text size="xs">{title}</Text>;
+  }
   return (
-    <Table.Td>
-      <Group gap={6} wrap="nowrap" justify="center">
-        <Checkbox size="xs" checked={isSelected} onChange={() => onToggle(ev.id)} />
-        <Tooltip
-          label={`Submitted by ${ev.submitted_by || "—"}${ev.remarks ? ` — ${ev.remarks}` : ""}`}
-          withArrow
-          multiline
-          w={220}
-        >
-          <Badge size="xs" color={gradeColor(ev.grade)}>{gradeLabel(ev.grade)}</Badge>
-        </Tooltip>
-      </Group>
-    </Table.Td>
+    <Tooltip label={title} multiline w={300} withArrow>
+      <Text size="xs" style={{ cursor: "help" }}>
+        {title.slice(0, 50)}…
+      </Text>
+    </Tooltip>
+  );
+}
+
+// One evaluation within a registration row: a checkbox (for the bulk verify/
+// announce action) plus its grade badge, rendered inline alongside its
+// siblings inside one shared "Grades" cell — not its own column. Remarks/
+// submitted-by are shown on hover instead of dedicated columns, since
+// they're read-only here. No lifecycle badge here — the Status filter always
+// narrows to one specific status (there's no "All" option), so every visible
+// entry already matches it and repeating that status on every cell would
+// just be noise.
+function AdminBlockCell({ ev, isSelected, onToggle }) {
+  return (
+    <Group gap={6} wrap="nowrap">
+      <Checkbox
+        size="xs"
+        checked={isSelected}
+        onChange={() => onToggle(ev.id)}
+      />
+      <Tooltip
+        label={`Submitted by ${ev.submitted_by || "—"}${ev.remarks ? ` — ${ev.remarks}` : ""}`}
+        withArrow
+        multiline
+        w={220}
+      >
+        <Badge size="xs" color={gradeColor(ev.grade)}>
+          {gradeLabel(ev.grade)}
+        </Badge>
+      </Tooltip>
+    </Group>
   );
 }
 
@@ -83,12 +102,12 @@ function AdminBlockCell({ ev, isSelected, onToggle }) {
 // ─────────────────────────────────────────────────────────────────────────────
 export default function AdminThesisGrades() {
   const [evaluations, setEvaluations] = useState([]);
-  const [loading, setLoading]         = useState(true);
-  const [semFilter, setSemFilter]     = useState("");
-  const [statusFilter, setStatusFilter] = useState("pending");   // ungraded|pending|verified|announced
-  const [selected, setSelected]       = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [semFilter, setSemFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("pending"); // ungraded|pending|verified|announced
+  const [selected, setSelected] = useState([]);
   const [actionLoading, setActionLoading] = useState(false);
-  const [error, setError]             = useState(null);
+  const [error, setError] = useState(null);
 
   const authHeaders = () => ({
     Authorization: `Token ${localStorage.getItem("authToken")}`,
@@ -101,7 +120,7 @@ export default function AdminThesisGrades() {
     setError(null);
     try {
       const params = {};
-      if (semFilter)  params.semester = semFilter;
+      if (semFilter) params.semester = semFilter;
       if (statusFilter) params.status = statusFilter;
       const res = await axios.get(adminThesisGradesListRoute, {
         headers: authHeaders(),
@@ -109,21 +128,31 @@ export default function AdminThesisGrades() {
       });
       setEvaluations(res.data.evaluations || []);
     } catch (e) {
-      setError(e.response?.data?.error || e.message || "Failed to load evaluations");
+      setError(
+        e.response?.data?.error || e.message || "Failed to load evaluations",
+      );
     } finally {
       setLoading(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [semFilter, statusFilter]);
 
-  useEffect(() => { fetchEvaluations(); }, [fetchEvaluations]);
+  useEffect(() => {
+    fetchEvaluations();
+  }, [fetchEvaluations]);
 
   // ── Selection helpers ──────────────────────────────────────────────────────
   const toggleAll = () => {
-    setSelected(selected.length === evaluations.length ? [] : evaluations.map((e) => e.id));
+    setSelected(
+      selected.length === evaluations.length
+        ? []
+        : evaluations.map((e) => e.id),
+    );
   };
   const toggleOne = (id) =>
-    setSelected((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+    setSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
 
   // Toggle every block belonging to one registration row at once.
   const toggleRow = (rowBlockIds) => {
@@ -147,11 +176,6 @@ export default function AdminThesisGrades() {
     return Array.from(map.entries());
   }, [evaluations]);
 
-  const maxBlocks = useMemo(
-    () => evaluations.reduce((max, ev) => Math.max(max, ev.total_blocks || 1), 1),
-    [evaluations],
-  );
-
   // ── Bulk actions ───────────────────────────────────────────────────────────
   const bulkAction = async (url, actionName) => {
     if (selected.length === 0) {
@@ -168,7 +192,7 @@ export default function AdminThesisGrades() {
       const count = res.data.count ?? selected.length;
       showNotification({
         title: `${actionName} complete`,
-        message: `${count} block(s) ${actionName.toLowerCase()}d`,
+        message: `${count} grade(s) ${actionName.toLowerCase()}d`,
         color: "green",
         icon: <IconCheck size={16} />,
       });
@@ -176,7 +200,8 @@ export default function AdminThesisGrades() {
     } catch (e) {
       showNotification({
         title: "Error",
-        message: e.response?.data?.error || `Failed to ${actionName.toLowerCase()}`,
+        message:
+          e.response?.data?.error || `Failed to ${actionName.toLowerCase()}`,
         color: "red",
         icon: <IconAlertCircle size={16} />,
       });
@@ -196,7 +221,7 @@ export default function AdminThesisGrades() {
   ];
 
   return (
-    <Card shadow="sm" p="lg" radius="md" withBorder>
+    <Card shadow="sm" p="lg" radius="md" withBorder mb="xl">
       <Stack gap="md">
         {/* Header */}
         <Title order={3} c="blue" fw={700} ta="center">
@@ -224,9 +249,9 @@ export default function AdminThesisGrades() {
             value={statusFilter}
             onChange={(v) => setStatusFilter(v || "")}
             data={[
-              { value: "ungraded",  label: "Ungraded" },
-              { value: "pending",   label: "Submitted (pending verify)" },
-              { value: "verified",  label: "Verified (pending announce)" },
+              { value: "ungraded", label: "Ungraded" },
+              { value: "pending", label: "Submitted (pending verify)" },
+              { value: "verified", label: "Verified (pending announce)" },
               { value: "announced", label: "Announced" },
             ]}
             w={240}
@@ -242,7 +267,11 @@ export default function AdminThesisGrades() {
             size="sm"
             leftSection={<IconCheck size={16} />}
             loading={actionLoading}
-            disabled={selected.length === 0 || statusFilter === "verified" || statusFilter === "announced"}
+            disabled={
+              selected.length === 0 ||
+              statusFilter === "verified" ||
+              statusFilter === "announced"
+            }
             onClick={() => bulkAction(adminVerifyThesisGradesRoute, "Verify")}
           >
             Verify Selected ({selected.length})
@@ -253,7 +282,9 @@ export default function AdminThesisGrades() {
             leftSection={<IconSpeakerphone size={16} />}
             loading={actionLoading}
             disabled={selected.length === 0 || statusFilter !== "verified"}
-            onClick={() => bulkAction(adminAnnounceThesisGradesRoute, "Announce")}
+            onClick={() =>
+              bulkAction(adminAnnounceThesisGradesRoute, "Announce")
+            }
           >
             Announce Selected ({selected.length})
           </Button>
@@ -270,7 +301,7 @@ export default function AdminThesisGrades() {
           </Alert>
         ) : evaluations.length === 0 ? (
           <Text ta="center" c="dimmed" py="xl">
-            No evaluation blocks found for the selected filters.
+            No grade entries found for the selected filters.
           </Text>
         ) : (
           <Table striped highlightOnHover withTableBorder withColumnBorders>
@@ -278,28 +309,39 @@ export default function AdminThesisGrades() {
               <Table.Tr>
                 <Table.Th>
                   <Checkbox
-                    checked={selected.length === evaluations.length && evaluations.length > 0}
-                    indeterminate={selected.length > 0 && selected.length < evaluations.length}
+                    checked={
+                      selected.length === evaluations.length &&
+                      evaluations.length > 0
+                    }
+                    indeterminate={
+                      selected.length > 0 &&
+                      selected.length < evaluations.length
+                    }
                     onChange={toggleAll}
                   />
                 </Table.Th>
+                <Table.Th>Roll No</Table.Th>
                 <Table.Th>Student</Table.Th>
                 <Table.Th>Semester</Table.Th>
-                <Table.Th>Thesis Slot</Table.Th>
+                <Table.Th>Thesis Code</Table.Th>
+                <Table.Th>Thesis Title</Table.Th>
                 <Table.Th>Credits</Table.Th>
-                {Array.from({ length: maxBlocks }, (_, i) => i + 1).map((n) => (
-                  <Table.Th key={n} ta="center">Block {n}</Table.Th>
-                ))}
+                <Table.Th>Grades</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
               {groupedRegistrations.map(([registrationId, blocksByNumber]) => {
-                const blocks = Object.values(blocksByNumber);
+                const blocks = Object.values(blocksByNumber).sort(
+                  (a, b) => a.block_number - b.block_number,
+                );
                 const reg = blocks[0].registration;
-                const totalBlocks = blocks[0].total_blocks;
                 const rowBlockIds = blocks.map((ev) => ev.id);
-                const allSelected = rowBlockIds.every((id) => selected.includes(id));
-                const someSelected = rowBlockIds.some((id) => selected.includes(id));
+                const allSelected = rowBlockIds.every((id) =>
+                  selected.includes(id),
+                );
+                const someSelected = rowBlockIds.some((id) =>
+                  selected.includes(id),
+                );
 
                 return (
                   <Table.Tr key={registrationId}>
@@ -310,22 +352,26 @@ export default function AdminThesisGrades() {
                         onChange={() => toggleRow(rowBlockIds)}
                       />
                     </Table.Td>
+                    <Table.Td>{reg.student.id}</Table.Td>
                     <Table.Td>{reg.student.name}</Table.Td>
-                    <Table.Td>Sem {reg.semester_no}</Table.Td>
-                    <Table.Td>{reg.thesis_slot}</Table.Td>
+                    <Table.Td>{reg.semester_no}</Table.Td>
+                    <Table.Td>{reg.thesis_code}</Table.Td>
+                    <Table.Td>
+                      <ThesisTitleCell title={reg.thesis_title} />
+                    </Table.Td>
                     <Table.Td>{reg.credits} Cr</Table.Td>
-                    {Array.from({ length: maxBlocks }, (_, i) => i + 1).map((blockNum) => (
-                      <AdminBlockCell
-                        key={blockNum}
-                        ev={blockNum <= totalBlocks ? blocksByNumber[blockNum] : undefined}
-                        isSelected={
-                          blocksByNumber[blockNum]
-                            ? selected.includes(blocksByNumber[blockNum].id)
-                            : false
-                        }
-                        onToggle={toggleOne}
-                      />
-                    ))}
+                    <Table.Td>
+                      <Group gap="sm" wrap="wrap">
+                        {blocks.map((ev) => (
+                          <AdminBlockCell
+                            key={ev.block_number}
+                            ev={ev}
+                            isSelected={selected.includes(ev.id)}
+                            onToggle={toggleOne}
+                          />
+                        ))}
+                      </Group>
+                    </Table.Td>
                   </Table.Tr>
                 );
               })}

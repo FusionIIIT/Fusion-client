@@ -6,20 +6,17 @@ import {
   Center,
   Loader,
   Button,
-  Text,
   Alert,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import { IconAlertCircle } from "@tabler/icons-react";
 import axios from "axios";
 import FusionTable from "./FusionTable";
-import SupervisorReviewModal  from "./SupervisorReviewModal";
-import {
-  supervisorDashboardRoute,
-} from "../../routes/academicRoutes";
+import SupervisorReviewModal from "./SupervisorReviewModal";
+import { supervisorDashboardRoute } from "../../routes/academicRoutes";
 
 export default function SupervisorDashboard() {
-  const [data, setData] = useState({ pending: [], forwarded: []});
+  const [data, setData] = useState({ pending: [], forwarded: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selected, setSelected] = useState(null);
@@ -54,7 +51,13 @@ export default function SupervisorDashboard() {
       } else if (e.response?.status === 403) {
         setError(new Error("Access denied. Insufficient permissions."));
       } else {
-        setError(new Error(e.response?.data?.detail || e.message || "Failed to load dashboard data"));
+        setError(
+          new Error(
+            e.response?.data?.detail ||
+              e.message ||
+              "Failed to load dashboard data",
+          ),
+        );
       }
       showNotification({
         title: "Error",
@@ -71,24 +74,28 @@ export default function SupervisorDashboard() {
     fetchData();
   }, [fetchData]);
 
-  const columnNames = useMemo(() => ["Student", "Theme", "Action"], []);
-  
+  const columnNames = useMemo(
+    () => ["Roll No", "Student", "Theme", "Action"],
+    [],
+  );
+
   const makeRows = useCallback(
     (list) =>
       list.map((t) => ({
+        "Roll No": t.student_roll || "N/A",
         Student: t.student_name || "N/A",
         Theme: t.research_theme || "N/A",
         Action: (
           <Button
             size="xs"
             onClick={() => setSelected(t)}
-            aria-label={`Review thesis for ${t.student_name}`}
+            aria-label={`${t.my_consent_given ? "Review" : "Consent to"} thesis for ${t.student_name}`}
           >
-            Review
+            {t.my_consent_given ? "Review" : "Consent"}
           </Button>
         ),
       })),
-    []
+    [],
   );
 
   const handleRefresh = useCallback(() => {
@@ -103,7 +110,7 @@ export default function SupervisorDashboard() {
       </Center>
     );
   }
-  
+
   if (error) {
     return (
       <Alert
@@ -130,15 +137,23 @@ export default function SupervisorDashboard() {
       <Tabs defaultValue="pending">
         <Tabs.List>
           <Tabs.Tab value="pending">Pending ({data.pending.length})</Tabs.Tab>
-          <Tabs.Tab value="forwarded">Forwarded ({data.forwarded.length})</Tabs.Tab>
+          <Tabs.Tab value="forwarded">
+            Forwarded ({data.forwarded.length})
+          </Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel value="pending" pt="md">
-          <FusionTable columnNames={columnNames} elements={makeRows(data.pending)} />
+          <FusionTable
+            columnNames={columnNames}
+            elements={makeRows(data.pending)}
+          />
         </Tabs.Panel>
 
         <Tabs.Panel value="forwarded" pt="md">
-          <FusionTable columnNames={columnNames} elements={makeRows(data.forwarded)} />
+          <FusionTable
+            columnNames={columnNames}
+            elements={makeRows(data.forwarded)}
+          />
         </Tabs.Panel>
       </Tabs>
 

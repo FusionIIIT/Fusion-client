@@ -9,15 +9,14 @@ import {
   TextInput,
   Table,
   Select,
-  Loader,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { notifications } from "@mantine/notifications";
-import { fetchDisciplinesData, fetchProgressSeminarDetails } from "../api/api";
+import { fetchDisciplinesData } from "../api/api";
 import { host } from "../../../routes/globalRoutes";
 
-function Admin_edit_progress_seminar_form() {
+function Admin_add_teaching_credit_form() {
   const form = useForm({
     initialValues: {
       code: "",
@@ -27,8 +26,8 @@ function Admin_edit_progress_seminar_form() {
       programme_type: "",
     },
     validate: {
-      code: (value) => (!value ? "Progress seminar code is required" : null),
-      name: (value) => (!value ? "Progress seminar name is required" : null),
+      code: (value) => (!value ? "Teaching credit code is required" : null),
+      name: (value) => (!value ? "Teaching credit name is required" : null),
       credit: (value) =>
         value === null || value === undefined || value < 0
           ? "Credits must be 0 or more"
@@ -39,46 +38,30 @@ function Admin_edit_progress_seminar_form() {
     },
   });
 
-  const { id } = useParams();
   const navigate = useNavigate();
   const [disciplines, setDisciplines] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadData = async () => {
+    const fetchDisciplines = async () => {
       try {
-        const [disciplinesResponse, psData] = await Promise.all([
-          fetchDisciplinesData(),
-          fetchProgressSeminarDetails(id),
-        ]);
-
-        const disciplineList = disciplinesResponse.map((discipline) => ({
+        const response = await fetchDisciplinesData();
+        const disciplineList = response.map((discipline) => ({
           value: discipline.id.toString(),
           label: `${discipline.name} (${discipline.acronym})`,
         }));
         setDisciplines(disciplineList);
-
-        form.setValues({
-          code: psData.code || "",
-          name: psData.name || "",
-          credit: psData.credit || 0,
-          discipline: psData.discipline?.toString() || "",
-          programme_type: psData.programme_type || "",
-        });
       } catch (fetchError) {
         notifications.show({
           title: "Error",
-          message: "Failed to load progress seminar details. Please try again.",
+          message: "Failed to load disciplines. Please refresh the page.",
           color: "red",
           autoClose: 4000,
         });
-      } finally {
-        setLoading(false);
       }
     };
 
-    loadData();
-  }, [id]);
+    fetchDisciplines();
+  }, []);
 
   const programmeTypeOptions = [
     { value: "PG", label: "Postgraduate (M.Tech)" },
@@ -86,7 +69,7 @@ function Admin_edit_progress_seminar_form() {
   ];
 
   const handleSubmit = async (values) => {
-    const apiUrl = `${host}/programme_curriculum/api/admin_update_progress_seminar/${id}/`;
+    const apiUrl = `${host}/programme_curriculum/api/admin_add_teaching_credit/`;
     const token = localStorage.getItem("authToken");
 
     const payload = {
@@ -99,7 +82,7 @@ function Admin_edit_progress_seminar_form() {
 
     try {
       const response = await fetch(apiUrl, {
-        method: "PUT",
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Token ${token}`,
@@ -108,14 +91,16 @@ function Admin_edit_progress_seminar_form() {
       });
 
       if (response.ok) {
+        const data = await response.json();
+
         notifications.show({
-          title: "Progress Seminar Updated Successfully!",
+          title: "Teaching Credit Added Successfully!",
           message: (
             <div>
               <Text size="sm" mb={8}>
                 <strong>
-                  Progress Seminar "{values.name}" ({values.code}) has been
-                  updated.
+                  Teaching Credit "{values.name}" ({values.code}) has been
+                  created.
                 </strong>
               </Text>
               <Text size="xs" c="gray.7">
@@ -132,6 +117,7 @@ function Admin_edit_progress_seminar_form() {
           },
         });
 
+        form.reset();
         setTimeout(() => {
           navigate("/programme_curriculum/admin_courses");
         }, 1500);
@@ -139,13 +125,13 @@ function Admin_edit_progress_seminar_form() {
         const errorData = await response.json();
 
         notifications.show({
-          title: "Failed to Update Progress Seminar",
+          title: "Failed to Add Teaching Credit",
           message: (
             <div>
               <Text size="sm" mb={8}>
                 <strong>
                   {errorData.error ||
-                    "Unable to update progress seminar. Please try again."}
+                    "Unable to create teaching credit. Please try again."}
                 </strong>
               </Text>
             </div>
@@ -165,9 +151,7 @@ function Admin_edit_progress_seminar_form() {
         message: (
           <div>
             <Text size="sm" mb={8}>
-              <strong>
-                Connection error occurred while updating progress seminar.
-              </strong>
+              <strong>Connection error occurred while adding teaching credit.</strong>
             </Text>
             <Text size="xs" c="gray.7">
               Please check your internet connection and try again.
@@ -184,22 +168,6 @@ function Admin_edit_progress_seminar_form() {
       });
     }
   };
-
-  if (loading) {
-    return (
-      <Container
-        fluid
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          minHeight: "50vh",
-        }}
-      >
-        <Loader size="lg" />
-      </Container>
-    );
-  }
 
   return (
     <div
@@ -242,7 +210,7 @@ function Admin_edit_progress_seminar_form() {
                   align="center"
                   style={{ padding: "10px", borderRadius: "5px" }}
                 >
-                  Edit Progress Seminar Form
+                  Teaching Credit Form
                 </Text>
 
                 <Table
@@ -251,7 +219,7 @@ function Admin_edit_progress_seminar_form() {
                   style={{ borderCollapse: "collapse", width: "100%" }}
                 >
                   <tbody>
-                    {/* Seminar Code */}
+                    {/* Teaching Credit Code */}
                     <tr>
                       <td
                         style={{
@@ -261,13 +229,13 @@ function Admin_edit_progress_seminar_form() {
                           color: "#1976d2",
                         }}
                       >
-                        Seminar Code:
+                        Teaching Credit Code:
                       </td>
                       <td
                         style={{ border: "2px solid #1976d2", padding: "10px" }}
                       >
                         <TextInput
-                          placeholder="e.g. CS898, EC898, ME898"
+                          placeholder="e.g. CS897, EC897, ME897"
                           value={form.values.code}
                           onChange={(event) =>
                             form.setFieldValue(
@@ -289,7 +257,7 @@ function Admin_edit_progress_seminar_form() {
                       </td>
                     </tr>
 
-                    {/* Seminar Name */}
+                    {/* Teaching Credit Name */}
                     <tr>
                       <td
                         style={{
@@ -299,13 +267,13 @@ function Admin_edit_progress_seminar_form() {
                           color: "#1976d2",
                         }}
                       >
-                        Seminar Name:
+                        Teaching Credit Name:
                       </td>
                       <td
                         style={{ border: "2px solid #1976d2", padding: "10px" }}
                       >
                         <TextInput
-                          placeholder="e.g. PhD Progress Seminar in Computer Science"
+                          placeholder="e.g. PhD Teaching Credit in Computer Science"
                           value={form.values.name}
                           onChange={(event) =>
                             form.setFieldValue(
@@ -450,7 +418,7 @@ function Admin_edit_progress_seminar_form() {
                     Cancel
                   </Button>
                   <Button type="submit" style={{ minWidth: "120px" }}>
-                    Update Progress Seminar
+                    Add Teaching Credit
                   </Button>
                 </Group>
               </Stack>
@@ -462,4 +430,4 @@ function Admin_edit_progress_seminar_form() {
   );
 }
 
-export default Admin_edit_progress_seminar_form;
+export default Admin_add_teaching_credit_form;

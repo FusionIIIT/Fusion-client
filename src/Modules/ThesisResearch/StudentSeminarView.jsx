@@ -1,12 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
-  Card, Title, Table, Center, Loader, Space, Anchor, Text, Alert
-} from '@mantine/core';
-import { showNotification } from '@mantine/notifications';
-import { IconAlertCircle } from '@tabler/icons-react';
-import axios from 'axios';
-import { studentSeminarDetailRoute } from '../../routes/academicRoutes';
-import PropTypes from 'prop-types';
+  Card,
+  Title,
+  Table,
+  Center,
+  Loader,
+  Space,
+  Anchor,
+  Text,
+  Alert,
+} from "@mantine/core";
+import { showNotification } from "@mantine/notifications";
+import { IconAlertCircle } from "@tabler/icons-react";
+import axios from "axios";
+import PropTypes from "prop-types";
+import { studentSeminarDetailRoute } from "../../routes/academicRoutes";
+import { host } from "../../routes/globalRoutes";
 
 export default function StudentSeminarView({ id }) {
   const [d, setD] = useState(null);
@@ -23,8 +32,8 @@ export default function StudentSeminarView({ id }) {
     const fetchSeminar = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem('authToken');
-        
+        const token = localStorage.getItem("authToken");
+
         if (!token) {
           throw new Error("Authentication required");
         }
@@ -45,12 +54,15 @@ export default function StudentSeminarView({ id }) {
         setD(res.data);
         setError(null);
       } catch (e) {
-        const message = e.response?.data?.error || e.message || 'Failed to load seminar details';
+        const message =
+          e.response?.data?.error ||
+          e.message ||
+          "Failed to load seminar details";
         setError(new Error(message));
-        showNotification({ 
-          title: 'Error', 
-          message, 
-          color: 'red',
+        showNotification({
+          title: "Error",
+          message,
+          color: "red",
           icon: <IconAlertCircle />,
         });
       } finally {
@@ -71,11 +83,7 @@ export default function StudentSeminarView({ id }) {
 
   if (error) {
     return (
-      <Alert
-        icon={<IconAlertCircle size={16} />}
-        title="Error"
-        color="red"
-      >
+      <Alert icon={<IconAlertCircle size={16} />} title="Error" color="red">
         {error.message}
       </Alert>
     );
@@ -96,12 +104,42 @@ export default function StudentSeminarView({ id }) {
 
       <Table striped>
         <tbody>
-          <tr><td><Text fw={500}>Date</Text></td><td>{d.date}</td></tr>
-          <tr><td><Text fw={500}>Time</Text></td><td>{d.time}</td></tr>
-          <tr><td><Text fw={500}>Venue</Text></td><td>{d.venue}</td></tr>
-          <tr><td><Text fw={500}>Previous Work</Text></td><td>{d.prev}</td></tr>
-          <tr><td><Text fw={500}>Current Contribution</Text></td><td>{d.curr}</td></tr>
-          <tr><td><Text fw={500}>Future Plan</Text></td><td>{d.future}</td></tr>
+          <tr>
+            <td>
+              <Text fw={500}>Date</Text>
+            </td>
+            <td>{d.date}</td>
+          </tr>
+          <tr>
+            <td>
+              <Text fw={500}>Time</Text>
+            </td>
+            <td>{d.time}</td>
+          </tr>
+          <tr>
+            <td>
+              <Text fw={500}>Venue</Text>
+            </td>
+            <td>{d.venue}</td>
+          </tr>
+          <tr>
+            <td>
+              <Text fw={500}>Previous Work</Text>
+            </td>
+            <td>{d.prev}</td>
+          </tr>
+          <tr>
+            <td>
+              <Text fw={500}>Current Contribution</Text>
+            </td>
+            <td>{d.curr}</td>
+          </tr>
+          <tr>
+            <td>
+              <Text fw={500}>Future Plan</Text>
+            </td>
+            <td>{d.future}</td>
+          </tr>
         </tbody>
       </Table>
 
@@ -111,7 +149,11 @@ export default function StudentSeminarView({ id }) {
         <>
           <Title order={5}>PDF Document</Title>
           <Anchor
-            href={d.doc_url.startsWith('http') ? d.doc_url : `${window.location.origin}/${d.doc_url}`}
+            href={
+              d.doc_url.startsWith("http")
+                ? d.doc_url
+                : `${host}${d.doc_url.startsWith("/") ? "" : "/"}${d.doc_url}`
+            }
             target="_blank"
             rel="noopener noreferrer"
             download
@@ -124,24 +166,30 @@ export default function StudentSeminarView({ id }) {
 
       <Space h="lg" />
       <Title order={5}>Publications</Title>
-      <Table striped highlightOnHover aria-label="Publications data">
-        <thead>
-          <tr>
-            <th scope="col">Category</th>
-            <th scope="col">Submitted</th>
-            <th scope="col">Accepted</th>
-            <th scope="col">Published</th>
-          </tr>
-        </thead>
+      <Table striped aria-label="Publications data">
         <tbody>
-          {(d.publications || []).map(p => (
-            <tr key={p.category}>
-              <td>{p.category}</td>
-              <td>{p.submitted || 0}</td>
-              <td>{p.accepted || 0}</td>
-              <td>{p.published || 0}</td>
-            </tr>
-          ))}
+          <tr>
+            <td>
+              <Text fw={500}>
+                Published/accepted (journals or conference proceedings)
+              </Text>
+            </td>
+            <td>{d.pub_published_or_accepted || 0}</td>
+          </tr>
+          <tr>
+            <td>
+              <Text fw={500}>
+                Presented in conferences/workshops (unpublished)
+              </Text>
+            </td>
+            <td>{d.pub_presented_unpublished || 0}</td>
+          </tr>
+          <tr>
+            <td>
+              <Text fw={500}>Submitted (under review)</Text>
+            </td>
+            <td>{d.pub_submitted_under_review || 0}</td>
+          </tr>
         </tbody>
       </Table>
     </Card>

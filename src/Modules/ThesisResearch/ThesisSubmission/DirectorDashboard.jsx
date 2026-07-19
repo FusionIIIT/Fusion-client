@@ -93,6 +93,8 @@ export default function DirectorDashboard() {
 
   const actionRows = data.action_required.map((t) => (
     <tr key={t.id}>
+      <td>{t.student_name || "N/A"}</td>
+      <td>{t.student_roll || "N/A"}</td>
       <td>{t.title || "N/A"}</td>
       <td>
         <Badge color={ACTION_COLOR[t.action] || "gray"}>{t.action_label}</Badge>
@@ -116,6 +118,8 @@ export default function DirectorDashboard() {
 
   const historyRows = data.history.map((t) => (
     <tr key={t.id}>
+      <td>{t.student_name || "N/A"}</td>
+      <td>{t.student_roll || "N/A"}</td>
       <td>{t.title || "N/A"}</td>
       <td>{t.status}</td>
       <td>
@@ -152,6 +156,8 @@ export default function DirectorDashboard() {
           >
             <thead>
               <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Roll No</th>
                 <th scope="col">Title</th>
                 <th scope="col">Action Needed</th>
                 <th scope="col">Waiting Since</th>
@@ -166,6 +172,8 @@ export default function DirectorDashboard() {
           <Table highlightOnHover aria-label="Processed submissions">
             <thead>
               <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Roll No</th>
                 <th scope="col">Title</th>
                 <th scope="col">Status</th>
                 <th scope="col">Action</th>

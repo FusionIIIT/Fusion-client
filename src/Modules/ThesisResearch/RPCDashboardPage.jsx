@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Card,
   Tabs,
@@ -9,25 +9,28 @@ import {
   Title,
   Space,
   Alert,
-} from '@mantine/core';
-import { showNotification } from '@mantine/notifications';
-import { IconAlertCircle } from '@tabler/icons-react';
-import axios from 'axios';
+} from "@mantine/core";
+import { showNotification } from "@mantine/notifications";
+import { IconAlertCircle } from "@tabler/icons-react";
+import axios from "axios";
 
-import { rpcSeminarListRoute } from '../../routes/academicRoutes';
-import RPCReviewModal from './RPCReviewModal';
+import { rpcSeminarListRoute } from "../../routes/academicRoutes";
+import RPCReviewModal from "./RPCReviewModal";
 
 export default function RPCDashboardPage() {
-  const [pending, setPending]   = useState([]);
+  const [pending, setPending] = useState([]);
   const [approved, setApproved] = useState([]);
   const [reviewId, setReviewId] = useState(null);
-  const [loading, setLoading]   = useState(true);
-  const [error, setError]       = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const token = localStorage.getItem('authToken');
-  const config = useMemo(() => ({ 
-    headers: { Authorization: `Token ${token}` } 
-  }), [token]);
+  const token = localStorage.getItem("authToken");
+  const config = useMemo(
+    () => ({
+      headers: { Authorization: `Token ${token}` },
+    }),
+    [token],
+  );
 
   const fetchData = useCallback(async () => {
     if (!token) {
@@ -51,12 +54,13 @@ export default function RPCDashboardPage() {
       setApproved(res.data.approved || []);
       setError(null);
     } catch (e) {
-      const errorMsg = e.response?.data?.detail || e.message || 'Failed to load seminar data';
+      const errorMsg =
+        e.response?.data?.detail || e.message || "Failed to load seminar data";
       setError(new Error(errorMsg));
       showNotification({
-        title: 'Error',
+        title: "Error",
         message: errorMsg,
-        color: 'red',
+        color: "red",
         icon: <IconAlertCircle />,
       });
     } finally {
@@ -69,29 +73,40 @@ export default function RPCDashboardPage() {
   }, [fetchData]);
 
   const openReview = useCallback((id) => setReviewId(id), []);
-  
+
   const closeReview = useCallback(() => {
     setReviewId(null);
     fetchData();
   }, [fetchData]);
 
-  const renderRows = useCallback((list, isPending) =>
-    list.map(s => (
-      <tr key={s.id}>
-        <td>{s.version || 'N/A'}</td>
-        <td>{s.thesis || 'N/A'}</td>
-        <td>{s.student || 'N/A'}</td>
-        <td>
-          <Button 
-            size="xs" 
-            onClick={() => openReview(s.id)}
-            aria-label={`${isPending ? 'Review' : 'View'} seminar for ${s.student}`}
-          >
-            {isPending ? 'Review' : 'View'}
-          </Button>
-        </td>
-      </tr>
-    )), [openReview]);
+  const renderRows = useCallback(
+    (list, isPending) =>
+      list.map((s) => {
+        const actionLabel = !isPending
+          ? "View"
+          : s.my_consent_given
+            ? "Review"
+            : "Consent";
+        return (
+          <tr key={s.id}>
+            <td>{s.semester_no ?? "—"}</td>
+            <td>{s.roll_number || "N/A"}</td>
+            <td>{s.student || "N/A"}</td>
+            <td>{s.thesis || "N/A"}</td>
+            <td>
+              <Button
+                size="xs"
+                onClick={() => openReview(s.id)}
+                aria-label={`${actionLabel} seminar for ${s.student}`}
+              >
+                {actionLabel}
+              </Button>
+            </td>
+          </tr>
+        );
+      }),
+    [openReview],
+  );
 
   if (loading) {
     return (
@@ -125,21 +140,18 @@ export default function RPCDashboardPage() {
 
       <Tabs defaultValue="pending">
         <Tabs.List>
-          <Tabs.Tab value="pending">
-            Pending ({pending.length})
-          </Tabs.Tab>
-          <Tabs.Tab value="approved">
-            Approved ({approved.length})
-          </Tabs.Tab>
+          <Tabs.Tab value="pending">Pending ({pending.length})</Tabs.Tab>
+          <Tabs.Tab value="approved">Approved ({approved.length})</Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel value="pending" pt="xs">
           <Table striped highlightOnHover>
             <thead>
               <tr>
-                <th>Ver</th>
-                <th>Thesis</th>
+                <th>Semester</th>
+                <th>Roll No</th>
                 <th>Student</th>
+                <th>Thesis</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -151,9 +163,10 @@ export default function RPCDashboardPage() {
           <Table striped highlightOnHover>
             <thead>
               <tr>
-                <th>Ver</th>
-                <th>Thesis</th>
+                <th>Semester</th>
+                <th>Roll No</th>
                 <th>Student</th>
+                <th>Thesis</th>
                 <th>Action</th>
               </tr>
             </thead>

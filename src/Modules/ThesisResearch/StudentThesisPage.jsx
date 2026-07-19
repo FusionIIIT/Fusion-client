@@ -14,6 +14,8 @@ import {
   Alert,
   Grid,
   Group,
+  Modal,
+  Stack,
 } from "@mantine/core";
 import { IconDownload, IconAlertCircle } from "@tabler/icons-react";
 import { showNotification } from "@mantine/notifications";
@@ -57,6 +59,8 @@ export default function StudentThesisPage() {
   const [facOpts, setFacOpts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [preview, setPreview] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -118,7 +122,7 @@ export default function StudentThesisPage() {
     );
 
   const status = thesis?.status;
-  const canEdit = !thesis || status === "supervisor_pending";
+  const canEdit = !thesis;
   const isApproved = status === "dean_approved";
 
   const handleSubmit = async () => {
@@ -133,13 +137,15 @@ export default function StudentThesisPage() {
     }
     const headers = { Authorization: `Token ${token}` };
 
+    setSubmitting(true);
     try {
       await axios.post(studentThesisRoute, form, { headers });
       const res = await axios.get(studentThesisRoute, { headers });
       setThesis(res.data);
+      setPreview(false);
       showNotification({
         title: "Success",
-        message: "Thesis topic saved.",
+        message: "Thesis topic submitted.",
         color: "green",
       });
     } catch (e) {
@@ -148,6 +154,8 @@ export default function StudentThesisPage() {
         message: e.response?.data?.error || "Submission failed",
         color: "red",
       });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -346,16 +354,72 @@ export default function StudentThesisPage() {
       <Space h="lg" />
 
       {canEdit && (
-        <Button fullWidth color="blue" onClick={handleSubmit}>
-          {thesis ? "Save Changes" : "Save & Submit"}
+        <Button fullWidth color="blue" onClick={() => setPreview(true)}>
+          Review &amp; Submit
         </Button>
       )}
 
-      {thesis && !canEdit && !isApproved && (
+      {thesis && !isApproved && (
         <Alert color="yellow" icon={<IconAlertCircle size={16} />} mt="sm">
-          Your form is under review and cannot be edited at this stage.
+          Your form has been submitted and cannot be edited any further.
         </Alert>
       )}
+
+      <Modal
+        opened={preview}
+        onClose={() => setPreview(false)}
+        title="Review Thesis Topic Proposal"
+        size="lg"
+      >
+        <Stack gap="xs">
+          <Text size="sm">
+            <b>Category:</b> {form.category}
+          </Text>
+          <Text size="sm">
+            <b>Broad Area:</b> {form.broad_area || "—"}
+          </Text>
+          <Text size="sm">
+            <b>Research Theme:</b> {form.research_theme || "—"}
+          </Text>
+          <Text size="sm">
+            <b>Supervisor:</b>{" "}
+            {facOpts.find((f) => f.value === form.supervisor_id)?.label || "—"}
+          </Text>
+          <Text size="sm">
+            <b>Co-Supervisor:</b>{" "}
+            {facOpts.find((f) => f.value === form.co_supervisor_id)?.label ||
+              "—"}
+          </Text>
+          {(form.external_name ||
+            form.external_email ||
+            form.external_discipline ||
+            form.external_institution) && (
+            <>
+              <Divider label="External Co-Supervisor" labelPosition="left" />
+              <Text size="sm">
+                <b>Name:</b> {form.external_name || "—"}
+              </Text>
+              <Text size="sm">
+                <b>Email:</b> {form.external_email || "—"}
+              </Text>
+              <Text size="sm">
+                <b>Discipline:</b> {form.external_discipline || "—"}
+              </Text>
+              <Text size="sm">
+                <b>Institution:</b> {form.external_institution || "—"}
+              </Text>
+            </>
+          )}
+        </Stack>
+        <Group justify="flex-end" mt="md">
+          <Button variant="outline" onClick={() => setPreview(false)}>
+            Back to Edit
+          </Button>
+          <Button color="blue" loading={submitting} onClick={handleSubmit}>
+            Confirm &amp; Submit
+          </Button>
+        </Group>
+      </Modal>
 
       {isApproved && (
         <Button

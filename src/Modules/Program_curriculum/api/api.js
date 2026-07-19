@@ -237,11 +237,28 @@ export const fetchThesisDetails = async (id) => {
   }
 };
 
-export const fetchProgressSeminarDetails = async (id) => {
+export const fetchSeminarDetails = async (id) => {
   try {
     const token = localStorage.getItem("authToken");
     const response = await axios.get(
-      `${BASE_URL}/programme_curriculum/api/admin_update_progress_seminar/${id}/`,
+      `${BASE_URL}/programme_curriculum/api/admin_update_seminar/${id}/`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const fetchTeachingCreditDetails = async (id) => {
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await axios.get(
+      `${BASE_URL}/programme_curriculum/api/admin_update_teaching_credit/${id}/`,
       {
         headers: {
           Authorization: `Token ${token}`,
@@ -288,18 +305,35 @@ export const fetchAllTheses = async () => {
   }
 };
 
-export const fetchAllProgressSeminars = async () => {
+export const fetchAllTeachingCredits = async () => {
   try {
     const token = localStorage.getItem("authToken");
     const response = await axios.get(
-      `${BASE_URL}/programme_curriculum/api/admin_progress_seminars/`,
+      `${BASE_URL}/programme_curriculum/api/admin_teaching_credits/`,
       {
         headers: {
           Authorization: `Token ${token}`,
         },
       },
     );
-    return response.data.progress_seminars;
+    return response.data.teaching_credits;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const fetchAllSeminars = async () => {
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await axios.get(
+      `${BASE_URL}/programme_curriculum/api/admin_seminars/`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+    return response.data.seminars;
   } catch (error) {
     throw error;
   }
@@ -1202,11 +1236,28 @@ export const fetchThesisSlotData = async (thesisSlotId) => {
   }
 };
 
-export const fetchProgressSeminarSlotData = async (psSlotId) => {
+export const fetchSeminarSlotData = async (seminarSlotId) => {
   try {
     const token = localStorage.getItem("authToken");
     const response = await axios.get(
-      `${BASE_URL}/programme_curriculum/api/admin_progress_seminar_slot/${psSlotId}/`,
+      `${BASE_URL}/programme_curriculum/api/admin_seminar_slot/${seminarSlotId}/`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const fetchTeachingCreditSlotData = async (tcSlotId) => {
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await axios.get(
+      `${BASE_URL}/programme_curriculum/api/admin_teaching_credit_slot/${tcSlotId}/`,
       {
         headers: {
           Authorization: `Token ${token}`,
@@ -1236,18 +1287,35 @@ export const fetchThesisSlotEditData = async (thesisSlotId) => {
   }
 };
 
-export const fetchProgressSeminarSlotEditData = async (psSlotId) => {
+export const fetchSeminarSlotEditData = async (seminarSlotId) => {
   try {
     const token = localStorage.getItem("authToken");
     const response = await axios.get(
-      `${BASE_URL}/programme_curriculum/api/admin_edit_progress_seminar_slot/${psSlotId}/`,
+      `${BASE_URL}/programme_curriculum/api/admin_edit_seminar_slot/${seminarSlotId}/`,
       {
         headers: {
           Authorization: `Token ${token}`,
         },
       },
     );
-    return response.data.progress_seminar_slot;
+    return response.data.seminar_slot;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const fetchTeachingCreditSlotEditData = async (tcSlotId) => {
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await axios.get(
+      `${BASE_URL}/programme_curriculum/api/admin_edit_teaching_credit_slot/${tcSlotId}/`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+    return response.data.teaching_credit_slot;
   } catch (error) {
     throw error;
   }

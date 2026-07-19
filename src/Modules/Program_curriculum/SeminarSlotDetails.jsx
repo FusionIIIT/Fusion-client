@@ -2,63 +2,63 @@ import React, { useState, useEffect } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import "./CourseSlotDetails.css";
 import axios from "axios";
-import { fetchProgressSeminarSlotData } from "./api/api";
+import { fetchSeminarSlotData } from "./api/api";
 import { host } from "../../routes/globalRoutes";
 
-function ProgressSeminarSlotDetails() {
-  const [psSlot, setPsSlot] = useState(null);
+function SeminarSlotDetails() {
+  const [seminarSlot, setSeminarSlot] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   const [searchParams] = useSearchParams();
-  const psSlotId = searchParams.get("ps_slot");
+  const seminarSlotId = searchParams.get("seminar_slot");
   const curriculumId = searchParams.get("curriculum");
   const semesterId = searchParams.get("semester");
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const data = await fetchProgressSeminarSlotData(psSlotId);
-        setPsSlot(data);
+        const data = await fetchSeminarSlotData(seminarSlotId);
+        setSeminarSlot(data);
       } catch (err) {
-        console.error("Error loading progress seminar slot data:", err);
+        console.error("Error loading seminar slot data:", err);
       } finally {
         setLoading(false);
       }
     };
     loadData();
-  }, [psSlotId]);
+  }, [seminarSlotId]);
 
-  const handleDeletePSSlot = async () => {
+  const handleDeleteSeminarSlot = async () => {
     try {
       const cacheChangeKey = `CurriculumCacheChange_${curriculumId}`;
       localStorage.setItem(cacheChangeKey, "true");
       const token = localStorage.getItem("authToken");
       const response = await axios.delete(
-        `${host}/programme_curriculum/api/admin_delete_progress_seminar_slot/${psSlotId}/`,
+        `${host}/programme_curriculum/api/admin_delete_seminar_slot/${seminarSlotId}/`,
         {
           headers: { Authorization: `Token ${token}` },
         },
       );
       if (response.status === 200) {
-        alert("Progress seminar slot deleted successfully!");
+        alert("Seminar slot deleted successfully!");
         navigate(
           `/programme_curriculum/view_curriculum?curriculum=${curriculumId}`,
         );
       }
     } catch (error) {
-      console.error("Error deleting progress seminar slot:", error);
-      alert("Failed to delete progress seminar slot.");
+      console.error("Error deleting seminar slot:", error);
+      alert("Failed to delete seminar slot.");
     } finally {
       setShowModal(false);
     }
   };
 
   if (loading) return <div>Loading...</div>;
-  if (!psSlot) return <div className="loading">Loading...</div>;
+  if (!seminarSlot) return <div className="loading">Loading...</div>;
 
-  const slot = psSlot.progress_seminar_slot;
+  const slot = seminarSlot.seminar_slot;
 
   return (
     <div className="flex-container">
@@ -70,7 +70,7 @@ function ProgressSeminarSlotDetails() {
                 <tbody>
                   <tr>
                     <td colSpan="4">
-                      <h2>Progress Seminar Slot: {slot.name}</h2>
+                      <h2>Seminar Slot: {slot.name}</h2>
                     </td>
                   </tr>
                   <tr>
@@ -85,7 +85,7 @@ function ProgressSeminarSlotDetails() {
                   <tr className="course-slot-row">
                     <td>Info</td>
                     <td colSpan="3">
-                      {slot.progress_seminar_slot_info || "-"}
+                      {slot.seminar_slot_info || "-"}
                     </td>
                   </tr>
                   <tr className="course-slot-row">
@@ -101,7 +101,7 @@ function ProgressSeminarSlotDetails() {
                 </tbody>
               </table>
 
-              {slot.progress_seminars.length > 0 ? (
+              {slot.seminars.length > 0 ? (
                 <table className="course-list-table">
                   <thead>
                     <tr className="table-header">
@@ -111,21 +111,21 @@ function ProgressSeminarSlotDetails() {
                     </tr>
                   </thead>
                   <tbody>
-                    {slot.progress_seminars.map((ps) => (
-                      <tr key={ps.id} style={{ textAlign: "center" }}>
+                    {slot.seminars.map((seminar) => (
+                      <tr key={seminar.id} style={{ textAlign: "center" }}>
                         <td>
                           <Link
-                            to={`/programme_curriculum/admin_course/${ps.id}`}
+                            to={`/programme_curriculum/admin_course/${seminar.id}`}
                             style={{ textDecoration: "none" }}
                           >
-                            {ps.code}
+                            {seminar.code}
                           </Link>
                         </td>
-                        <td>{ps.name}</td>
-                        <td>{ps.credit}</td>
+                        <td>{seminar.name}</td>
+                        <td>{seminar.credit}</td>
                         <td>
                           <Link
-                            to={`/programme_curriculum/admin_edit_progress_seminar_form/${ps.id}`}
+                            to={`/programme_curriculum/admin_edit_seminar_form/${seminar.id}`}
                             className="edit-btn"
                           >
                             Edit
@@ -137,7 +137,7 @@ function ProgressSeminarSlotDetails() {
                 </table>
               ) : (
                 <div className="no-courses">
-                  No Progress Seminars Available
+                  No Seminars Available
                 </div>
               )}
             </div>
@@ -146,7 +146,7 @@ function ProgressSeminarSlotDetails() {
 
         <div className="button-container">
           <Link
-            to={`/programme_curriculum/admin_edit_progress_seminar_slot_form/${psSlotId}`}
+            to={`/programme_curriculum/admin_edit_seminar_slot_form/${seminarSlotId}`}
             className="edit-course-slot-btn"
           >
             Edit Seminar Slot
@@ -158,7 +158,7 @@ function ProgressSeminarSlotDetails() {
             Remove Seminar Slot
           </button>
           <Link
-            to={`/programme_curriculum/acad_admin_add_progress_seminar_slot_form?semester=${semesterId}&curriculum=${curriculumId}`}
+            to={`/programme_curriculum/acad_admin_add_seminar_slot_form?semester=${semesterId}&curriculum=${curriculumId}`}
             className="add-course-slot-btn"
           >
             Add Seminar Slot
@@ -172,11 +172,11 @@ function ProgressSeminarSlotDetails() {
             <h2>
               Warning <i className="attention icon" />
             </h2>
-            <p>Are you sure you want to remove this progress seminar slot?</p>
+            <p>Are you sure you want to remove this seminar slot?</p>
             <div className="modal-actions">
               <button
                 className="confirm-remove-btn"
-                onClick={handleDeletePSSlot}
+                onClick={handleDeleteSeminarSlot}
               >
                 Remove
               </button>
@@ -194,4 +194,4 @@ function ProgressSeminarSlotDetails() {
   );
 }
 
-export default ProgressSeminarSlotDetails;
+export default SeminarSlotDetails;
