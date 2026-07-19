@@ -8,6 +8,7 @@ import {
   ScrollArea,
   Table,
   TextInput,
+  NumberInput,
   Group,
   Title,
   Text,
@@ -173,6 +174,7 @@ export default function VerifyDean() {
         }));
         setInitialRegs(regs.map((r) => ({ ...r })));
         setRegistrations(regs);
+        setAllowResub(regs.some((r) => r.reSubmit));
 
         const counts = {};
         regs.forEach((r) => (counts[r.grade] = (counts[r.grade] || 0) + 1));
@@ -259,19 +261,43 @@ export default function VerifyDean() {
     return orig && (orig.grade !== r.grade || orig.remarks !== r.remarks);
   });
 
+  const usesPointerGrades = registrations.some((r) => {
+    const g = String(r.grade ?? "").trim();
+    return g !== "" && !Number.isNaN(Number(g));
+  });
+
   const rows = registrations.map((r) => (
     <tr key={r.id}>
       <td>{r.roll_no}</td>
       <td>{r.batch}</td>
       <td>{r.semester}</td>
       <td>
-        <Select
-          data={GRADE_OPTIONS}
-          value={r.grade}
-          onChange={(v) => updateGrade(r.id, v)}
-          disabled={isVerified}
-          size="xs"
-        />
+        {usesPointerGrades ? (
+          <NumberInput
+            value={r.grade === "" || r.grade == null ? "" : Number(r.grade)}
+            onChange={(val) =>
+              updateGrade(
+                r.id,
+                val === "" || val == null ? "" : Number(val).toFixed(1),
+              )
+            }
+            min={2}
+            max={10}
+            step={0.1}
+            decimalScale={1}
+            fixedDecimalScale
+            disabled={isVerified}
+            size="xs"
+          />
+        ) : (
+          <Select
+            data={GRADE_OPTIONS}
+            value={r.grade}
+            onChange={(v) => updateGrade(r.id, v)}
+            disabled={isVerified}
+            size="xs"
+          />
+        )}
       </td>
       <td>
         <TextInput
