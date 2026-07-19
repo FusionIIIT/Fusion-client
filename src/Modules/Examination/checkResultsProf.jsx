@@ -26,6 +26,7 @@ export default function GradesDownloadPage() {
   const semesterOptions = [
     { value: "Odd Semester", label: "Odd" },
     { value: "Even Semester", label: "Even" },
+    { value: "Summer Semester", label: "Summer" },
   ];
   
   const programmeTypes = [
