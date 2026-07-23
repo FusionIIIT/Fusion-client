@@ -52,8 +52,11 @@ export default function SubmitGradesProf() {
 
   // Sections the selected course is allotted in (empty => elective, no section).
   // For faculty this is their own assigned section(s); for acadadmin, all of them.
+  // Sections apply only to UG; PG/PhD have no sections.
   const selectedCourseSections =
-    courseOptions.find((c) => c.value === course)?.sections || [];
+    programmeType === "UG"
+      ? courseOptions.find((c) => c.value === course)?.sections || []
+      : [];
 
   // A sectioned course needs a section chosen before submit.
   const sectionMissing = selectedCourseSections.length > 0 && !section;
@@ -62,10 +65,10 @@ export default function SubmitGradesProf() {
   // acadadmin selects manually. (If a faculty teaches multiple sections of the
   // same course, they still choose which one.)
   useEffect(() => {
-    if (isAcadadmin) return;
+    if (isAcadadmin || programmeType !== "UG") return;
     const secs = courseOptions.find((c) => c.value === course)?.sections || [];
     if (secs.length === 1) setSection(secs[0]);
-  }, [course, courseOptions, isAcadadmin]);
+  }, [course, courseOptions, isAcadadmin, programmeType]);
 
   useEffect(() => {
     async function fetchAcademicYears() {
@@ -357,7 +360,10 @@ export default function SubmitGradesProf() {
                 placeholder="Select Programme Type"
                 data={programmeTypes}
                 value={programmeType}
-                onChange={setProgrammeType}
+                onChange={(v) => {
+                  setProgrammeType(v);
+                  setSection("");
+                }}
                 disabled={loading}
                 required
               />
