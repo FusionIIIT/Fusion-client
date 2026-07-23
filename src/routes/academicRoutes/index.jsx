@@ -124,9 +124,9 @@ export const applyPromoteRoute = `${host}/academic-procedures/api/acad/promote/a
 export const applyDemoteRoute = `${host}/academic-procedures/api/acad/demote/apply/`;
 
 // Section assignment (Academics > Section Assignment)
-export const sectionBatchesRoute  = `${host}/aims/api/section/batches/`;
+export const sectionBatchesRoute = `${host}/aims/api/section/batches/`;
 export const sectionStudentsRoute = `${host}/aims/api/section/students/`;
-export const assignSectionRoute   = `${host}/aims/api/section/assign/`;
+export const assignSectionRoute = `${host}/aims/api/section/assign/`;
 
 export const courseRegistrationReceiptRoute = `${host}/academic-procedures/course_reg_receipt/`;
 
@@ -218,11 +218,14 @@ export const rpcSeminarFinalizeRoute = (id) =>
 
 // PhD Thesis Submission
 export const thesisSubmitRoute = `${host}/academic-procedures/api/thesis/submit/`;
+export const thesisSubmissionStatusRoute = `${host}/academic-procedures/api/thesis/submission-status/`;
 export const supervisorThesisDashboardRoute = `${host}/academic-procedures/api/thesis/supervisor-dashboard/`;
 export const supervisorDashboardRouteThesisSubmission = `${host}/academic-procedures/api/thesis/supervisor-dashboard/`;
 export const supervisorSubmissionDetailRoute = (id) =>
   `${host}/academic-procedures/api/thesis/submission-detail/${id}/`;
 export const supervisorAssignRoute = `${host}/academic-procedures/api/thesis/supervisor-assign/`;
+export const supervisorReviewReportsRoute = `${host}/academic-procedures/api/thesis/supervisor-review-reports/`;
+export const examinerHonorariumListRoute = `${host}/academic-procedures/api/thesis/examiner-honorarium/`;
 export const deanThesisPanelDashboardRoute = `${host}/academic-procedures/api/thesis/dean-dashboard/`;
 export const deanPanelApproveRoute = `${host}/academic-procedures/api/thesis/dean-panel-approve/`;
 export const deanSendInvitationsRoute = `${host}/academic-procedures/api/thesis/dean-send-invitations/`;
@@ -241,8 +244,6 @@ export const reviewDetailRoute = (token) =>
 
 // Student
 export const studentComprehensiveExamRoute = `${host}/academic-procedures/api/stu/comprehensive-exam/`;
-export const studentOptSubjectsRoute = (attemptId) =>
-  `${host}/academic-procedures/api/stu/comprehensive-exam/attempt/${attemptId}/opt-subjects/`;
 
 // Supervisor
 export const supervisorComprehensiveExamDashboardRoute = `${host}/academic-procedures/api/supervisor/comprehensive-exam/dashboard/`;
@@ -253,29 +254,39 @@ export const supervisorComprehensiveExamDetailRoute = (id) =>
   `${host}/academic-procedures/api/supervisor/comprehensive-exam/${id}/`;
 export const supervisorResubmitComprehensiveExamRoute = (id) =>
   `${host}/academic-procedures/api/supervisor/comprehensive-exam/${id}/resubmit/`;
-export const supervisorFloatSubjectsRoute = (id) =>
-  `${host}/academic-procedures/api/supervisor/comprehensive-exam/${id}/float-subjects/`;
-export const supervisorConfirmOptedSubjectsRoute = (attemptId) =>
-  `${host}/academic-procedures/api/supervisor/comprehensive-exam/attempt/${attemptId}/confirm-subjects/`;
+export const supervisorSetExamDateRoute = (attemptId) =>
+  `${host}/academic-procedures/api/supervisor/comprehensive-exam/attempt/${attemptId}/set-exam-date/`;
 
 // Academic Office (acadadmin)
 export const academicOfficeComprehensiveExamListRoute = `${host}/academic-procedures/api/acadadmin/comprehensive-exam/`;
 export const academicOfficeVerifyComprehensiveExamRoute = (id) =>
   `${host}/academic-procedures/api/acadadmin/comprehensive-exam/${id}/verify/`;
 
-// Convener (Dean Academic stands in for DPGC/PGCS for now)
-export const convenerComprehensiveExamDashboardRoute = `${host}/academic-procedures/api/dean/comprehensive-exam/dashboard/`;
-export const convenerApproveCommitteeRoute = (id) =>
-  `${host}/academic-procedures/api/dean/comprehensive-exam/${id}/approve-committee/`;
-export const convenerSubmitResultRoute = (attemptId) =>
-  `${host}/academic-procedures/api/dean/comprehensive-exam/attempt/${attemptId}/report/`;
+// Convener DPGC (HOD of the student's department stands in)
+export const hodDpgcComprehensiveExamDashboardRoute = `${host}/academic-procedures/api/hod/comprehensive-exam/dpgc-dashboard/`;
+export const hodDpgcApproveComprehensiveExamRoute = (id) =>
+  `${host}/academic-procedures/api/hod/comprehensive-exam/${id}/dpgc-approve/`;
 
-// HOD (as discipline coordinator)
-export const hodComprehensiveExamDashboardRoute = `${host}/academic-procedures/api/hod/comprehensive-exam/dashboard/`;
-export const hodReviewSubjectsRoute = (attemptId) =>
-  `${host}/academic-procedures/api/hod/comprehensive-exam/attempt/${attemptId}/review-subjects/`;
+// RPC (the student's existing committee, fetched live)
+export const rpcComprehensiveExamListRoute = `${host}/academic-procedures/api/faculty/comprehensive-exam/rpc/`;
+export const rpcComprehensiveExamDetailRoute = (attemptId) =>
+  `${host}/academic-procedures/api/faculty/comprehensive-exam/rpc/${attemptId}/`;
+export const rpcComprehensiveExamConsentRoute = (attemptId) =>
+  `${host}/academic-procedures/api/faculty/comprehensive-exam/rpc/${attemptId}/consent/`;
+export const rpcComprehensiveExamFinalizeRoute = (attemptId) =>
+  `${host}/academic-procedures/api/faculty/comprehensive-exam/rpc/${attemptId}/finalize/`;
 
-// Course catalog (for floating subjects from real courses, not free text)
+// Convener PGCS (HOD of the student's department stands in)
+export const hodPgcsComprehensiveExamDashboardRoute = `${host}/academic-procedures/api/hod/comprehensive-exam/pgcs-dashboard/`;
+export const hodPgcsReviewComprehensiveExamRoute = (attemptId) =>
+  `${host}/academic-procedures/api/hod/comprehensive-exam/attempt/${attemptId}/pgcs-review/`;
+
+// Dean Academic (forward-only final sign-off)
+export const deanComprehensiveExamDashboardRoute = `${host}/academic-procedures/api/dean/comprehensive-exam/dashboard/`;
+export const deanApproveComprehensiveExamRoute = (attemptId) =>
+  `${host}/academic-procedures/api/dean/comprehensive-exam/attempt/${attemptId}/approve/`;
+
+// Course catalog (used by Teaching Credit's course-choice pickers)
 export const listCoursesForDropdownRoute = `${host}/academic-procedures/api/courses/dropdown/`;
 
 // ============================================================================
@@ -296,15 +307,34 @@ export const supervisorOpenSeminarDetailRoute = (id) =>
   `${host}/academic-procedures/api/supervisor/open-seminar/${id}/`;
 export const supervisorResubmitOpenSeminarRoute = (id) =>
   `${host}/academic-procedures/api/supervisor/open-seminar/${id}/resubmit/`;
-export const supervisorRetryOpenSeminarRoute = (id) =>
-  `${host}/academic-procedures/api/supervisor/open-seminar/${id}/retry/`;
+export const supervisorSetSeminarDateRoute = (attemptId) =>
+  `${host}/academic-procedures/api/supervisor/open-seminar/attempt/${attemptId}/set-seminar-date/`;
 
-// Convener (Dean Academic stands in for DPGC/PGCS for now)
-export const convenerOpenSeminarDashboardRoute = `${host}/academic-procedures/api/dean/open-seminar/dashboard/`;
-export const convenerApproveOpenSeminarCommitteeRoute = (attemptId) =>
-  `${host}/academic-procedures/api/dean/open-seminar/attempt/${attemptId}/approve-committee/`;
-export const convenerSubmitOpenSeminarReportRoute = (attemptId) =>
-  `${host}/academic-procedures/api/dean/open-seminar/attempt/${attemptId}/report/`;
+// Convener DPGC, early review (HOD of the student's department stands in)
+export const hodDpgcOpenSeminarDashboardRoute = `${host}/academic-procedures/api/hod/open-seminar/dpgc-dashboard/`;
+export const hodDpgcReviewOpenSeminarRoute = (id) =>
+  `${host}/academic-procedures/api/hod/open-seminar/${id}/dpgc-review/`;
+
+// RPC (the student's existing committee, fetched live)
+export const rpcOpenSeminarListRoute = `${host}/academic-procedures/api/faculty/open-seminar/rpc/`;
+export const rpcOpenSeminarDetailRoute = (attemptId) =>
+  `${host}/academic-procedures/api/faculty/open-seminar/rpc/${attemptId}/`;
+export const rpcOpenSeminarConsentRoute = (attemptId) =>
+  `${host}/academic-procedures/api/faculty/open-seminar/rpc/${attemptId}/consent/`;
+export const rpcOpenSeminarFinalizeRoute = (attemptId) =>
+  `${host}/academic-procedures/api/faculty/open-seminar/rpc/${attemptId}/finalize/`;
+
+// Convener DPGC, second review (HOD of the student's department stands in)
+export const hodReviewOpenSeminarDashboardRoute = `${host}/academic-procedures/api/hod/open-seminar/review-dashboard/`;
+export const hodReviewOpenSeminarRoute = (attemptId) =>
+  `${host}/academic-procedures/api/hod/open-seminar/attempt/${attemptId}/review/`;
+
+// Dean Academic (appoints Dean Nominee early; forward-only final approval)
+export const deanOpenSeminarDashboardRoute = `${host}/academic-procedures/api/dean/open-seminar/dashboard/`;
+export const deanAppointNomineeOpenSeminarRoute = (id) =>
+  `${host}/academic-procedures/api/dean/open-seminar/${id}/appoint-nominee/`;
+export const deanApproveOpenSeminarRoute = (attemptId) =>
+  `${host}/academic-procedures/api/dean/open-seminar/attempt/${attemptId}/approve/`;
 
 // Dean Nominee (ad-hoc faculty appointment)
 export const deanNomineeOpenSeminarDashboardRoute = `${host}/academic-procedures/api/faculty/open-seminar-nominee/dashboard/`;

@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
-  Card, Title, Tabs, Center, Loader, Button, Text, Alert,
+  Card,
+  Title,
+  Tabs,
+  Center,
+  Loader,
+  Button,
+  Alert,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import { IconAlertCircle } from "@tabler/icons-react";
@@ -46,7 +52,13 @@ export default function HODDashboard() {
       } else if (e.response?.status === 403) {
         setError(new Error("Access denied. Insufficient permissions."));
       } else {
-        setError(new Error(e.response?.data?.detail || e.message || "Failed to load dashboard data"));
+        setError(
+          new Error(
+            e.response?.data?.detail ||
+              e.message ||
+              "Failed to load dashboard data",
+          ),
+        );
       }
       showNotification({
         title: "Error",
@@ -70,7 +82,7 @@ export default function HODDashboard() {
       list.map((t) => ({
         "Roll No": t.student_roll || "N/A",
         Student: t.student_name || "N/A",
-        Theme: t.research_theme ? t.research_theme.slice(0, 30) + "..." : "N/A",
+        Theme: t.research_theme ? `${t.research_theme.slice(0, 30)}...` : "N/A",
         Action: (
           <Button
             size="xs"
@@ -81,7 +93,7 @@ export default function HODDashboard() {
           </Button>
         ),
       })),
-    []
+    [],
   );
 
   const handleRefresh = useCallback(() => {
@@ -116,7 +128,9 @@ export default function HODDashboard() {
 
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
-      <Title order={3} mb="md" align="center">HOD Dashboard</Title>
+      <Title order={3} mb="md" ta="center">
+        HOD Dashboard
+      </Title>
 
       <Tabs value={activeTab} onChange={setActiveTab}>
         <Tabs.List>

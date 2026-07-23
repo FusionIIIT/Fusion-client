@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
   Modal,
-  MultiSelect,
   Checkbox,
   TextInput,
   Button,
@@ -16,7 +15,6 @@ import { showNotification } from "@mantine/notifications";
 import axios from "axios";
 import PropTypes from "prop-types";
 import {
-  facultyListRoute,
   openSeminarEligibilityPreviewRoute,
   supervisorProposeOpenSeminarRoute,
 } from "../../../routes/academicRoutes";
@@ -27,7 +25,6 @@ export default function SupervisorProposeOpenSeminarModal({
   onClose,
   refresh,
 }) {
-  const [facOpts, setFacOpts] = useState([]);
   const [eligibility, setEligibility] = useState(null);
   const [loadingInfo, setLoadingInfo] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -35,21 +32,15 @@ export default function SupervisorProposeOpenSeminarModal({
     proposed_date: "",
     teaching_credits: 0,
     first_draft_sent_to_dean: false,
-    committee: [],
   });
 
   useEffect(() => {
     const load = async () => {
       setLoadingInfo(true);
       try {
-        const [facRes, eligRes] = await Promise.all([
-          axios.get(facultyListRoute, { headers: authHeaders() }),
-          axios.get(openSeminarEligibilityPreviewRoute(thesis.student_roll), {
-            headers: authHeaders(),
-          }),
-        ]);
-        setFacOpts(
-          facRes.data.map((f) => ({ value: String(f.id), label: f.name })),
+        const eligRes = await axios.get(
+          openSeminarEligibilityPreviewRoute(thesis.student_roll),
+          { headers: authHeaders() },
         );
         setEligibility(eligRes.data);
       } catch {
@@ -68,10 +59,10 @@ export default function SupervisorProposeOpenSeminarModal({
   const set = (key) => (value) => setForm((f) => ({ ...f, [key]: value }));
 
   const handleSubmit = useCallback(async () => {
-    if (form.committee.length === 0) {
+    if (!form.proposed_date) {
       showNotification({
         title: "Missing fields",
-        message: "Select at least one committee member.",
+        message: "Proposed date is required.",
         color: "yellow",
       });
       return;
@@ -84,12 +75,13 @@ export default function SupervisorProposeOpenSeminarModal({
           ...form,
           roll_no: thesis.student_roll,
           possible_thesis_title: thesis.research_theme || "",
+          co_supervisor_id: thesis.co_supervisor?.id || null,
         },
         { headers: authHeaders() },
       );
       showNotification({
         title: "Proposed",
-        message: "Open Seminar committee sent for Convener approval.",
+        message: "Open Seminar sent for Convener (DPGC) review.",
         color: "green",
       });
       refresh();
@@ -105,33 +97,52 @@ export default function SupervisorProposeOpenSeminarModal({
   }, [form, thesis, refresh]);
 
   return (
-    <Modal
-      opened
-      onClose={onClose}
-      title="Propose Open Seminar Committee"
-      size="70%"
-    >
+    <Modal opened onClose={onClose} title="Propose Open Seminar" size="70%">
       {loadingInfo ? (
         <Center style={{ height: 150 }}>
           <Loader />
         </Center>
       ) : (
-        <Stack spacing="md">
+        <Stack gap="md">
           <Table striped highlightOnHover>
             <tbody>
               <tr>
                 <td>
-                  <Text fw={500}>Student</Text>
+                  <Text fw={500}>Student Name</Text>
                 </td>
+                <td>{thesis.student_name}</td>
+              </tr>
+              <tr>
                 <td>
-                  {thesis.student_name} ({thesis.student_roll})
+                  <Text fw={500}>Roll No</Text>
                 </td>
+                <td>{thesis.student_roll}</td>
+              </tr>
+              <tr>
+                <td>
+                  <Text fw={500}>Discipline</Text>
+                </td>
+                <td>{thesis.student_discipline || "—"}</td>
               </tr>
               <tr>
                 <td>
                   <Text fw={500}>Thesis Title</Text>
                 </td>
                 <td>{thesis.research_theme || "—"}</td>
+              </tr>
+              <tr>
+                <td>
+                  <Text fw={500}>Supervisor</Text>
+                </td>
+                <td>{thesis.supervisor ? thesis.supervisor.name : "—"}</td>
+              </tr>
+              <tr>
+                <td>
+                  <Text fw={500}>Co-Supervisor</Text>
+                </td>
+                <td>
+                  {thesis.co_supervisor ? thesis.co_supervisor.name : "—"}
+                </td>
               </tr>
               <tr>
                 <td>
@@ -168,6 +179,31 @@ export default function SupervisorProposeOpenSeminarModal({
             </tbody>
           </Table>
 
+          <Text fw={500}>Examination Committee (RPC)</Text>
+          <Table striped highlightOnHover>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Discipline</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(!thesis.committee || thesis.committee.length === 0) && (
+                <tr>
+                  <td colSpan={2}>
+                    <Text c="dimmed">Not yet constituted</Text>
+                  </td>
+                </tr>
+              )}
+              {(thesis.committee || []).map((m) => (
+                <tr key={m.id}>
+                  <td>{m.name}</td>
+                  <td>{m.discipline}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+
           <TextInput
             label="Proposed Date of Open Seminar"
             type="date"
@@ -190,14 +226,6 @@ export default function SupervisorProposeOpenSeminarModal({
             checked={form.first_draft_sent_to_dean}
             onChange={(e) => set("first_draft_sent_to_dean")(e.target.checked)}
           />
-          <MultiSelect
-            label="Open Seminar Committee (up to 5 members)"
-            data={facOpts}
-            value={form.committee}
-            onChange={set("committee")}
-            searchable
-            maxValues={5}
-          />
           <Group justify="flex-end">
             <Button variant="default" onClick={onClose}>
               Cancel
@@ -218,7 +246,23 @@ SupervisorProposeOpenSeminarModal.propTypes = {
     student_name: PropTypes.string,
     student_roll: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
       .isRequired,
+    student_discipline: PropTypes.string,
     research_theme: PropTypes.string,
+    supervisor: PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      name: PropTypes.string,
+    }),
+    co_supervisor: PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      name: PropTypes.string,
+    }),
+    committee: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        name: PropTypes.string,
+        discipline: PropTypes.string,
+      }),
+    ),
   }).isRequired,
   onClose: PropTypes.func.isRequired,
   refresh: PropTypes.func.isRequired,

@@ -12,13 +12,13 @@ import {
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import axios from "axios";
+import PropTypes from "prop-types";
 import {
   deanReviewRoute,
   deanGeneratePdfRoute,
 } from "../../routes/academicRoutes";
 
 export default function DeanReviewModal({ thesis, onClose, refresh }) {
-  console.log('rendered');
   const [form, setForm] = useState(null);
   const [remarks, setRemarks] = useState("");
   const [loading, setLoading] = useState(true);
@@ -72,7 +72,7 @@ export default function DeanReviewModal({ thesis, onClose, refresh }) {
       await axios.post(
         deanReviewRoute(thesis.id),
         { approve: true },
-        { headers }
+        { headers },
       );
       showNotification({
         title: "Success",
@@ -96,7 +96,7 @@ export default function DeanReviewModal({ thesis, onClose, refresh }) {
       await axios.post(
         deanReviewRoute(thesis.id),
         { approve: false, remarks },
-        { headers }
+        { headers },
       );
       showNotification({
         title: "Success",
@@ -116,7 +116,6 @@ export default function DeanReviewModal({ thesis, onClose, refresh }) {
   };
 
   const handleDownload = async () => {
-    const token = localStorage.getItem("authToken");
     if (!token) {
       showNotification({
         title: "Auth Error",
@@ -133,7 +132,7 @@ export default function DeanReviewModal({ thesis, onClose, refresh }) {
       });
 
       const url = window.URL.createObjectURL(
-        new Blob([res.data], { type: "application/pdf" })
+        new Blob([res.data], { type: "application/pdf" }),
       );
       const link = document.createElement("a");
       link.href = url;
@@ -153,51 +152,76 @@ export default function DeanReviewModal({ thesis, onClose, refresh }) {
 
   return (
     <Modal opened onClose={onClose} title="Dean Final Review" size="90%">
-      <Stack spacing="lg">
+      <Stack gap="lg">
         <Table striped highlightOnHover>
           <tbody>
             <tr>
-              <td><Text weight={500}>Roll No</Text></td>
+              <td>
+                <Text weight={500}>Roll No</Text>
+              </td>
               <td>{form.student_roll}</td>
             </tr>
             <tr>
-              <td><Text weight={500}>Name</Text></td>
+              <td>
+                <Text weight={500}>Name</Text>
+              </td>
               <td>{form.student_name}</td>
             </tr>
             <tr>
-              <td><Text weight={500}>Discipline</Text></td>
+              <td>
+                <Text weight={500}>Discipline</Text>
+              </td>
               <td>{form.student_discipline}</td>
             </tr>
             <tr>
-              <td><Text weight={500}>Category</Text></td>
+              <td>
+                <Text weight={500}>Category</Text>
+              </td>
               <td>{form.category}</td>
             </tr>
             <tr>
-              <td><Text weight={500}>Broad Area</Text></td>
+              <td>
+                <Text weight={500}>Broad Area</Text>
+              </td>
               <td>{form.broad_area}</td>
             </tr>
             <tr>
-              <td><Text weight={500}>Research Theme</Text></td>
               <td>
-                <Textarea value={form.research_theme} readOnly minRows={3} />
+                <Text weight={500}>Research Theme</Text>
+              </td>
+              <td>
+                <Textarea
+                  aria-label="Research Theme"
+                  value={form.research_theme}
+                  readOnly
+                  minRows={3}
+                />
               </td>
             </tr>
             {form.external.ext_name && (
               <>
                 <tr>
-                  <td><Text weight={500}>External Supervisor</Text></td>
+                  <td>
+                    <Text weight={500}>External Supervisor</Text>
+                  </td>
                   <td>{form.external.ext_name}</td>
                 </tr>
                 <tr>
-                  <td><Text weight={500}>Email</Text></td>
+                  <td>
+                    <Text weight={500}>Email</Text>
+                  </td>
                   <td>{form.external.ext_email}</td>
                 </tr>
                 <tr>
-                  <td><Text weight={500}>Discipline</Text></td>
+                  <td>
+                    <Text weight={500}>Discipline</Text>
+                  </td>
                   <td>{form.external.ext_discipline}</td>
                 </tr>
                 <tr>
-                  <td><Text weight={500}>Institution</Text></td>
+                  <td>
+                    <Text weight={500}>Institution</Text>
+                  </td>
                   <td>{form.external.ext_institution}</td>
                 </tr>
               </>
@@ -208,12 +232,18 @@ export default function DeanReviewModal({ thesis, onClose, refresh }) {
         <Text weight={500}>Supervisor Load</Text>
         <Table striped highlightOnHover>
           <thead>
-            <tr><th /><th>Single</th><th>Shared</th></tr>
+            <tr>
+              <th aria-label="Category" />
+              <th>Single</th>
+              <th>Shared</th>
+            </tr>
           </thead>
           <tbody>
-            {['PG', 'PhD'].map(cat => (
+            {["PG", "PhD"].map((cat) => (
               <tr key={cat}>
-                <td><Text weight={500}>{cat}</Text></td>
+                <td>
+                  <Text weight={500}>{cat}</Text>
+                </td>
                 <td>{form.load[`${cat.toLowerCase()}_single`]}</td>
                 <td>{form.load[`${cat.toLowerCase()}_shared`]}</td>
               </tr>
@@ -224,7 +254,10 @@ export default function DeanReviewModal({ thesis, onClose, refresh }) {
         <Text weight={500}>RPC Committee Members</Text>
         <Table striped highlightOnHover>
           <thead>
-            <tr><th>Name</th><th>Discipline</th></tr>
+            <tr>
+              <th>Name</th>
+              <th>Discipline</th>
+            </tr>
           </thead>
           <tbody>
             {form.committee.map((m, idx) => (
@@ -241,32 +274,40 @@ export default function DeanReviewModal({ thesis, onClose, refresh }) {
             color="blue"
             style={{ backgroundColor: "#e6f0ff", padding: 10, borderRadius: 4 }}
           >
-            <Text weight={500} component="span">Existing Dean's Remarks:</Text> {form.dean_remarks}
+            <Text weight={500} component="span">
+              Existing Dean's Remarks:
+            </Text>{" "}
+            {form.dean_remarks}
           </Text>
         )}
 
-        {form.status === 'dean_pending' && (
+        {form.status === "dean_pending" && (
           <Textarea
             label="Remarks (if sending back to HOD)"
             placeholder="Enter your remarks here"
             value={remarks}
-            onChange={e => setRemarks(e.target.value)}
+            onChange={(e) => setRemarks(e.target.value)}
             minRows={3}
           />
         )}
 
-        {(form.status === 'dean_pending' || form.status === 'hod_approved') && (
+        {(form.status === "dean_pending" || form.status === "hod_approved") && (
           <Group grow>
             <Button fullWidth onClick={handleApprove} loading={loading}>
               Approve Thesis
             </Button>
-            <Button fullWidth color="red" onClick={handleReject} loading={loading}>
+            <Button
+              fullWidth
+              color="red"
+              onClick={handleReject}
+              loading={loading}
+            >
               Send Back to HOD
             </Button>
           </Group>
         )}
 
-        {form.status === 'dean_approved' && (
+        {form.status === "dean_approved" && (
           <Group>
             <Button fullWidth variant="outline" onClick={handleDownload}>
               Download Full Approved PDF
@@ -277,3 +318,11 @@ export default function DeanReviewModal({ thesis, onClose, refresh }) {
     </Modal>
   );
 }
+
+DeanReviewModal.propTypes = {
+  thesis: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  }).isRequired,
+  onClose: PropTypes.func.isRequired,
+  refresh: PropTypes.func.isRequired,
+};

@@ -54,7 +54,7 @@ export default function DeanNomineeReportModal({ seminar, onClose, refresh }) {
       );
       showNotification({
         title: "Submitted",
-        message: "Your confidential report has been recorded.",
+        message: "Your report has been recorded.",
         color: "green",
       });
       refresh();
@@ -71,7 +71,7 @@ export default function DeanNomineeReportModal({ seminar, onClose, refresh }) {
 
   return (
     <Modal opened onClose={onClose} title="Report of Dean Nominee" size="70%">
-      <Stack spacing="md">
+      <Stack gap="md">
         <Table striped highlightOnHover>
           <tbody>
             <tr>

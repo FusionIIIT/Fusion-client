@@ -3,7 +3,6 @@ import {
   Modal,
   Text,
   Table,
-  Checkbox,
   Textarea,
   Button,
   Stack,
@@ -12,51 +11,31 @@ import {
 import { showNotification } from "@mantine/notifications";
 import axios from "axios";
 import PropTypes from "prop-types";
-import { academicOfficeVerifyComprehensiveExamRoute } from "../../../routes/academicRoutes";
+import { hodPgcsReviewComprehensiveExamRoute } from "../../../routes/academicRoutes";
 import {
-  ENTRY_QUALIFICATION_LABEL,
   authHeaders,
+  currentAttempt,
   EXAM_SHAPE,
 } from "./comprehensiveExamShared";
 
-export default function AcademicOfficeVerifyModal({ exam, onClose, refresh }) {
-  const [creditsVerified, setCreditsVerified] = useState(
-    exam.credits_completed >= exam.required_credits,
-  );
-  const [cpiVerified, setCpiVerified] = useState(
-    Number(exam.current_cpi) >= 7.0,
-  );
-  const [rmVerified, setRmVerified] = useState(false);
+export default function HODPgcsReviewModal({ exam, onClose, refresh }) {
+  const attempt = currentAttempt(exam);
   const [remarks, setRemarks] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handle = async (approve) => {
-    if (approve && !(creditsVerified && cpiVerified && rmVerified)) {
-      showNotification({
-        title: "Cannot approve yet",
-        message: "Check all three eligibility boxes before approving.",
-        color: "yellow",
-      });
-      return;
-    }
     setLoading(true);
     try {
       await axios.post(
-        academicOfficeVerifyComprehensiveExamRoute(exam.id),
-        {
-          approve,
-          credits_verified: creditsVerified,
-          cpi_verified: cpiVerified,
-          research_methodology_verified: rmVerified,
-          remarks,
-        },
+        hodPgcsReviewComprehensiveExamRoute(attempt.id),
+        { approve, remarks },
         { headers: authHeaders() },
       );
       showNotification({
-        title: approve ? "Verified" : "Rejected",
+        title: approve ? "Forwarded" : "Sent Back",
         message: approve
-          ? "Forwarded to Convener for committee approval."
-          : "Sent back to supervisor.",
+          ? "Forwarded to Dean Academic."
+          : "Sent back to the RPC for fresh consensus.",
         color: approve ? "green" : "yellow",
       });
       refresh();
@@ -72,7 +51,7 @@ export default function AcademicOfficeVerifyModal({ exam, onClose, refresh }) {
   };
 
   return (
-    <Modal opened onClose={onClose} title="Verify Eligibility" size="70%">
+    <Modal opened onClose={onClose} title="Convener (PGCS) Review" size="80%">
       <Stack gap="md">
         <Table striped highlightOnHover>
           <tbody>
@@ -120,35 +99,35 @@ export default function AcademicOfficeVerifyModal({ exam, onClose, refresh }) {
             </tr>
             <tr>
               <td>
-                <Text fw={500}>Proposed Date of Examination</Text>
+                <Text fw={500}>Attempt</Text>
               </td>
-              <td>{exam.proposed_exam_date || "—"}</td>
+              <td>{attempt?.attempt_number}</td>
             </tr>
             <tr>
               <td>
-                <Text fw={500}>Entry Qualification</Text>
+                <Text fw={500}>Date of Examination</Text>
               </td>
-              <td>{ENTRY_QUALIFICATION_LABEL[exam.entry_qualification]}</td>
+              <td>{attempt?.exam_date || "—"}</td>
             </tr>
             <tr>
               <td>
-                <Text fw={500}>Credits Completed</Text>
+                <Text fw={500}>
+                  Candidate&apos;s Performance in Examination
+                </Text>
               </td>
               <td>
-                {exam.credits_completed} / {exam.required_credits} required
+                {attempt?.result === "passed"
+                  ? "Passed"
+                  : attempt?.result === "failed"
+                    ? "Failed"
+                    : "—"}
               </td>
-            </tr>
-            <tr>
-              <td>
-                <Text fw={500}>Current CPI</Text>
-              </td>
-              <td>{exam.current_cpi ?? "—"} (min 7.0 required)</td>
             </tr>
           </tbody>
         </Table>
 
         <Text fw={500}>Examination Committee (RPC)</Text>
-        <Table striped highlightOnHover>
+        <Table striped highlightOnHover mb="md">
           <thead>
             <tr>
               <th>Name</th>
@@ -156,14 +135,7 @@ export default function AcademicOfficeVerifyModal({ exam, onClose, refresh }) {
             </tr>
           </thead>
           <tbody>
-            {(!exam.committee || exam.committee.length === 0) && (
-              <tr>
-                <td colSpan={2}>
-                  <Text c="dimmed">Not yet constituted</Text>
-                </td>
-              </tr>
-            )}
-            {(exam.committee || []).map((m) => (
+            {exam.committee.map((m) => (
               <tr key={m.id}>
                 <td>{m.name}</td>
                 <td>{m.discipline}</td>
@@ -172,32 +144,53 @@ export default function AcademicOfficeVerifyModal({ exam, onClose, refresh }) {
           </tbody>
         </Table>
 
-        <Checkbox
-          label="Credits requirement fulfilled"
-          checked={creditsVerified}
-          onChange={(e) => setCreditsVerified(e.target.checked)}
-        />
-        <Checkbox
-          label="Minimum CPI of 7.0 fulfilled"
-          checked={cpiVerified}
-          onChange={(e) => setCpiVerified(e.target.checked)}
-        />
-        <Checkbox
-          label="Research Methodology completed"
-          checked={rmVerified}
-          onChange={(e) => setRmVerified(e.target.checked)}
-        />
+        <Text fw={500}>RPC Report</Text>
+        <Table striped highlightOnHover>
+          <tbody>
+            <tr>
+              <td>
+                <b>Fundamentals</b>
+              </td>
+              <td>{attempt?.fundamentals_comment || "—"}</td>
+            </tr>
+            <tr>
+              <td>
+                <b>Problem Identification</b>
+              </td>
+              <td>{attempt?.problem_identification_comment || "—"}</td>
+            </tr>
+            <tr>
+              <td>
+                <b>Plan of Work</b>
+              </td>
+              <td>{attempt?.plan_of_work_comment || "—"}</td>
+            </tr>
+            <tr>
+              <td>
+                <b>Suggestions</b>
+              </td>
+              <td>{attempt?.suggestions_comment || "—"}</td>
+            </tr>
+            <tr>
+              <td>
+                <b>Additional Literature</b>
+              </td>
+              <td>{attempt?.additional_literature_comment || "—"}</td>
+            </tr>
+          </tbody>
+        </Table>
+
         <Textarea
-          label="Remarks"
+          label="Remarks (if sending back to the RPC)"
           value={remarks}
           onChange={(e) => setRemarks(e.target.value)}
         />
         <Group grow>
           <Button onClick={() => handle(true)} loading={loading}>
-            Approve &amp; Forward to Convener
+            Forward to Dean Academic
           </Button>
           <Button color="red" onClick={() => handle(false)} loading={loading}>
-            Reject
+            Send Back to RPC
           </Button>
         </Group>
       </Stack>
@@ -205,7 +198,7 @@ export default function AcademicOfficeVerifyModal({ exam, onClose, refresh }) {
   );
 }
 
-AcademicOfficeVerifyModal.propTypes = {
+HODPgcsReviewModal.propTypes = {
   exam: EXAM_SHAPE.isRequired,
   onClose: PropTypes.func.isRequired,
   refresh: PropTypes.func.isRequired,

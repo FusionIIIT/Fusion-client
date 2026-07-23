@@ -11,15 +11,10 @@ import {
 import { showNotification } from "@mantine/notifications";
 import axios from "axios";
 import PropTypes from "prop-types";
-import { hodReviewSubjectsRoute } from "../../../routes/academicRoutes";
-import {
-  authHeaders,
-  currentAttempt,
-  EXAM_SHAPE,
-} from "./comprehensiveExamShared";
+import { hodDpgcApproveComprehensiveExamRoute } from "../../../routes/academicRoutes";
+import { authHeaders, EXAM_SHAPE } from "./comprehensiveExamShared";
 
-export default function HODReviewSubjectsModal({ exam, onClose, refresh }) {
-  const attempt = currentAttempt(exam);
+export default function HODDpgcApproveModal({ exam, onClose, refresh }) {
   const [remarks, setRemarks] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -27,14 +22,14 @@ export default function HODReviewSubjectsModal({ exam, onClose, refresh }) {
     setLoading(true);
     try {
       await axios.post(
-        hodReviewSubjectsRoute(attempt.id),
+        hodDpgcApproveComprehensiveExamRoute(exam.id),
         { approve, remarks },
         { headers: authHeaders() },
       );
       showNotification({
-        title: approve ? "Approved" : "Rejected",
+        title: approve ? "Forwarded" : "Rejected",
         message: approve
-          ? "Student can now select subjects."
+          ? "The student's RPC can now begin the exam review."
           : "Sent back to supervisor.",
         color: approve ? "green" : "yellow",
       });
@@ -51,45 +46,74 @@ export default function HODReviewSubjectsModal({ exam, onClose, refresh }) {
   };
 
   return (
-    <Modal opened onClose={onClose} title="Review Floated Subjects" size="70%">
-      <Stack spacing="md">
+    <Modal opened onClose={onClose} title="Convener (DPGC) Approval" size="70%">
+      <Stack gap="md">
         <Table striped highlightOnHover>
           <tbody>
             <tr>
               <td>
-                <Text fw={500}>Student</Text>
+                <Text fw={500}>Student Name</Text>
               </td>
+              <td>{exam.student_name}</td>
+            </tr>
+            <tr>
               <td>
-                {exam.student_name} ({exam.student_roll})
+                <Text fw={500}>Roll No</Text>
               </td>
+              <td>{exam.student_roll}</td>
+            </tr>
+            <tr>
+              <td>
+                <Text fw={500}>Discipline</Text>
+              </td>
+              <td>{exam.student_discipline || "—"}</td>
+            </tr>
+            <tr>
+              <td>
+                <Text fw={500}>Semester</Text>
+              </td>
+              <td>{exam.semester_no ?? "—"}</td>
+            </tr>
+            <tr>
+              <td>
+                <Text fw={500}>Thesis Title</Text>
+              </td>
+              <td>{exam.possible_thesis_title || "—"}</td>
             </tr>
             <tr>
               <td>
                 <Text fw={500}>Supervisor</Text>
               </td>
-              <td>{exam.supervisor?.name}</td>
+              <td>{exam.supervisor?.name || "—"}</td>
             </tr>
             <tr>
               <td>
-                <Text fw={500}>Written Exam Date</Text>
+                <Text fw={500}>Co-Supervisor</Text>
               </td>
-              <td>{attempt?.written_exam_date || "—"}</td>
+              <td>{exam.co_supervisor ? exam.co_supervisor.name : "—"}</td>
             </tr>
             <tr>
               <td>
-                <Text fw={500}>Oral Exam Date</Text>
+                <Text fw={500}>Proposed Date of Examination</Text>
               </td>
-              <td>{attempt?.oral_exam_date || "—"}</td>
+              <td>{exam.proposed_exam_date || "—"}</td>
             </tr>
           </tbody>
         </Table>
 
-        <Text fw={500}>Subjects Floated for Written Examination</Text>
+        <Text fw={500}>Examination Committee (RPC)</Text>
         <Table striped highlightOnHover>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Discipline</th>
+            </tr>
+          </thead>
           <tbody>
-            {attempt?.subjects.map((s) => (
-              <tr key={s.id}>
-                <td>{s.subject_name}</td>
+            {exam.committee.map((m) => (
+              <tr key={m.id}>
+                <td>{m.name}</td>
+                <td>{m.discipline}</td>
               </tr>
             ))}
           </tbody>
@@ -102,7 +126,7 @@ export default function HODReviewSubjectsModal({ exam, onClose, refresh }) {
         />
         <Group grow>
           <Button onClick={() => handle(true)} loading={loading}>
-            Approve Subjects
+            Forward
           </Button>
           <Button color="red" onClick={() => handle(false)} loading={loading}>
             Send Back to Supervisor
@@ -113,7 +137,7 @@ export default function HODReviewSubjectsModal({ exam, onClose, refresh }) {
   );
 }
 
-HODReviewSubjectsModal.propTypes = {
+HODDpgcApproveModal.propTypes = {
   exam: EXAM_SHAPE.isRequired,
   onClose: PropTypes.func.isRequired,
   refresh: PropTypes.func.isRequired,

@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Modal,
   Text,
   Table,
-  Select,
   Textarea,
   Button,
   Stack,
@@ -12,58 +11,29 @@ import {
 import { showNotification } from "@mantine/notifications";
 import axios from "axios";
 import PropTypes from "prop-types";
-import {
-  facultyListRoute,
-  convenerApproveOpenSeminarCommitteeRoute,
-} from "../../../routes/academicRoutes";
-import {
-  authHeaders,
-  currentAttempt,
-  OPEN_SEMINAR_SHAPE,
-} from "./openSeminarShared";
+import { hodDpgcReviewOpenSeminarRoute } from "../../../routes/academicRoutes";
+import { authHeaders, OPEN_SEMINAR_SHAPE } from "./openSeminarShared";
 
-export default function ConvenerApproveOpenSeminarCommitteeModal({
+export default function HODDpgcApproveOpenSeminarModal({
   seminar,
   onClose,
   refresh,
 }) {
-  const attempt = currentAttempt(seminar);
-  const [facOpts, setFacOpts] = useState([]);
-  const [deanNomineeId, setDeanNomineeId] = useState("");
   const [remarks, setRemarks] = useState("");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    axios
-      .get(facultyListRoute, { headers: authHeaders() })
-      .then((res) =>
-        setFacOpts(
-          res.data.map((f) => ({ value: String(f.id), label: f.name })),
-        ),
-      )
-      .catch(() => {});
-  }, []);
-
   const handle = async (approve) => {
-    if (approve && !deanNomineeId) {
-      showNotification({
-        title: "Dean Nominee required",
-        message: "Appoint a Dean Nominee before approving.",
-        color: "yellow",
-      });
-      return;
-    }
     setLoading(true);
     try {
       await axios.post(
-        convenerApproveOpenSeminarCommitteeRoute(attempt.id),
-        { approve, dean_nominee_id: deanNomineeId, remarks },
+        hodDpgcReviewOpenSeminarRoute(seminar.id),
+        { approve, remarks },
         { headers: authHeaders() },
       );
       showNotification({
-        title: approve ? "Approved" : "Rejected",
+        title: approve ? "Forwarded" : "Rejected",
         message: approve
-          ? "Committee approved; Dean Nominee appointed."
+          ? "Forwarded to Dean Academic."
           : "Sent back to supervisor.",
         color: approve ? "green" : "yellow",
       });
@@ -83,25 +53,35 @@ export default function ConvenerApproveOpenSeminarCommitteeModal({
     <Modal
       opened
       onClose={onClose}
-      title="Approve Open Seminar Committee"
+      title="Convener (DPGC) Approval — Open Seminar"
       size="70%"
     >
-      <Stack spacing="md">
+      <Stack gap="md">
         <Table striped highlightOnHover>
           <tbody>
             <tr>
               <td>
-                <Text fw={500}>Student</Text>
+                <Text fw={500}>Student Name</Text>
               </td>
-              <td>
-                {seminar.student_name} ({seminar.student_roll})
-              </td>
+              <td>{seminar.student_name}</td>
             </tr>
             <tr>
               <td>
-                <Text fw={500}>Supervisor</Text>
+                <Text fw={500}>Roll No</Text>
               </td>
-              <td>{seminar.supervisor?.name}</td>
+              <td>{seminar.student_roll}</td>
+            </tr>
+            <tr>
+              <td>
+                <Text fw={500}>Discipline</Text>
+              </td>
+              <td>{seminar.student_discipline || "—"}</td>
+            </tr>
+            <tr>
+              <td>
+                <Text fw={500}>Semester</Text>
+              </td>
+              <td>{seminar.semester_no ?? "—"}</td>
             </tr>
             <tr>
               <td>
@@ -111,32 +91,48 @@ export default function ConvenerApproveOpenSeminarCommitteeModal({
             </tr>
             <tr>
               <td>
-                <Text fw={500}>Proposed Date</Text>
+                <Text fw={500}>Supervisor</Text>
               </td>
-              <td>{attempt?.proposed_date || "—"}</td>
+              <td>{seminar.supervisor?.name || "—"}</td>
             </tr>
             <tr>
               <td>
-                <Text fw={500}>Total Credits</Text>
+                <Text fw={500}>Co-Supervisor</Text>
               </td>
-              <td>{attempt?.total_credits ?? "—"}</td>
+              <td>
+                {seminar.co_supervisor ? seminar.co_supervisor.name : "—"}
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <Text fw={500}>Proposed Date</Text>
+              </td>
+              <td>{seminar.proposed_date || "—"}</td>
+            </tr>
+            <tr>
+              <td>
+                <Text fw={500}>
+                  Credits (Course Work / Progress Seminar / Thesis Research /
+                  Teaching)
+                </Text>
+              </td>
+              <td>
+                {seminar.course_work_credits} /{" "}
+                {seminar.progress_seminar_credits} /{" "}
+                {seminar.thesis_research_credits} / {seminar.teaching_credits} ={" "}
+                {seminar.total_credits} total
+              </td>
             </tr>
             <tr>
               <td>
                 <Text fw={500}>RPC Recommended Open Seminar?</Text>
               </td>
-              <td>{attempt?.rpc_recommended_open_seminar ? "Yes" : "No"}</td>
-            </tr>
-            <tr>
-              <td>
-                <Text fw={500}>1st Draft Sent to Dean?</Text>
-              </td>
-              <td>{attempt?.first_draft_sent_to_dean ? "Yes" : "No"}</td>
+              <td>{seminar.rpc_recommended_open_seminar ? "Yes" : "No"}</td>
             </tr>
           </tbody>
         </Table>
 
-        <Text fw={500}>Committee</Text>
+        <Text fw={500}>Examination Committee (RPC)</Text>
         <Table striped highlightOnHover>
           <thead>
             <tr>
@@ -145,7 +141,7 @@ export default function ConvenerApproveOpenSeminarCommitteeModal({
             </tr>
           </thead>
           <tbody>
-            {attempt?.committee.map((m) => (
+            {seminar.committee.map((m) => (
               <tr key={m.id}>
                 <td>{m.name}</td>
                 <td>{m.discipline}</td>
@@ -154,14 +150,6 @@ export default function ConvenerApproveOpenSeminarCommitteeModal({
           </tbody>
         </Table>
 
-        <Select
-          label="Appoint Dean Nominee"
-          data={facOpts}
-          value={deanNomineeId}
-          onChange={setDeanNomineeId}
-          searchable
-          required
-        />
         <Textarea
           label="Remarks (if sending back)"
           value={remarks}
@@ -169,7 +157,7 @@ export default function ConvenerApproveOpenSeminarCommitteeModal({
         />
         <Group grow>
           <Button onClick={() => handle(true)} loading={loading}>
-            Approve Committee
+            Forward
           </Button>
           <Button color="red" onClick={() => handle(false)} loading={loading}>
             Send Back to Supervisor
@@ -180,7 +168,7 @@ export default function ConvenerApproveOpenSeminarCommitteeModal({
   );
 }
 
-ConvenerApproveOpenSeminarCommitteeModal.propTypes = {
+HODDpgcApproveOpenSeminarModal.propTypes = {
   seminar: OPEN_SEMINAR_SHAPE.isRequired,
   onClose: PropTypes.func.isRequired,
   refresh: PropTypes.func.isRequired,

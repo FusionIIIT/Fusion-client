@@ -65,7 +65,7 @@ export default function HODDecideTeachingCreditModal({
 
   return (
     <Modal opened onClose={onClose} title="Teaching Credit — Decide" size="60%">
-      <Stack spacing="md">
+      <Stack gap="md">
         <Table striped highlightOnHover>
           <tbody>
             <tr>

@@ -16,6 +16,7 @@ import {
   Group,
   Modal,
   Stack,
+  Table,
 } from "@mantine/core";
 import { IconDownload, IconAlertCircle } from "@tabler/icons-react";
 import { showNotification } from "@mantine/notifications";
@@ -269,7 +270,7 @@ export default function StudentThesisPage() {
         <Grid.Col span={{ base: 12, md: 6 }}>
           <Select
             label="Supervisor"
-            data={facOpts}
+            data={facOpts.filter((f) => f.value !== form.co_supervisor_id)}
             value={form.supervisor_id}
             onChange={(v) => setForm((f) => ({ ...f, supervisor_id: v }))}
             disabled={!canEdit}
@@ -281,7 +282,7 @@ export default function StudentThesisPage() {
         <Grid.Col span={{ base: 12, md: 6 }}>
           <Select
             label="Co-Supervisor"
-            data={facOpts}
+            data={facOpts.filter((f) => f.value !== form.supervisor_id)}
             value={form.co_supervisor_id}
             onChange={(v) => setForm((f) => ({ ...f, co_supervisor_id: v }))}
             disabled={!canEdit}
@@ -371,43 +372,68 @@ export default function StudentThesisPage() {
         title="Review Thesis Topic Proposal"
         size="lg"
       >
-        <Stack gap="xs">
-          <Text size="sm">
-            <b>Category:</b> {form.category}
-          </Text>
-          <Text size="sm">
-            <b>Broad Area:</b> {form.broad_area || "—"}
-          </Text>
-          <Text size="sm">
-            <b>Research Theme:</b> {form.research_theme || "—"}
-          </Text>
-          <Text size="sm">
-            <b>Supervisor:</b>{" "}
-            {facOpts.find((f) => f.value === form.supervisor_id)?.label || "—"}
-          </Text>
-          <Text size="sm">
-            <b>Co-Supervisor:</b>{" "}
-            {facOpts.find((f) => f.value === form.co_supervisor_id)?.label ||
-              "—"}
-          </Text>
+        <Stack gap="md">
+          <Table withTableBorder>
+            <Table.Tbody>
+              {[
+                { label: "Category", value: form.category },
+                { label: "Broad Area", value: form.broad_area || "—" },
+                {
+                  label: "Research Theme",
+                  value: form.research_theme || "—",
+                },
+                {
+                  label: "Supervisor",
+                  value:
+                    facOpts.find((f) => f.value === form.supervisor_id)
+                      ?.label || "—",
+                },
+                {
+                  label: "Co-Supervisor",
+                  value:
+                    facOpts.find((f) => f.value === form.co_supervisor_id)
+                      ?.label || "—",
+                },
+              ].map((row) => (
+                <Table.Tr key={row.label}>
+                  <Table.Th style={{ whiteSpace: "nowrap", width: "1%" }}>
+                    {row.label}
+                  </Table.Th>
+                  <Table.Td>{row.value}</Table.Td>
+                </Table.Tr>
+              ))}
+            </Table.Tbody>
+          </Table>
+
           {(form.external_name ||
             form.external_email ||
             form.external_discipline ||
             form.external_institution) && (
             <>
               <Divider label="External Co-Supervisor" labelPosition="left" />
-              <Text size="sm">
-                <b>Name:</b> {form.external_name || "—"}
-              </Text>
-              <Text size="sm">
-                <b>Email:</b> {form.external_email || "—"}
-              </Text>
-              <Text size="sm">
-                <b>Discipline:</b> {form.external_discipline || "—"}
-              </Text>
-              <Text size="sm">
-                <b>Institution:</b> {form.external_institution || "—"}
-              </Text>
+              <Table withTableBorder>
+                <Table.Tbody>
+                  {[
+                    { label: "Name", value: form.external_name || "—" },
+                    { label: "Email", value: form.external_email || "—" },
+                    {
+                      label: "Discipline",
+                      value: form.external_discipline || "—",
+                    },
+                    {
+                      label: "Institution",
+                      value: form.external_institution || "—",
+                    },
+                  ].map((row) => (
+                    <Table.Tr key={row.label}>
+                      <Table.Th style={{ whiteSpace: "nowrap", width: "1%" }}>
+                        {row.label}
+                      </Table.Th>
+                      <Table.Td>{row.value}</Table.Td>
+                    </Table.Tr>
+                  ))}
+                </Table.Tbody>
+              </Table>
             </>
           )}
         </Stack>

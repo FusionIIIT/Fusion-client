@@ -16,6 +16,7 @@ import {
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import axios from "axios";
+import PropTypes from "prop-types";
 
 import {
   rpcSeminarDetailRoute,
@@ -198,7 +199,7 @@ export default function RPCReviewModal({ seminarId, onClose }) {
       size="90%"
     >
       <Card shadow="sm" padding="lg">
-        <Stack spacing="md">
+        <Stack gap="md">
           <Table verticalSpacing="sm" fontSize="sm">
             <tbody>
               <tr>
@@ -448,3 +449,9 @@ export default function RPCReviewModal({ seminarId, onClose }) {
     </Modal>
   );
 }
+
+RPCReviewModal.propTypes = {
+  seminarId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    .isRequired,
+  onClose: PropTypes.func.isRequired,
+};

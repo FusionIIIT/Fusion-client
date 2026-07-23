@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Modal,
   Text,
   Table,
-  Checkbox,
+  Select,
   Textarea,
   Button,
   Stack,
@@ -12,29 +12,34 @@ import {
 import { showNotification } from "@mantine/notifications";
 import axios from "axios";
 import PropTypes from "prop-types";
-import { academicOfficeVerifyComprehensiveExamRoute } from "../../../routes/academicRoutes";
 import {
-  ENTRY_QUALIFICATION_LABEL,
-  authHeaders,
-  EXAM_SHAPE,
-} from "./comprehensiveExamShared";
+  facultyListRoute,
+  deanAppointNomineeOpenSeminarRoute,
+} from "../../../routes/academicRoutes";
+import { authHeaders, OPEN_SEMINAR_SHAPE } from "./openSeminarShared";
 
-export default function AcademicOfficeVerifyModal({ exam, onClose, refresh }) {
-  const [creditsVerified, setCreditsVerified] = useState(
-    exam.credits_completed >= exam.required_credits,
-  );
-  const [cpiVerified, setCpiVerified] = useState(
-    Number(exam.current_cpi) >= 7.0,
-  );
-  const [rmVerified, setRmVerified] = useState(false);
+export default function DeanAppointNomineeModal({ seminar, onClose, refresh }) {
+  const [facOpts, setFacOpts] = useState([]);
+  const [deanNomineeId, setDeanNomineeId] = useState("");
   const [remarks, setRemarks] = useState("");
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    axios
+      .get(facultyListRoute, { headers: authHeaders() })
+      .then((res) =>
+        setFacOpts(
+          res.data.map((f) => ({ value: String(f.id), label: f.name })),
+        ),
+      )
+      .catch(() => {});
+  }, []);
+
   const handle = async (approve) => {
-    if (approve && !(creditsVerified && cpiVerified && rmVerified)) {
+    if (approve && !deanNomineeId) {
       showNotification({
-        title: "Cannot approve yet",
-        message: "Check all three eligibility boxes before approving.",
+        title: "Dean Nominee required",
+        message: "Appoint a Dean Nominee before approving.",
         color: "yellow",
       });
       return;
@@ -42,20 +47,14 @@ export default function AcademicOfficeVerifyModal({ exam, onClose, refresh }) {
     setLoading(true);
     try {
       await axios.post(
-        academicOfficeVerifyComprehensiveExamRoute(exam.id),
-        {
-          approve,
-          credits_verified: creditsVerified,
-          cpi_verified: cpiVerified,
-          research_methodology_verified: rmVerified,
-          remarks,
-        },
+        deanAppointNomineeOpenSeminarRoute(seminar.id),
+        { approve, dean_nominee_id: deanNomineeId, remarks },
         { headers: authHeaders() },
       );
       showNotification({
-        title: approve ? "Verified" : "Rejected",
+        title: approve ? "Approved" : "Rejected",
         message: approve
-          ? "Forwarded to Convener for committee approval."
+          ? "Dean Nominee appointed; the RPC can now begin review."
           : "Sent back to supervisor.",
         color: approve ? "green" : "yellow",
       });
@@ -72,7 +71,12 @@ export default function AcademicOfficeVerifyModal({ exam, onClose, refresh }) {
   };
 
   return (
-    <Modal opened onClose={onClose} title="Verify Eligibility" size="70%">
+    <Modal
+      opened
+      onClose={onClose}
+      title="Appoint Dean Nominee — Open Seminar"
+      size="70%"
+    >
       <Stack gap="md">
         <Table striped highlightOnHover>
           <tbody>
@@ -80,69 +84,69 @@ export default function AcademicOfficeVerifyModal({ exam, onClose, refresh }) {
               <td>
                 <Text fw={500}>Student Name</Text>
               </td>
-              <td>{exam.student_name}</td>
+              <td>{seminar.student_name}</td>
             </tr>
             <tr>
               <td>
                 <Text fw={500}>Roll No</Text>
               </td>
-              <td>{exam.student_roll}</td>
+              <td>{seminar.student_roll}</td>
             </tr>
             <tr>
               <td>
                 <Text fw={500}>Discipline</Text>
               </td>
-              <td>{exam.student_discipline || "—"}</td>
+              <td>{seminar.student_discipline || "—"}</td>
             </tr>
             <tr>
               <td>
                 <Text fw={500}>Semester</Text>
               </td>
-              <td>{exam.semester_no ?? "—"}</td>
+              <td>{seminar.semester_no ?? "—"}</td>
             </tr>
             <tr>
               <td>
                 <Text fw={500}>Thesis Title</Text>
               </td>
-              <td>{exam.possible_thesis_title || "—"}</td>
+              <td>{seminar.possible_thesis_title || "—"}</td>
             </tr>
             <tr>
               <td>
                 <Text fw={500}>Supervisor</Text>
               </td>
-              <td>{exam.supervisor?.name || "—"}</td>
+              <td>{seminar.supervisor?.name || "—"}</td>
             </tr>
             <tr>
               <td>
                 <Text fw={500}>Co-Supervisor</Text>
               </td>
-              <td>{exam.co_supervisor ? exam.co_supervisor.name : "—"}</td>
-            </tr>
-            <tr>
               <td>
-                <Text fw={500}>Proposed Date of Examination</Text>
-              </td>
-              <td>{exam.proposed_exam_date || "—"}</td>
-            </tr>
-            <tr>
-              <td>
-                <Text fw={500}>Entry Qualification</Text>
-              </td>
-              <td>{ENTRY_QUALIFICATION_LABEL[exam.entry_qualification]}</td>
-            </tr>
-            <tr>
-              <td>
-                <Text fw={500}>Credits Completed</Text>
-              </td>
-              <td>
-                {exam.credits_completed} / {exam.required_credits} required
+                {seminar.co_supervisor ? seminar.co_supervisor.name : "—"}
               </td>
             </tr>
             <tr>
               <td>
-                <Text fw={500}>Current CPI</Text>
+                <Text fw={500}>Proposed Date</Text>
               </td>
-              <td>{exam.current_cpi ?? "—"} (min 7.0 required)</td>
+              <td>{seminar.proposed_date || "—"}</td>
+            </tr>
+            <tr>
+              <td>
+                <Text fw={500}>Total Credits</Text>
+              </td>
+              <td>{seminar.total_credits ?? "—"}</td>
+            </tr>
+            <tr>
+              <td>
+                <Text fw={500}>RPC Recommended Open Seminar?</Text>
+              </td>
+              <td>{seminar.rpc_recommended_open_seminar ? "Yes" : "No"}</td>
+            </tr>
+            <tr>
+              <td>
+                <Text fw={500}>1st Draft Sent to Dean?</Text>
+              </td>
+              <td>{seminar.first_draft_sent_to_dean ? "Yes" : "No"}</td>
             </tr>
           </tbody>
         </Table>
@@ -156,14 +160,7 @@ export default function AcademicOfficeVerifyModal({ exam, onClose, refresh }) {
             </tr>
           </thead>
           <tbody>
-            {(!exam.committee || exam.committee.length === 0) && (
-              <tr>
-                <td colSpan={2}>
-                  <Text c="dimmed">Not yet constituted</Text>
-                </td>
-              </tr>
-            )}
-            {(exam.committee || []).map((m) => (
+            {seminar.committee.map((m) => (
               <tr key={m.id}>
                 <td>{m.name}</td>
                 <td>{m.discipline}</td>
@@ -172,32 +169,25 @@ export default function AcademicOfficeVerifyModal({ exam, onClose, refresh }) {
           </tbody>
         </Table>
 
-        <Checkbox
-          label="Credits requirement fulfilled"
-          checked={creditsVerified}
-          onChange={(e) => setCreditsVerified(e.target.checked)}
-        />
-        <Checkbox
-          label="Minimum CPI of 7.0 fulfilled"
-          checked={cpiVerified}
-          onChange={(e) => setCpiVerified(e.target.checked)}
-        />
-        <Checkbox
-          label="Research Methodology completed"
-          checked={rmVerified}
-          onChange={(e) => setRmVerified(e.target.checked)}
+        <Select
+          label="Appoint Dean Nominee"
+          data={facOpts}
+          value={deanNomineeId}
+          onChange={setDeanNomineeId}
+          searchable
+          required
         />
         <Textarea
-          label="Remarks"
+          label="Remarks (if sending back)"
           value={remarks}
           onChange={(e) => setRemarks(e.target.value)}
         />
         <Group grow>
           <Button onClick={() => handle(true)} loading={loading}>
-            Approve &amp; Forward to Convener
+            Approve
           </Button>
           <Button color="red" onClick={() => handle(false)} loading={loading}>
-            Reject
+            Send Back to Supervisor
           </Button>
         </Group>
       </Stack>
@@ -205,8 +195,8 @@ export default function AcademicOfficeVerifyModal({ exam, onClose, refresh }) {
   );
 }
 
-AcademicOfficeVerifyModal.propTypes = {
-  exam: EXAM_SHAPE.isRequired,
+DeanAppointNomineeModal.propTypes = {
+  seminar: OPEN_SEMINAR_SHAPE.isRequired,
   onClose: PropTypes.func.isRequired,
   refresh: PropTypes.func.isRequired,
 };

@@ -12,6 +12,7 @@ import {
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import axios from "axios";
+import PropTypes from "prop-types";
 import { hodReviewRoute } from "../../routes/academicRoutes";
 
 export default function HODReviewModal({ thesis, onClose, refresh }) {
@@ -69,7 +70,7 @@ export default function HODReviewModal({ thesis, onClose, refresh }) {
       await axios.post(
         hodReviewRoute(thesis.id),
         { approve, remarks },
-        { headers }
+        { headers },
       );
       notifications.show({
         title: "Success",
@@ -91,33 +92,46 @@ export default function HODReviewModal({ thesis, onClose, refresh }) {
 
   return (
     <Modal opened onClose={onClose} title="HOD Review" size="90%">
-      <Stack spacing="lg">
+      <Stack gap="lg">
         <Table striped highlightOnHover>
           <tbody>
             <tr>
-              <td><Text weight={500}>Roll No</Text></td>
+              <td>
+                <Text weight={500}>Roll No</Text>
+              </td>
               <td>{form.student_roll}</td>
             </tr>
             <tr>
-              <td><Text weight={500}>Name</Text></td>
+              <td>
+                <Text weight={500}>Name</Text>
+              </td>
               <td>{form.student_name}</td>
             </tr>
             <tr>
-              <td><Text weight={500}>Discipline</Text></td>
+              <td>
+                <Text weight={500}>Discipline</Text>
+              </td>
               <td>{form.student_discipline}</td>
             </tr>
             <tr>
-              <td><Text weight={500}>Category</Text></td>
+              <td>
+                <Text weight={500}>Category</Text>
+              </td>
               <td>{form.category}</td>
             </tr>
             <tr>
-              <td><Text weight={500}>Broad Area</Text></td>
+              <td>
+                <Text weight={500}>Broad Area</Text>
+              </td>
               <td>{form.broad_area}</td>
             </tr>
             <tr>
-              <td><Text weight={500}>Research Theme</Text></td>
+              <td>
+                <Text weight={500}>Research Theme</Text>
+              </td>
               <td>
                 <Textarea
+                  aria-label="Research Theme"
                   value={form.research_theme}
                   readOnly
                   minRows={3}
@@ -127,19 +141,27 @@ export default function HODReviewModal({ thesis, onClose, refresh }) {
             {form.external.ext_name && (
               <>
                 <tr>
-                  <td><Text weight={500}>External Supervisor</Text></td>
+                  <td>
+                    <Text weight={500}>External Supervisor</Text>
+                  </td>
                   <td>{form.external.ext_name}</td>
                 </tr>
                 <tr>
-                  <td><Text weight={500}>Email</Text></td>
+                  <td>
+                    <Text weight={500}>Email</Text>
+                  </td>
                   <td>{form.external.ext_email}</td>
                 </tr>
                 <tr>
-                  <td><Text weight={500}>External Discipline</Text></td>
+                  <td>
+                    <Text weight={500}>External Discipline</Text>
+                  </td>
                   <td>{form.external.ext_discipline}</td>
                 </tr>
                 <tr>
-                  <td><Text weight={500}>Institution</Text></td>
+                  <td>
+                    <Text weight={500}>Institution</Text>
+                  </td>
                   <td>{form.external.ext_institution}</td>
                 </tr>
               </>
@@ -151,7 +173,7 @@ export default function HODReviewModal({ thesis, onClose, refresh }) {
         <Table striped highlightOnHover>
           <thead>
             <tr>
-              <th />
+              <th aria-label="Category" />
               <th>Single</th>
               <th>Shared</th>
             </tr>
@@ -159,7 +181,9 @@ export default function HODReviewModal({ thesis, onClose, refresh }) {
           <tbody>
             {["PG", "PhD"].map((cat) => (
               <tr key={cat}>
-                <td><Text weight={500}>{cat}</Text></td>
+                <td>
+                  <Text weight={500}>{cat}</Text>
+                </td>
                 <td>{form.load[`${cat.toLowerCase()}_single`]}</td>
                 <td>{form.load[`${cat.toLowerCase()}_shared`]}</td>
               </tr>
@@ -170,7 +194,10 @@ export default function HODReviewModal({ thesis, onClose, refresh }) {
         <Text weight={500}>RPC Committee Members</Text>
         <Table striped highlightOnHover>
           <thead>
-            <tr><th>Name</th><th>Discipline</th></tr>
+            <tr>
+              <th>Name</th>
+              <th>Discipline</th>
+            </tr>
           </thead>
           <tbody>
             {form.committee.map((m, idx) => (
@@ -187,7 +214,9 @@ export default function HODReviewModal({ thesis, onClose, refresh }) {
             color="blue"
             style={{ backgroundColor: "#e6f0ff", padding: 10, borderRadius: 4 }}
           >
-            <Text weight={500} component="span">Dean's Remarks:</Text>{" "}
+            <Text weight={500} component="span">
+              Dean's Remarks:
+            </Text>{" "}
             {form.dean_remarks}
           </Text>
         )}
@@ -197,7 +226,9 @@ export default function HODReviewModal({ thesis, onClose, refresh }) {
             color="red"
             style={{ backgroundColor: "#ffe6e6", padding: 10, borderRadius: 4 }}
           >
-            <Text weight={500} component="span">Previous HOD Remarks:</Text>{" "}
+            <Text weight={500} component="span">
+              Previous HOD Remarks:
+            </Text>{" "}
             {form.hod_remarks}
           </Text>
         )}
@@ -231,3 +262,11 @@ export default function HODReviewModal({ thesis, onClose, refresh }) {
     </Modal>
   );
 }
+
+HODReviewModal.propTypes = {
+  thesis: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  }).isRequired,
+  onClose: PropTypes.func.isRequired,
+  refresh: PropTypes.func.isRequired,
+};

@@ -40,23 +40,40 @@ const EMPTY_EXAMINER = {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function ExaminerCard({ examiner, index, total, category, readOnly, onChange, onRemove, onMove }) {
+function ExaminerCard({
+  examiner,
+  index,
+  total,
+  category,
+  readOnly,
+  onChange,
+  onRemove,
+  onMove,
+}) {
   const [isEditing, setIsEditing] = useState(false);
   const fieldsDisabled = readOnly || !isEditing;
   const isForeign = category === "foreign";
-  const nameError = !fieldsDisabled && !examiner.name ? "Name is required" : null;
-  const emailError = !fieldsDisabled && examiner.email && !EMAIL_RE.test(examiner.email)
-    ? "Invalid email address"
-    : null;
+  const nameError =
+    !fieldsDisabled && !examiner.name ? "Name is required" : null;
+  const emailError =
+    !fieldsDisabled && examiner.email && !EMAIL_RE.test(examiner.email)
+      ? "Invalid email address"
+      : null;
 
   return (
     <Card withBorder p="md" radius="md">
-      <Group position="apart" mb="sm">
-        <Badge size="lg" variant="light">Rank {index + 1}</Badge>
+      <Group justify="space-between" mb="sm">
+        <Badge size="lg" variant="light">
+          Rank {index + 1}
+        </Badge>
         {!readOnly && (
-          <Group spacing="xs">
+          <Group gap="xs">
             <ActionIcon
-              aria-label={isEditing ? `Done editing ${category} examiner ${index + 1}` : `Edit ${category} examiner ${index + 1}`}
+              aria-label={
+                isEditing
+                  ? `Done editing ${category} examiner ${index + 1}`
+                  : `Edit ${category} examiner ${index + 1}`
+              }
               color={isEditing ? "teal" : "blue"}
               onClick={() => setIsEditing((v) => !v)}
             >
@@ -88,7 +105,7 @@ function ExaminerCard({ examiner, index, total, category, readOnly, onChange, on
         )}
       </Group>
 
-      <Stack spacing="sm">
+      <Stack gap="sm">
         <Group grow>
           <TextInput
             label="Name"
@@ -175,10 +192,18 @@ ExaminerCard.propTypes = {
   onMove: PropTypes.func.isRequired,
 };
 
-function ExaminerList({ category, examiners, readOnly, onChange, onRemove, onMove, onAdd }) {
+function ExaminerList({
+  category,
+  examiners,
+  readOnly,
+  onChange,
+  onRemove,
+  onMove,
+  onAdd,
+}) {
   const label = category === "indian" ? "Indian" : "Foreign";
   return (
-    <Stack spacing="md" mt="md">
+    <Stack gap="md" mt="md">
       {examiners.map((ex, i) => (
         <ExaminerCard
           // eslint-disable-next-line react/no-array-index-key
@@ -218,12 +243,20 @@ ExaminerList.propTypes = {
   onAdd: PropTypes.func.isRequired,
 };
 
-export default function DirectorPrioritiesPanel({ submission, readOnly = false, onClose }) {
+export default function DirectorPrioritiesPanel({
+  submission,
+  readOnly = false,
+  onClose,
+}) {
   const [indian, setIndian] = useState(
-    submission.indian_examiners?.length ? submission.indian_examiners : [{ ...EMPTY_EXAMINER }],
+    submission.indian_examiners?.length
+      ? submission.indian_examiners
+      : [{ ...EMPTY_EXAMINER }],
   );
   const [foreign, setForeign] = useState(
-    submission.foreign_examiners?.length ? submission.foreign_examiners : [{ ...EMPTY_EXAMINER }],
+    submission.foreign_examiners?.length
+      ? submission.foreign_examiners
+      : [{ ...EMPTY_EXAMINER }],
   );
   const [remarks, setRemarks] = useState("");
   const [activeTab, setActiveTab] = useState("indian");
@@ -238,7 +271,9 @@ export default function DirectorPrioritiesPanel({ submission, readOnly = false, 
   };
 
   const removeExaminer = (setList) => (index) => {
-    setList((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev));
+    setList((prev) =>
+      prev.length > 1 ? prev.filter((_, i) => i !== index) : prev,
+    );
   };
 
   const moveExaminer = (setList) => (index, direction) => {
@@ -271,7 +306,8 @@ export default function DirectorPrioritiesPanel({ submission, readOnly = false, 
     if (action === "send_back" && !remarks.trim()) {
       showNotification({
         title: "Validation",
-        message: "Please add a remark explaining why the panel is being sent back to the Dean.",
+        message:
+          "Please add a remark explaining why the panel is being sent back to the Dean.",
         color: "red",
         icon: <IconX />,
       });
@@ -294,7 +330,10 @@ export default function DirectorPrioritiesPanel({ submission, readOnly = false, 
       );
       showNotification({
         title: "Success",
-        message: action === "send_back" ? "Panel sent back to Dean" : "Priorities approved",
+        message:
+          action === "send_back"
+            ? "Panel sent back to Dean"
+            : "Priorities approved",
         color: "teal",
         icon: <IconCheck />,
       });
@@ -314,13 +353,17 @@ export default function DirectorPrioritiesPanel({ submission, readOnly = false, 
   return (
     <Card shadow="xs" p="md" mt="lg" withBorder>
       <Title order={4} mb="xs">
-        {readOnly ? `Priorities for "${submission.title}"` : `Set Priorities for "${submission.title}"`}
+        {readOnly
+          ? `Priorities for "${submission.title}"`
+          : `Set Priorities for "${submission.title}"`}
       </Title>
 
       <Tabs value={activeTab} onChange={setActiveTab}>
         <Tabs.List>
           <Tabs.Tab value="indian">Indian Examiners ({indian.length})</Tabs.Tab>
-          <Tabs.Tab value="foreign">Foreign Examiners ({foreign.length})</Tabs.Tab>
+          <Tabs.Tab value="foreign">
+            Foreign Examiners ({foreign.length})
+          </Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel value="indian">
@@ -361,7 +404,7 @@ export default function DirectorPrioritiesPanel({ submission, readOnly = false, 
 
       <Divider my="md" />
 
-      <Group position="apart">
+      <Group justify="space-between">
         <Text size="sm" color="dimmed">
           {indian.length} Indian &middot; {foreign.length} Foreign selected
         </Text>
@@ -372,10 +415,18 @@ export default function DirectorPrioritiesPanel({ submission, readOnly = false, 
             </Button>
           ) : (
             <>
-              <Button color="red" onClick={() => submit("send_back")} loading={submitting}>
+              <Button
+                color="red"
+                onClick={() => submit("send_back")}
+                loading={submitting}
+              >
                 Send Back to Dean
               </Button>
-              <Button color="teal" onClick={() => submit("approve")} loading={submitting}>
+              <Button
+                color="teal"
+                onClick={() => submit("approve")}
+                loading={submitting}
+              >
                 Approve Examiners
               </Button>
             </>

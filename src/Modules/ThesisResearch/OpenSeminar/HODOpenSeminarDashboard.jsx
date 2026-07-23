@@ -12,44 +12,44 @@ import {
 import { showNotification } from "@mantine/notifications";
 import axios from "axios";
 import {
-  hodDpgcComprehensiveExamDashboardRoute,
-  hodPgcsComprehensiveExamDashboardRoute,
+  hodDpgcOpenSeminarDashboardRoute,
+  hodReviewOpenSeminarDashboardRoute,
 } from "../../../routes/academicRoutes";
-import { authHeaders, currentAttempt } from "./comprehensiveExamShared";
-import HODDpgcApproveModal from "./HODDpgcApproveModal";
-import HODPgcsReviewModal from "./HODPgcsReviewModal";
+import { authHeaders, currentAttempt } from "./openSeminarShared";
+import HODDpgcApproveOpenSeminarModal from "./HODDpgcApproveOpenSeminarModal";
+import HODReviewOpenSeminarModal from "./HODReviewOpenSeminarModal";
 
-export default function HODComprehensiveExamDashboard() {
-  const [dpgcPending, setDpgcPending] = useState([]);
-  const [pgcsPending, setPgcsPending] = useState([]);
+export default function HODOpenSeminarDashboard() {
+  const [earlyPending, setEarlyPending] = useState([]);
+  const [postRpcPending, setPostRpcPending] = useState([]);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [dpgcSel, setDpgcSel] = useState(null);
-  const [pgcsSel, setPgcsSel] = useState(null);
+  const [earlySel, setEarlySel] = useState(null);
+  const [postRpcSel, setPostRpcSel] = useState(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [dRes, pRes] = await Promise.all([
-        axios.get(hodDpgcComprehensiveExamDashboardRoute, {
+      const [dRes, rRes] = await Promise.all([
+        axios.get(hodDpgcOpenSeminarDashboardRoute, {
           headers: authHeaders(),
         }),
-        axios.get(hodPgcsComprehensiveExamDashboardRoute, {
+        axios.get(hodReviewOpenSeminarDashboardRoute, {
           headers: authHeaders(),
         }),
       ]);
-      setDpgcPending(dRes.data.pending || []);
-      setPgcsPending(pRes.data.pending || []);
-      const dpgcHistory = (dRes.data.history || []).map((e) => ({
-        ...e,
-        stage: "DPGC",
+      setEarlyPending(dRes.data.pending || []);
+      setPostRpcPending(rRes.data.pending || []);
+      const earlyHistory = (dRes.data.history || []).map((s) => ({
+        ...s,
+        stage: "Early Review",
       }));
-      const pgcsHistory = (pRes.data.history || []).map((e) => ({
-        ...e,
-        stage: "PGCS",
+      const postRpcHistory = (rRes.data.history || []).map((s) => ({
+        ...s,
+        stage: "Post-RPC Review",
       }));
       setHistory(
-        [...dpgcHistory, ...pgcsHistory].sort(
+        [...earlyHistory, ...postRpcHistory].sort(
           (a, b) => new Date(b.decided_at) - new Date(a.decided_at),
         ),
       );
@@ -69,8 +69,8 @@ export default function HODComprehensiveExamDashboard() {
   }, [fetchData]);
 
   const handleRefresh = () => {
-    setDpgcSel(null);
-    setPgcsSel(null);
+    setEarlySel(null);
+    setPostRpcSel(null);
     fetchData();
   };
 
@@ -84,42 +84,46 @@ export default function HODComprehensiveExamDashboard() {
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
       <Title order={3} mb="md">
-        Comprehensive Exam — Convener (DPGC / PGCS)
+        Open Seminar — Convener (DPGC)
       </Title>
 
-      <Tabs defaultValue="dpgc">
+      <Tabs defaultValue="early">
         <Tabs.List>
-          <Tabs.Tab value="dpgc">
-            DPGC Approvals ({dpgcPending.length})
+          <Tabs.Tab value="early">
+            Early Review ({earlyPending.length})
           </Tabs.Tab>
-          <Tabs.Tab value="pgcs">PGCS Reviews ({pgcsPending.length})</Tabs.Tab>
+          <Tabs.Tab value="postRpc">
+            Post-RPC Review ({postRpcPending.length})
+          </Tabs.Tab>
           <Tabs.Tab value="history">History ({history.length})</Tabs.Tab>
         </Tabs.List>
 
-        <Tabs.Panel value="dpgc" pt="md">
+        <Tabs.Panel value="early" pt="md">
           <Table striped highlightOnHover>
             <thead>
               <tr>
                 <th>Roll No</th>
                 <th>Student</th>
+                <th>Thesis Title</th>
                 <th>Supervisor</th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody>
-              {dpgcPending.length === 0 && (
+              {earlyPending.length === 0 && (
                 <tr>
-                  <td colSpan={4}>No exams pending DPGC approval.</td>
+                  <td colSpan={5}>No seminars pending early review.</td>
                 </tr>
               )}
-              {dpgcPending.map((e) => (
-                <tr key={e.id}>
-                  <td>{e.student_roll}</td>
-                  <td>{e.student_name}</td>
-                  <td>{e.supervisor?.name}</td>
+              {earlyPending.map((s) => (
+                <tr key={s.id}>
+                  <td>{s.student_roll}</td>
+                  <td>{s.student_name}</td>
+                  <td>{s.possible_thesis_title || "—"}</td>
+                  <td>{s.supervisor?.name}</td>
                   <td>
-                    <Button size="xs" onClick={() => setDpgcSel(e)}>
-                      Review
+                    <Button size="xs" onClick={() => setEarlySel(s)}>
+                      Forward
                     </Button>
                   </td>
                 </tr>
@@ -128,7 +132,7 @@ export default function HODComprehensiveExamDashboard() {
           </Table>
         </Tabs.Panel>
 
-        <Tabs.Panel value="pgcs" pt="md">
+        <Tabs.Panel value="postRpc" pt="md">
           <Table striped highlightOnHover>
             <thead>
               <tr>
@@ -139,19 +143,19 @@ export default function HODComprehensiveExamDashboard() {
               </tr>
             </thead>
             <tbody>
-              {pgcsPending.length === 0 && (
+              {postRpcPending.length === 0 && (
                 <tr>
-                  <td colSpan={4}>No attempts pending PGCS review.</td>
+                  <td colSpan={4}>No attempts pending post-RPC review.</td>
                 </tr>
               )}
-              {pgcsPending.map((e) => (
-                <tr key={e.id}>
-                  <td>{e.student_roll}</td>
-                  <td>{e.student_name}</td>
-                  <td>{currentAttempt(e)?.attempt_number}</td>
+              {postRpcPending.map((s) => (
+                <tr key={s.id}>
+                  <td>{s.student_roll}</td>
+                  <td>{s.student_name}</td>
+                  <td>{currentAttempt(s)?.attempt_number}</td>
                   <td>
-                    <Button size="xs" onClick={() => setPgcsSel(e)}>
-                      Review
+                    <Button size="xs" onClick={() => setPostRpcSel(s)}>
+                      Forward
                     </Button>
                   </td>
                 </tr>
@@ -179,21 +183,21 @@ export default function HODComprehensiveExamDashboard() {
                   <td colSpan={7}>No decisions recorded yet.</td>
                 </tr>
               )}
-              {history.map((e) => (
-                <tr key={`${e.stage}-${e.id}`}>
-                  <td>{e.student_roll}</td>
-                  <td>{e.student_name}</td>
-                  <td>{e.stage}</td>
+              {history.map((s) => (
+                <tr key={`${s.stage}-${s.id}`}>
+                  <td>{s.student_roll}</td>
+                  <td>{s.student_name}</td>
+                  <td>{s.stage}</td>
                   <td>
-                    <Badge color={e.decision === "Approved" ? "green" : "red"}>
-                      {e.decision}
+                    <Badge color={s.decision === "Approved" ? "green" : "red"}>
+                      {s.decision}
                     </Badge>
                   </td>
-                  <td>{e.remarks || "—"}</td>
-                  <td>{e.decided_by || "—"}</td>
+                  <td>{s.remarks || "—"}</td>
+                  <td>{s.decided_by || "—"}</td>
                   <td>
-                    {e.decided_at
-                      ? new Date(e.decided_at).toLocaleString()
+                    {s.decided_at
+                      ? new Date(s.decided_at).toLocaleString()
                       : "—"}
                   </td>
                 </tr>
@@ -203,17 +207,17 @@ export default function HODComprehensiveExamDashboard() {
         </Tabs.Panel>
       </Tabs>
 
-      {dpgcSel && (
-        <HODDpgcApproveModal
-          exam={dpgcSel}
-          onClose={() => setDpgcSel(null)}
+      {earlySel && (
+        <HODDpgcApproveOpenSeminarModal
+          seminar={earlySel}
+          onClose={() => setEarlySel(null)}
           refresh={handleRefresh}
         />
       )}
-      {pgcsSel && (
-        <HODPgcsReviewModal
-          exam={pgcsSel}
-          onClose={() => setPgcsSel(null)}
+      {postRpcSel && (
+        <HODReviewOpenSeminarModal
+          seminar={postRpcSel}
+          onClose={() => setPostRpcSel(null)}
           refresh={handleRefresh}
         />
       )}

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   Modal,
   Select,
-  MultiSelect,
+  TextInput,
   Button,
   Text,
   Table,
@@ -15,7 +15,6 @@ import { showNotification } from "@mantine/notifications";
 import axios from "axios";
 import PropTypes from "prop-types";
 import {
-  facultyListRoute,
   supervisorStudentAcademicInfoRoute,
   supervisorProposeComprehensiveExamRoute,
 } from "../../../routes/academicRoutes";
@@ -26,30 +25,24 @@ export default function SupervisorProposeExamModal({
   onClose,
   refresh,
 }) {
-  const [facOpts, setFacOpts] = useState([]);
   const [academicInfo, setAcademicInfo] = useState(null);
   const [loadingInfo, setLoadingInfo] = useState(true);
   const [loading, setLoading] = useState(false);
-  // Title and co-supervisor come from the student's existing ThesisTopic record,
-  // credits/CPI are fetched from the student's own academic records -- all
-  // display-only here, never manually entered.
-  const [form, setForm] = useState({
-    entry_qualification: "",
-    committee: [],
-  });
+  // Title, discipline, supervisor/co-supervisor and committee come from the
+  // student's existing ThesisTopic record, credits/CPI are fetched from the
+  // student's own academic records -- all display-only here, never manually
+  // entered. No committee is proposed -- the student's existing RPC doubles
+  // as the examination committee.
+  const [entryQualification, setEntryQualification] = useState("");
+  const [proposedExamDate, setProposedExamDate] = useState("");
 
   useEffect(() => {
     const load = async () => {
       setLoadingInfo(true);
       try {
-        const [facRes, infoRes] = await Promise.all([
-          axios.get(facultyListRoute, { headers: authHeaders() }),
-          axios.get(supervisorStudentAcademicInfoRoute(thesis.student_roll), {
-            headers: authHeaders(),
-          }),
-        ]);
-        setFacOpts(
-          facRes.data.map((f) => ({ value: String(f.id), label: f.name })),
+        const infoRes = await axios.get(
+          supervisorStudentAcademicInfoRoute(thesis.student_roll),
+          { headers: authHeaders() },
         );
         setAcademicInfo(infoRes.data);
       } catch {
@@ -65,10 +58,8 @@ export default function SupervisorProposeExamModal({
     load();
   }, [thesis.student_roll]);
 
-  const set = (key) => (value) => setForm((f) => ({ ...f, [key]: value }));
-
   const handleSubmit = useCallback(async () => {
-    if (!form.entry_qualification) {
+    if (!entryQualification) {
       showNotification({
         title: "Missing fields",
         message: "Entry qualification is required.",
@@ -81,13 +72,13 @@ export default function SupervisorProposeExamModal({
       await axios.post(
         supervisorProposeComprehensiveExamRoute,
         {
-          ...form,
           roll_no: thesis.student_roll,
+          entry_qualification: entryQualification,
           possible_thesis_title: thesis.research_theme || "",
+          proposed_exam_date: proposedExamDate || null,
           co_supervisor_id: thesis.co_supervisor
             ? thesis.co_supervisor.id
             : null,
-          committee: form.committee,
         },
         { headers: authHeaders() },
       );
@@ -107,7 +98,7 @@ export default function SupervisorProposeExamModal({
     } finally {
       setLoading(false);
     }
-  }, [form, thesis, refresh]);
+  }, [entryQualification, proposedExamDate, thesis, refresh]);
 
   return (
     <Modal
@@ -121,22 +112,38 @@ export default function SupervisorProposeExamModal({
           <Loader />
         </Center>
       ) : (
-        <Stack spacing="md">
+        <Stack gap="md">
           <Table striped highlightOnHover>
             <tbody>
               <tr>
                 <td>
-                  <Text fw={500}>Student</Text>
+                  <Text fw={500}>Student Name</Text>
                 </td>
+                <td>{thesis.student_name}</td>
+              </tr>
+              <tr>
                 <td>
-                  {thesis.student_name} ({thesis.student_roll})
+                  <Text fw={500}>Roll No</Text>
                 </td>
+                <td>{thesis.student_roll}</td>
+              </tr>
+              <tr>
+                <td>
+                  <Text fw={500}>Discipline</Text>
+                </td>
+                <td>{thesis.student_discipline || "—"}</td>
               </tr>
               <tr>
                 <td>
                   <Text fw={500}>Thesis Title</Text>
                 </td>
                 <td>{thesis.research_theme || "—"}</td>
+              </tr>
+              <tr>
+                <td>
+                  <Text fw={500}>Supervisor</Text>
+                </td>
+                <td>{thesis.supervisor ? thesis.supervisor.name : "—"}</td>
               </tr>
               <tr>
                 <td>
@@ -161,6 +168,31 @@ export default function SupervisorProposeExamModal({
             </tbody>
           </Table>
 
+          <Text fw={500}>Examination Committee (RPC)</Text>
+          <Table striped highlightOnHover>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Discipline</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(!thesis.committee || thesis.committee.length === 0) && (
+                <tr>
+                  <td colSpan={2}>
+                    <Text c="dimmed">Not yet constituted</Text>
+                  </td>
+                </tr>
+              )}
+              {(thesis.committee || []).map((m) => (
+                <tr key={m.id}>
+                  <td>{m.name}</td>
+                  <td>{m.discipline}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+
           <Select
             label="Entry Qualification"
             data={[
@@ -173,17 +205,15 @@ export default function SupervisorProposeExamModal({
                 label: "B.Tech/B.E./M.Sc./MA (40 credits required)",
               },
             ]}
-            value={form.entry_qualification}
-            onChange={set("entry_qualification")}
+            value={entryQualification}
+            onChange={setEntryQualification}
             required
           />
-          <MultiSelect
-            label="Examination Committee (up to 5 members)"
-            data={facOpts}
-            value={form.committee}
-            onChange={set("committee")}
-            searchable
-            maxValues={5}
+          <TextInput
+            label="Proposed Date of Examination"
+            type="date"
+            value={proposedExamDate}
+            onChange={(e) => setProposedExamDate(e.target.value)}
           />
           <Group justify="flex-end">
             <Button variant="default" onClick={onClose}>
@@ -205,11 +235,23 @@ SupervisorProposeExamModal.propTypes = {
     student_name: PropTypes.string,
     student_roll: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
       .isRequired,
+    student_discipline: PropTypes.string,
     research_theme: PropTypes.string,
+    supervisor: PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      name: PropTypes.string,
+    }),
     co_supervisor: PropTypes.shape({
       id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
       name: PropTypes.string,
     }),
+    committee: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        name: PropTypes.string,
+        discipline: PropTypes.string,
+      }),
+    ),
   }).isRequired,
   onClose: PropTypes.func.isRequired,
   refresh: PropTypes.func.isRequired,
