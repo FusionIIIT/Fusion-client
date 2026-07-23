@@ -5,8 +5,6 @@ import {
   Text,
   Badge,
   Table,
-  Checkbox,
-  Button,
   Center,
   Loader,
   Stack,
@@ -17,10 +15,7 @@ import {
 import { showNotification } from "@mantine/notifications";
 import { IconAlertCircle } from "@tabler/icons-react";
 import axios from "axios";
-import {
-  studentComprehensiveExamRoute,
-  studentOptSubjectsRoute,
-} from "../../../routes/academicRoutes";
+import { studentComprehensiveExamRoute } from "../../../routes/academicRoutes";
 import {
   EXAM_STATUS_LABEL,
   EXAM_STATUS_COLOR,
@@ -34,8 +29,6 @@ import {
 export default function StudentComprehensiveExamPage() {
   const [exam, setExam] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [selectedSubjects, setSelectedSubjects] = useState([]);
-  const [submitting, setSubmitting] = useState(false);
 
   const fetchExam = useCallback(async () => {
     setLoading(true);
@@ -44,7 +37,6 @@ export default function StudentComprehensiveExamPage() {
         headers: authHeaders(),
       });
       setExam(res.data && res.data.id ? res.data : null);
-      setSelectedSubjects([]);
     } catch (e) {
       showNotification({
         title: "Error",
@@ -85,49 +77,6 @@ export default function StudentComprehensiveExamPage() {
   }
 
   const attempt = currentAttempt(exam);
-  const canOptSubjects = attempt?.status === "subjects_ready";
-  const floatedSubjects = attempt?.subjects || [];
-
-  const toggleSubject = (id) => {
-    setSelectedSubjects((prev) => {
-      if (prev.includes(id)) return prev.filter((s) => s !== id);
-      if (prev.length >= 2) return prev;
-      return [...prev, id];
-    });
-  };
-
-  const handleOptSubjects = async () => {
-    if (selectedSubjects.length !== 2) {
-      showNotification({
-        title: "Select 2 subjects",
-        message: "You must select exactly 2 subjects for the written exam.",
-        color: "yellow",
-      });
-      return;
-    }
-    setSubmitting(true);
-    try {
-      await axios.post(
-        studentOptSubjectsRoute(attempt.id),
-        { subject_ids: selectedSubjects },
-        { headers: authHeaders() },
-      );
-      showNotification({
-        title: "Submitted",
-        message: "Subject selection sent to your supervisor for confirmation.",
-        color: "green",
-      });
-      fetchExam();
-    } catch (e) {
-      showNotification({
-        title: "Error",
-        message: e.response?.data?.error || "Submission failed",
-        color: "red",
-      });
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
@@ -140,6 +89,18 @@ export default function StudentComprehensiveExamPage() {
 
       <Table striped highlightOnHover mb="md">
         <tbody>
+          <tr>
+            <td>
+              <Text fw={500}>Discipline</Text>
+            </td>
+            <td>{exam.student_discipline || "—"}</td>
+          </tr>
+          <tr>
+            <td>
+              <Text fw={500}>Semester</Text>
+            </td>
+            <td>{exam.semester_no ?? "—"}</td>
+          </tr>
           <tr>
             <td>
               <Text fw={500}>Thesis Title</Text>
@@ -160,6 +121,12 @@ export default function StudentComprehensiveExamPage() {
               <td>{exam.co_supervisor.name}</td>
             </tr>
           )}
+          <tr>
+            <td>
+              <Text fw={500}>Proposed Date of Examination</Text>
+            </td>
+            <td>{exam.proposed_exam_date || "—"}</td>
+          </tr>
           <tr>
             <td>
               <Text fw={500}>Entry Qualification</Text>
@@ -197,14 +164,14 @@ export default function StudentComprehensiveExamPage() {
             "Contact your supervisor for details."}
         </Alert>
       )}
-      {exam.status === "convener_rejected" && (
-        <Alert color="red" mb="md" title="Rejected by Convener">
-          {exam.convener_remarks || "Contact your supervisor for details."}
+      {exam.status === "dpgc_rejected" && (
+        <Alert color="red" mb="md" title="Rejected by Convener (DPGC)">
+          {exam.dpgc_remarks || "Contact your supervisor for details."}
         </Alert>
       )}
 
       <Text fw={500} mb="xs">
-        Examination Committee
+        Examination Committee (your RPC)
       </Text>
       <Table striped highlightOnHover mb="md">
         <thead>
@@ -240,63 +207,21 @@ export default function StudentComprehensiveExamPage() {
             </Badge>
           </Group>
 
-          {attempt.status === "hod_rejected" && (
-            <Alert color="red" mb="md" title="Subjects sent back by HOD">
-              {attempt.hod_remarks || "Your supervisor will re-float subjects."}
+          <Text size="sm" mb="md">
+            <b>Date of Examination:</b> {attempt.exam_date || "Not yet set"}
+          </Text>
+
+          {attempt.pgcs_remarks && attempt.status === "rpc_pending" && (
+            <Alert color="red" mb="md" title="Sent back by Convener (PGCS)">
+              {attempt.pgcs_remarks}
             </Alert>
           )}
-
-          {canOptSubjects ? (
-            <Stack>
-              <Text size="sm" c="dimmed">
-                Select exactly 2 subjects for the written examination.
-              </Text>
-              {floatedSubjects.map((s) => (
-                <Checkbox
-                  key={s.id}
-                  label={s.subject_name}
-                  checked={selectedSubjects.includes(s.id)}
-                  onChange={() => toggleSubject(s.id)}
-                />
-              ))}
-              <Button
-                onClick={handleOptSubjects}
-                loading={submitting}
-                disabled={selectedSubjects.length !== 2}
-              >
-                Submit Selection
-              </Button>
-            </Stack>
-          ) : (
-            <Table striped highlightOnHover>
-              <thead>
-                <tr>
-                  <th>Subject</th>
-                  <th>Opted</th>
-                </tr>
-              </thead>
-              <tbody>
-                {floatedSubjects.map((s) => (
-                  <tr key={s.id}>
-                    <td>{s.subject_name}</td>
-                    <td>{s.selected_by_student ? "Yes" : "—"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          )}
-
-          {attempt.status === "subjects_ready" &&
-            attempt.supervisor_confirmation_remarks && (
-              <Alert color="red" mt="md" title="Supervisor sent selection back">
-                {attempt.supervisor_confirmation_remarks}
-              </Alert>
-            )}
 
           {(attempt.status === "passed" || attempt.status === "failed") && (
             <Stack mt="md">
               <Text fw={500}>
-                Result: {attempt.result === "passed" ? "Passed" : "Failed"}
+                Candidate&apos;s Performance in Examination:{" "}
+                {attempt.result === "passed" ? "Passed" : "Failed"}
               </Text>
               {attempt.fundamentals_comment && (
                 <Text size="sm">

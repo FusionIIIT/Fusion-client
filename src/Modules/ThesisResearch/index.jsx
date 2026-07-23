@@ -15,20 +15,23 @@ import SupervisorDashboard from "./SupervisorDashboard";
 import SupervisorThesisGrading from "./SupervisorThesisGrading";
 import RPCDashboardPage from "./RPCDashboardPage";
 import SupervisorDashboardSub from "./ThesisSubmission/SupervisorDashboardSub";
+import SupervisorReviewReports from "./SupervisorReviewReports";
 import HODDashboard from "./HODDashboard";
 import DeanDashboard from "./DeanDashboard";
 import DeanPanelDashboard from "./ThesisSubmission/DeanPanelDashboard";
 import DirectorDashboard from "./ThesisSubmission/DirectorDashboard";
 import AdminThesisGrades from "./AdminThesisGrades";
+import HonorariumDashboard from "./HonorariumDashboard";
 import StudentComprehensiveExamPage from "./ComprehensiveExam/StudentComprehensiveExamPage";
 import SupervisorComprehensiveExamDashboard from "./ComprehensiveExam/SupervisorComprehensiveExamDashboard";
 import HODComprehensiveExamDashboard from "./ComprehensiveExam/HODComprehensiveExamDashboard";
-import ConvenerComprehensiveExamDashboard from "./ComprehensiveExam/ConvenerComprehensiveExamDashboard";
+import DeanComprehensiveExamDashboard from "./ComprehensiveExam/DeanComprehensiveExamDashboard";
 import AcademicOfficeComprehensiveExamList from "./ComprehensiveExam/AcademicOfficeComprehensiveExamList";
 import StudentOpenSeminarPage from "./OpenSeminar/StudentOpenSeminarPage";
 import SupervisorOpenSeminarDashboard from "./OpenSeminar/SupervisorOpenSeminarDashboard";
 import DeanNomineeDashboard from "./OpenSeminar/DeanNomineeDashboard";
-import ConvenerOpenSeminarDashboard from "./OpenSeminar/ConvenerOpenSeminarDashboard";
+import HODOpenSeminarDashboard from "./OpenSeminar/HODOpenSeminarDashboard";
+import DeanOpenSeminarDashboard from "./OpenSeminar/DeanOpenSeminarDashboard";
 import StudentTeachingCreditPage from "./TeachingCredit/StudentTeachingCreditPage";
 import SupervisorTeachingCreditList from "./TeachingCredit/SupervisorTeachingCreditList";
 import HODTeachingCreditDashboard from "./TeachingCredit/HODTeachingCreditDashboard";
@@ -113,6 +116,7 @@ function ThesisResearchPage() {
           { title: "Dean Nominee Reports" },
           { title: "Teaching Credit" },
           { title: "Examiner Assignment" },
+          { title: "Examiner Reports" },
         ],
         tabComponents: [
           SupervisorDashboard,
@@ -123,6 +127,7 @@ function ThesisResearchPage() {
           DeanNomineeDashboard,
           SupervisorTeachingCreditList,
           SupervisorDashboardSub,
+          SupervisorReviewReports,
         ],
       };
     }
@@ -131,12 +136,14 @@ function ThesisResearchPage() {
       return {
         tabItems: [
           { title: "Thesis Review" },
-          { title: "Comprehensive Exam Subjects" },
+          { title: "Comprehensive Exam" },
+          { title: "Open Seminar" },
           { title: "Teaching Credit" },
         ],
         tabComponents: [
           HODDashboard,
           HODComprehensiveExamDashboard,
+          HODOpenSeminarDashboard,
           HODTeachingCreditDashboard,
         ],
       };
@@ -152,8 +159,8 @@ function ThesisResearchPage() {
         ],
         tabComponents: [
           DeanDashboard,
-          ConvenerComprehensiveExamDashboard,
-          ConvenerOpenSeminarDashboard,
+          DeanComprehensiveExamDashboard,
+          DeanOpenSeminarDashboard,
           DeanPanelDashboard,
         ],
       };
@@ -172,11 +179,13 @@ function ThesisResearchPage() {
           { title: "Thesis Grades" },
           { title: "Comprehensive Exam Eligibility" },
           { title: "Teaching Credit" },
+          { title: "Examiner Honorarium" },
         ],
         tabComponents: [
           AdminThesisGrades,
           AcademicOfficeComprehensiveExamList,
           AcademicOfficeTeachingCreditList,
+          HonorariumDashboard,
         ],
       };
     }

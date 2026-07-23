@@ -67,7 +67,7 @@ export default function HODCompleteTeachingCreditModal({
       title="Teaching Credit — Mark Completion"
       size="70%"
     >
-      <Stack spacing="md">
+      <Stack gap="md">
         <Table striped highlightOnHover>
           <tbody>
             <tr>

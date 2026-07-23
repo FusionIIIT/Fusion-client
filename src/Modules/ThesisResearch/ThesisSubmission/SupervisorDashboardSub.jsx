@@ -96,7 +96,7 @@ export default function SupervisorDashboardSub() {
 
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
-      <Title order={3} align="center" mb="md">
+      <Title order={3} ta="center" mb="md">
         Supervisor Dashboard
       </Title>
 

@@ -9,7 +9,6 @@ import {
   Loader,
   Stack,
   Group,
-  MultiSelect,
   Checkbox,
   TextInput,
   Alert,
@@ -19,11 +18,8 @@ import { showNotification } from "@mantine/notifications";
 import axios from "axios";
 import PropTypes from "prop-types";
 import {
-  facultyListRoute,
-  openSeminarEligibilityPreviewRoute,
   supervisorOpenSeminarDetailRoute,
   supervisorResubmitOpenSeminarRoute,
-  supervisorRetryOpenSeminarRoute,
 } from "../../../routes/academicRoutes";
 import {
   SEMINAR_STATUS_LABEL,
@@ -32,54 +28,34 @@ import {
   ATTEMPT_STATUS_COLOR,
   authHeaders,
   currentAttempt,
+  isAttemptReadyToForward,
 } from "./openSeminarShared";
-
-const EMPTY_FORM = {
-  proposed_date: "",
-  teaching_credits: 0,
-  first_draft_sent_to_dean: false,
-  committee: [],
-};
+import RPCOpenSeminarReviewPanel from "./RPCOpenSeminarReviewPanel";
 
 export default function SupervisorOpenSeminarModal({
   seminarId,
+  viewerIsSupervisor,
   onClose,
   refresh,
 }) {
   const [seminar, setSeminar] = useState(null);
-  const [facOpts, setFacOpts] = useState([]);
-  const [eligibility, setEligibility] = useState(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [form, setForm] = useState(EMPTY_FORM);
+  const [resubmitForm, setResubmitForm] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [sRes, fRes] = await Promise.all([
-        axios.get(supervisorOpenSeminarDetailRoute(seminarId), {
-          headers: authHeaders(),
-        }),
-        axios.get(facultyListRoute, { headers: authHeaders() }),
-      ]);
-      setSeminar(sRes.data);
-      setFacOpts(
-        fRes.data.map((f) => ({ value: String(f.id), label: f.name })),
-      );
-
-      const attempt = currentAttempt(sRes.data);
-      setForm({
-        proposed_date: attempt?.proposed_date || "",
-        teaching_credits: attempt?.teaching_credits || 0,
-        first_draft_sent_to_dean: attempt?.first_draft_sent_to_dean || false,
-        committee: attempt?.committee.map((m) => String(m.id)) || [],
+      const res = await axios.get(supervisorOpenSeminarDetailRoute(seminarId), {
+        headers: authHeaders(),
       });
-
-      const eRes = await axios.get(
-        openSeminarEligibilityPreviewRoute(sRes.data.student_roll),
-        { headers: authHeaders() },
-      );
-      setEligibility(eRes.data);
+      setSeminar(res.data);
+      setResubmitForm({
+        possible_thesis_title: res.data.possible_thesis_title,
+        proposed_date: res.data.proposed_date || "",
+        teaching_credits: res.data.teaching_credits || 0,
+        first_draft_sent_to_dean: res.data.first_draft_sent_to_dean || false,
+      });
     } catch {
       showNotification({
         title: "Error",
@@ -105,19 +81,33 @@ export default function SupervisorOpenSeminarModal({
   if (!seminar) return null;
 
   const attempt = currentAttempt(seminar);
-  const canResubmit = attempt?.status === "convener_rejected";
-  const canRetry = attempt?.status === "not_satisfactory";
-  const set = (key) => (value) => setForm((f) => ({ ...f, [key]: value }));
+  const topBadge =
+    attempt && isAttemptReadyToForward(attempt)
+      ? { color: "blue", label: "In Progress" }
+      : attempt && seminar.status === "in_progress"
+        ? {
+            color: ATTEMPT_STATUS_COLOR[attempt.status],
+            label: ATTEMPT_STATUS_LABEL[attempt.status] || attempt.status,
+          }
+        : {
+            color: SEMINAR_STATUS_COLOR[seminar.status],
+            label: SEMINAR_STATUS_LABEL[seminar.status] || seminar.status,
+          };
+
+  const set = (key) => (value) =>
+    setResubmitForm((f) => ({ ...f, [key]: value }));
 
   const handleResubmit = async () => {
     setBusy(true);
     try {
-      await axios.post(supervisorResubmitOpenSeminarRoute(seminar.id), form, {
-        headers: authHeaders(),
-      });
+      await axios.post(
+        supervisorResubmitOpenSeminarRoute(seminar.id),
+        resubmitForm,
+        { headers: authHeaders() },
+      );
       showNotification({
         title: "Resubmitted",
-        message: "Sent for Convener approval again.",
+        message: "Sent for Convener (DPGC) review again.",
         color: "green",
       });
       refresh();
@@ -132,151 +122,91 @@ export default function SupervisorOpenSeminarModal({
     }
   };
 
-  const handleRetry = async () => {
-    if (form.committee.length === 0) {
-      showNotification({
-        title: "Missing fields",
-        message: "Select at least one committee member.",
-        color: "yellow",
-      });
-      return;
-    }
-    setBusy(true);
-    try {
-      await axios.post(supervisorRetryOpenSeminarRoute(seminar.id), form, {
-        headers: authHeaders(),
-      });
-      showNotification({
-        title: "New Attempt Started",
-        message: "Fresh committee sent for Convener approval.",
-        color: "green",
-      });
-      refresh();
-    } catch (e) {
-      showNotification({
-        title: "Error",
-        message: e.response?.data?.error || "Retry failed",
-        color: "red",
-      });
-    } finally {
-      setBusy(false);
-    }
-  };
-
   return (
     <Modal opened onClose={onClose} title="Manage Open Seminar" size="80%">
-      <Stack spacing="md">
-        <Group justify="space-between">
-          <Text fw={500}>
-            {seminar.student_name} ({seminar.student_roll})
-          </Text>
-          <Badge color={SEMINAR_STATUS_COLOR[seminar.status]}>
-            {SEMINAR_STATUS_LABEL[seminar.status] || seminar.status}
-          </Badge>
+      <Stack gap="md">
+        <Group justify="flex-end">
+          <Badge color={topBadge.color}>{topBadge.label}</Badge>
         </Group>
 
-        {attempt && (
-          <Badge color={ATTEMPT_STATUS_COLOR[attempt.status]} w="fit-content">
-            Attempt {attempt.attempt_number}:{" "}
-            {ATTEMPT_STATUS_LABEL[attempt.status] || attempt.status}
-          </Badge>
-        )}
+        <Table striped highlightOnHover>
+          <tbody>
+            <tr>
+              <td>
+                <Text fw={500}>Student Name</Text>
+              </td>
+              <td>{seminar.student_name}</td>
+            </tr>
+            <tr>
+              <td>
+                <Text fw={500}>Roll No</Text>
+              </td>
+              <td>{seminar.student_roll}</td>
+            </tr>
+            <tr>
+              <td>
+                <Text fw={500}>Discipline</Text>
+              </td>
+              <td>{seminar.student_discipline || "—"}</td>
+            </tr>
+            <tr>
+              <td>
+                <Text fw={500}>Semester</Text>
+              </td>
+              <td>{seminar.semester_no ?? "—"}</td>
+            </tr>
+            <tr>
+              <td>
+                <Text fw={500}>Thesis Title</Text>
+              </td>
+              <td>{seminar.possible_thesis_title || "—"}</td>
+            </tr>
+            <tr>
+              <td>
+                <Text fw={500}>Supervisor</Text>
+              </td>
+              <td>{seminar.supervisor?.name || "—"}</td>
+            </tr>
+            <tr>
+              <td>
+                <Text fw={500}>Co-Supervisor</Text>
+              </td>
+              <td>
+                {seminar.co_supervisor ? seminar.co_supervisor.name : "—"}
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <Text fw={500}>Proposed Date</Text>
+              </td>
+              <td>{seminar.proposed_date || "—"}</td>
+            </tr>
+            <tr>
+              <td>
+                <Text fw={500}>
+                  Credits (Course Work / Progress Seminar / Thesis Research /
+                  Teaching)
+                </Text>
+              </td>
+              <td>
+                {seminar.course_work_credits} /{" "}
+                {seminar.progress_seminar_credits} /{" "}
+                {seminar.thesis_research_credits} / {seminar.teaching_credits} ={" "}
+                {seminar.total_credits} total
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <Text fw={500}>RPC Recommended Open Seminar?</Text>
+              </td>
+              <td>{seminar.rpc_recommended_open_seminar ? "Yes" : "No"}</td>
+            </tr>
+          </tbody>
+        </Table>
 
-        {canResubmit && (
-          <Alert color="red" title="Rejected by Convener">
-            {attempt.convener_remarks || "Edit the committee and resubmit."}
-          </Alert>
-        )}
-        {canRetry && (
-          <Alert color="red" title="Not Satisfactory">
-            {attempt.committee_comments ||
-              "Start a new attempt with a fresh committee."}
-          </Alert>
-        )}
-
-        {(canResubmit || canRetry) && (
+        {!attempt && (
           <>
-            <Divider label="Credit Breakdown (auto-computed)" />
-            <Table striped highlightOnHover>
-              <tbody>
-                <tr>
-                  <td>
-                    <Text fw={500}>Course Work</Text>
-                  </td>
-                  <td>{eligibility?.course_work_credits ?? "—"}</td>
-                </tr>
-                <tr>
-                  <td>
-                    <Text fw={500}>Progress Seminar</Text>
-                  </td>
-                  <td>{eligibility?.progress_seminar_credits ?? "—"}</td>
-                </tr>
-                <tr>
-                  <td>
-                    <Text fw={500}>Thesis Research</Text>
-                  </td>
-                  <td>{eligibility?.thesis_research_credits ?? "—"}</td>
-                </tr>
-                <tr>
-                  <td>
-                    <Text fw={500}>Semesters Completed</Text>
-                  </td>
-                  <td>{eligibility?.semesters_completed ?? "—"}</td>
-                </tr>
-                <tr>
-                  <td>
-                    <Text fw={500}>RPC Recommended Open Seminar?</Text>
-                  </td>
-                  <td>
-                    {eligibility?.rpc_recommended_open_seminar ? "Yes" : "No"}
-                  </td>
-                </tr>
-              </tbody>
-            </Table>
-
-            <TextInput
-              label="Proposed Date of Open Seminar"
-              type="date"
-              value={form.proposed_date}
-              onChange={(e) => set("proposed_date")(e.target.value)}
-            />
-            <TextInput
-              label="Credit earned through Teaching"
-              description="Not tracked elsewhere in Fusion yet — enter manually"
-              type="number"
-              min={0}
-              value={form.teaching_credits}
-              onChange={(e) =>
-                set("teaching_credits")(Number(e.target.value) || 0)
-              }
-            />
-            <Checkbox
-              label="1st draft of thesis sent to Dean's office"
-              checked={form.first_draft_sent_to_dean}
-              onChange={(e) =>
-                set("first_draft_sent_to_dean")(e.target.checked)
-              }
-            />
-            <MultiSelect
-              label="Open Seminar Committee (up to 5 members)"
-              data={facOpts}
-              value={form.committee}
-              onChange={set("committee")}
-              searchable
-              maxValues={5}
-            />
-            <Button
-              onClick={canResubmit ? handleResubmit : handleRetry}
-              loading={busy}
-            >
-              {canResubmit ? "Resubmit" : "Start New Attempt"}
-            </Button>
-          </>
-        )}
-
-        {!canResubmit && !canRetry && attempt && (
-          <>
-            <Divider label="Committee" />
+            <Text fw={500}>Examination Committee (RPC)</Text>
             <Table striped highlightOnHover>
               <thead>
                 <tr>
@@ -285,7 +215,14 @@ export default function SupervisorOpenSeminarModal({
                 </tr>
               </thead>
               <tbody>
-                {attempt.committee.map((m) => (
+                {seminar.committee.length === 0 && (
+                  <tr>
+                    <td colSpan={2}>
+                      <Text c="dimmed">Not yet constituted</Text>
+                    </td>
+                  </tr>
+                )}
+                {seminar.committee.map((m) => (
                   <tr key={m.id}>
                     <td>{m.name}</td>
                     <td>{m.discipline}</td>
@@ -293,22 +230,80 @@ export default function SupervisorOpenSeminarModal({
                 ))}
               </tbody>
             </Table>
-            {attempt.dean_nominee && (
-              <Text size="sm">Dean Nominee: {attempt.dean_nominee.name}</Text>
+          </>
+        )}
+
+        {viewerIsSupervisor &&
+          (seminar.status === "hod_rejected" ||
+            seminar.status === "dean_rejected") &&
+          resubmitForm && (
+            <>
+              <Alert color="red" title="Rejected — edit and resubmit">
+                {seminar.hod_remarks || seminar.dean_remarks}
+              </Alert>
+              <TextInput
+                label="Thesis Title"
+                value={resubmitForm.possible_thesis_title}
+                onChange={(e) => set("possible_thesis_title")(e.target.value)}
+              />
+              <TextInput
+                label="Proposed Date of Open Seminar"
+                type="date"
+                value={resubmitForm.proposed_date}
+                onChange={(e) => set("proposed_date")(e.target.value)}
+              />
+              <TextInput
+                label="Credit earned through Teaching"
+                type="number"
+                min={0}
+                value={resubmitForm.teaching_credits}
+                onChange={(e) =>
+                  set("teaching_credits")(Number(e.target.value) || 0)
+                }
+              />
+              <Checkbox
+                label="1st draft of thesis sent to Dean's office"
+                checked={resubmitForm.first_draft_sent_to_dean}
+                onChange={(e) =>
+                  set("first_draft_sent_to_dean")(e.target.checked)
+                }
+              />
+              <Button onClick={handleResubmit} loading={busy}>
+                Resubmit
+              </Button>
+            </>
+          )}
+
+        {seminar.status === "dean_pending" && (
+          <Text c="dimmed">Awaiting Dean Academic approval.</Text>
+        )}
+        {seminar.status === "hod_pending" && (
+          <Text c="dimmed">Awaiting Convener (DPGC) review.</Text>
+        )}
+
+        {attempt && (
+          <>
+            <Divider label={`Attempt ${attempt.attempt_number}`} />
+
+            {attempt.hod_review_remarks && attempt.status === "rpc_pending" && (
+              <Alert color="red" title="Sent back by Convener (DPGC)">
+                {attempt.hod_review_remarks}
+              </Alert>
             )}
+
             {attempt.result && (
-              <>
-                <Text fw={500}>
-                  Result:{" "}
-                  {attempt.result === "satisfactory"
-                    ? "Satisfactory"
-                    : "Not Satisfactory"}
-                </Text>
-                {attempt.committee_comments && (
-                  <Text size="sm">{attempt.committee_comments}</Text>
-                )}
-              </>
+              <Text fw={500}>
+                Candidate&apos;s Performance:{" "}
+                {attempt.result === "satisfactory"
+                  ? "Satisfactory"
+                  : "Not Satisfactory"}
+              </Text>
             )}
+
+            <RPCOpenSeminarReviewPanel
+              attemptId={attempt.id}
+              onUpdate={refresh}
+            />
           </>
         )}
 
@@ -343,6 +338,11 @@ export default function SupervisorOpenSeminarModal({
 SupervisorOpenSeminarModal.propTypes = {
   seminarId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
     .isRequired,
+  viewerIsSupervisor: PropTypes.bool,
   onClose: PropTypes.func.isRequired,
   refresh: PropTypes.func.isRequired,
+};
+
+SupervisorOpenSeminarModal.defaultProps = {
+  viewerIsSupervisor: true,
 };

@@ -7,7 +7,9 @@ import {
   Table,
   Center,
   Loader,
+  Stack,
   Group,
+  Alert,
   Divider,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
@@ -19,6 +21,7 @@ import {
   ATTEMPT_STATUS_LABEL,
   ATTEMPT_STATUS_COLOR,
   authHeaders,
+  currentAttempt,
 } from "./openSeminarShared";
 
 export default function StudentOpenSeminarPage() {
@@ -68,6 +71,8 @@ export default function StudentOpenSeminarPage() {
     );
   }
 
+  const attempt = currentAttempt(seminar);
+
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
       <Group justify="space-between" mb="md">
@@ -79,6 +84,18 @@ export default function StudentOpenSeminarPage() {
 
       <Table striped highlightOnHover mb="md">
         <tbody>
+          <tr>
+            <td>
+              <Text fw={500}>Discipline</Text>
+            </td>
+            <td>{seminar.student_discipline || "—"}</td>
+          </tr>
+          <tr>
+            <td>
+              <Text fw={500}>Semester</Text>
+            </td>
+            <td>{seminar.semester_no ?? "—"}</td>
+          </tr>
           <tr>
             <td>
               <Text fw={500}>Thesis Title</Text>
@@ -99,63 +116,138 @@ export default function StudentOpenSeminarPage() {
               <td>{seminar.co_supervisor.name}</td>
             </tr>
           )}
+          <tr>
+            <td>
+              <Text fw={500}>Proposed Date</Text>
+            </td>
+            <td>{seminar.proposed_date || "—"}</td>
+          </tr>
+          <tr>
+            <td>
+              <Text fw={500}>
+                Credits (Course Work / Progress Seminar / Thesis Research /
+                Teaching)
+              </Text>
+            </td>
+            <td>
+              {seminar.course_work_credits} / {seminar.progress_seminar_credits}{" "}
+              / {seminar.thesis_research_credits} / {seminar.teaching_credits} ={" "}
+              {seminar.total_credits} total
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <Text fw={500}>Semesters Completed</Text>
+            </td>
+            <td>{seminar.semesters_completed}</td>
+          </tr>
+          <tr>
+            <td>
+              <Text fw={500}>RPC Recommended Open Seminar?</Text>
+            </td>
+            <td>{seminar.rpc_recommended_open_seminar ? "Yes" : "No"}</td>
+          </tr>
         </tbody>
       </Table>
 
-      <Divider mb="md" />
+      {seminar.status === "hod_rejected" && (
+        <Alert color="red" mb="md" title="Rejected by Convener (DPGC)">
+          {seminar.hod_remarks || "Contact your supervisor for details."}
+        </Alert>
+      )}
+      {seminar.status === "dean_rejected" && (
+        <Alert color="red" mb="md" title="Rejected by Dean Academic">
+          {seminar.dean_remarks || "Contact your supervisor for details."}
+        </Alert>
+      )}
+
       <Text fw={500} mb="xs">
-        Attempts
+        Examination Committee (your RPC)
       </Text>
-      {[...seminar.attempts].reverse().map((a) => (
-        <div key={a.id} style={{ marginBottom: 16 }}>
-          <Group justify="space-between" mb={4}>
-            <Text fw={500}>Attempt {a.attempt_number}</Text>
-            <Badge color={ATTEMPT_STATUS_COLOR[a.status]}>
-              {ATTEMPT_STATUS_LABEL[a.status] || a.status}
+      <Table striped highlightOnHover mb="md">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Discipline</th>
+          </tr>
+        </thead>
+        <tbody>
+          {seminar.committee.length === 0 && (
+            <tr>
+              <td colSpan={2}>
+                <Text c="dimmed">Not yet constituted</Text>
+              </td>
+            </tr>
+          )}
+          {seminar.committee.map((m) => (
+            <tr key={m.id}>
+              <td>{m.name}</td>
+              <td>{m.discipline}</td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+
+      {attempt && (
+        <>
+          <Divider mb="md" />
+          <Group justify="space-between" mb="xs">
+            <Text fw={500}>Attempt {attempt.attempt_number}</Text>
+            <Badge color={ATTEMPT_STATUS_COLOR[attempt.status]}>
+              {ATTEMPT_STATUS_LABEL[attempt.status] || attempt.status}
             </Badge>
           </Group>
-          <Table striped highlightOnHover mb="sm">
+
+          <Text size="sm" mb="md">
+            <b>Date of Seminar:</b> {attempt.seminar_date || "Not yet set"}
+          </Text>
+
+          {attempt.hod_review_remarks && attempt.status === "rpc_pending" && (
+            <Alert color="red" mb="md" title="Sent back by Convener (DPGC)">
+              {attempt.hod_review_remarks}
+            </Alert>
+          )}
+
+          {(attempt.status === "satisfactory" ||
+            attempt.status === "not_satisfactory") && (
+            <Stack mt="md">
+              <Text fw={500}>
+                Result:{" "}
+                {attempt.result === "satisfactory"
+                  ? "Satisfactory"
+                  : "Not Satisfactory"}
+              </Text>
+              {attempt.committee_comments && (
+                <Text size="sm">{attempt.committee_comments}</Text>
+              )}
+            </Stack>
+          )}
+        </>
+      )}
+
+      {seminar.attempts.length > 1 && (
+        <>
+          <Divider my="md" label="Previous Attempts" />
+          <Table striped highlightOnHover>
+            <thead>
+              <tr>
+                <th>Attempt</th>
+                <th>Status</th>
+                <th>Result</th>
+              </tr>
+            </thead>
             <tbody>
-              <tr>
-                <td>
-                  <Text fw={500}>Proposed Date</Text>
-                </td>
-                <td>{a.proposed_date || "—"}</td>
-              </tr>
-              <tr>
-                <td>
-                  <Text fw={500}>Committee</Text>
-                </td>
-                <td>
-                  {a.committee.length === 0
-                    ? "—"
-                    : a.committee.map((m) => m.name).join(", ")}
-                </td>
-              </tr>
-              {a.result && (
-                <tr>
-                  <td>
-                    <Text fw={500}>Result</Text>
-                  </td>
-                  <td>
-                    {a.result === "satisfactory"
-                      ? "Satisfactory"
-                      : "Not Satisfactory"}
-                  </td>
+              {seminar.attempts.map((a) => (
+                <tr key={a.id}>
+                  <td>{a.attempt_number}</td>
+                  <td>{ATTEMPT_STATUS_LABEL[a.status] || a.status}</td>
+                  <td>{a.result || "—"}</td>
                 </tr>
-              )}
-              {a.committee_comments && (
-                <tr>
-                  <td>
-                    <Text fw={500}>Comments</Text>
-                  </td>
-                  <td>{a.committee_comments}</td>
-                </tr>
-              )}
+              ))}
             </tbody>
           </Table>
-        </div>
-      ))}
+        </>
+      )}
     </Card>
   );
 }

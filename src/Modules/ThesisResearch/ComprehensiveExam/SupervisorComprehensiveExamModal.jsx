@@ -9,10 +9,8 @@ import {
   Loader,
   Stack,
   Group,
-  Textarea,
   TextInput,
   Select,
-  MultiSelect,
   Alert,
   Divider,
 } from "@mantine/core";
@@ -20,13 +18,9 @@ import { showNotification } from "@mantine/notifications";
 import axios from "axios";
 import PropTypes from "prop-types";
 import {
-  facultyListRoute,
-  listCoursesForDropdownRoute,
   supervisorStudentAcademicInfoRoute,
   supervisorComprehensiveExamDetailRoute,
   supervisorResubmitComprehensiveExamRoute,
-  supervisorFloatSubjectsRoute,
-  supervisorConfirmOptedSubjectsRoute,
 } from "../../../routes/academicRoutes";
 import {
   EXAM_STATUS_LABEL,
@@ -35,55 +29,37 @@ import {
   ATTEMPT_STATUS_COLOR,
   authHeaders,
   currentAttempt,
+  isAttemptReadyToForward,
 } from "./comprehensiveExamShared";
+import RPCReviewPanel from "./RPCReviewPanel";
 
 export default function SupervisorComprehensiveExamModal({
   examId,
+  viewerIsSupervisor,
   onClose,
   refresh,
 }) {
   const [exam, setExam] = useState(null);
-  const [facOpts, setFacOpts] = useState([]);
-  const [courseOpts, setCourseOpts] = useState([]);
   const [academicInfo, setAcademicInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
 
   const [resubmitForm, setResubmitForm] = useState(null);
-  const [subjects, setSubjects] = useState([]);
-  const [dates, setDates] = useState({
-    written_exam_date: "",
-    oral_exam_date: "",
-  });
-  const [confirmRemarks, setConfirmRemarks] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [eRes, fRes, cRes] = await Promise.all([
-        axios.get(supervisorComprehensiveExamDetailRoute(examId), {
+      const eRes = await axios.get(
+        supervisorComprehensiveExamDetailRoute(examId),
+        {
           headers: authHeaders(),
-        }),
-        axios.get(facultyListRoute, { headers: authHeaders() }),
-        axios.get(listCoursesForDropdownRoute, { headers: authHeaders() }),
-      ]);
+        },
+      );
       setExam(eRes.data);
-      setFacOpts(
-        fRes.data.map((f) => ({ value: String(f.id), label: f.name })),
-      );
-      setCourseOpts(
-        (cRes.data.courses || []).map((c) => ({
-          value: String(c.id),
-          label: `${c.code} - ${c.name}`,
-        })),
-      );
       setResubmitForm({
         possible_thesis_title: eRes.data.possible_thesis_title,
+        proposed_exam_date: eRes.data.proposed_exam_date || "",
         entry_qualification: eRes.data.entry_qualification,
-        co_supervisor_id: eRes.data.co_supervisor
-          ? String(eRes.data.co_supervisor.id)
-          : "",
-        committee: eRes.data.committee.map((m) => String(m.id)),
       });
       const infoRes = await axios.get(
         supervisorStudentAcademicInfoRoute(eRes.data.student_roll),
@@ -115,10 +91,18 @@ export default function SupervisorComprehensiveExamModal({
   if (!exam) return null;
 
   const attempt = currentAttempt(exam);
-  // Once floated, subjects are locked while pending HOD review -- only
-  // editable again if HOD sends them back.
-  const canEditSubjects = attempt?.status === "hod_rejected";
-  const needsNewAttempt = exam.status === "in_progress" && !attempt;
+  const topBadge =
+    attempt && isAttemptReadyToForward(attempt)
+      ? { color: "blue", label: "In Progress" }
+      : attempt && exam.status === "in_progress"
+        ? {
+            color: ATTEMPT_STATUS_COLOR[attempt.status],
+            label: ATTEMPT_STATUS_LABEL[attempt.status] || attempt.status,
+          }
+        : {
+            color: EXAM_STATUS_COLOR[exam.status],
+            label: EXAM_STATUS_LABEL[exam.status] || exam.status,
+          };
 
   const handleResubmit = async () => {
     setBusy(true);
@@ -145,69 +129,6 @@ export default function SupervisorComprehensiveExamModal({
     }
   };
 
-  const handleFloatSubjects = async () => {
-    if (subjects.length < 2) {
-      showNotification({
-        title: "Not enough subjects",
-        message: "Select at least 2 subjects from the course list.",
-        color: "yellow",
-      });
-      return;
-    }
-    const subjectNames = subjects.map(
-      (id) => courseOpts.find((c) => c.value === id)?.label || id,
-    );
-    setBusy(true);
-    try {
-      await axios.post(
-        supervisorFloatSubjectsRoute(exam.id),
-        { subjects: subjectNames, ...dates },
-        { headers: authHeaders() },
-      );
-      showNotification({
-        title: "Floated",
-        message: "Subjects sent to HOD for approval.",
-        color: "green",
-      });
-      refresh();
-    } catch (e) {
-      showNotification({
-        title: "Error",
-        message: e.response?.data?.error || "Failed to float subjects",
-        color: "red",
-      });
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleConfirmSubjects = async (confirm) => {
-    setBusy(true);
-    try {
-      await axios.post(
-        supervisorConfirmOptedSubjectsRoute(attempt.id),
-        { confirm, remarks: confirmRemarks },
-        { headers: authHeaders() },
-      );
-      showNotification({
-        title: confirm ? "Confirmed" : "Sent Back",
-        message: confirm
-          ? "Exam proceeds to written+oral."
-          : "Student must re-select subjects.",
-        color: confirm ? "green" : "yellow",
-      });
-      refresh();
-    } catch (e) {
-      showNotification({
-        title: "Error",
-        message: e.response?.data?.error || "Action failed",
-        color: "red",
-      });
-    } finally {
-      setBusy(false);
-    }
-  };
-
   return (
     <Modal
       opened
@@ -215,39 +136,115 @@ export default function SupervisorComprehensiveExamModal({
       title="Manage Comprehensive Examination"
       size="80%"
     >
-      <Stack spacing="md">
-        <Group justify="space-between">
-          <Text fw={500}>
-            {exam.student_name} ({exam.student_roll})
-          </Text>
-          <Badge color={EXAM_STATUS_COLOR[exam.status]}>
-            {EXAM_STATUS_LABEL[exam.status] || exam.status}
-          </Badge>
+      <Stack gap="md">
+        <Group justify="flex-end">
+          <Badge color={topBadge.color}>{topBadge.label}</Badge>
         </Group>
 
         <Table striped highlightOnHover>
           <tbody>
             <tr>
               <td>
+                <Text fw={500}>Student Name</Text>
+              </td>
+              <td>{exam.student_name}</td>
+            </tr>
+            <tr>
+              <td>
+                <Text fw={500}>Roll No</Text>
+              </td>
+              <td>{exam.student_roll}</td>
+            </tr>
+            <tr>
+              <td>
+                <Text fw={500}>Discipline</Text>
+              </td>
+              <td>{exam.student_discipline || "—"}</td>
+            </tr>
+            <tr>
+              <td>
+                <Text fw={500}>Semester</Text>
+              </td>
+              <td>{exam.semester_no ?? "—"}</td>
+            </tr>
+            <tr>
+              <td>
+                <Text fw={500}>Thesis Title</Text>
+              </td>
+              <td>{exam.possible_thesis_title || "—"}</td>
+            </tr>
+            <tr>
+              <td>
+                <Text fw={500}>Supervisor</Text>
+              </td>
+              <td>{exam.supervisor?.name || "—"}</td>
+            </tr>
+            <tr>
+              <td>
+                <Text fw={500}>Co-Supervisor</Text>
+              </td>
+              <td>{exam.co_supervisor ? exam.co_supervisor.name : "—"}</td>
+            </tr>
+            <tr>
+              <td>
+                <Text fw={500}>Proposed Date of Examination</Text>
+              </td>
+              <td>{exam.proposed_exam_date || "—"}</td>
+            </tr>
+            <tr>
+              <td>
                 <Text fw={500}>Credits Completed Through Course Work</Text>
               </td>
-              <td>{academicInfo?.credits_completed ?? "—"}</td>
+              <td>
+                {academicInfo?.credits_completed ?? "—"} /{" "}
+                {exam.required_credits} required
+              </td>
             </tr>
             <tr>
               <td>
                 <Text fw={500}>Current CPI</Text>
               </td>
-              <td>{academicInfo?.current_cpi ?? "—"}</td>
+              <td>{academicInfo?.current_cpi ?? "—"} (min 7.0 required)</td>
             </tr>
           </tbody>
         </Table>
 
-        {(exam.status === "academic_office_rejected" ||
-          exam.status === "convener_rejected") &&
+        {!attempt && (
+          <>
+            <Text fw={500}>Examination Committee (RPC)</Text>
+            <Table striped highlightOnHover>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Discipline</th>
+                </tr>
+              </thead>
+              <tbody>
+                {exam.committee.length === 0 && (
+                  <tr>
+                    <td colSpan={2}>
+                      <Text c="dimmed">Not yet constituted</Text>
+                    </td>
+                  </tr>
+                )}
+                {exam.committee.map((m) => (
+                  <tr key={m.id}>
+                    <td>{m.name}</td>
+                    <td>{m.discipline}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </>
+        )}
+
+        {viewerIsSupervisor &&
+          (exam.status === "academic_office_rejected" ||
+            exam.status === "dpgc_rejected") &&
           resubmitForm && (
             <>
               <Alert color="red" title="Rejected — edit and resubmit">
-                {exam.academic_office_remarks || exam.convener_remarks}
+                {exam.academic_office_remarks || exam.dpgc_remarks}
               </Alert>
               <TextInput
                 label="Thesis Title"
@@ -256,6 +253,17 @@ export default function SupervisorComprehensiveExamModal({
                   setResubmitForm((f) => ({
                     ...f,
                     possible_thesis_title: e.target.value,
+                  }))
+                }
+              />
+              <TextInput
+                label="Proposed Date of Examination"
+                type="date"
+                value={resubmitForm.proposed_exam_date}
+                onChange={(e) =>
+                  setResubmitForm((f) => ({
+                    ...f,
+                    proposed_exam_date: e.target.value,
                   }))
                 }
               />
@@ -276,24 +284,14 @@ export default function SupervisorComprehensiveExamModal({
                   setResubmitForm((f) => ({ ...f, entry_qualification: v }))
                 }
               />
-              <MultiSelect
-                label="Examination Committee (up to 5 members)"
-                data={facOpts}
-                value={resubmitForm.committee}
-                onChange={(v) =>
-                  setResubmitForm((f) => ({ ...f, committee: v }))
-                }
-                maxValues={5}
-                searchable
-              />
               <Button onClick={handleResubmit} loading={busy}>
                 Resubmit
               </Button>
             </>
           )}
 
-        {exam.status === "convener_pending" && (
-          <Text c="dimmed">Awaiting Convener approval of the committee.</Text>
+        {exam.status === "dpgc_pending" && (
+          <Text c="dimmed">Awaiting Convener (DPGC) approval.</Text>
         )}
 
         {exam.status === "academic_office_pending" && (
@@ -302,118 +300,24 @@ export default function SupervisorComprehensiveExamModal({
           </Text>
         )}
 
-        {(needsNewAttempt || canEditSubjects) && (
-          <>
-            <Divider
-              label={`Float Subjects — Attempt ${exam.current_attempt_number}`}
-            />
-            {attempt?.status === "hod_rejected" && (
-              <Alert color="red" title="Rejected by HOD">
-                {attempt.hod_remarks}
-              </Alert>
-            )}
-            <MultiSelect
-              label="Subjects"
-              description="Select at least 2, up to 6"
-              data={courseOpts}
-              value={subjects}
-              onChange={setSubjects}
-              searchable
-              maxValues={6}
-            />
-            <Group grow>
-              <TextInput
-                label="Proposed Written Exam Date"
-                type="date"
-                value={dates.written_exam_date}
-                onChange={(e) =>
-                  setDates((d) => ({ ...d, written_exam_date: e.target.value }))
-                }
-              />
-              <TextInput
-                label="Proposed Oral Exam Date"
-                type="date"
-                value={dates.oral_exam_date}
-                onChange={(e) =>
-                  setDates((d) => ({ ...d, oral_exam_date: e.target.value }))
-                }
-              />
-            </Group>
-            <Button onClick={handleFloatSubjects} loading={busy}>
-              Float Subjects to HOD
-            </Button>
-          </>
-        )}
-
-        {attempt && !canEditSubjects && attempt.status !== "subjects_opted" && (
+        {attempt && (
           <>
             <Divider label={`Attempt ${attempt.attempt_number}`} />
-            <Badge color={ATTEMPT_STATUS_COLOR[attempt.status]}>
-              {ATTEMPT_STATUS_LABEL[attempt.status] || attempt.status}
-            </Badge>
-            <Table striped highlightOnHover>
-              <thead>
-                <tr>
-                  <th>Subject</th>
-                  <th>Opted</th>
-                </tr>
-              </thead>
-              <tbody>
-                {attempt.subjects.map((s) => (
-                  <tr key={s.id}>
-                    <td>{s.subject_name}</td>
-                    <td>{s.selected_by_student ? "Yes" : "—"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-            {(attempt.status === "passed" || attempt.status === "failed") && (
+
+            {attempt.pgcs_remarks && attempt.status === "rpc_pending" && (
+              <Alert color="red" title="Sent back by Convener (PGCS)">
+                {attempt.pgcs_remarks}
+              </Alert>
+            )}
+
+            {attempt.result && (
               <Text fw={500}>
-                Result: {attempt.result === "passed" ? "Passed" : "Failed"}
+                Candidate&apos;s Performance in Examination:{" "}
+                {attempt.result === "passed" ? "Passed" : "Failed"}
               </Text>
             )}
-          </>
-        )}
 
-        {attempt?.status === "subjects_opted" && (
-          <>
-            <Divider label="Student's Opted Subjects — Confirm or Send Back" />
-            <Table striped highlightOnHover>
-              <thead>
-                <tr>
-                  <th>Subject</th>
-                  <th>Opted</th>
-                </tr>
-              </thead>
-              <tbody>
-                {attempt.subjects.map((s) => (
-                  <tr key={s.id}>
-                    <td>{s.subject_name}</td>
-                    <td>{s.selected_by_student ? "Yes" : "—"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-            <Textarea
-              label="Remarks (if sending back)"
-              value={confirmRemarks}
-              onChange={(e) => setConfirmRemarks(e.target.value)}
-            />
-            <Group grow>
-              <Button
-                onClick={() => handleConfirmSubjects(true)}
-                loading={busy}
-              >
-                Confirm
-              </Button>
-              <Button
-                color="red"
-                onClick={() => handleConfirmSubjects(false)}
-                loading={busy}
-              >
-                Send Back to Student
-              </Button>
-            </Group>
+            <RPCReviewPanel attemptId={attempt.id} onUpdate={refresh} />
           </>
         )}
 
@@ -447,6 +351,11 @@ export default function SupervisorComprehensiveExamModal({
 
 SupervisorComprehensiveExamModal.propTypes = {
   examId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  viewerIsSupervisor: PropTypes.bool,
   onClose: PropTypes.func.isRequired,
   refresh: PropTypes.func.isRequired,
+};
+
+SupervisorComprehensiveExamModal.defaultProps = {
+  viewerIsSupervisor: true,
 };

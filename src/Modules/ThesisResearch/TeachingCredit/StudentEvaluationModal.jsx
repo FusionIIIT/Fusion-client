@@ -77,7 +77,7 @@ export default function StudentEvaluationModal({
       title="Student Evaluation for Teaching Credit"
       size="70%"
     >
-      <Stack spacing="md">
+      <Stack gap="md">
         <Text size="sm" c="dimmed">
           Course: {registration.allocated_course?.code} —{" "}
           {registration.allocated_course?.name}. Your response is anonymous and

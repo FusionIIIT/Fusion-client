@@ -41,6 +41,7 @@ import {
   IconNote,
 } from "@tabler/icons-react";
 import axios from "axios";
+import PropTypes from "prop-types";
 import {
   supervisorThesisGradesRoute,
   supervisorDownloadAllThesisGradesTemplateRoute,
@@ -75,12 +76,22 @@ function ThesisTitleCell({ title }) {
   );
 }
 
+ThesisTitleCell.propTypes = {
+  title: PropTypes.string,
+};
+
+ThesisTitleCell.defaultProps = {
+  title: "",
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Sub-component: one grade dropdown (or a locked badge) for a single
 // evaluation, rendered inline alongside its siblings inside one shared
-// "Grades" cell — not its own column.
+// "Grades" cell — not its own column. Remarks are captured once per student
+// row (see RegistrationGradeRow), not per grade — matching the Excel upload
+// flow, which only ever had one remarks column per student.
 // ─────────────────────────────────────────────────────────────────────────────
-function GradeCell({ ev, draft, onDraftChange }) {
+function GradeCell({ ev, grade, onGradeChange }) {
   const locked = ev.verified || ev.announced;
 
   if (locked) {
@@ -96,56 +107,44 @@ function GradeCell({ ev, draft, onDraftChange }) {
   }
 
   return (
-    <Group gap={4} wrap="nowrap">
-      <Select
-        size="xs"
-        placeholder="— Not graded —"
-        value={draft?.grade ?? null}
-        onChange={(v) => onDraftChange(ev.block_number, { grade: v })}
-        data={[
-          { value: "S", label: "S — Satisfactory" },
-          { value: "X", label: "X — Unsatisfactory" },
-        ]}
-        clearable
-        w={150}
-      />
-      <Popover width={240} withArrow trapFocus shadow="md">
-        <Popover.Target>
-          <ActionIcon
-            variant="subtle"
-            size="sm"
-            color={draft?.remarks ? "blue" : "gray"}
-            aria-label={`Remarks for grade ${ev.block_number}`}
-          >
-            <IconNote size={14} />
-          </ActionIcon>
-        </Popover.Target>
-        <Popover.Dropdown>
-          <Textarea
-            size="xs"
-            label="Optional remarks"
-            placeholder="Add a remark for this grade"
-            value={draft?.remarks || ""}
-            onChange={(e) =>
-              onDraftChange(ev.block_number, {
-                remarks: e.currentTarget.value,
-              })
-            }
-            autosize
-            minRows={2}
-            maxRows={4}
-          />
-        </Popover.Dropdown>
-      </Popover>
-    </Group>
+    <Select
+      size="xs"
+      placeholder="— Not graded —"
+      value={grade ?? null}
+      onChange={(v) => onGradeChange(ev.block_number, v)}
+      data={[
+        { value: "S", label: "S — Satisfactory" },
+        { value: "X", label: "X — Unsatisfactory" },
+      ]}
+      clearable
+      w={150}
+    />
   );
 }
 
+GradeCell.propTypes = {
+  ev: PropTypes.shape({
+    block_number: PropTypes.number.isRequired,
+    grade: PropTypes.string,
+    remarks: PropTypes.string,
+    verified: PropTypes.bool,
+    announced: PropTypes.bool,
+  }).isRequired,
+  grade: PropTypes.string,
+  onGradeChange: PropTypes.func.isRequired,
+};
+
+GradeCell.defaultProps = {
+  grade: null,
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Sub-component: one row per thesis registration, with every grade shown
-// together in a single "Grades" cell. Submit is only enabled once every
-// unlocked grade is chosen, and sends them all together in a single bulk
-// request — no partial submission.
+// together in a single "Grades" cell and a single remark that applies to all
+// of them — matching the Excel upload flow, which only ever had one remarks
+// column per student. Submit is only enabled once every unlocked grade is
+// chosen, and sends them all together in a single bulk request — no partial
+// submission.
 // ─────────────────────────────────────────────────────────────────────────────
 function RegistrationGradeRow({ blocksByNumber, submittedByName, onGraded }) {
   const blocks = Object.values(blocksByNumber).sort(
@@ -153,39 +152,34 @@ function RegistrationGradeRow({ blocksByNumber, submittedByName, onGraded }) {
   );
   const reg = blocks[0].registration;
 
-  const [drafts, setDrafts] = useState(() => {
+  const [grades, setGrades] = useState(() => {
     const init = {};
     blocks.forEach((ev) => {
-      init[ev.block_number] = {
-        grade: ev.grade || null,
-        remarks: ev.remarks || "",
-      };
+      init[ev.block_number] = ev.grade || null;
     });
     return init;
   });
+  const [remark, setRemark] = useState(
+    () => blocks.find((ev) => ev.remarks)?.remarks || "",
+  );
   const [saving, setSaving] = useState(false);
 
-  const updateDraft = useCallback((blockNum, patch) => {
-    setDrafts((prev) => ({
-      ...prev,
-      [blockNum]: { ...prev[blockNum], ...patch },
-    }));
+  const updateGrade = useCallback((blockNum, value) => {
+    setGrades((prev) => ({ ...prev, [blockNum]: value }));
   }, []);
 
   const unlockedBlocks = blocks.filter((ev) => !(ev.verified || ev.announced));
   const allGraded =
     unlockedBlocks.length > 0 &&
-    unlockedBlocks.every((ev) => !!drafts[ev.block_number]?.grade);
+    unlockedBlocks.every((ev) => !!grades[ev.block_number]);
   // True once every draft matches what's already saved server-side — used to
   // keep Submit disabled after a successful save instead of letting the same
   // grades be resubmitted on every click until the admin verifies them.
-  const isDirty = unlockedBlocks.some((ev) => {
-    const draft = drafts[ev.block_number];
-    return (
-      (draft?.grade ?? null) !== (ev.grade ?? null) ||
-      (draft?.remarks ?? "") !== (ev.remarks ?? "")
-    );
-  });
+  const isDirty = unlockedBlocks.some(
+    (ev) =>
+      (grades[ev.block_number] ?? null) !== (ev.grade ?? null) ||
+      (remark ?? "") !== (ev.remarks ?? ""),
+  );
   const canSubmit = allGraded && isDirty;
 
   const handleSubmit = async () => {
@@ -193,8 +187,8 @@ function RegistrationGradeRow({ blocksByNumber, submittedByName, onGraded }) {
     const token = localStorage.getItem("authToken");
     const submissions = unlockedBlocks.map((ev) => ({
       evaluation_id: ev.id,
-      grade: drafts[ev.block_number].grade,
-      remarks: drafts[ev.block_number].remarks,
+      grade: grades[ev.block_number],
+      remarks: remark,
     }));
 
     try {
@@ -214,8 +208,8 @@ function RegistrationGradeRow({ blocksByNumber, submittedByName, onGraded }) {
         successCount += 1;
         onGraded({
           ...ev,
-          grade: drafts[ev.block_number].grade,
-          remarks: drafts[ev.block_number].remarks,
+          grade: grades[ev.block_number],
+          remarks: remark,
           submitted_by: submittedByName,
           submitted_at: new Date().toISOString(),
         });
@@ -264,11 +258,38 @@ function RegistrationGradeRow({ blocksByNumber, submittedByName, onGraded }) {
             <GradeCell
               key={ev.block_number}
               ev={ev}
-              draft={drafts[ev.block_number]}
-              onDraftChange={updateDraft}
+              grade={grades[ev.block_number]}
+              onGradeChange={updateGrade}
             />
           ))}
         </Group>
+      </Table.Td>
+      <Table.Td>
+        <Popover width={280} withArrow trapFocus shadow="md">
+          <Popover.Target>
+            <ActionIcon
+              variant="subtle"
+              size="sm"
+              color={remark ? "blue" : "gray"}
+              aria-label={`Remarks for ${reg.student.name}`}
+              disabled={unlockedBlocks.length === 0}
+            >
+              <IconNote size={16} />
+            </ActionIcon>
+          </Popover.Target>
+          <Popover.Dropdown>
+            <Textarea
+              size="xs"
+              label="Remarks (applies to all grades above)"
+              placeholder="Add a remark"
+              value={remark}
+              onChange={(e) => setRemark(e.currentTarget.value)}
+              autosize
+              minRows={2}
+              maxRows={4}
+            />
+          </Popover.Dropdown>
+        </Popover>
       </Table.Td>
       <Table.Td>
         <Tooltip
@@ -298,6 +319,15 @@ function RegistrationGradeRow({ blocksByNumber, submittedByName, onGraded }) {
     </Table.Tr>
   );
 }
+
+RegistrationGradeRow.propTypes = {
+  // Keyed by block_number -- each value is an evaluation block sharing the
+  // same shape as GradeCell's `ev`, plus its parent `registration`.
+  // eslint-disable-next-line react/forbid-prop-types
+  blocksByNumber: PropTypes.object.isRequired,
+  submittedByName: PropTypes.string.isRequired,
+  onGraded: PropTypes.func.isRequired,
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Main component
@@ -642,6 +672,7 @@ export default function SupervisorThesisGrading() {
                     <Table.Th>Thesis Code</Table.Th>
                     <Table.Th>Thesis Title</Table.Th>
                     <Table.Th>Grades</Table.Th>
+                    <Table.Th>Remarks</Table.Th>
                     <Table.Th>Action</Table.Th>
                   </Table.Tr>
                 </Table.Thead>

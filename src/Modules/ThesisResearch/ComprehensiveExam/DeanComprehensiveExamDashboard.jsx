@@ -1,12 +1,25 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Card, Title, Table, Button, Center, Loader } from "@mantine/core";
+import {
+  Card,
+  Title,
+  Table,
+  Button,
+  Center,
+  Loader,
+  Badge,
+} from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import axios from "axios";
-import { deanNomineeOpenSeminarDashboardRoute } from "../../../routes/academicRoutes";
-import { authHeaders } from "./openSeminarShared";
-import DeanNomineeReportModal from "./DeanNomineeReportModal";
+import { deanComprehensiveExamDashboardRoute } from "../../../routes/academicRoutes";
+import {
+  authHeaders,
+  currentAttempt,
+  ATTEMPT_STATUS_LABEL,
+  ATTEMPT_STATUS_COLOR,
+} from "./comprehensiveExamShared";
+import DeanApproveModal from "./DeanApproveModal";
 
-export default function DeanNomineeDashboard() {
+export default function DeanComprehensiveExamDashboard() {
   const [pending, setPending] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
@@ -14,7 +27,7 @@ export default function DeanNomineeDashboard() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await axios.get(deanNomineeOpenSeminarDashboardRoute, {
+      const res = await axios.get(deanComprehensiveExamDashboardRoute, {
         headers: authHeaders(),
       });
       setPending(res.data.pending || []);
@@ -48,7 +61,7 @@ export default function DeanNomineeDashboard() {
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
       <Title order={3} mb="md">
-        Open Seminar — Dean Nominee Reports
+        Comprehensive Exam — Final Approval
       </Title>
 
       <Table striped highlightOnHover>
@@ -56,26 +69,31 @@ export default function DeanNomineeDashboard() {
           <tr>
             <th>Roll No</th>
             <th>Student</th>
-            <th>Thesis Title</th>
-            <th>Supervisor</th>
+            <th>Attempt</th>
+            <th>Result</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
           {pending.length === 0 && (
             <tr>
-              <td colSpan={5}>No pending Dean Nominee reports.</td>
+              <td colSpan={5}>No attempts pending final approval.</td>
             </tr>
           )}
-          {pending.map((s) => (
-            <tr key={s.id}>
-              <td>{s.student_roll}</td>
-              <td>{s.student_name}</td>
-              <td>{s.possible_thesis_title || "—"}</td>
-              <td>{s.supervisor?.name}</td>
+          {pending.map((e) => (
+            <tr key={e.id}>
+              <td>{e.student_roll}</td>
+              <td>{e.student_name}</td>
+              <td>{currentAttempt(e)?.attempt_number}</td>
               <td>
-                <Button size="xs" onClick={() => setSelected(s)}>
-                  Submit Report
+                <Badge color={ATTEMPT_STATUS_COLOR[currentAttempt(e)?.result]}>
+                  {ATTEMPT_STATUS_LABEL[currentAttempt(e)?.result] ||
+                    currentAttempt(e)?.result}
+                </Badge>
+              </td>
+              <td>
+                <Button size="xs" onClick={() => setSelected(e)}>
+                  Review &amp; Approve
                 </Button>
               </td>
             </tr>
@@ -84,8 +102,8 @@ export default function DeanNomineeDashboard() {
       </Table>
 
       {selected && (
-        <DeanNomineeReportModal
-          seminar={selected}
+        <DeanApproveModal
+          exam={selected}
           onClose={() => setSelected(null)}
           refresh={handleRefresh}
         />

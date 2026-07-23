@@ -14,6 +14,7 @@ import {
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import axios from "axios";
+import PropTypes from "prop-types";
 import RPCCommitteeTable from "./RPCCommitteeTable";
 import {
   supervisorReviewRoute,
@@ -159,7 +160,7 @@ export default function SupervisorReviewModal({ thesis, onClose, refresh }) {
       title="Supervisor / Co-Supervisor Review"
       size="90%"
     >
-      <Stack spacing="lg">
+      <Stack gap="lg">
         {/* Student Info */}
         <Table striped highlightOnHover>
           <tbody>
@@ -222,7 +223,7 @@ export default function SupervisorReviewModal({ thesis, onClose, refresh }) {
             <Table striped highlightOnHover>
               <thead>
                 <tr>
-                  <th />
+                  <th aria-label="Category" />
                   <th>Single</th>
                   <th>Shared</th>
                 </tr>
@@ -338,3 +339,11 @@ export default function SupervisorReviewModal({ thesis, onClose, refresh }) {
     </Modal>
   );
 }
+
+SupervisorReviewModal.propTypes = {
+  thesis: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  }).isRequired,
+  onClose: PropTypes.func.isRequired,
+  refresh: PropTypes.func.isRequired,
+};

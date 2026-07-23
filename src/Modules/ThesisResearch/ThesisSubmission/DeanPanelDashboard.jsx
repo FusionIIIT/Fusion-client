@@ -95,7 +95,7 @@ export default function DeanPanelDashboard() {
 
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
-      <Title order={3} mb="md" align="center">
+      <Title order={3} mb="md" ta="center">
         Dean - Thesis Examination Panel
       </Title>
 

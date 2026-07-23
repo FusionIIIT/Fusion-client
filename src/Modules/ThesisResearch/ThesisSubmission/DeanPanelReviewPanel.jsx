@@ -1,5 +1,14 @@
 import React, { useState } from "react";
-import { Card, Title, Text, Table, Button, Group, Badge, Textarea } from "@mantine/core";
+import {
+  Card,
+  Title,
+  Text,
+  Table,
+  Button,
+  Group,
+  Badge,
+  Textarea,
+} from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import { IconCheck, IconX } from "@tabler/icons-react";
 import axios from "axios";
@@ -26,7 +35,7 @@ function ExaminerTable({ title, category, examiners }) {
   const color = CATEGORY_COLOR[category];
   return (
     <Card withBorder radius="md" p="sm" mt="md" bg={`${color}.0`}>
-      <Group spacing="xs" mb="xs">
+      <Group gap="xs" mb="xs">
         <Badge color={color} size="lg">
           {title}
         </Badge>
@@ -106,7 +115,8 @@ export default function DeanPanelReviewPanel({ submission, onClose }) {
       );
       showNotification({
         title: "Success",
-        message: action === "approve" ? "Panel forwarded" : "Sent back to supervisor",
+        message:
+          action === "approve" ? "Panel forwarded" : "Sent back to supervisor",
         color: "teal",
         icon: <IconCheck />,
       });
@@ -157,7 +167,8 @@ export default function DeanPanelReviewPanel({ submission, onClose }) {
         {submission.title}
       </Title>
       <Text size="sm" c="dimmed" mb="sm">
-        {submission.student_name || "N/A"} &middot; Roll No: {submission.student_roll || "N/A"}
+        {submission.student_name || "N/A"} &middot; Roll No:{" "}
+        {submission.student_roll || "N/A"}
       </Text>
 
       <ExaminerTable
@@ -172,15 +183,29 @@ export default function DeanPanelReviewPanel({ submission, onClose }) {
       />
 
       {submission.dean_panel_remarks && (
-        <Text size="sm" mt="md" p="sm" style={{ backgroundColor: "#ffe6e6", borderRadius: 4 }}>
-          <Text component="span" fw={500}>Previous remarks (sent back to supervisor): </Text>
+        <Text
+          size="sm"
+          mt="md"
+          p="sm"
+          style={{ backgroundColor: "#ffe6e6", borderRadius: 4 }}
+        >
+          <Text component="span" fw={500}>
+            Previous remarks (sent back to supervisor):{" "}
+          </Text>
           {submission.dean_panel_remarks}
         </Text>
       )}
 
       {submission.director_remarks && (
-        <Text size="sm" mt="md" p="sm" style={{ backgroundColor: "#fff3cd", borderRadius: 4 }}>
-          <Text component="span" fw={500}>Remarks from Director: </Text>
+        <Text
+          size="sm"
+          mt="md"
+          p="sm"
+          style={{ backgroundColor: "#fff3cd", borderRadius: 4 }}
+        >
+          <Text component="span" fw={500}>
+            Remarks from Director:{" "}
+          </Text>
           {submission.director_remarks}
         </Text>
       )}

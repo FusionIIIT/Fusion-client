@@ -137,7 +137,7 @@ export default function DirectorDashboard() {
 
   return (
     <Card shadow="sm" p="lg" withBorder>
-      <Title order={3} mb="md" align="center">
+      <Title order={3} mb="md" ta="center">
         Director Dashboard
       </Title>
 

@@ -108,7 +108,7 @@ export default function StudentResubmitTeachingCreditModal({
           <Loader />
         </Center>
       ) : (
-        <Stack spacing="md">
+        <Stack gap="md">
           <Alert color="red" title="Sent Back by HOD">
             {registration.hod_remarks ||
               "Please revise your choices and resubmit."}

@@ -1,6 +1,6 @@
 // src/components/thesis/SupervisorAssignmentPanel.jsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Card,
   Title,
@@ -16,44 +16,50 @@ import {
   Badge,
   Loader,
   Divider,
-} from '@mantine/core';
-import { showNotification } from '@mantine/notifications';
-import {
-  IconPlus,
-  IconTrash,
-  IconCheck,
-  IconX,
-} from '@tabler/icons-react';
-import axios from 'axios';
-import PropTypes from 'prop-types';
+} from "@mantine/core";
+import { showNotification } from "@mantine/notifications";
+import { IconPlus, IconTrash, IconCheck, IconX } from "@tabler/icons-react";
+import axios from "axios";
+import PropTypes from "prop-types";
 import {
   supervisorAssignRoute,
   supervisorSubmissionDetailRoute,
-} from '../../../routes/academicRoutes';
+} from "../../../routes/academicRoutes";
 
 const EMPTY_EXAMINER = {
-  name: '',
-  position: '',
-  address: '',
-  phone: '',
-  fax: '',
-  email: '',
-  time_ranking: '',
+  name: "",
+  position: "",
+  address: "",
+  phone: "",
+  fax: "",
+  email: "",
+  time_ranking: "",
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function ExaminerCard({ examiner, index, total, category, readOnly, onChange, onRemove }) {
-  const isForeign = category === 'foreign';
-  const nameError = !readOnly && !examiner.name ? 'Name is required' : null;
-  const emailError = !readOnly && examiner.email && !EMAIL_RE.test(examiner.email)
-    ? 'Invalid email address'
-    : null;
+function ExaminerCard({
+  examiner,
+  index,
+  total,
+  category,
+  readOnly,
+  onChange,
+  onRemove,
+}) {
+  const isForeign = category === "foreign";
+  const nameError = !readOnly && !examiner.name ? "Name is required" : null;
+  const emailError =
+    !readOnly && examiner.email && !EMAIL_RE.test(examiner.email)
+      ? "Invalid email address"
+      : null;
 
   return (
     <Card withBorder p="md" radius="md">
-      <Group position="apart" mb="sm">
-        <Badge size="lg" variant="light">Examiner {index + 1}</Badge>
+      <Group justify="space-between" mb="sm">
+        <Badge size="lg" variant="light">
+          Examiner {index + 1}
+        </Badge>
         {!readOnly && (
           <ActionIcon
             aria-label={`Remove ${category} examiner ${index + 1}`}
@@ -66,20 +72,20 @@ function ExaminerCard({ examiner, index, total, category, readOnly, onChange, on
         )}
       </Group>
 
-      <Stack spacing="sm">
+      <Stack gap="sm">
         <Group grow>
           <TextInput
             label="Name"
             required
             value={examiner.name}
             error={nameError}
-            onChange={(e) => onChange(index, 'name', e.target.value)}
+            onChange={(e) => onChange(index, "name", e.target.value)}
             disabled={readOnly}
           />
           <TextInput
             label="Present Position"
             value={examiner.position}
-            onChange={(e) => onChange(index, 'position', e.target.value)}
+            onChange={(e) => onChange(index, "position", e.target.value)}
             disabled={readOnly}
           />
         </Group>
@@ -88,7 +94,7 @@ function ExaminerCard({ examiner, index, total, category, readOnly, onChange, on
           label="Postal Address"
           minRows={2}
           value={examiner.address}
-          onChange={(e) => onChange(index, 'address', e.target.value)}
+          onChange={(e) => onChange(index, "address", e.target.value)}
           disabled={readOnly}
         />
 
@@ -97,8 +103,8 @@ function ExaminerCard({ examiner, index, total, category, readOnly, onChange, on
             label="Time Ranking"
             description="Preference order for scheduling across time zones"
             min={1}
-            value={examiner.time_ranking || ''}
-            onChange={(v) => onChange(index, 'time_ranking', v)}
+            value={examiner.time_ranking || ""}
+            onChange={(v) => onChange(index, "time_ranking", v)}
             disabled={readOnly}
           />
         )}
@@ -107,13 +113,13 @@ function ExaminerCard({ examiner, index, total, category, readOnly, onChange, on
           <TextInput
             label="Phone"
             value={examiner.phone}
-            onChange={(e) => onChange(index, 'phone', e.target.value)}
+            onChange={(e) => onChange(index, "phone", e.target.value)}
             disabled={readOnly}
           />
           <TextInput
             label="Fax"
             value={examiner.fax}
-            onChange={(e) => onChange(index, 'fax', e.target.value)}
+            onChange={(e) => onChange(index, "fax", e.target.value)}
             disabled={readOnly}
           />
         </Group>
@@ -124,7 +130,7 @@ function ExaminerCard({ examiner, index, total, category, readOnly, onChange, on
           type="email"
           value={examiner.email}
           error={emailError}
-          onChange={(e) => onChange(index, 'email', e.target.value)}
+          onChange={(e) => onChange(index, "email", e.target.value)}
           disabled={readOnly}
         />
       </Stack>
@@ -144,16 +150,23 @@ ExaminerCard.propTypes = {
   }).isRequired,
   index: PropTypes.number.isRequired,
   total: PropTypes.number.isRequired,
-  category: PropTypes.oneOf(['indian', 'foreign']).isRequired,
+  category: PropTypes.oneOf(["indian", "foreign"]).isRequired,
   readOnly: PropTypes.bool.isRequired,
   onChange: PropTypes.func.isRequired,
   onRemove: PropTypes.func.isRequired,
 };
 
-function ExaminerList({ category, examiners, readOnly, onChange, onRemove, onAdd }) {
-  const label = category === 'indian' ? 'Indian' : 'Foreign';
+function ExaminerList({
+  category,
+  examiners,
+  readOnly,
+  onChange,
+  onRemove,
+  onAdd,
+}) {
+  const label = category === "indian" ? "Indian" : "Foreign";
   return (
-    <Stack spacing="md" mt="md">
+    <Stack gap="md" mt="md">
       {examiners.map((ex, i) => (
         <ExaminerCard
           // eslint-disable-next-line react/no-array-index-key
@@ -173,7 +186,7 @@ function ExaminerList({ category, examiners, readOnly, onChange, onRemove, onAdd
           leftIcon={<IconPlus size={16} />}
           onClick={onAdd}
           fullWidth
-          style={{ borderStyle: 'dashed' }}
+          style={{ borderStyle: "dashed" }}
         >
           Add {label} Examiner
         </Button>
@@ -193,7 +206,7 @@ const examinerShape = PropTypes.shape({
 });
 
 ExaminerList.propTypes = {
-  category: PropTypes.oneOf(['indian', 'foreign']).isRequired,
+  category: PropTypes.oneOf(["indian", "foreign"]).isRequired,
   examiners: PropTypes.arrayOf(examinerShape).isRequired,
   readOnly: PropTypes.bool.isRequired,
   onChange: PropTypes.func.isRequired,
@@ -201,11 +214,15 @@ ExaminerList.propTypes = {
   onAdd: PropTypes.func.isRequired,
 };
 
-export default function SupervisorAssignmentPanel({ submission, readOnly = false, onClose }) {
+export default function SupervisorAssignmentPanel({
+  submission,
+  readOnly = false,
+  onClose,
+}) {
   const [indian, setIndian] = useState([{ ...EMPTY_EXAMINER }]);
   const [foreign, setForeign] = useState([{ ...EMPTY_EXAMINER }]);
-  const [deanRemarks, setDeanRemarks] = useState('');
-  const [activeTab, setActiveTab] = useState('indian');
+  const [deanRemarks, setDeanRemarks] = useState("");
+  const [activeTab, setActiveTab] = useState("indian");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -215,15 +232,31 @@ export default function SupervisorAssignmentPanel({ submission, readOnly = false
   useEffect(() => {
     (async () => {
       try {
-        const token = localStorage.getItem('authToken');
-        const res = await axios.get(supervisorSubmissionDetailRoute(submission.id), {
-          headers: { Authorization: `Token ${token}` },
-        });
-        setIndian(res.data.indian_examiners?.length ? res.data.indian_examiners : [{ ...EMPTY_EXAMINER }]);
-        setForeign(res.data.foreign_examiners?.length ? res.data.foreign_examiners : [{ ...EMPTY_EXAMINER }]);
-        setDeanRemarks(res.data.dean_panel_remarks || '');
+        const token = localStorage.getItem("authToken");
+        const res = await axios.get(
+          supervisorSubmissionDetailRoute(submission.id),
+          {
+            headers: { Authorization: `Token ${token}` },
+          },
+        );
+        setIndian(
+          res.data.indian_examiners?.length
+            ? res.data.indian_examiners
+            : [{ ...EMPTY_EXAMINER }],
+        );
+        setForeign(
+          res.data.foreign_examiners?.length
+            ? res.data.foreign_examiners
+            : [{ ...EMPTY_EXAMINER }],
+        );
+        setDeanRemarks(res.data.dean_panel_remarks || "");
       } catch (e) {
-        showNotification({ title: 'Error', message: 'Failed to load examiners', color: 'red', icon: <IconX /> });
+        showNotification({
+          title: "Error",
+          message: "Failed to load examiners",
+          color: "red",
+          icon: <IconX />,
+        });
       } finally {
         setLoading(false);
       }
@@ -239,7 +272,9 @@ export default function SupervisorAssignmentPanel({ submission, readOnly = false
   };
 
   const removeExaminer = (setList) => (index) => {
-    setList((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev));
+    setList((prev) =>
+      prev.length > 1 ? prev.filter((_, i) => i !== index) : prev,
+    );
   };
 
   const addExaminer = (setList) => () => {
@@ -252,9 +287,9 @@ export default function SupervisorAssignmentPanel({ submission, readOnly = false
     );
     if (invalid) {
       showNotification({
-        title: 'Validation',
-        message: 'Every examiner needs a name and a valid email address',
-        color: 'red',
+        title: "Validation",
+        message: "Every examiner needs a name and a valid email address",
+        color: "red",
         icon: <IconX />,
       });
       return;
@@ -266,17 +301,22 @@ export default function SupervisorAssignmentPanel({ submission, readOnly = false
         indian_examiners: indian,
         foreign_examiners: foreign,
       };
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem("authToken");
       await axios.post(supervisorAssignRoute, payload, {
         headers: { Authorization: `Token ${token}` },
       });
-      showNotification({ title: 'Success', message: 'Examiners assigned', color: 'teal', icon: <IconCheck /> });
+      showNotification({
+        title: "Success",
+        message: "Examiners assigned",
+        color: "teal",
+        icon: <IconCheck />,
+      });
       onClose();
     } catch (e) {
       showNotification({
-        title: 'Error',
+        title: "Error",
         message: e.response?.data?.error || e.message,
-        color: 'red',
+        color: "red",
         icon: <IconX />,
       });
     } finally {
@@ -306,8 +346,10 @@ export default function SupervisorAssignmentPanel({ submission, readOnly = false
       )}
 
       {deanRemarks && (
-        <Card withBorder p="sm" mb="md" style={{ backgroundColor: '#fff4e6' }}>
-          <Text size="sm" fw={500}>Dean&apos;s remarks (sent back for changes):</Text>
+        <Card withBorder p="sm" mb="md" style={{ backgroundColor: "#fff4e6" }}>
+          <Text size="sm" fw={500}>
+            Dean&apos;s remarks (sent back for changes):
+          </Text>
           <Text size="sm">{deanRemarks}</Text>
         </Card>
       )}
@@ -315,7 +357,9 @@ export default function SupervisorAssignmentPanel({ submission, readOnly = false
       <Tabs value={activeTab} onChange={setActiveTab}>
         <Tabs.List>
           <Tabs.Tab value="indian">Indian Examiners ({indian.length})</Tabs.Tab>
-          <Tabs.Tab value="foreign">Foreign Examiners ({foreign.length})</Tabs.Tab>
+          <Tabs.Tab value="foreign">
+            Foreign Examiners ({foreign.length})
+          </Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel value="indian">
@@ -343,13 +387,13 @@ export default function SupervisorAssignmentPanel({ submission, readOnly = false
 
       <Divider my="md" />
 
-      <Group position="apart">
+      <Group justify="space-between">
         <Text size="sm" color="dimmed">
           {indian.length} Indian &middot; {foreign.length} Foreign selected
         </Text>
         <Group>
           <Button variant="default" onClick={onClose} disabled={submitting}>
-            {readOnly ? 'Close' : 'Cancel'}
+            {readOnly ? "Close" : "Cancel"}
           </Button>
           {!readOnly && (
             <Button onClick={handleSubmit} loading={submitting}>

@@ -8,12 +8,18 @@ const RPCCommitteeTable = memo(function RPCCommitteeTable({
   facultyOptions,
   committee,
   onChange,
-  readOnly
+  readOnly,
 }) {
   const fixedMembers = useMemo(() => {
     return [
-      supervisor?.id && { name: supervisor.name, discipline: supervisor.discipline },
-      coSupervisor?.id && { name: coSupervisor.name, discipline: coSupervisor.discipline },
+      supervisor?.id && {
+        name: supervisor.name,
+        discipline: supervisor.discipline,
+      },
+      coSupervisor?.id && {
+        name: coSupervisor.name,
+        discipline: coSupervisor.discipline,
+      },
     ].filter(Boolean);
   }, [supervisor, coSupervisor]);
 
@@ -36,16 +42,32 @@ const RPCCommitteeTable = memo(function RPCCommitteeTable({
       <tbody>
         {fixedMembers.map((m, idx) => (
           <tr key={`fixed-${idx}`}>
-            <td><Text size="sm">{m.name}</Text></td>
-            <td><Text size="sm">{m.discipline}</Text></td>
+            <td>
+              <Text size="sm">{m.name}</Text>
+            </td>
+            <td>
+              <Text size="sm">{m.discipline}</Text>
+            </td>
           </tr>
         ))}
         {Array.from({ length: numSelectables }).map((_, i) => {
           const val = committee[i] || null;
-          const selectedFaculty = facultyOptions.find(f => f.value === val);
+          const selectedFaculty = facultyOptions.find((f) => f.value === val);
           const label = selectedFaculty?.label || "";
           const discipline = selectedFaculty?.discipline || "";
-          
+
+          // Exclude the fixed Supervisor/Co-Supervisor and whoever is already
+          // picked in another committee slot, so the same faculty member
+          // can't be selected twice across this table.
+          const excludedIds = [
+            supervisor?.id,
+            coSupervisor?.id,
+            ...committee.filter((_v, j) => j !== i),
+          ];
+          const availableOptions = facultyOptions.filter(
+            (f) => f.value === val || !excludedIds.includes(f.value),
+          );
+
           return (
             <tr key={`select-${i}`}>
               <td>
@@ -53,7 +75,7 @@ const RPCCommitteeTable = memo(function RPCCommitteeTable({
                   <Text size="sm">{label || "-"}</Text>
                 ) : (
                   <Select
-                    data={facultyOptions}
+                    data={availableOptions}
                     value={val}
                     onChange={(v) => handleSelectionChange(i, v)}
                     placeholder="Select faculty"
@@ -63,7 +85,9 @@ const RPCCommitteeTable = memo(function RPCCommitteeTable({
                   />
                 )}
               </td>
-              <td><Text size="sm">{discipline || "-"}</Text></td>
+              <td>
+                <Text size="sm">{discipline || "-"}</Text>
+              </td>
             </tr>
           );
         })}
@@ -85,13 +109,14 @@ RPCCommitteeTable.propTypes = {
   }),
   facultyOptions: PropTypes.arrayOf(
     PropTypes.shape({
-      value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+      value: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+        .isRequired,
       label: PropTypes.string.isRequired,
       discipline: PropTypes.string,
-    })
+    }),
   ).isRequired,
   committee: PropTypes.arrayOf(
-    PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   ).isRequired,
   onChange: PropTypes.func.isRequired,
   readOnly: PropTypes.bool,
@@ -103,6 +128,6 @@ RPCCommitteeTable.defaultProps = {
   readOnly: false,
 };
 
-RPCCommitteeTable.displayName = 'RPCCommitteeTable';
+RPCCommitteeTable.displayName = "RPCCommitteeTable";
 
 export default RPCCommitteeTable;

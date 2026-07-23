@@ -104,7 +104,7 @@ export default function StudentProposeTeachingCreditModal({
           <Loader />
         </Center>
       ) : (
-        <Stack spacing="md">
+        <Stack gap="md">
           <Text size="sm" c="dimmed">
             Choose up to 4 courses in order of priority (preferably UG).
           </Text>
