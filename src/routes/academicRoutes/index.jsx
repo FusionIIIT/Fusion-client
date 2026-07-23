@@ -1,4 +1,4 @@
-import { host } from "../globalRoutes";
+import { host, dynamicApiHost } from "../globalRoutes";
 
 export const calendarRoute = `${host}/aims/api/calendar/`;
 export const editCalendarRoute = `${host}/aims/api/calendar/update/`;
@@ -232,11 +232,13 @@ export const deanSendInvitationsRoute = `${host}/academic-procedures/api/thesis/
 export const directorDashboardRoute = `${host}/academic-procedures/api/thesis/director-dashboard/`;
 export const directorApproveRoute = `${host}/academic-procedures/api/thesis/director-approve/`;
 
-// External Reviewer (token-based)
+// External Reviewer (token-based). Reached via emailed links from arbitrary
+// networks -- uses dynamicApiHost, not host, so it works regardless of what
+// domain the page is actually opened on.
 export const invitationActionRoute = (token, action) =>
-  `${host}/academic-procedures/api/invitation/${token}/${action}/`;
+  `${dynamicApiHost}/academic-procedures/api/invitation/${token}/${action}/`;
 export const reviewDetailRoute = (token) =>
-  `${host}/academic-procedures/api/review/${token}/`;
+  `${dynamicApiHost}/academic-procedures/api/review/${token}/`;
 
 // ============================================================================
 // PhD Comprehensive Examination
