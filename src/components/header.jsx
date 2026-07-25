@@ -22,9 +22,9 @@ import { notifications } from "@mantine/notifications";
 import { setRole, setCurrentAccessibleModules } from "../redux/userslice";
 import classes from "../Modules/Dashboard/Dashboard.module.css";
 import avatarImage from "../assets/avatar.png";
-import { setPfNo } from "../redux/pfNoSlice";
 
-import { logoutRoute, updateRoleRoute } from "../routes/dashboardRoutes";
+import { updateRoleRoute } from "../routes/dashboardRoutes";
+import useLogout from "../helper/useLogout";
 
 function Header({ opened, toggleSidebar }) {
   const [popoverOpened, setPopoverOpened] = useState(false);
@@ -65,39 +65,12 @@ function Header({ opened, toggleSidebar }) {
       console.log(response.data.message);
       dispatch(setRole(newRole));
       dispatch(setCurrentAccessibleModules());
-      navigate('/dashboard')
+      navigate("/dashboard");
     } catch (error) {
       console.error("Error updating last selected role:", error.response.data);
     }
   };
-  const handleLogout = async () => {
-    const token = localStorage.getItem("authToken");
-
-    try {
-      await axios.post(
-        logoutRoute,
-        {},
-        {
-          // 3 hours got wasted just because of an empty brackets :)
-          headers: {
-            Authorization: `Token ${token}`,
-            "Content-Type": "application/json",
-          },
-        },
-      );
-
-      if (localStorage.getItem("pfNo") != null) {
-        dispatch(setPfNo(null));
-      }
-      sessionStorage.removeItem("authToken");
-      localStorage.removeItem("authToken");
-      navigate("/accounts/login");
-      // queryclient.invalidateQueries();
-      console.log("User logged out successfully");
-    } catch (err) {
-      console.error("Logout error:", err);
-    }
-  };
+  const { handleLogout } = useLogout();
 
   return (
     <Flex
@@ -199,7 +172,7 @@ function Header({ opened, toggleSidebar }) {
                       variant="light"
                       color="pink"
                       size="xs"
-                      onClick={handleLogout}
+                      onClick={() => handleLogout()}
                     >
                       Log out
                     </Button>
