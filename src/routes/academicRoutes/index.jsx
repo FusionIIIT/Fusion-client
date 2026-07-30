@@ -35,6 +35,7 @@ export const verifyRegistrationRoute = `${host}/academic-procedures/api/acad/ver
 export const batchesRoute = `${host}/programme_curriculum/api/admin_batches/`;
 export const checkAllocationRoute = `${host}/aims/api/check-allocation`;
 export const startAllocationRoute = `${host}/aims/api/start-allocation`;
+export const addCourseToSlotsRoute = `${host}/aims/api/add-course-to-slots`;
 export const allocationResultsRoute = `${host}/aims/api/allocation-results`;
 export const exportAllocationCourseRoute = `${host}/aims/api/allocation-results/export`;
 export const exportAllAllocationCoursesRoute = `${host}/aims/api/allocation-results/export-all`;
