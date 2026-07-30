@@ -177,7 +177,11 @@ function AllocateCourses() {
       if (err.response?.status === 409 && data?.needs_action?.length) {
         setSlotIssues(data.needs_action);
       } else {
-        setError(data?.message || data?.error || "Error starting allocation.");
+        setError(
+          data?.message ||
+            data?.error ||
+            `Error starting allocation (HTTP ${err.response?.status ?? "?"}).`,
+        );
       }
     }
     setLoading(false);
