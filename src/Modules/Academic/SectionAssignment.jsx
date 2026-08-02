@@ -197,6 +197,12 @@ function SectionAssignment() {
       );
       return next;
     });
+    showNotification({
+      title: mode === "select" ? "Range selected" : "Range unselected",
+      message: `${matches.length} student(s) ${mode === "select" ? "added to" : "removed from"} selection.`,
+      color: mode === "select" ? "indigo" : "gray",
+      autoClose: 2000,
+    });
   };
 
   // Majority roll prefix = this discipline's native students; the rest are
@@ -222,6 +228,12 @@ function SectionAssignment() {
         mode === "select" ? next.add(s.roll_no) : next.delete(s.roll_no),
       );
       return next;
+    });
+    showNotification({
+      title: mode === "select" ? "Transfers selected" : "Transfers unselected",
+      message: `${transferRolls.length} transferred student(s) ${mode === "select" ? "added to" : "removed from"} selection.`,
+      color: mode === "select" ? "orange" : "gray",
+      autoClose: 2000,
     });
   };
 
