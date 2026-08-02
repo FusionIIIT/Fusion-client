@@ -56,10 +56,30 @@ export default function StudentAddCourse() {
   if (error)   return <Alert color="red">{error}</Alert>;
   if (!slots.length) return <Text>No slots available for adding courses.</Text>;
 
+  const courseOf = (s) =>
+    (s.courses || []).find(c => String(c.id) === s.selectedCourse);
+
+  // A course not running in the student's own section needs a running section picked.
+  const needsSection = (s) => {
+    const c = courseOf(s);
+    return !!c && !c.own_section_running && (c.sections || []).length > 0;
+  };
+
   const pickCourse = (idx, val) => {
-    setSlots(slots.map((s, i) =>
-      i === idx ? { ...s, selectedCourse: val } : s
-    ));
+    setSlots(slots.map((s, i) => {
+      if (i !== idx) return s;
+      const course = (s.courses || []).find(c => String(c.id) === val);
+      // Auto-pick when the course runs in exactly one (other) section.
+      let selectedSection = '';
+      if (course && !course.own_section_running && (course.sections || []).length === 1) {
+        selectedSection = String(course.sections[0].course_instructor_id);
+      }
+      return { ...s, selectedCourse: val, selectedSection };
+    }));
+  };
+
+  const pickSection = (idx, val) => {
+    setSlots(slots.map((s, i) => (i === idx ? { ...s, selectedSection: val } : s)));
   };
 
   const toSubmit = slots.filter(s => s.selectedCourse && s.selectedCourse !== '');
@@ -70,17 +90,31 @@ export default function StudentAddCourse() {
       showNotification({ title: 'Auth Error', message: 'No token', color: 'red' });
       return;
     }
-    setSubmitting(true);
-
     const selectedSlots = slots.filter(s => s.selectedCourse && s.selectedCourse !== '');
+
+    const missingSection = selectedSlots.find(s => needsSection(s) && !s.selectedSection);
+    if (missingSection) {
+      const c = courseOf(missingSection);
+      showNotification({
+        title: 'Section required',
+        message: `Select a section for ${c ? c.code : 'the course'} — it isn't running in your section.`,
+        color: 'yellow',
+      });
+      return;
+    }
+
+    setSubmitting(true);
 
     try {
       await Promise.all(
         selectedSlots.map(s =>
           axios.post(studentAddCourseRoute,
-            { 
+            {
               slot_id: s.id,
-              course_id: parseInt(s.selectedCourse, 10)
+              course_id: parseInt(s.selectedCourse, 10),
+              ...(s.selectedSection
+                ? { course_instructor_id: parseInt(s.selectedSection, 10) }
+                : {}),
             },
             { headers: { Authorization: `Token ${token}` } }
           )
@@ -137,6 +171,21 @@ export default function StudentAddCourse() {
                   onChange={val => pickCourse(i, val)}
                   clearable
                 />
+                {needsSection(s) && (
+                  <Select
+                    mt="xs"
+                    placeholder="Select section…"
+                    description="Not running in your section — pick a running one"
+                    data={courseOf(s).sections.map(sec => ({
+                      value: String(sec.course_instructor_id),
+                      label: sec.section
+                        ? `Section ${sec.section} — ${sec.instructor}`
+                        : sec.instructor,
+                    }))}
+                    value={s.selectedSection || ''}
+                    onChange={val => pickSection(i, val)}
+                  />
+                )}
               </td>
             </tr>
           ))}
