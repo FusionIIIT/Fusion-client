@@ -1,49 +1,55 @@
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import { showNotification } from "@mantine/notifications";
+import { CheckCircle, XCircle } from "@phosphor-icons/react";
 import axios from "axios";
-import { CheckCircle, XCircle } from "@phosphor-icons/react"; // Optional for adding icons to notifications
 import { logoutRoute } from "../routes/dashboardRoutes";
 
 const useLogout = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const handleLogout = async () => {
+  const handleLogout = async ({ reason } = {}) => {
     const token = localStorage.getItem("authToken");
 
     try {
-      await axios.post(
-        logoutRoute,
-        {},
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-            "Content-Type": "application/json",
+      if (token) {
+        await axios.post(
+          logoutRoute,
+          {},
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+              "Content-Type": "application/json",
+            },
           },
-        },
-      );
-      sessionStorage.removeItem("authToken");
-      localStorage.removeItem("authToken");
-      navigate("/accounts/login");
-
-      // Show success notification
-      showNotification({
-        title: "Logged Out",
-        message: "You have been logged out successfully.",
-        color: "green", // Customize color
-        icon: <CheckCircle size={18} />,
-      });
-
-      console.log("User logged out successfully");
+        );
+      }
     } catch (err) {
       console.error("Logout error:", err);
+    } finally {
+      localStorage.clear();
+      sessionStorage.clear();
+      dispatch({ type: "RESET_STORE" });
 
-      // Show error notification
-      showNotification({
-        title: "Logout Failed",
-        message: "There was an issue logging you out. Please try again.",
-        color: "red", // Customize color
-        icon: <XCircle size={18} />,
-      });
+      showNotification(
+        reason === "inactivity"
+          ? {
+              title: "Logged out",
+              message:
+                "You were logged out due to inactivity. Please log in again.",
+              color: "red",
+              icon: <XCircle size={18} />,
+            }
+          : {
+              title: "Logged out",
+              message: "You have been logged out successfully.",
+              color: "green",
+              icon: <CheckCircle size={18} />,
+            },
+      );
+
+      navigate("/accounts/login");
     }
   };
 
