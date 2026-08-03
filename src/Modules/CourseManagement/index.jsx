@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import ModuleTabs from "../../components/moduleTabs";
-import CustomBreadcrumbs from "../../components/Breadcrumbs";
 import Announcements from "./components/Announcements";
 import Attendance from "./components/Attendance";
 import CourseContent from "./components/CourseContent";
@@ -93,7 +92,6 @@ function CourseManagementPage() {
 
   return (
     <>
-      <CustomBreadcrumbs />
       <ModuleTabs
         tabs={tabs}
         activeTab={activeTab}

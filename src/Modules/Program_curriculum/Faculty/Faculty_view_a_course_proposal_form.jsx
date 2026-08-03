@@ -1,8 +1,10 @@
 import { Button, Card, Grid, Table, Text } from "@mantine/core";
 import React from "react";
 import { useSearchParams } from "react-router-dom";
+import useDefaultCourseCode from "../../../helper/useDefaultCourseCode";
 
 function Faculty_view_a_course_proposal_form() {
+  const defaultCourseCode = useDefaultCourseCode();
   const [searchParams] = useSearchParams();
 
   // Get the 'id' query parameter
@@ -11,13 +13,11 @@ function Faculty_view_a_course_proposal_form() {
   const courseProposal = courseProposals.find(
     (proposal) => proposal.pk === parseInt(id, 10),
   );
-  console.log(courseProposal);
   const courseProposalData = Object.entries(courseProposal.fields);
-  console.log(courseProposalData.length);
 
   const courseDetails = {
     createdBy: "atul",
-    code: "CS101",
+    code: defaultCourseCode,
     name: "Introduction to Computer Science",
     version: "1.0",
     contactHours: {

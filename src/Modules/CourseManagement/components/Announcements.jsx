@@ -12,6 +12,7 @@ import {
 } from "@mantine/core";
 import "./Announcement.css";
 import AvatarImage from "../../../assets/avatar.png";
+import useDefaultCourseCode from "../../../helper/useDefaultCourseCode";
 
 function Announcement() {
   const [file, setFile] = useState(null);
@@ -27,9 +28,10 @@ function Announcement() {
   const [errorModalOpen, setErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const currentCourseCode = "CS101";
+  const currentCourseCode = useDefaultCourseCode();
 
   const fetchStudents = useCallback(async () => {
+    if (!currentCourseCode) return;
     try {
       const response = await axios.get(
         `/api/course_students/${currentCourseCode}/`,
@@ -42,6 +44,7 @@ function Announcement() {
   }, [currentCourseCode]);
 
   useEffect(() => {
+    if (!currentCourseCode) return;
     setCourseCode(currentCourseCode);
     fetchStudents();
   }, [currentCourseCode, fetchStudents]);

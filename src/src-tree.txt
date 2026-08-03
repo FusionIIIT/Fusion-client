@@ -1,0 +1,734 @@
+/home/divyeshtechs/Desktop/Fusion-client/src
+├── App.jsx
+├── App.module.css
+├── assets
+│   ├── avatar.png
+│   ├── declined.png
+│   ├── detail.png
+│   ├── fusion_logo.png
+│   ├── HR_assets
+│   │   └── sample.txt
+│   ├── IIITJ_logo.webp
+│   ├── LHTC.jpg
+│   ├── notfound.svg
+│   └── resolved.png
+├── components
+│   ├── Breadcrumbs.jsx
+│   ├── empty.jsx
+│   ├── FusionTable.jsx
+│   ├── header.jsx
+│   ├── layout.jsx
+│   ├── logout.js
+│   ├── moduleTabs.jsx
+│   └── sidebarContent.jsx
+├── helper
+│   ├── api.js
+│   ├── inactivityhandler.js
+│   ├── tokenStorage.js
+│   ├── useDefaultCourseCode.js
+│   ├── useLogout.jsx
+│   └── validateauth.jsx
+├── index.css
+├── main.jsx
+├── Modules
+│   ├── Academic
+│   │   ├── AcademicCalendar.jsx
+│   │   ├── AllocateCourses.jsx
+│   │   ├── AllotCourses.jsx
+│   │   ├── AvailableCourses.jsx
+│   │   ├── DeletePreRegistration.jsx
+│   │   ├── FinalRegistration.jsx
+│   │   ├── GenerateStudentList.jsx
+│   │   ├── index.jsx
+│   │   ├── PreRegistration.jsx
+│   │   ├── RegisteredCourses.jsx
+│   │   ├── StudentCourses.jsx
+│   │   ├── SwayamRegistration.jsx
+│   │   ├── VerifyStudentRegistration.jsx
+│   │   └── ViewRollList.jsx
+│   ├── ComplaintManagement
+│   │   ├── ComplaintModule.module.css
+│   │   ├── components
+│   │   │   ├── ComplainForm.jsx
+│   │   │   ├── ComplaintDetails.jsx
+│   │   │   ├── ComplaintHistory.jsx
+│   │   │   ├── FeedbackForm.jsx
+│   │   │   ├── FeedbackItem.jsx
+│   │   │   ├── Feedback.jsx
+│   │   │   ├── FeedbackList.jsx
+│   │   │   ├── FormAcknowledgmentPage.jsx
+│   │   │   ├── FormPage.jsx
+│   │   │   ├── Generate_Report.jsx
+│   │   │   ├── RedirectedComplaintsChangedStatus.jsx
+│   │   │   ├── RedirectedComplaintsDetails.jsx
+│   │   │   ├── RedirectedComplaints.jsx
+│   │   │   ├── ResolvedComplaints.jsx
+│   │   │   ├── UnresComp_ChangeStatus.jsx
+│   │   │   ├── UnresComp_Redirect.jsx
+│   │   │   └── UnresolvedComplaints.jsx
+│   │   ├── index.jsx
+│   │   ├── routes
+│   │   │   └── api.jsx
+│   │   └── styles
+│   │       ├── ComplaintHistory.css
+│   │       └── GenerateReport.css
+│   ├── CourseManagement
+│   │   ├── components
+│   │   │   ├── Announcement.css
+│   │   │   ├── Announcements.jsx
+│   │   │   ├── Attendance
+│   │   │   ├── Attendance.css
+│   │   │   ├── Attendance.jsx
+│   │   │   ├── CourseContent.css
+│   │   │   ├── CourseContent.jsx
+│   │   │   ├── EvaluateAssignment.css
+│   │   │   ├── EvaluateAssignment.jsx
+│   │   │   ├── GradeScheme.jsx
+│   │   │   ├── Gradingscheme.css
+│   │   │   ├── ManageEvaluations.css
+│   │   │   ├── ManageEvaluations.jsx
+│   │   │   ├── StdAssignmentSub.css
+│   │   │   ├── StdAssignmentSub.jsx
+│   │   │   ├── StdAttendance.css
+│   │   │   ├── StdAttendance.jsx
+│   │   │   ├── StdViewmarks.css
+│   │   │   ├── StdViewmarks.jsx
+│   │   │   ├── StudentDashboard.css
+│   │   │   ├── StudentDashboard.jsx
+│   │   │   ├── Student_Registration
+│   │   │   ├── StudentviewContent.css
+│   │   │   ├── StudentviewContent.jsx
+│   │   │   ├── Submit_Assignment.css
+│   │   │   ├── Submit_Assignment.jsx
+│   │   │   ├── SubmitAttendance.css
+│   │   │   ├── SubmitAttendance.jsx
+│   │   │   ├── SubmitMarks.css
+│   │   │   └── SubmitMarks.jsx
+│   │   ├── index.css
+│   │   └── index.jsx
+│   ├── Dashboard
+│   │   ├── Dashboard.module.css
+│   │   ├── dashboardNotifications.jsx
+│   │   └── StudentProfile
+│   │       ├── achievementsComponent.jsx
+│   │       ├── educationCoursesComponent.jsx
+│   │       ├── profileComponent.jsx
+│   │       ├── profilePage.jsx
+│   │       ├── skillsComponent.jsx
+│   │       └── workExperienceComponent.jsx
+│   ├── Department
+│   │   ├── Components
+│   │   │   ├── AboutUs.jsx
+│   │   │   ├── Alumnicat.jsx
+│   │   │   ├── Announcements.jsx
+│   │   │   ├── BrowseAnnouncements.jsx
+│   │   │   ├── Data
+│   │   │   ├── DepartmentGallery.jsx
+│   │   │   ├── DeptTabs.jsx
+│   │   │   ├── EditFacilities.jsx
+│   │   │   ├── FacilitiesDescriptive.jsx
+│   │   │   ├── Facilities.jsx
+│   │   │   ├── FacilityGallery.jsx
+│   │   │   ├── Faculty.jsx
+│   │   │   ├── FeedbackForm.jsx
+│   │   │   ├── Landingpage.jsx
+│   │   │   ├── MakeAnnouncement.jsx
+│   │   │   ├── SpecialTable.jsx
+│   │   │   ├── Stock.jsx
+│   │   │   ├── Studentcat.jsx
+│   │   │   └── ViewFeedback.jsx
+│   │   ├── DepartmentDashboard.jsx
+│   │   └── styles
+│   │       └── Departmentmodule.module.css
+│   ├── Examination
+│   │   ├── announcement.jsx
+│   │   ├── checkResult.jsx
+│   │   ├── checkResultsProf.jsx
+│   │   ├── components
+│   │   │   ├── breadCrumbsExam.jsx
+│   │   │   ├── customBreadCrumbs.jsx
+│   │   │   ├── nav2.jsx
+│   │   │   ├── nav.jsx
+│   │   │   ├── roleBasedFiltersExam.jsx
+│   │   │   ├── studentTranscript.jsx
+│   │   │   └── transcript.jsx
+│   │   ├── examination.jsx
+│   │   ├── generateTranscript.jsx
+│   │   ├── routes
+│   │   │   ├── examinationRoutes.jsx
+│   │   │   └── protectedRoutes.jsx
+│   │   ├── seatingPlan.jsx
+│   │   ├── styles
+│   │   │   ├── announcement.css
+│   │   │   ├── nav.css
+│   │   │   ├── submit.css
+│   │   │   ├── transcript.css
+│   │   │   └── verify.css
+│   │   ├── submitGrades.jsx
+│   │   ├── submitGradesProf.jsx
+│   │   ├── validateDean.jsx
+│   │   ├── verifyDean.jsx
+│   │   └── verifyGrades.jsx
+│   ├── facultyProfessionalProfile
+│   │   ├── App.jsx
+│   │   ├── components
+│   │   │   ├── AdministrativeProfileButtons.jsx
+│   │   │   ├── BreadCrumbs.jsx
+│   │   │   ├── FormTemplate.jsx
+│   │   │   ├── Navbar.jsx
+│   │   │   ├── ProfileButtons.jsx
+│   │   │   └── Sidebar.jsx
+│   │   ├── facultyProfessionalProfile.jsx
+│   │   └── Profile
+│   │       ├── AboutMe
+│   │       ├── AdministrativePosition
+│   │       ├── Conference
+│   │       ├── EventsOrganised
+│   │       ├── Honors
+│   │       ├── MyProfile
+│   │       ├── Others
+│   │       ├── ProfessionalExperience
+│   │       ├── Projects
+│   │       ├── Publications
+│   │       ├── Qualifications
+│   │       ├── ThesisSupervision
+│   │       └── Visits
+│   ├── FileTracking
+│   │   ├── components
+│   │   │   ├── Archive.jsx
+│   │   │   ├── ComposeFile.jsx
+│   │   │   ├── Drafts.jsx
+│   │   │   ├── EditDraft.jsx
+│   │   │   ├── Inbox.jsx
+│   │   │   ├── Outbox.jsx
+│   │   │   ├── SectionNavigation.jsx
+│   │   │   └── ViewFile.jsx
+│   │   └── index.jsx
+│   ├── Gymkhana
+│   │   ├── ApprovalsTable.jsx
+│   │   ├── BackendLogic
+│   │   │   └── ApiRoutes.js
+│   │   ├── BudgetApprovalTable.jsx
+│   │   ├── BudgetForm.jsx
+│   │   ├── calender
+│   │   │   ├── ClubFilter.jsx
+│   │   │   ├── DateSelector.jsx
+│   │   │   ├── EventCalender.jsx
+│   │   │   └── EventCard.jsx
+│   │   ├── ClubViewComponent.jsx
+│   │   ├── CoordinatorMembersTable.jsx
+│   │   ├── CounsellorReview.jsx
+│   │   ├── CustomTable.jsx
+│   │   ├── DownloadNewsletter.jsx
+│   │   ├── Editor.jsx
+│   │   ├── EventForm.jsx
+│   │   ├── EventReportForm.jsx
+│   │   ├── EventReportTable.jsx
+│   │   ├── FestForm.jsx
+│   │   ├── GalleryForm.jsx
+│   │   ├── GalleryView.jsx
+│   │   ├── GymkhanaDashboard.jsx
+│   │   ├── GymkhanaForms.css
+│   │   ├── NewsLetterForm.jsx
+│   │   ├── RegistrationForm.jsx
+│   │   ├── YearlyplanButton.jsx
+│   │   └── YearlyplanTable.jsx
+│   ├── Health Center
+│   │   ├── Compounder
+│   │   │   ├── Announcement
+│   │   │   ├── Doctor
+│   │   │   ├── Feedback
+│   │   │   ├── History
+│   │   │   ├── Medical Relief
+│   │   │   ├── NavCom.jsx
+│   │   │   ├── Schedule
+│   │   │   └── Stocks
+│   │   ├── index.jsx
+│   │   ├── Patient
+│   │   │   ├── Announcements
+│   │   │   ├── Feedback
+│   │   │   ├── History
+│   │   │   ├── Medical Relief
+│   │   │   ├── Navigation.jsx
+│   │   │   └── Schedule
+│   │   └── Routes
+│   │       ├── CompounderRoutes.jsx
+│   │       └── StudentRoutes.jsx
+│   ├── Hostel-Management
+│   │   ├── components
+│   │   │   ├── all-actors
+│   │   │   ├── caretaker
+│   │   │   ├── students
+│   │   │   └── warden
+│   │   ├── index.jsx
+│   │   └── pages
+│   │       ├── all-actors
+│   │       ├── caretaker
+│   │       ├── EnhancedSectionNavigation.jsx
+│   │       ├── hostel-admin
+│   │       ├── SectionNavigationAdmin.jsx
+│   │       ├── SectionNavigationCaretaker.jsx
+│   │       ├── SectionNavigationStudent.jsx
+│   │       ├── SectionNavigationWarden.jsx
+│   │       ├── students
+│   │       └── warden
+│   ├── HR
+│   │   ├── components
+│   │   │   ├── Dots.jsx
+│   │   │   ├── FormComponent
+│   │   │   ├── HeroBanner.jsx
+│   │   │   ├── HeroBanner.module.css
+│   │   │   ├── HrBreadcrumbs.jsx
+│   │   │   ├── HrBreadcrumbs.module.css
+│   │   │   ├── Loading.jsx
+│   │   │   ├── PerformanceCard.jsx
+│   │   │   ├── SearchAndSelectUser.jsx
+│   │   │   ├── SearchEmployee.jsx
+│   │   │   └── tables
+│   │   ├── index.jsx
+│   │   └── pages
+│   │       ├── AppraisalPageComp
+│   │       ├── AppraisalPage.module.css
+│   │       ├── Appraisel.jsx
+│   │       ├── CPDA_ADVANCE.jsx
+│   │       ├── CPDA_ADVANCEPageComp
+│   │       ├── CPDA_ADVANCEPage.module.css
+│   │       ├── CPDA_Claim.jsx
+│   │       ├── CPDA_ClaimPageComp
+│   │       ├── CPDA_ClaimPage.module.css
+│   │       ├── FormView.jsx
+│   │       ├── Hr_Dashboard.jsx
+│   │       ├── Hr_Dashboard.module.css
+│   │       ├── LeavePageComp
+│   │       ├── LeavePage.jsx
+│   │       ├── LeavePage.module.css
+│   │       ├── LTC.jsx
+│   │       ├── LTCPageComp
+│   │       └── LTCPage.module.css
+│   ├── Inventory
+│   │   ├── components
+│   │   │   ├── AddProduct.jsx
+│   │   │   ├── Bdes.jsx
+│   │   │   ├── Btech.jsx
+│   │   │   ├── HostelInventory.jsx
+│   │   │   ├── inventoryDashboard.jsx
+│   │   │   ├── InventoryIndex.jsx
+│   │   │   ├── InventoryRequests.jsx
+│   │   │   ├── InventoryTable.jsx
+│   │   │   ├── Reports.jsx
+│   │   │   ├── RequestProduct.jsx
+│   │   │   ├── SectionNavigation.jsx
+│   │   │   └── TransferProduct.jsx
+│   │   └── styles
+│   │       ├── addProduct.css
+│   │       ├── popupModal.css
+│   │       └── transferProduct.css
+│   ├── Iwd
+│   │   ├── components
+│   │   │   ├── ApproveRejectRequest.jsx
+│   │   │   ├── AuditDocument.jsx
+│   │   │   ├── BreadCrumbs.jsx
+│   │   │   ├── CreatedRequests.jsx
+│   │   │   ├── CreateRequestForm.jsx
+│   │   │   ├── EditBudgetForm.jsx
+│   │   │   ├── EngineerIssueWorkOrder.module.css
+│   │   │   ├── FileActions
+│   │   │   ├── FinalBillRequest.jsx
+│   │   │   ├── GlobTable.css
+│   │   │   ├── IssueWorkOrderForm.jsx
+│   │   │   ├── IssueWorkOrder.jsx
+│   │   │   ├── ItemsTable.jsx
+│   │   │   ├── managebills
+│   │   │   ├── ManageBudget.jsx
+│   │   │   ├── ProposalForm.jsx
+│   │   │   ├── RejectedRequest.jsx
+│   │   │   ├── RequestsInProgress.jsx
+│   │   │   ├── RequestsStatus.jsx
+│   │   │   ├── SettleBills.jsx
+│   │   │   ├── subcomponents
+│   │   │   ├── UpdateRequestForm.jsx
+│   │   │   ├── ViewBudget.jsx
+│   │   │   ├── viewDetails.jsx
+│   │   │   ├── viewproposals.jsx
+│   │   │   ├── ViewRequestFile.jsx
+│   │   │   ├── viewSelectedProposal.jsx
+│   │   │   ├── viewWorkFile.jsx
+│   │   │   └── WorkDetails.jsx
+│   │   ├── handlers
+│   │   │   └── handlers.jsx
+│   │   ├── helper
+│   │   │   ├── ConfirmationModal.jsx
+│   │   │   ├── designationContext.jsx
+│   │   │   ├── roleBasedFilter.jsx
+│   │   │   └── WorkContext.jsx
+│   │   ├── index.jsx
+│   │   ├── iwd.module.css
+│   │   └── routes
+│   │       └── iwdRoutes.jsx
+│   ├── Mess
+│   │   ├── components
+│   │   │   ├── addorrem.jsx
+│   │   │   ├── Applications.jsx
+│   │   │   ├── ApplyForRebate.jsx
+│   │   │   ├── ApplyForSpecialFood.jsx
+│   │   │   ├── BillBaseAndExcelUpload.jsx
+│   │   │   ├── CaretakerIndex.jsx
+│   │   │   ├── Deregistration.jsx
+│   │   │   ├── Feedback.jsx
+│   │   │   ├── MessActivities.jsx
+│   │   │   ├── MessAnnouncements.jsx
+│   │   │   ├── MessFeedback.jsx
+│   │   │   ├── MessRegistrations.jsx
+│   │   │   ├── PaymentHistory.jsx
+│   │   │   ├── Rebatestatus.jsx
+│   │   │   ├── RegisterDeregisterUpdateRequest.jsx
+│   │   │   ├── Registration.jsx
+│   │   │   ├── RespondRebate.jsx
+│   │   │   ├── SpecialFoodRequests.jsx
+│   │   │   ├── SpecialFoodStatus.jsx
+│   │   │   ├── StudentFeedback.jsx
+│   │   │   ├── StudentIndex.jsx
+│   │   │   ├── StudentRebatePage.jsx
+│   │   │   ├── UpdateBalanceRequest.jsx
+│   │   │   ├── UpdateBalanceRequestStatus.jsx
+│   │   │   ├── UpdateBills.jsx
+│   │   │   ├── UpdateMenu.jsx
+│   │   │   ├── UpdatePaymentRequests.jsx
+│   │   │   ├── UpdatePayments.jsx
+│   │   │   ├── UpdateSemDates.jsx
+│   │   │   ├── ViewBillAndPayments.jsx
+│   │   │   ├── ViewBill.jsx
+│   │   │   ├── ViewDeregistrationRequests.jsx
+│   │   │   ├── ViewFeedback.jsx
+│   │   │   ├── ViewMenu.jsx
+│   │   │   ├── ViewRegistration.jsx
+│   │   │   ├── ViewRegistrationRequests.jsx
+│   │   │   ├── ViewSpecialFoodRequest.jsx
+│   │   │   ├── ViewStudentBill.jsx
+│   │   │   └── WardenIndex.jsx
+│   │   ├── pages
+│   │   │   └── index.jsx
+│   │   ├── routes
+│   │   │   └── index.jsx
+│   │   └── styles
+│   │       └── messModule.module.css
+│   ├── online_cms
+│   │   ├── api.js
+│   │   ├── AssignmentFeature.jsx
+│   │   ├── AttendanceFeature.jsx
+│   │   ├── components
+│   │   │   ├── AddAssignmentForm.jsx
+│   │   │   ├── AddGradingSchemeForm.jsx
+│   │   │   ├── AddQuestionForm.jsx
+│   │   │   ├── AssignmentTable.jsx
+│   │   │   ├── AssignmentUploadForm.jsx
+│   │   │   ├── AttendanceForm.jsx
+│   │   │   ├── AttendanceRecordsTable.jsx
+│   │   │   ├── CourseDashboard.jsx
+│   │   │   ├── CourseListTable.jsx
+│   │   │   ├── CreateBankForm.jsx
+│   │   │   ├── DocumentsTable.jsx
+│   │   │   ├── DocumentUploadForm.jsx
+│   │   │   ├── ForumQuestionForm.jsx
+│   │   │   ├── ForumReplyModal.jsx
+│   │   │   ├── ForumThreadTable.jsx
+│   │   │   ├── ForumWorkspace.jsx
+│   │   │   ├── GradeSubmissionForm.jsx
+│   │   │   ├── GradingSchemeTable.jsx
+│   │   │   ├── ModuleList.jsx
+│   │   │   ├── QuestionBankTable.jsx
+│   │   │   ├── QuizAttemptView.jsx
+│   │   │   ├── QuizCreateForm.jsx
+│   │   │   ├── QuizListTable.jsx
+│   │   │   ├── QuizWorkspace.jsx
+│   │   │   ├── StudentEvaluationTable.jsx
+│   │   │   ├── StudentGradesTable.jsx
+│   │   │   └── TopicTable.jsx
+│   │   ├── CourseHome.jsx
+│   │   ├── CourseList.jsx
+│   │   ├── DocumentsFeature.jsx
+│   │   ├── ForumFeature.jsx
+│   │   ├── GradingFeature.jsx
+│   │   ├── index.jsx
+│   │   ├── QuestionBankFeature.jsx
+│   │   └── QuizFeature.jsx
+│   ├── Otheracademic
+│   │   ├── Assistantship
+│   │   │   ├── Admins
+│   │   │   └── Supervisors
+│   │   ├── Bonafide
+│   │   │   ├── AdminBonafideRequests.css
+│   │   │   ├── AdminBonafideRequests.jsx
+│   │   │   ├── BonafideCombined.jsx
+│   │   │   ├── BonafideForm.css
+│   │   │   ├── Bonafideform.jsx
+│   │   │   ├── BonafideFormStatus.css
+│   │   │   └── BonafideFormStatus.jsx
+│   │   ├── Graduate_Seminar
+│   │   │   ├── Dept_admin.jsx
+│   │   │   └── graduate_status.jsx
+│   │   ├── Incharge
+│   │   │   ├── InchargeLab.jsx
+│   │   │   └── LabInchargeNoDuesStatus.module.css
+│   │   ├── Leave
+│   │   │   ├── ApproveLeave.jsx
+│   │   │   ├── ApproveLeaveTA.jsx
+│   │   │   ├── ApproveLeaveThesis.jsx
+│   │   │   ├── LeaveCombined.jsx
+│   │   │   ├── LeaveFormPG.jsx
+│   │   │   ├── LeavePGcombined.jsx
+│   │   │   ├── LeavePGstatus.jsx
+│   │   │   ├── leaveStatus.css
+│   │   │   └── LeaveStatus.jsx
+│   │   ├── NoDues
+│   │   │   ├── Incharge.jsx
+│   │   │   ├── Incharge.module.css
+│   │   │   ├── NoDuesCombined.jsx
+│   │   │   ├── NoduesForm.jsx
+│   │   │   └── NoDuesStatus.jsx
+│   │   ├── OtherAcademicProcedures.jsx
+│   │   └── pages
+│   │       └── Otheracademic
+│   ├── Patent
+│   │   ├── components
+│   │   │   ├── Applicant
+│   │   │   ├── Director
+│   │   │   └── PCCAdmin
+│   │   ├── data
+│   │   │   └── director
+│   │   ├── routes
+│   │   │   └── PatentRoutes.jsx
+│   │   ├── services
+│   │   │   ├── attorneyService.jsx
+│   │   │   └── documentService.jsx
+│   │   └── style
+│   │       ├── Applicant
+│   │       ├── Director
+│   │       └── Pcc_Admin
+│   ├── PlacementCell
+│   │   ├── ApplyForPlacementForm.jsx
+│   │   ├── components
+│   │   │   ├── AddPlacementEventForm.jsx
+│   │   │   ├── AddPlacementRecordForm.jsx
+│   │   │   ├── AppliedStudentDetails.jsx
+│   │   │   ├── ApplyForPlacementForm.jsx
+│   │   │   ├── CompanyRegistrationForm.jsx
+│   │   │   ├── CreateNextRoundForm.jsx
+│   │   │   ├── DebarredStudents.jsx
+│   │   │   ├── DownloadCV.jsx
+│   │   │   ├── EditPlacementForm.jsx
+│   │   │   ├── FieldsForm.jsx
+│   │   │   ├── NextRoundInfo.jsx
+│   │   │   ├── PlacementCalendar.jsx
+│   │   │   ├── PlacementEventHandeling.jsx
+│   │   │   ├── PlacementRecordsTable.jsx
+│   │   │   ├── PlacementScheduleCard.jsx
+│   │   │   ├── PlacementSchedule.jsx
+│   │   │   ├── RestrictionsTab.jsx
+│   │   │   ├── SendNotificationForm.jsx
+│   │   │   └── Timeline.jsx
+│   │   └── index.jsx
+│   ├── Program_curriculum
+│   │   ├── Acad_admin
+│   │   │   ├── Acad_admin_replicate_curriculum.jsx
+│   │   │   ├── Admin_add_batch_form.jsx
+│   │   │   ├── Admin_add_course_instructor_form.jsx
+│   │   │   ├── Admin_add_course_proposal_form.jsx
+│   │   │   ├── Admin_add_course_slot_form.jsx
+│   │   │   ├── Admin_add_curriculum_form.jsx
+│   │   │   ├── Admin_add_discipline_form.jsx
+│   │   │   ├── Admin_add_programme_form.jsx
+│   │   │   ├── Admin_edit_batch_form.jsx
+│   │   │   ├── Admin_edit_course_form.jsx
+│   │   │   ├── Admin_edit_course_instructor_form.jsx
+│   │   │   ├── Admin_edit_course_slot_form.jsx
+│   │   │   ├── Admin_edit_curriculum_form.jsx
+│   │   │   ├── Admin_edit_discipline_form.jsx
+│   │   │   ├── Admin_edit_programme_form.jsx
+│   │   │   ├── Admin_view_a_course.jsx
+│   │   │   ├── Admin_view_all_batches.jsx
+│   │   │   ├── Admin_view_all_course_instructors.jsx
+│   │   │   ├── Admin_view_all_courses.jsx
+│   │   │   ├── Admin_view_all_programmes.jsx
+│   │   │   ├── Admin_view_all_working_curriculums.jsx
+│   │   │   ├── Admin_view_semesters_of_a_curriculum.css
+│   │   │   ├── Admin_view_semesters_of_a_curriculum.jsx
+│   │   │   ├── BDesAcadView.jsx
+│   │   │   ├── BreadcrumbTabsAcadadmin.jsx
+│   │   │   ├── DisciplineAcad.jsx
+│   │   │   └── Instigate_form.jsx
+│   │   ├── api
+│   │   │   └── api.js
+│   │   ├── BreadCrumbs.jsx
+│   │   ├── CourseSlotDetails.css
+│   │   ├── CourseSlotDetails.jsx
+│   │   ├── Faculty
+│   │   │   ├── BDesView.jsx
+│   │   │   ├── BreadcrumbTagsFaculty.jsx
+│   │   │   ├── Discipline.jsx
+│   │   │   ├── Faculty_add_course_proposal_form.jsx
+│   │   │   ├── Faculty_course_forward_form.jsx
+│   │   │   ├── Faculty_course_proposal.css
+│   │   │   ├── Faculty_Course_Proposal_Final_Form.jsx
+│   │   │   ├── Faculty_course_proposal.jsx
+│   │   │   ├── Faculty_view_a_course.jsx
+│   │   │   ├── Faculty_view_a_course_proposal_form.jsx
+│   │   │   ├── Faculty_view_all_batches.jsx
+│   │   │   ├── Faculty_view_all_courses.css
+│   │   │   ├── Faculty_view_all_courses.jsx
+│   │   │   ├── Faculty_view_all_programmes.jsx
+│   │   │   ├── Faculty_view_all_working_curriculums.jsx
+│   │   │   ├── InwardFiles.jsx
+│   │   │   ├── OutwardFiles.jsx
+│   │   │   ├── VCourseProposalForm.jsx
+│   │   │   └── ViewInwardFile.jsx
+│   │   ├── programmCurriculum.jsx
+│   │   ├── SemesterInfo.css
+│   │   ├── SemesterInfo.jsx
+│   │   ├── Student
+│   │   │   ├── BDesStudView.jsx
+│   │   │   ├── BreadcrumbTabsStudent.jsx
+│   │   │   ├── DisciplineStud.jsx
+│   │   │   ├── StudCourseSlotDetails.jsx
+│   │   │   └── StudSemesterinfo.jsx
+│   │   ├── View_a_course.jsx
+│   │   ├── View_all_batches.jsx
+│   │   ├── View_all_courses.jsx
+│   │   ├── View_all_programmes.jsx
+│   │   ├── View_all_working_curriculums.jsx
+│   │   └── ViewSemesterOfACurriculum.jsx
+│   ├── Purchase
+│   │   ├── ArchievedIndents.jsx
+│   │   ├── components
+│   │   │   └── BreadCrumbs.jsx
+│   │   ├── EmployeeViewFileIndent.jsx
+│   │   ├── FilledIndents.jsx
+│   │   ├── ForwardIndent.jsx
+│   │   ├── Inbox.jsx
+│   │   ├── IndentForm.jsx
+│   │   ├── NewForwardIndent.jsx
+│   │   ├── Outbox.jsx
+│   │   ├── PurchaseNavbar.jsx
+│   │   ├── PurchaseRoute.jsx
+│   │   ├── SavedIndentes.jsx
+│   │   ├── StockEntry.jsx
+│   │   ├── Table2.jsx
+│   │   ├── Table.jsx
+│   │   ├── Temp.jsx
+│   │   ├── Test2.jsx
+│   │   ├── useItemFormTemplate.jsx
+│   │   ├── ViewIndentInbox.jsx
+│   │   └── ViewIndent.jsx
+│   ├── RSPC
+│   │   ├── components
+│   │   │   ├── forms
+│   │   │   ├── modals
+│   │   │   ├── RSPCBreadcrumbs.jsx
+│   │   │   └── tables
+│   │   ├── helpers
+│   │   │   ├── badgeColours.jsx
+│   │   │   ├── confirmationModal.jsx
+│   │   │   └── projectPDF.jsx
+│   │   ├── requestForms.jsx
+│   │   ├── researchProjects.jsx
+│   │   └── styles
+│   │       ├── formStyle.module.css
+│   │       ├── researchProjectsStyle.module.css
+│   │       └── tableStyle.module.css
+│   ├── Scholarship
+│   │   ├── convenor
+│   │   │   ├── components
+│   │   │   ├── forms
+│   │   │   ├── images
+│   │   │   └── pages
+│   │   ├── Convocation
+│   │   │   ├── AwardRegistration.jsx
+│   │   │   ├── ConvocationMedal.jsx
+│   │   │   ├── DirectorGoldForm.jsx
+│   │   │   ├── DirectorSilverForm.jsx
+│   │   │   └── DMProficiencyForm.jsx
+│   │   ├── MCM_Application
+│   │   │   └── ScholarshipForm.jsx
+│   │   └── user
+│   │       ├── components
+│   │       ├── images
+│   │       └── pages
+│   └── Visitors_Hostel
+│       ├── accountStatements.jsx
+│       ├── activeBookings.jsx
+│       ├── addItems.jsx
+│       ├── bookingForm.jsx
+│       ├── bookings.jsx
+│       ├── cancellationRequest.jsx
+│       ├── CheckoutForm.jsx
+│       ├── completedBookings.jsx
+│       ├── components
+│       │   └── BreadCrumbs.jsx
+│       ├── confirmBooking_Incharge.jsx
+│       ├── data
+│       │   └── countries.jsx
+│       ├── forwardBooking.jsx
+│       ├── inventory.jsx
+│       ├── pendingRequests.jsx
+│       ├── roomsAvailability.jsx
+│       ├── roomsAvailibilityDetails.jsx
+│       ├── Styles.module.css
+│       ├── updateBooking.jsx
+│       ├── vhGuidelines.jsx
+│       ├── viewActiveBooking.jsx
+│       ├── viewBooking.jsx
+│       ├── visitorsContent.jsx
+│       └── VisitorsNavbar.jsx
+├── pages
+│   ├── forgotPassword.jsx
+│   ├── login.jsx
+│   └── resetPasswordConfirm.jsx
+├── redux
+│   ├── formSlice.jsx
+│   ├── moduleslice.jsx
+│   ├── pfNoSlice.jsx
+│   ├── store.jsx
+│   └── userslice.jsx
+├── routes
+│   ├── academicRoutes
+│   │   └── index.jsx
+│   ├── courseMgmtRoutes
+│   │   └── index.jsx
+│   ├── dashboardRoutes
+│   │   └── index.jsx
+│   ├── departmentRoutes
+│   │   └── index.jsx
+│   ├── facultyProfessionalProfileRoutes
+│   │   └── index.jsx
+│   ├── filetrackingRoutes
+│   │   └── index.jsx
+│   ├── globalRoutes
+│   │   ├── host.js
+│   │   └── index.jsx
+│   ├── health_center
+│   │   └── index.jsx
+│   ├── hostelManagementRoutes
+│   │   └── index.jsx
+│   ├── hr
+│   │   └── index.jsx
+│   ├── inventoryRoutes
+│   │   └── index.jsx
+│   ├── online_cmsRoutes
+│   │   ├── endpoints.js
+│   │   └── index.jsx
+│   ├── otheracademicRoutes
+│   │   └── index.jsx
+│   ├── placementCellRoutes
+│   │   └── index.jsx
+│   ├── purchaseRoutes
+│   │   └── index.jsx
+│   ├── RSPCRoutes
+│   │   ├── additional.jsx
+│   │   └── index.jsx
+│   ├── SPACSRoutes
+│   │   └── index.jsx
+│   └── visitorsHostelRoutes
+│       └── index.jsx
+└── src-tree.txt
+
+178 directories, 554 files

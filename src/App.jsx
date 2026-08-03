@@ -110,7 +110,7 @@ const ProgrammeCurriculumRoutes = lazy(
   () => import("./Modules/Program_curriculum/programmCurriculum"),
 );
 
-const CourseManagementPage = lazy(() => import("./Modules/CourseManagement"));
+const OnlineCmsPage = lazy(() => import("./Modules/online_cms/index"));
 
 const theme = createTheme({
   breakpoints: { xs: "30em", sm: "48em", md: "64em", lg: "74em", xl: "90em" },
@@ -127,16 +127,30 @@ export default function App() {
       <Notifications position="top-center" autoClose={2000} limit={1} />
 
       {![
-        "/accounts/login",
+        "/login",
         "/reset-password",
         location.pathname.startsWith("/reset-password-confirm/")
           ? location.pathname
           : "",
       ].includes(location.pathname) && <ValidateAuth />}
-      {location.pathname !== "/accounts/login" && <InactivityHandler />}
+      {location.pathname !== "/login" && <InactivityHandler />}
 
       <Routes>
-        <Route path="/" element={<Navigate to="/accounts/login" replace />} />
+        <Route
+          path="/online-cms/*"
+          element={
+            <Layout>
+              <Suspense fallback={<div>Loading .... </div>}>
+                <OnlineCmsPage />
+              </Suspense>
+            </Layout>
+          }
+        />
+        <Route
+          path="/course-management"
+          element={<Navigate to="/online-cms" replace />}
+        />
+        <Route path="/" element={<Navigate to="/login" replace />} />
         <Route
           path="/dashboard"
           element={
@@ -250,10 +264,14 @@ export default function App() {
 
         <Route
           path="/course-management"
+          element={<Navigate to="/online-cms" replace />}
+        />
+        <Route
+          path="/online-cms/*"
           element={
             <Layout>
               <Suspense fallback={<div>Loading .... </div>}>
-                <CourseManagementPage />
+                <OnlineCmsPage />
               </Suspense>
             </Layout>
           }
@@ -531,7 +549,7 @@ export default function App() {
         <Route path="/healthcenter/*" element={<HealthCenter />} />
         <Route path="/purchase/*" element={<PurchaseRoutes />} />
         <Route path="/patent/*" element={<PatentRoutes />} />
-        <Route path="/accounts/login" element={<LoginPage />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/reset-password" element={<ForgotPassword />} />
         <Route
           path="/reset-password-confirm/:uid/:token"

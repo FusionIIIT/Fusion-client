@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Flex } from "@mantine/core";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 
 import CustomBreadcrumbs from "../../components/Breadcrumbs";
 import ModuleTabs from "../../components/moduleTabs";
@@ -17,10 +17,12 @@ import AllocateCourses from "./AllocateCourses";
 import VerifyStudentRegistration from "./VerifyStudentRegistration";
 import SwayamRegistration from "./SwayamRegistration";
 import AllotCourses from "./AllotCourses";
+import { setCurrentModule, setActiveTab_ } from "../../redux/moduleslice";
 
 function AcademicPage() {
   const [activeTab, setActiveTab] = useState("0");
   const role = useSelector((state) => state.user.role);
+  const dispatch = useDispatch();
 
   let tabItems;
   let tabComponents;
@@ -73,6 +75,18 @@ function AcademicPage() {
   }
 
   const ActiveComponent = tabComponents[parseInt(activeTab, 10)];
+
+  useEffect(() => {
+    dispatch(setCurrentModule("Academics"));
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (tabItems && tabItems.length > 0) {
+      const index = parseInt(activeTab, 10);
+      const title = tabItems[index] ? tabItems[index].title : tabItems[0].title;
+      dispatch(setActiveTab_(title));
+    }
+  }, [dispatch, activeTab, tabItems]);
 
   return (
     <>
