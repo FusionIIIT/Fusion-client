@@ -43,6 +43,10 @@ function SectionAssignment() {
   const [otherSection, setOtherSection] = useState("");
   const [saving, setSaving] = useState(false);
 
+  // Roll-number range for bulk select/unselect.
+  const [rangeFrom, setRangeFrom] = useState("");
+  const [rangeTo, setRangeTo] = useState("");
+
   const token = localStorage.getItem("authToken");
   const authHeader = { headers: { Authorization: `Token ${token}` } };
 
@@ -128,6 +132,108 @@ function SectionAssignment() {
       if (next.has(roll)) next.delete(roll);
       else next.add(roll);
       return next;
+    });
+  };
+
+  // Split a roll into its prefix + trailing number ("21BCS007" -> {21BCS, 7}).
+  const parseRoll = (roll) => {
+    const s = String(roll || "")
+      .trim()
+      .toUpperCase();
+    const m = s.match(/^(.*?)(\d+)$/);
+    return m
+      ? { prefix: m[1], num: parseInt(m[2], 10) }
+      : { prefix: s, num: NaN };
+  };
+
+  // Select/unselect listed students in [from, to]. Prefix-aware, so a
+  // transferred-in student who kept a different roll prefix (e.g. 21BME015 in a
+  // CSE list) is NOT matched by a numeric range.
+  const applyRange = (mode) => {
+    const f = parseRoll(rangeFrom);
+    const t = parseRoll(rangeTo);
+    if (Number.isNaN(f.num) || Number.isNaN(t.num)) {
+      showNotification({
+        title: "Enter a valid range",
+        message: "Provide both From and To roll numbers.",
+        color: "yellow",
+      });
+      return;
+    }
+    const lo = Math.min(f.num, t.num);
+    const hi = Math.max(f.num, t.num);
+    // Prefix from the inputs if given, else the most common prefix in the list.
+    let prefix = f.prefix || t.prefix;
+    if (!prefix) {
+      const counts = {};
+      students.forEach((s) => {
+        const p = parseRoll(s.roll_no).prefix;
+        counts[p] = (counts[p] || 0) + 1;
+      });
+      prefix =
+        Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0] || "";
+    }
+    const matches = students.filter((s) => {
+      const p = parseRoll(s.roll_no);
+      return (
+        !Number.isNaN(p.num) &&
+        p.prefix === prefix &&
+        p.num >= lo &&
+        p.num <= hi
+      );
+    });
+    if (matches.length === 0) {
+      showNotification({
+        title: "No matches",
+        message: `No ${prefix || ""} students in that roll-number range.`,
+        color: "yellow",
+      });
+      return;
+    }
+    setSelected((prev) => {
+      const next = new Set(prev);
+      matches.forEach((s) =>
+        mode === "select" ? next.add(s.roll_no) : next.delete(s.roll_no),
+      );
+      return next;
+    });
+    showNotification({
+      title: mode === "select" ? "Range selected" : "Range unselected",
+      message: `${matches.length} student(s) ${mode === "select" ? "added to" : "removed from"} selection.`,
+      color: mode === "select" ? "indigo" : "gray",
+      autoClose: 2000,
+    });
+  };
+
+  // Majority roll prefix = this discipline's native students; the rest are
+  // transferred-in (kept a foreign roll prefix) and are handled as one group.
+  const nativePrefix = (() => {
+    const counts = {};
+    students.forEach((s) => {
+      const p = parseRoll(s.roll_no).prefix;
+      counts[p] = (counts[p] || 0) + 1;
+    });
+    return Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0] || "";
+  })();
+
+  const transferRolls = students.filter(
+    (s) => parseRoll(s.roll_no).prefix !== nativePrefix,
+  );
+
+  const applyTransfers = (mode) => {
+    if (transferRolls.length === 0) return;
+    setSelected((prev) => {
+      const next = new Set(prev);
+      transferRolls.forEach((s) =>
+        mode === "select" ? next.add(s.roll_no) : next.delete(s.roll_no),
+      );
+      return next;
+    });
+    showNotification({
+      title: mode === "select" ? "Transfers selected" : "Transfers unselected",
+      message: `${transferRolls.length} transferred student(s) ${mode === "select" ? "added to" : "removed from"} selection.`,
+      color: mode === "select" ? "orange" : "gray",
+      autoClose: 2000,
     });
   };
 
@@ -251,6 +357,57 @@ function SectionAssignment() {
             Assign Section{selected.size > 0 ? ` (${selected.size})` : ""}
           </Button>
         </Flex>
+
+        {students.length > 0 && (
+          <Flex gap="md" align="flex-end" wrap="wrap" mt="md">
+            <TextInput
+              label="From roll no."
+              placeholder="e.g. 21BCS001 or 1"
+              value={rangeFrom}
+              onChange={(e) => setRangeFrom(e.currentTarget.value)}
+              style={{ flex: 1, minWidth: 150 }}
+            />
+            <TextInput
+              label="To roll no."
+              placeholder="e.g. 21BCS050 or 50"
+              value={rangeTo}
+              onChange={(e) => setRangeTo(e.currentTarget.value)}
+              style={{ flex: 1, minWidth: 150 }}
+            />
+            <Button
+              variant="light"
+              color="indigo"
+              onClick={() => applyRange("select")}
+            >
+              Select range
+            </Button>
+            <Button
+              variant="light"
+              color="gray"
+              onClick={() => applyRange("unselect")}
+            >
+              Unselect range
+            </Button>
+            {transferRolls.length > 0 && (
+              <>
+                <Button
+                  variant="light"
+                  color="orange"
+                  onClick={() => applyTransfers("select")}
+                >
+                  Select transfers ({transferRolls.length})
+                </Button>
+                <Button
+                  variant="light"
+                  color="gray"
+                  onClick={() => applyTransfers("unselect")}
+                >
+                  Unselect transfers
+                </Button>
+              </>
+            )}
+          </Flex>
+        )}
       </Paper>
 
       {loadingStudents ? (

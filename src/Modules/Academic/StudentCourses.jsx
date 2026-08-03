@@ -66,6 +66,7 @@ export default function StudentCourses() {
     course_id: null,
     academic_year: null,
     registration_type: null,
+    course_instructor_id: null,
     old_course: null,
   });
 
@@ -184,6 +185,8 @@ export default function StudentCourses() {
     form.append("course_id", course_id);
     form.append("academic_year", academic_year);
     form.append("registration_type", registration_type);
+    if (newCourse.course_instructor_id)
+      form.append("course_instructor_id", newCourse.course_instructor_id);
     if (old_course) form.append("old_course", old_course);
 
     setLoading(true);
@@ -200,6 +203,7 @@ export default function StudentCourses() {
           course_id: null,
           academic_year: null,
           registration_type: null,
+          course_instructor_id: null,
           old_course: null,
         });
         showNotification({
@@ -253,19 +257,39 @@ export default function StudentCourses() {
     }
   };
 
-  const handleSlotChange = async (slotId) => {
-    setNewCourse((p) => ({ ...p, courseslot_id: slotId, course_id: null }));
+  // Fetch a slot's courses. Passing the term makes the API include each course's
+  // running sections, so the admin can pick one for a cross-section backlog/improvement.
+  const fetchSlotCourses = async (slotId, academicYear, semesterType) => {
+    if (!slotId) return;
     const token = localStorage.getItem("authToken");
+    let url = `${getCoursesRoute}?courseslot_id=${slotId}`;
+    if (academicYear && semesterType) {
+      url += `&academic_year=${encodeURIComponent(academicYear)}&semester_type=${encodeURIComponent(semesterType)}`;
+    }
     try {
-      const { data } = await axios.get(
-        `${getCoursesRoute}?courseslot_id=${slotId}`,
-        { headers: { Authorization: `Token ${token}` } }
-      );
+      const { data } = await axios.get(url, {
+        headers: { Authorization: `Token ${token}` },
+      });
       setSlotCourses(data);
     } catch {
       setError("Failed to load courses");
     }
   };
+
+  const handleSlotChange = async (slotId) => {
+    setNewCourse((p) => ({
+      ...p,
+      courseslot_id: slotId,
+      course_id: null,
+      course_instructor_id: null,
+    }));
+    fetchSlotCourses(slotId, newCourse.academic_year, newCourse.semester_type);
+  };
+
+  // Running sections of the selected course (present when the term is chosen).
+  const courseSections =
+    slotCourses.find((c) => String(c.id) === String(newCourse.course_id))
+      ?.sections || [];
 
   const filteredDetails =
     studentData?.details.filter(
@@ -421,9 +445,31 @@ export default function StudentCourses() {
           placeholder="Select academic year"
           data={academicYears.map((y) => ({ value: y, label: y }))}
           value={newCourse.academic_year}
-          onChange={(v) => setNewCourse((p) => ({ ...p, academic_year: v }))}
+          onChange={(v) => {
+            setNewCourse((p) => ({ ...p, academic_year: v, course_instructor_id: null }));
+            fetchSlotCourses(newCourse.courseslot_id, v, newCourse.semester_type);
+          }}
           mb="sm"
         />
+        {courseSections.length > 0 && (
+          <Select
+            label="Section"
+            placeholder="Select section"
+            description="Running section — required for a backlog/improvement in another section"
+            data={courseSections.map((sec) => ({
+              value: String(sec.course_instructor_id),
+              label: sec.section
+                ? `Section ${sec.section} — ${sec.instructor}`
+                : sec.instructor,
+            }))}
+            value={newCourse.course_instructor_id}
+            onChange={(v) =>
+              setNewCourse((p) => ({ ...p, course_instructor_id: v }))
+            }
+            mb="sm"
+            clearable
+          />
+        )}
         <Select
           label="Registration Type"
           placeholder="Select type"
