@@ -30,6 +30,8 @@ import {
   FileInput,
   Modal,
   ScrollArea,
+  NumberInput,
+  Anchor,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import {
@@ -47,7 +49,9 @@ import {
   supervisorDownloadAllThesisGradesTemplateRoute,
   supervisorUploadAllThesisGradesRoute,
   supervisorBulkSubmitAllThesisGradesRoute,
+  supervisorThesisDecimalScoresRoute,
 } from "../../routes/academicRoutes";
+import { host } from "../../routes/globalRoutes";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -55,6 +59,10 @@ import {
 const gradeColor = (g) => (g === "S" ? "green" : g === "X" ? "red" : "gray");
 const gradeLabel = (g) =>
   g === "S" ? "Satisfactory" : g === "X" ? "Unsatisfactory" : "—";
+const fileUrl = (url) =>
+  url.startsWith("http")
+    ? url
+    : `${host}${url.startsWith("/") ? "" : "/"}${url}`;
 
 function ThesisTitleCell({ title }) {
   if (!title) {
@@ -312,7 +320,7 @@ function RegistrationGradeRow({ blocksByNumber, submittedByName, onGraded }) {
               ? "Submit"
               : allGraded && !isDirty
                 ? "Graded"
-                : `Submit All (${unlockedBlocks.length})`}
+                : `Submit (${unlockedBlocks.length})`}
           </Button>
         </Tooltip>
       </Table.Td>
@@ -330,6 +338,146 @@ RegistrationGradeRow.propTypes = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Sub-component: one row for a decimal-mode (PG final-thesis semester)
+// registration -- a single evaluation scored out of 100 instead of S/X
+// blocks. Submitting here forwards the score to HOD, same as the endpoint
+// that used to live behind its own "PG Thesis Scores" tab; blocked until the
+// student's synopsis + report are uploaded.
+// ─────────────────────────────────────────────────────────────────────────────
+function DecimalGradeRow({ ev, onGraded }) {
+  const { registration: reg } = ev;
+  const [score, setScore] = useState("");
+  const [saving, setSaving] = useState(false);
+  const hasSubmission = ev.synopsis_url && ev.thesis_report_url;
+  const alreadyScored = ev.supervisor_score !== null;
+
+  const handleSubmit = async () => {
+    if (score === "" || score === undefined) return;
+    setSaving(true);
+    try {
+      const token = localStorage.getItem("authToken");
+      await axios.post(
+        supervisorThesisDecimalScoresRoute,
+        { evaluation_id: ev.id, score },
+        { headers: { Authorization: `Token ${token}` } },
+      );
+      showNotification({
+        title: "Score submitted",
+        message: `Forwarded to HOD for ${reg.student.name}`,
+        color: "green",
+        icon: <IconCheck size={16} />,
+      });
+      onGraded({ ...ev, supervisor_score: score });
+    } catch (e) {
+      showNotification({
+        title: "Error",
+        message: e.response?.data?.error || "Failed to submit score",
+        color: "red",
+        icon: <IconAlertCircle size={16} />,
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Table.Tr>
+      <Table.Td>{reg.student.id}</Table.Td>
+      <Table.Td>{reg.student.name}</Table.Td>
+      <Table.Td>{reg.semester_no}</Table.Td>
+      <Table.Td>{reg.thesis_code}</Table.Td>
+      <Table.Td>
+        <ThesisTitleCell title={reg.thesis_title} />
+      </Table.Td>
+      <Table.Td>
+        <Stack gap={6}>
+          {hasSubmission ? (
+            <Group gap="md">
+              <Anchor
+                size="xs"
+                href={fileUrl(ev.synopsis_url)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Synopsis
+              </Anchor>
+              <Anchor
+                size="xs"
+                href={fileUrl(ev.thesis_report_url)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Thesis Report
+              </Anchor>
+            </Group>
+          ) : (
+            <Badge size="xs" color="yellow" variant="light">
+              Not submitted
+            </Badge>
+          )}
+          {alreadyScored ? (
+            <Badge color="blue" variant="light">
+              Score: {ev.supervisor_score}
+            </Badge>
+          ) : !hasSubmission ? (
+            <Text size="xs" c="dimmed">
+              Awaiting thesis submission
+            </Text>
+          ) : (
+            <NumberInput
+              size="xs"
+              min={0}
+              max={100}
+              decimalScale={1}
+              placeholder="0-100"
+              value={score}
+              onChange={setScore}
+              w={120}
+            />
+          )}
+        </Stack>
+      </Table.Td>
+      <Table.Td>
+        <Text size="xs" c="dimmed">
+          —
+        </Text>
+      </Table.Td>
+      <Table.Td>
+        {!alreadyScored && hasSubmission && (
+          <Button
+            size="xs"
+            loading={saving}
+            disabled={score === "" || score === undefined}
+            onClick={handleSubmit}
+          >
+            Submit
+          </Button>
+        )}
+      </Table.Td>
+    </Table.Tr>
+  );
+}
+
+DecimalGradeRow.propTypes = {
+  ev: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    supervisor_score: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+    synopsis_url: PropTypes.string,
+    thesis_report_url: PropTypes.string,
+    registration: PropTypes.shape({
+      semester_no: PropTypes.number,
+      thesis_code: PropTypes.string,
+      thesis_title: PropTypes.string,
+      student: PropTypes.shape({
+        id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        name: PropTypes.string,
+      }),
+    }).isRequired,
+  }).isRequired,
+  onGraded: PropTypes.func.isRequired,
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Main component
 // ─────────────────────────────────────────────────────────────────────────────
 export default function SupervisorThesisGrading() {
@@ -338,6 +486,7 @@ export default function SupervisorThesisGrading() {
   const [error, setError] = useState(null);
   const [semFilter, setSemFilter] = useState("");
   const [gradedFilter, setGradedFilter] = useState(""); // "" | "false" | "true"
+  const [programmeFilter, setProgrammeFilter] = useState(""); // "" | "PG" | "PHD"
 
   // Excel upload (all blocks at once) state
   const [uploadAllFile, setUploadAllFile] = useState(null);
@@ -538,13 +687,19 @@ export default function SupervisorThesisGrading() {
   // manual-entry table shows one row per student instead of one row per block.
   const groupedRegistrations = useMemo(() => {
     const map = new Map();
-    evaluations.forEach((ev) => {
-      const key = ev.registration.id;
-      if (!map.has(key)) map.set(key, {});
-      map.get(key)[ev.block_number] = ev;
-    });
+    evaluations
+      .filter(
+        (ev) =>
+          !programmeFilter ||
+          ev.registration.programme_category === programmeFilter,
+      )
+      .forEach((ev) => {
+        const key = ev.registration.id;
+        if (!map.has(key)) map.set(key, {});
+        map.get(key)[ev.block_number] = ev;
+      });
     return Array.from(map.entries());
-  }, [evaluations]);
+  }, [evaluations, programmeFilter]);
 
   // Build unique semester options from loaded data
   const semOptions = [
@@ -565,8 +720,9 @@ export default function SupervisorThesisGrading() {
         </Title>
         <Text size="sm" c="dimmed" ta="center">
           Submit S (Satisfactory) or X (Unsatisfactory) grades for your
-          supervised PhD students. All of a student&apos;s grades must be
-          submitted together — no partial submission.
+          supervised students. All of a student&apos;s grades must be submitted
+          together — no partial submission. PG&apos;s final thesis semester
+          instead takes a single score out of 100.
         </Text>
 
         <Divider />
@@ -618,6 +774,18 @@ export default function SupervisorThesisGrading() {
 
             {/* Filters */}
             <Group>
+              <Select
+                label="Filter by Programme"
+                placeholder="All (PG + PhD)"
+                value={programmeFilter}
+                onChange={(v) => setProgrammeFilter(v || "")}
+                data={[
+                  { value: "PG", label: "PG" },
+                  { value: "PHD", label: "PhD" },
+                ]}
+                clearable
+                w={200}
+              />
               <Select
                 label="Filter by Semester"
                 placeholder="All Semesters"
@@ -678,14 +846,26 @@ export default function SupervisorThesisGrading() {
                 </Table.Thead>
                 <Table.Tbody>
                   {groupedRegistrations.map(
-                    ([registrationId, blocksByNumber]) => (
-                      <RegistrationGradeRow
-                        key={registrationId}
-                        blocksByNumber={blocksByNumber}
-                        submittedByName={getUserName()}
-                        onGraded={handleGraded}
-                      />
-                    ),
+                    ([registrationId, blocksByNumber]) => {
+                      const blocks = Object.values(blocksByNumber);
+                      if (blocks[0].evaluation_type === "decimal") {
+                        return (
+                          <DecimalGradeRow
+                            key={registrationId}
+                            ev={blocks[0]}
+                            onGraded={handleGraded}
+                          />
+                        );
+                      }
+                      return (
+                        <RegistrationGradeRow
+                          key={registrationId}
+                          blocksByNumber={blocksByNumber}
+                          submittedByName={getUserName()}
+                          onGraded={handleGraded}
+                        />
+                      );
+                    },
                   )}
                 </Table.Tbody>
               </Table>

@@ -11,6 +11,7 @@ import { getProfileDataRoute } from "../../routes/dashboardRoutes";
 import StudentThesisPage from "./StudentThesisPage";
 import StudentSeminarPage from "./StudentSeminarPage";
 import StudentThesisSubmissionUploadForm from "./ThesisSubmission/StudentThesisSubmissionUploadForm";
+import StudentPGThesisSubmissionUploadForm from "./ThesisSubmission/StudentPGThesisSubmissionUploadForm";
 import SupervisorDashboard from "./SupervisorDashboard";
 import SupervisorThesisGrading from "./SupervisorThesisGrading";
 import RPCDashboardPage from "./RPCDashboardPage";
@@ -36,6 +37,8 @@ import StudentTeachingCreditPage from "./TeachingCredit/StudentTeachingCreditPag
 import SupervisorTeachingCreditList from "./TeachingCredit/SupervisorTeachingCreditList";
 import HODTeachingCreditDashboard from "./TeachingCredit/HODTeachingCreditDashboard";
 import AcademicOfficeTeachingCreditList from "./TeachingCredit/AcademicOfficeTeachingCreditList";
+import HODThesisExaminerPanel from "./HODThesisExaminerPanel";
+import DeanPGThesisExaminerPanel from "./DeanPGThesisExaminerPanel";
 
 function ThesisResearchPage() {
   const [activeTab, setActiveTab] = useState("0");
@@ -80,6 +83,13 @@ function ThesisResearchPage() {
   // Submission) in the same order for every role, instead of an ad hoc per-role list.
   const { tabItems, tabComponents } = useMemo(() => {
     if (role === "student" && studentProgramme && studentProgramme !== "UG") {
+      // Final Submission (synopsis/report upload -> Dean Panel -> Director ->
+      // external Indian+foreign examiners) is a PhD-specific workflow. PG
+      // has its own separate, simpler submission step (no approval chain --
+      // the supervisor scores decimal-mode theses inline in the regular
+      // Thesis Grading tab, and the batch examiner in PG Examiner Panel).
+      const isPhdStudent = studentProgramme === "PHD";
+      const isPgStudent = studentProgramme === "PG";
       return {
         tabItems: [
           { title: "Thesis Supervisor Registration" },
@@ -87,7 +97,8 @@ function ThesisResearchPage() {
           { title: "Progress Seminar" },
           { title: "Open Seminar" },
           { title: "Teaching Credit" },
-          { title: "Final Submission" },
+          ...(isPhdStudent ? [{ title: "Final Submission" }] : []),
+          ...(isPgStudent ? [{ title: "Thesis Submission" }] : []),
         ],
         tabComponents: [
           StudentThesisPage,
@@ -95,7 +106,8 @@ function ThesisResearchPage() {
           StudentSeminarPage,
           StudentOpenSeminarPage,
           StudentTeachingCreditPage,
-          StudentThesisSubmissionUploadForm,
+          ...(isPhdStudent ? [StudentThesisSubmissionUploadForm] : []),
+          ...(isPgStudent ? [StudentPGThesisSubmissionUploadForm] : []),
         ],
       };
     }
@@ -139,12 +151,14 @@ function ThesisResearchPage() {
           { title: "Comprehensive Exam" },
           { title: "Open Seminar" },
           { title: "Teaching Credit" },
+          { title: "PG Examiner Panel" },
         ],
         tabComponents: [
           HODDashboard,
           HODComprehensiveExamDashboard,
           HODOpenSeminarDashboard,
           HODTeachingCreditDashboard,
+          HODThesisExaminerPanel,
         ],
       };
     }
@@ -156,12 +170,14 @@ function ThesisResearchPage() {
           { title: "Comprehensive Exam" },
           { title: "Open Seminar" },
           { title: "Examiner Panel" },
+          { title: "PG Examiner Panel" },
         ],
         tabComponents: [
           DeanDashboard,
           DeanComprehensiveExamDashboard,
           DeanOpenSeminarDashboard,
           DeanPanelDashboard,
+          DeanPGThesisExaminerPanel,
         ],
       };
     }

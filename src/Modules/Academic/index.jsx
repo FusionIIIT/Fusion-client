@@ -44,7 +44,8 @@ function AcademicPage() {
   const role = useSelector((state) => state.user.role);
   const dispatch = useDispatch();
 
-  // Only PhD students get the "PhD Course Registration" tab; check once so
+  // PhD and PG students both get the "Thesis & Course Registration" tab
+  // (backend treats them the same here, see _is_phd_student); check once so
   // the tab list doesn't have to show/hide after an initial flash.
   useEffect(() => {
     if (role !== "student") return;
@@ -81,7 +82,7 @@ function AcademicPage() {
           { title: "Feedback Responses" },
           { title: "Batch/Branch Change" },
           { title: "Promote Students" },
-          { title: "PhD Course Requests" },
+          { title: "Thesis & Course Requests" },
         ],
         tabComponents: [
           StudentCourses,
@@ -117,7 +118,7 @@ function AcademicPage() {
           { title: "Add / Drop" },
           { title: "Feedback Form" },
           { title: "Teaching Credit Feedback" },
-          ...(isPhdStudent ? [{ title: "PhD Course Registration" }] : []),
+          ...(isPhdStudent ? [{ title: "Thesis & Course Registration" }] : []),
         ],
         tabComponents: [
           RegisteredCourses,

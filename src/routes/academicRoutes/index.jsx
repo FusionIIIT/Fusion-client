@@ -145,6 +145,21 @@ export const adminThesisEnrollmentListRoute = `${host}/academic-procedures/api/a
 export const adminVerifyEnrollmentsRoute = `${host}/academic-procedures/api/acadadmin/thesis-enrollments/verify/`;
 export const adminRejectEnrollmentsRoute = `${host}/academic-procedures/api/acadadmin/thesis-enrollments/reject/`;
 
+// PG Decimal Thesis Grading -- Supervisor Score + Batch-Wide Examiner Panel
+export const supervisorThesisDecimalScoresRoute = `${host}/academic-procedures/api/supervisor/thesis-decimal-scores/`;
+export const hodThesisExaminerPanelDashboardRoute = `${host}/academic-procedures/api/hod/thesis-examiner-panels/`;
+export const hodSubmitThesisExaminerPanelRoute = `${host}/academic-procedures/api/hod/thesis-examiner-panels/submit/`;
+export const deanThesisExaminerPanelDashboardRoute = `${host}/academic-procedures/api/dean/thesis-examiner-panels/`;
+export const deanRankAndInviteExaminerPanelRoute = `${host}/academic-procedures/api/dean/thesis-examiner-panels/rank-and-invite/`;
+// Reached via emailed links from arbitrary networks -- uses dynamicApiHost,
+// not host, same reasoning as invitationActionRoute/reviewDetailRoute below.
+export const examinerPanelInvitationActionRoute = (token, action) =>
+  `${dynamicApiHost}/academic-procedures/api/thesis-examiner-panel/${token}/${action}/`;
+export const examinerPanelBatchDetailRoute = (token) =>
+  `${dynamicApiHost}/academic-procedures/api/thesis-examiner-panel/${token}/detail/`;
+export const examinerPanelSubmitScoreRoute = (token) =>
+  `${dynamicApiHost}/academic-procedures/api/thesis-examiner-panel/${token}/score/`;
+
 // PhD Progress Seminar Enrollment (semester-level registration)
 export const studentProgressSeminarEnrollmentRoute = `${host}/academic-procedures/api/stu/progress-seminar-enrollment/`;
 export const adminProgressSeminarEnrollmentListRoute = `${host}/academic-procedures/api/acadadmin/progress-seminar-enrollments/`;
@@ -219,6 +234,11 @@ export const rpcSeminarFinalizeRoute = (id) =>
 // PhD Thesis Submission
 export const thesisSubmitRoute = `${host}/academic-procedures/api/thesis/submit/`;
 export const thesisSubmissionStatusRoute = `${host}/academic-procedures/api/thesis/submission-status/`;
+
+// PG Thesis Submission -- separate from PhD's ThesisSubmission (no Dean
+// Panel/Director/foreign-examiner chain), feeds the PG decimal-scoring flow.
+export const pgThesisSubmitRoute = `${host}/academic-procedures/api/stu/pg-thesis-submit/`;
+export const pgThesisSubmissionStatusRoute = `${host}/academic-procedures/api/stu/pg-thesis-submission-status/`;
 export const supervisorThesisDashboardRoute = `${host}/academic-procedures/api/thesis/supervisor-dashboard/`;
 export const supervisorDashboardRouteThesisSubmission = `${host}/academic-procedures/api/thesis/supervisor-dashboard/`;
 export const supervisorSubmissionDetailRoute = (id) =>

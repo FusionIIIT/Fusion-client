@@ -3264,15 +3264,17 @@ const AdminUpcomingBatch = () => {
   // Filter table columns based on programme type
   const getVisibleColumns = (programmeType) => {
     // Fields to hide for PhD students
-    const phdHiddenFields = ['specialization', 'allottedCategory', 'allottedGender', 'jeeRank', 'categoryRank'];
+    const phdHiddenFields = ['jeeAppNo', 'specialization', 'allottedCategory', 'allottedGender', 'jeeRank', 'categoryRank'];
     
-    // Fields to hide for UG/PG students
-    const ugPgHiddenFields = [];
-    
+    // Fields to hide for PG students (JEE doesn't apply — PG admission is GATE-based)
+    const pgHiddenFields = ['jeeAppNo'];
+
     if (programmeType === 'phd') {
       return STUDENT_TABLE_COLUMNS.filter(column => !phdHiddenFields.includes(column.key));
-    } else if (programmeType === 'ug' || programmeType === 'pg') {
-      return STUDENT_TABLE_COLUMNS.filter(column => !ugPgHiddenFields.includes(column.key));
+    } else if (programmeType === 'pg') {
+      return STUDENT_TABLE_COLUMNS.filter(column => !pgHiddenFields.includes(column.key));
+    } else if (programmeType === 'ug') {
+      return STUDENT_TABLE_COLUMNS;
     }
     
     return STUDENT_TABLE_COLUMNS;

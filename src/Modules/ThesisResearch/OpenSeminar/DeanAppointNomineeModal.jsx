@@ -8,6 +8,7 @@ import {
   Button,
   Stack,
   Group,
+  Anchor,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import axios from "axios";
@@ -17,6 +18,7 @@ import {
   deanAppointNomineeOpenSeminarRoute,
 } from "../../../routes/academicRoutes";
 import { authHeaders, OPEN_SEMINAR_SHAPE } from "./openSeminarShared";
+import { host } from "../../../routes/globalRoutes";
 
 export default function DeanAppointNomineeModal({ seminar, onClose, refresh }) {
   const [facOpts, setFacOpts] = useState([]);
@@ -144,9 +146,25 @@ export default function DeanAppointNomineeModal({ seminar, onClose, refresh }) {
             </tr>
             <tr>
               <td>
-                <Text fw={500}>1st Draft Sent to Dean?</Text>
+                <Text fw={500}>1st Draft of Thesis</Text>
               </td>
-              <td>{seminar.first_draft_sent_to_dean ? "Yes" : "No"}</td>
+              <td>
+                {seminar.first_draft_document_url ? (
+                  <Anchor
+                    href={
+                      seminar.first_draft_document_url.startsWith("http")
+                        ? seminar.first_draft_document_url
+                        : `${host}${seminar.first_draft_document_url.startsWith("/") ? "" : "/"}${seminar.first_draft_document_url}`
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    View uploaded draft
+                  </Anchor>
+                ) : (
+                  "—"
+                )}
+              </td>
             </tr>
           </tbody>
         </Table>

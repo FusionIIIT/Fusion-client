@@ -9,10 +9,11 @@ import {
   Loader,
   Stack,
   Group,
-  Checkbox,
+  FileInput,
   TextInput,
   Alert,
   Divider,
+  Anchor,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import axios from "axios";
@@ -31,6 +32,7 @@ import {
   isAttemptReadyToForward,
 } from "./openSeminarShared";
 import RPCOpenSeminarReviewPanel from "./RPCOpenSeminarReviewPanel";
+import { host } from "../../../routes/globalRoutes";
 
 export default function SupervisorOpenSeminarModal({
   seminarId,
@@ -42,6 +44,7 @@ export default function SupervisorOpenSeminarModal({
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [resubmitForm, setResubmitForm] = useState(null);
+  const [firstDraftFile, setFirstDraftFile] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -53,8 +56,6 @@ export default function SupervisorOpenSeminarModal({
       setResubmitForm({
         possible_thesis_title: res.data.possible_thesis_title,
         proposed_date: res.data.proposed_date || "",
-        teaching_credits: res.data.teaching_credits || 0,
-        first_draft_sent_to_dean: res.data.first_draft_sent_to_dean || false,
       });
     } catch {
       showNotification({
@@ -100,11 +101,15 @@ export default function SupervisorOpenSeminarModal({
   const handleResubmit = async () => {
     setBusy(true);
     try {
-      await axios.post(
-        supervisorResubmitOpenSeminarRoute(seminar.id),
-        resubmitForm,
-        { headers: authHeaders() },
-      );
+      const fd = new FormData();
+      fd.append("possible_thesis_title", resubmitForm.possible_thesis_title);
+      fd.append("proposed_date", resubmitForm.proposed_date);
+      if (firstDraftFile) {
+        fd.append("first_draft_document", firstDraftFile);
+      }
+      await axios.post(supervisorResubmitOpenSeminarRoute(seminar.id), fd, {
+        headers: { ...authHeaders(), "Content-Type": "multipart/form-data" },
+      });
       showNotification({
         title: "Resubmitted",
         message: "Sent for Convener (DPGC) review again.",
@@ -252,21 +257,28 @@ export default function SupervisorOpenSeminarModal({
                 value={resubmitForm.proposed_date}
                 onChange={(e) => set("proposed_date")(e.target.value)}
               />
-              <TextInput
-                label="Credit earned through Teaching"
-                type="number"
-                min={0}
-                value={resubmitForm.teaching_credits}
-                onChange={(e) =>
-                  set("teaching_credits")(Number(e.target.value) || 0)
-                }
-              />
-              <Checkbox
-                label="1st draft of thesis sent to Dean's office"
-                checked={resubmitForm.first_draft_sent_to_dean}
-                onChange={(e) =>
-                  set("first_draft_sent_to_dean")(e.target.checked)
-                }
+              {seminar.first_draft_document_url && (
+                <Text size="sm">
+                  Current draft:{" "}
+                  <Anchor
+                    href={
+                      seminar.first_draft_document_url.startsWith("http")
+                        ? seminar.first_draft_document_url
+                        : `${host}${seminar.first_draft_document_url.startsWith("/") ? "" : "/"}${seminar.first_draft_document_url}`
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    View uploaded draft
+                  </Anchor>
+                </Text>
+              )}
+              <FileInput
+                label="1st Draft of Thesis (sent to Dean's office)"
+                placeholder="Upload PDF to replace"
+                accept="application/pdf"
+                value={firstDraftFile}
+                onChange={setFirstDraftFile}
               />
               <Button onClick={handleResubmit} loading={busy}>
                 Resubmit

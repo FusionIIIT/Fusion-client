@@ -22,6 +22,9 @@ import {
   exportCalendarRoute,
   importCalendarRoute,
 } from "../../routes/academicRoutes";
+import AudienceSelector, {
+  defaultAudienceValue,
+} from "../../components/AudienceSelector.jsx";
 
 function AcademicCalendar() {
   const [events, setEvents] = useState([]);
@@ -30,6 +33,7 @@ function AcademicCalendar() {
     from_date: null,
     to_date: null,
   });
+  const [audience, setAudience] = useState(defaultAudienceValue());
   const [editingEvent, setEditingEvent] = useState(null);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [error, setError] = useState("");
@@ -61,7 +65,7 @@ function AcademicCalendar() {
                 from_date: e.from_date ? new Date(e.from_date) : null,
                 to_date: e.to_date ? new Date(e.to_date) : null,
               }))
-            : []
+            : [],
         );
       } catch (err) {
         if (mounted) setError("Failed to load events");
@@ -89,6 +93,7 @@ function AcademicCalendar() {
   const handleAdd = () => {
     setError("");
     setNewEvent({ description: "", from_date: null, to_date: null });
+    setAudience(defaultAudienceValue());
     setAddModalOpen(true);
   };
   const handleEdit = (ev) => {
@@ -115,7 +120,7 @@ function AcademicCalendar() {
           from_date: editingEvent.from_date.toISOString().slice(0, 10),
           to_date: editingEvent.to_date.toISOString().slice(0, 10),
         },
-        { headers: { Authorization: `Token ${token}` } }
+        { headers: { Authorization: `Token ${token}` } },
       );
       setEditingEvent(null);
       setRefreshTrigger((t) => t + 1);
@@ -128,12 +133,23 @@ function AcademicCalendar() {
 
   // Create new event
   const handleAddEvent = async () => {
-    if (
-      !newEvent.description ||
-      !newEvent.from_date ||
-      !newEvent.to_date
-    ) {
+    if (!newEvent.description || !newEvent.from_date || !newEvent.to_date) {
       return setError("Please fill all fields");
+    }
+    if (audience.audienceType === "role" && !audience.targetRole) {
+      return setError("Please select a role for the audience");
+    }
+    if (audience.audienceType === "department" && !audience.targetDepartment) {
+      return setError("Please select a department for the audience");
+    }
+    if (audience.audienceType === "batch" && !audience.targetBatch) {
+      return setError("Please select a batch for the audience");
+    }
+    if (
+      audience.audienceType === "individual" &&
+      audience.targetUsers.length === 0
+    ) {
+      return setError("Please select at least one user for the audience");
     }
     setProcessing(true);
     try {
@@ -144,8 +160,19 @@ function AcademicCalendar() {
           ...newEvent,
           from_date: newEvent.from_date.toISOString().slice(0, 10),
           to_date: newEvent.to_date.toISOString().slice(0, 10),
+          audience_type: audience.audienceType,
+          target_role:
+            audience.audienceType === "role" ? audience.targetRole : null,
+          target_department:
+            audience.audienceType === "department"
+              ? audience.targetDepartment
+              : null,
+          target_batch:
+            audience.audienceType === "batch" ? audience.targetBatch : null,
+          target_users:
+            audience.audienceType === "individual" ? audience.targetUsers : [],
         },
-        { headers: { Authorization: `Token ${token}` } }
+        { headers: { Authorization: `Token ${token}` } },
       );
       setAddModalOpen(false);
       setRefreshTrigger((t) => t + 1);
@@ -451,6 +478,7 @@ function AcademicCalendar() {
           required
           disabled={processing}
         />
+        <AudienceSelector value={audience} onChange={setAudience} />
         <Group position="right" mt="lg">
           <Button onClick={handleAddEvent} disabled={processing}>
             {processing ? "Adding…" : "Add Event"}

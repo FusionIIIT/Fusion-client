@@ -22,6 +22,7 @@ function Admin_view_all_working_curriculums() {
   const [loading, setLoading] = useState(true);
   const [deleteModalOpened, setDeleteModalOpened] = useState(false);
   const [curriculumToDelete, setCurriculumToDelete] = useState(null);
+  const [activeCategory, setActiveCategory] = useState("UG");
 
   const fetchData = async () => {
     // Show cached data instantly for perceived speed, but always revalidate from
@@ -68,6 +69,7 @@ function Admin_view_all_working_curriculums() {
   }, []);
 
   const filteredData = curriculums.filter((item) => {
+    if ((item.category || "UG") !== activeCategory) return false;
     const searchLower = searchTerm.toLowerCase();
     return (
       item.name.toLowerCase().includes(searchLower) ||
@@ -251,10 +253,27 @@ function Admin_view_all_working_curriculums() {
       withNormalizeCSS
     >
       <Container style={{ padding: "20px", maxWidth: "100%" }}>
-        <Flex justify="space-between" align="center" mb={20}>
-          <Button variant="filled" style={{ marginRight: "10px" }}>
-            Curriculums
-          </Button>
+        <Flex justify="space-between" align="center" wrap="wrap" gap="sm" mb={20}>
+          <Flex gap="sm" wrap="wrap">
+            <Button
+              variant={activeCategory === "UG" ? "filled" : "outline"}
+              onClick={() => setActiveCategory("UG")}
+            >
+              UG: Undergraduate
+            </Button>
+            <Button
+              variant={activeCategory === "PG" ? "filled" : "outline"}
+              onClick={() => setActiveCategory("PG")}
+            >
+              PG: Post Graduate
+            </Button>
+            <Button
+              variant={activeCategory === "PHD" ? "filled" : "outline"}
+              onClick={() => setActiveCategory("PHD")}
+            >
+              PhD: Doctor of Philosophy
+            </Button>
+          </Flex>
           <Flex align="center" gap="md">
             <TextInput
               placeholder="Search by name, version, batch, or semesters..."
