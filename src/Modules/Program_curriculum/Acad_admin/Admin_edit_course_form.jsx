@@ -230,6 +230,7 @@ function Admin_edit_course_form() {
       name: values.courseName,
       code: values.courseCode,
       credit: values.courseCredit,
+      max_seats: values.maxSeats,
       lecture_hours: values.lectureHours,
       tutorial_hours: values.tutorialHours,
       pratical_hours: values.practicalHours,
