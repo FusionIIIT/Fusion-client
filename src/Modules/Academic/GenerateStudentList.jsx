@@ -22,10 +22,11 @@ import axios from "axios";
 import { showNotification } from "@mantine/notifications";
 
 import {
-  availableCoursesRoute,   // NEW endpoint: GET /aims/api/available-courses/
-  generatexlsheet,         // POST /aims/api/generate-xlsheet/
-  listBatchesRoute,        // Academic procedures API for prereg tab
-  generateprereport,       // unchanged: for prereg tab
+  availableCoursesRoute,
+  generatexlsheet,
+  exportAllCoursesZipRoute,
+  listBatchesRoute,
+  generateprereport,
 } from "../../routes/academicRoutes";
 
 const generateAcademicYears = () => {
@@ -70,6 +71,7 @@ export default function GenerateStudentList() {
   const [semesterType, setSemesterType] = useState("");
   const [programmeType, setProgrammeType] = useState("All");
   const [listType, setListType]         = useState("");
+  const [section, setSection]           = useState("");
   const [course, setCourse]             = useState("");
   const [courseOptions, setCourseOptions] = useState([]);
   const [showPreview, setShowPreview] = useState(false);
@@ -89,6 +91,11 @@ export default function GenerateStudentList() {
 
   const [loading, setLoading]           = useState(false);
   const [error, setError]               = useState(null);
+  const [exportAllLoading, setExportAllLoading] = useState(false);
+
+  // Sections the currently-selected course is split into (empty => no sections).
+  const selectedCourseSections =
+    courseOptions.find((c) => c.value === course)?.sections || [];
 
   // 1) Fetch available courses once year+semester are set
   const fetchCourses = useCallback(async () => {
@@ -108,12 +115,13 @@ export default function GenerateStudentList() {
         params: { academic_year: academicYear, semester_type: semesterType },
         headers: { Authorization: `Token ${token}` },
       });
-      // Expect [{ id, code, name, instructor }, ...]
+      // Expect [{ id, code, name, instructor, sections }, ...]
       setCourseOptions(
         res.data.map(c => ({
           value: String(c.id),
           label: `${c.code} - ${c.name}`,
           instructor: c.instructor || 'TBA',
+          sections: c.sections || [],
         }))
       );
     } catch (err) {
@@ -156,6 +164,9 @@ export default function GenerateStudentList() {
       if (programmeType && programmeType !== 'All') {
         payload.programme_type = programmeType;
       }
+      if (section && section.trim() !== '') {
+        payload.section = section;
+      }
 
       const res = await axios.post(generatexlsheet, payload, {
         headers: {
@@ -184,7 +195,39 @@ export default function GenerateStudentList() {
     }
   };
 
-  // 3) Generate Roll List Excel
+  // 3) Export ALL courses as ZIP
+  const handleExportAllZip = async () => {
+    setExportAllLoading(true);
+    const token = localStorage.getItem("authToken");
+    try {
+      const payload = { academic_year: academicYear, semester_type: semesterType };
+      if (listType && listType.trim()) payload.list_type = listType;
+      if (programmeType && programmeType !== "All") payload.programme_type = programmeType;
+
+      const res = await axios.post(exportAllCoursesZipRoute, payload, {
+        headers: { Authorization: `Token ${token}`, "Content-Type": "application/json" },
+        responseType: "blob",
+      });
+
+      const filename = `${academicYear.replace("-", "_")}_${semesterType.replace(/ /g, "_")}_All_Courses.zip`;
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const a = document.createElement("a");
+      a.href = url;
+      a.setAttribute("download", filename);
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+
+      showNotification({ title: "Downloaded", message: `${courseOptions.length} courses exported as ZIP`, color: "green" });
+    } catch (err) {
+      showNotification({ title: "Export failed", message: err.response?.data?.error || err.message, color: "red" });
+    } finally {
+      setExportAllLoading(false);
+    }
+  };
+
+  // 4) Generate Roll List Excel
   const handleGenerateList = async () => {
     if (!academicYear || !semesterType || !course) {
       showNotification({
@@ -198,7 +241,7 @@ export default function GenerateStudentList() {
     await handlePreview();
   };
 
-  // 4) Confirm and generate after preview
+  // 5) Confirm and generate after preview
   const handleConfirmGenerate = async () => {
     setLoading(true);
     const token = localStorage.getItem("authToken");
@@ -214,6 +257,9 @@ export default function GenerateStudentList() {
       }
       if (programmeType && programmeType !== 'All') {
         payload.programme_type = programmeType;
+      }
+      if (section && section.trim() !== '') {
+        payload.section = section;
       }
 
       const res = await axios.post(generatexlsheet, payload, {
@@ -468,13 +514,44 @@ export default function GenerateStudentList() {
           ) : (
             <Select
               label="Course"
-              placeholder="Select course"
+              placeholder="Select course (leave empty to export all)"
               data={courseOptions}
               value={course}
-              onChange={setCourse}
+              onChange={(v) => {
+                setCourse(v);
+                setSection("");
+              }}
               searchable
+              clearable
               mb="md"
             />
+          )}
+
+          {/* Section filter shows only when the selected course has sections. */}
+          {course && selectedCourseSections.length > 0 && (
+            <Select
+              label="Section (Optional)"
+              placeholder="All sections"
+              description="Filter the roll list to one section. Leave empty for the full course list."
+              data={selectedCourseSections.map((s) => ({ value: s, label: s }))}
+              value={section}
+              onChange={(v) => setSection(v || "")}
+              clearable
+              mb="md"
+            />
+          )}
+
+          {/* Export All — shown only when courses are loaded and none is selected */}
+          {!course && courseOptions.length > 0 && academicYear && semesterType && (
+            <Button
+              fullWidth
+              color="teal"
+              mb="sm"
+              loading={exportAllLoading}
+              onClick={handleExportAllZip}
+            >
+              Export All ({courseOptions.length} courses) as ZIP
+            </Button>
           )}
 
           <Button

@@ -13,6 +13,7 @@ import StudentCourses from "./StudentCourses";
 import DeletePreRegistration from "./DeletePreRegistration";
 import AcademicCalendar from "./AcademicCalendar";
 import GenerateStudentList from "./GenerateStudentList";
+import SectionAssignment from "./SectionAssignment";
 import ViewRollList from "./ViewRollList";
 import AllocateCourses from "./AllocateCourses";
 import VerifyStudentRegistration from "./VerifyStudentRegistration";
@@ -28,6 +29,10 @@ import AdminFeedbackView from "./FeedbackForm/AdminFeedbackView";
 import AdminBatchChange from "./AdminBatchChange";
 import AdminPromoteSemester from "./AdminPromoteSemester";
 import InstructorDashboard from "./FeedbackForm/InstructorDashboard";
+import AdminAddDashboard from "./AdminAddDashboard";
+import AdminDropDashboard from "./AdminDropDashboard";
+import AdminSwayamDashboard from "./AdminSwayamDashboard";
+import StudentCourseFeedbackForm from "./FeedbackForm/StudentCourseFeedbackForm";
 // PhD-specific imports
 import StudentThesisPage from "./StudentThesisPage";
 import SupervisorDashboard from "./SupervisorDashboard";
@@ -93,10 +98,14 @@ function AcademicPage() {
           { title: "Delete Pre-Registration" },
           { title: "Academic Calendar" },
           { title: "Generate Student List" },
+          { title: "Section Assignment" },
           { title: "Allocate Courses" },
           { title: "Verify Student Registration" },
           { title: "Allot Courses" },
           { title: "Replacement Allocation" },
+          { title: "Add BL Courses" },
+          { title: "Drop Courses" },
+          { title: "Swayam" },
           { title: "Student Dashboard" },
           { title: "Feedback Responses" },
           { title: "Batch/Branch Change" },
@@ -109,10 +118,14 @@ function AcademicPage() {
           DeletePreRegistration,
           AcademicCalendar,
           GenerateStudentList,
+          SectionAssignment,
           AllocateCourses,
           VerifyStudentRegistration,
           AllotCourses,
           AdminReplacementDashboard,
+          AdminAddDashboard,
+          AdminDropDashboard,
+          AdminSwayamDashboard,
           AdminStudentDashboard,
           AdminFeedbackView,
           AdminBatchChange,
@@ -134,6 +147,7 @@ function AcademicPage() {
         { title: "Final-Registration" },
         { title: "Swayam Registration" },
         { title: "Add / Drop" },
+        { title: "Feedback Form" },
       ];
 
       const baseComponents = [
@@ -144,6 +158,7 @@ function AcademicPage() {
         FinalRegistration,
         SwayamRegistration,
         StudentAddDropReplace,
+        StudentCourseFeedbackForm,
       ];
 
       if (isUG) {

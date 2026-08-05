@@ -740,9 +740,21 @@ const STUDENT_FIELDS_CONFIG = {
     ],
     excelColumns: [
       "Status",
-      "status", 
-      "reported status", 
+      "status",
+      "reported status",
       "reporting status"
+    ],
+  },
+  section: {
+    label: "Section",
+    placeholder: "Assigned in Academics > Section Assignment",
+    required: false,
+    backendField: "section",
+    systemField: true,
+    systemGenerated: true,
+    excelColumns: [
+      "Section",
+      "section",
     ],
   },
 };
@@ -3145,6 +3157,7 @@ const AdminUpcomingBatch = () => {
     { key: 'rollNumber', label: 'Roll Number', minWidth: '120px', fields: ['rollNumber', 'roll_number', 'Institute Roll Number'] },
     { key: 'name', label: 'Name', minWidth: '180px', fields: ['name', 'Name'] },
     { key: 'branch', label: 'Discipline', minWidth: '200px', fields: ['discipline', 'branch', 'Discipline'] },
+    { key: 'section', label: 'Section', minWidth: '80px', fields: ['section', 'Section'] },
     { key: 'specialization', label: 'Specialization', minWidth: '180px', fields: ['specialization', 'Specialization'] },
     { key: 'admissionType', label: 'Admission Type', minWidth: '180px', fields: ['admissionType', 'admission_type', 'Admission Type'] },
     { key: 'gateQualified', label: 'GATE Qualified', minWidth: '120px', fields: ['gateQualified', 'gate_qualified', 'GATE Qualaified', 'GATE Qualified'] },
@@ -3230,6 +3243,7 @@ const AdminUpcomingBatch = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Token ${localStorage.getItem("authToken")}`,
         },
         body: JSON.stringify({ academic_year: academicYear })
       });

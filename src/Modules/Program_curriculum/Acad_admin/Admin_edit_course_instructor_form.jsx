@@ -30,6 +30,7 @@ function Admin_edit_course_instructor() {
       instructor: "",
       academicYear: "",
       semesterType: "",
+      sectionLabel: "",
     },
   });
 
@@ -77,6 +78,7 @@ function Admin_edit_course_instructor() {
             instructor: String(courseInstructor.instructor_id),
             academicYear: formattedYear,
             semesterType: courseInstructor.semester_type,
+            sectionLabel: courseInstructor.section_label || "",
           });
         } else {
           notifications.show({
@@ -116,12 +118,16 @@ function Admin_edit_course_instructor() {
         `${host}/programme_curriculum/api/admin_update_course_instructor/${id}/`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Token ${localStorage.getItem("authToken")}`,
+          },
           body: JSON.stringify({
             course_id: values.courseName,
             instructor_id: values.instructor,
             year: semesterYear,
             semester_type: values.semesterType,
+            section_label: values.sectionLabel || "",
           }),
         }
       );
@@ -249,6 +255,19 @@ function Admin_edit_course_instructor() {
                   value={form.values.semesterType}
                   onChange={(value) => form.setFieldValue("semesterType", value)}
                   required
+                />
+
+                <Select
+                  label="Section"
+                  description="Section this faculty teaches (A–F). Leave blank for a single-offering elective."
+                  placeholder="No section (elective)"
+                  data={["A", "B", "C", "D", "E", "F"].map((s) => ({
+                    value: s,
+                    label: s,
+                  }))}
+                  value={form.values.sectionLabel}
+                  onChange={(value) => form.setFieldValue("sectionLabel", value || "")}
+                  clearable
                 />
 
                 <Group position="right" mt="lg">

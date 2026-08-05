@@ -20,10 +20,11 @@ function ValidateAuth() {
   const navigate = useNavigate();
 
   const validateUser = useCallback(async () => {
-    const token = localStorage.getItem("authToken");
+    const token = sessionStorage.getItem("authToken");
 
     if (!token) {
       console.error("No authentication token found!");
+      sessionStorage.removeItem("authToken");
       localStorage.removeItem("authToken");
       // notifications.show({
       //   title: "Authentication Error",
@@ -64,6 +65,7 @@ function ValidateAuth() {
         message: "Your session has expired. Please log in again.",
         color: "red",
       });
+      sessionStorage.removeItem("authToken");
       localStorage.removeItem("authToken");
       dispatch(clearUserName());
       dispatch(clearRoles());

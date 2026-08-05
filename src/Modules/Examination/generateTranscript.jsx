@@ -147,17 +147,9 @@ export default function GenerateTranscript() {
         headers: { Authorization: `Token ${token}` },
         responseType: "blob",
       });
-      const batchOption = formOptions.batches.find(
-        (opt) => opt.value === formData.batch,
-      );
-      const semesterOption = formOptions.semesters.find(
-        (opt) => opt.value === formData.semester,
-      );
-      const batchLabel = batchOption ? batchOption.label : formData.batch;
-      const semesterLabel = semesterOption
-        ? semesterOption.label
-        : `Semester ${semester_no}`;
-      const fileName = `${batchLabel}_${semesterLabel}.xlsx`;
+      const contentDisposition = response.headers["content-disposition"];
+      const filenameMatch = contentDisposition?.match(/filename="([^"]+)"/);
+      const fileName = filenameMatch ? filenameMatch[1] : "student_grades.xlsx";
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
@@ -191,11 +183,13 @@ export default function GenerateTranscript() {
                 <Box>
                   <Select
                     label="Batch"
-                    placeholder="Select Batch"
+                    placeholder="Select or type to search batch"
                     data={formOptions.batches}
                     value={formData.batch?.toString()}
                     onChange={handleChange("batch")}
                     radius="sm"
+                    searchable
+                    nothingFoundMessage="No matching batch"
                   />
                 </Box>
                 <Box>

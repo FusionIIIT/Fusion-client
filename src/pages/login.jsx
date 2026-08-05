@@ -246,7 +246,7 @@ function LoginPage() {
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
+    const token = sessionStorage.getItem("authToken");
     if (token) {
       navigate("/dashboard", { replace: true });
     }
@@ -538,7 +538,9 @@ function LoginPage() {
       });
       
       if (response.status === 200 && response.data?.token) {
+        sessionStorage.setItem("authToken", response.data.token);
         localStorage.setItem("authToken", response.data.token);
+        localStorage.setItem("lastActivity", String(Date.now()));
         
         notifications.show({ 
           message: "Authentication successful", 

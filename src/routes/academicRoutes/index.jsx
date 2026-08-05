@@ -35,10 +35,15 @@ export const verifyRegistrationRoute = `${host}/academic-procedures/api/acad/ver
 export const batchesRoute = `${host}/programme_curriculum/api/admin_batches/`;
 export const checkAllocationRoute = `${host}/aims/api/check-allocation`;
 export const startAllocationRoute = `${host}/aims/api/start-allocation`;
+export const addCourseToSlotsRoute = `${host}/aims/api/add-course-to-slots`;
+export const allocationResultsRoute = `${host}/aims/api/allocation-results`;
+export const exportAllocationCourseRoute = `${host}/aims/api/allocation-results/export`;
+export const exportAllAllocationCoursesRoute = `${host}/aims/api/allocation-results/export-all`;
 export const getStudentCourseRoute = `${host}/academic-procedures/api/acad/verify_course/`;
 export const dropStudentCourseRoute = `${host}/academic-procedures/api/acad/verify_course/drop/`;
 export const addStudentCourseRoute = `${host}/academic-procedures/api/acad/addCourse/`;
 export const generatexlsheet = `${host}/aims/api/generatexlsheet`;
+export const exportAllCoursesZipRoute = `${host}/aims/api/export-all-courses-zip/`;
 export const availableCoursesRoute = `${host}/aims/api/available-courses`;
 export const academicProceduresFaculty = `${host}/academic-procedures/api/fac/academic_procedures_faculty`;
 export const getAllCourses = `${host}/academic-procedures/api/acad/get_all_courses`;
@@ -117,6 +122,12 @@ export const applyBatchRoute    = `${host}/academic-procedures/api/acad/batch_ch
 
 export const listStudentsPromoteRoute = `${host}/academic-procedures/api/acad/promote/students/`;
 export const applyPromoteRoute = `${host}/academic-procedures/api/acad/promote/apply/`;
+export const applyDemoteRoute = `${host}/academic-procedures/api/acad/demote/apply/`;
+
+// Section assignment (Academics > Section Assignment)
+export const sectionBatchesRoute  = `${host}/aims/api/section/batches/`;
+export const sectionStudentsRoute = `${host}/aims/api/section/students/`;
+export const assignSectionRoute   = `${host}/aims/api/section/assign/`;
 
 export const courseRegistrationReceiptRoute = `${host}/academic-procedures/course_reg_receipt/`;
 

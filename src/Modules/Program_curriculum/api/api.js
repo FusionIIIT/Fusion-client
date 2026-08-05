@@ -334,8 +334,14 @@ export const adminFetchCurriculumData = async (id) => {
 
 export const adminFetchCourseInstructorData = async () => {
   try {
+    const token = localStorage.getItem("authToken");
     const response = await axios.get(
       `${BASE_URL}/programme_curriculum/api/admin_instructor/`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
     );
     return response.data.course_instructors;
   } catch (error) {
@@ -486,8 +492,14 @@ export const fetchBatchData = async (batch_id) => {
 
 export const fetchFacultiesData = async () => {
   try {
+    const token = localStorage.getItem("authToken");
     const response = await axios.get(
       `${BASE_URL}/programme_curriculum/api/admin_faculties/`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
     );
     return response.data.faculties;
   } catch (error) {

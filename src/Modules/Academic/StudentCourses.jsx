@@ -9,7 +9,6 @@ import {
   Group,
   Select,
   Loader,
-  Stack,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import axios from "axios";
@@ -23,24 +22,78 @@ import {
 } from "../../routes/academicRoutes";
 
 const defaultSemesterOptions = [
-  { value: JSON.stringify({ no: 1, type: "Odd Semester" }), label: "Semester 1 (Odd)" },
-  { value: JSON.stringify({ no: 2, type: "Even Semester" }), label: "Semester 2 (Even)" },
-  { value: JSON.stringify({ no: 2, type: "Summer Semester" }), label: "Summer Term 1" },
-  { value: JSON.stringify({ no: 3, type: "Odd Semester" }), label: "Semester 3 (Odd)" },
-  { value: JSON.stringify({ no: 4, type: "Even Semester" }), label: "Semester 4 (Even)" },
-  { value: JSON.stringify({ no: 4, type: "Summer Semester" }), label: "Summer Term 2" },
-  { value: JSON.stringify({ no: 5, type: "Odd Semester" }), label: "Semester 5 (Odd)" },
-  { value: JSON.stringify({ no: 6, type: "Even Semester" }), label: "Semester 6 (Even)" },
-  { value: JSON.stringify({ no: 6, type: "Summer Semester" }), label: "Summer Term 3" },
-  { value: JSON.stringify({ no: 7, type: "Odd Semester" }), label: "Semester 7 (Odd)" },
-  { value: JSON.stringify({ no: 8, type: "Even Semester" }), label: "Semester 8 (Even)" },
-  { value: JSON.stringify({ no: 8, type: "Summer Semester" }), label: "Summer Term 4" },
-  { value: JSON.stringify({ no: 9, type: "Odd Semester" }), label: "Semester 9 (Odd)" },
-  { value: JSON.stringify({ no: 10, type: "Even Semester" }), label: "Semester 10 (Even)" },
-  { value: JSON.stringify({ no: 10, type: "Summer Semester" }), label: "Summer Term 5" },
-  { value: JSON.stringify({ no: 11, type: "Odd Semester" }), label: "Semester 11 (Odd)" },
-  { value: JSON.stringify({ no: 12, type: "Even Semester" }), label: "Semester 12 (Even)" },
-  { value: JSON.stringify({ no: 12, type: "Summer Semester" }), label: "Summer Term 6" },
+  {
+    value: JSON.stringify({ no: 1, type: "Odd Semester" }),
+    label: "Semester 1 (Odd)",
+  },
+  {
+    value: JSON.stringify({ no: 2, type: "Even Semester" }),
+    label: "Semester 2 (Even)",
+  },
+  {
+    value: JSON.stringify({ no: 2, type: "Summer Semester" }),
+    label: "Summer Term 1",
+  },
+  {
+    value: JSON.stringify({ no: 3, type: "Odd Semester" }),
+    label: "Semester 3 (Odd)",
+  },
+  {
+    value: JSON.stringify({ no: 4, type: "Even Semester" }),
+    label: "Semester 4 (Even)",
+  },
+  {
+    value: JSON.stringify({ no: 4, type: "Summer Semester" }),
+    label: "Summer Term 2",
+  },
+  {
+    value: JSON.stringify({ no: 5, type: "Odd Semester" }),
+    label: "Semester 5 (Odd)",
+  },
+  {
+    value: JSON.stringify({ no: 6, type: "Even Semester" }),
+    label: "Semester 6 (Even)",
+  },
+  {
+    value: JSON.stringify({ no: 6, type: "Summer Semester" }),
+    label: "Summer Term 3",
+  },
+  {
+    value: JSON.stringify({ no: 7, type: "Odd Semester" }),
+    label: "Semester 7 (Odd)",
+  },
+  {
+    value: JSON.stringify({ no: 8, type: "Even Semester" }),
+    label: "Semester 8 (Even)",
+  },
+  {
+    value: JSON.stringify({ no: 8, type: "Summer Semester" }),
+    label: "Summer Term 4",
+  },
+  {
+    value: JSON.stringify({ no: 9, type: "Odd Semester" }),
+    label: "Semester 9 (Odd)",
+  },
+  {
+    value: JSON.stringify({ no: 10, type: "Even Semester" }),
+    label: "Semester 10 (Even)",
+  },
+  {
+    value: JSON.stringify({ no: 10, type: "Summer Semester" }),
+    label: "Summer Term 5",
+  },
+  {
+    value: JSON.stringify({ no: 11, type: "Odd Semester" }),
+    label: "Semester 11 (Odd)",
+  },
+  {
+    value: JSON.stringify({ no: 12, type: "Even Semester" }),
+    label: "Semester 12 (Even)",
+  },
+  {
+    value: JSON.stringify({ no: 12, type: "Summer Semester" }),
+    label: "Summer Term 6",
+  },
 ];
 
 export default function StudentCourses() {
@@ -64,6 +117,7 @@ export default function StudentCourses() {
     course_id: null,
     academic_year: null,
     registration_type: null,
+    course_instructor_id: null,
     old_course: null,
   });
 
@@ -73,8 +127,8 @@ export default function StudentCourses() {
     const start = now.getMonth() >= 6 ? year : year - 1;
     const yrs = [];
     for (let i = 0; i < 5; i++) {
-      const y1 = start - i,
-        y2 = y1 + 1;
+      const y1 = start - i;
+      const y2 = y1 + 1;
       yrs.push(`${y1}-${String(y2).slice(-2)}`);
     }
     setAcademicYears(yrs);
@@ -94,13 +148,21 @@ export default function StudentCourses() {
       const { data } = await axios.post(
         getStudentCourseRoute,
         { rollno: rollNo },
-        { headers: { Authorization: `Token ${token}` } }
+        { headers: { Authorization: `Token ${token}` } },
       );
       setStudentData(data);
-      // Set initial semester selection from API data
-      if (data.semester_list && data.semester_list.length > 0) {
-        const firstSem = data.semester_list[0];
-        setSelectedSemester({ no: firstSem.semester_no, type: getSemesterType(firstSem.semester_no) });
+
+      if (data.current_semester) {
+        // Derive the semester type from the semester number's parity so the
+        // value always matches a dropdown option (odd no -> Odd Semester,
+        // even no -> Even Semester). The backend's month-based type can
+        // otherwise conflict with an even/odd semester number and leave the
+        // Select empty.
+        const no = Number(data.current_semester.semester_no);
+        setSelectedSemester({
+          no,
+          type: no % 2 === 1 ? "Odd Semester" : "Even Semester",
+        });
       }
     } catch (err) {
       setError(err.response?.data?.error || err.message || "Fetch failed");
@@ -118,18 +180,27 @@ export default function StudentCourses() {
   // Generate semester options from API data or use defaults
   const semesterOptions = useMemo(() => {
     // Check if this is a PhD student by checking batch name from response
-    const isPhdStudent = studentData?.dict2?.roll_no?.toUpperCase().includes('PCS') || 
-                        (studentData?.details && studentData.details.length > 0 && 
-                         studentData.details[0]?.course_name?.includes('PhD'));
-    
+    const isPhdStudent =
+      studentData?.dict2?.roll_no?.toUpperCase().includes("PCS") ||
+      (studentData?.details &&
+        studentData.details.length > 0 &&
+        studentData.details[0]?.course_name?.includes("PhD"));
+
     // For PhD students, use the filtered list from API
-    if (isPhdStudent && studentData?.semester_list && studentData.semester_list.length > 0) {
-      return studentData.semester_list.map(sem => ({
-        value: JSON.stringify({ no: sem.semester_no, type: getSemesterType(sem.semester_no) }),
-        label: `Semester ${sem.semester_no} (${sem.semester_no % 2 === 1 ? 'Odd' : 'Even'})`
+    if (
+      isPhdStudent &&
+      studentData?.semester_list &&
+      studentData.semester_list.length > 0
+    ) {
+      return studentData.semester_list.map((sem) => ({
+        value: JSON.stringify({
+          no: sem.semester_no,
+          type: getSemesterType(sem.semester_no),
+        }),
+        label: `Semester ${sem.semester_no} (${sem.semester_no % 2 === 1 ? "Odd" : "Even"})`,
       }));
     }
-    
+
     // For UG/PG students, use the full default list with summer terms
     return defaultSemesterOptions;
   }, [studentData]);
@@ -151,7 +222,7 @@ export default function StudentCourses() {
       await axios.post(
         dropStudentCourseRoute,
         { id: courseToDrop, roll_no: rollNo },
-        { headers: { Authorization: `Token ${token}` } }
+        { headers: { Authorization: `Token ${token}` } },
       );
       showNotification({
         title: "Course Dropped",
@@ -199,6 +270,8 @@ export default function StudentCourses() {
     form.append("course_id", course_id);
     form.append("academic_year", academic_year);
     form.append("registration_type", registration_type);
+    if (newCourse.course_instructor_id)
+      form.append("course_instructor_id", newCourse.course_instructor_id);
     if (old_course) form.append("old_course", old_course);
 
     setLoading(true);
@@ -215,6 +288,7 @@ export default function StudentCourses() {
           course_id: null,
           academic_year: null,
           registration_type: null,
+          course_instructor_id: null,
           old_course: null,
         });
         showNotification({
@@ -236,31 +310,31 @@ export default function StudentCourses() {
     clearError();
     if (!val) return;
     const semObj = JSON.parse(val);
-    
-  let semesterId = semObj.no;
-  if (studentData && studentData.semester_list) {
-    const found = studentData.semester_list.find(
-      (s) => s.semester_no == semObj.no
-    );
-    if (found) {
-      semesterId = found.id;
+
+    let semesterId = semObj.no;
+    if (studentData && studentData.semester_list) {
+      const found = studentData.semester_list.find(
+        (s) => s.semester_no == semObj.no,
+      );
+      if (found) {
+        semesterId = found.id;
+      }
     }
-  }
     setNewCourse((p) => ({
-    ...p,
-    semester_id: semesterId,
-    semester_no: semObj.no, 
-    semester_type: semObj.type,
-    courseslot_id: null,
-    course_id: null,
-  }));
+      ...p,
+      semester_id: semesterId,
+      semester_no: semObj.no,
+      semester_type: semObj.type,
+      courseslot_id: null,
+      course_id: null,
+    }));
     setSlotCourses([]);
     setSemSlots([]);
     const token = localStorage.getItem("authToken");
     try {
       const { data } = await axios.get(
         `${getCourseSlotsRoute}?semester_id=${semesterId}`,
-        { headers: { Authorization: `Token ${token}` } }
+        { headers: { Authorization: `Token ${token}` } },
       );
       setSemSlots(data);
     } catch {
@@ -268,25 +342,45 @@ export default function StudentCourses() {
     }
   };
 
-  const handleSlotChange = async (slotId) => {
-    setNewCourse((p) => ({ ...p, courseslot_id: slotId, course_id: null }));
+  // Fetch a slot's courses. Passing the term makes the API include each course's
+  // running sections, so the admin can pick one for a cross-section backlog/improvement.
+  const fetchSlotCourses = async (slotId, academicYear, semesterType) => {
+    if (!slotId) return;
     const token = localStorage.getItem("authToken");
+    let url = `${getCoursesRoute}?courseslot_id=${slotId}`;
+    if (academicYear && semesterType) {
+      url += `&academic_year=${encodeURIComponent(academicYear)}&semester_type=${encodeURIComponent(semesterType)}`;
+    }
     try {
-      const { data } = await axios.get(
-        `${getCoursesRoute}?courseslot_id=${slotId}`,
-        { headers: { Authorization: `Token ${token}` } }
-      );
+      const { data } = await axios.get(url, {
+        headers: { Authorization: `Token ${token}` },
+      });
       setSlotCourses(data);
     } catch {
       setError("Failed to load courses");
     }
   };
 
+  const handleSlotChange = async (slotId) => {
+    setNewCourse((p) => ({
+      ...p,
+      courseslot_id: slotId,
+      course_id: null,
+      course_instructor_id: null,
+    }));
+    fetchSlotCourses(slotId, newCourse.academic_year, newCourse.semester_type);
+  };
+
+  // Running sections of the selected course (present when the term is chosen).
+  const courseSections =
+    slotCourses.find((c) => String(c.id) === String(newCourse.course_id))
+      ?.sections || [];
+
   const filteredDetails =
     studentData?.details.filter(
       (c) =>
         c.sem === selectedSemester.no &&
-        c.semester_type === selectedSemester.type
+        c.semester_type === selectedSemester.type,
     ) || [];
   const totalCredits = filteredDetails.reduce((sum, c) => sum + c.credits, 0);
 
@@ -311,7 +405,10 @@ export default function StudentCourses() {
     "Replaced By":
       c.replaced_by && c.replaced_by.length > 0
         ? c.replaced_by
-            .map((r) => `${r.course_id.code} - ${r.course_id.name} (Sem ${r.semester_id.semester_no})`)
+            .map(
+              (r) =>
+                `${r.course_id.code} - ${r.course_id.name} (Sem ${r.semester_id.semester_no})`,
+            )
             .join(", ")
         : "NA",
     Actions: (
@@ -400,10 +497,13 @@ export default function StudentCourses() {
           placeholder="Select semester"
           data={semesterOptions}
           value={
-          newCourse.semester_no && newCourse.semester_type
-          ? JSON.stringify({ no: newCourse.semester_no, type: newCourse.semester_type })
-          : ""
-        }
+            newCourse.semester_no && newCourse.semester_type
+              ? JSON.stringify({
+                  no: newCourse.semester_no,
+                  type: newCourse.semester_type,
+                })
+              : ""
+          }
           onChange={handleSemesterSelect}
           mb="sm"
         />
@@ -436,9 +536,39 @@ export default function StudentCourses() {
           placeholder="Select academic year"
           data={academicYears.map((y) => ({ value: y, label: y }))}
           value={newCourse.academic_year}
-          onChange={(v) => setNewCourse((p) => ({ ...p, academic_year: v }))}
+          onChange={(v) => {
+            setNewCourse((p) => ({
+              ...p,
+              academic_year: v,
+              course_instructor_id: null,
+            }));
+            fetchSlotCourses(
+              newCourse.courseslot_id,
+              v,
+              newCourse.semester_type,
+            );
+          }}
           mb="sm"
         />
+        {courseSections.length > 0 && (
+          <Select
+            label="Section"
+            placeholder="Select section"
+            description="Running section — required for a backlog/improvement in another section"
+            data={courseSections.map((sec) => ({
+              value: String(sec.course_instructor_id),
+              label: sec.section
+                ? `Section ${sec.section} — ${sec.instructor}`
+                : sec.instructor,
+            }))}
+            value={newCourse.course_instructor_id}
+            onChange={(v) =>
+              setNewCourse((p) => ({ ...p, course_instructor_id: v }))
+            }
+            mb="sm"
+            clearable
+          />
+        )}
         <Select
           label="Registration Type"
           placeholder="Select type"
