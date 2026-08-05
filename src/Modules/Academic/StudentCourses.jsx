@@ -641,8 +641,16 @@ export default function StudentCourses() {
           data={academicYears.map((y) => ({ value: y, label: y }))}
           value={newCourse.academic_year}
           onChange={(v) => {
-            setNewCourse((p) => ({ ...p, academic_year: v, course_instructor_id: null }));
-            fetchSlotCourses(newCourse.courseslot_id, v, newCourse.semester_type);
+            setNewCourse((p) => ({
+              ...p,
+              academic_year: v,
+              course_instructor_id: null,
+            }));
+            fetchSlotCourses(
+              newCourse.courseslot_id,
+              v,
+              newCourse.semester_type,
+            );
           }}
           mb="sm"
         />
