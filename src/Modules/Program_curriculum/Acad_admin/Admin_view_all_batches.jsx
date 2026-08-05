@@ -26,6 +26,7 @@ import { host } from "../../../routes/globalRoutes";
 
 function AdminViewAllBatches() {
   const [activeTab, setActiveTab] = useState("Batches");
+  const [activeCategory, setActiveCategory] = useState("UG");
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState({
     name: "",
@@ -70,6 +71,7 @@ function AdminViewAllBatches() {
           id: batch.batch_id,
           name: batch.name,
           programme: batch.name,
+          category: batch.category || "UG",
           discipline: batch.discipline,
           displayBranch: batch.discipline,
           year: batch.year,
@@ -119,6 +121,7 @@ function AdminViewAllBatches() {
 
   const applyFilters = (data) => {
     return data.filter((batch) => {
+      if ((batch.category || "UG") !== activeCategory) return false;
       const searchLower = searchQuery.toLowerCase();
       return (
         searchQuery === "" ||
@@ -128,7 +131,7 @@ function AdminViewAllBatches() {
         (batch.curriculum && batch.curriculum.toLowerCase().includes(searchLower))
       );
     });
-  }; 
+  };
 
   const filteredBatches = applyFilters(batches);
   const filteredFinishedBatches = applyFilters(finishedBatches);
@@ -189,21 +192,40 @@ function AdminViewAllBatches() {
       withNormalizeCSS
     >
       <Container style={{ padding: "20px", maxWidth: "100%" }}>
-        <Flex justify="space-between" align="center" mb={10}>
-          <Flex justify="flex-start" align="center">
+        <Flex justify="space-between" align="center" wrap="wrap" gap="sm" mb={10}>
+          <Flex justify="flex-start" align="center" wrap="wrap" gap="sm">
             <Button
               variant={activeTab === "Batches" ? "filled" : "outline"}
-              style={{ marginRight: "10px" }}
               onClick={() => setActiveTab("Batches")}
             >
               Batches
             </Button>
             <Button
               variant={activeTab === "Finished Batches" ? "filled" : "outline"}
-              style={{ marginRight: "10px" }}
               onClick={() => setActiveTab("Finished Batches")}
             >
               Finished Batches
+            </Button>
+            <Button
+              variant={activeCategory === "UG" ? "filled" : "outline"}
+              color="teal"
+              onClick={() => setActiveCategory("UG")}
+            >
+              UG: Undergraduate
+            </Button>
+            <Button
+              variant={activeCategory === "PG" ? "filled" : "outline"}
+              color="teal"
+              onClick={() => setActiveCategory("PG")}
+            >
+              PG: Post Graduate
+            </Button>
+            <Button
+              variant={activeCategory === "PHD" ? "filled" : "outline"}
+              color="teal"
+              onClick={() => setActiveCategory("PHD")}
+            >
+              PhD: Doctor of Philosophy
             </Button>
           </Flex>
           <Flex align="center" gap="md">

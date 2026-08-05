@@ -75,7 +75,7 @@ export default function SupervisorDashboard() {
   }, [fetchData]);
 
   const columnNames = useMemo(
-    () => ["Roll No", "Student", "Theme", "Action"],
+    () => ["Roll No", "Student", "Programme", "Theme", "Action"],
     [],
   );
 
@@ -84,6 +84,10 @@ export default function SupervisorDashboard() {
       list.map((t) => ({
         "Roll No": t.student_roll || "N/A",
         Student: t.student_name || "N/A",
+        Programme:
+          t.programme_category === "PHD"
+            ? "PhD"
+            : t.programme_category || "N/A",
         Theme: t.research_theme || "N/A",
         Action: (
           <Button

@@ -21,6 +21,7 @@ import axios from "axios";
 import {
   checkAllocationRoute,
   startAllocationRoute,
+  addCourseToSlotsRoute,
   allocationResultsRoute,
   exportAllocationCourseRoute,
   exportAllAllocationCoursesRoute,
@@ -58,6 +59,8 @@ function AllocateCourses() {
   const [exportingId, setExportingId] = useState(null);
   const [exportingAll, setExportingAll] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [slotIssues, setSlotIssues] = useState(null);
+  const [skippedCourseIds, setSkippedCourseIds] = useState([]);
 
   const getToken = () => localStorage.getItem("authToken");
 
@@ -127,7 +130,8 @@ function AllocateCourses() {
     setLoading(false);
   };
 
-  const handleStartAllocation = async () => {
+  /* 409 means a course is missing from its slot and nothing was allocated */
+  const runAllocation = async (skipList) => {
     setLoading(true);
     setSuccess("");
     setError("");
@@ -135,27 +139,94 @@ function AllocateCourses() {
     setSearchQuery("");
 
     const tok = getToken();
-    if (!tok) { setError("No token found"); setLoading(false); return; }
+    if (!tok) {
+      setError("No token found");
+      setLoading(false);
+      return;
+    }
 
     try {
       const res = await axios.post(
         startAllocationRoute,
-        { batch, semester, year, programme_type: programmeType },
-        { headers: { Authorization: `Token ${tok}`, "Content-Type": "application/json" } },
+        {
+          batch,
+          semester,
+          year,
+          programme_type: programmeType,
+          skip_course_ids: skipList,
+        },
+        {
+          headers: {
+            Authorization: `Token ${tok}`,
+            "Content-Type": "application/json",
+          },
+        },
       );
       if (res.data.status === 1) {
-        setSuccess("Course allocation successful!");
+        setSlotIssues(null);
+        setSuccess(res.data.message || "Course allocation successful!");
         setShowStartButton(false);
-        setLoading(false);                 // stop this spinner before the results spinner starts
+        // stop this spinner before the results spinner starts
+        setLoading(false);
         await fetchAllocationResults();
         return;
-      } else {
-        setError(res.data.message || "Allocation failed");
       }
+      setError(res.data.message || "Allocation failed");
     } catch (err) {
-      setError(err.response?.data?.message || "Error starting allocation.");
+      const data = err.response?.data;
+      if (err.response?.status === 409 && data?.needs_action?.length) {
+        setSlotIssues(data.needs_action);
+      } else {
+        setError(
+          data?.message ||
+            data?.error ||
+            `Error starting allocation (HTTP ${err.response?.status ?? "?"}).`,
+        );
+      }
     }
     setLoading(false);
+  };
+
+  const handleStartAllocation = () => {
+    setSkippedCourseIds([]);
+    setSlotIssues(null);
+    return runAllocation([]);
+  };
+
+  const handleAddToSlots = async (issue) => {
+    const pending = slotIssues;
+    setSlotIssues(null);
+    setError("");
+    try {
+      await axios.post(
+        addCourseToSlotsRoute,
+        {
+          course_id: issue.course_id,
+          slot_ids: issue.missing_from.map((m) => m.slot_id),
+        },
+        {
+          headers: {
+            Authorization: `Token ${getToken()}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+      await runAllocation(skippedCourseIds);
+    } catch (err) {
+      setSlotIssues(pending); // reopen so it can be retried or skipped
+      setError(
+        err.response?.data?.message ||
+          `Could not add ${issue.course_code} to its slots.`,
+      );
+    }
+  };
+
+  const handleSkipCourse = async (issue) => {
+    setSlotIssues(null);
+    setError("");
+    const nextSkips = [...new Set([...skippedCourseIds, issue.course_id])];
+    setSkippedCourseIds(nextSkips);
+    await runAllocation(nextSkips);
   };
 
   const handleExportCourse = async (course) => {
@@ -318,6 +389,89 @@ function AllocateCourses() {
           ))}
         </Stack>
       </>
+    );
+  };
+
+  /* ── Courses missing from their course slot ── */
+  const renderSlotIssuesModal = () => {
+    if (!slotIssues?.length) return null;
+
+    return (
+      <Modal
+        opened={!!slotIssues?.length}
+        onClose={() => setSlotIssues(null)}
+        size="lg"
+        title={<Text fw={700} c="red.7">Courses missing from their course slot</Text>}
+      >
+        <Stack gap="md">
+          <Alert color="yellow" variant="light">
+            Nothing has been allocated yet. These courses were registered under
+            a slot that does not list them, so allocation would put students in
+            a slot their course does not belong to. Add each course to its slot,
+            or skip it.
+          </Alert>
+
+          {slotIssues.map((issue) => (
+            <Card
+              key={`${issue.course_id}-${issue.slot_name}`}
+              withBorder
+              padding="sm"
+            >
+              <Stack gap="xs">
+                <Group justify="space-between" wrap="nowrap">
+                  <div>
+                    <Text fw={600}>
+                      {issue.course_code} — {issue.course_name}
+                    </Text>
+                    <Text size="sm" c="dimmed">
+                      slot {issue.slot_name} ({issue.slot_type}) · sem{" "}
+                      {issue.missing_from[0]?.semester_no}
+                    </Text>
+                  </div>
+                  <Badge color="red" variant="light">
+                    {issue.students} student{issue.students === 1 ? "" : "s"}
+                  </Badge>
+                </Group>
+
+                <div>
+                  <Text size="sm" mb={4}>
+                    Missing from {issue.missing_from.length} curriculum slot
+                    {issue.missing_from.length === 1 ? "" : "s"}:
+                  </Text>
+                  <Group gap="xs">
+                    {issue.missing_from.map((m) => (
+                      <Badge key={m.slot_id} variant="outline" color="gray">
+                        {m.curriculum_name} ({m.students})
+                      </Badge>
+                    ))}
+                  </Group>
+                </div>
+
+                <Group justify="flex-end" gap="sm">
+                  <Button
+                    size="xs"
+                    variant="light"
+                    color="red"
+                    onClick={() => handleSkipCourse(issue)}
+                  >
+                    Skip this course
+                  </Button>
+                  <Button size="xs" onClick={() => handleAddToSlots(issue)}>
+                    Add to slots
+                  </Button>
+                </Group>
+              </Stack>
+            </Card>
+          ))}
+
+          <Text size="xs" c="dimmed">
+            Add to slots writes the course into those slots and re-runs
+            allocation. Skip drops it for every student — they fall through to
+            their next priority choice, and in a single-choice slot they get
+            nothing.
+          </Text>
+        </Stack>
+      </Modal>
     );
   };
 
@@ -546,6 +700,7 @@ function AllocateCourses() {
         </>
       )}
 
+      {renderSlotIssuesModal()}
       {renderPreviewModal()}
     </Card>
   );

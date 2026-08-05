@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
   Modal,
-  Checkbox,
+  FileInput,
   TextInput,
   Button,
   Text,
@@ -30,9 +30,8 @@ export default function SupervisorProposeOpenSeminarModal({
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     proposed_date: "",
-    teaching_credits: 0,
-    first_draft_sent_to_dean: false,
   });
+  const [firstDraftFile, setFirstDraftFile] = useState(null);
 
   useEffect(() => {
     const load = async () => {
@@ -69,16 +68,19 @@ export default function SupervisorProposeOpenSeminarModal({
     }
     setLoading(true);
     try {
-      await axios.post(
-        supervisorProposeOpenSeminarRoute,
-        {
-          ...form,
-          roll_no: thesis.student_roll,
-          possible_thesis_title: thesis.research_theme || "",
-          co_supervisor_id: thesis.co_supervisor?.id || null,
-        },
-        { headers: authHeaders() },
-      );
+      const fd = new FormData();
+      fd.append("proposed_date", form.proposed_date);
+      fd.append("roll_no", thesis.student_roll);
+      fd.append("possible_thesis_title", thesis.research_theme || "");
+      if (thesis.co_supervisor?.id) {
+        fd.append("co_supervisor_id", thesis.co_supervisor.id);
+      }
+      if (firstDraftFile) {
+        fd.append("first_draft_document", firstDraftFile);
+      }
+      await axios.post(supervisorProposeOpenSeminarRoute, fd, {
+        headers: { ...authHeaders(), "Content-Type": "multipart/form-data" },
+      });
       showNotification({
         title: "Proposed",
         message: "Open Seminar sent for Convener (DPGC) review.",
@@ -94,7 +96,7 @@ export default function SupervisorProposeOpenSeminarModal({
     } finally {
       setLoading(false);
     }
-  }, [form, thesis, refresh]);
+  }, [form, firstDraftFile, thesis, refresh]);
 
   return (
     <Modal opened onClose={onClose} title="Propose Open Seminar" size="70%">
@@ -164,6 +166,12 @@ export default function SupervisorProposeOpenSeminarModal({
               </tr>
               <tr>
                 <td>
+                  <Text fw={500}>Credit earned through Teaching</Text>
+                </td>
+                <td>{eligibility?.teaching_credits ?? "—"}</td>
+              </tr>
+              <tr>
+                <td>
                   <Text fw={500}>No. of Semesters Completed</Text>
                 </td>
                 <td>{eligibility?.semesters_completed ?? "—"}</td>
@@ -211,20 +219,12 @@ export default function SupervisorProposeOpenSeminarModal({
             onChange={(e) => set("proposed_date")(e.target.value)}
             required
           />
-          <TextInput
-            label="Credit earned through Teaching"
-            description="Not tracked elsewhere in Fusion yet — enter manually"
-            type="number"
-            min={0}
-            value={form.teaching_credits}
-            onChange={(e) =>
-              set("teaching_credits")(Number(e.target.value) || 0)
-            }
-          />
-          <Checkbox
-            label="1st draft of thesis sent to Dean's office"
-            checked={form.first_draft_sent_to_dean}
-            onChange={(e) => set("first_draft_sent_to_dean")(e.target.checked)}
+          <FileInput
+            label="1st Draft of Thesis (sent to Dean's office)"
+            placeholder="Upload PDF"
+            accept="application/pdf"
+            value={firstDraftFile}
+            onChange={setFirstDraftFile}
           />
           <Group justify="flex-end">
             <Button variant="default" onClick={onClose}>

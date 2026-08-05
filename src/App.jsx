@@ -11,6 +11,8 @@ import Profile from "./Modules/Dashboard/StudentProfile/profilePage";
 import LoginPage from "./pages/login";
 import ThesisInvitationResponse from "./pages/thesisInvitationResponse";
 import ThesisEvaluationForm from "./pages/thesisEvaluationForm";
+import ThesisExaminerPanelResponse from "./pages/thesisExaminerPanelResponse";
+import ThesisExaminerPanelScoring from "./pages/thesisExaminerPanelScoring";
 import AcademicPage from "./Modules/Academic/index";
 import ThesisResearchPage from "./Modules/ThesisResearch/index";
 import ValidateAuth from "./helper/validateauth";
@@ -139,18 +141,18 @@ export default function App() {
   // Public, token-authenticated pages reached from emailed links (external
   // thesis examiners have no Fusion account) must skip the session-token
   // guard and inactivity timeout, same as the login page.
-  const isPublicRoute = location.pathname === "/accounts/login"
-    || location.pathname === "/reset-password"
-    || location.pathname.startsWith("/thesis-invitation/")
-    || location.pathname.startsWith("/thesis-evaluation/");
+  const isPublicRoute =
+    location.pathname === "/accounts/login" ||
+    location.pathname === "/reset-password" ||
+    location.pathname.startsWith("/thesis-invitation/") ||
+    location.pathname.startsWith("/thesis-evaluation/") ||
+    location.pathname.startsWith("/thesis-examiner-panel/");
 
   return (
     <MantineProvider theme={theme}>
       <Notifications position="top-center" autoClose={2000} limit={1} />
-      {location.pathname !== "/accounts/login" &&
-        location.pathname !== "/reset-password" && <ValidateAuth />}
-      {location.pathname !== "/accounts/login" &&
-        location.pathname !== "/reset-password" && <InactivityHandler />}
+      {!isPublicRoute && <ValidateAuth />}
+      {!isPublicRoute && <InactivityHandler />}
 
       <Routes>
         <Route path="/" element={<Navigate to="/accounts/login" replace />} />
@@ -203,9 +205,26 @@ export default function App() {
           }
         />
         <Route path="/accounts/login" element={<LoginPage />} />
-        <Route path="/reset-password" element={<Navigate to="/accounts/login" replace />} />
-        <Route path="/thesis-invitation/:token/:action" element={<ThesisInvitationResponse />} />
-        <Route path="/thesis-evaluation/:token" element={<ThesisEvaluationForm />} />
+        <Route
+          path="/reset-password"
+          element={<Navigate to="/accounts/login" replace />}
+        />
+        <Route
+          path="/thesis-invitation/:token/:action"
+          element={<ThesisInvitationResponse />}
+        />
+        <Route
+          path="/thesis-evaluation/:token"
+          element={<ThesisEvaluationForm />}
+        />
+        <Route
+          path="/thesis-examiner-panel/:token/:action"
+          element={<ThesisExaminerPanelResponse />}
+        />
+        <Route
+          path="/thesis-examiner-panel/:token/score"
+          element={<ThesisExaminerPanelScoring />}
+        />
         <Route path="/examination/*" element={<Examination />} />
         <Route path="/database/*" element={<Database />} />
         <Route

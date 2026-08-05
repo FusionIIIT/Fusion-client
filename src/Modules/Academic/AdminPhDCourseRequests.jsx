@@ -63,6 +63,7 @@ function toRow(type, r) {
     semesterNo: r.semester_no,
     student: r.student?.name ?? r.student,
     studentName: r.student?.name ?? r.student_name,
+    programmeCategory: r.programme_category || null,
   };
   if (type === "course") {
     return {
@@ -109,6 +110,7 @@ function toRow(type, r) {
 }
 
 export default function AdminPhDCourseRequests() {
+  const [programmeCategory, setProgrammeCategory] = useState("");
   const [semester, setSemester] = useState("");
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -173,13 +175,20 @@ export default function AdminPhDCourseRequests() {
     fetchAll();
   }, [fetchAll]);
 
+  const categoryFilteredRows = useMemo(
+    () =>
+      programmeCategory
+        ? rows.filter((r) => r.programmeCategory === programmeCategory)
+        : rows,
+    [rows, programmeCategory],
+  );
   const pendingRows = useMemo(
-    () => rows.filter((r) => r.status === "pending"),
-    [rows],
+    () => categoryFilteredRows.filter((r) => r.status === "pending"),
+    [categoryFilteredRows],
   );
   const processedRows = useMemo(
-    () => rows.filter((r) => r.status !== "pending"),
-    [rows],
+    () => categoryFilteredRows.filter((r) => r.status !== "pending"),
+    [categoryFilteredRows],
   );
   const filteredProcessedRows = useMemo(
     () =>
@@ -311,6 +320,19 @@ export default function AdminPhDCourseRequests() {
         <Stack spacing="md">
           <Group grow align="flex-start">
             <Select
+              label="Programme"
+              placeholder="All (PG + PhD)"
+              data={[
+                { value: "PG", label: "PG" },
+                { value: "PHD", label: "PhD" },
+              ]}
+              value={programmeCategory}
+              onChange={(value) => setProgrammeCategory(value || "")}
+              clearable
+            />
+          </Group>
+          <Group grow align="flex-start">
+            <Select
               label="Semester"
               placeholder="Select semester"
               data={Array.from({ length: 10 }, (_, i) => ({
@@ -368,8 +390,8 @@ export default function AdminPhDCourseRequests() {
         </Alert>
       ) : !semester ? (
         <Alert color="gray" mt="md">
-          Select a semester to view PhD registration requests (courses, thesis,
-          progress seminar and teaching credit).
+          Select a semester to view PG/PhD registration requests (courses,
+          thesis, progress seminar and teaching credit).
         </Alert>
       ) : (
         <Tabs defaultValue="pending" mt="md">

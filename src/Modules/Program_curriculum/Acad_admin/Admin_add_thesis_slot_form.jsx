@@ -14,10 +14,7 @@ import { useForm } from "@mantine/form";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { notifications } from "@mantine/notifications";
-import {
-  fetchAllTheses,
-  fetchSemesterDetails,
-} from "../api/api";
+import { fetchAllTheses, fetchSemesterDetails } from "../api/api";
 import { host } from "../../../routes/globalRoutes";
 
 const SLOT_NAME_PREFIX = "TH";
@@ -28,6 +25,7 @@ function Admin_add_thesis_slot_form() {
   const [error, setError] = useState(null);
   const [semesterOptions, setSemesterOptions] = useState([]);
   const [semesterNumberById, setSemesterNumberById] = useState({});
+  const [curriculumCategory, setCurriculumCategory] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -53,9 +51,12 @@ function Admin_add_thesis_slot_form() {
       duration: 1,
       minLimit: 0,
       maxLimit: 1000,
+      evaluationType: "blocks_sx",
     },
     validate: {
       slotName: (value) => (!value ? "Thesis slot name is required" : null),
+      evaluationType: (value) =>
+        !value ? "Evaluation type is required" : null,
     },
   });
 
@@ -73,9 +74,11 @@ function Admin_add_thesis_slot_form() {
             label: `${data.curriculum_name} v${data.curriculum_version} Sem-${semester.semester_number}`,
           }));
           setSemesterOptions(formattedOptions);
+          setCurriculumCategory(data.category || null);
           const numberById = {};
           data.semesters.forEach((semester) => {
-            numberById[semester.semester_id.toString()] = semester.semester_number;
+            numberById[semester.semester_id.toString()] =
+              semester.semester_number;
           });
           setSemesterNumberById(numberById);
           if (semesterid) {
@@ -96,7 +99,10 @@ function Admin_add_thesis_slot_form() {
   const handleSemesterChange = (value) => {
     form.setFieldValue("semester", value);
     const semNum = semesterNumberById[value];
-    form.setFieldValue("slotName", semNum ? `${SLOT_NAME_PREFIX}${semNum}` : "");
+    form.setFieldValue(
+      "slotName",
+      semNum ? `${SLOT_NAME_PREFIX}${semNum}` : "",
+    );
   };
 
   const handleThesisSelect = (selectedId) => {
@@ -116,6 +122,7 @@ function Admin_add_thesis_slot_form() {
         duration: values.duration,
         min_registration_limit: values.minLimit,
         max_registration_limit: values.maxLimit,
+        evaluation_type: values.evaluationType,
       };
       const token = localStorage.getItem("authToken");
       const response = await axios.post(
@@ -232,6 +239,21 @@ function Admin_add_thesis_slot_form() {
                   nothingFound="No theses available"
                   required
                 />
+
+                {curriculumCategory === "PG" && (
+                  <Select
+                    label="Evaluation Type"
+                    data={[
+                      { value: "blocks_sx", label: "S/X Grade" },
+                      { value: "decimal", label: "Decimal Score" },
+                    ]}
+                    value={form.values.evaluationType}
+                    onChange={(value) =>
+                      form.setFieldValue("evaluationType", value)
+                    }
+                    required
+                  />
+                )}
               </Stack>
 
               <Group position="right" mt="lg">

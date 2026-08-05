@@ -116,7 +116,7 @@ export const OPEN_SEMINAR_SHAPE = PropTypes.shape({
   total_credits: PropTypes.number,
   semesters_completed: PropTypes.number,
   rpc_recommended_open_seminar: PropTypes.bool,
-  first_draft_sent_to_dean: PropTypes.bool,
+  first_draft_document_url: PropTypes.string,
   hod_remarks: PropTypes.string,
   dean_remarks: PropTypes.string,
   nominee_attempt_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),

@@ -54,6 +54,7 @@ const YES_NO_NA = [
 
 export default function RPCReviewModal({ seminarId, onClose }) {
   const [data, setData] = useState(null);
+  const [saving, setSaving] = useState(false);
   const token = localStorage.getItem("authToken");
 
   useEffect(() => {
@@ -111,8 +112,10 @@ export default function RPCReviewModal({ seminarId, onClose }) {
     status,
     myComment,
     isConsented,
+    programme_category: programmeCategory,
   } = data;
 
+  const isPg = programmeCategory === "PG";
   const approved = status === "rpc_approved";
   const iHaveConsented = isConsented;
 
@@ -125,6 +128,7 @@ export default function RPCReviewModal({ seminarId, onClose }) {
   };
 
   const saveConsent = () => {
+    setSaving(true);
     axios
       .post(
         rpcSeminarConsentRoute(seminarId),
@@ -162,7 +166,8 @@ export default function RPCReviewModal({ seminarId, onClose }) {
           message: "Consent failed",
           color: "red",
         });
-      });
+      })
+      .finally(() => setSaving(false));
   };
 
   const finalize = () => {
@@ -352,47 +357,69 @@ export default function RPCReviewModal({ seminarId, onClose }) {
             onChange={(v) => updateField("overall_grade", v)}
             disabled={approved || iHaveConsented}
           />
-          <Select
-            label="Expected period"
-            data={PERIOD_OPTIONS}
-            value={expected_period}
-            onChange={(v) => updateField("expected_period", v)}
-            disabled={approved || iHaveConsented}
-          />
-          <Select
-            label="Continue assistantship?"
-            data={YES_NO_NA}
-            value={rec_assist}
-            onChange={(v) => updateField("rec_assist", v)}
-            disabled={approved || iHaveConsented}
-          />
-          <Select
-            label="Enhancement after 2 years?"
-            data={YES_NO_NA}
-            value={rec_enhance}
-            onChange={(v) => updateField("rec_enhance", v)}
-            disabled={approved || iHaveConsented}
-          />
-          <Select
-            label="Must repeat seminar?"
-            data={[
-              { value: "Yes", label: "Yes" },
-              { value: "NA", label: "Not Applicable" },
-            ]}
-            value={rec_repeat}
-            onChange={(v) => updateField("rec_repeat", v)}
-            disabled={approved || iHaveConsented}
-          />
-          <Select
-            label="Recommend open seminar?"
-            data={[
-              { value: "Yes", label: "Yes" },
-              { value: "No", label: "No" },
-            ]}
-            value={rec_open}
-            onChange={(v) => updateField("rec_open", v)}
-            disabled={approved || iHaveConsented}
-          />
+          {isPg ? (
+            <Select
+              label="Panel's Report / Recommendations"
+              data={[
+                {
+                  value: "Yes",
+                  label: "Must give Annual Progress Seminar again",
+                },
+                {
+                  value: "NA",
+                  label:
+                    "Not Applicable (in case not satisfied by the performance)",
+                },
+              ]}
+              value={rec_repeat}
+              onChange={(v) => updateField("rec_repeat", v)}
+              disabled={approved || iHaveConsented}
+            />
+          ) : (
+            <>
+              <Select
+                label="Expected period"
+                data={PERIOD_OPTIONS}
+                value={expected_period}
+                onChange={(v) => updateField("expected_period", v)}
+                disabled={approved || iHaveConsented}
+              />
+              <Select
+                label="Continue assistantship?"
+                data={YES_NO_NA}
+                value={rec_assist}
+                onChange={(v) => updateField("rec_assist", v)}
+                disabled={approved || iHaveConsented}
+              />
+              <Select
+                label="Enhancement after 2 years?"
+                data={YES_NO_NA}
+                value={rec_enhance}
+                onChange={(v) => updateField("rec_enhance", v)}
+                disabled={approved || iHaveConsented}
+              />
+              <Select
+                label="Must repeat seminar?"
+                data={[
+                  { value: "Yes", label: "Yes" },
+                  { value: "NA", label: "Not Applicable" },
+                ]}
+                value={rec_repeat}
+                onChange={(v) => updateField("rec_repeat", v)}
+                disabled={approved || iHaveConsented}
+              />
+              <Select
+                label="Recommend open seminar?"
+                data={[
+                  { value: "Yes", label: "Yes" },
+                  { value: "No", label: "No" },
+                ]}
+                value={rec_open}
+                onChange={(v) => updateField("rec_open", v)}
+                disabled={approved || iHaveConsented}
+              />
+            </>
+          )}
           <Space h="md" />
 
           {/* Comments Table */}
@@ -432,6 +459,7 @@ export default function RPCReviewModal({ seminarId, onClose }) {
             <Button
               fullWidth
               onClick={saveConsent}
+              loading={saving}
               disabled={approved || iHaveConsented}
             >
               {iHaveConsented ? "Already Consented" : "Save & Consent"}

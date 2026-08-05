@@ -34,6 +34,7 @@ import {
   IconSpeakerphone,
 } from "@tabler/icons-react";
 import axios from "axios";
+import PropTypes from "prop-types";
 import {
   adminThesisGradesListRoute,
   adminVerifyThesisGradesRoute,
@@ -67,6 +68,14 @@ function ThesisTitleCell({ title }) {
   );
 }
 
+ThesisTitleCell.propTypes = {
+  title: PropTypes.string,
+};
+
+ThesisTitleCell.defaultProps = {
+  title: "",
+};
+
 // One evaluation within a registration row: a checkbox (for the bulk verify/
 // announce action) plus its grade badge, rendered inline alongside its
 // siblings inside one shared "Grades" cell — not its own column. Remarks/
@@ -96,6 +105,17 @@ function AdminBlockCell({ ev, isSelected, onToggle }) {
     </Group>
   );
 }
+
+AdminBlockCell.propTypes = {
+  ev: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    submitted_by: PropTypes.string,
+    remarks: PropTypes.string,
+    grade: PropTypes.string,
+  }).isRequired,
+  isSelected: PropTypes.bool.isRequired,
+  onToggle: PropTypes.func.isRequired,
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Component
