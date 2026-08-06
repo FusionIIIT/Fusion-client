@@ -28,8 +28,13 @@ const parseValidDate = (value) => {
   return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
 };
 
-function PlacementScheduleGrid({ data, itemsPerPage, cardsPerRow }) {
+function PlacementScheduleGrid({ data, itemsPerPage, cardsPerRow, onUpdated }) {
   const [activePage, setActivePage] = useState(1);
+
+  // Reset to page 1 when the (filtered) data set changes, else a stale page can render blank.
+  useEffect(() => {
+    setActivePage(1);
+  }, [data.length]);
 
   const startIndex = (activePage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -61,6 +66,7 @@ function PlacementScheduleGrid({ data, itemsPerPage, cardsPerRow }) {
                 eligibilityReasons={item.eligibility_reasons}
                 eligibilityCriteria={item.eligibility_criteria}
                 check={item.check}
+                onUpdated={onUpdated}
               />
             ) : (
               <div />
@@ -69,7 +75,7 @@ function PlacementScheduleGrid({ data, itemsPerPage, cardsPerRow }) {
         ))}
       </Grid>
       <Pagination
-        page={activePage}
+        value={activePage}
         onChange={setActivePage}
         total={Math.ceil(data.length / itemsPerPage)}
         mt="xl"
@@ -90,6 +96,7 @@ PlacementScheduleGrid.propTypes = {
 
   itemsPerPage: PropTypes.number.isRequired,
   cardsPerRow: PropTypes.number.isRequired,
+  onUpdated: PropTypes.func,
 };
 
 function PlacementSchedule() {
@@ -191,7 +198,14 @@ function PlacementSchedule() {
       parseValidDate(event.placement_date) || parseValidDate(event.schedule_at),
   );
 
+  // Closed once the end datetime has passed (mirrors the card's isClosed).
+  const isEventClosed = (event) => {
+    const end = parseValidDate(event.end_datetime);
+    return !!end && end <= new Date();
+  };
+
   const activeEvents = filteredPlacementData.filter((event) => {
+    if (isEventClosed(event)) return false;
     const startDate = parseValidDate(event.placement_date);
     if (!startDate) return false;
 
@@ -200,6 +214,7 @@ function PlacementSchedule() {
 
   // Filter upcoming events
   const upcomingEvents = filteredPlacementData.filter((event) => {
+    if (isEventClosed(event)) return false;
     const startDate = parseValidDate(event.placement_date);
     if (!startDate) return false;
 
@@ -207,21 +222,7 @@ function PlacementSchedule() {
   });
 
   // Filter closed events
-  const closedEvents = filteredPlacementData.filter((event) => {
-    const endDateTime = parseValidDate(
-      event.schedule_at && event.time
-        ? `${event.schedule_at}T${event.time}`
-        : event.schedule_at,
-    );
-    if (!endDateTime) return false;
-
-    return endDateTime <= new Date(); // Closed if the event's end time is in the past
-  });
-
-  // const closedEvents = placementData.filter((event) => {
-  //   const endDateTime = new Date(`${event.schedule_at}T${event.time}`);
-  //   return endDateTime <= new Date();
-  // });
+  const closedEvents = filteredPlacementData.filter(isEventClosed);
 
   const handleAddEvent = () => {
     setIsModalOpen(true);
@@ -347,6 +348,7 @@ function PlacementSchedule() {
                   data={allEvents}
                   itemsPerPage={10}
                   cardsPerRow={2}
+                  onUpdated={() => fetchData()}
                 />
               ) : (
                 <div style={{ textAlign: "center", marginTop: "20px" }}>
@@ -361,6 +363,7 @@ function PlacementSchedule() {
                   data={activeEvents}
                   itemsPerPage={10}
                   cardsPerRow={2}
+                  onUpdated={() => fetchData()}
                 />
               ) : (
                 <div style={{ textAlign: "center", marginTop: "20px" }}>
@@ -375,6 +378,7 @@ function PlacementSchedule() {
                   data={upcomingEvents}
                   itemsPerPage={10}
                   cardsPerRow={2}
+                  onUpdated={() => fetchData()}
                 />
               ) : (
                 <div style={{ textAlign: "center", marginTop: "20px" }}>
@@ -390,6 +394,7 @@ function PlacementSchedule() {
                     data={closedEvents}
                     itemsPerPage={10}
                     cardsPerRow={2}
+                    onUpdated={() => fetchData()}
                   />
                 ) : (
                   <div style={{ textAlign: "center", marginTop: "20px" }}>

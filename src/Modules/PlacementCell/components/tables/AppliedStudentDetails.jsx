@@ -79,7 +79,7 @@ function JobApplicationsTable() {
     const fetchFieldsList = async () => {
       try {
         const response = await placementApi.getFormFields(jobId);
-        if (response.status === 200) {
+        if (response.status >= 200 && response.status < 300) {
           setFields(response.data);
         }
       } catch (error) {
@@ -115,7 +115,7 @@ function JobApplicationsTable() {
         applicationId,
         status,
       );
-      if (response.status === 200) {
+      if (response.status >= 200 && response.status < 300) {
         setApplications((prevApplications) =>
           prevApplications.map((application) =>
             application.id === applicationId
@@ -151,7 +151,7 @@ function JobApplicationsTable() {
 
     try {
       const response = await placementApi.deleteApplication(applicationId);
-      if (response.status === 200) {
+      if (response.status >= 200 && response.status < 300) {
         setApplications((prevApplications) =>
           prevApplications.filter(
             (application) => application.id !== applicationId,
@@ -227,7 +227,7 @@ function JobApplicationsTable() {
         application_ids: selectedIds,
       });
 
-      if (response.status === 201) {
+      if (response.status >= 200 && response.status < 300) {
         notifications.show({
           title: "Round Scheduled",
           message: `Interview scheduled for ${response.data.scheduled_candidates} candidate(s).`,

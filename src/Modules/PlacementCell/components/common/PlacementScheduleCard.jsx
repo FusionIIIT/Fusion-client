@@ -47,6 +47,7 @@ function PlacementScheduleCard({
   eligible,
   eligibilityReasons,
   check,
+  onUpdated,
 }) {
   const role = useSelector((state) => state.user.role);
   const isPlacementAdmin =
@@ -145,11 +146,11 @@ function PlacementScheduleCard({
   };
 
   const handleDeleteClick = async () => {
-    setVisible(false);
     try {
       const response = await placementApi.deletePlacementEvent(jobId);
 
       if (response.ok) {
+        setVisible(false);
         notifications.show({
           title: "Success",
           message: "Placement schedule deleted successfully!",
@@ -158,6 +159,7 @@ function PlacementScheduleCard({
           autoClose: 3000,
         });
         setIsModalOpen(false);
+        if (onUpdated) onUpdated();
       } else {
         const errorData = await response.json();
         const error = {
@@ -190,20 +192,17 @@ function PlacementScheduleCard({
   };
 
   const handleSubmit = async (newData) => {
-    // const formattedDate = newData.date && format(newData.date, "yyyy-MM-dd");
-
-    // const formattedTime = newData.time && format(newData.time, "HH:mm:ss");
-
     const updatedData = {
       placement_type: newData.placementType,
       company_name: newData.company || companyName,
       ctc: newData.ctc || salary,
-      description: newData.descriptionInput || description,
-      schedule_at: format(newData.time, "HH:mm:ss"),
-      placement_date: format(newData.date, "yyyy-MM-dd"),
-      end_date_time: format(newData.endDateTime, "yyyy-MM-dd HH:mm:ss"),
-      eligibility_criteria: newData.eligibilityCriteria || eligibilityCriteria,
-      location: newData.locationInput || location,
+      description: newData.description ?? description,
+      schedule_at: newData.schedule_at,
+      placement_date: newData.placement_date,
+      end_datetime: newData.end_datetime,
+      end_date: newData.end_date,
+      eligibility_criteria: eligibilityCriteria,
+      location: newData.location || location,
       role: newData.role || position,
     };
 
@@ -222,7 +221,8 @@ function PlacementScheduleCard({
           autoClose: 3000,
         });
 
-        setModalOpened(false);
+        setIsModalOpen(false);
+        if (onUpdated) onUpdated();
       } else {
         const errorData = await response.json();
         const error = {
@@ -499,6 +499,7 @@ PlacementScheduleCard.propTypes = {
   eligible: PropTypes.bool,
   eligibilityReasons: PropTypes.arrayOf(PropTypes.string),
   check: PropTypes.bool,
+  onUpdated: PropTypes.func,
 };
 
 export default PlacementScheduleCard;

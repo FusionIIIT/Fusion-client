@@ -25,7 +25,7 @@ export default function ThesisInvitationResponse() {
 
     (async () => {
       try {
-        const res = await axios.get(invitationActionRoute(token, action));
+        const res = await axios.post(invitationActionRoute(token, action), {});
         setStatus("done");
         setMessage(res.data?.detail || "Your response has been recorded.");
       } catch (e) {

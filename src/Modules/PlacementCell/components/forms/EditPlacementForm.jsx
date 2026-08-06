@@ -13,22 +13,35 @@ import {
   Button,
   MultiSelect,
 } from "@mantine/core";
-import { DateInput, TimeInput } from "@mantine/dates";
-import { notifications } from "@mantine/notifications";
+import { format } from "date-fns";
 import PropTypes from "prop-types";
 
+// Convert a stored datetime ("YYYY-MM-DD HH:mm:ss" or ISO) to a datetime-local input value.
+const toLocalInput = (value) => {
+  if (!value) return "";
+  const d = new Date(String(value).replace(" ", "T"));
+  return Number.isNaN(d.getTime()) ? "" : format(d, "yyyy-MM-dd'T'HH:mm");
+};
+
 function EditPlacementForm({ isOpen, onClose, placementData, onSubmit }) {
-  const { companyName, location, position, jobType, description, salary } =
-    placementData;
+  const {
+    companyName,
+    location,
+    position,
+    jobType,
+    description,
+    salary,
+    postedTime,
+    endDateTime,
+  } = placementData;
 
   const [company, setCompany] = useState(companyName);
-  const [date, setDate] = useState(new Date());
   const [locationInput, setLocation] = useState(location);
   const [ctc, setCtc] = useState(salary);
-  const [time, setTime] = useState(new Date());
+  const [scheduleAt, setScheduleAt] = useState(toLocalInput(postedTime));
+  const [endAt, setEndAt] = useState(toLocalInput(endDateTime));
   const [placementType, setPlacementType] = useState(jobType);
   const [descriptionInput, setDescription] = useState(description);
-  const [datePickerOpened, setDatePickerOpened] = useState(false);
   const [role, setRole] = useState(position);
 
   const [tpoFields] = useState([
@@ -39,14 +52,6 @@ function EditPlacementForm({ isOpen, onClose, placementData, onSubmit }) {
 
   const [selectedFields, setSelectedFields] = useState([]);
 
-  const getFormattedDate = (date_) => {
-    if (!date_) return null;
-    const year = date_.getFullYear();
-    const month = String(date_.getMonth() + 1).padStart(2, "0");
-    const day = String(date_.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  };
-
   const handleSubmit = () => {
     const parsedCtc = parseFloat(ctc);
     if (Number.isNaN(parsedCtc) || parsedCtc <= 0) {
@@ -54,27 +59,24 @@ function EditPlacementForm({ isOpen, onClose, placementData, onSubmit }) {
       return;
     }
 
-    const formattedCtc = parsedCtc.toFixed(2);
+    if (!scheduleAt) {
+      alert("Please pick a schedule date and time.");
+      return;
+    }
 
+    // Emit backend-ready field names/formats; the card reports the API result.
     onSubmit({
       company,
-      date: getFormattedDate(date),
       location: locationInput,
-      ctc: formattedCtc,
-      time,
+      ctc: parsedCtc.toFixed(2),
       placementType,
       description: descriptionInput,
       role,
+      schedule_at: scheduleAt.replace("T", " "),
+      placement_date: scheduleAt.split("T")[0],
+      end_datetime: endAt ? endAt.replace("T", " ") : null,
+      end_date: endAt ? endAt.split("T")[0] : null,
     });
-
-    notifications.show({
-      title: "Success",
-      message: "Placement event updated successfully!",
-      color: "green",
-      position: "top-center",
-    });
-
-    onClose();
   };
 
   return (
@@ -94,37 +96,20 @@ function EditPlacementForm({ isOpen, onClose, placementData, onSubmit }) {
           </Grid.Col>
 
           <Grid.Col span={4}>
-            <DateInput
-              label="Date"
-              placeholder="Pick a date"
-              value={date}
-              onChange={(d) => {
-                setDate(d);
-              }}
-              opened={datePickerOpened}
-              onFocus={() => setDatePickerOpened(true)}
-              onBlur={() => setDatePickerOpened(false)}
-              styles={{
-                input: {
-                  border: "1px solid #ced4da",
-                  borderRadius: "4px",
-                  padding: "10px",
-                  fontSize: "14px",
-                  width: "100%",
-                  boxSizing: "border-box",
-                  "&:focus": {
-                    outline: "none",
-                    borderColor: "#1c7ed6",
-                  },
-                },
-                label: {
-                  display: "block",
-                  marginBottom: "5px",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  color: "#425047",
-                },
-              }}
+            <TextInput
+              type="datetime-local"
+              label="Schedule (date & time)"
+              value={scheduleAt}
+              onChange={(e) => setScheduleAt(e.target.value)}
+            />
+          </Grid.Col>
+
+          <Grid.Col span={4}>
+            <TextInput
+              type="datetime-local"
+              label="Closes at (end)"
+              value={endAt}
+              onChange={(e) => setEndAt(e.target.value)}
             />
           </Grid.Col>
 
@@ -143,16 +128,6 @@ function EditPlacementForm({ isOpen, onClose, placementData, onSubmit }) {
               placeholder="Enter CTC"
               value={ctc}
               onChange={(e) => setCtc(e.target.value)}
-            />
-          </Grid.Col>
-
-          <Grid.Col span={4}>
-            <TimeInput
-              label="Time"
-              placeholder="Select time"
-              value={time}
-              onChange={setTime}
-              format="24"
             />
           </Grid.Col>
 
@@ -181,7 +156,7 @@ function EditPlacementForm({ isOpen, onClose, placementData, onSubmit }) {
             <TextInput
               label="Role Offered"
               placeholder="Enter the role offered"
-              value={position}
+              value={role}
               onChange={(e) => setRole(e.target.value)}
             />
           </Grid.Col>
@@ -218,6 +193,8 @@ EditPlacementForm.propTypes = {
     jobType: PropTypes.string.isRequired,
     description: PropTypes.string,
     salary: PropTypes.string,
+    postedTime: PropTypes.string,
+    endDateTime: PropTypes.string,
   }).isRequired,
   onSubmit: PropTypes.func.isRequired,
 };

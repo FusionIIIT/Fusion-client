@@ -225,7 +225,9 @@ export default function AdminPhDCourseRequests() {
         });
         return;
       }
-      const selectedRows = rows.filter((r) => selectedKeys.has(r.key));
+      const selectedRows = categoryFilteredRows.filter((r) =>
+        selectedKeys.has(r.key),
+      );
       const byType = {
         course: selectedRows
           .filter((r) => r.type === "course")
@@ -298,9 +300,7 @@ export default function AdminPhDCourseRequests() {
           message: `Processed ${selectedRows.length} item(s).`,
           color: "green",
         });
-        setSelectedKeys(new Set());
         setRemarks("");
-        await fetchAll();
       } catch (err) {
         showNotification({
           title: `${action === "approve" ? "Approval" : "Rejection"} Error`,
@@ -309,9 +309,13 @@ export default function AdminPhDCourseRequests() {
         });
       } finally {
         setProcessing(false);
+        // Deselect + refetch regardless: on partial failure the succeeded rows
+        // must drop out of the pending set so a retry can't re-POST them.
+        setSelectedKeys(new Set());
+        await fetchAll();
       }
     },
-    [selectedKeys, rows, remarks, fetchAll],
+    [selectedKeys, categoryFilteredRows, remarks, fetchAll],
   );
 
   return (
@@ -327,7 +331,10 @@ export default function AdminPhDCourseRequests() {
                 { value: "PHD", label: "PhD" },
               ]}
               value={programmeCategory}
-              onChange={(value) => setProgrammeCategory(value || "")}
+              onChange={(value) => {
+                setProgrammeCategory(value || "");
+                setSelectedKeys(new Set());
+              }}
               clearable
             />
           </Group>

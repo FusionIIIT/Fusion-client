@@ -61,7 +61,8 @@ function ApplyToPlacementForm({ jobID }) {
   const validateFields = () => {
     const newErrors = {};
     fields.forEach((field) => {
-      if (field.required && !formData[field.field_id]?.value) {
+      const val = formData[field.field_id]?.value;
+      if (field.required && (val === undefined || val === null || val === "")) {
         newErrors[field.field_id] = `${field.name} is required.`;
       }
     });

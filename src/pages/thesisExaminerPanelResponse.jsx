@@ -31,8 +31,9 @@ export default function ThesisExaminerPanelResponse() {
 
     (async () => {
       try {
-        const res = await axios.get(
+        const res = await axios.post(
           examinerPanelInvitationActionRoute(token, action),
+          {},
         );
         setStatus("done");
         setMessage(res.data?.detail || "Your response has been recorded.");

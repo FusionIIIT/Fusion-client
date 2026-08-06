@@ -117,7 +117,9 @@ function PhDCourseRegisterForm() {
       setTeachingCreditInfo(teachingCreditRes.data);
       setHasCourseRequestThisSemester(
         (myRequestsRes.data.requests || []).some(
-          (r) => r.semester_no === slotsRes.data.semester_no,
+          (r) =>
+            r.semester_no === slotsRes.data.semester_no &&
+            r.status !== "rejected",
         ),
       );
     } catch (err) {
@@ -148,26 +150,29 @@ function PhDCourseRegisterForm() {
   // submitted -- a course request, or a thesis/seminar/teaching-credit
   // registration -- that semester's registration is closed. No re-opening
   // the form to add more later; status lives entirely in "My Requests".
+  const isActiveReg = (reg) => !!reg && reg.status !== "rejected";
   const hasSubmittedThisSemester =
     hasCourseRequestThisSemester ||
-    !!thesisInfo?.registration ||
-    !!seminarInfo?.registration ||
-    !!teachingCreditInfo?.registration;
+    isActiveReg(thesisInfo?.registration) ||
+    isActiveReg(seminarInfo?.registration) ||
+    isActiveReg(teachingCreditInfo?.registration);
 
   const coursesToSubmit = slots.filter((s) => s.selectedCourse);
   const thesisTopicApproved =
     !!thesisInfo?.thesis_topic?.status &&
     thesisInfo.thesis_topic.status === "dean_approved";
   const canEnrollThesis =
-    thesisTopicApproved && thesisInfo?.thesis_slot && !thesisInfo?.registration;
+    thesisTopicApproved &&
+    thesisInfo?.thesis_slot &&
+    !isActiveReg(thesisInfo?.registration);
   const canEnrollSeminar =
     seminarInfo?.thesis_topic_approved &&
     seminarInfo?.progress_seminar_slot &&
-    !seminarInfo?.registration;
+    !isActiveReg(seminarInfo?.registration);
   const canEnrollTeachingCredit =
     teachingCreditInfo?.comprehensive_exam_passed &&
     teachingCreditInfo?.teaching_credit_slot &&
-    !teachingCreditInfo?.registration;
+    !isActiveReg(teachingCreditInfo?.registration);
 
   const willEnrollThesis = canEnrollThesis && !!selectedThesis;
   const willEnrollSeminar = canEnrollSeminar && !!selectedSeminar;
@@ -291,7 +296,6 @@ function PhDCourseRegisterForm() {
       setSelectedThesis("");
       setSelectedSeminar("");
       setSelectedTeachingCredit("");
-      fetchAll();
     } catch (err) {
       showNotification({
         title: "Submit failed",
@@ -300,6 +304,9 @@ function PhDCourseRegisterForm() {
       });
     } finally {
       setSubmitting(false);
+      // Refetch regardless: a partial failure still creates some requests, so
+      // reflect them and lock the form instead of allowing a duplicate re-POST.
+      fetchAll();
     }
   };
 
@@ -371,7 +378,7 @@ function PhDCourseRegisterForm() {
       <Card withBorder p="md">
         <Group gap="xs" align="center" mb="md">
           <Title order={5}>Thesis</Title>
-          {!thesisInfo?.registration && !thesisTopicApproved && (
+          {!isActiveReg(thesisInfo?.registration) && !thesisTopicApproved && (
             <Tooltip label="Your thesis topic must be dean-approved before you can enroll.">
               <Badge color="red" variant="light">
                 Requires Dean-Approved Topic
@@ -379,7 +386,7 @@ function PhDCourseRegisterForm() {
             </Tooltip>
           )}
         </Group>
-        {thesisInfo?.registration ? (
+        {isActiveReg(thesisInfo?.registration) ? (
           <Badge color={REG_BADGE_COLOR[thesisInfo.registration.status]}>
             {thesisInfo.registration.credits} credits —{" "}
             {thesisInfo.registration.status}
@@ -437,7 +444,7 @@ function PhDCourseRegisterForm() {
       <Card withBorder p="md">
         <Group gap="xs" align="center" mb="md">
           <Title order={5}>Progress Seminar</Title>
-          {!seminarInfo?.registration &&
+          {!isActiveReg(seminarInfo?.registration) &&
             !seminarInfo?.thesis_topic_approved && (
               <Tooltip label="Your thesis topic must be dean-approved before you can enroll.">
                 <Badge color="red" variant="light">
@@ -446,7 +453,7 @@ function PhDCourseRegisterForm() {
               </Tooltip>
             )}
         </Group>
-        {seminarInfo?.registration ? (
+        {isActiveReg(seminarInfo?.registration) ? (
           <Badge color={REG_BADGE_COLOR[seminarInfo.registration.status]}>
             {seminarInfo.registration.status}
           </Badge>
@@ -491,7 +498,7 @@ function PhDCourseRegisterForm() {
       <Card withBorder p="md">
         <Group gap="xs" align="center" mb="md">
           <Title order={5}>Teaching Credit</Title>
-          {!teachingCreditInfo?.registration &&
+          {!isActiveReg(teachingCreditInfo?.registration) &&
             !teachingCreditInfo?.comprehensive_exam_passed && (
               <Tooltip label="Comprehensive Examination must be passed before you can enroll.">
                 <Badge color="red" variant="light">
@@ -500,7 +507,7 @@ function PhDCourseRegisterForm() {
               </Tooltip>
             )}
         </Group>
-        {teachingCreditInfo?.registration ? (
+        {isActiveReg(teachingCreditInfo?.registration) ? (
           <Badge
             color={REG_BADGE_COLOR[teachingCreditInfo.registration.status]}
           >

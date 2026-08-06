@@ -86,7 +86,7 @@ function DebarredStudents() {
     try {
       const response = await placementApi.removeDebarredStatus(rollNumber);
 
-      if (response.status === 200) {
+      if (response.status >= 200 && response.status < 300) {
         notifications.show({
           title: "Success",
           message: "Removed student from debarred list.",
@@ -169,7 +169,7 @@ function DebarredStudents() {
     try {
       const response = await placementApi.debarStudent(formattedRoll, payload);
 
-      if (response.status === 200) {
+      if (response.status >= 200 && response.status < 300) {
         setDebarredStudents((prev) => [
           ...prev,
           {

@@ -5,6 +5,7 @@ import { notifications } from "@mantine/notifications";
 import { placementApi } from "../services/api";
 
 function formatTimeLeft(ms) {
+  if (!Number.isFinite(ms)) return "—";
   if (ms <= 0) return "Expired";
   const totalSeconds = Math.floor(ms / 1000);
   const hours = Math.floor(totalSeconds / 3600);
@@ -44,10 +45,11 @@ export default function OfferDetailPage() {
   }, [offerId]);
 
   useEffect(() => {
-    if (!offer || !offer.response_deadline) return;
+    if (!offer || !offer.response_deadline) return undefined;
+    const deadlineMs = new Date(offer.response_deadline).getTime();
+    if (Number.isNaN(deadlineMs)) return undefined;
     const interval = setInterval(() => {
-      const deadline = new Date(offer.response_deadline).getTime();
-      setTimeLeft(deadline - Date.now());
+      setTimeLeft(deadlineMs - Date.now());
     }, 1000);
     return () => clearInterval(interval);
   }, [offer]);
@@ -58,7 +60,7 @@ export default function OfferDetailPage() {
       if (response.status === 200) {
         notifications.show({
           title: "Success",
-          message: `Offer ${action.toLowerCase()}ed successfully!`,
+          message: `Offer ${action.toLowerCase()} successfully!`,
           color: "green",
         });
         navigate("/placement-cell");
