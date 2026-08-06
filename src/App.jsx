@@ -1,5 +1,6 @@
 import { createTheme, MantineProvider, Center, Loader } from "@mantine/core";
 import "@mantine/core/styles.css";
+import "@mantine/dates/styles.css";
 import "@mantine/notifications/styles.css";
 import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -8,13 +9,19 @@ import { Layout } from "./components/layout";
 import Dashboard from "./Modules/Dashboard/dashboardNotifications";
 import Profile from "./Modules/Dashboard/StudentProfile/profilePage";
 import LoginPage from "./pages/login";
+import ThesisInvitationResponse from "./pages/thesisInvitationResponse";
+import ThesisEvaluationForm from "./pages/thesisEvaluationForm";
+import ThesisExaminerPanelResponse from "./pages/thesisExaminerPanelResponse";
+import ThesisExaminerPanelScoring from "./pages/thesisExaminerPanelScoring";
 import AcademicPage from "./Modules/Academic/index";
+import ThesisResearchPage from "./Modules/ThesisResearch/index";
 import ValidateAuth from "./helper/validateauth";
 import FacultyProfessionalProfile from "./Modules/facultyProfessionalProfile/facultyProfessionalProfile";
 import InactivityHandler from "./helper/inactivityhandler";
 import Examination from "./Modules/Examination/examination";
 import Database from "./Modules/Database/database";
 import ProgrammeCurriculumRoutes from "./Modules/Program_curriculum/programmCurriculum";
+import PlacementCellRoutes from "./routes/placementCellRoutes/PlacementCellRoutes";
 import NotFoundPage from "./components/NotFoundPage";
 
 const theme = createTheme({
@@ -49,8 +56,14 @@ export default function App() {
     const channel = new BroadcastChannel("fusion-auth-session");
     const onMessage = (event) => {
       const msg = event?.data;
-      if (msg?.type === "SESSION_CHECK" && sessionStorage.getItem("authToken")) {
-        channel.postMessage({ type: "SESSION_ACTIVE", requestId: msg.requestId });
+      if (
+        msg?.type === "SESSION_CHECK" &&
+        sessionStorage.getItem("authToken")
+      ) {
+        channel.postMessage({
+          type: "SESSION_ACTIVE",
+          requestId: msg.requestId,
+        });
       }
     };
     channel.addEventListener("message", onMessage);
@@ -125,11 +138,21 @@ export default function App() {
     );
   }
 
+  // Public, token-authenticated pages reached from emailed links (external
+  // thesis examiners have no Fusion account) must skip the session-token
+  // guard and inactivity timeout, same as the login page.
+  const isPublicRoute =
+    location.pathname === "/accounts/login" ||
+    location.pathname === "/reset-password" ||
+    location.pathname.startsWith("/thesis-invitation/") ||
+    location.pathname.startsWith("/thesis-evaluation/") ||
+    location.pathname.startsWith("/thesis-examiner-panel/");
+
   return (
     <MantineProvider theme={theme}>
       <Notifications position="top-center" autoClose={2000} limit={1} />
-      {location.pathname !== "/accounts/login" && location.pathname !== "/reset-password" && <ValidateAuth />}
-      {location.pathname !== "/accounts/login" && location.pathname !== "/reset-password" && <InactivityHandler />}
+      {!isPublicRoute && <ValidateAuth />}
+      {!isPublicRoute && <InactivityHandler />}
 
       <Routes>
         <Route path="/" element={<Navigate to="/accounts/login" replace />} />
@@ -146,6 +169,14 @@ export default function App() {
           element={
             <Layout>
               <AcademicPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/thesis-research"
+          element={
+            <Layout>
+              <ThesisResearchPage />
             </Layout>
           }
         />
@@ -174,9 +205,36 @@ export default function App() {
           }
         />
         <Route path="/accounts/login" element={<LoginPage />} />
-        <Route path="/reset-password" element={<Navigate to="/accounts/login" replace />} />
+        <Route
+          path="/reset-password"
+          element={<Navigate to="/accounts/login" replace />}
+        />
+        <Route
+          path="/thesis-invitation/:token/:action"
+          element={<ThesisInvitationResponse />}
+        />
+        <Route
+          path="/thesis-evaluation/:token"
+          element={<ThesisEvaluationForm />}
+        />
+        <Route
+          path="/thesis-examiner-panel/:token/:action"
+          element={<ThesisExaminerPanelResponse />}
+        />
+        <Route
+          path="/thesis-examiner-panel/:token/score"
+          element={<ThesisExaminerPanelScoring />}
+        />
         <Route path="/examination/*" element={<Examination />} />
         <Route path="/database/*" element={<Database />} />
+        <Route
+          path="/placement-cell/*"
+          element={
+            <Layout>
+              <PlacementCellRoutes />
+            </Layout>
+          }
+        />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </MantineProvider>

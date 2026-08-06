@@ -16,7 +16,12 @@ import {
   Modal,
   Stack,
 } from "@mantine/core";
-import { IconDownload, IconEye, IconArchive, IconSearch } from "@tabler/icons-react";
+import {
+  IconDownload,
+  IconEye,
+  IconArchive,
+  IconSearch,
+} from "@tabler/icons-react";
 import axios from "axios";
 import {
   checkAllocationRoute,
@@ -30,13 +35,10 @@ import {
 /* ── helpers ── */
 const CURRENT_YEAR = new Date().getFullYear();
 
-const yearOptions = Array.from(
-  { length: CURRENT_YEAR - 2021 + 1 },
-  (_, i) => {
-    const y = String(CURRENT_YEAR - i);
-    return { value: y, label: y };
-  },
-);
+const yearOptions = Array.from({ length: CURRENT_YEAR - 2021 + 1 }, (_, i) => {
+  const y = String(CURRENT_YEAR - i);
+  return { value: y, label: y };
+});
 
 const semesterOptions = Array.from({ length: 8 }, (_, i) => ({
   value: String(i + 1),
@@ -87,7 +89,9 @@ function AllocateCourses() {
         setAllocationResults(res.data);
         setSearchQuery("");
       }
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
     setResultsLoading(false);
   };
 
@@ -100,21 +104,31 @@ function AllocateCourses() {
     setSearchQuery("");
 
     const tok = getToken();
-    if (!tok) { setError("No token found"); setLoading(false); return; }
+    if (!tok) {
+      setError("No token found");
+      setLoading(false);
+      return;
+    }
 
     try {
       const res = await axios.post(
         checkAllocationRoute,
         { batch, sem: semester, year, programme_type: programmeType },
-        { headers: { Authorization: `Token ${tok}`, "Content-Type": "application/json" } },
+        {
+          headers: {
+            Authorization: `Token ${tok}`,
+            "Content-Type": "application/json",
+          },
+        },
       );
       const r = res.data;
       if (r.status === 2) {
         setSuccess("Courses are successfully allocated.");
-        setLoading(false);                 // stop this spinner before the results spinner starts
+        setLoading(false); // stop this spinner before the results spinner starts
         await fetchAllocationResults();
         return;
-      } else if (r.status === 1) {
+      }
+      if (r.status === 1) {
         setError("Courses not yet allocated. Start allocation.");
         setShowStartButton(true);
       } else if (r.status === -1) {
@@ -234,11 +248,25 @@ function AllocateCourses() {
     try {
       const res = await axios.post(
         exportAllocationCourseRoute,
-        { batch, sem: semester, year, programme_type: programmeType, course_db_id: course.course_db_id },
-        { headers: { Authorization: `Token ${getToken()}` }, responseType: "blob" },
+        {
+          batch,
+          sem: semester,
+          year,
+          programme_type: programmeType,
+          course_db_id: course.course_db_id,
+        },
+        {
+          headers: { Authorization: `Token ${getToken()}` },
+          responseType: "blob",
+        },
       );
-      triggerDownload(new Blob([res.data]), `${batch}_Sem${semester}_${course.course_code}.xlsx`);
-    } catch { /* silent */ }
+      triggerDownload(
+        new Blob([res.data]),
+        `${batch}_Sem${semester}_${course.course_code}.xlsx`,
+      );
+    } catch {
+      /* silent */
+    }
     setExportingId(null);
   };
 
@@ -248,10 +276,18 @@ function AllocateCourses() {
       const res = await axios.post(
         exportAllAllocationCoursesRoute,
         { batch, sem: semester, year, programme_type: programmeType },
-        { headers: { Authorization: `Token ${getToken()}` }, responseType: "blob" },
+        {
+          headers: { Authorization: `Token ${getToken()}` },
+          responseType: "blob",
+        },
       );
-      triggerDownload(new Blob([res.data]), `${batch}_Sem${semester}_AllCourses.zip`);
-    } catch { /* silent */ }
+      triggerDownload(
+        new Blob([res.data]),
+        `${batch}_Sem${semester}_AllCourses.zip`,
+      );
+    } catch {
+      /* silent */
+    }
     setExportingAll(false);
   };
 
@@ -263,7 +299,10 @@ function AllocateCourses() {
     const rows = allocationResults.student_wise;
     if (!q) return rows;
     return rows.filter((row) => {
-      const courseText = row.courses.map((c) => `${c.code} ${c.name}`).join(" ").toLowerCase();
+      const courseText = row.courses
+        .map((c) => `${c.code} ${c.name}`)
+        .join(" ")
+        .toLowerCase();
       return (
         row.student_id.toLowerCase().includes(q) ||
         row.student_name.toLowerCase().includes(q) ||
@@ -279,7 +318,10 @@ function AllocateCourses() {
     if (!q) return courses;
     return courses.filter((c) => {
       const stuText = c.students
-        .map((s) => `${s.roll_no} ${s.full_name} ${s.discipline} ${s.email} ${s.registration_type}`)
+        .map(
+          (s) =>
+            `${s.roll_no} ${s.full_name} ${s.discipline} ${s.email} ${s.registration_type}`,
+        )
         .join(" ")
         .toLowerCase();
       return (
@@ -294,10 +336,20 @@ function AllocateCourses() {
   /* ── Student-wise tab ── */
   const renderStudentWise = () => {
     if (!filteredStudents.length)
-      return <Text color="dimmed" mt="sm">{q ? "No results match your search." : "No records found."}</Text>;
+      return (
+        <Text color="dimmed" mt="sm">
+          {q ? "No results match your search." : "No records found."}
+        </Text>
+      );
     return (
       <ScrollArea mt="sm">
-        <Table striped highlightOnHover withBorder withColumnBorders fontSize="sm">
+        <Table
+          striped
+          highlightOnHover
+          withBorder
+          withColumnBorders
+          fontSize="sm"
+        >
           <thead>
             <tr>
               <th style={{ width: 60 }}>S. No</th>
@@ -334,7 +386,11 @@ function AllocateCourses() {
   /* ── Course-wise tab ── */
   const renderCourseWise = () => {
     if (!filteredCourses.length)
-      return <Text color="dimmed" mt="sm">{q ? "No results match your search." : "No records found."}</Text>;
+      return (
+        <Text color="dimmed" mt="sm">
+          {q ? "No results match your search." : "No records found."}
+        </Text>
+      );
 
     return (
       <>
@@ -352,15 +408,26 @@ function AllocateCourses() {
         <Stack spacing="sm">
           {filteredCourses.map((course, idx) => (
             <Card key={course.course_db_id} withBorder p="sm" radius="md">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  gap: 12,
+                }}
+              >
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <Text weight={600} style={{ wordBreak: "break-word" }}>
-                    <Text component="span" color="dimmed" weight={400} mr={6}>{idx + 1}.</Text>
+                    <Text component="span" color="dimmed" weight={400} mr={6}>
+                      {idx + 1}.
+                    </Text>
                     {course.course_code} — {course.course_name}
                   </Text>
                   <Text size="xs" color="dimmed" mt={2}>
-                    Instructor: {course.instructor} &nbsp;|&nbsp; {course.students.length} students
-                    &nbsp;|&nbsp; {allocationResults.semester_type}, {allocationResults.academic_year}
+                    Instructor: {course.instructor} &nbsp;|&nbsp;{" "}
+                    {course.students.length} students &nbsp;|&nbsp;{" "}
+                    {allocationResults.semester_type},{" "}
+                    {allocationResults.academic_year}
                   </Text>
                 </div>
                 <Stack spacing={6} style={{ flexShrink: 0 }}>
@@ -401,7 +468,11 @@ function AllocateCourses() {
         opened={!!slotIssues?.length}
         onClose={() => setSlotIssues(null)}
         size="lg"
-        title={<Text fw={700} c="red.7">Courses missing from their course slot</Text>}
+        title={
+          <Text fw={700} c="red.7">
+            Courses missing from their course slot
+          </Text>
+        }
       >
         <Stack gap="md">
           <Alert color="yellow" variant="light">
@@ -487,7 +558,12 @@ function AllocateCourses() {
         onClose={() => setPreviewCourse(null)}
         size="90%"
         styles={{
-          body: { padding: "16px 20px", display: "flex", flexDirection: "column", height: "85vh" },
+          body: {
+            padding: "16px 20px",
+            display: "flex",
+            flexDirection: "column",
+            height: "85vh",
+          },
         }}
         title={
           <Text weight={700} color="blue" size="md">
@@ -497,7 +573,8 @@ function AllocateCourses() {
       >
         <Stack spacing={2} mb="xs" align="center">
           <Text weight={700} color="blue" align="center" size="sm">
-            PDPM INDIAN INSTITUTE OF INFORMATION TECHNOLOGY, DESIGN AND MANUFACTURING JABALPUR
+            PDPM INDIAN INSTITUTE OF INFORMATION TECHNOLOGY, DESIGN AND
+            MANUFACTURING JABALPUR
           </Text>
           <Text weight={600} align="center" size="sm">
             {semester_type.toUpperCase()}, {academic_year}
@@ -511,7 +588,8 @@ function AllocateCourses() {
           <Text size="sm">Course Title: {course_name}</Text>
           <Text size="sm">Instructor: {instructor}</Text>
           <Text size="sm" color="blue">
-            List Type: {programme_type} - Complete Roll List (All Registration Types)
+            List Type: {programme_type} - Complete Roll List (All Registration
+            Types)
           </Text>
         </Stack>
 
@@ -524,7 +602,14 @@ function AllocateCourses() {
             fontSize="xs"
             style={{ tableLayout: "fixed", width: "100%" }}
           >
-            <thead style={{ position: "sticky", top: 0, background: "#fff", zIndex: 1 }}>
+            <thead
+              style={{
+                position: "sticky",
+                top: 0,
+                background: "#fff",
+                zIndex: 1,
+              }}
+            >
               <tr>
                 <th style={{ width: 50 }}>S. No</th>
                 <th style={{ width: 110 }}>Roll No</th>
@@ -542,7 +627,9 @@ function AllocateCourses() {
                   <td>{s.roll_no}</td>
                   <td>{s.full_name}</td>
                   <td>{s.discipline}</td>
-                  <td style={{ wordBreak: "break-all", fontSize: 11 }}>{s.email}</td>
+                  <td style={{ wordBreak: "break-all", fontSize: 11 }}>
+                    {s.email}
+                  </td>
                   <td>{s.registration_type}</td>
                   <td />
                 </tr>
@@ -573,7 +660,14 @@ function AllocateCourses() {
       </Text>
 
       {/* 2-column × 2-row form grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: 24 }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "16px",
+          marginBottom: 24,
+        }}
+      >
         <Select
           label="Programme Type"
           placeholder="Select programme type"
@@ -582,6 +676,7 @@ function AllocateCourses() {
           data={[
             { value: "UG", label: "Undergraduate (UG)" },
             { value: "PG", label: "Postgraduate (PG)" },
+            { value: "PHD", label: "PhD" },
           ]}
         />
         <Select
@@ -619,7 +714,13 @@ function AllocateCourses() {
       </Button>
 
       {loading && (
-        <div style={{ display: "flex", justifyContent: "center", marginTop: "1rem" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "1rem",
+          }}
+        >
           <Loader variant="dots" />
         </div>
       )}
@@ -649,7 +750,13 @@ function AllocateCourses() {
       )}
 
       {resultsLoading && (
-        <div style={{ display: "flex", justifyContent: "center", marginTop: "1.5rem" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "1.5rem",
+          }}
+        >
           <Loader variant="dots" />
         </div>
       )}
@@ -676,15 +783,20 @@ function AllocateCourses() {
             <Tabs.List>
               <Tabs.Tab value="student">
                 Student-wise ({filteredStudents.length}
-                {q && allocationResults.student_wise.length !== filteredStudents.length
+                {q &&
+                allocationResults.student_wise.length !==
+                  filteredStudents.length
                   ? ` of ${allocationResults.student_wise.length}`
-                  : ""} students)
+                  : ""}{" "}
+                students)
               </Tabs.Tab>
               <Tabs.Tab value="course">
                 Course-wise ({filteredCourses.length}
-                {q && allocationResults.course_wise.length !== filteredCourses.length
+                {q &&
+                allocationResults.course_wise.length !== filteredCourses.length
                   ? ` of ${allocationResults.course_wise.length}`
-                  : ""} courses)
+                  : ""}{" "}
+                courses)
               </Tabs.Tab>
             </Tabs.List>
 

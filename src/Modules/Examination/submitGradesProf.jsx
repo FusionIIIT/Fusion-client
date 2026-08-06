@@ -25,6 +25,7 @@ export default function SubmitGradesProf() {
   const programmeTypes = [
     { value: "UG", label: "UG (Undergraduate)" },
     { value: "PG", label: "PG (Postgraduate)" },
+    { value: "PHD", label: "PhD" },
   ];
   const userRole = useSelector((s) => s.user.role);
 
@@ -127,9 +128,9 @@ export default function SubmitGradesProf() {
   const handleFileChange = (file) => setExcelFile(file);
 
   const handleApiError = (error, operation) => {
-    if (error.response?.status === 400 && 
+    if (error.response?.status === 400 &&
         error.response?.data?.error?.includes('specify programme_type')) {
-      setError(`This course has both UG and PG students. The ${programmeType} filter is applied to show only relevant students.`);
+      setError(`${error.response.data.error} The ${programmeType} filter is applied to show only relevant students.`);
     } else {
       setError(`Error ${operation}: ${error.response?.data?.error || error.message}`);
     }
@@ -195,7 +196,18 @@ export default function SubmitGradesProf() {
         color: "green",
       });
     } catch (err) {
-      setError(`Error downloading template: ${err.response?.data?.error || err.message}`);
+      let serverMessage = null;
+      if (err.response?.data instanceof Blob) {
+        try {
+          const text = await err.response.data.text();
+          serverMessage = JSON.parse(text)?.error;
+        } catch {
+          serverMessage = null;
+        }
+      } else {
+        serverMessage = err.response?.data?.error;
+      }
+      setError(`Error downloading template: ${serverMessage || err.message}`);
     } finally {
       setLoading(false);
     }
@@ -280,7 +292,7 @@ export default function SubmitGradesProf() {
 
       if (msg.includes("ALREADY BEEN SUBMITTED")) {
         const progTypeText = programmeType && programmeType !== 'All' ? ` for ${programmeType} students` : '';
-        setError(`This course has already been submitted${progTypeText}. If you need to submit grades for a different programme type (UG/PG), please contact the administrator or check if separate submissions are allowed.`);
+        setError(`This course has already been submitted${progTypeText}. If you need to submit grades for a different programme type (UG/PG/PhD), please contact the administrator or check if separate submissions are allowed.`);
       } else {
         const parts = msg.split("\n").map((s) => s.trim()).filter((s) => s);
         if (parts.length > 1) setErrorList(parts);

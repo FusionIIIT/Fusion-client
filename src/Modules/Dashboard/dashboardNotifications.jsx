@@ -1,21 +1,22 @@
 import axios from "axios";
 import PropTypes from "prop-types";
-import { SortAscending } from "@phosphor-icons/react";
-import { useEffect, useMemo, useState } from "react";
+import { CaretDown, CaretUp, SortAscending } from "@phosphor-icons/react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import {
+  Anchor,
   Container,
   Loader,
   Badge,
   Button,
   Divider,
   Flex,
-  Grid,
   Paper,
   Select,
+  Stack,
   Text,
   CloseButton,
 } from "@mantine/core";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import classes from "./Dashboard.module.css";
 import { Empty } from "../../components/empty";
 import CustomBreadcrumbs from "../../components/Breadcrumbs.jsx";
@@ -26,8 +27,34 @@ import {
   getNotificationsRoute,
 } from "../../routes/dashboardRoutes";
 import ModuleTabs from "../../components/moduleTabs.jsx";
+import CreateAnnouncementForm from "./CreateAnnouncementForm.jsx";
+import {
+  incrementUnreadCount,
+  decrementUnreadCount,
+} from "../../redux/notificationSlice";
 
 const categories = ["Most Recent", "Tags", "Title"];
+
+const URL_PATTERN = /(https?:\/\/[^\s]+)/;
+
+function linkifyText(text) {
+  if (!text) return text;
+  return text.split(URL_PATTERN).map((segment, index) => {
+    if (!URL_PATTERN.test(segment)) return segment;
+    const trailingPunctuation = segment.match(/[).,!?;:'"]+$/)?.[0] ?? "";
+    const url = trailingPunctuation
+      ? segment.slice(0, -trailingPunctuation.length)
+      : segment;
+    return (
+      <Fragment key={index}>
+        <Anchor href={url} target="_blank" rel="noopener noreferrer">
+          {url}
+        </Anchor>
+        {trailingPunctuation}
+      </Fragment>
+    );
+  });
+}
 
 function NotificationItem({
   notification,
@@ -36,59 +63,89 @@ function NotificationItem({
   markAsUnread,
   loading,
 }) {
-  const { module } = notification.data;
+  const [expanded, setExpanded] = useState(false);
+  const { module, flag } = notification.data;
+  const isAnnouncement = flag === "announcement";
 
   return (
-    <Grid.Col span={{ base: 12, md: 6 }} key={notification.id}>
-      <Paper
-        radius="md"
-        px="lg"
-        pt="sm"
-        pb="xl"
-        style={{ borderLeft: "0.6rem solid #15ABFF" }}
-        withBorder
-        maw="1240px"
-      >
-        <Flex justify="space-between">
-          <Flex direction="column">
-            <Flex gap="md">
-              <Text fw={600} size="1.2rem" mb="0.4rem">
-                {notification.verb}
-              </Text>
-              <Badge color="#15ABFF">{module || "N/A"}</Badge>
-            </Flex>
-            <Text c="#6B6B6B" size="0.7rem">
-              {new Date(notification.timestamp).toLocaleDateString()}
+    <Paper
+      radius="md"
+      p="md"
+      withBorder
+      style={{
+        borderLeft: `0.4rem solid ${notification.unread ? "#15ABFF" : "#E0E0E0"}`,
+        cursor: "pointer",
+      }}
+      onClick={() => setExpanded((prev) => !prev)}
+    >
+      <Flex justify="space-between" align="center" gap="sm" wrap="nowrap">
+        <Flex align="center" gap="sm" style={{ flex: 1, minWidth: 0 }}>
+          <Text
+            fw={notification.unread ? 700 : 500}
+            truncate="end"
+            style={{ flexShrink: 0, maxWidth: "45%" }}
+          >
+            {notification.verb}
+          </Text>
+          {!isAnnouncement && (
+            <Badge color="#15ABFF" size="sm" style={{ flexShrink: 0 }}>
+              {module || "N/A"}
+            </Badge>
+          )}
+          {!expanded && (
+            <Text
+              c="#6B6B6B"
+              size="sm"
+              truncate="end"
+              style={{ flex: 1, minWidth: 0 }}
+            >
+              {notification.description}
             </Text>
-            <Divider my="sm" w="10rem" />
-          </Flex>
+          )}
+        </Flex>
+        <Flex align="center" gap="xs" style={{ flexShrink: 0 }}>
+          <Text c="#6B6B6B" size="0.7rem">
+            {new Date(notification.timestamp).toLocaleDateString()}
+          </Text>
           <CloseButton
             variant="transparent"
             style={{ cursor: "pointer" }}
-            onClick={() => deleteNotification(notification.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              deleteNotification(notification.id);
+            }}
           />
+          {expanded ? <CaretUp size={16} /> : <CaretDown size={16} />}
         </Flex>
-        <Flex justify="space-between">
-          <Text>{notification.description || "No description available."}</Text>
-          <Button
-            variant="filled"
-            color={notification.unread ? "blue" : "gray"}
-            onClick={() =>
-              notification.unread
-                ? markAsRead(notification.id)
-                : markAsUnread(notification.id)
-            }
-            loaderProps={{ type: "dots" }}
-            loading={loading === notification.id}
-            style={{ cursor: "pointer" }}
-            ml="sm"
-            miw="120px"
-          >
-            {notification.unread ? "Mark as read" : "Unread"}
-          </Button>
-        </Flex>
-      </Paper>
-    </Grid.Col>
+      </Flex>
+
+      {expanded && (
+        <>
+          <Divider my="sm" />
+          <Flex justify="space-between" align="flex-start" gap="md" wrap="wrap">
+            <Text style={{ flex: 1 }}>
+              {notification.description
+                ? linkifyText(notification.description)
+                : "No description available."}
+            </Text>
+            <Button
+              variant="filled"
+              color={notification.unread ? "blue" : "gray"}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (notification.unread) markAsRead(notification.id);
+                else markAsUnread(notification.id);
+              }}
+              loaderProps={{ type: "dots" }}
+              loading={loading === notification.id}
+              miw="120px"
+            >
+              {notification.unread ? "Mark as read" : "Unread"}
+            </Button>
+          </Flex>
+        </>
+      )}
+    </Paper>
   );
 }
 
@@ -100,8 +157,20 @@ function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [read_Loading, setRead_Loading] = useState(-1);
   const dispatch = useDispatch();
+  const role = useSelector((state) => state.user.role);
+  const canCreateAnnouncement = role === "acadadmin";
   // const tabsListRef = useRef(null);
-  const tabItems = [{ title: "Notifications" }, { title: "Announcements" }];
+  const tabItems = [
+    { title: "Notifications" },
+    { title: "Announcements" },
+    ...(canCreateAnnouncement ? [{ title: "Create Announcement" }] : []),
+  ];
+
+  useEffect(() => {
+    if (Number(activeTab) >= tabItems.length) {
+      setActiveTab("0");
+    }
+  }, [tabItems.length, activeTab]);
 
   const notificationBadgeCount = notificationsList.filter(
     (n) => !n.deleted && n.unread,
@@ -145,7 +214,7 @@ function Dashboard() {
     };
 
     fetchDashboardData();
-  }, [dispatch]);
+  }, [dispatch, role]);
 
   // const handleTabChange = (direction) => {
   //   const newIndex =
@@ -199,6 +268,7 @@ function Dashboard() {
             notif.id === notifId ? { ...notif, unread: false } : notif,
           ),
         );
+        dispatch(decrementUnreadCount());
       }
     } catch (err) {
       console.error("Error marking notification as read:", err);
@@ -227,6 +297,7 @@ function Dashboard() {
             notif.id === notifId ? { ...notif, unread: true } : notif,
           ),
         );
+        dispatch(incrementUnreadCount());
       }
     } catch (err) {
       console.error("Error marking notification as unread:", err);
@@ -237,6 +308,9 @@ function Dashboard() {
 
   const deleteNotification = async (notifId) => {
     const token = localStorage.getItem("authToken");
+    const wasUnread = [...notificationsList, ...announcementsList].some(
+      (notif) => notif.id === notifId && notif.unread && !notif.deleted,
+    );
 
     try {
       const response = await axios.post(
@@ -256,6 +330,7 @@ function Dashboard() {
         setAnnouncementsList((prev) =>
           prev.filter((notif) => notif.id !== notifId),
         );
+        if (wasUnread) dispatch(decrementUnreadCount());
       }
     } catch (err) {
       console.error("Error deleting notification:", err);
@@ -341,51 +416,60 @@ function Dashboard() {
           badges={badges}
         />
 
-        <Flex
-          w={{ base: "40%", sm: "auto" }}
-          align="center"
-          mt="md"
-          rowGap="1rem"
-          columnGap="4rem"
-          wrap="wrap"
-        >
-          <Select
-            classNames={{
-              option: classes.selectoptions,
-              input: classes.selectinputs,
-            }}
-            variant="filled"
-            leftSection={<SortAscending />}
-            data={categories}
-            value={sortedBy}
-            onChange={setSortedBy}
-            placeholder="Sort By"
-          />
-        </Flex>
-      </Flex>
-      <Grid mt="xl">
-        {loading ? (
-          <Container py="xl">
-            <Loader size="lg" />
-          </Container>
-        ) : sortedNotifications.filter((notification) => !notification.deleted)
-            .length === 0 ? (
-          <Empty />
-        ) : (
-          sortedNotifications
-            .filter((notification) => !notification.deleted)
-            .map((notification) => (
-              <NotificationItem
-                notification={notification}
-                key={notification.id}
-                markAsRead={markAsRead}
-                markAsUnread={markAsUnread}
-                deleteNotification={deleteNotification}
-                loading={read_Loading}
-              />
-            ))
+        {activeTab !== "2" && (
+          <Flex
+            w={{ base: "40%", sm: "auto" }}
+            align="center"
+            mt="md"
+            rowGap="1rem"
+            columnGap="4rem"
+            wrap="wrap"
+          >
+            <Select
+              classNames={{
+                option: classes.selectoptions,
+                input: classes.selectinputs,
+              }}
+              variant="filled"
+              leftSection={<SortAscending />}
+              data={categories}
+              value={sortedBy}
+              onChange={setSortedBy}
+              placeholder="Sort By"
+            />
+          </Flex>
         )}
-      </Grid>
+      </Flex>
+      {activeTab === "2" ? (
+        <Container fluid pt="xs" pb="xl" px={0}>
+          <CreateAnnouncementForm />
+        </Container>
+      ) : (
+        <Stack mt="xl" gap="sm">
+          {loading ? (
+            <Container py="xl">
+              <Loader size="lg" />
+            </Container>
+          ) : sortedNotifications.filter(
+              (notification) => !notification.deleted,
+            ).length === 0 ? (
+            <Empty />
+          ) : (
+            sortedNotifications
+              .filter((notification) => !notification.deleted)
+              .map((notification) => (
+                <NotificationItem
+                  notification={notification}
+                  key={notification.id}
+                  markAsRead={markAsRead}
+                  markAsUnread={markAsUnread}
+                  deleteNotification={deleteNotification}
+                  loading={read_Loading}
+                />
+              ))
+          )}
+        </Stack>
+      )}
     </>
   );
 }

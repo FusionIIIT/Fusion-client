@@ -23,6 +23,7 @@ const PROGRAMME_TYPE_CHOICES = [
   { value: "All", label: "All Programmes" },
   { value: "UG", label: "Undergraduate (UG)" },
   { value: "PG", label: "Postgraduate (PG)" },
+  { value: "PHD", label: "PhD" },
 ];
 
 const SEMESTER_TYPE_CHOICES = [
@@ -32,7 +33,11 @@ const SEMESTER_TYPE_CHOICES = [
   { value: "Summer Semester", label: "Summer Semester" },
 ];
 
-const SEM_ORDER = { "Odd Semester": 0, "Even Semester": 1, "Summer Semester": 2 };
+const SEM_ORDER = {
+  "Odd Semester": 0,
+  "Even Semester": 1,
+  "Summer Semester": 2,
+};
 
 function getCurrentDefaults() {
   const now = new Date();
@@ -61,7 +66,8 @@ function sortCourses(courses) {
   });
 }
 
-const { academicYear: DEFAULT_AY, semesterType: DEFAULT_SEM } = getCurrentDefaults();
+const { academicYear: DEFAULT_AY, semesterType: DEFAULT_SEM } =
+  getCurrentDefaults();
 
 function ViewRollList() {
   const [allCourses, setAllCourses] = useState([]);
@@ -79,7 +85,10 @@ function ViewRollList() {
   useEffect(() => {
     const fetchCourses = async () => {
       const token = localStorage.getItem("authToken");
-      if (!token) { setFetchError("No authentication token found."); return; }
+      if (!token) {
+        setFetchError("No authentication token found.");
+        return;
+      }
       try {
         const response = await axios.get(academicProceduresFaculty, {
           headers: { Authorization: `Token ${token}` },
@@ -88,14 +97,19 @@ function ViewRollList() {
         setAllCourses(assignedCourses);
         setFilteredCourses(assignedCourses);
       } catch (error) {
-        setFetchError(error.response?.data?.error || "Failed to fetch courses.");
+        setFetchError(
+          error.response?.data?.error || "Failed to fetch courses.",
+        );
       }
     };
     fetchCourses();
   }, []);
 
   const filterCoursesByProgrammeType = async (progType, courses) => {
-    if (progType === "All") { setFilteredCourses(courses); return; }
+    if (progType === "All") {
+      setFilteredCourses(courses);
+      return;
+    }
     setFilteringCourses(true);
     const token = localStorage.getItem("authToken");
     const result = [];
@@ -103,8 +117,19 @@ function ViewRollList() {
       try {
         const response = await axios.post(
           generatexlsheet,
-          { course: course.course_id, semester_type: course.semester_type, academic_year: course.academic_year, programme_type: progType, preview_only: true },
-          { headers: { Authorization: `Token ${token}`, "Content-Type": "application/json" } }
+          {
+            course: course.course_id,
+            semester_type: course.semester_type,
+            academic_year: course.academic_year,
+            programme_type: progType,
+            preview_only: true,
+          },
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+              "Content-Type": "application/json",
+            },
+          },
         );
         const students = response.data.students || response.data || [];
         if (students.length > 0) result.push(course);
@@ -117,7 +142,8 @@ function ViewRollList() {
   };
 
   useEffect(() => {
-    if (allCourses.length > 0) filterCoursesByProgrammeType(programmeType, allCourses);
+    if (allCourses.length > 0)
+      filterCoursesByProgrammeType(programmeType, allCourses);
   }, [allCourses]);
 
   const handleProgrammeTypeChange = async (val) => {
@@ -128,36 +154,68 @@ function ViewRollList() {
 
   // Academic year options derived from filteredCourses + always include default (current) AY
   const ayOptions = useMemo(() => {
-    const years = new Set(filteredCourses.map((c) => c.academic_year).filter(Boolean));
+    const years = new Set(
+      filteredCourses.map((c) => c.academic_year).filter(Boolean),
+    );
     years.add(DEFAULT_AY);
     const sorted = [...years].sort((a, b) => b.localeCompare(a));
-    return [{ value: "All", label: "All Years" }, ...sorted.map((y) => ({ value: y, label: y }))];
+    return [
+      { value: "All", label: "All Years" },
+      ...sorted.map((y) => ({ value: y, label: y })),
+    ];
   }, [filteredCourses]);
 
-  const handleDownloadRollList = async (courseId, courseCode, semesterType, academicYear, section) => {
+  const handleDownloadRollList = async (
+    courseId,
+    courseCode,
+    semesterType,
+    academicYear,
+    section,
+  ) => {
     const token = localStorage.getItem("authToken");
-    if (!token) { setFetchError("No authentication token found."); return; }
+    if (!token) {
+      setFetchError("No authentication token found.");
+      return;
+    }
     try {
       setDownloadingCourseId(`${courseId}-${section || ""}`);
       setLoading(true);
-      const payload = { course: courseId, semester_type: semesterType, academic_year: academicYear };
+      const payload = {
+        course: courseId,
+        semester_type: semesterType,
+        academic_year: academicYear,
+      };
       if (programmeType !== "All") payload.programme_type = programmeType;
       // Scope to this offering's section if it has one (else download unchanged).
       if (section) payload.section = section;
       const response = await axios.post(generatexlsheet, payload, {
-        headers: { Authorization: `Token ${token}`, "Content-Type": "application/json" },
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
         responseType: "blob",
       });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
-      link.setAttribute("download", `${courseCode}${programmeType !== "All" ? `_${programmeType}` : ""}${section ? `_Section_${section}` : ""}.xlsx`);
+      link.setAttribute(
+        "download",
+        `${courseCode}${programmeType !== "All" ? `_${programmeType}` : ""}${section ? `_Section_${section}` : ""}.xlsx`,
+      );
       link.href = url;
       document.body.appendChild(link);
       link.click();
       link.remove();
-      showNotification({ title: "Success", message: `Roll list downloaded successfully`, color: "green" });
+      showNotification({
+        title: "Success",
+        message: `Roll list downloaded successfully`,
+        color: "green",
+      });
     } catch (error) {
-      showNotification({ title: "Download Failed", message: error.response?.data?.error || "Failed to download roll list.", color: "red" });
+      showNotification({
+        title: "Download Failed",
+        message: error.response?.data?.error || "Failed to download roll list.",
+        color: "red",
+      });
     } finally {
       setLoading(false);
       setDownloadingCourseId(null);
@@ -169,18 +227,21 @@ function ViewRollList() {
   const displayCourses = sortCourses(
     filteredCourses.filter((c) => {
       if (selectedAY !== "All" && c.academic_year !== selectedAY) return false;
-      if (selectedSem !== "All" && c.semester_type !== selectedSem) return false;
+      if (selectedSem !== "All" && c.semester_type !== selectedSem)
+        return false;
       if (q) {
         return (
           (c.course_name || "").toLowerCase().includes(q) ||
           (c.course_code || "").toLowerCase().includes(q) ||
-          String(c.version || "").toLowerCase().includes(q) ||
+          String(c.version || "")
+            .toLowerCase()
+            .includes(q) ||
           (c.academic_year || "").toLowerCase().includes(q) ||
           (c.semester_type || "").toLowerCase().includes(q)
         );
       }
       return true;
-    })
+    }),
   );
 
   // Show the Section column only if at least one assigned offering has a section.
@@ -196,7 +257,9 @@ function ViewRollList() {
   ];
 
   const elements = displayCourses.map((course) => {
-    const busy = loading && downloadingCourseId === `${course.course_id}-${course.section || ""}`;
+    const busy =
+      loading &&
+      downloadingCourseId === `${course.course_id}-${course.section || ""}`;
     return {
       "Course Name": course.course_name,
       "Course Code": course.course_code,
@@ -206,14 +269,24 @@ function ViewRollList() {
       ...(hasAnySection ? { Section: course.section || "—" } : {}),
       Action: (
         <Button
-          onClick={() => handleDownloadRollList(course.course_id, course.course_code, course.semester_type, course.academic_year, course.section)}
+          onClick={() =>
+            handleDownloadRollList(
+              course.course_id,
+              course.course_code,
+              course.semester_type,
+              course.academic_year,
+              course.section,
+            )
+          }
           variant="outline"
           color="blue"
           size="xs"
           disabled={busy}
           rightSection={busy ? <Loader size="xs" color="blue" /> : null}
         >
-          {busy ? "Downloading..." : `Download ${programmeType !== "All" ? programmeType + " " : ""}${course.section ? `Section ${course.section} ` : ""}Roll List`}
+          {busy
+            ? "Downloading..."
+            : `Download ${programmeType !== "All" ? `${programmeType} ` : ""}${course.section ? `Section ${course.section} ` : ""}Roll List`}
         </Button>
       ),
     };
@@ -221,7 +294,12 @@ function ViewRollList() {
 
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
-      <Text size="lg" weight={700} mb="md" style={{ textAlign: "center", color: "#3B82F6" }}>
+      <Text
+        size="lg"
+        weight={700}
+        mb="md"
+        style={{ textAlign: "center", color: "#3B82F6" }}
+      >
         Assigned Courses
       </Text>
 
@@ -258,7 +336,11 @@ function ViewRollList() {
           style={{ flex: 1, minWidth: 180 }}
         />
         {filteringCourses && (
-          <Text size="sm" color="dimmed" style={{ alignSelf: "center", marginTop: 20 }}>
+          <Text
+            size="sm"
+            color="dimmed"
+            style={{ alignSelf: "center", marginTop: 20 }}
+          >
             Filtering...
           </Text>
         )}
@@ -271,14 +353,24 @@ function ViewRollList() {
       )}
 
       {loading && allCourses.length === 0 ? (
-        <Center><Loader size="lg" /></Center>
-      ) : displayCourses.length === 0 && allCourses.length > 0 && !filteringCourses ? (
+        <Center>
+          <Loader size="lg" />
+        </Center>
+      ) : displayCourses.length === 0 &&
+        allCourses.length > 0 &&
+        !filteringCourses ? (
         <Alert color="blue" mb="md">
-          {q ? "No courses match your search." : "No courses found for the selected filters."}
+          {q
+            ? "No courses match your search."
+            : "No courses found for the selected filters."}
         </Alert>
       ) : (
         <div style={{ overflowX: "auto" }}>
-          <FusionTable columnNames={columnNames} elements={elements} width="100%" />
+          <FusionTable
+            columnNames={columnNames}
+            elements={elements}
+            width="100%"
+          />
         </div>
       )}
     </Card>

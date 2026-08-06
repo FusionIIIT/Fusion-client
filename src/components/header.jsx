@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { User, SignOut, Bell, UserSwitch } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -22,17 +22,33 @@ import { notifications } from "@mantine/notifications";
 import { setRole, setCurrentAccessibleModules } from "../redux/userslice";
 import classes from "../Modules/Dashboard/Dashboard.module.css";
 import avatarImage from "../assets/avatar.png";
+import { setUnreadCount } from "../redux/notificationSlice";
 
-import { updateRoleRoute } from "../routes/dashboardRoutes";
+import {
+  updateRoleRoute,
+  unreadNotificationCountRoute,
+} from "../routes/dashboardRoutes";
 import useLogout from "../helper/useLogout";
 
 function Header({ opened, toggleSidebar }) {
   const [popoverOpened, setPopoverOpened] = useState(false);
+  const unreadCount = useSelector((state) => state.notification.unreadCount);
   const username = useSelector((state) => state.user.username);
   const roles = useSelector((state) => state.user.roles);
   const role = useSelector((state) => state.user.role);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (!token) return;
+    axios
+      .get(unreadNotificationCountRoute, {
+        headers: { Authorization: `Token ${token}` },
+      })
+      .then(({ data }) => dispatch(setUnreadCount(data.count)))
+      .catch(() => {});
+  }, [dispatch, role]);
   // const queryclient = useQueryClient();
 
   const handleRoleChange = async (newRole) => {
@@ -115,8 +131,18 @@ function Header({ opened, toggleSidebar }) {
             onChange={handleRoleChange}
             placeholder="Role"
           />
-          <Indicator>
-            <Bell color="orange" size="32px" cursor="pointer" />
+          <Indicator
+            label={unreadCount > 99 ? "99+" : unreadCount}
+            size={16}
+            color="red"
+            disabled={unreadCount === 0}
+          >
+            <Bell
+              color="orange"
+              size="32px"
+              style={{ cursor: "pointer" }}
+              onClick={() => navigate("/dashboard")}
+            />
           </Indicator>
           <Popover
             opened={popoverOpened}

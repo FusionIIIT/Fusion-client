@@ -9,6 +9,7 @@ import {
 import {
   House as HomeIcon,
   Books as AcademicsIcon,
+  BookOpenText as ThesisResearchIcon,
   CalendarBlank as CurriculumIcon,
   ForkKnife as MessIcon,
   Bed as GuestIcon,
@@ -69,6 +70,12 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
             : "/programme_curriculum/faculty_view_all_programmes",
     },
     {
+      label: "Doctoral & PG Research",
+      id: "thesis_research",
+      icon: <ThesisResearchIcon size={18} />,
+      url: "/thesis-research",
+    },
+    {
       label: "Mess Management",
       id: "mess_management",
       icon: <MessIcon size={18} />,
@@ -108,7 +115,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "Placement Cell",
       id: "placement_cell",
       icon: <PlacementIcon size={18} />,
-      url: "/",
+      url: "/placement-cell",
     },
     {
       label: "Department Portal",

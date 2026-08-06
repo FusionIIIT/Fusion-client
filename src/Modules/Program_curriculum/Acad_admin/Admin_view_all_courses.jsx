@@ -18,11 +18,18 @@ import { host } from "../../../routes/globalRoutes";
 
 function Admin_view_all_courses() {
   const [courses, setCourses] = useState([]);
+  const [theses, setTheses] = useState([]);
+  const [seminars, setSeminars] = useState([]);
+  const [teachingCredits, setTeachingCredits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteModalOpened, setDeleteModalOpened] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState(null);
+  const [thesisToDelete, setThesisToDelete] = useState(null);
+  const [seminarToDelete, setSeminarToDelete] = useState(null);
+  const [teachingCreditToDelete, setTeachingCreditToDelete] = useState(null);
+  const [activeView, setActiveView] = useState("courses"); // "courses", "theses", "seminars", or "teachingCredits"
 
   useEffect(() => {
     const loadCourses = async () => {
@@ -56,7 +63,84 @@ function Admin_view_all_courses() {
       }
     };
 
+    const loadTheses = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        const response = await fetch(
+          `${host}/programme_curriculum/api/admin_theses/`,
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch theses");
+        }
+
+        const data = await response.json();
+        setTheses(data.theses || []);
+      } catch (err) {
+        console.error("Failed to load theses:", err);
+      }
+    };
+
     loadCourses();
+    loadTheses();
+
+    const loadSeminars = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        const response = await fetch(
+          `${host}/programme_curriculum/api/admin_seminars/`,
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch seminars");
+        }
+
+        const data = await response.json();
+        setSeminars(data.seminars || []);
+      } catch (err) {
+        console.error("Failed to load seminars:", err);
+      }
+    };
+
+    loadSeminars();
+
+    const loadTeachingCredits = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        const response = await fetch(
+          `${host}/programme_curriculum/api/admin_teaching_credits/`,
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch teaching credits");
+        }
+
+        const data = await response.json();
+        setTeachingCredits(data.teaching_credits || []);
+      } catch (err) {
+        console.error("Failed to load teaching credits:", err);
+      }
+    };
+
+    loadTeachingCredits();
   }, []);
 
   if (loading) {
@@ -89,8 +173,53 @@ function Admin_view_all_courses() {
     );
   });
 
+  const filteredTheses = theses.filter((thesis) => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      thesis.code.toLowerCase().includes(searchLower) ||
+      thesis.name.toLowerCase().includes(searchLower) ||
+      thesis.discipline.toLowerCase().includes(searchLower) ||
+      thesis.credits.toString().includes(searchLower)
+    );
+  });
+
+  const filteredSeminars = seminars.filter((seminar) => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      seminar.code.toLowerCase().includes(searchLower) ||
+      seminar.name.toLowerCase().includes(searchLower) ||
+      seminar.discipline.toLowerCase().includes(searchLower) ||
+      seminar.credits.toString().includes(searchLower)
+    );
+  });
+
+  const filteredTeachingCredits = teachingCredits.filter((tc) => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      tc.code.toLowerCase().includes(searchLower) ||
+      tc.name.toLowerCase().includes(searchLower) ||
+      tc.discipline.toLowerCase().includes(searchLower) ||
+      tc.credits.toString().includes(searchLower)
+    );
+  });
+
   const handleDeleteClick = (course) => {
     setCourseToDelete(course);
+    setDeleteModalOpened(true);
+  };
+
+  const handleDeleteThesisClick = (thesis) => {
+    setThesisToDelete(thesis);
+    setDeleteModalOpened(true);
+  };
+
+  const handleDeleteSeminarClick = (seminar) => {
+    setSeminarToDelete(seminar);
+    setDeleteModalOpened(true);
+  };
+
+  const handleDeleteTeachingCreditClick = (tc) => {
+    setTeachingCreditToDelete(tc);
     setDeleteModalOpened(true);
   };
 
@@ -107,16 +236,47 @@ function Admin_view_all_courses() {
         return;
       }
 
-      const response = await fetch(
-        `${host}/api/admin_delete_course/${courseToDelete.id}/`,
-        {
-          method: "DELETE",
-          headers: {
-            "Authorization": `Token ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      // Determine if deleting course, thesis, seminar, or teaching credit
+      const isThesis = thesisToDelete !== null;
+      const isSeminar = seminarToDelete !== null;
+      const isTeachingCredit = teachingCreditToDelete !== null;
+      const itemToDelete = isSeminar
+        ? seminarToDelete
+        : isTeachingCredit
+        ? teachingCreditToDelete
+        : isThesis
+        ? thesisToDelete
+        : courseToDelete;
+      const kindLabel = isSeminar
+        ? "Seminar"
+        : isTeachingCredit
+        ? "Teaching Credit"
+        : isThesis
+        ? "Thesis"
+        : "Course";
+      const kindLabelLower = kindLabel.toLowerCase();
+      const kindLabelPluralLower = isSeminar
+        ? "seminars"
+        : isTeachingCredit
+        ? "teaching credits"
+        : isThesis
+        ? "theses"
+        : "courses";
+      const deleteUrl = isSeminar
+        ? `${host}/programme_curriculum/api/admin_delete_seminar/${itemToDelete.id}/`
+        : isTeachingCredit
+        ? `${host}/programme_curriculum/api/admin_delete_teaching_credit/${itemToDelete.id}/`
+        : isThesis
+        ? `${host}/programme_curriculum/api/admin_delete_thesis/${itemToDelete.id}/`
+        : `${host}/api/admin_delete_course/${itemToDelete.id}/`;
+
+      const response = await fetch(deleteUrl, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
       let data = {};
       const contentType = response.headers.get("content-type");
@@ -124,14 +284,31 @@ function Admin_view_all_courses() {
         data = await response.json();
       }
 
-      if (response.ok && (data.success !== false)) {
-        setCourses(prev => prev.filter(course => course.id !== courseToDelete.id));
-        
-        localStorage.setItem("AdminCoursesCachechange", "true");
-        
+      if (response.ok && data.success !== false) {
+        if (isSeminar) {
+          setSeminars((prev) =>
+            prev.filter((seminar) => seminar.id !== itemToDelete.id)
+          );
+        } else if (isTeachingCredit) {
+          setTeachingCredits((prev) =>
+            prev.filter((tc) => tc.id !== itemToDelete.id)
+          );
+        } else if (isThesis) {
+          setTheses((prev) =>
+            prev.filter((thesis) => thesis.id !== itemToDelete.id)
+          );
+        } else {
+          setCourses((prev) =>
+            prev.filter((course) => course.id !== itemToDelete.id)
+          );
+          localStorage.setItem("AdminCoursesCachechange", "true");
+        }
+
         notifications.show({
           title: "Successfully Deleted",
-          message: data.message || `Course '${courseToDelete.code} - ${courseToDelete.name}' has been deleted`,
+          message:
+            data.message ||
+            `${kindLabel} '${itemToDelete.code} - ${itemToDelete.name}' has been deleted`,
           color: "green",
           autoClose: 3000,
         });
@@ -139,32 +316,34 @@ function Admin_view_all_courses() {
         if (response.status === 404) {
           notifications.show({
             title: "Not Found",
-            message: "This course may have already been deleted or the delete endpoint is not available",
+            message: `This ${kindLabelLower} may have already been deleted or the delete endpoint is not available`,
             color: "orange",
             autoClose: 4000,
           });
         } else if (response.status === 400 && data.dependencies) {
           const dependencyMessage = data.dependencies
-            .map(dep => `${dep.count} ${dep.type}`)
-            .join(', ');
-          
+            .map((dep) => `${dep.count} ${dep.type}`)
+            .join(", ");
+
           notifications.show({
             title: "Cannot Delete",
-            message: `${data.message || 'This course has dependencies'}: ${dependencyMessage}`,
+            message: `${data.message || `This ${kindLabelLower} has dependencies`}: ${dependencyMessage}`,
             color: "orange",
             autoClose: 5000,
           });
         } else if (response.status === 403) {
           notifications.show({
             title: "Access Denied",
-            message: "You don't have permission to delete courses",
+            message: `You don't have permission to delete ${kindLabelPluralLower}`,
             color: "red",
             autoClose: 3000,
           });
         } else {
           notifications.show({
             title: "Delete Failed",
-            message: data.error || "Failed to delete course. The backend delete API may not be implemented yet.",
+            message:
+              data.error ||
+              `Failed to delete ${kindLabelLower}. The backend delete API may not be implemented yet.`,
             color: "red",
             autoClose: 4000,
           });
@@ -173,13 +352,17 @@ function Admin_view_all_courses() {
     } catch (error) {
       notifications.show({
         title: "Network Error",
-        message: "Failed to connect to server. Please check your connection and try again.",
+        message:
+          "Failed to connect to server. Please check your connection and try again.",
         color: "red",
         autoClose: 3000,
       });
     } finally {
       setDeleteModalOpened(false);
       setCourseToDelete(null);
+      setThesisToDelete(null);
+      setSeminarToDelete(null);
+      setTeachingCreditToDelete(null);
     }
   };
 
@@ -191,21 +374,72 @@ function Admin_view_all_courses() {
     >
       <Container style={{ padding: "20px", maxWidth: "100%" }}>
         <Flex justify="space-between" align="center" mb={20}>
-          <Button variant="filled" style={{ marginRight: "10px" }}>
-            Courses
-          </Button>
+          <Flex gap="sm">
+            <Button
+              variant={activeView === "courses" ? "filled" : "outline"}
+              onClick={() => setActiveView("courses")}
+            >
+              Courses
+            </Button>
+            <Button
+              variant={activeView === "theses" ? "filled" : "outline"}
+              onClick={() => setActiveView("theses")}
+            >
+              Theses
+            </Button>
+            <Button
+              variant={activeView === "seminars" ? "filled" : "outline"}
+              onClick={() => setActiveView("seminars")}
+            >
+              Seminars
+            </Button>
+            <Button
+              variant={activeView === "teachingCredits" ? "filled" : "outline"}
+              onClick={() => setActiveView("teachingCredits")}
+            >
+              Teaching Credits
+            </Button>
+          </Flex>
           <Flex align="center" gap="md">
             <TextInput
-              placeholder="Search by course code, name, version, or credits..."
+              placeholder={
+                activeView === "courses"
+                  ? "Search by course code, name, version, or credits..."
+                  : activeView === "theses"
+                  ? "Search by thesis code, name, discipline, or credits..."
+                  : activeView === "seminars"
+                  ? "Search by seminar code, name, discipline, or credits..."
+                  : "Search by teaching credit code, name, discipline, or credits..."
+              }
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.currentTarget.value)}
               style={{ width: "400px" }}
             />
-            <Link to="/programme_curriculum/acad_admin_add_course_proposal_form">
-              <Button variant="filled" color="blue" radius="sm">
-                Add Course
-              </Button>
-            </Link>
+            {activeView === "courses" ? (
+              <Link to="/programme_curriculum/acad_admin_add_course_proposal_form">
+                <Button variant="filled" color="blue" radius="sm">
+                  Add Course
+                </Button>
+              </Link>
+            ) : activeView === "theses" ? (
+              <Link to="/programme_curriculum/admin_add_thesis">
+                <Button variant="filled" color="blue" radius="sm">
+                  Add Thesis
+                </Button>
+              </Link>
+            ) : activeView === "seminars" ? (
+              <Link to="/programme_curriculum/admin_add_seminar">
+                <Button variant="filled" color="blue" radius="sm">
+                  Add Seminar
+                </Button>
+              </Link>
+            ) : (
+              <Link to="/programme_curriculum/admin_add_teaching_credit">
+                <Button variant="filled" color="blue" radius="sm">
+                  Add Teaching Credit
+                </Button>
+              </Link>
+            )}
           </Flex>
         </Flex>
         <hr />
@@ -229,70 +463,595 @@ function Admin_view_all_courses() {
           <Table highlightOnHover striped className="courses-table">
             <thead className="courses-table-header">
               <tr>
-                <th
-                  style={{
-                    padding: "15px 20px",
-                    backgroundColor: "#C5E2F6",
-                    color: "#3498db",
-                    fontSize: "16px",
-                    textAlign: "center",
-                    borderRight: "1px solid #d3d3d3",
-                  }}
-                >
-                  Course Code
-                </th>
-                <th
-                  style={{
-                    padding: "15px 20px",
-                    backgroundColor: "#C5E2F6",
-                    color: "#3498db",
-                    fontSize: "16px",
-                    textAlign: "center",
-                    borderRight: "1px solid #d3d3d3",
-                  }}
-                >
-                  Course Name
-                </th>
-                <th
-                  style={{
-                    padding: "15px 20px",
-                    backgroundColor: "#C5E2F6",
-                    color: "#3498db",
-                    fontSize: "16px",
-                    textAlign: "center",
-                    borderRight: "1px solid #d3d3d3",
-                  }}
-                >
-                  Version
-                </th>
-                <th
-                  style={{
-                    padding: "15px 20px",
-                    backgroundColor: "#C5E2F6",
-                    color: "#3498db",
-                    fontSize: "16px",
-                    textAlign: "center",
-                    borderRight: "1px solid #d3d3d3",
-                  }}
-                >
-                  Credits
-                </th>
-                <th
-                  style={{
-                    padding: "15px 20px",
-                    backgroundColor: "#C5E2F6",
-                    color: "#3498db",
-                    fontSize: "16px",
-                    textAlign: "center",
-                  }}
-                >
-                  Actions
-                </th>
+                {activeView === "courses" ? (
+                  <>
+                    <th
+                      style={{
+                        padding: "15px 20px",
+                        backgroundColor: "#C5E2F6",
+                        color: "#3498db",
+                        fontSize: "16px",
+                        textAlign: "center",
+                        borderRight: "1px solid #d3d3d3",
+                      }}
+                    >
+                      Course Code
+                    </th>
+                    <th
+                      style={{
+                        padding: "15px 20px",
+                        backgroundColor: "#C5E2F6",
+                        color: "#3498db",
+                        fontSize: "16px",
+                        textAlign: "center",
+                        borderRight: "1px solid #d3d3d3",
+                      }}
+                    >
+                      Course Name
+                    </th>
+                    <th
+                      style={{
+                        padding: "15px 20px",
+                        backgroundColor: "#C5E2F6",
+                        color: "#3498db",
+                        fontSize: "16px",
+                        textAlign: "center",
+                        borderRight: "1px solid #d3d3d3",
+                      }}
+                    >
+                      Version
+                    </th>
+                    <th
+                      style={{
+                        padding: "15px 20px",
+                        backgroundColor: "#C5E2F6",
+                        color: "#3498db",
+                        fontSize: "16px",
+                        textAlign: "center",
+                        borderRight: "1px solid #d3d3d3",
+                      }}
+                    >
+                      Credits
+                    </th>
+                    <th
+                      style={{
+                        padding: "15px 20px",
+                        backgroundColor: "#C5E2F6",
+                        color: "#3498db",
+                        fontSize: "16px",
+                        textAlign: "center",
+                      }}
+                    >
+                      Actions
+                    </th>
+                  </>
+                ) : activeView === "theses" ? (
+                  <>
+                    <th
+                      style={{
+                        padding: "15px 20px",
+                        backgroundColor: "#C5E2F6",
+                        color: "#3498db",
+                        fontSize: "16px",
+                        textAlign: "center",
+                        borderRight: "1px solid #d3d3d3",
+                      }}
+                    >
+                      Thesis Code
+                    </th>
+                    <th
+                      style={{
+                        padding: "15px 20px",
+                        backgroundColor: "#C5E2F6",
+                        color: "#3498db",
+                        fontSize: "16px",
+                        textAlign: "center",
+                        borderRight: "1px solid #d3d3d3",
+                      }}
+                    >
+                      Thesis Name
+                    </th>
+                    <th
+                      style={{
+                        padding: "15px 20px",
+                        backgroundColor: "#C5E2F6",
+                        color: "#3498db",
+                        fontSize: "16px",
+                        textAlign: "center",
+                        borderRight: "1px solid #d3d3d3",
+                      }}
+                    >
+                      Discipline
+                    </th>
+                    <th
+                      style={{
+                        padding: "15px 20px",
+                        backgroundColor: "#C5E2F6",
+                        color: "#3498db",
+                        fontSize: "16px",
+                        textAlign: "center",
+                        borderRight: "1px solid #d3d3d3",
+                      }}
+                    >
+                      Programme Type
+                    </th>
+                    <th
+                      style={{
+                        padding: "15px 20px",
+                        backgroundColor: "#C5E2F6",
+                        color: "#3498db",
+                        fontSize: "16px",
+                        textAlign: "center",
+                        borderRight: "1px solid #d3d3d3",
+                      }}
+                    >
+                      Credits
+                    </th>
+                    <th
+                      style={{
+                        padding: "15px 20px",
+                        backgroundColor: "#C5E2F6",
+                        color: "#3498db",
+                        fontSize: "16px",
+                        textAlign: "center",
+                      }}
+                    >
+                      Actions
+                    </th>
+                  </>
+                ) : activeView === "seminars" ? (
+                  <>
+                    <th
+                      style={{
+                        padding: "15px 20px",
+                        backgroundColor: "#C5E2F6",
+                        color: "#3498db",
+                        fontSize: "16px",
+                        textAlign: "center",
+                        borderRight: "1px solid #d3d3d3",
+                      }}
+                    >
+                      Seminar Code
+                    </th>
+                    <th
+                      style={{
+                        padding: "15px 20px",
+                        backgroundColor: "#C5E2F6",
+                        color: "#3498db",
+                        fontSize: "16px",
+                        textAlign: "center",
+                        borderRight: "1px solid #d3d3d3",
+                      }}
+                    >
+                      Seminar Name
+                    </th>
+                    <th
+                      style={{
+                        padding: "15px 20px",
+                        backgroundColor: "#C5E2F6",
+                        color: "#3498db",
+                        fontSize: "16px",
+                        textAlign: "center",
+                        borderRight: "1px solid #d3d3d3",
+                      }}
+                    >
+                      Discipline
+                    </th>
+                    <th
+                      style={{
+                        padding: "15px 20px",
+                        backgroundColor: "#C5E2F6",
+                        color: "#3498db",
+                        fontSize: "16px",
+                        textAlign: "center",
+                        borderRight: "1px solid #d3d3d3",
+                      }}
+                    >
+                      Programme Type
+                    </th>
+                    <th
+                      style={{
+                        padding: "15px 20px",
+                        backgroundColor: "#C5E2F6",
+                        color: "#3498db",
+                        fontSize: "16px",
+                        textAlign: "center",
+                        borderRight: "1px solid #d3d3d3",
+                      }}
+                    >
+                      Credits
+                    </th>
+                    <th
+                      style={{
+                        padding: "15px 20px",
+                        backgroundColor: "#C5E2F6",
+                        color: "#3498db",
+                        fontSize: "16px",
+                        textAlign: "center",
+                      }}
+                    >
+                      Actions
+                    </th>
+                  </>
+                ) : (
+                  <>
+                    <th
+                      style={{
+                        padding: "15px 20px",
+                        backgroundColor: "#C5E2F6",
+                        color: "#3498db",
+                        fontSize: "16px",
+                        textAlign: "center",
+                        borderRight: "1px solid #d3d3d3",
+                      }}
+                    >
+                      Teaching Credit Code
+                    </th>
+                    <th
+                      style={{
+                        padding: "15px 20px",
+                        backgroundColor: "#C5E2F6",
+                        color: "#3498db",
+                        fontSize: "16px",
+                        textAlign: "center",
+                        borderRight: "1px solid #d3d3d3",
+                      }}
+                    >
+                      Teaching Credit Name
+                    </th>
+                    <th
+                      style={{
+                        padding: "15px 20px",
+                        backgroundColor: "#C5E2F6",
+                        color: "#3498db",
+                        fontSize: "16px",
+                        textAlign: "center",
+                        borderRight: "1px solid #d3d3d3",
+                      }}
+                    >
+                      Discipline
+                    </th>
+                    <th
+                      style={{
+                        padding: "15px 20px",
+                        backgroundColor: "#C5E2F6",
+                        color: "#3498db",
+                        fontSize: "16px",
+                        textAlign: "center",
+                        borderRight: "1px solid #d3d3d3",
+                      }}
+                    >
+                      Programme Type
+                    </th>
+                    <th
+                      style={{
+                        padding: "15px 20px",
+                        backgroundColor: "#C5E2F6",
+                        color: "#3498db",
+                        fontSize: "16px",
+                        textAlign: "center",
+                        borderRight: "1px solid #d3d3d3",
+                      }}
+                    >
+                      Credits
+                    </th>
+                    <th
+                      style={{
+                        padding: "15px 20px",
+                        backgroundColor: "#C5E2F6",
+                        color: "#3498db",
+                        fontSize: "16px",
+                        textAlign: "center",
+                      }}
+                    >
+                      Actions
+                    </th>
+                  </>
+                )}
               </tr>
             </thead>
             <tbody>
-              {filteredCourses.length > 0 ? (
-                filteredCourses.map((course, index) => (
+              {activeView === "courses" ? (
+                filteredCourses.length > 0 ? (
+                  filteredCourses.map((course, index) => (
+                    <tr
+                      key={index}
+                      style={{
+                        backgroundColor:
+                          index % 2 !== 0 ? "#E6F7FF" : "#ffffff",
+                      }}
+                    >
+                      <td
+                        style={{
+                          padding: "15px 20px",
+                          textAlign: "center",
+                          color: "black",
+                          width: "20%",
+                          borderRight: "1px solid #d3d3d3",
+                        }}
+                      >
+                        <Link
+                          to={`/programme_curriculum/admin_course/${course.id}`}
+                          className="course-link"
+                          style={{
+                            color: "#3498db",
+                            textDecoration: "none",
+                            fontSize: "14px",
+                          }}
+                        >
+                          {course.code}
+                        </Link>
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px 20px",
+                          textAlign: "center",
+                          color: "black",
+                          width: "30%",
+                          borderRight: "1px solid #d3d3d3",
+                        }}
+                      >
+                        {course.name}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px 20px",
+                          textAlign: "center",
+                          color: "black",
+                          width: "15%",
+                          borderRight: "1px solid #d3d3d3",
+                        }}
+                      >
+                        {course.version}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px 20px",
+                          textAlign: "center",
+                          color: "black",
+                          width: "15%",
+                          borderRight: "1px solid #d3d3d3",
+                        }}
+                      >
+                        {course.credits}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px 20px",
+                          textAlign: "center",
+                          color: "black",
+                          width: "20%",
+                        }}
+                      >
+                        <Flex gap="xs" justify="center">
+                          <Link
+                            to={`/programme_curriculum/acad_admin_edit_course_form/${course.id}`}
+                          >
+                            <ActionIcon variant="light" color="blue" size="sm">
+                              <IconEdit size="1rem" />
+                            </ActionIcon>
+                          </Link>
+                          <ActionIcon
+                            variant="light"
+                            color="red"
+                            size="sm"
+                            onClick={() => handleDeleteClick(course)}
+                          >
+                            <IconTrash size="1rem" />
+                          </ActionIcon>
+                        </Flex>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="5" style={{ textAlign: "center" }}>
+                      No courses found
+                    </td>
+                  </tr>
+                )
+              ) : activeView === "theses" ? (
+                filteredTheses.length > 0 ? (
+                  filteredTheses.map((thesis, index) => (
+                    <tr
+                      key={index}
+                      style={{
+                        backgroundColor:
+                          index % 2 !== 0 ? "#E6F7FF" : "#ffffff",
+                      }}
+                    >
+                      <td
+                        style={{
+                          padding: "15px 20px",
+                          textAlign: "center",
+                          color: "black",
+                          width: "15%",
+                          borderRight: "1px solid #d3d3d3",
+                        }}
+                      >
+                        {thesis.code}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px 20px",
+                          textAlign: "center",
+                          color: "black",
+                          width: "25%",
+                          borderRight: "1px solid #d3d3d3",
+                        }}
+                      >
+                        {thesis.name}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px 20px",
+                          textAlign: "center",
+                          color: "black",
+                          width: "20%",
+                          borderRight: "1px solid #d3d3d3",
+                        }}
+                      >
+                        {thesis.discipline}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px 20px",
+                          textAlign: "center",
+                          color: "black",
+                          width: "15%",
+                          borderRight: "1px solid #d3d3d3",
+                        }}
+                      >
+                        {thesis.programme_type}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px 20px",
+                          textAlign: "center",
+                          color: "black",
+                          width: "10%",
+                          borderRight: "1px solid #d3d3d3",
+                        }}
+                      >
+                        {thesis.credits}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px 20px",
+                          textAlign: "center",
+                          color: "black",
+                          width: "15%",
+                        }}
+                      >
+                        <Flex gap="xs" justify="center">
+                          <Link
+                            to={`/programme_curriculum/admin_edit_thesis_form/${thesis.id}`}
+                          >
+                            <ActionIcon variant="light" color="blue" size="sm">
+                              <IconEdit size="1rem" />
+                            </ActionIcon>
+                          </Link>
+                          <ActionIcon
+                            variant="light"
+                            color="red"
+                            size="sm"
+                            onClick={() => handleDeleteThesisClick(thesis)}
+                          >
+                            <IconTrash size="1rem" />
+                          </ActionIcon>
+                        </Flex>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="6" style={{ textAlign: "center" }}>
+                      No theses found
+                    </td>
+                  </tr>
+                )
+              ) : activeView === "seminars" ? (
+                filteredSeminars.length > 0 ? (
+                  filteredSeminars.map((seminar, index) => (
+                    <tr
+                      key={index}
+                      style={{
+                        backgroundColor:
+                          index % 2 !== 0 ? "#E6F7FF" : "#ffffff",
+                      }}
+                    >
+                      <td
+                        style={{
+                          padding: "15px 20px",
+                          textAlign: "center",
+                          color: "black",
+                          width: "15%",
+                          borderRight: "1px solid #d3d3d3",
+                        }}
+                      >
+                        {seminar.code}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px 20px",
+                          textAlign: "center",
+                          color: "black",
+                          width: "25%",
+                          borderRight: "1px solid #d3d3d3",
+                        }}
+                      >
+                        {seminar.name}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px 20px",
+                          textAlign: "center",
+                          color: "black",
+                          width: "20%",
+                          borderRight: "1px solid #d3d3d3",
+                        }}
+                      >
+                        {seminar.discipline}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px 20px",
+                          textAlign: "center",
+                          color: "black",
+                          width: "15%",
+                          borderRight: "1px solid #d3d3d3",
+                        }}
+                      >
+                        {seminar.programme_type}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px 20px",
+                          textAlign: "center",
+                          color: "black",
+                          width: "10%",
+                          borderRight: "1px solid #d3d3d3",
+                        }}
+                      >
+                        {seminar.credits}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px 20px",
+                          textAlign: "center",
+                          color: "black",
+                          width: "15%",
+                        }}
+                      >
+                        <Flex gap="xs" justify="center">
+                          <Link
+                            to={`/programme_curriculum/admin_edit_seminar_form/${seminar.id}`}
+                          >
+                            <ActionIcon variant="light" color="blue" size="sm">
+                              <IconEdit size="1rem" />
+                            </ActionIcon>
+                          </Link>
+                          <ActionIcon
+                            variant="light"
+                            color="red"
+                            size="sm"
+                            onClick={() => handleDeleteSeminarClick(seminar)}
+                          >
+                            <IconTrash size="1rem" />
+                          </ActionIcon>
+                        </Flex>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="6" style={{ textAlign: "center" }}>
+                      No seminars found
+                    </td>
+                  </tr>
+                )
+              ) : filteredTeachingCredits.length > 0 ? (
+                filteredTeachingCredits.map((tc, index) => (
                   <tr
                     key={index}
                     style={{
@@ -305,32 +1064,33 @@ function Admin_view_all_courses() {
                         padding: "15px 20px",
                         textAlign: "center",
                         color: "black",
-                        width: "20%",
+                        width: "15%",
                         borderRight: "1px solid #d3d3d3",
                       }}
                     >
-                      <Link
-                        to={`/programme_curriculum/admin_course/${course.id}`}
-                        className="course-link"
-                        style={{
-                          color: "#3498db",
-                          textDecoration: "none",
-                          fontSize: "14px",
-                        }}
-                      >
-                        {course.code}
-                      </Link>
+                      {tc.code}
                     </td>
                     <td
                       style={{
                         padding: "15px 20px",
                         textAlign: "center",
                         color: "black",
-                        width: "30%",
+                        width: "25%",
                         borderRight: "1px solid #d3d3d3",
                       }}
                     >
-                      {course.name}
+                      {tc.name}
+                    </td>
+                    <td
+                      style={{
+                        padding: "15px 20px",
+                        textAlign: "center",
+                        color: "black",
+                        width: "20%",
+                        borderRight: "1px solid #d3d3d3",
+                      }}
+                    >
+                      {tc.discipline}
                     </td>
                     <td
                       style={{
@@ -341,7 +1101,18 @@ function Admin_view_all_courses() {
                         borderRight: "1px solid #d3d3d3",
                       }}
                     >
-                      {course.version}
+                      {tc.programme_type}
+                    </td>
+                    <td
+                      style={{
+                        padding: "15px 20px",
+                        textAlign: "center",
+                        color: "black",
+                        width: "10%",
+                        borderRight: "1px solid #d3d3d3",
+                      }}
+                    >
+                      {tc.credits}
                     </td>
                     <td
                       style={{
@@ -349,32 +1120,21 @@ function Admin_view_all_courses() {
                         textAlign: "center",
                         color: "black",
                         width: "15%",
-                        borderRight: "1px solid #d3d3d3",
-                      }}
-                    >
-                      {course.credits}
-                    </td>
-                    <td
-                      style={{
-                        padding: "15px 20px",
-                        textAlign: "center",
-                        color: "black",
-                        width: "20%",
                       }}
                     >
                       <Flex gap="xs" justify="center">
                         <Link
-                          to={`/programme_curriculum/acad_admin_edit_course_form/${course.id}`}
+                          to={`/programme_curriculum/admin_edit_teaching_credit_form/${tc.id}`}
                         >
                           <ActionIcon variant="light" color="blue" size="sm">
                             <IconEdit size="1rem" />
                           </ActionIcon>
                         </Link>
-                        <ActionIcon 
-                          variant="light" 
-                          color="red" 
+                        <ActionIcon
+                          variant="light"
+                          color="red"
                           size="sm"
-                          onClick={() => handleDeleteClick(course)}
+                          onClick={() => handleDeleteTeachingCreditClick(tc)}
                         >
                           <IconTrash size="1rem" />
                         </ActionIcon>
@@ -384,8 +1144,8 @@ function Admin_view_all_courses() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" style={{ textAlign: "center" }}>
-                    No courses found
+                  <td colSpan="6" style={{ textAlign: "center" }}>
+                    No teaching credits found
                   </td>
                 </tr>
               )}
@@ -396,38 +1156,117 @@ function Admin_view_all_courses() {
         <Modal
           opened={deleteModalOpened}
           onClose={() => setDeleteModalOpened(false)}
-          title="Confirm Course Deletion"
+          title={seminarToDelete !== null ? "Confirm Seminar Deletion" : teachingCreditToDelete !== null ? "Confirm Teaching Credit Deletion" : thesisToDelete !== null ? "Confirm Thesis Deletion" : "Confirm Course Deletion"}
           centered
           size="md"
         >
-          <Text size="sm" mb="md">
-            Are you sure you want to delete the course <strong>"{courseToDelete?.code} - {courseToDelete?.name}"</strong> 
-            (Version: {courseToDelete?.version})?
-          </Text>
-          
-          <Text size="xs" color="orange" mb="sm">
-            ⚠️ <strong>Warning:</strong> This action cannot be undone.
-          </Text>
-          
-          <Text size="xs" color="blue" mb="md">
-            ℹ️ <strong>Note:</strong> If the backend delete API is not yet implemented, 
-            you'll receive a notification about the current status.
-          </Text>
-          
-          <Flex justify="flex-end" mt="md" gap="sm">
-            <Button 
-              variant="outline" 
-              onClick={() => setDeleteModalOpened(false)}
-            >
-              Cancel
-            </Button>
-            <Button 
-              color="red" 
-              onClick={handleConfirmDelete}
-            >
-              Delete Course
-            </Button>
-          </Flex>
+          {seminarToDelete !== null ? (
+            <>
+              <Text size="sm" mb="md">
+                Are you sure you want to delete the seminar <strong>"{seminarToDelete?.code} - {seminarToDelete?.name}"</strong>?
+              </Text>
+
+              <Text size="xs" color="orange" mb="sm">
+                Warning: This action cannot be undone.
+              </Text>
+
+              <Flex justify="flex-end" mt="md" gap="sm">
+                <Button
+                  variant="outline"
+                  onClick={() => setDeleteModalOpened(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  color="red"
+                  onClick={handleConfirmDelete}
+                >
+                  Delete Seminar
+                </Button>
+              </Flex>
+            </>
+          ) : teachingCreditToDelete !== null ? (
+            <>
+              <Text size="sm" mb="md">
+                Are you sure you want to delete the teaching credit <strong>"{teachingCreditToDelete?.code} - {teachingCreditToDelete?.name}"</strong>?
+              </Text>
+
+              <Text size="xs" color="orange" mb="sm">
+                Warning: This action cannot be undone.
+              </Text>
+
+              <Flex justify="flex-end" mt="md" gap="sm">
+                <Button
+                  variant="outline"
+                  onClick={() => setDeleteModalOpened(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  color="red"
+                  onClick={handleConfirmDelete}
+                >
+                  Delete Teaching Credit
+                </Button>
+              </Flex>
+            </>
+          ) : thesisToDelete !== null ? (
+            <>
+              <Text size="sm" mb="md">
+                Are you sure you want to delete the thesis <strong>"{thesisToDelete?.code} - {thesisToDelete?.name}"</strong>?
+              </Text>
+              
+              <Text size="xs" color="orange" mb="sm">
+                ⚠️ <strong>Warning:</strong> This action cannot be undone.
+              </Text>
+              
+              <Flex justify="flex-end" mt="md" gap="sm">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setDeleteModalOpened(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  color="red" 
+                  onClick={handleConfirmDelete}
+                >
+                  Delete Thesis
+                </Button>
+              </Flex>
+            </>
+          ) : (
+            <>
+              <Text size="sm" mb="md">
+                Are you sure you want to delete the course <strong>"{courseToDelete?.code} - {courseToDelete?.name}"</strong> 
+                (Version: {courseToDelete?.version})?
+              </Text>
+              
+              <Text size="xs" color="orange" mb="sm">
+                ⚠️ <strong>Warning:</strong> This action cannot be undone.
+              </Text>
+              
+              <Text size="xs" color="blue" mb="md">
+                ℹ️ <strong>Note:</strong> If the backend delete API is not yet implemented, 
+                you'll receive a notification about the current status.
+              </Text>
+              
+              <Flex justify="flex-end" mt="md" gap="sm">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setDeleteModalOpened(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  color="red" 
+                  onClick={handleConfirmDelete}
+                >
+                  Delete Course
+                </Button>
+              </Flex>
+            </>
+          )}
         </Modal>
       </Container>
     </MantineProvider>

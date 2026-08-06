@@ -112,7 +112,7 @@ export default function CheckResult() {
           const studentData = {
             name: data.student_info.name || data.student_info.student_name || '',
             rollNumber: data.student_info.roll_number || data.student_info.roll_no || '',
-            programme: data.student_info.programme || 'B.Tech',
+            programme: data.student_info.programme || '',
             branch: data.student_info.branch || '',
             academicYear: data.student_info.academic_year || ''
           };
@@ -123,7 +123,7 @@ export default function CheckResult() {
             setStudentInfo({
               name: userData.name || userData.username || '',
               rollNumber: userData.roll_no || '',
-              programme: userData.programme || 'B.Tech',
+              programme: userData.programme || '',
               branch: userData.department || '',
               academicYear: ''
             });
