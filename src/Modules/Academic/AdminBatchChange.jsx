@@ -13,6 +13,7 @@ import {
   Group,
   TextInput,
 } from "@mantine/core";
+import { showNotification } from "@mantine/notifications";
 import {
   listBatchesRoute,
   listStudentsRoute,
@@ -28,6 +29,7 @@ export default function AdminBatchChange() {
   const [error, setError] = useState("");
   const [changes, setChanges] = useState({});
   const [modalOpen, setModalOpen] = useState(false);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     setLoadingBatches(true);
@@ -91,6 +93,13 @@ export default function AdminBatchChange() {
     );
   });
 
+  // Sort by roll no (username) alphabetically, then filter by the search box.
+  const visibleStudents = [...students]
+    .sort((a, b) => (a.username || "").localeCompare(b.username || ""))
+    .filter((st) =>
+      (st.username || "").toLowerCase().includes(search.trim().toLowerCase()),
+    );
+
   const submitChanges = () => setModalOpen(true);
 
   const confirmApply = () => {
@@ -104,11 +113,38 @@ export default function AdminBatchChange() {
       .post(applyBatchRoute, payload, {
         headers: { Authorization: `Token ${token}` },
       })
-      .then(() => {
+      .then((res) => {
         setModalOpen(false);
+        const errs = res.data?.errors || [];
+        if (errs.length) {
+          const msg = errs.map((e) => e.detail).join("\n");
+          setError(msg);
+          showNotification({
+            title: "Some students were not updated",
+            message: msg,
+            color: "red",
+            autoClose: false,
+          });
+        } else {
+          setError("");
+          showNotification({
+            title: "Batch changes applied",
+            message: "All selected students were updated.",
+            color: "green",
+          });
+        }
         fetchStudents();
       })
-      .catch(() => setError("Failed to apply batch changes."));
+      .catch(() => {
+        setModalOpen(false);
+        const msg = "Failed to apply batch changes. Please try again.";
+        setError(msg);
+        showNotification({
+          title: "Batch change failed",
+          message: msg,
+          color: "red",
+        });
+      });
   };
 
   return (
@@ -147,9 +183,16 @@ export default function AdminBatchChange() {
 
         {students.length > 0 && !loadingStudents && (
           <>
+            <TextInput
+              placeholder="Search by roll no…"
+              value={search}
+              onChange={(e) => setSearch(e.currentTarget.value)}
+              mb="md"
+            />
             <Table striped highlightOnHover withTableBorder>
               <thead>
                 <tr>
+                  <th>S. No.</th>
                   <th>Username</th>
                   <th>Current Batch</th>
                   <th>New Batch</th>
@@ -157,8 +200,9 @@ export default function AdminBatchChange() {
                 </tr>
               </thead>
               <tbody>
-                {students.map((st) => (
+                {visibleStudents.map((st, idx) => (
                   <tr key={st.id}>
+                    <td>{idx + 1}</td>
                     <td>{st.username}</td>
                     <td>{st.current_batch}</td>
                     <td>
@@ -186,6 +230,13 @@ export default function AdminBatchChange() {
                     </td>
                   </tr>
                 ))}
+                {visibleStudents.length === 0 && (
+                  <tr>
+                    <td colSpan={5} style={{ textAlign: "center" }}>
+                      No students match &quot;{search}&quot;
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </Table>
 

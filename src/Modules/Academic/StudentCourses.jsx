@@ -400,7 +400,12 @@ export default function StudentCourses() {
         await handleGetCourses();
       }
     } catch (err) {
-      setError(err.response?.data?.detail || err.message || "Add failed");
+      setError(
+        err.response?.data?.error ||
+          err.response?.data?.detail ||
+          err.message ||
+          "Add failed",
+      );
     } finally {
       setLoading(false);
     }
