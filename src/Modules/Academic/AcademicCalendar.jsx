@@ -32,6 +32,8 @@ function AcademicCalendar() {
     description: "",
     from_date: null,
     to_date: null,
+    from_time: "",
+    to_time: "",
   });
   const [audience, setAudience] = useState(defaultAudienceValue());
   const [editingEvent, setEditingEvent] = useState(null);
@@ -64,6 +66,8 @@ function AcademicCalendar() {
                 ...e,
                 from_date: e.from_date ? new Date(e.from_date) : null,
                 to_date: e.to_date ? new Date(e.to_date) : null,
+                from_time: e.from_time || "",
+                to_time: e.to_time || "",
               }))
             : [],
         );
@@ -89,10 +93,26 @@ function AcademicCalendar() {
         })
       : "";
 
+  // "14:30" / "14:30:00" -> "2:30 PM"; empty for whole-day (no time set)
+  const formatTime = (t) => {
+    if (!t) return "—";
+    const [h, m] = t.split(":");
+    const hr = Number(h);
+    const period = hr >= 12 ? "PM" : "AM";
+    const hr12 = hr % 12 || 12;
+    return `${hr12}:${m} ${period}`;
+  };
+
   // Open modals
   const handleAdd = () => {
     setError("");
-    setNewEvent({ description: "", from_date: null, to_date: null });
+    setNewEvent({
+      description: "",
+      from_date: null,
+      to_date: null,
+      from_time: "",
+      to_time: "",
+    });
     setAudience(defaultAudienceValue());
     setAddModalOpen(true);
   };
@@ -119,6 +139,8 @@ function AcademicCalendar() {
           ...editingEvent,
           from_date: editingEvent.from_date.toISOString().slice(0, 10),
           to_date: editingEvent.to_date.toISOString().slice(0, 10),
+          from_time: editingEvent.from_time || null,
+          to_time: editingEvent.to_time || null,
         },
         { headers: { Authorization: `Token ${token}` } },
       );
@@ -160,6 +182,8 @@ function AcademicCalendar() {
           ...newEvent,
           from_date: newEvent.from_date.toISOString().slice(0, 10),
           to_date: newEvent.to_date.toISOString().slice(0, 10),
+          from_time: newEvent.from_time || null,
+          to_time: newEvent.to_time || null,
           audience_type: audience.audienceType,
           target_role:
             audience.audienceType === "role" ? audience.targetRole : null,
@@ -290,7 +314,9 @@ function AcademicCalendar() {
               <tr>
                 <th>Description</th>
                 <th>Start Date</th>
+                <th>Start Time</th>
                 <th>End Date</th>
+                <th>End Time</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -300,7 +326,9 @@ function AcademicCalendar() {
                   <tr key={ev.id}>
                     <td>{ev.description}</td>
                     <td>{formatDate(ev.from_date)}</td>
+                    <td>{formatTime(ev.from_time)}</td>
                     <td>{formatDate(ev.to_date)}</td>
+                    <td>{formatTime(ev.to_time)}</td>
                     <td>
                       <Group spacing="xs">
                         <Button
@@ -326,7 +354,7 @@ function AcademicCalendar() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} align="center">
+                  <td colSpan={6} align="center">
                     No events found
                   </td>
                 </tr>
@@ -425,6 +453,26 @@ function AcademicCalendar() {
           required
           disabled={processing}
         />
+        <TextInput
+          label="Start Time (optional)"
+          type="time"
+          value={(editingEvent?.from_time || "").slice(0, 5)}
+          onChange={(e) =>
+            setEditingEvent({ ...editingEvent, from_time: e.target.value })
+          }
+          mb="md"
+          disabled={processing}
+        />
+        <TextInput
+          label="End Time (optional)"
+          type="time"
+          value={(editingEvent?.to_time || "").slice(0, 5)}
+          onChange={(e) =>
+            setEditingEvent({ ...editingEvent, to_time: e.target.value })
+          }
+          mb="md"
+          disabled={processing}
+        />
         <Group position="right" mt="lg">
           <Button onClick={handleSaveEdit} disabled={processing}>
             {processing ? "Saving…" : "Save Changes"}
@@ -476,6 +524,26 @@ function AcademicCalendar() {
           }
           mb="md"
           required
+          disabled={processing}
+        />
+        <TextInput
+          label="Start Time (optional)"
+          type="time"
+          value={(newEvent.from_time || "").slice(0, 5)}
+          onChange={(e) =>
+            setNewEvent({ ...newEvent, from_time: e.target.value })
+          }
+          mb="md"
+          disabled={processing}
+        />
+        <TextInput
+          label="End Time (optional)"
+          type="time"
+          value={(newEvent.to_time || "").slice(0, 5)}
+          onChange={(e) =>
+            setNewEvent({ ...newEvent, to_time: e.target.value })
+          }
+          mb="md"
           disabled={processing}
         />
         <AudienceSelector value={audience} onChange={setAudience} />
