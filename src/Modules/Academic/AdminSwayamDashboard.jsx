@@ -35,7 +35,21 @@ const AdminSwayamDashboard = () => {
   const [selectedIds, setSelectedIds] = useState([]);
   const [academicYear, setAcademicYear] = useState('');
   const [semesterType, setSemesterType] = useState('');
+  const [semesterNo, setSemesterNo] = useState('');
   const academicYears = useMemo(() => generateAcademicYears(), []);
+
+  // Distinct semesters in the current request list, for the semester-wise filter.
+  const semesterOptions = useMemo(
+    () => Array.from(new Set(requests.map(r => r.semester?.semester_no).filter(s => s != null)))
+      .sort((a, b) => a - b)
+      .map(s => ({ value: String(s), label: `Semester ${s}` })),
+    [requests]
+  );
+
+  const visibleRequests = useMemo(
+    () => semesterNo ? requests.filter(r => String(r.semester?.semester_no) === semesterNo) : requests,
+    [requests, semesterNo]
+  );
 
   useEffect(() => {
     fetchRequests();
@@ -204,11 +218,9 @@ const AdminSwayamDashboard = () => {
   };
 
   const toggleSelectAll = () => {
-    if (selectedIds.length === requests.length) {
-      setSelectedIds([]);
-    } else {
-      setSelectedIds(requests.map(r => r.id));
-    }
+    const allVisibleSelected =
+      visibleRequests.length > 0 && visibleRequests.every(r => selectedIds.includes(r.id));
+    setSelectedIds(allVisibleSelected ? [] : visibleRequests.map(r => r.id));
   };
 
   const toggleSelect = (id) => {
@@ -244,8 +256,8 @@ const AdminSwayamDashboard = () => {
         key: 'checkbox',
         header: (
           <Checkbox
-            checked={selectedIds.length === requests.length && requests.length > 0}
-            indeterminate={selectedIds.length > 0 && selectedIds.length < requests.length}
+            checked={visibleRequests.length > 0 && visibleRequests.every(r => selectedIds.includes(r.id))}
+            indeterminate={visibleRequests.some(r => selectedIds.includes(r.id)) && !visibleRequests.every(r => selectedIds.includes(r.id))}
             onChange={toggleSelectAll}
           />
         ),
@@ -260,6 +272,7 @@ const AdminSwayamDashboard = () => {
       { key: 'student', header: 'Student Name', render: (req) => req.student.name },
       { key: 'roll', header: 'Roll No', render: (req) => req.student.roll_no },
       { key: 'batch', header: 'Batch', render: (req) => req.student.batch },
+      { key: 'sem', header: 'Sem', render: (req) => req.semester?.semester_no ?? '-' },
     ];
 
     if (activeRequestTab === 'replace') {
@@ -358,7 +371,7 @@ const AdminSwayamDashboard = () => {
           </tr>
         </thead>
         <tbody>
-          {requests.map((req, index) => (
+          {visibleRequests.map((req, index) => (
             <tr key={req.id}>
               {columns.map((col) => (
                 <td key={col.key}>{col.render(req, index)}</td>
@@ -389,6 +402,15 @@ const AdminSwayamDashboard = () => {
               data={SEMESTER_CHOICES}
               value={semesterType}
               onChange={setSemesterType}
+            />
+            <Select
+              label="Semester"
+              placeholder="All semesters"
+              data={semesterOptions}
+              value={semesterNo}
+              onChange={setSemesterNo}
+              clearable
+              disabled={semesterOptions.length === 0}
             />
           </Group>
           <Group position="left">
