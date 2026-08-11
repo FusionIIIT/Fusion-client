@@ -28,6 +28,12 @@ export default function RegisteredCourses() {
   const user = useSelector((state) => state.user);
 
   useEffect(() => {
+    // Student-only view: skip the student endpoints until the role resolves to 'student' (avoids a 403 when mounted for other roles).
+    if (user?.role !== "student") {
+      setLoading(false);
+      return;
+    }
+
     const fetchStudentProfile = async () => {
       const getValueSafely = (obj, paths) => {
         for (const path of paths) {

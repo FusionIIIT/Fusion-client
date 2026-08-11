@@ -32,6 +32,7 @@ const generateAcademicYears = () => {
 export default function AdminAddDashboard() {
   const [year, setYear] = useState('');
   const [semester, setSemester] = useState('');
+  const [semesterNo, setSemesterNo] = useState('');
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -92,18 +93,35 @@ export default function AdminAddDashboard() {
     [requests]
   );
 
+  // Distinct semesters across all requests, for the semester-wise filter.
+  const semesterOptions = useMemo(
+    () => Array.from(new Set(requests.map(r => r.semester).filter(s => s != null)))
+      .sort((a, b) => a - b)
+      .map(s => ({ value: String(s), label: `Semester ${s}` })),
+    [requests]
+  );
+
+  const visiblePending = useMemo(
+    () => semesterNo ? pendingRequests.filter(r => String(r.semester) === semesterNo) : pendingRequests,
+    [pendingRequests, semesterNo]
+  );
+
   const filteredProcessedRequests = useMemo(
-    () => statusFilter ? processedRequests.filter(r => r.status === statusFilter) : processedRequests,
-    [processedRequests, statusFilter]
+    () => processedRequests
+      .filter(r => (statusFilter ? r.status === statusFilter : true))
+      .filter(r => (semesterNo ? String(r.semester) === semesterNo : true)),
+    [processedRequests, statusFilter, semesterNo]
   );
 
   const toggleSelectAll = useCallback(() => {
-    if (selectedIds.size === pendingRequests.length && pendingRequests.length > 0) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(pendingRequests.map(r => r.id)));
-    }
-  }, [selectedIds.size, pendingRequests]);
+    const allVisibleSelected =
+      visiblePending.length > 0 && visiblePending.every(r => selectedIds.has(r.id));
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      visiblePending.forEach(r => (allVisibleSelected ? next.delete(r.id) : next.add(r.id)));
+      return next;
+    });
+  }, [selectedIds, visiblePending]);
 
   const handleAction = useCallback(async (action) => {
     if (selectedIds.size === 0) {
@@ -314,6 +332,15 @@ export default function AdminAddDashboard() {
               value={semester}
               onChange={setSemester}
             />
+            <Select
+              label="Semester"
+              placeholder="All semesters"
+              data={semesterOptions}
+              value={semesterNo}
+              onChange={setSemesterNo}
+              clearable
+              disabled={semesterOptions.length === 0}
+            />
           </Group>
 
           <Group position="left" spacing="xs">
@@ -397,12 +424,13 @@ export default function AdminAddDashboard() {
                     <tr>
                       <th style={{ width: 50 }}>
                         <Checkbox
-                          checked={selectedIds.size === pendingRequests.length && pendingRequests.length > 0}
+                          checked={visiblePending.length > 0 && visiblePending.every(r => selectedIds.has(r.id))}
                           onChange={toggleSelectAll}
-                          indeterminate={selectedIds.size > 0 && selectedIds.size < pendingRequests.length}
+                          indeterminate={visiblePending.some(r => selectedIds.has(r.id)) && !visiblePending.every(r => selectedIds.has(r.id))}
                         />
                       </th>
                       <th>Student</th>
+                      <th>Sem</th>
                       <th>Slot</th>
                       <th>Course</th>
                       <th>Status</th>
@@ -411,7 +439,7 @@ export default function AdminAddDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {pendingRequests.map(r => (
+                    {visiblePending.map(r => (
                       <tr key={r.id}>
                         <td>
                           <Checkbox
@@ -425,6 +453,7 @@ export default function AdminAddDashboard() {
                             <Text size="xs" color="dimmed">{r.student_name}</Text>
                           )}
                         </td>
+                        <td>{r.semester ?? '-'}</td>
                         <td>{r.slot}</td>
                         <td>
                           <Text size="sm">{r.course}</Text>
@@ -475,6 +504,7 @@ export default function AdminAddDashboard() {
                   <thead>
                     <tr>
                       <th>Student</th>
+                      <th>Sem</th>
                       <th>Slot</th>
                       <th>Course</th>
                       <th>
@@ -508,6 +538,7 @@ export default function AdminAddDashboard() {
                             <Text size="xs" color="dimmed">{r.student_name}</Text>
                           )}
                         </td>
+                        <td>{r.semester ?? '-'}</td>
                         <td>{r.slot}</td>
                         <td>
                           <Text size="sm">{r.course}</Text>

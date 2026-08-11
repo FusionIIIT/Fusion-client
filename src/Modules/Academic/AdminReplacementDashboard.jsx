@@ -34,6 +34,7 @@ const generateAcademicYears = () => {
 export default function AdminReplacementDashboard() {
   const [year, setYear] = useState('');
   const [semester, setSemester] = useState('');
+  const [semesterNo, setSemesterNo] = useState('');
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -53,14 +54,30 @@ export default function AdminReplacementDashboard() {
     [requests]
   );
 
+  // Distinct semesters across all requests (pending + processed), for the semester-wise filter.
+  const semesterOptions = useMemo(
+    () => Array.from(new Set(requests.map(r => r.semester).filter(s => s != null)))
+      .sort((a, b) => a - b)
+      .map(s => ({ value: String(s), label: `Semester ${s}` })),
+    [requests]
+  );
+
+  // Pending requests after applying the semester-wise filter (empty = all).
+  const visiblePendingRequests = useMemo(
+    () => semesterNo ? pendingRequests.filter(r => String(r.semester) === semesterNo) : pendingRequests,
+    [pendingRequests, semesterNo]
+  );
+
   const processedRequests = useMemo(
     () => requests.filter(r => r.status !== 'Pending'),
     [requests]
   );
 
   const filteredProcessedRequests = useMemo(
-    () => statusFilter ? processedRequests.filter(r => r.status === statusFilter) : processedRequests,
-    [processedRequests, statusFilter]
+    () => processedRequests
+      .filter(r => (statusFilter ? r.status === statusFilter : true))
+      .filter(r => (semesterNo ? String(r.semester) === semesterNo : true)),
+    [processedRequests, statusFilter, semesterNo]
   );
 
   const rejectedRequests = useMemo(
@@ -105,10 +122,10 @@ export default function AdminReplacementDashboard() {
       return;
     }
 
-    if (pendingRequests.length === 0) {
+    if (selectedPendingIds.size === 0) {
       showNotification({
-        title: 'No Pending Requests',
-        message: 'There are no pending requests to allocate.',
+        title: 'No requests selected',
+        message: 'Select the requests you want to allot, then click Start Allotment.',
         color: 'yellow',
       });
       return;
@@ -120,17 +137,19 @@ export default function AdminReplacementDashboard() {
       return;
     }
 
+    const ids = Array.from(selectedPendingIds);
     setAllocating(true);
     axios.post(allotReplacementCoursesRoute,
-      { academic_year: year, semester_type: semester },
+      { academic_year: year, semester_type: semester, request_ids: ids },
       { headers: { Authorization: `Token ${token}` } }
     )
     .then(() => {
       showNotification({
         title: 'Allocation Complete',
-        message: 'All pending requests processed.',
+        message: `${ids.length} selected request(s) processed.`,
         color: 'green'
       });
+      setSelectedPendingIds(new Set());
       fetchRequests(); // Refresh after allocation
     })
     .catch(err => {
@@ -160,12 +179,19 @@ export default function AdminReplacementDashboard() {
   }, []);
 
   const toggleSelectAllPending = useCallback(() => {
-    if (selectedPendingIds.size === pendingRequests.length && pendingRequests.length > 0) {
-      setSelectedPendingIds(new Set());
-    } else {
-      setSelectedPendingIds(new Set(pendingRequests.map(r => r.id)));
-    }
-  }, [selectedPendingIds.size, pendingRequests]);
+    const allVisibleSelected =
+      visiblePendingRequests.length > 0 &&
+      visiblePendingRequests.every(r => selectedPendingIds.has(r.id));
+    setSelectedPendingIds(prev => {
+      const next = new Set(prev);
+      if (allVisibleSelected) {
+        visiblePendingRequests.forEach(r => next.delete(r.id));
+      } else {
+        visiblePendingRequests.forEach(r => next.add(r.id));
+      }
+      return next;
+    });
+  }, [selectedPendingIds, visiblePendingRequests]);
 
   const toggleSelectAllRejected = useCallback(() => {
     if (selectedProcessedIds.size === rejectedRequests.length && rejectedRequests.length > 0) {
@@ -351,13 +377,14 @@ export default function AdminReplacementDashboard() {
         <tr>
           <th style={{ width: 50 }}>
             <Checkbox
-              checked={selectedPendingIds.size === data.length && data.length > 0}
+              checked={data.length > 0 && data.every(r => selectedPendingIds.has(r.id))}
               onChange={toggleSelectAllPending}
-              indeterminate={selectedPendingIds.size > 0 && selectedPendingIds.size < data.length}
+              indeterminate={data.some(r => selectedPendingIds.has(r.id)) && !data.every(r => selectedPendingIds.has(r.id))}
             />
           </th>
           <th>S. No.</th>
           <th>Student</th>
+          <th>Sem</th>
           <th>Slot</th>
           <th>Old</th>
           <th>New</th>
@@ -380,6 +407,7 @@ export default function AdminReplacementDashboard() {
               <Text size="sm" weight={500}>{r.student}</Text>
               <Text size="xs" color="dimmed">{r.student_name}</Text>
             </td>
+            <td>{r.semester ?? '-'}</td>
             <td>{r.slot}</td>
             <td>
               <Text size="sm" weight={500}>{r.old_course}</Text>
@@ -424,6 +452,7 @@ export default function AdminReplacementDashboard() {
           )}
           <th>S. No.</th>
           <th>Student</th>
+          <th>Sem</th>
           <th>Slot</th>
           <th>Old</th>
           <th>New</th>
@@ -468,6 +497,7 @@ export default function AdminReplacementDashboard() {
               <Text size="sm" weight={500}>{r.student}</Text>
               <Text size="xs" color="dimmed">{r.student_name}</Text>
             </td>
+            <td>{r.semester ?? '-'}</td>
             <td>{r.slot}</td>
             <td>
               <Text size="sm" weight={500}>{r.old_course}</Text>
@@ -527,6 +557,15 @@ export default function AdminReplacementDashboard() {
               value={semester}
               onChange={setSemester}
             />
+            <Select
+              label="Semester"
+              placeholder="All semesters"
+              data={semesterOptions}
+              value={semesterNo}
+              onChange={setSemesterNo}
+              clearable
+              disabled={semesterOptions.length === 0}
+            />
           </Group>
 
           <Group position="left" spacing="xs">
@@ -538,14 +577,14 @@ export default function AdminReplacementDashboard() {
             >
               Refresh
             </Button>
-            <Button 
-              size="sm" 
-              color="green" 
-              onClick={handleAllocate} 
+            <Button
+              size="sm"
+              color="green"
+              onClick={handleAllocate}
               loading={allocating}
-              disabled={!year || !semester || pendingRequests.length === 0}
+              disabled={!year || !semester || selectedPendingIds.size === 0}
             >
-              Start Allotment
+              Start Allotment ({selectedPendingIds.size})
             </Button>
           </Group>
         </Stack>
@@ -597,7 +636,7 @@ export default function AdminReplacementDashboard() {
                     </Button>
                   </Group>
                 </Group>
-                {renderPendingTable(pendingRequests)}
+                {renderPendingTable(visiblePendingRequests)}
               </Card>
             ) : (
               <Alert color="blue">No pending replacement requests.</Alert>
