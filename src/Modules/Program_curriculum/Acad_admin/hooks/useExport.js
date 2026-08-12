@@ -3,6 +3,7 @@ import { notifications } from "@mantine/notifications";
 import { STUDENT_FIELDS_CONFIG } from "../AdminUpcomingBatchesConstants";
 import {
   getExportableFields,
+  getCurrentProgrammeType,
   prepareExportData,
   exportToExcel,
   exportToCSV,
@@ -17,9 +18,14 @@ export function useExport({ selectedBatch, getFilteredStudents }) {
   const [isExporting, setIsExporting] = useState(false);
   const [selectAllFields, setSelectAllFields] = useState(true);
 
+  // Offer only the fields relevant to this batch's programme type.
+  const exportableFields = getExportableFields(
+    getCurrentProgrammeType(selectedBatch),
+  );
+
   const initializeSelectedFields = () => {
     const fields = {};
-    getExportableFields().forEach((field) => {
+    exportableFields.forEach((field) => {
       fields[field.key] = !STUDENT_FIELDS_CONFIG[field.key].systemGenerated;
     });
     setSelectedFields(fields);
@@ -27,7 +33,7 @@ export function useExport({ selectedBatch, getFilteredStudents }) {
 
   const handleSelectAllFields = (checked) => {
     const newSelectedFields = {};
-    getExportableFields().forEach((field) => {
+    exportableFields.forEach((field) => {
       newSelectedFields[field.key] = checked;
     });
     setSelectedFields(newSelectedFields);
@@ -46,7 +52,7 @@ export function useExport({ selectedBatch, getFilteredStudents }) {
     };
     setSelectedFields(newSelectedFields);
 
-    const allFields = getExportableFields();
+    const allFields = exportableFields;
     const allSelected = allFields.every(
       (field) => newSelectedFields[field.key],
     );
@@ -123,6 +129,7 @@ export function useExport({ selectedBatch, getFilteredStudents }) {
   return {
     showExportModal,
     setShowExportModal,
+    exportableFields,
     selectedFields,
     exportFormat,
     setExportFormat,

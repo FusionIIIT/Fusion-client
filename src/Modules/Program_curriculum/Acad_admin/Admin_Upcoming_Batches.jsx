@@ -16,7 +16,6 @@ import { customTableStyles } from "./AdminUpcomingBatchesConstants";
 import {
   getCurrentBatchYear,
   getViewAcademicYearOptions,
-  getExportableFields,
   getDisciplineOptions,
 } from "./AdminUpcomingBatchesUtils";
 import AddBatchModal from "./components/AddBatchModal";
@@ -174,6 +173,7 @@ function AdminUpcomingBatch() {
   const {
     showExportModal,
     setShowExportModal,
+    exportableFields,
     selectedFields,
     exportFormat,
     setExportFormat,
@@ -653,7 +653,7 @@ function AdminUpcomingBatch() {
           setExportFormat={setExportFormat}
           selectAllFields={selectAllFields}
           onToggleAll={handleToggleAllFields}
-          fields={getExportableFields()}
+          fields={exportableFields}
           selectedFields={selectedFields}
           onFieldChange={handleFieldChange}
           recordCount={getFilteredStudents().length}

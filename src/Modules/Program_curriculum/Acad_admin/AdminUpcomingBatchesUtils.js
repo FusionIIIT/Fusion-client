@@ -416,10 +416,11 @@ export const applyCaseConversion = (student) => {
   return convertedStudent;
 };
 
-export const getExportableFields = () => {
+export const getExportableFields = (programmeType) => {
   const organizedFieldOrder = [
     // Basic Information
     "jeeAppNo",
+    "applicationNo",
     "rollNumber",
     "name",
     "fname",
@@ -451,6 +452,8 @@ export const getExportableFields = () => {
     // Admission Information (grouped)
     "admissionMode",
     "admissionModeRemarks", // Remarks immediately after main field
+    "admissionType",
+    "gateQualified",
 
     // Contact Information
     "phoneNumber",
@@ -476,13 +479,19 @@ export const getExportableFields = () => {
     "reportedStatus",
   ];
 
-  // Return fields in the organized order, filtering out non-existent fields
+  // Return fields in the organized order, filtered to the current programme
+  // (e.g. PhD batches expose application_no/admission_type, UG/PG expose
+  // jee_app_no/admission_mode) so no field appears where it has no data.
+  const programmeCode = (programmeType || "").toUpperCase();
   return organizedFieldOrder
-    .filter(
-      (key) =>
-        STUDENT_FIELDS_CONFIG[key] &&
-        !STUDENT_FIELDS_CONFIG[key].systemGenerated,
-    )
+    .filter((key) => {
+      const config = STUDENT_FIELDS_CONFIG[key];
+      if (!config || config.systemGenerated) return false;
+      if (config.showForProgrammes && programmeCode) {
+        return config.showForProgrammes.includes(programmeCode);
+      }
+      return true;
+    })
     .map((key) => ({
       key,
       label: STUDENT_FIELDS_CONFIG[key].label,
@@ -494,6 +503,7 @@ export const getExportableFields = () => {
 export const prepareExportData = (students, selectedFieldKeys) => {
   const organizedFieldOrder = [
     "jeeAppNo",
+    "applicationNo",
     "rollNumber",
     "name",
     "fname",
@@ -514,6 +524,8 @@ export const prepareExportData = (students, selectedFieldKeys) => {
     "categoryRank",
     "admissionMode",
     "admissionModeRemarks", // Grouped with admissionMode
+    "admissionType",
+    "gateQualified",
     "phoneNumber",
     "instituteEmail",
     "alternateEmail",
