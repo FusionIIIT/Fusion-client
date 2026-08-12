@@ -873,19 +873,6 @@ export const STUDENT_TABLE_COLUMNS = [
     fields: ["specialization", "Specialization"],
   },
   {
-    key: "admissionType",
-    label: "Admission Type",
-    minWidth: "180px",
-    fields: [
-      "admissionMode",
-      "admission_mode",
-      "Admission Mode",
-      "admissionType",
-      "admission_type",
-      "Admission Type",
-    ],
-  },
-  {
     key: "gateQualified",
     label: "GATE Qualified",
     minWidth: "120px",
@@ -1033,6 +1020,19 @@ export const STUDENT_TABLE_COLUMNS = [
     label: "Nationality",
     minWidth: "100px",
     fields: ["nationality", "Nationality"],
+  },
+  {
+    key: "admissionMode",
+    label: "Admission Mode",
+    minWidth: "180px",
+    fields: [
+      "admissionMode",
+      "admission_mode",
+      "Admission Mode",
+      "admissionType",
+      "admission_type",
+      "Admission Type",
+    ],
   },
   {
     key: "admissionModeRemarks",
