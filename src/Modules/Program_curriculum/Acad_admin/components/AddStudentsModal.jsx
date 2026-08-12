@@ -136,10 +136,22 @@ function AddStudentsModal({
   uploadProgress,
   uploadedFile,
 }) {
-  // Validate size then store the image as a base64 data URL in manualFormData.
+  // Validate type + size then store the image as a base64 data URL.
   const handleImageUpload = (file, field, maxKB) => {
     if (!file) {
       setManualFormData((prev) => ({ ...prev, [field]: "" }));
+      return;
+    }
+    const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
+    if (
+      !allowedTypes.includes(file.type) &&
+      !/\.(png|jpe?g)$/i.test(file.name)
+    ) {
+      notifications.show({
+        title: "Invalid file type",
+        message: "Only PNG, JPG, or JPEG images are allowed.",
+        color: "red",
+      });
       return;
     }
     if (file.size > maxKB * 1024) {
