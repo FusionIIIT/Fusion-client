@@ -1,8 +1,15 @@
 import axios from "axios";
 import PropTypes from "prop-types";
-import { CaretDown, CaretUp, SortAscending } from "@phosphor-icons/react";
+import {
+  CaretDown,
+  CaretUp,
+  SortAscending,
+  Trash,
+  Funnel,
+} from "@phosphor-icons/react";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import {
+  ActionIcon,
   Anchor,
   Container,
   Loader,
@@ -10,6 +17,8 @@ import {
   Button,
   Divider,
   Flex,
+  Group,
+  Modal,
   Paper,
   Select,
   Stack,
@@ -17,23 +26,31 @@ import {
   CloseButton,
 } from "@mantine/core";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { showNotification } from "@mantine/notifications";
 import classes from "./Dashboard.module.css";
 import { Empty } from "../../components/empty";
 import CustomBreadcrumbs from "../../components/Breadcrumbs.jsx";
 import {
   notificationReadRoute,
   notificationDeleteRoute,
+  notificationClearRoute,
   notificationUnreadRoute,
   getNotificationsRoute,
+  updateRoleRoute,
 } from "../../routes/dashboardRoutes";
+import { setRole, setCurrentAccessibleModules } from "../../redux/userslice";
 import ModuleTabs from "../../components/moduleTabs.jsx";
 import CreateAnnouncementForm from "./CreateAnnouncementForm.jsx";
 import {
   incrementUnreadCount,
   decrementUnreadCount,
+  setUnreadCount,
 } from "../../redux/notificationSlice";
 
 const categories = ["Most Recent", "Tags", "Title"];
+
+const statusFilters = ["All", "Unread", "Read"];
 
 const URL_PATTERN = /(https?:\/\/[^\s]+)/;
 
@@ -56,16 +73,49 @@ function linkifyText(text) {
   });
 }
 
+// Modules whose notifications originate in the Academic module; clicking such
+// a notification deep-links to that module's tab. An explicit data.url (set by
+// newer notify.send calls) always wins over this fallback.
+const ACADEMIC_MODULES = ["Academic Calendar", "PhD Course Registration"];
+
+// The role that actually owns a module's admin action. A user with several
+// roles sees the same notification under all of them, but clicking should land
+// them in the role that can act on it. First match the viewer actually holds
+// wins. Modules absent here (e.g. Academic Calendar, which everyone gets) need
+// no role switch and open in the current role.
+const MODULE_TARGET_ROLES = {
+  "PhD Course Registration": ["acadadmin", "studentacadadmin"],
+};
+
+function resolveNotificationPath(notification) {
+  const url = notification?.data?.url;
+  if (typeof url === "string" && url.trim()) return url;
+  const moduleName = notification?.data?.module;
+  if (moduleName && ACADEMIC_MODULES.includes(moduleName)) {
+    return `/academics?tab=${encodeURIComponent(moduleName)}`;
+  }
+  return null;
+}
+
+function resolveNotificationRoles(notification) {
+  const tagged = notification?.data?.role;
+  if (typeof tagged === "string" && tagged.trim()) return [tagged];
+  const moduleName = notification?.data?.module;
+  return MODULE_TARGET_ROLES[moduleName] || [];
+}
+
 function NotificationItem({
   notification,
   markAsRead,
   deleteNotification,
   markAsUnread,
+  onOpen,
   loading,
 }) {
   const [expanded, setExpanded] = useState(false);
   const { module, flag } = notification.data;
   const isAnnouncement = flag === "announcement";
+  const targetPath = resolveNotificationPath(notification);
 
   return (
     <Paper
@@ -76,7 +126,10 @@ function NotificationItem({
         borderLeft: `0.4rem solid ${notification.unread ? "#15ABFF" : "#E0E0E0"}`,
         cursor: "pointer",
       }}
-      onClick={() => setExpanded((prev) => !prev)}
+      onClick={() => {
+        if (targetPath) onOpen(notification, targetPath);
+        else setExpanded((prev) => !prev);
+      }}
     >
       <Flex justify="space-between" align="center" gap="sm" wrap="nowrap">
         <Flex align="center" gap="sm" style={{ flex: 1, minWidth: 0 }}>
@@ -115,7 +168,17 @@ function NotificationItem({
               deleteNotification(notification.id);
             }}
           />
-          {expanded ? <CaretUp size={16} /> : <CaretDown size={16} />}
+          <ActionIcon
+            variant="subtle"
+            color="gray"
+            aria-label={expanded ? "Collapse" : "Expand"}
+            onClick={(e) => {
+              e.stopPropagation();
+              setExpanded((prev) => !prev);
+            }}
+          >
+            {expanded ? <CaretUp size={16} /> : <CaretDown size={16} />}
+          </ActionIcon>
         </Flex>
       </Flex>
 
@@ -154,10 +217,16 @@ function Dashboard() {
   const [announcementsList, setAnnouncementsList] = useState([]);
   const [activeTab, setActiveTab] = useState("0");
   const [sortedBy, setSortedBy] = useState("Most Recent");
+  const [statusFilter, setStatusFilter] = useState("All");
   const [loading, setLoading] = useState(false);
   const [read_Loading, setRead_Loading] = useState(-1);
+  const [clearModalOpen, setClearModalOpen] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const role = useSelector((state) => state.user.role);
+  const roles = useSelector((state) => state.user.roles);
+  const unreadCount = useSelector((state) => state.notification.unreadCount);
   const canCreateAnnouncement = role === "acadadmin";
   // const tabsListRef = useRef(null);
   const tabItems = [
@@ -191,9 +260,17 @@ function Dashboard() {
           headers: { Authorization: `Token ${token}` },
         });
         const { notifications } = data;
+        const parseNotificationData = (raw) => {
+          if (raw && typeof raw === "object") return raw;
+          try {
+            return JSON.parse(raw);
+          } catch {
+            return {};
+          }
+        };
         const notificationsData = notifications.map((item) => ({
           ...item,
-          data: JSON.parse(item.data.replace(/'/g, '"')),
+          data: parseNotificationData(item.data),
         }));
 
         setNotificationsList(
@@ -247,6 +324,17 @@ function Dashboard() {
     };
     return [...notificationsToDisplay].sort(sortMap[sortedBy]);
   }, [sortedBy, notificationsToDisplay]);
+
+  const displayedNotifications = useMemo(
+    () =>
+      sortedNotifications.filter((n) => {
+        if (n.deleted) return false;
+        if (statusFilter === "Unread") return n.unread;
+        if (statusFilter === "Read") return !n.unread;
+        return true;
+      }),
+    [sortedNotifications, statusFilter],
+  );
 
   const markAsRead = async (notifId) => {
     const token = localStorage.getItem("authToken");
@@ -337,13 +425,76 @@ function Dashboard() {
     }
   };
 
+  const clearAllNotifications = async () => {
+    const token = localStorage.getItem("authToken");
+    const scope = activeTab === "1" ? "announcement" : "notification";
+    try {
+      setClearing(true);
+      const response = await axios.post(
+        notificationClearRoute,
+        { scope },
+        { headers: { Authorization: `Token ${token}` } },
+      );
+      if (response.status === 200) {
+        if (scope === "announcement") {
+          setAnnouncementsList([]);
+        } else {
+          setNotificationsList([]);
+        }
+        const unreadCleared = response.data?.unread_cleared ?? 0;
+        if (unreadCleared > 0) {
+          dispatch(setUnreadCount(Math.max(0, unreadCount - unreadCleared)));
+        }
+      }
+    } catch (err) {
+      console.error("Error clearing notifications:", err);
+    } finally {
+      setClearing(false);
+      setClearModalOpen(false);
+    }
+  };
+
+  const openNotification = async (notification, path) => {
+    if (notification.unread) markAsRead(notification.id);
+    // If the notification belongs to a role the viewer holds but isn't
+    // currently in, switch to that role before navigating so the target page
+    // renders under the right role (its tabs/permissions differ per role).
+    const targetRole = resolveNotificationRoles(notification).find((r) =>
+      roles?.includes(r),
+    );
+    if (targetRole && targetRole !== role) {
+      const token = localStorage.getItem("authToken");
+      try {
+        await axios.patch(
+          updateRoleRoute,
+          { last_selected_role: targetRole },
+          { headers: { Authorization: `Token ${token}` } },
+        );
+        dispatch(setRole(targetRole));
+        dispatch(setCurrentAccessibleModules());
+        showNotification({
+          title: "Role switched",
+          message: `Switched to ${targetRole} to open this notification.`,
+          color: "blue",
+        });
+      } catch (err) {
+        console.error("Failed to switch role for notification:", err);
+      }
+    }
+    navigate(path);
+  };
+
+  const visibleCount = notificationsToDisplay.filter((n) => !n.deleted).length;
+  const tabLabel = activeTab === "1" ? "announcements" : "notifications";
+
   return (
     <>
       <CustomBreadcrumbs />
       <Flex
         justify="space-between"
-        align={{ base: "start", sm: "center" }}
+        align="flex-start"
         mt="lg"
+        gap="sm"
         direction={{ base: "column", sm: "row" }}
       >
         {/* <Flex
@@ -418,23 +569,54 @@ function Dashboard() {
 
         {activeTab !== "2" && (
           <Flex
-            w={{ base: "40%", sm: "auto" }}
+            w={{ base: "100%", sm: "auto" }}
             align="center"
-            mt="md"
-            rowGap="1rem"
-            columnGap="4rem"
+            justify={{ base: "flex-start", sm: "flex-end" }}
+            mt={{ base: "md", sm: 0 }}
+            gap="sm"
             wrap="wrap"
           >
+            <Button
+              variant="light"
+              color="red"
+              size="sm"
+              radius="md"
+              leftSection={<Trash size={16} />}
+              onClick={() => setClearModalOpen(true)}
+              disabled={visibleCount === 0}
+            >
+              Clear All
+            </Button>
             <Select
               classNames={{
                 option: classes.selectoptions,
                 input: classes.selectinputs,
               }}
               variant="filled"
-              leftSection={<SortAscending />}
+              size="sm"
+              radius="md"
+              w={{ base: "100%", xs: 150 }}
+              allowDeselect={false}
+              leftSection={<Funnel size={16} />}
+              data={statusFilters}
+              value={statusFilter}
+              onChange={(value) => setStatusFilter(value || "All")}
+              placeholder="Status"
+            />
+            <Select
+              classNames={{
+                option: classes.selectoptions,
+                input: classes.selectinputs,
+              }}
+              variant="filled"
+              size="sm"
+              radius="md"
+              w={{ base: "100%", xs: 170 }}
+              allowDeselect={false}
+              leftSection={<SortAscending size={16} />}
               data={categories}
               value={sortedBy}
-              onChange={setSortedBy}
+              onChange={(value) => setSortedBy(value || "Most Recent")}
               placeholder="Sort By"
             />
           </Flex>
@@ -450,26 +632,47 @@ function Dashboard() {
             <Container py="xl">
               <Loader size="lg" />
             </Container>
-          ) : sortedNotifications.filter(
-              (notification) => !notification.deleted,
-            ).length === 0 ? (
+          ) : displayedNotifications.length === 0 ? (
             <Empty />
           ) : (
-            sortedNotifications
-              .filter((notification) => !notification.deleted)
-              .map((notification) => (
+            displayedNotifications.map((notification) => (
                 <NotificationItem
                   notification={notification}
                   key={notification.id}
                   markAsRead={markAsRead}
                   markAsUnread={markAsUnread}
                   deleteNotification={deleteNotification}
+                  onOpen={openNotification}
                   loading={read_Loading}
                 />
               ))
           )}
         </Stack>
       )}
+
+      <Modal
+        opened={clearModalOpen}
+        onClose={() => setClearModalOpen(false)}
+        title={`Clear all ${tabLabel}?`}
+        centered
+      >
+        <Text size="sm" mb="lg">
+          This will remove all {visibleCount} {tabLabel} from your list. This
+          action cannot be undone.
+        </Text>
+        <Group justify="flex-end">
+          <Button
+            variant="default"
+            onClick={() => setClearModalOpen(false)}
+            disabled={clearing}
+          >
+            Cancel
+          </Button>
+          <Button color="red" onClick={clearAllNotifications} loading={clearing}>
+            Clear All
+          </Button>
+        </Group>
+      </Modal>
     </>
   );
 }
@@ -485,11 +688,13 @@ NotificationItem.propTypes = {
     data: PropTypes.shape({
       module: PropTypes.string,
       flag: PropTypes.string,
+      url: PropTypes.string,
     }),
     unread: PropTypes.bool.isRequired,
   }).isRequired,
   markAsRead: PropTypes.func.isRequired,
   markAsUnread: PropTypes.func.isRequired,
   deleteNotification: PropTypes.func.isRequired,
+  onOpen: PropTypes.func.isRequired,
   loading: PropTypes.number.isRequired,
 };
