@@ -5,6 +5,7 @@ import "@mantine/notifications/styles.css";
 import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Notifications } from "@mantine/notifications";
+import { useSelector } from "react-redux";
 import { Layout } from "./components/layout";
 import Dashboard from "./Modules/Dashboard/dashboardNotifications";
 import Profile from "./Modules/Dashboard/StudentProfile/profilePage";
@@ -18,6 +19,7 @@ import ThesisResearchPage from "./Modules/ThesisResearch/index";
 import ValidateAuth from "./helper/validateauth";
 import FacultyProfessionalProfile from "./Modules/facultyProfessionalProfile/facultyProfessionalProfile";
 import InactivityHandler from "./helper/inactivityhandler";
+import ProfileCompletionModal from "./components/ProfileCompletionModal";
 import Examination from "./Modules/Examination/examination";
 import Database from "./Modules/Database/database";
 import ProgrammeCurriculumRoutes from "./Modules/Program_curriculum/programmCurriculum";
@@ -37,6 +39,9 @@ const theme = createTheme({
 
 export default function App() {
   const location = useLocation();
+  const mustCompleteProfile = useSelector(
+    (state) => state.user.mustCompleteProfile,
+  );
 
   // True immediately when sessionStorage already has the token (normal in-session
   // navigation), or when there is no token at all (fresh visit / already logged out).
@@ -153,6 +158,7 @@ export default function App() {
       <Notifications position="top-center" autoClose={2000} limit={1} />
       {!isPublicRoute && <ValidateAuth />}
       {!isPublicRoute && <InactivityHandler />}
+      {!isPublicRoute && mustCompleteProfile && <ProfileCompletionModal />}
 
       <Routes>
         <Route path="/" element={<Navigate to="/accounts/login" replace />} />

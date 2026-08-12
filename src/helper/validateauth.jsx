@@ -10,6 +10,7 @@ import {
   setRole,
   setAccessibleModules,
   setCurrentAccessibleModules,
+  setMustCompleteProfile,
   clearUserName,
   clearRoles,
 } from "../redux/userslice";
@@ -45,6 +46,7 @@ function ValidateAuth() {
         accessible_modules = [],
         last_selected_role,
         roll_no,
+        must_complete_profile = false,
       } = data;
 
       // console.log("User Data:", data);
@@ -58,6 +60,7 @@ function ValidateAuth() {
 
       dispatch(setAccessibleModules(accessible_modules));
       dispatch(setCurrentAccessibleModules());
+      dispatch(setMustCompleteProfile(must_complete_profile));
     } catch (error) {
       console.error("User validation failed:", error);
       notifications.show({

@@ -7,6 +7,10 @@ export const authRoute = `${host}/api/auth/me`;
 export const loginRoute = `${host}/api/auth/login/`;
 export const mediaRoute = `${host}/media/`;
 
+// First-login student profile completion
+export const profileCompletionRoute = `${host}/programme_curriculum/api/student/profile_completion/`;
+export const profileCompletionSubmitRoute = `${host}/programme_curriculum/api/student/profile_completion/submit/`;
+
 // OTP-based password reset
 export const passwordResetSendOtp = `${host}/api/auth/password-reset/send-otp/`;
 export const passwordResetVerifyOtp = `${host}/api/auth/password-reset/verify-otp/`;
