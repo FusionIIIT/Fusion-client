@@ -2362,6 +2362,34 @@ function AddStudentsModal({
                           }}
                         >
                           <Text size="xs" weight={600} color="dimmed" mb={2}>
+                            NAME (HINDI)
+                          </Text>
+                          <Text size="sm" weight={500}>
+                            {manualFormData.hindiName || "Not provided"}
+                          </Text>
+                        </div>
+                        <div
+                          style={{
+                            padding: "8px",
+                            backgroundColor: "#f8f9fa",
+                            borderRadius: "6px",
+                          }}
+                        >
+                          <Text size="xs" weight={600} color="dimmed" mb={2}>
+                            AADHAAR NO.
+                          </Text>
+                          <Text size="sm" weight={500}>
+                            {manualFormData.aadharNo || "Not provided"}
+                          </Text>
+                        </div>
+                        <div
+                          style={{
+                            padding: "8px",
+                            backgroundColor: "#f8f9fa",
+                            borderRadius: "6px",
+                          }}
+                        >
+                          <Text size="xs" weight={600} color="dimmed" mb={2}>
                             FATHER'S NAME
                           </Text>
                           <Text size="sm" weight={500}>
@@ -2423,6 +2451,66 @@ function AddStudentsModal({
                           <Text size="sm" weight={500}>
                             {manualFormData.minority || "Not specified"}
                           </Text>
+                        </div>
+                        <div
+                          style={{
+                            padding: "8px",
+                            backgroundColor: "#f8f9fa",
+                            borderRadius: "6px",
+                          }}
+                        >
+                          <Text size="xs" weight={600} color="dimmed" mb={2}>
+                            PASSPORT PHOTO
+                          </Text>
+                          {manualFormData.photo ? (
+                            <img
+                              src={
+                                manualFormData.photo.startsWith("data:")
+                                  ? manualFormData.photo
+                                  : `${host}${manualFormData.photo}`
+                              }
+                              alt="Student passport"
+                              style={{
+                                height: "64px",
+                                borderRadius: "4px",
+                                border: "1px solid #e2e8f0",
+                              }}
+                            />
+                          ) : (
+                            <Text size="sm" weight={500}>
+                              Not uploaded
+                            </Text>
+                          )}
+                        </div>
+                        <div
+                          style={{
+                            padding: "8px",
+                            backgroundColor: "#f8f9fa",
+                            borderRadius: "6px",
+                          }}
+                        >
+                          <Text size="xs" weight={600} color="dimmed" mb={2}>
+                            SIGNATURE
+                          </Text>
+                          {manualFormData.signature ? (
+                            <img
+                              src={
+                                manualFormData.signature.startsWith("data:")
+                                  ? manualFormData.signature
+                                  : `${host}${manualFormData.signature}`
+                              }
+                              alt="Student signature"
+                              style={{
+                                height: "40px",
+                                borderRadius: "4px",
+                                border: "1px solid #e2e8f0",
+                              }}
+                            />
+                          ) : (
+                            <Text size="sm" weight={500}>
+                              Not uploaded
+                            </Text>
+                          )}
                         </div>
                         <div
                           style={{
