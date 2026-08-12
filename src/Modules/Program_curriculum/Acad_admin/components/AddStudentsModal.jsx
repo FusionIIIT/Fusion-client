@@ -1209,9 +1209,12 @@ function AddStudentsModal({
                           onChange={(e) =>
                             setManualFormData({
                               ...manualFormData,
-                              aadharNo: e.target.value,
+                              aadharNo: e.target.value
+                                .replace(/\D/g, "")
+                                .slice(0, 12),
                             })
                           }
+                          maxLength={12}
                           error={errors.aadharNo}
                         />
                       </Grid.Col>

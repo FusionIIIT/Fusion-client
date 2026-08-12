@@ -149,8 +149,20 @@ export const validatePhoneNumbers = (formData) => {
   return errors;
 };
 
+export const validateAadhaar = (formData) => {
+  const errors = {};
+  const value = formData.aadharNo || formData.aadhar_number;
+  if (value && !/^\d{12}$/.test(String(value).trim())) {
+    errors.aadharNo = "Aadhaar number must be exactly 12 digits.";
+  }
+  return errors;
+};
+
 export const applyUniversalValidation = (formData) => {
   let errors = {};
+
+  // Apply Aadhaar validation
+  errors = { ...errors, ...validateAadhaar(formData) };
 
   // Apply PwD validation
   errors = { ...errors, ...validatePwDFields(formData) };
