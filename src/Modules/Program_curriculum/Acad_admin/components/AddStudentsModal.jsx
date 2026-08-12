@@ -1327,6 +1327,7 @@ function AddStudentsModal({
                       <Grid.Col span={isMobile ? 12 : 6}>
                         <FileInput
                           label={STUDENT_FIELDS_CONFIG.photo.label}
+                          description="PNG, JPG or JPEG • up to 200 KB"
                           placeholder={STUDENT_FIELDS_CONFIG.photo.placeholder}
                           accept="image/png,image/jpeg"
                           clearable
@@ -1355,6 +1356,7 @@ function AddStudentsModal({
                       <Grid.Col span={isMobile ? 12 : 6}>
                         <FileInput
                           label={STUDENT_FIELDS_CONFIG.signature.label}
+                          description="PNG, JPG or JPEG • up to 30 KB"
                           placeholder={
                             STUDENT_FIELDS_CONFIG.signature.placeholder
                           }
