@@ -129,9 +129,14 @@ export function useExport({ selectedBatch, getFilteredStudents }) {
 
       const filename = `${selectedBatch?.programme || "Students"}_${selectedBatch?.discipline || "Export"}_${new Date().toISOString().split("T")[0]}`;
 
+      // Header labels of image fields, so Excel can embed them into cells.
+      const imageColumns = exportableFields
+        .filter((field) => field.type === "image" && selectedFields[field.key])
+        .map((field) => field.label);
+
       switch (exportFormat) {
         case "excel":
-          exportToExcel(exportData, filename);
+          await exportToExcel(exportData, filename, imageColumns);
           break;
         case "csv":
           exportToCSV(exportData, filename);

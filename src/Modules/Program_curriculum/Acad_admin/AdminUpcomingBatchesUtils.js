@@ -1,7 +1,6 @@
 // Pure helper functions extracted from Admin_Upcoming_Batches.jsx.
 // No component state or hooks; safe to import and reuse.
 
-import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import JSZip from "jszip";
 import {
@@ -723,57 +722,94 @@ export const prepareExportData = (students, selectedFieldKeys) => {
   });
 };
 
-export const exportToExcel = (data, filename) => {
-  const wb = XLSX.utils.book_new();
+// Columns whose value is an image URL get the actual image embedded (imageColumns
+// lists those header labels). exceljs is lazy-loaded since it is only needed here.
+export const exportToExcel = async (data, filename, imageColumns = []) => {
+  const ExcelJS = (await import("exceljs")).default;
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Students");
 
-  if (data.length > 0) {
-    const firstRow = data[0];
-    const orderedKeys = [];
-
-    if (firstRow["S.No"] !== undefined) {
-      orderedKeys.push("S.No");
-    }
-
-    const priorityLabels = [
-      "Institute Roll Number",
-      "JEE App. No.",
-      "Full Name",
-      "Institute Email ID",
-    ];
-    priorityLabels.forEach((label) => {
-      if (firstRow[label] !== undefined && !orderedKeys.includes(label)) {
-        orderedKeys.push(label);
-      }
-    });
-
-    Object.keys(firstRow).forEach((key) => {
-      if (!orderedKeys.includes(key)) {
-        orderedKeys.push(key);
-      }
-    });
-
-    const orderedData = data.map((row) => {
-      const orderedRow = {};
-      orderedKeys.forEach((key) => {
-        orderedRow[key] = row[key] || "";
-      });
-      return orderedRow;
-    });
-
-    const ws = XLSX.utils.json_to_sheet(orderedData, { header: orderedKeys });
-
-    const colWidths = orderedKeys.map((key) => ({
-      wch: Math.max(key.length, 15),
-    }));
-    ws["!cols"] = colWidths;
-
-    XLSX.utils.book_append_sheet(wb, ws, "Students");
-  } else {
-    const ws = XLSX.utils.json_to_sheet([]);
-    XLSX.utils.book_append_sheet(wb, ws, "Students");
+  if (!data || data.length === 0) {
+    const emptyBuffer = await workbook.xlsx.writeBuffer();
+    saveAs(new Blob([emptyBuffer]), `${filename}.xlsx`);
+    return;
   }
 
-  XLSX.writeFile(wb, `${filename}.xlsx`);
+  const firstRow = data[0];
+  const orderedKeys = [];
+  if (firstRow["S.No"] !== undefined) {
+    orderedKeys.push("S.No");
+  }
+  const priorityLabels = [
+    "Institute Roll Number",
+    "JEE App. No.",
+    "Full Name",
+    "Institute Email ID",
+  ];
+  priorityLabels.forEach((label) => {
+    if (firstRow[label] !== undefined && !orderedKeys.includes(label)) {
+      orderedKeys.push(label);
+    }
+  });
+  Object.keys(firstRow).forEach((key) => {
+    if (!orderedKeys.includes(key)) {
+      orderedKeys.push(key);
+    }
+  });
+
+  const imageSet = new Set(imageColumns);
+  worksheet.columns = orderedKeys.map((key) => ({
+    header: key,
+    key,
+    width: imageSet.has(key) ? 18 : Math.max(15, Math.min(40, key.length + 2)),
+  }));
+  worksheet.getRow(1).font = { bold: true };
+
+  data.forEach((row) => {
+    const values = {};
+    orderedKeys.forEach((key) => {
+      values[key] = imageSet.has(key) ? "" : row[key] || "";
+    });
+    worksheet.addRow(values);
+  });
+
+  // Embed each image URL into its cell (skip fetch failures).
+  await Promise.all(
+    data.flatMap((row, rowIdx) =>
+      orderedKeys
+        .map((key, colIdx) => ({ key, colIdx }))
+        .filter(({ key }) => imageSet.has(key) && row[key])
+        .map(async ({ key, colIdx }) => {
+          try {
+            const response = await fetch(row[key]);
+            if (!response.ok) return;
+            const buffer = await response.arrayBuffer();
+            let ext = (row[key].split(".").pop() || "png")
+              .split("?")[0]
+              .toLowerCase();
+            if (ext === "jpg") ext = "jpeg";
+            if (ext !== "png" && ext !== "jpeg") return;
+            const imageId = workbook.addImage({ buffer, extension: ext });
+            worksheet.getRow(rowIdx + 2).height = 48;
+            worksheet.addImage(imageId, {
+              tl: { col: colIdx + 0.15, row: rowIdx + 1.1 },
+              ext: { width: 56, height: 56 },
+              editAs: "oneCell",
+            });
+          } catch (error) {
+            // Skip images that fail to fetch; the rest still export.
+          }
+        }),
+    ),
+  );
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  saveAs(
+    new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    }),
+    `${filename}.xlsx`,
+  );
 };
 
 export const exportToCSV = (data, filename) => {
