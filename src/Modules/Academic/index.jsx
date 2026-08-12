@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { Flex } from "@mantine/core";
 import { useDispatch, useSelector } from "react-redux";
+import { useSearchParams } from "react-router-dom";
 import axios from "axios";
 
 import CustomBreadcrumbs from "../../components/Breadcrumbs";
@@ -38,11 +39,23 @@ import AdminPhDCourseRequests from "./AdminPhDCourseRequests";
 import TeachingCreditFeedback from "./TeachingCreditFeedback";
 import { phdStudentStatusRoute } from "../../routes/academicRoutes";
 
+// Maps a notification's data.module to the tab title(s) that render it, so a
+// click on a notification can deep-link straight to the source tab. Titles
+// differ slightly across roles (and one is misspelled), hence the alias list.
+const MODULE_TAB_ALIASES = {
+  "Academic Calendar": ["Academic Calendar", "Academic Calender"],
+  "PhD Course Registration": [
+    "Thesis & Course Requests",
+    "Thesis & Course Registration",
+  ],
+};
+
 function AcademicPage() {
   const [activeTab, setActiveTab] = useState("0");
   const [isPhdStudent, setIsPhdStudent] = useState(false);
   const role = useSelector((state) => state.user.role);
   const dispatch = useDispatch();
+  const [searchParams] = useSearchParams();
 
   // PhD and PG students both get the "Thesis & Course Registration" tab
   // (backend treats them the same here, see _is_phd_student); check once so
@@ -166,6 +179,18 @@ function AcademicPage() {
       dispatch(setActiveTab_(tabItems[activeTab].title));
     }
   }, [activeTab, tabItems, dispatch]);
+
+  // Deep-link support: /academics?tab=<module> selects the matching tab for
+  // the current role (falls back to a direct title match for other callers).
+  useEffect(() => {
+    const requested = searchParams.get("tab");
+    if (!requested) return;
+    const candidates = MODULE_TAB_ALIASES[requested] || [requested];
+    const idx = tabItems.findIndex((t) =>
+      candidates.some((c) => c.toLowerCase() === t.title.toLowerCase()),
+    );
+    if (idx >= 0) setActiveTab(String(idx));
+  }, [searchParams, tabItems]);
 
   const ActiveComponent = useMemo(
     () => tabComponents[parseInt(activeTab, 10)],
