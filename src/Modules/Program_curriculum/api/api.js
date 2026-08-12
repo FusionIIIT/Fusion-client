@@ -972,30 +972,6 @@ export const createBatch = async (batchData) => {
   }
 };
 
-// Update Batch - PUT /programme_curriculum/api/batches/<batch_id>/update/
-export const updateBatch = async (batchId, batchData) => {
-  try {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      throw new Error("Authorization token is required");
-    }
-
-    const response = await axios.put(
-      `${BASE_URL}/programme_curriculum/api/batches/${batchId}/update/`,
-      batchData,
-      {
-        headers: {
-          Authorization: `Token ${token}`,
-          "Content-Type": "application/json",
-        },
-      },
-    );
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-};
-
 // Delete Batch
 export const deleteBatch = async (batchId) => {
   try {
