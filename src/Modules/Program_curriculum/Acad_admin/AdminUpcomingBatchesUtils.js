@@ -527,6 +527,7 @@ export const prepareExportData = (students, selectedFieldKeys) => {
     "bloodGroup",
     "bloodGroupRemarks", // Grouped with bloodGroup
     "branch",
+    "specialization",
     "jeeRank",
     "categoryRank",
     "admissionMode",
@@ -758,10 +759,14 @@ export const exportToExcel = async (data, filename, imageColumns = []) => {
   });
 
   const imageSet = new Set(imageColumns);
+  const isSignatureCol = (key) => key.toLowerCase().includes("sign");
+  const imageColWidth = (key) => (isSignatureCol(key) ? 30 : 20);
   worksheet.columns = orderedKeys.map((key) => ({
     header: key,
     key,
-    width: imageSet.has(key) ? 18 : Math.max(15, Math.min(40, key.length + 2)),
+    width: imageSet.has(key)
+      ? imageColWidth(key)
+      : Math.max(15, Math.min(40, key.length + 2)),
   }));
   worksheet.getRow(1).font = { bold: true };
 
@@ -790,10 +795,13 @@ export const exportToExcel = async (data, filename, imageColumns = []) => {
             if (ext === "jpg") ext = "jpeg";
             if (ext !== "png" && ext !== "jpeg") return;
             const imageId = workbook.addImage({ buffer, extension: ext });
-            worksheet.getRow(rowIdx + 2).height = 48;
+            const size = isSignatureCol(key)
+              ? { width: 170, height: 70 }
+              : { width: 100, height: 120 };
+            worksheet.getRow(rowIdx + 2).height = 95;
             worksheet.addImage(imageId, {
-              tl: { col: colIdx + 0.15, row: rowIdx + 1.1 },
-              ext: { width: 56, height: 56 },
+              tl: { col: colIdx + 0.15, row: rowIdx + 1.05 },
+              ext: size,
               editAs: "oneCell",
             });
           } catch (error) {
