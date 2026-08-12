@@ -171,6 +171,8 @@ function AdminUpcomingBatch() {
     exportFormat,
     setExportFormat,
     isExporting,
+    isExportingImages,
+    handleExportImages,
     selectAllFields,
     handleToggleAllFields,
     handleFieldChange,
@@ -608,6 +610,8 @@ function AdminUpcomingBatch() {
           handleEditStudent={handleEditStudent}
           handleDeleteStudent={handleDeleteStudent}
           setShowExportModal={setShowExportModal}
+          onExportImages={handleExportImages}
+          isExportingImages={isExportingImages}
         />
 
         {/* Add New Batch Modal */}

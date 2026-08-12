@@ -14,6 +14,7 @@ import {
 import {
   Check,
   Download,
+  Images,
   MagnifyingGlass,
   Warning,
 } from "@phosphor-icons/react";
@@ -44,6 +45,8 @@ function StudentListModal({
   handleEditStudent,
   handleDeleteStudent,
   setShowExportModal,
+  onExportImages,
+  isExportingImages,
 }) {
   return (
     <Modal
@@ -211,6 +214,23 @@ function StudentListModal({
               >
                 Export Data
               </Button>
+              <Button
+                leftSection={<Images size={18} />}
+                onClick={onExportImages}
+                loading={isExportingImages}
+                disabled={studentList.length === 0}
+                variant="light"
+                color="teal"
+                size="md"
+                radius="md"
+                style={{
+                  fontWeight: 500,
+                  minWidth: "150px",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                Export Images
+              </Button>
             </Group>
           </Group>
         </Box>
@@ -286,6 +306,8 @@ StudentListModal.propTypes = {
   handleEditStudent: PropTypes.func,
   handleDeleteStudent: PropTypes.func,
   setShowExportModal: PropTypes.func,
+  onExportImages: PropTypes.func,
+  isExportingImages: PropTypes.bool,
 };
 
 export default StudentListModal;

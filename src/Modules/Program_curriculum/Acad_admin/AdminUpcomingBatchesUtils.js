@@ -3,6 +3,7 @@
 
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import JSZip from "jszip";
 import {
   PROGRAMME_TYPES,
   STUDENT_FIELDS_CONFIG,
@@ -810,6 +811,49 @@ export const exportToCSV = (data, filename) => {
 
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
   saveAs(blob, `${filename}.csv`);
+};
+
+// Zip every student's photo/signature named <roll>_photo.<ext> / <roll>_sign.<ext>
+// and download it. Returns the number of images added (0 => nothing to export).
+export const exportStudentImages = async (students, filename, hostUrl) => {
+  const zip = new JSZip();
+  let count = 0;
+
+  const addImage = async (url, roll, suffix) => {
+    if (!url) return;
+    const fullUrl = url.startsWith("http") ? url : `${hostUrl}${url}`;
+    try {
+      const response = await fetch(fullUrl);
+      if (!response.ok) return;
+      const blob = await response.blob();
+      const ext = (url.split(".").pop() || "png").split("?")[0].toLowerCase();
+      zip.file(`${roll}_${suffix}.${ext}`, blob);
+      count += 1;
+    } catch (error) {
+      // Skip images that fail to fetch; the rest still export.
+    }
+  };
+
+  await Promise.all(
+    (students || []).map((student) => {
+      const roll =
+        student.rollNumber ||
+        student.roll_number ||
+        student.jeeAppNo ||
+        student.jee_app_no ||
+        student.name ||
+        "unknown";
+      return Promise.all([
+        addImage(student.photo, roll, "photo"),
+        addImage(student.signature, roll, "sign"),
+      ]);
+    }),
+  );
+
+  if (count === 0) return 0;
+  const content = await zip.generateAsync({ type: "blob" });
+  saveAs(content, `${filename}.zip`);
+  return count;
 };
 
 export const getStudentFieldValue = (student, column) => {

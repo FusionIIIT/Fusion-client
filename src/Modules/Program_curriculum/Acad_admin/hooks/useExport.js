@@ -7,7 +7,9 @@ import {
   prepareExportData,
   exportToExcel,
   exportToCSV,
+  exportStudentImages,
 } from "../AdminUpcomingBatchesUtils";
+import { host } from "../../../../routes/globalRoutes";
 
 // Owns the export-modal state (format/fields) and builds the xlsx/csv export.
 // selectedBatch + getFilteredStudents are injected from useStudentList.
@@ -16,7 +18,43 @@ export function useExport({ selectedBatch, getFilteredStudents }) {
   const [selectedFields, setSelectedFields] = useState({});
   const [exportFormat, setExportFormat] = useState("excel");
   const [isExporting, setIsExporting] = useState(false);
+  const [isExportingImages, setIsExportingImages] = useState(false);
   const [selectAllFields, setSelectAllFields] = useState(true);
+
+  const handleExportImages = async () => {
+    setIsExportingImages(true);
+    try {
+      const filename = `${selectedBatch?.programme || "Students"}_${
+        selectedBatch?.displayBranch || selectedBatch?.discipline || "Batch"
+      }_images`.replace(/\s+/g, "_");
+      const count = await exportStudentImages(
+        getFilteredStudents(),
+        filename,
+        host,
+      );
+      if (count === 0) {
+        notifications.show({
+          title: "No Images",
+          message: "No photos or signatures found for these students.",
+          color: "orange",
+        });
+      } else {
+        notifications.show({
+          title: "Images Exported",
+          message: `Downloaded ${count} image(s) as a zip.`,
+          color: "green",
+        });
+      }
+    } catch (error) {
+      notifications.show({
+        title: "Export Failed",
+        message: "Failed to export images. Please try again.",
+        color: "red",
+      });
+    } finally {
+      setIsExportingImages(false);
+    }
+  };
 
   // Offer only the fields relevant to this batch's programme type.
   const exportableFields = getExportableFields(
@@ -134,6 +172,8 @@ export function useExport({ selectedBatch, getFilteredStudents }) {
     exportFormat,
     setExportFormat,
     isExporting,
+    isExportingImages,
+    handleExportImages,
     selectAllFields,
     handleToggleAllFields,
     handleFieldChange,
