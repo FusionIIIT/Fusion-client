@@ -353,7 +353,7 @@ export function useAddStudents({
                 "jeeAppNo",
                 "application_no",
                 "Application No",
-                "JEE App. No. / CCMT Roll No.",
+                "JEE App. No. / CCMT Roll No. / Application No.",
               ],
               address: ["Address", "permanent_address", "permanentAddress"],
               state: ["State", "home_state", "homeState"],
@@ -436,6 +436,18 @@ export function useAddStudents({
             });
           }
 
+          // Normalize select values to the canonical option so a value stored
+          // in a different case (e.g. "UTTAR PRADESH") still matches "Uttar Pradesh".
+          if (value && fieldConfig.type === "select" && fieldConfig.options) {
+            const match = fieldConfig.options.find(
+              (opt) =>
+                String(opt.value).toLowerCase() === String(value).toLowerCase(),
+            );
+            if (match) {
+              value = match.value;
+            }
+          }
+
           studentData[fieldKey] = value || "";
         });
 
@@ -451,7 +463,7 @@ export function useAddStudents({
     "app_no",
     "JEE App. No / CCMT Roll No",
     "JEE App. No./CCMT Roll. No.",
-    "JEE App. No. / CCMT Roll No.",
+    "JEE App. No. / CCMT Roll No. / Application No.",
     "JEE App No / CCMT Roll No",
     "Jee Main Application Number",
   ];
@@ -1806,7 +1818,7 @@ export function useAddStudents({
     // ── UG / PG template ────────────────────────────────────────────────────
     const headers = [
       "Sno",
-      "JEE App. No. / CCMT Roll No.",
+      "JEE App. No. / CCMT Roll No. / AICTE App. No.",
       "Institute Roll Number",
       "Name",
       "Discipline",
