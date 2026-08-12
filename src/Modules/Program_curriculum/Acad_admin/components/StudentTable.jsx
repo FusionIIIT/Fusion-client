@@ -15,6 +15,38 @@ import {
   getStatusProperties,
   getCurrentProgrammeType,
 } from "../AdminUpcomingBatchesUtils";
+import { host } from "../../../../routes/globalRoutes";
+
+// Renders one student cell: an image thumbnail for photo/signature columns,
+// a badge for the sticky roll-number column, plain text otherwise.
+const renderStudentCell = (student, column, colIndex) => {
+  const value = getStudentFieldValue(student, column);
+  if (column.type === "image") {
+    if (!value || value === "-") return "-";
+    const src = value.startsWith("http") ? value : `${host}${value}`;
+    return (
+      <img
+        src={src}
+        alt={column.label}
+        style={{
+          height: "40px",
+          width: column.key === "signature" ? "70px" : "40px",
+          objectFit: "contain",
+          borderRadius: "4px",
+          border: "1px solid #e2e8f0",
+        }}
+      />
+    );
+  }
+  if (colIndex === 1 && column.key === "rollNumber") {
+    return (
+      <Badge color="blue" variant="light" size="sm">
+        {value}
+      </Badge>
+    );
+  }
+  return value;
+};
 
 const getReportedStatusBadge = (status) => {
   const statusProps = getStatusProperties(status);
@@ -251,13 +283,7 @@ function StudentTable({
                           : {}),
                     }}
                   >
-                    {colIndex === 1 && column.key === "rollNumber" ? (
-                      <Badge color="blue" variant="light" size="sm">
-                        {getStudentFieldValue(student, column)}
-                      </Badge>
-                    ) : (
-                      getStudentFieldValue(student, column)
-                    )}
+                    {renderStudentCell(student, column, colIndex)}
                   </td>
                 ))}
 

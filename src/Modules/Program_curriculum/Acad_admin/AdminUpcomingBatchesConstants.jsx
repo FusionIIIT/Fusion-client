@@ -81,7 +81,7 @@ export const PROGRAMME_TYPES = {
 
 export const STUDENT_FIELDS_CONFIG = {
   jeeAppNo: {
-    label: "JEE App. No. / CCMT Roll No.",
+    label: "JEE App. No. / CCMT Roll No. / Application No.",
     placeholder: "Enter JEE application number or CCMT roll number",
     required: false,
     backendField: "jee_app_no",
@@ -201,6 +201,41 @@ export const STUDENT_FIELDS_CONFIG = {
     required: true,
     backendField: "name",
     excelColumns: ["name", "student name", "full name"],
+  },
+  hindiName: {
+    label: "Name (Hindi)",
+    placeholder: "पूरा नाम दर्ज करें",
+    required: false,
+    backendField: "hindi_name",
+    excelColumns: ["hindi name", "name hindi", "name in hindi"],
+  },
+  aadharNo: {
+    label: "Aadhaar No.",
+    placeholder: "Enter 12-digit Aadhaar number",
+    required: false,
+    backendField: "aadhar_number",
+    excelColumns: [
+      "aadhar no",
+      "aadhaar no",
+      "aadhar number",
+      "aadhaar number",
+    ],
+  },
+  photo: {
+    label: "Photo",
+    placeholder: "Upload passport photo (max 200KB)",
+    required: false,
+    type: "image",
+    backendField: "photo",
+    excelColumns: ["photo"],
+  },
+  signature: {
+    label: "Signature",
+    placeholder: "Upload signature (max 30KB)",
+    required: false,
+    type: "image",
+    backendField: "signature",
+    excelColumns: ["signature"],
   },
   fname: {
     label: "Father Name",
@@ -755,6 +790,10 @@ export const STUDENT_FIELDS_CONFIG = {
 export const INITIAL_FORM_DATA = {
   // UG / PG identifier
   jeeAppNo: "",
+  hindiName: "",
+  aadharNo: "",
+  photo: "",
+  signature: "",
   // PhD identifier
   applicationNo: "",
   admissionType: "",
@@ -848,12 +887,24 @@ export const STUDENT_TABLE_COLUMNS = [
     ],
   },
   {
+    key: "aadharNo",
+    label: "Aadhaar No.",
+    minWidth: "140px",
+    fields: ["aadharNo", "aadhar_number", "aadharNumber", "Aadhaar No."],
+  },
+  {
     key: "rollNumber",
     label: "Roll Number",
     minWidth: "120px",
     fields: ["rollNumber", "roll_number", "Institute Roll Number"],
   },
   { key: "name", label: "Name", minWidth: "180px", fields: ["name", "Name"] },
+  {
+    key: "hindiName",
+    label: "Name (Hindi)",
+    minWidth: "180px",
+    fields: ["hindiName", "hindi_name", "Name (Hindi)"],
+  },
   {
     key: "branch",
     label: "Discipline",
@@ -889,6 +940,20 @@ export const STUDENT_TABLE_COLUMNS = [
     label: "Gender",
     minWidth: "80px",
     fields: ["gender", "Gender"],
+  },
+  {
+    key: "photo",
+    label: "Photo",
+    minWidth: "80px",
+    type: "image",
+    fields: ["photo"],
+  },
+  {
+    key: "signature",
+    label: "Signature",
+    minWidth: "100px",
+    type: "image",
+    fields: ["signature"],
   },
   {
     key: "category",

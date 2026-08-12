@@ -47,6 +47,7 @@ import {
   cleanDisciplineName,
   getBatchYearOptions,
 } from "../AdminUpcomingBatchesUtils";
+import { host } from "../../../../routes/globalRoutes";
 
 const PREVIEW_FIELD_ORDER = [
   "jeeAppNo", // 1. JEE App No (UG/PG)
@@ -134,6 +135,29 @@ function AddStudentsModal({
   uploadProgress,
   uploadedFile,
 }) {
+  // Validate size then store the image as a base64 data URL in manualFormData.
+  const handleImageUpload = (file, field, maxKB) => {
+    if (!file) {
+      setManualFormData((prev) => ({ ...prev, [field]: "" }));
+      return;
+    }
+    if (file.size > maxKB * 1024) {
+      notifications.show({
+        title: "File too large",
+        message: `${field === "photo" ? "Photo" : "Signature"} must be ≤ ${maxKB} KB (selected ${Math.round(
+          file.size / 1024,
+        )} KB).`,
+        color: "red",
+      });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setManualFormData((prev) => ({ ...prev, [field]: reader.result }));
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <Modal
       opened={opened}
@@ -1157,6 +1181,42 @@ function AddStudentsModal({
                       error={errors.name}
                     />
 
+                    {/* Hindi Name + Aadhaar */}
+                    <Grid>
+                      <Grid.Col span={isMobile ? 12 : 6}>
+                        <TextInput
+                          label={STUDENT_FIELDS_CONFIG.hindiName.label}
+                          placeholder={
+                            STUDENT_FIELDS_CONFIG.hindiName.placeholder
+                          }
+                          value={manualFormData.hindiName || ""}
+                          onChange={(e) =>
+                            setManualFormData({
+                              ...manualFormData,
+                              hindiName: e.target.value,
+                            })
+                          }
+                          error={errors.hindiName}
+                        />
+                      </Grid.Col>
+                      <Grid.Col span={isMobile ? 12 : 6}>
+                        <TextInput
+                          label={STUDENT_FIELDS_CONFIG.aadharNo.label}
+                          placeholder={
+                            STUDENT_FIELDS_CONFIG.aadharNo.placeholder
+                          }
+                          value={manualFormData.aadharNo || ""}
+                          onChange={(e) =>
+                            setManualFormData({
+                              ...manualFormData,
+                              aadharNo: e.target.value,
+                            })
+                          }
+                          error={errors.aadharNo}
+                        />
+                      </Grid.Col>
+                    </Grid>
+
                     {/* Parent Names */}
                     <Grid>
                       <Grid.Col span={isMobile ? 12 : 6}>
@@ -1232,6 +1292,66 @@ function AddStudentsModal({
                           required={STUDENT_FIELDS_CONFIG.category.required}
                           error={errors.category}
                         />
+                      </Grid.Col>
+                    </Grid>
+
+                    {/* Photo + Signature */}
+                    <Grid>
+                      <Grid.Col span={isMobile ? 12 : 6}>
+                        <FileInput
+                          label={STUDENT_FIELDS_CONFIG.photo.label}
+                          placeholder={STUDENT_FIELDS_CONFIG.photo.placeholder}
+                          accept="image/png,image/jpeg"
+                          clearable
+                          onChange={(file) =>
+                            handleImageUpload(file, "photo", 200)
+                          }
+                        />
+                        {manualFormData.photo && (
+                          <img
+                            src={
+                              manualFormData.photo.startsWith("data:")
+                                ? manualFormData.photo
+                                : `${host}${manualFormData.photo}`
+                            }
+                            alt="Student passport"
+                            style={{
+                              height: "72px",
+                              marginTop: "8px",
+                              borderRadius: "4px",
+                              border: "1px solid #e2e8f0",
+                            }}
+                          />
+                        )}
+                      </Grid.Col>
+                      <Grid.Col span={isMobile ? 12 : 6}>
+                        <FileInput
+                          label={STUDENT_FIELDS_CONFIG.signature.label}
+                          placeholder={
+                            STUDENT_FIELDS_CONFIG.signature.placeholder
+                          }
+                          accept="image/png,image/jpeg"
+                          clearable
+                          onChange={(file) =>
+                            handleImageUpload(file, "signature", 30)
+                          }
+                        />
+                        {manualFormData.signature && (
+                          <img
+                            src={
+                              manualFormData.signature.startsWith("data:")
+                                ? manualFormData.signature
+                                : `${host}${manualFormData.signature}`
+                            }
+                            alt="Signature preview"
+                            style={{
+                              height: "48px",
+                              marginTop: "8px",
+                              borderRadius: "4px",
+                              border: "1px solid #e2e8f0",
+                            }}
+                          />
+                        )}
                       </Grid.Col>
                     </Grid>
 
