@@ -1,5 +1,14 @@
 import PropTypes from "prop-types";
-import { Modal, Stack, Text, Group, Button, Switch, Box, Grid } from "@mantine/core";
+import {
+  Modal,
+  Stack,
+  Text,
+  Group,
+  Button,
+  Switch,
+  Box,
+  Grid,
+} from "@mantine/core";
 import { FileXls, Download } from "@phosphor-icons/react";
 
 // Choose format + fields and export the currently-filtered students.
@@ -185,8 +194,8 @@ ExportModal.propTypes = {
   setExportFormat: PropTypes.func.isRequired,
   selectAllFields: PropTypes.bool,
   onToggleAll: PropTypes.func.isRequired,
-  fields: PropTypes.array.isRequired,
-  selectedFields: PropTypes.object.isRequired,
+  fields: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+  selectedFields: PropTypes.instanceOf(Object).isRequired,
   onFieldChange: PropTypes.func.isRequired,
   recordCount: PropTypes.number,
   isExporting: PropTypes.bool,

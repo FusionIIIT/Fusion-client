@@ -3,13 +3,34 @@ import { notifications } from "@mantine/notifications";
 import { Text } from "@mantine/core";
 import * as XLSX from "xlsx";
 import { host } from "../../../../routes/globalRoutes";
-import { INITIAL_FORM_DATA, STUDENT_FIELDS_CONFIG } from "../AdminUpcomingBatchesConstants";
-import { applyUniversalValidation, validatePhoneNumbers } from "../AdminUpcomingBatchesValidation";
-import { processExcelUpload, saveStudentsBatch, addSingleStudent, updateStudent } from "../../api/api";
 import {
-  batchYearToAcademicYear, getBatchForBranch, getCurrentBatchYear, getUploadDisciplines,
-  getViewAcademicYearOptions, mapAllottedCategoryValue, mapAllottedGenderValue, mapCategoryValue,
-  mapGenderValue, mapPwdValue, parseDuplicateError, applyCaseConversion, cleanDisciplineName,
+  INITIAL_FORM_DATA,
+  STUDENT_FIELDS_CONFIG,
+} from "../AdminUpcomingBatchesConstants";
+import {
+  applyUniversalValidation,
+  validatePhoneNumbers,
+} from "../AdminUpcomingBatchesValidation";
+import {
+  processExcelUpload,
+  saveStudentsBatch,
+  addSingleStudent,
+  updateStudent,
+} from "../../api/api";
+import {
+  batchYearToAcademicYear,
+  getBatchForBranch,
+  getCurrentBatchYear,
+  getUploadDisciplines,
+  getViewAcademicYearOptions,
+  mapAllottedCategoryValue,
+  mapAllottedGenderValue,
+  mapCategoryValue,
+  mapGenderValue,
+  mapPwdValue,
+  parseDuplicateError,
+  applyCaseConversion,
+  cleanDisciplineName,
   extractSpecializationFromBatchName,
 } from "../AdminUpcomingBatchesUtils";
 
@@ -46,7 +67,7 @@ export function useAddStudents({
 
   const showWorkflowGuidance = (errorType, details = {}) => {
     switch (errorType) {
-      case 'curriculum_required':
+      case "curriculum_required":
         notifications.show({
           title: " Setup Required: Step 1 of 3",
           message: (
@@ -55,9 +76,12 @@ export function useAddStudents({
                 <strong>Create a curriculum first:</strong>
               </Text>
               <Text size="xs" color="gray.7">
-                1. Go to Programme Curriculum → Admin Curriculum<br/>
-                2. Click "Add Curriculum" to create a new curriculum<br/>
-                3. Set status to "Working" when ready<br/>
+                1. Go to Programme Curriculum → Admin Curriculum
+                <br />
+                2. Click "Add Curriculum" to create a new curriculum
+                <br />
+                3. Set status to "Working" when ready
+                <br />
                 4. Then come back to create batches
               </Text>
             </div>
@@ -65,24 +89,28 @@ export function useAddStudents({
           color: "blue",
           autoClose: 12000,
           style: {
-            backgroundColor: '#e3f2fd',
-            borderColor: '#90caf9',
-            color: '#1565c0',
+            backgroundColor: "#e3f2fd",
+            borderColor: "#90caf9",
+            color: "#1565c0",
           },
         });
         break;
-        
-      case 'batches_required':
+
+      case "batches_required":
         notifications.show({
-          title: "🎯 Setup Required: Step 2 of 3", 
+          title: "🎯 Setup Required: Step 2 of 3",
           message: (
             <div>
               <Text size="sm" mb={8}>
-                <strong>Create batches for {details.academicYear || 'current year'}:</strong>
+                <strong>
+                  Create batches for {details.academicYear || "current year"}:
+                </strong>
               </Text>
               <Text size="xs" color="gray.7">
-                1. Curriculum ✅ (completed)<br/>
-                2. Create batches and assign curriculum to each<br/>
+                1. Curriculum ✅ (completed)
+                <br />
+                2. Create batches and assign curriculum to each
+                <br />
                 3. Then upload student data
               </Text>
             </div>
@@ -90,14 +118,14 @@ export function useAddStudents({
           color: "blue",
           autoClose: 10000,
           style: {
-            backgroundColor: '#e3f2fd',
-            borderColor: '#90caf9',
-            color: '#1565c0',
+            backgroundColor: "#e3f2fd",
+            borderColor: "#90caf9",
+            color: "#1565c0",
           },
         });
         break;
-        
-      case 'curriculum_assignment_required':
+
+      case "curriculum_assignment_required":
         notifications.show({
           title: "🎯 Setup Required: Step 2b of 3",
           message: (
@@ -106,9 +134,12 @@ export function useAddStudents({
                 <strong>Assign curriculum to batches:</strong>
               </Text>
               <Text size="xs" color="gray.7">
-                1. Curriculum ✅ (completed)<br/>
-                2. Batches ✅ (completed)<br/>
-                3. Assign curriculum to: {details.batchNames}<br/>
+                1. Curriculum ✅ (completed)
+                <br />
+                2. Batches ✅ (completed)
+                <br />
+                3. Assign curriculum to: {details.batchNames}
+                <br />
                 4. Then upload student data
               </Text>
             </div>
@@ -116,14 +147,14 @@ export function useAddStudents({
           color: "orange",
           autoClose: 12000,
           style: {
-            backgroundColor: '#fff3cd',
-            borderColor: '#ffeaa7',
-            color: '#856404',
+            backgroundColor: "#fff3cd",
+            borderColor: "#ffeaa7",
+            color: "#856404",
           },
         });
         break;
-        
-      case 'ready_for_students':
+
+      case "ready_for_students":
         notifications.show({
           title: "🎉 Ready for Step 3!",
           message: (
@@ -132,9 +163,9 @@ export function useAddStudents({
                 <strong>All prerequisites completed:</strong>
               </Text>
               <Text size="xs" color="gray.7">
-                1. Curriculum ✅<br/>
-                2. Batches ✅<br/>
-                3. Curriculum Assignment ✅<br/>
+                1. Curriculum ✅<br />
+                2. Batches ✅<br />
+                3. Curriculum Assignment ✅<br />
                 You can now upload student data!
               </Text>
             </div>
@@ -142,17 +173,19 @@ export function useAddStudents({
           color: "green",
           autoClose: 8000,
           style: {
-            backgroundColor: '#d4edda',
-            borderColor: '#c3e6cb',
-            color: '#155724',
+            backgroundColor: "#d4edda",
+            borderColor: "#c3e6cb",
+            color: "#155724",
           },
         });
+        break;
+      default:
         break;
     }
   };
 
   const validateRequiredFields = (formData, isEditMode = false) => {
-    let errors = {};
+    let fieldErrors = {};
 
     const dropdownFields = [
       "gender",
@@ -174,7 +207,7 @@ export function useAddStudents({
       if (isEditMode && dropdownFields.includes(fieldKey)) {
         return;
       }
-      
+
       // Skip validation for fields that don't apply to current programme type
       if (fieldConfig.showForProgrammes) {
         const currentProgramType = activeSection.toUpperCase();
@@ -185,276 +218,251 @@ export function useAddStudents({
 
       if (fieldConfig.required) {
         const value = formData[fieldKey];
-        const isEmpty = value === undefined || 
-                       value === null || 
-                       value === "" ||
-                       (typeof value === 'string' && value.trim() === "");
-        
+        const isEmpty =
+          value === undefined ||
+          value === null ||
+          value === "" ||
+          (typeof value === "string" && value.trim() === "");
+
         if (isEmpty) {
-          console.log(`Field ${fieldKey} (${fieldConfig.label}) is missing or empty. Value:`, value);
-          errors[fieldKey] = `${fieldConfig.label} is required`;
+          console.log(
+            `Field ${fieldKey} (${fieldConfig.label}) is missing or empty. Value:`,
+            value,
+          );
+          fieldErrors[fieldKey] = `${fieldConfig.label} is required`;
         }
       }
     });
 
     const universalErrors = applyUniversalValidation(formData, isEditMode);
-    errors = { ...errors, ...universalErrors };
+    fieldErrors = { ...fieldErrors, ...universalErrors };
 
-    return errors;
-  };
-
-  const validateCurrentStep = (formData, step, isEditMode = false) => {
-    const errors = {};
-    let fieldsToValidate = [];
-
-    const dropdownFields = [
-      "gender",
-      "category",
-      "allottedGender",
-      "allottedCategory",
-      "pwd",
-      "branch",
-      "categoryRank",
-    ];
-
-    switch (step) {
-      case 0: 
-        fieldsToValidate = ["name", "fname", "mname", "gender", "category"];
-        break;
-      case 1:
-        fieldsToValidate = ["pwd", "jeeAppNo", "address"];
-        break;
-      case 2: 
-        fieldsToValidate = ["branch"];
-        break;
-      default:
-        return errors;
-    }
-
-    if (isEditMode) {
-      fieldsToValidate = fieldsToValidate.filter(
-        (field) => !dropdownFields.includes(field),
-      );
-    }
-
-    fieldsToValidate.forEach((fieldKey) => {
-      const fieldConfig = STUDENT_FIELDS_CONFIG[fieldKey];
-      if (!fieldConfig) return;
-
-      // Skip fields not applicable to the current programme type
-      if (fieldConfig.showForProgrammes) {
-        const currentProgramType = activeSection.toUpperCase();
-        if (!fieldConfig.showForProgrammes.includes(currentProgramType)) return;
-      }
-
-      if (
-        fieldConfig.required &&
-        (!formData[fieldKey] || formData[fieldKey].trim() === "")
-      ) {
-        errors[fieldKey] = `${fieldConfig.label} is required`;
-      }
-    });
-
-    return errors;
+    return fieldErrors;
   };
 
   useEffect(() => {
     if (editingStudent && showAddModal && addMode === "manual") {
-      const isFormEmpty = !manualFormData.name && !manualFormData.fname && !manualFormData.category;
-      
+      const isFormEmpty =
+        !manualFormData.name &&
+        !manualFormData.fname &&
+        !manualFormData.category;
+
       if (isFormEmpty) {
         const studentData = {};
         Object.keys(STUDENT_FIELDS_CONFIG).forEach((fieldKey) => {
-        const fieldConfig = STUDENT_FIELDS_CONFIG[fieldKey];
-        let value = "";
+          const fieldConfig = STUDENT_FIELDS_CONFIG[fieldKey];
+          let value = "";
 
-        if (
-          editingStudent[fieldKey] !== undefined &&
-          editingStudent[fieldKey] !== null &&
-          editingStudent[fieldKey] !== ""
-        ) {
-          value = editingStudent[fieldKey];
-          
-          if (fieldKey === "category") {
-            value = mapCategoryValue(value);
-          } else if (fieldKey === "gender") {
-            value = mapGenderValue(value);
-          } else if (fieldKey === "pwd") {
-            value = mapPwdValue(value);
-          } else if (fieldKey === "allottedCategory") {
-            value = mapAllottedCategoryValue(value);
-          } else if (fieldKey === "allottedGender") {
-            value = mapAllottedGenderValue(value);
-          }
-        }
-        else if (fieldConfig.backendField && editingStudent[fieldConfig.backendField] !== undefined &&
-          editingStudent[fieldConfig.backendField] !== null &&
-          editingStudent[fieldConfig.backendField] !== "") {
-          value = editingStudent[fieldConfig.backendField];
+          if (
+            editingStudent[fieldKey] !== undefined &&
+            editingStudent[fieldKey] !== null &&
+            editingStudent[fieldKey] !== ""
+          ) {
+            value = editingStudent[fieldKey];
 
-          if (fieldKey === "category") {
-            value = mapCategoryValue(value);
-          } else if (fieldKey === "gender") {
-            value = mapGenderValue(value);
-          } else if (fieldKey === "pwd") {
-            value = mapPwdValue(value);
-          } else if (fieldKey === "allottedCategory") {
-            value = mapAllottedCategoryValue(value);
-          } else if (fieldKey === "allottedGender") {
-            value = mapAllottedGenderValue(value);
-          }
-        }
-        else if (fieldConfig.excelColumns) {
-          for (const excelCol of fieldConfig.excelColumns) {
-            const colValue = editingStudent[excelCol];
-            if (
-              colValue !== undefined &&
-              colValue !== null &&
-              colValue !== ""
-            ) {
-              value = colValue;
-              if (fieldKey === "category") {
-                value = mapCategoryValue(value);
-              } else if (fieldKey === "gender") {
-                value = mapGenderValue(value);
-              } else if (fieldKey === "pwd") {
-                value = mapPwdValue(value);
-              } else if (fieldKey === "allottedCategory") {
-                value = mapAllottedCategoryValue(value);
-              } else if (fieldKey === "allottedGender") {
-                value = mapAllottedGenderValue(value);
-              }
-              break;
+            if (fieldKey === "category") {
+              value = mapCategoryValue(value);
+            } else if (fieldKey === "gender") {
+              value = mapGenderValue(value);
+            } else if (fieldKey === "pwd") {
+              value = mapPwdValue(value);
+            } else if (fieldKey === "allottedCategory") {
+              value = mapAllottedCategoryValue(value);
+            } else if (fieldKey === "allottedGender") {
+              value = mapAllottedGenderValue(value);
             }
-          }
-        }
+          } else if (
+            fieldConfig.backendField &&
+            editingStudent[fieldConfig.backendField] !== undefined &&
+            editingStudent[fieldConfig.backendField] !== null &&
+            editingStudent[fieldConfig.backendField] !== ""
+          ) {
+            value = editingStudent[fieldConfig.backendField];
 
-        if (!value) {
-          const specialMappings = {
-            fname: [
-              "father_name",
-              "fatherName",
-              "father",
-              "Father Name",
-              "Father's Name",
-            ],
-            mname: [
-              "mother_name",
-              "motherName",
-              "mother",
-              "Mother Name",
-              "Mother's Name",
-            ],
-            name: ["Name", "student_name", "full_name", "fullName"],
-            email: [
-              "personal_email",
-              "personalEmail",
-              "Alternate_email_id",
-              "Alternate Email ID",
-            ],
-            phoneNumber: [
-              "phone_number",
-              "phoneNumber",
-              "mobile",
-              "Mobile",
-              "contact",
-            ],
-            dob: ["date_of_birth", "dateOfBirth", "Date of Birth", "DOB"],
-            jeeRank: ["ai_rank", "aiRank", "AI rank", "AI Rank"],
-            jeeAppNo: [
-              "jee_app_no",
-              "jeeAppNo",
-              "application_no",
-              "Application No",
-              "JEE App. No. / CCMT Roll No.",
-            ],
-            address: ["Address", "permanent_address", "permanentAddress"],
-            state: ["State", "home_state", "homeState"],
-            gender: ["Gender"],
-            category: ["Category"],
-            allottedCategory: ["allottedcat", "allotted_category", "Allotted Cat"],
-            allottedGender: ["allotted_gender", "Allotted Gender"],
-            pwd: ["PWD"],
-            branch: ["Branch", "discipline", "Discipline"],
-            pwdCategoryRemarks: [
-              "pwd_category_remarks", 
-              "pwdCategoryRemarks", 
-              "pwd category remarks"
-            ],
-            bloodGroupRemarks: [
-              "blood_group_remarks", 
-              "bloodGroupRemarks", 
-              "blood group remarks"
-            ],
-            admissionModeRemarks: [
-              "admission_mode_remarks", 
-              "admissionModeRemarks", 
-              "admission mode remarks"
-            ],
-            categoryRank: ["category_rank", "categoryRank", "cat rank"],
-            rollNumber: ["roll_number", "rollNumber", "institute_roll_number"],
-            instituteEmail: ["institute_email", "instituteEmail", "official_email"],
-            alternateEmail: ["personal_email", "alternate_email", "alternateEmail"],
-            parentEmail: ["parent_email", "parentEmail", "guardian_email"],
-            fatherOccupation: ["father_occupation", "fatherOccupation"],
-            fatherMobile: ["father_mobile", "fatherMobile", "father_phone"],
-            motherOccupation: ["mother_occupation", "motherOccupation"],
-            motherMobile: ["mother_mobile", "motherMobile", "mother_phone"],
-            bloodGroup: ["blood_group", "bloodGroup"],
-            country: ["Country", "nation"],
-            nationality: ["Nationality", "citizenship"],
-            admissionMode: ["admission_mode", "admissionMode"],
-            pwdCategory: ["pwd_category", "pwdCategory", "disability_category"],
-            incomeGroup: ["income_group", "incomeGroup"],
-            income: ["Income", "annual_income", "family_income"],
-            minority: ["Minority", "minority_status", "religious_minority"],
-          };
-
-          const variations = specialMappings[fieldKey] || [];
-
-          for (const variation of variations) {
-            if (
-              editingStudent[variation] !== undefined &&
-              editingStudent[variation] !== null &&
-              editingStudent[variation] !== ""
-            ) {
-              value = editingStudent[variation];
-
-              if (fieldKey === "category") {
-                value = mapCategoryValue(value);
-              }
-              break;
+            if (fieldKey === "category") {
+              value = mapCategoryValue(value);
+            } else if (fieldKey === "gender") {
+              value = mapGenderValue(value);
+            } else if (fieldKey === "pwd") {
+              value = mapPwdValue(value);
+            } else if (fieldKey === "allottedCategory") {
+              value = mapAllottedCategoryValue(value);
+            } else if (fieldKey === "allottedGender") {
+              value = mapAllottedGenderValue(value);
             }
+          } else if (fieldConfig.excelColumns) {
+            fieldConfig.excelColumns.some((excelCol) => {
+              const colValue = editingStudent[excelCol];
+              if (
+                colValue !== undefined &&
+                colValue !== null &&
+                colValue !== ""
+              ) {
+                value = colValue;
+                if (fieldKey === "category") {
+                  value = mapCategoryValue(value);
+                } else if (fieldKey === "gender") {
+                  value = mapGenderValue(value);
+                } else if (fieldKey === "pwd") {
+                  value = mapPwdValue(value);
+                } else if (fieldKey === "allottedCategory") {
+                  value = mapAllottedCategoryValue(value);
+                } else if (fieldKey === "allottedGender") {
+                  value = mapAllottedGenderValue(value);
+                }
+                return true;
+              }
+              return false;
+            });
           }
-        }
 
-        studentData[fieldKey] = value || "";
-      });
+          if (!value) {
+            const specialMappings = {
+              fname: [
+                "father_name",
+                "fatherName",
+                "father",
+                "Father Name",
+                "Father's Name",
+              ],
+              mname: [
+                "mother_name",
+                "motherName",
+                "mother",
+                "Mother Name",
+                "Mother's Name",
+              ],
+              name: ["Name", "student_name", "full_name", "fullName"],
+              email: [
+                "personal_email",
+                "personalEmail",
+                "Alternate_email_id",
+                "Alternate Email ID",
+              ],
+              phoneNumber: [
+                "phone_number",
+                "phoneNumber",
+                "mobile",
+                "Mobile",
+                "contact",
+              ],
+              dob: ["date_of_birth", "dateOfBirth", "Date of Birth", "DOB"],
+              jeeRank: ["ai_rank", "aiRank", "AI rank", "AI Rank"],
+              jeeAppNo: [
+                "jee_app_no",
+                "jeeAppNo",
+                "application_no",
+                "Application No",
+                "JEE App. No. / CCMT Roll No.",
+              ],
+              address: ["Address", "permanent_address", "permanentAddress"],
+              state: ["State", "home_state", "homeState"],
+              gender: ["Gender"],
+              category: ["Category"],
+              allottedCategory: [
+                "allottedcat",
+                "allotted_category",
+                "Allotted Cat",
+              ],
+              allottedGender: ["allotted_gender", "Allotted Gender"],
+              pwd: ["PWD"],
+              branch: ["Branch", "discipline", "Discipline"],
+              pwdCategoryRemarks: [
+                "pwd_category_remarks",
+                "pwdCategoryRemarks",
+                "pwd category remarks",
+              ],
+              bloodGroupRemarks: [
+                "blood_group_remarks",
+                "bloodGroupRemarks",
+                "blood group remarks",
+              ],
+              admissionModeRemarks: [
+                "admission_mode_remarks",
+                "admissionModeRemarks",
+                "admission mode remarks",
+              ],
+              categoryRank: ["category_rank", "categoryRank", "cat rank"],
+              rollNumber: [
+                "roll_number",
+                "rollNumber",
+                "institute_roll_number",
+              ],
+              instituteEmail: [
+                "institute_email",
+                "instituteEmail",
+                "official_email",
+              ],
+              alternateEmail: [
+                "personal_email",
+                "alternate_email",
+                "alternateEmail",
+              ],
+              parentEmail: ["parent_email", "parentEmail", "guardian_email"],
+              fatherOccupation: ["father_occupation", "fatherOccupation"],
+              fatherMobile: ["father_mobile", "fatherMobile", "father_phone"],
+              motherOccupation: ["mother_occupation", "motherOccupation"],
+              motherMobile: ["mother_mobile", "motherMobile", "mother_phone"],
+              bloodGroup: ["blood_group", "bloodGroup"],
+              country: ["Country", "nation"],
+              nationality: ["Nationality", "citizenship"],
+              admissionMode: ["admission_mode", "admissionMode"],
+              pwdCategory: [
+                "pwd_category",
+                "pwdCategory",
+                "disability_category",
+              ],
+              incomeGroup: ["income_group", "incomeGroup"],
+              income: ["Income", "annual_income", "family_income"],
+              minority: ["Minority", "minority_status", "religious_minority"],
+            };
 
-      setManualFormData(studentData);
+            const variations = specialMappings[fieldKey] || [];
+
+            variations.some((variation) => {
+              if (
+                editingStudent[variation] !== undefined &&
+                editingStudent[variation] !== null &&
+                editingStudent[variation] !== ""
+              ) {
+                value = editingStudent[variation];
+
+                if (fieldKey === "category") {
+                  value = mapCategoryValue(value);
+                }
+                return true;
+              }
+              return false;
+            });
+          }
+
+          studentData[fieldKey] = value || "";
+        });
+
+        setManualFormData(studentData);
       }
     }
   }, [editingStudent, showAddModal, addMode]);
 
   const jeeAppKeys = [
-    'jee_app_no',
-    'jee_app_number',
-    'application_number', 
-    'app_no',
-    'JEE App. No / CCMT Roll No',
-    'JEE App. No./CCMT Roll. No.',
-    'JEE App. No. / CCMT Roll No.',
-    'JEE App No / CCMT Roll No',
-    'Jee Main Application Number'
+    "jee_app_no",
+    "jee_app_number",
+    "application_number",
+    "app_no",
+    "JEE App. No / CCMT Roll No",
+    "JEE App. No./CCMT Roll. No.",
+    "JEE App. No. / CCMT Roll No.",
+    "JEE App No / CCMT Roll No",
+    "Jee Main Application Number",
   ];
 
   const specializationKeys = [
-    'Specialization',
-    'specialization',
-    'Specialisation',
-    'specialisation',
-    'Stream',
-    'stream'
+    "Specialization",
+    "specialization",
+    "Specialisation",
+    "specialisation",
+    "Stream",
+    "stream",
   ];
 
   const handleFileUpload = async (file) => {
@@ -466,7 +474,6 @@ export function useAddStudents({
       try {
         setUploadProgress(30);
 
-
         const response = await processExcelUpload(file, activeSection);
 
         setUploadProgress(80);
@@ -477,31 +484,34 @@ export function useAddStudents({
 
           const transformStudentData = (student) => {
             const transformed = { ...student };
-            
-            for (const key of jeeAppKeys) {
+
+            jeeAppKeys.some((key) => {
               if (transformed[key] && !transformed.jeeAppNo) {
                 transformed.jeeAppNo = transformed[key];
-                break;
+                return true;
               }
-            }
-            
-            for (const key of specializationKeys) {
+              return false;
+            });
+
+            specializationKeys.some((key) => {
               if (transformed[key] && !transformed.specialization) {
                 transformed.specialization = transformed[key];
-                break;
+                return true;
               }
-            }
-            
+              return false;
+            });
+
             return transformed;
           };
 
-          const transformedValidStudents = validStudents.map(transformStudentData);
-          const transformedInvalidStudents = invalidStudents.map(item => ({
+          const transformedValidStudents =
+            validStudents.map(transformStudentData);
+          const transformedInvalidStudents = invalidStudents.map((item) => ({
             ...transformStudentData(item.data || item),
-            _validation_error: item.error, 
+            _validation_error: item.error,
             _row_number: item.row,
           }));
-          
+
           setUploadProgress(100);
 
           notifications.show({
@@ -510,7 +520,10 @@ export function useAddStudents({
             color: "green",
           });
 
-          const allStudents = [...transformedValidStudents, ...transformedInvalidStudents];
+          const allStudents = [
+            ...transformedValidStudents,
+            ...transformedInvalidStudents,
+          ];
 
           setExtractedData(allStudents);
           setShowPreview(true);
@@ -521,41 +534,50 @@ export function useAddStudents({
         setUploadProgress(0);
 
         const errorData = error.response?.data;
-        const errorMessage = errorData?.message || errorData?.error || error.message;
+        const errorMessage =
+          errorData?.message || errorData?.error || error.message;
 
         if (errorMessage?.includes("No working curriculums found")) {
-          showWorkflowGuidance('curriculum_required');
+          showWorkflowGuidance("curriculum_required");
         } else if (errorMessage?.includes("No active batches found")) {
-          showWorkflowGuidance('batches_required', { 
-            academicYear: getViewAcademicYearOptions()[0]?.label || 'current year'
+          showWorkflowGuidance("batches_required", {
+            academicYear:
+              getViewAcademicYearOptions()[0]?.label || "current year",
           });
         } else if (errorMessage?.includes("have no curriculum assigned")) {
           const batchMatch = errorMessage.match(/assigned: (.+?)\./);
           const batchNames = batchMatch ? batchMatch[1] : "some batches";
-          
-          showWorkflowGuidance('curriculum_assignment_required', { batchNames });
-        } else if (errorMessage?.includes("validation") || errorMessage?.includes("prerequisite")) {
+
+          showWorkflowGuidance("curriculum_assignment_required", {
+            batchNames,
+          });
+        } else if (
+          errorMessage?.includes("validation") ||
+          errorMessage?.includes("prerequisite")
+        ) {
           notifications.show({
             title: "📋 Validation Error",
             message: errorMessage,
             color: "red",
             autoClose: 8000,
             style: {
-              backgroundColor: '#f8d7da',
-              borderColor: '#f5c6cb',
-              color: '#721c24',
+              backgroundColor: "#f8d7da",
+              borderColor: "#f5c6cb",
+              color: "#721c24",
             },
           });
         } else {
           notifications.show({
             title: " Upload Error",
-            message: errorMessage || "Failed to process Excel file. Please check the format and try again.",
+            message:
+              errorMessage ||
+              "Failed to process Excel file. Please check the format and try again.",
             color: "red",
             autoClose: 6000,
             style: {
-              backgroundColor: '#f8d7da',
-              borderColor: '#f5c6cb',
-              color: '#721c24',
+              backgroundColor: "#f8d7da",
+              borderColor: "#f5c6cb",
+              color: "#721c24",
             },
           });
         }
@@ -579,19 +601,20 @@ export function useAddStudents({
         }
 
         if (!fieldValue && fieldInfo.excelColumns) {
-          for (const excelCol of fieldInfo.excelColumns) {
+          fieldInfo.excelColumns.some((excelCol) => {
             if (student[excelCol]) {
               fieldValue = student[excelCol];
-              break;
+              return true;
             }
             const exactMatch = Object.keys(student).find(
               (key) => key.toLowerCase() === excelCol.toLowerCase(),
             );
             if (exactMatch && student[exactMatch]) {
               fieldValue = student[exactMatch];
-              break;
+              return true;
             }
-          }
+            return false;
+          });
         }
 
         if (!fieldValue) {
@@ -602,41 +625,69 @@ export function useAddStudents({
             fieldInfo.label?.toLowerCase(),
           ];
 
-          for (const variation of variations) {
+          variations.some((variation) => {
             if (student[variation]) {
               fieldValue = student[variation];
-              break;
+              return true;
             }
-          }
+            return false;
+          });
         }
 
         // Extract specialization from batch name if not found in student data
-        if (fieldKey === "specialization" && (!fieldValue || fieldValue === "")) {
-          const studentBranch = student.branch || student.discipline || student.Discipline || "";
+        if (
+          fieldKey === "specialization" &&
+          (!fieldValue || fieldValue === "")
+        ) {
+          const studentBranch =
+            student.branch || student.discipline || student.Discipline || "";
           const studentYear = student.year || student.Year || "";
 
-          if (studentBranch && (studentBranch.includes("M.Tech") || studentBranch.includes("M.Des"))) {
-            const extractedSpec = extractSpecializationFromBatchName(`${studentBranch} ${studentYear}`);
+          if (
+            studentBranch &&
+            (studentBranch.includes("M.Tech") ||
+              studentBranch.includes("M.Des"))
+          ) {
+            const extractedSpec = extractSpecializationFromBatchName(
+              `${studentBranch} ${studentYear}`,
+            );
             if (extractedSpec) {
               fieldValue = extractedSpec;
-            } else {
-              if (studentBranch.includes("Design") || studentBranch === "Design") {
-                fieldValue = "Design";
-              } else if (studentBranch.includes("Mechatronics") || studentBranch === "Mechatronics") {
-                fieldValue = "Mechatronics";
-              }
-            }
-          } else if (studentBranch && !studentBranch.includes("B.Tech") && !studentBranch.includes("B.Des")) {
-            if (studentBranch.includes("Design") || studentBranch === "Design") {
+            } else if (
+              studentBranch.includes("Design") ||
+              studentBranch === "Design"
+            ) {
               fieldValue = "Design";
-            } else if (studentBranch.includes("Mechatronics") || studentBranch === "Mechatronics") {
+            } else if (
+              studentBranch.includes("Mechatronics") ||
+              studentBranch === "Mechatronics"
+            ) {
+              fieldValue = "Mechatronics";
+            }
+          } else if (
+            studentBranch &&
+            !studentBranch.includes("B.Tech") &&
+            !studentBranch.includes("B.Des")
+          ) {
+            if (
+              studentBranch.includes("Design") ||
+              studentBranch === "Design"
+            ) {
+              fieldValue = "Design";
+            } else if (
+              studentBranch.includes("Mechatronics") ||
+              studentBranch === "Mechatronics"
+            ) {
               fieldValue = "Mechatronics";
             }
           }
         }
 
         if (fieldKey === "dob" && fieldValue) {
-          fieldValue = typeof fieldValue === 'string' ? fieldValue.split(' ')[0].split('T')[0] : fieldValue;
+          fieldValue =
+            typeof fieldValue === "string"
+              ? fieldValue.split(" ")[0].split("T")[0]
+              : fieldValue;
         }
 
         // Clean up branch/discipline names by removing extra details in parentheses
@@ -645,7 +696,7 @@ export function useAddStudents({
         }
 
         transformedStudent[fieldKey] = fieldValue || "";
-        
+
         // Also set backend field if configured
         if (fieldInfo.backendField && fieldValue) {
           transformedStudent[fieldInfo.backendField] = fieldValue;
@@ -667,62 +718,12 @@ export function useAddStudents({
     });
   };
 
-  const validateBatchPrerequisites = async (academicYear, disciplines = []) => {
-    try {
-      const response = await fetch(`${host}/programme_curriculum/api/batches/validate_prerequisites/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ academic_year: academicYear, disciplines })
-      });
-
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        return validateBatchPrerequisitesFrontend(academicYear);
-      }
-      
-      const data = await response.json();
-      
-      if (!data.can_upload_students) {
-        const errorMessages = data.missing_batches.slice(0, 5).map(batch => 
-          `• ${batch.acronym} - ${batch.discipline}: ${batch.action_required}`
-        ).join('\n');
-        
-        const additionalErrors = data.missing_batches.length > 5 ? 
-          `\n... and ${data.missing_batches.length - 5} more missing batches` : '';
-        
-        notifications.show({
-          title: "Batches Required",
-          message: (
-            <div>
-              <Text size="sm" mb={8}>
-                <strong>Please create required batches first:</strong>
-              </Text>
-              <Text size="xs" style={{ whiteSpace: 'pre-line', color: '#721c24' }}>
-                {errorMessages}{additionalErrors}
-              </Text>
-            </div>
-          ),
-          color: "red",
-          autoClose: false,
-        });
-        return false;
-      }
-      
-      return true;
-    } catch (error) {
-      if (error.message.includes('Unexpected token') || error.message.includes('<!doctype')) {
-        return validateBatchPrerequisitesFrontend(academicYear, disciplines);
-      }
-      
-      return true; 
-    }
-  };
-
-  const validateBatchPrerequisitesFrontend = (academicYear, disciplines = []) => {
+  const validateBatchPrerequisitesFrontend = (
+    academicYear,
+    disciplines = [],
+  ) => {
     const currentBatches = getCurrentBatches();
-    
+
     if (!currentBatches || currentBatches.length === 0) {
       notifications.show({
         title: "No Batches Found",
@@ -737,8 +738,10 @@ export function useAddStudents({
     // for PhD Odd Aug-2025, both map to academic year 2025-26) to avoid defaulting
     // to getCurrentBatchYear() which returns currentYear-1 in Jan-June.
     const yearToCheck = academicYear || getCurrentBatchYear();
-    const batchesForYear = currentBatches.filter(batch => batch.year === yearToCheck);
-    
+    const batchesForYear = currentBatches.filter(
+      (batch) => batch.year === yearToCheck,
+    );
+
     if (batchesForYear.length === 0) {
       notifications.show({
         title: "No Batches for Current Year",
@@ -749,26 +752,95 @@ export function useAddStudents({
       return false;
     }
 
-    const requiredDisciplines = disciplines.length > 0
-      ? disciplines
-      : batchesForYear.map(batch => batch.discipline || batch.branch).filter(Boolean);
+    const requiredDisciplines =
+      disciplines.length > 0
+        ? disciplines
+        : batchesForYear
+            .map((batch) => batch.discipline || batch.branch)
+            .filter(Boolean);
 
-    for (const disciplineName of requiredDisciplines) {
-      const matchingBatch = batchesForYear.find(batch => {
-        const batchDiscipline = (batch.discipline || batch.branch || '').trim().toLowerCase();
+    const missingDiscipline = requiredDisciplines.find((disciplineName) => {
+      const matchingBatch = batchesForYear.find((batch) => {
+        const batchDiscipline = (batch.discipline || batch.branch || "")
+          .trim()
+          .toLowerCase();
         return batchDiscipline === disciplineName.trim().toLowerCase();
       });
+      return !matchingBatch;
+    });
 
-      if (!matchingBatch) {
+    if (missingDiscipline) {
+      notifications.show({
+        title: "Batches Required",
+        message: (
+          <div>
+            <Text size="sm" mb={8}>
+              <strong>Please create the required batch first:</strong>
+            </Text>
+            <Text
+              size="xs"
+              style={{ whiteSpace: "pre-line", color: "#721c24" }}
+            >
+              • {missingDiscipline} - Create batch for year {yearToCheck}
+            </Text>
+          </div>
+        ),
+        color: "red",
+        autoClose: false,
+      });
+      return false;
+    }
+
+    return true;
+  };
+
+  const validateBatchPrerequisites = async (academicYear, disciplines = []) => {
+    try {
+      const response = await fetch(
+        `${host}/programme_curriculum/api/batches/validate_prerequisites/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ academic_year: academicYear, disciplines }),
+        },
+      );
+
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        return validateBatchPrerequisitesFrontend(academicYear);
+      }
+
+      const data = await response.json();
+
+      if (!data.can_upload_students) {
+        const errorMessages = data.missing_batches
+          .slice(0, 5)
+          .map(
+            (batch) =>
+              `• ${batch.acronym} - ${batch.discipline}: ${batch.action_required}`,
+          )
+          .join("\n");
+
+        const additionalErrors =
+          data.missing_batches.length > 5
+            ? `\n... and ${data.missing_batches.length - 5} more missing batches`
+            : "";
+
         notifications.show({
           title: "Batches Required",
           message: (
             <div>
               <Text size="sm" mb={8}>
-                <strong>Please create the required batch first:</strong>
+                <strong>Please create required batches first:</strong>
               </Text>
-              <Text size="xs" style={{ whiteSpace: 'pre-line', color: '#721c24' }}>
-                • {disciplineName} - Create batch for year {yearToCheck}
+              <Text
+                size="xs"
+                style={{ whiteSpace: "pre-line", color: "#721c24" }}
+              >
+                {errorMessages}
+                {additionalErrors}
               </Text>
             </div>
           ),
@@ -777,17 +849,26 @@ export function useAddStudents({
         });
         return false;
       }
+
+      return true;
+    } catch (error) {
+      if (
+        error.message.includes("Unexpected token") ||
+        error.message.includes("<!doctype")
+      ) {
+        return validateBatchPrerequisitesFrontend(academicYear, disciplines);
+      }
+
+      return true;
     }
-    
-    return true;
   };
 
   const validateExcelData = (data) => {
     const validationErrors = [];
-    
+
     data.forEach((student, index) => {
       const rowNumber = index + 2;
-      
+
       // Transform student data to standardized field names before validation
       const transformedStudent = {};
       Object.keys(STUDENT_FIELDS_CONFIG).forEach((fieldKey) => {
@@ -799,63 +880,85 @@ export function useAddStudents({
         }
 
         if (!fieldValue && fieldInfo.excelColumns) {
-          for (const excelCol of fieldInfo.excelColumns) {
+          fieldInfo.excelColumns.some((excelCol) => {
             if (student[excelCol]) {
               fieldValue = student[excelCol];
-              break;
+              return true;
             }
             const matchedKey = Object.keys(student).find(
-              key => key.toLowerCase() === excelCol.toLowerCase()
+              (key) => key.toLowerCase() === excelCol.toLowerCase(),
             );
             if (matchedKey && student[matchedKey]) {
               fieldValue = student[matchedKey];
-              break;
+              return true;
             }
-          }
+            return false;
+          });
         }
-        
+
         if (fieldValue) {
           transformedStudent[fieldKey] = fieldValue;
         }
       });
 
-      const errors = applyUniversalValidation(transformedStudent, false);
-      
-      if (Object.keys(errors).length > 0) {
-        Object.entries(errors).forEach(([field, error]) => {
+      const rowErrors = applyUniversalValidation(transformedStudent);
+
+      if (Object.keys(rowErrors).length > 0) {
+        Object.entries(rowErrors).forEach(([field, error]) => {
           validationErrors.push({
             row: rowNumber,
             student: student.name || student.Name || `Row ${rowNumber}`,
             field: STUDENT_FIELDS_CONFIG[field]?.label || field,
-            error: error
+            error,
           });
         });
       }
 
       // Validate dropdown values
       const dropdownValidations = {
-        admissionMode: STUDENT_FIELDS_CONFIG.admissionMode.options.map(opt => opt.value),
-        pwdCategory: STUDENT_FIELDS_CONFIG.pwdCategory.options.map(opt => opt.value), 
-        incomeGroup: STUDENT_FIELDS_CONFIG.incomeGroup.options.map(opt => opt.value),
-        bloodGroup: STUDENT_FIELDS_CONFIG.bloodGroup.options.map(opt => opt.value),
-        allottedGender: STUDENT_FIELDS_CONFIG.allottedGender.options.map(opt => opt.value),
-        allottedCategory: STUDENT_FIELDS_CONFIG.allottedCategory.options.map(opt => opt.value),
-        gender: STUDENT_FIELDS_CONFIG.gender.options.map(opt => opt.value),
-        category: STUDENT_FIELDS_CONFIG.category.options.map(opt => opt.value),
-        pwd: STUDENT_FIELDS_CONFIG.pwd.options.map(opt => opt.value),
+        admissionMode: STUDENT_FIELDS_CONFIG.admissionMode.options.map(
+          (opt) => opt.value,
+        ),
+        pwdCategory: STUDENT_FIELDS_CONFIG.pwdCategory.options.map(
+          (opt) => opt.value,
+        ),
+        incomeGroup: STUDENT_FIELDS_CONFIG.incomeGroup.options.map(
+          (opt) => opt.value,
+        ),
+        bloodGroup: STUDENT_FIELDS_CONFIG.bloodGroup.options.map(
+          (opt) => opt.value,
+        ),
+        allottedGender: STUDENT_FIELDS_CONFIG.allottedGender.options.map(
+          (opt) => opt.value,
+        ),
+        allottedCategory: STUDENT_FIELDS_CONFIG.allottedCategory.options.map(
+          (opt) => opt.value,
+        ),
+        gender: STUDENT_FIELDS_CONFIG.gender.options.map((opt) => opt.value),
+        category: STUDENT_FIELDS_CONFIG.category.options.map(
+          (opt) => opt.value,
+        ),
+        pwd: STUDENT_FIELDS_CONFIG.pwd.options.map((opt) => opt.value),
       };
 
-      Object.entries(dropdownValidations).forEach(([fieldKey, validOptions]) => {
-        const value = student[fieldKey];
-        if (value && value.trim() !== "" && value !== "-" && !validOptions.includes(value)) {
-          validationErrors.push({
-            row: rowNumber,
-            student: student.name || student.Name || `Row ${rowNumber}`,
-            field: STUDENT_FIELDS_CONFIG[fieldKey]?.label || fieldKey,
-            error: `Invalid value "${value}". Must be one of: ${validOptions.join(', ')}`
-          });
-        }
-      });
+      Object.entries(dropdownValidations).forEach(
+        ([fieldKey, validOptions]) => {
+          const value = student[fieldKey];
+          if (
+            value &&
+            value.trim() !== "" &&
+            value !== "-" &&
+            !validOptions.includes(value)
+          ) {
+            validationErrors.push({
+              row: rowNumber,
+              student: student.name || student.Name || `Row ${rowNumber}`,
+              field: STUDENT_FIELDS_CONFIG[fieldKey]?.label || fieldKey,
+              error: `Invalid value "${value}". Must be one of: ${validOptions.join(", ")}`,
+            });
+          }
+        },
+      );
 
       // Validate phone numbers for duplicates
       const phoneErrors = validatePhoneNumbers(student);
@@ -865,25 +968,29 @@ export function useAddStudents({
             row: rowNumber,
             student: student.name || student.Name || `Row ${rowNumber}`,
             field: STUDENT_FIELDS_CONFIG[field]?.label || field,
-            error: error
+            error,
           });
         });
       }
     });
-    
+
     return validationErrors;
   };
 
   const handleExcelUpload = async () => {
     try {
       // Check if PhD semester is selected for PhD section
-      console.log('handleExcelUpload called:', { activeSection, selectedPhdSemester });
-      
-      if (activeSection === 'phd' && !selectedPhdSemester) {
-        console.log('Blocked: PhD semester not selected');
+      console.log("handleExcelUpload called:", {
+        activeSection,
+        selectedPhdSemester,
+      });
+
+      if (activeSection === "phd" && !selectedPhdSemester) {
+        console.log("Blocked: PhD semester not selected");
         notifications.show({
           title: "Semester Selection Required",
-          message: "Please select PhD semester (Odd or Even) before uploading students.",
+          message:
+            "Please select PhD semester (Odd or Even) before uploading students.",
           color: "yellow",
         });
         return;
@@ -902,24 +1009,36 @@ export function useAddStudents({
 
       // Validate Excel data before proceeding
       const excelValidationErrors = validateExcelData(dataToUpload);
-      
+
       if (excelValidationErrors.length > 0) {
-        const errorMessages = excelValidationErrors.slice(0, 10).map(error => 
-          `• Row ${error.row} (${error.student}): ${error.field} - ${error.error}`
-        ).join('\n');
-        
-        const additionalErrors = excelValidationErrors.length > 10 ? 
-          `\n... and ${excelValidationErrors.length - 10} more validation errors` : '';
-        
+        const errorMessages = excelValidationErrors
+          .slice(0, 10)
+          .map(
+            (error) =>
+              `• Row ${error.row} (${error.student}): ${error.field} - ${error.error}`,
+          )
+          .join("\n");
+
+        const additionalErrors =
+          excelValidationErrors.length > 10
+            ? `\n... and ${excelValidationErrors.length - 10} more validation errors`
+            : "";
+
         notifications.show({
           title: "Upload Failed - Data Validation Errors",
           message: (
             <div>
               <Text size="sm" mb={8}>
-                <strong>Please fix the following errors in your Excel file:</strong>
+                <strong>
+                  Please fix the following errors in your Excel file:
+                </strong>
               </Text>
-              <Text size="xs" style={{ whiteSpace: 'pre-line', color: '#721c24' }}>
-                {errorMessages}{additionalErrors}
+              <Text
+                size="xs"
+                style={{ whiteSpace: "pre-line", color: "#721c24" }}
+              >
+                {errorMessages}
+                {additionalErrors}
               </Text>
             </div>
           ),
@@ -931,8 +1050,11 @@ export function useAddStudents({
       // Use viewAcademicYear (the admin-selected year) for batch lookup.
       const currentAcademicYear = viewAcademicYear;
       const uploadDisciplines = getUploadDisciplines(dataToUpload);
-      const canUpload = await validateBatchPrerequisites(currentAcademicYear, uploadDisciplines);
-      
+      const canUpload = await validateBatchPrerequisites(
+        currentAcademicYear,
+        uploadDisciplines,
+      );
+
       if (!canUpload) {
         return;
       }
@@ -940,74 +1062,89 @@ export function useAddStudents({
       const currentBatches = getCurrentBatches();
       const batchValidationErrors = [];
       const studentBatchMap = new Map();
-      
-      for (const student of dataToUpload) {
-        const studentBranch = student.branch || student.discipline || student.Branch || student.Discipline;
+
+      dataToUpload.forEach((student) => {
+        const studentBranch =
+          student.branch ||
+          student.discipline ||
+          student.Branch ||
+          student.Discipline;
         const studentYear = viewAcademicYear; // Must match getCurrentBatches() which filters by viewAcademicYear
 
         const matchingBatch = getBatchForBranch(
-          studentBranch, 
+          studentBranch,
           currentBatches,
-          activeSection === 'phd' ? selectedPhdSemester : null
+          activeSection === "phd" ? selectedPhdSemester : null,
         );
 
         let finalMatchingBatch = matchingBatch;
         if (!finalMatchingBatch) {
-          finalMatchingBatch = currentBatches.find(batch => {
+          finalMatchingBatch = currentBatches.find((batch) => {
             const batchBranch = batch.discipline || batch.branch;
-            return (
-              batchBranch === studentBranch &&
-              batch.year === studentYear
-            );
+            return batchBranch === studentBranch && batch.year === studentYear;
           });
         }
 
         if (finalMatchingBatch && finalMatchingBatch.year !== studentYear) {
           finalMatchingBatch = null;
         }
-        
+
         if (!finalMatchingBatch) {
-          const semesterInfo = activeSection === 'phd' && selectedPhdSemester ? ` (${selectedPhdSemester.toUpperCase()} semester)` : '';
+          const semesterInfo =
+            activeSection === "phd" && selectedPhdSemester
+              ? ` (${selectedPhdSemester.toUpperCase()} semester)`
+              : "";
           batchValidationErrors.push({
-            student: student.name || student.Name || 'Unknown',
+            student: student.name || student.Name || "Unknown",
             branch: studentBranch,
             year: studentYear,
-            message: `No existing batch found for ${studentBranch} ${studentYear}${semesterInfo}`
+            message: `No existing batch found for ${studentBranch} ${studentYear}${semesterInfo}`,
           });
         } else {
-          const studentsForThisBatch = studentBatchMap.get(finalMatchingBatch.id) || [];
+          const studentsForThisBatch =
+            studentBatchMap.get(finalMatchingBatch.id) || [];
           studentsForThisBatch.push(student);
           studentBatchMap.set(finalMatchingBatch.id, studentsForThisBatch);
-          
-          const totalStudentsForBatch = (finalMatchingBatch.filledSeats || 0) + studentsForThisBatch.length;
+
+          const totalStudentsForBatch =
+            (finalMatchingBatch.filledSeats || 0) + studentsForThisBatch.length;
           if (totalStudentsForBatch > finalMatchingBatch.totalSeats) {
             batchValidationErrors.push({
-              student: student.name || student.Name || 'Unknown',
+              student: student.name || student.Name || "Unknown",
               branch: studentBranch,
               year: studentYear,
-              message: `Batch ${studentBranch} ${studentYear} will exceed capacity (${totalStudentsForBatch}/${finalMatchingBatch.totalSeats})`
+              message: `Batch ${studentBranch} ${studentYear} will exceed capacity (${totalStudentsForBatch}/${finalMatchingBatch.totalSeats})`,
             });
           }
         }
-      }
+      });
 
       if (batchValidationErrors.length > 0) {
-        const errorMessages = batchValidationErrors.slice(0, 5).map(error => 
-          `• ${error.student}: ${error.message}`
-        ).join('\n');
-        
-        const additionalErrors = batchValidationErrors.length > 5 ? 
-          `\n... and ${batchValidationErrors.length - 5} more errors` : '';
-        
+        const errorMessages = batchValidationErrors
+          .slice(0, 5)
+          .map((error) => `• ${error.student}: ${error.message}`)
+          .join("\n");
+
+        const additionalErrors =
+          batchValidationErrors.length > 5
+            ? `\n... and ${batchValidationErrors.length - 5} more errors`
+            : "";
+
         notifications.show({
           title: "Upload Failed - Batch Validation Errors",
           message: (
             <div>
               <Text size="sm" mb={8}>
-                <strong>Cannot upload students. Please create required batches first:</strong>
+                <strong>
+                  Cannot upload students. Please create required batches first:
+                </strong>
               </Text>
-              <Text size="xs" style={{ whiteSpace: 'pre-line', color: '#721c24' }}>
-                {errorMessages}{additionalErrors}
+              <Text
+                size="xs"
+                style={{ whiteSpace: "pre-line", color: "#721c24" }}
+              >
+                {errorMessages}
+                {additionalErrors}
               </Text>
             </div>
           ),
@@ -1022,7 +1159,12 @@ export function useAddStudents({
       if (!showBatchPreview) {
         const branchCounts = {};
         dataToUpload.forEach((stu) => {
-          const b = stu.branch || stu.discipline || stu.Branch || stu.Discipline || "Unknown";
+          const b =
+            stu.branch ||
+            stu.discipline ||
+            stu.Branch ||
+            stu.Discipline ||
+            "Unknown";
           branchCounts[b] = (branchCounts[b] || 0) + 1;
         });
         setProcessedBatchData(dataToUpload);
@@ -1037,19 +1179,19 @@ export function useAddStudents({
       }
 
       const transformedData = transformDataForDatabase(dataToUpload);
-      
+
       // Debug logging
-      console.log('PhD Upload Debug:', {
+      console.log("PhD Upload Debug:", {
         activeSection,
         selectedPhdSemester,
-        sendingValue: activeSection === 'phd' ? selectedPhdSemester : null
+        sendingValue: activeSection === "phd" ? selectedPhdSemester : null,
       });
-      
+
       const response = await saveStudentsBatch(
-        transformedData, 
+        transformedData,
         activeSection,
-        activeSection === 'phd' ? selectedPhdSemester : null,
-        viewAcademicYear  // Pass the current view year so backend targets the right batch year
+        activeSection === "phd" ? selectedPhdSemester : null,
+        viewAcademicYear, // Pass the current view year so backend targets the right batch year
       );
 
       if (response.success) {
@@ -1058,13 +1200,20 @@ export function useAddStudents({
 
         if (uploadCount === 0) {
           // Backend returned success but nothing was saved — treat as failure
-          const errorDetail = response.error_detail || response.message || 'No students were saved.';
+          const errorDetail =
+            response.error_detail ||
+            response.message ||
+            "No students were saved.";
           const errorList = response.errors;
           let displayMsg = errorDetail;
           if (Array.isArray(errorList) && errorList.length > 0) {
             const firstErr = errorList[0];
-            const errText = typeof firstErr === 'string' ? firstErr
-              : (firstErr.required_action || firstErr.error || JSON.stringify(firstErr));
+            const errText =
+              typeof firstErr === "string"
+                ? firstErr
+                : firstErr.required_action ||
+                  firstErr.error ||
+                  JSON.stringify(firstErr);
             displayMsg = errText || errorDetail;
           }
           notifications.show({
@@ -1076,7 +1225,7 @@ export function useAddStudents({
         } else {
           notifications.show({
             title: "✅ Upload Successful",
-            message: `${uploadCount} student${uploadCount !== 1 ? 's' : ''} uploaded to existing batches successfully!`,
+            message: `${uploadCount} student${uploadCount !== 1 ? "s" : ""} uploaded to existing batches successfully!`,
             color: "green",
           });
 
@@ -1100,18 +1249,22 @@ export function useAddStudents({
         let displayMsg = errorDetail;
         if (Array.isArray(errorList) && errorList.length > 0) {
           const firstErr = errorList[0];
-          const errText = typeof firstErr === 'string' ? firstErr
-            : (firstErr.required_action || firstErr.error || JSON.stringify(firstErr));
+          const errText =
+            typeof firstErr === "string"
+              ? firstErr
+              : firstErr.required_action ||
+                firstErr.error ||
+                JSON.stringify(firstErr);
           displayMsg = errText || errorDetail;
         }
-        if (response.error_code === 'BATCH_NOT_FOUND') {
+        if (response.error_code === "BATCH_NOT_FOUND") {
           notifications.show({
             title: "Batch Required",
             message: response.required_action || displayMsg,
             color: "red",
             autoClose: false,
           });
-        } else if (response.error_code === 'BATCH_MATCHING_ERROR') {
+        } else if (response.error_code === "BATCH_MATCHING_ERROR") {
           notifications.show({
             title: "Configuration Error",
             message: response.message,
@@ -1129,33 +1282,41 @@ export function useAddStudents({
       }
     } catch (error) {
       const errorData = error.response?.data;
-      const errorMessage = errorData?.message || errorData?.error || error.message;
+      const errorMessage =
+        errorData?.message || errorData?.error || error.message;
 
       if (errorMessage?.includes("No working curriculums found")) {
-        showWorkflowGuidance('curriculum_required');
+        showWorkflowGuidance("curriculum_required");
       } else if (errorMessage?.includes("No active batches found")) {
-        showWorkflowGuidance('batches_required', { 
-          academicYear: getViewAcademicYearOptions()[0]?.label || 'current year'
+        showWorkflowGuidance("batches_required", {
+          academicYear:
+            getViewAcademicYearOptions()[0]?.label || "current year",
         });
       } else if (errorMessage?.includes("have no curriculum assigned")) {
         const batchMatch = errorMessage.match(/assigned: (.+?)\./);
         const batchNames = batchMatch ? batchMatch[1] : "some batches";
-        
-        showWorkflowGuidance('curriculum_assignment_required', { batchNames });
-      } else if (errorMessage?.includes("validation") || errorMessage?.includes("prerequisite")) {
+
+        showWorkflowGuidance("curriculum_assignment_required", { batchNames });
+      } else if (
+        errorMessage?.includes("validation") ||
+        errorMessage?.includes("prerequisite")
+      ) {
         notifications.show({
           title: "📋 Validation Error",
           message: errorMessage,
           color: "red",
           autoClose: 8000,
           style: {
-            backgroundColor: '#f8d7da',
-            borderColor: '#f5c6cb',
-            color: '#721c24',
+            backgroundColor: "#f8d7da",
+            borderColor: "#f5c6cb",
+            color: "#721c24",
           },
         });
       } else {
-        const { title, message } = parseDuplicateError(error, "upload students");
+        const { title, message } = parseDuplicateError(
+          error,
+          "upload students",
+        );
 
         notifications.show({
           title,
@@ -1177,18 +1338,19 @@ export function useAddStudents({
           manualFormData,
           !!editingStudent,
         );
-        
+
         if (Object.keys(finalErrors).length > 0) {
           console.log("Validation failed. Errors:", finalErrors);
           console.log("Form data:", manualFormData);
           console.log("Active section:", activeSection);
-          
+
           setErrors(finalErrors);
-          const phoneErrors = Object.values(finalErrors).filter(error => 
-            error.includes("mobile number cannot be the same") || 
-            error.includes("phone number cannot be the same")
+          const phoneErrors = Object.values(finalErrors).filter(
+            (error) =>
+              error.includes("mobile number cannot be the same") ||
+              error.includes("phone number cannot be the same"),
           );
-          
+
           if (phoneErrors.length > 0) {
             notifications.show({
               title: "Duplicate Phone Number",
@@ -1197,15 +1359,23 @@ export function useAddStudents({
             });
           } else {
             const missingFields = Object.entries(finalErrors)
-              .map(([field, error]) => `• ${STUDENT_FIELDS_CONFIG[field]?.label || field}: ${error}`)
-              .join('\n');
-            
+              .map(
+                ([field, error]) =>
+                  `• ${STUDENT_FIELDS_CONFIG[field]?.label || field}: ${error}`,
+              )
+              .join("\n");
+
             notifications.show({
               title: "Validation Error",
               message: (
                 <div>
-                  <Text size="sm" mb={8}>Please fill the following required fields:</Text>
-                  <Text size="xs" style={{ whiteSpace: 'pre-line', color: '#721c24' }}>
+                  <Text size="sm" mb={8}>
+                    Please fill the following required fields:
+                  </Text>
+                  <Text
+                    size="xs"
+                    style={{ whiteSpace: "pre-line", color: "#721c24" }}
+                  >
                     {missingFields}
                   </Text>
                 </div>
@@ -1222,17 +1392,21 @@ export function useAddStudents({
         if (!editingStudent) {
           // Use viewAcademicYear (the admin-selected year) for batch lookup.
           const studentYear = viewAcademicYear;
-          if (activeSection === 'phd' && !selectedPhdSemester) {
+          if (activeSection === "phd" && !selectedPhdSemester) {
             notifications.show({
               title: "Semester Selection Required",
-              message: "Please select PhD semester (Odd or Even) before saving a manual student.",
+              message:
+                "Please select PhD semester (Odd or Even) before saving a manual student.",
               color: "yellow",
             });
             return;
           }
           const uploadDisciplines = getUploadDisciplines([manualFormData]);
-          const canUpload = await validateBatchPrerequisites(studentYear, uploadDisciplines);
-          
+          const canUpload = await validateBatchPrerequisites(
+            studentYear,
+            uploadDisciplines,
+          );
+
           if (!canUpload) {
             return;
           }
@@ -1242,19 +1416,23 @@ export function useAddStudents({
           else if (activeSection === "pg") allBatches = pgBatches || [];
           else allBatches = phdBatches || [];
 
-          const batchesForYear = allBatches.filter(batch => batch.year === studentYear);
+          const batchesForYear = allBatches.filter(
+            (batch) => batch.year === studentYear,
+          );
           const studentBranch = manualFormData.branch;
 
           const matchingBatch = getBatchForBranch(
-            studentBranch, 
+            studentBranch,
             batchesForYear,
-            activeSection === 'phd' ? selectedPhdSemester : null
+            activeSection === "phd" ? selectedPhdSemester : null,
           );
-          
+
           if (!matchingBatch) {
             const academicYearStr = batchYearToAcademicYear(studentYear);
-            const availableBranches = batchesForYear.map(b => b.discipline || b.branch).filter(Boolean);
-            
+            const availableBranches = batchesForYear
+              .map((b) => b.discipline || b.branch)
+              .filter(Boolean);
+
             notifications.show({
               title: "Cannot Add Student",
               message: (
@@ -1262,11 +1440,18 @@ export function useAddStudents({
                   <Text size="sm" mb={8}>
                     <strong>No matching batch found.</strong>
                   </Text>
-                  <Text size="xs" style={{ color: '#721c24' }}>
-                    Looking for: {studentBranch} {studentYear} (Academic Year: {academicYearStr})
+                  <Text size="xs" style={{ color: "#721c24" }}>
+                    Looking for: {studentBranch} {studentYear} (Academic Year:{" "}
+                    {academicYearStr})
                   </Text>
-                  <Text size="xs" style={{ color: '#856404', marginTop: '8px' }}>
-                    Available: {availableBranches.length > 0 ? availableBranches.join(', ') : 'None for this year'}
+                  <Text
+                    size="xs"
+                    style={{ color: "#856404", marginTop: "8px" }}
+                  >
+                    Available:{" "}
+                    {availableBranches.length > 0
+                      ? availableBranches.join(", ")
+                      : "None for this year"}
                   </Text>
                 </div>
               ),
@@ -1289,21 +1474,35 @@ export function useAddStudents({
         }
 
         if (editingStudent) {
-          const oldBranch = editingStudent.branch || editingStudent.Branch || editingStudent.discipline || editingStudent.Discipline;
+          const oldBranch =
+            editingStudent.branch ||
+            editingStudent.Branch ||
+            editingStudent.discipline ||
+            editingStudent.Discipline;
           const newBranch = manualFormData.branch;
-          const branchChanged = oldBranch && newBranch && oldBranch.toLowerCase().trim() !== newBranch.toLowerCase().trim();
-          const updateData = { ...transformedData[0], programmeType: activeSection };
+          const branchChanged =
+            oldBranch &&
+            newBranch &&
+            oldBranch.toLowerCase().trim() !== newBranch.toLowerCase().trim();
+          const updateData = {
+            ...transformedData[0],
+            programmeType: activeSection,
+          };
 
           let targetBatch = null;
           if (branchChanged) {
-            const currentBatches = activeSection === 'ug' ? ugBatches : 
-                                 activeSection === 'pg' ? pgBatches : phdBatches;
+            const currentBatches =
+              activeSection === "ug"
+                ? ugBatches
+                : activeSection === "pg"
+                  ? pgBatches
+                  : phdBatches;
             targetBatch = getBatchForBranch(
-              newBranch, 
+              newBranch,
               currentBatches,
-              activeSection === 'phd' ? selectedPhdSemester : null
+              activeSection === "phd" ? selectedPhdSemester : null,
             );
-            
+
             if (!targetBatch) {
               notifications.show({
                 title: "Branch Transfer Warning",
@@ -1359,9 +1558,11 @@ export function useAddStudents({
             } else if (branchChanged) {
               successMessage += ` Discipline updated to "${newBranch}".`;
             }
-            
+
             notifications.show({
-              title: branchChanged ? "Discipline Change Completed" : "Update Successful",
+              title: branchChanged
+                ? "Discipline Change Completed"
+                : "Update Successful",
               message: successMessage,
               color: "green",
               autoClose: branchChanged ? 10000 : 4000,
@@ -1398,8 +1599,8 @@ export function useAddStudents({
           const response = await addSingleStudent(
             transformedData[0],
             activeSection,
-            activeSection === 'phd' ? selectedPhdSemester : null,
-            viewAcademicYear  // Pass current view year so backend uses the right batch year
+            activeSection === "phd" ? selectedPhdSemester : null,
+            viewAcademicYear, // Pass current view year so backend uses the right batch year
           );
 
           if (response.success) {
@@ -1416,55 +1617,62 @@ export function useAddStudents({
             setErrors({});
 
             forceRefreshData();
+          } else if (response.error_code === "BATCH_NOT_FOUND") {
+            notifications.show({
+              title: "Batch Required",
+              message: response.required_action || response.message,
+              color: "red",
+              autoClose: false,
+            });
+          } else if (response.error_code === "BATCH_MATCHING_ERROR") {
+            notifications.show({
+              title: "Configuration Error",
+              message: response.message,
+              color: "red",
+              autoClose: false,
+            });
           } else {
-            if (response.error_code === 'BATCH_NOT_FOUND') {
-              notifications.show({
-                title: "Batch Required",
-                message: response.required_action || response.message,
-                color: "red",
-                autoClose: false,
-              });
-            } else if (response.error_code === 'BATCH_MATCHING_ERROR') {
-              notifications.show({
-                title: "Configuration Error", 
-                message: response.message,
-                color: "red",
-                autoClose: false,
-              });
-            } else {
-              throw new Error(response.message || "Failed to add student");
-            }
+            throw new Error(response.message || "Failed to add student");
           }
         }
       } catch (error) {
         const errorData = error.response?.data;
-        const errorMessage = errorData?.message || errorData?.error || error.message;
+        const errorMessage =
+          errorData?.message || errorData?.error || error.message;
 
         if (errorMessage?.includes("No working curriculums found")) {
-          showWorkflowGuidance('curriculum_required');
+          showWorkflowGuidance("curriculum_required");
         } else if (errorMessage?.includes("No active batches found")) {
-          showWorkflowGuidance('batches_required', { 
-            academicYear: getViewAcademicYearOptions()[0]?.label || 'current year'
+          showWorkflowGuidance("batches_required", {
+            academicYear:
+              getViewAcademicYearOptions()[0]?.label || "current year",
           });
         } else if (errorMessage?.includes("have no curriculum assigned")) {
           const batchMatch = errorMessage.match(/assigned: (.+?)\./);
           const batchNames = batchMatch ? batchMatch[1] : "some batches";
-          
-          showWorkflowGuidance('curriculum_assignment_required', { batchNames });
-        } else if (errorMessage?.includes("validation") || errorMessage?.includes("prerequisite")) {
+
+          showWorkflowGuidance("curriculum_assignment_required", {
+            batchNames,
+          });
+        } else if (
+          errorMessage?.includes("validation") ||
+          errorMessage?.includes("prerequisite")
+        ) {
           notifications.show({
             title: "📋 Validation Error",
             message: errorMessage,
             color: "red",
             autoClose: 8000,
             style: {
-              backgroundColor: '#f8d7da',
-              borderColor: '#f5c6cb',
-              color: '#721c24',
+              backgroundColor: "#f8d7da",
+              borderColor: "#f5c6cb",
+              color: "#721c24",
             },
           });
         } else {
-          const operationType = editingStudent ? "update student" : "add student";
+          const operationType = editingStudent
+            ? "update student"
+            : "add student";
           const { title, message } = parseDuplicateError(error, operationType);
 
           notifications.show({
@@ -1480,13 +1688,13 @@ export function useAddStudents({
 
   const prevStep = () => {
     if (currentStep > 0) {
-      setErrors({}); 
+      setErrors({});
       setCurrentStep(currentStep - 1);
     }
   };
 
   const generateExcelTemplate = () => {
-    const isPhd = activeSection === 'phd';
+    const isPhd = activeSection === "phd";
 
     // ── PhD template ────────────────────────────────────────────────────────
     if (isPhd) {
@@ -1574,15 +1782,22 @@ export function useAddStudents({
 
       const worksheet = XLSX.utils.aoa_to_sheet([headers, ...sampleData]);
       const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Student Data Template");
+      XLSX.utils.book_append_sheet(
+        workbook,
+        worksheet,
+        "Student Data Template",
+      );
 
-      worksheet["!cols"] = headers.map((h) => ({ wch: Math.max(h.length + 4, 22) }));
+      worksheet["!cols"] = headers.map((h) => ({
+        wch: Math.max(h.length + 4, 22),
+      }));
 
       XLSX.writeFile(workbook, "student_data_template_PHD.xlsx");
 
       notifications.show({
         title: "Template Downloaded",
-        message: "PhD Excel template with all required fields has been downloaded",
+        message:
+          "PhD Excel template with all required fields has been downloaded",
         color: "green",
       });
       return;
@@ -1679,46 +1894,6 @@ export function useAddStudents({
       wch: Math.max(header.length, 20),
     }));
     worksheet["!cols"] = colWidths;
-
-    // Add data validation for dropdown fields
-    const dropdownValidations = {
-      'G': { // Gender column (moved right by one after adding Specialization)
-        type: 'list',
-        values: ['Male', 'Female', 'Other']
-      },
-      'H': { // Category column (moved right by one)
-        type: 'list', 
-        values: ['General', 'OBC-NCL', 'SC', 'ST', 'GEN-EWS']
-      },
-      'J': { // PwD column (moved right by one)
-        type: 'list',
-        values: ['YES', 'NO']
-      },
-      'K': { // PwD Category column (moved right by one)
-        type: 'list',
-        values: ['Locomotor Disability', 'Low vision Disability', 'Deaf Disability', 'Cerebral Palsy', 'Dyslexia', 'Amputee (Both Hand)', 'Deafness', 'Any other (remarks)']
-      },
-      'X': { // Blood Group column (moved right by one)
-        type: 'list',
-        values: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Other']
-      },
-      'AB': { // Admission Mode column (moved right by one)
-        type: 'list',
-        values: ['Direct Institute advertisement', 'CCMT Counselling', 'JoSAA/CSAB Counselling', 'UCEED Counselling', 'Study In India (SII) Counselling', 'DASA Counselling', 'Any other (remarks)']
-      },
-      'AD': { // Income Group column (moved right by one)
-        type: 'list',
-        values: ['Between 0 to 2 Lakh', 'Between 2 to 4 Lakh', 'Between 4 to 6 Lakh', 'Between 6 to 8 Lakh', 'More than 8 Lakh']
-      },
-      'AH': { // Allotted Category column (moved right by one)
-        type: 'list',
-        values: ['OPNO', 'OPPH', 'EWNO', 'EWPH', 'BCNO', 'BCPH', 'SCNO', 'SCPH', 'STNO']
-      },
-      'AI': { // Allotted Gender column (moved right by one)
-        type: 'list',
-        values: ['Gender-Neutral', 'Female-Only (including Supernumerary)']
-      }
-    };
 
     XLSX.writeFile(
       workbook,

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { notifications } from "@mantine/notifications";
-import { Badge } from "@mantine/core";
 import { deleteStudent } from "../../api/api";
 import { host } from "../../../../routes/globalRoutes";
 import { PROGRAMME_TYPES } from "../AdminUpcomingBatchesConstants";
@@ -14,7 +13,6 @@ import {
 export function useStudentList({
   activeSection,
   batchSetters,
-  getCurrentBatches,
   forceRefreshData,
   fetchBatchData,
 }) {
@@ -50,10 +48,60 @@ export function useStudentList({
     });
   };
 
+  const tryFallbackStudentFetch = async (batch) => {
+    const token = localStorage.getItem("authToken");
+
+    try {
+      const response = await fetch(
+        `${host}/programme_curriculum/api/admin_batches/`,
+        {
+          headers: { Authorization: `Token ${token}` },
+        },
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const targetBatch = data.find((b) => b.id === batch.id);
+
+        if (targetBatch) {
+          let students = [];
+
+          if (targetBatch.students) students.push(...targetBatch.students);
+          if (targetBatch.upload_students)
+            students.push(...targetBatch.upload_students);
+          if (targetBatch.academic_students)
+            students.push(...targetBatch.academic_students);
+
+          const seenStudents = new Set();
+          students = students.filter((student) => {
+            const identifier =
+              student.id ||
+              student.student_id ||
+              student.jee_app_no ||
+              student.name;
+            if (seenStudents.has(identifier)) return false;
+            seenStudents.add(identifier);
+            return true;
+          });
+          students = filterStudentsBySpecialization(students, batch);
+
+          if (students.length > 0) {
+            setStudentList(students);
+            return;
+          }
+        }
+      }
+
+      setStudentList([]);
+    } catch (error) {
+      setStudentList([]);
+    }
+  };
+
   const handleBatchRowClick = async (batch) => {
     setSelectedBatch(batch);
     setShowStudentModal(true);
-    
+
     if (selectedBatch && selectedBatch.id === batch.id && showStudentModal) {
       return;
     }
@@ -69,44 +117,49 @@ export function useStudentList({
         });
         return;
       }
-      
+
       const response = await fetch(
         `${host}/programme_curriculum/api/batches/${batch.id}/students/`,
         {
           headers: { Authorization: `Token ${token}` },
-        }
+        },
       );
-      
+
       if (response.ok) {
         const data = await response.json();
-        
+
         const uploadStudents = data.upload_students || [];
         const academicStudents = data.academic_students || [];
         const directStudents = data.students || [];
 
-        const combinedStudents = [...uploadStudents, ...academicStudents, ...directStudents];
-        
+        const combinedStudents = [
+          ...uploadStudents,
+          ...academicStudents,
+          ...directStudents,
+        ];
+
         if (combinedStudents.length === 0) {
           await tryFallbackStudentFetch(batch);
           return;
         }
 
         const seenStudents = new Set();
-        students = combinedStudents.filter(student => {
-          const identifier = student.id || 
-                           student.student_id || 
-                           student.jee_app_no || 
-                           student.jeeAppNo ||
-                           student.roll_number || 
-                           student.rollNumber ||
-                           student.institute_email ||
-                           student.instituteEmail ||
-                           `${student.name}_${student.dob || student.date_of_birth}`;
-          
+        students = combinedStudents.filter((student) => {
+          const identifier =
+            student.id ||
+            student.student_id ||
+            student.jee_app_no ||
+            student.jeeAppNo ||
+            student.roll_number ||
+            student.rollNumber ||
+            student.institute_email ||
+            student.instituteEmail ||
+            `${student.name}_${student.dob || student.date_of_birth}`;
+
           if (seenStudents.has(identifier)) {
             return false;
           }
-          
+
           seenStudents.add(identifier);
           return true;
         });
@@ -121,88 +174,43 @@ export function useStudentList({
       await tryFallbackStudentFetch(batch);
       return;
     }
-    
+
     setStudentList(students);
-  };
-
-  const tryFallbackStudentFetch = async (batch) => {
-    const token = localStorage.getItem("authToken");
-    
-    try {
-      const response = await fetch(
-        `${host}/programme_curriculum/api/admin_batches/`,
-        {
-          headers: { Authorization: `Token ${token}` },
-        }
-      );
-      
-      if (response.ok) {
-        const data = await response.json();
-        const targetBatch = data.find(b => b.id === batch.id);
-        
-        if (targetBatch) {
-          let students = [];
-
-          if (targetBatch.students) students.push(...targetBatch.students);
-          if (targetBatch.upload_students) students.push(...targetBatch.upload_students);
-          if (targetBatch.academic_students) students.push(...targetBatch.academic_students);
-
-          const seenStudents = new Set();
-          students = students.filter(student => {
-            const identifier = student.id || student.student_id || student.jee_app_no || student.name;
-            if (seenStudents.has(identifier)) return false;
-            seenStudents.add(identifier);
-            return true;
-          });
-          students = filterStudentsBySpecialization(students, batch);
-          
-          if (students.length > 0) {
-            setStudentList(students);
-            return;
-          }
-        }
-      }
-
-      setStudentList([]);
-      
-    } catch (error) {
-      setStudentList([]);
-    }
   };
 
   const updateStudentStatus = async (requestData) => {
     try {
       const token = localStorage.getItem("authToken");
-      
+
       const payload = {
-        studentId: requestData.studentId,  
-        reportedStatus: requestData.newStatus || requestData.reportedStatus, 
+        studentId: requestData.studentId,
+        reportedStatus: requestData.newStatus || requestData.reportedStatus,
         batchId: requestData.batchId || selectedBatch?.id,
         // Pass programmeType so the backend can disambiguate between
         // StudentBatchUpload and PhdStudentBatchUpload when IDs collide.
-        programmeType: requestData.programmeType || (selectedBatch ? getCurrentProgrammeType(selectedBatch) : undefined),
+        programmeType:
+          requestData.programmeType ||
+          (selectedBatch ? getCurrentProgrammeType(selectedBatch) : undefined),
       };
 
       const response = await fetch(
         `${host}/programme_curriculum/api/admin_update_student_status/`,
         {
-          method: 'POST',
-          headers: { 
+          method: "POST",
+          headers: {
             Authorization: `Token ${token}`,
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify(payload),
-        }
+        },
       );
-      
+
       if (response.ok) {
         const data = await response.json();
         return { success: true, data };
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        return { success: false, error: errorData };
       }
-      
+      const errorData = await response.json().catch(() => ({}));
+      return { success: false, error: errorData };
     } catch (error) {
       return { success: false, error: error.message };
     }
@@ -213,8 +221,8 @@ export function useStudentList({
 
     try {
       const requestData = {
-        studentId: studentId,
-        newStatus: newStatus,
+        studentId,
+        newStatus,
         batchId: selectedBatch.id,
       };
 
@@ -223,11 +231,11 @@ export function useStudentList({
       if (result.success) {
         setStudentList((prev) =>
           prev.map((student) =>
-            (student.id === studentId || student.student_id === studentId)
-              ? { 
-                  ...student, 
+            student.id === studentId || student.student_id === studentId
+              ? {
+                  ...student,
                   reportedStatus: newStatus,
-                  reported_status: newStatus 
+                  reported_status: newStatus,
                 }
               : student,
           ),
@@ -242,7 +250,11 @@ export function useStudentList({
                 ...batch,
                 students: currentStudents.map((student) =>
                   student.id === studentId
-                    ? { ...student, reportedStatus: newStatus, reported_status: newStatus }
+                    ? {
+                        ...student,
+                        reportedStatus: newStatus,
+                        reported_status: newStatus,
+                      }
                     : student,
                 ),
               };
@@ -288,10 +300,15 @@ export function useStudentList({
       newSelected.add(studentId);
     }
     setSelectedStudents(newSelected);
-    
+
     // Update "select all" state
-    const allStudentIds = getFilteredStudents().map(student => student.id || student.student_id);
-    setIsAllSelected(allStudentIds.length > 0 && allStudentIds.every(id => newSelected.has(id)));
+    const allStudentIds = getFilteredStudents().map(
+      (student) => student.id || student.student_id,
+    );
+    setIsAllSelected(
+      allStudentIds.length > 0 &&
+        allStudentIds.every((id) => newSelected.has(id)),
+    );
   };
 
   const handleStudentSelect = (studentId) => {
@@ -305,7 +322,9 @@ export function useStudentList({
   };
 
   const handleSelectAll = () => {
-    const allStudentIds = getFilteredStudents().map(student => student.id || student.student_id);
+    const allStudentIds = getFilteredStudents().map(
+      (student) => student.id || student.student_id,
+    );
     if (isAllSelected) {
       setSelectedStudents(new Set());
       setIsAllSelected(false);
@@ -326,54 +345,63 @@ export function useStudentList({
     }
 
     setIsBulkReporting(true);
-    let successCount = 0;
-    let failureCount = 0;
 
     try {
-      for (const studentId of selectedStudents) {
-        const student = getFilteredStudents().find(s => (s.id || s.student_id) === studentId);
-        if (student) {
+      const results = await Promise.all(
+        Array.from(selectedStudents).map(async (studentId) => {
+          const student = getFilteredStudents().find(
+            (s) => (s.id || s.student_id) === studentId,
+          );
+          if (!student) return false;
           try {
             const result = await updateStudentStatus({
-              studentId: studentId,
+              studentId,
               reportedStatus: newStatus,
               batchId: selectedBatch.id,
             });
+            if (!result.success) return false;
 
-            if (result.success) {
-              successCount++;
-              setStudentList(prevList =>
-                prevList.map(student =>
-                  (student.id || student.student_id) === studentId
-                    ? { ...student, reportedStatus: newStatus, reported_status: newStatus }
-                    : student
-                )
-              );
+            setStudentList((prevList) =>
+              prevList.map((s) =>
+                (s.id || s.student_id) === studentId
+                  ? {
+                      ...s,
+                      reportedStatus: newStatus,
+                      reported_status: newStatus,
+                    }
+                  : s,
+              ),
+            );
 
-              const updateBatchData = (batchArray) =>
-                batchArray.map((batch) => ({
-                  ...batch,
-                  students: batch.students?.map((student) =>
-                    (student.id || student.student_id) === studentId
-                      ? { ...student, reportedStatus: newStatus, reported_status: newStatus }
-                      : student
-                  ),
-                }));
+            const updateBatchData = (batchArray) =>
+              batchArray.map((batch) => ({
+                ...batch,
+                students: batch.students?.map((s) =>
+                  (s.id || s.student_id) === studentId
+                    ? {
+                        ...s,
+                        reportedStatus: newStatus,
+                        reported_status: newStatus,
+                      }
+                    : s,
+                ),
+              }));
 
-              setUgBatches(updateBatchData);
-              setPgBatches(updateBatchData);
-              setPhdBatches(updateBatchData);
-            } else {
-              failureCount++;
-            }
+            setUgBatches(updateBatchData);
+            setPgBatches(updateBatchData);
+            setPhdBatches(updateBatchData);
+            return true;
           } catch (error) {
-            failureCount++;
+            return false;
           }
-        }
-      }
+        }),
+      );
 
-      const statusLabel = newStatus.replace('_', ' ').toLowerCase();
-      
+      const successCount = results.filter(Boolean).length;
+      const failureCount = results.length - successCount;
+
+      const statusLabel = newStatus.replace("_", " ").toLowerCase();
+
       // Show results notification
       if (successCount > 0 && failureCount === 0) {
         notifications.show({
@@ -400,11 +428,11 @@ export function useStudentList({
       }
       setSelectedStudents(new Set());
       setIsAllSelected(false);
-
     } catch (error) {
       notifications.show({
         title: "Error",
-        message: "An error occurred during bulk status update. Please try again.",
+        message:
+          "An error occurred during bulk status update. Please try again.",
         color: "red",
       });
     } finally {
@@ -427,14 +455,22 @@ export function useStudentList({
     }
 
     // Store student data and show confirmation modal
-    setStudentToDelete({ id: studentId, name: studentName, programmeType: activeSection });
+    setStudentToDelete({
+      id: studentId,
+      name: studentName,
+      programmeType: activeSection,
+    });
     setShowDeleteStudentConfirm(true);
   };
 
   const confirmDeleteStudent = async () => {
     if (!studentToDelete) return;
 
-    const { id: studentId, name: studentName, programmeType: studentProgrammeType } = studentToDelete;
+    const {
+      id: studentId,
+      name: studentName,
+      programmeType: studentProgrammeType,
+    } = studentToDelete;
     setDeletingStudent(studentId);
 
     try {
@@ -494,7 +530,6 @@ export function useStudentList({
         throw new Error(response.message || "Failed to delete student");
       }
     } catch (error) {
-
       let errorMessage = "Failed to delete student";
       let errorTitle = "Error";
 
@@ -537,11 +572,8 @@ export function useStudentList({
         title: errorTitle,
         message: errorMessage,
         color: "red",
-        autoClose: false, 
+        autoClose: false,
       });
-
-      if (selectedBatch) {
-      }
     } finally {
       setDeletingStudent(null);
       setShowDeleteStudentConfirm(false);

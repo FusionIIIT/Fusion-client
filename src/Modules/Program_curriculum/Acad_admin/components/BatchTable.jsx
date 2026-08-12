@@ -74,15 +74,17 @@ function BatchTable({
               onMouseEnter={
                 editingRow === batch.id
                   ? undefined
-                  : (e) =>
-                      (e.target.closest("tr").style.backgroundColor = "#f8f9fa")
+                  : (e) => {
+                      e.target.closest("tr").style.backgroundColor = "#f8f9fa";
+                    }
               }
               onMouseLeave={
                 editingRow === batch.id
                   ? undefined
-                  : (e) =>
-                      (e.target.closest("tr").style.backgroundColor =
-                        "transparent")
+                  : (e) => {
+                      e.target.closest("tr").style.backgroundColor =
+                        "transparent";
+                    }
               }
             >
               <td style={BODY_CELL}>
@@ -113,7 +115,8 @@ function BatchTable({
                   />
                 ) : (
                   <Badge variant="light" color="blue">
-                    {batch.displayBranch || getDisplayBranchName(batch.discipline)}
+                    {batch.displayBranch ||
+                      getDisplayBranchName(batch.discipline)}
                   </Badge>
                 )}
               </td>
@@ -149,7 +152,10 @@ function BatchTable({
                       batch.curriculumVersion || batch.curriculum_version;
                     function hasVersionInfo(displayValue, versionValue) {
                       if (!versionValue) return false;
-                      const regex = new RegExp(`\\bv?\\s*${versionValue}\\b`, "i");
+                      const regex = new RegExp(
+                        `\\bv?\\s*${versionValue}\\b`,
+                        "i",
+                      );
                       return regex.test(displayValue);
                     }
                     if (version && !hasVersionInfo(display, version)) {
@@ -259,10 +265,10 @@ function BatchTable({
 }
 
 BatchTable.propTypes = {
-  batches: PropTypes.array.isRequired,
+  batches: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   loading: PropTypes.bool,
   editingRow: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  editFormData: PropTypes.object,
+  editFormData: PropTypes.instanceOf(Object),
   setEditFormData: PropTypes.func,
   onRowClick: PropTypes.func.isRequired,
   getProgrammeOptions: PropTypes.func.isRequired,

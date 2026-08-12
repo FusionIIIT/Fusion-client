@@ -98,9 +98,9 @@ function AddBatchModal({
 AddBatchModal.propTypes = {
   opened: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  newBatchData: PropTypes.object.isRequired,
+  newBatchData: PropTypes.instanceOf(Object).isRequired,
   setNewBatchData: PropTypes.func.isRequired,
-  programmeOptions: PropTypes.array.isRequired,
+  programmeOptions: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   getDisciplineOptions: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
 };

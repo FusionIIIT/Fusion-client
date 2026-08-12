@@ -13,20 +13,20 @@ export function useAddBatch({
   forceRefreshData,
 }) {
   const { setUgBatches, setPgBatches, setPhdBatches } = batchSetters;
-  const [showAddBatchModal, setShowAddBatchModal] = useState(false); 
+  const [showAddBatchModal, setShowAddBatchModal] = useState(false);
   const [newBatchData, setNewBatchData] = useState({
     programme: "",
     discipline: "",
     year: selectedBatchYear,
     totalSeats: 60,
   });
-  const [deletingBatchId, setDeletingBatchId] = useState(null); 
+  const [deletingBatchId, setDeletingBatchId] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
-    setNewBatchData(prev => ({
+    setNewBatchData((prev) => ({
       ...prev,
-      year: selectedBatchYear
+      year: selectedBatchYear,
     }));
   }, [selectedBatchYear]);
 
@@ -83,7 +83,8 @@ export function useAddBatch({
           throw new Error(result.message || "Failed to create batch");
         }
       } catch (error) {
-        const rollbackBatches = (batches) => batches.filter(b => b.id !== batchToAdd.id);
+        const rollbackBatches = (batches) =>
+          batches.filter((b) => b.id !== batchToAdd.id);
         if (activeSection === "ug") setUgBatches(rollbackBatches);
         else if (activeSection === "pg") setPgBatches(rollbackBatches);
         else setPhdBatches(rollbackBatches);
@@ -104,10 +105,13 @@ export function useAddBatch({
   };
 
   const handleDeleteBatch = async () => {
-    const batchToDelete = getCurrentBatches().find(b => b.id === deletingBatchId);
-    
+    const batchToDelete = getCurrentBatches().find(
+      (b) => b.id === deletingBatchId,
+    );
+
     try {
-      const updateBatches = (batches) => batches.filter(b => b.id !== deletingBatchId);
+      const updateBatches = (batches) =>
+        batches.filter((b) => b.id !== deletingBatchId);
       if (activeSection === "ug") setUgBatches(updateBatches);
       else if (activeSection === "pg") setPgBatches(updateBatches);
       else setPhdBatches(updateBatches);
@@ -122,11 +126,16 @@ export function useAddBatch({
           message: (
             <div>
               <Text size="sm" mb={8}>
-                <strong>{result.message || "Batch deleted successfully"}</strong>
+                <strong>
+                  {result.message || "Batch deleted successfully"}
+                </strong>
               </Text>
               {result.deleted_batch && (
                 <Text size="xs" color="gray.7">
-                  Deleted: {result.deleted_batch.name} ({result.deleted_batch.discipline_acronym || result.deleted_batch.discipline}) - {result.deleted_batch.year}
+                  Deleted: {result.deleted_batch.name} (
+                  {result.deleted_batch.discipline_acronym ||
+                    result.deleted_batch.discipline}
+                  ) - {result.deleted_batch.year}
                 </Text>
               )}
             </div>
@@ -134,9 +143,9 @@ export function useAddBatch({
           color: "green",
           autoClose: 6000,
           style: {
-            backgroundColor: '#d4edda',
-            borderColor: '#c3e6cb',
-            color: '#155724',
+            backgroundColor: "#d4edda",
+            borderColor: "#c3e6cb",
+            color: "#155724",
           },
         });
         forceRefreshData();

@@ -20,8 +20,8 @@ function DeleteStudentModal({ opened, onClose, student, deleting, onConfirm }) {
           This action cannot be undone.
         </Text>
         <Text size="sm" color="orange">
-          Note: If this student has associated records in other modules, deletion
-          may not be possible due to database constraints.
+          Note: If this student has associated records in other modules,
+          deletion may not be possible due to database constraints.
         </Text>
 
         <Group justify="flex-end" mt="md">
@@ -40,7 +40,7 @@ function DeleteStudentModal({ opened, onClose, student, deleting, onConfirm }) {
 DeleteStudentModal.propTypes = {
   opened: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  student: PropTypes.object,
+  student: PropTypes.instanceOf(Object),
   deleting: PropTypes.bool,
   onConfirm: PropTypes.func.isRequired,
 };

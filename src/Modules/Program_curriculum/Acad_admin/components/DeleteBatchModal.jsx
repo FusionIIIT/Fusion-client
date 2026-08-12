@@ -70,8 +70,8 @@ function DeleteBatchModal({ opened, onClose, batch, onConfirm }) {
         >
           <Text size="sm">
             • Cannot delete if this batch has enrolled students
-            <br />• Cannot delete if ANY students exist in this discipline across
-            ALL batches
+            <br />• Cannot delete if ANY students exist in this discipline
+            across ALL batches
             <br />• The entire discipline must be empty before deletion
           </Text>
         </Alert>
@@ -80,7 +80,11 @@ function DeleteBatchModal({ opened, onClose, batch, onConfirm }) {
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button color="red" onClick={onConfirm} leftSection={<Trash size={16} />}>
+          <Button
+            color="red"
+            onClick={onConfirm}
+            leftSection={<Trash size={16} />}
+          >
             Delete Batch
           </Button>
         </Group>
@@ -92,7 +96,7 @@ function DeleteBatchModal({ opened, onClose, batch, onConfirm }) {
 DeleteBatchModal.propTypes = {
   opened: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  batch: PropTypes.object,
+  batch: PropTypes.instanceOf(Object),
   onConfirm: PropTypes.func.isRequired,
 };
 

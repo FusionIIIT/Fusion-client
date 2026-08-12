@@ -6,8 +6,12 @@ import { getCurrentBatchYear } from "../AdminUpcomingBatchesUtils";
 // effect. filteredBatches stays in the component (it composes useBatchData).
 export function useBatchFilters() {
   const [activeSection, setActiveSection] = useState(PROGRAMME_TYPES.UG);
-  const [selectedBatchYear, setSelectedBatchYear] = useState(() => getCurrentBatchYear());
-  const [viewAcademicYear, setViewAcademicYear] = useState(() => getCurrentBatchYear()); 
+  const [selectedBatchYear, setSelectedBatchYear] = useState(() =>
+    getCurrentBatchYear(),
+  );
+  const [viewAcademicYear, setViewAcademicYear] = useState(() =>
+    getCurrentBatchYear(),
+  );
 
   const [searchQuery, setSearchQuery] = useState("");
   // filterYear is kept as "" (no-op) — year filtering is handled by viewAcademicYear / matchesViewYear

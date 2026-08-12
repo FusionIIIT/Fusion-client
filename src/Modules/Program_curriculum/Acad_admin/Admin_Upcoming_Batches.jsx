@@ -1,14 +1,25 @@
 import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
-import { Container, Button, TextInput, Select, Grid, Flex } from "@mantine/core";
+import {
+  Container,
+  Button,
+  TextInput,
+  Select,
+  Grid,
+  Flex,
+} from "@mantine/core";
 import { Plus, MagnifyingGlass, Funnel } from "@phosphor-icons/react";
 import { notifications } from "@mantine/notifications";
 import { useMediaQuery } from "@mantine/hooks";
 import { updateBatch } from "../api/api";
 
-import { customTableStyles, INITIAL_FORM_DATA } from "./AdminUpcomingBatchesConstants";
+import { customTableStyles } from "./AdminUpcomingBatchesConstants";
 
-import { getCurrentBatchYear, getViewAcademicYearOptions, normalizeBranchName, validateTransferCompatibility, getCurrentProgrammeType, performBatchBranchChangeAPI, getExportableFields, getDisciplineOptions } from "./AdminUpcomingBatchesUtils";
+import {
+  getCurrentBatchYear,
+  getViewAcademicYearOptions,
+  getExportableFields,
+  getDisciplineOptions,
+} from "./AdminUpcomingBatchesUtils";
 import AddBatchModal from "./components/AddBatchModal";
 import DeleteBatchModal from "./components/DeleteBatchModal";
 import DeleteStudentModal from "./components/DeleteStudentModal";
@@ -23,170 +34,8 @@ import { useStudentList } from "./hooks/useStudentList";
 import { useExport } from "./hooks/useExport";
 import { useAddStudents } from "./hooks/useAddStudents";
 
-const AdminUpcomingBatch = () => {
-
-  const isViewingCurrentYear = () => {
-    const currentYear = getCurrentBatchYear();
-    const viewYear = parseInt(viewAcademicYear, 10);
-    // Allow reporting for the current academic year (and future years if navigated).
-    return viewYear >= currentYear;
-  };
-
-
-
-
-  // Proactive validation check before attempting student operations
-
-
-
-
-  const getBatchForBranchTransfer = (targetBranch, targetYear = null, programmeType = null, allBatches = null) => {
-    if (!targetBranch) return null;
-
-    const batchesToSearch = allBatches || getCurrentBatches();
-    if (!batchesToSearch || batchesToSearch.length === 0) return null;
-
-    const targetVariants = normalizeBranchName(targetBranch);
-
-    // Filter batches by programme type if specified
-    let filteredBatches = batchesToSearch;
-    if (programmeType) {
-      filteredBatches = batchesToSearch.filter(batch => {
-        const batchProgramme = (batch.programme || '').toLowerCase();
-        switch (programmeType) {
-          case 'ug':
-            return batchProgramme.includes('b.tech') || batchProgramme.includes('b.des');
-          case 'pg':
-            return batchProgramme.includes('m.tech') || batchProgramme.includes('m.des');
-          case 'phd':
-            return batchProgramme.includes('phd') || batchProgramme.includes('ph.d');
-          default:
-            return true;
-        }
-      });
-    }
-
-    if (targetYear) {
-      filteredBatches = filteredBatches.filter(batch => batch.year === parseInt(targetYear));
-    }
-    const exactMatch = filteredBatches.find(batch => {
-      const batchBranch = (batch.discipline || batch.branch || '').trim();
-      if (!batchBranch) return false;
-      
-      const batchVariants = normalizeBranchName(batchBranch);
-      return targetVariants.some(target => 
-        batchVariants.some(batchVar => 
-          target.toLowerCase() === batchVar.toLowerCase()
-        )
-      );
-    });
-
-    return exactMatch || null;
-  };
-
-  const getAvailableTargetBatches = (currentBatch, transferType = 'batch_change') => {
-    const allBatches = [...ugBatches, ...pgBatches, ...phdBatches];
-    
-    return allBatches.filter(batch => {
-      if (batch.id === currentBatch?.id) return false;
-      const availableSeats = (batch.totalSeats || 0) - (batch.filledSeats || 0);
-      if (availableSeats <= 0) return false;
-
-      switch (transferType) {
-        case 'batch_change':
-          return batch.discipline === currentBatch?.discipline;
-        
-        case 'branch_change':
-          const currentProgrammeType = getCurrentProgrammeType(currentBatch);
-          const batchProgrammeType = getCurrentProgrammeType(batch);
-          return batchProgrammeType === currentProgrammeType && 
-                 batch.discipline !== currentBatch?.discipline;
-        
-        case 'programme_change':
-          const currentProgramme = getCurrentProgrammeType(currentBatch);
-          const targetProgramme = getCurrentProgrammeType(batch);
-          return targetProgramme !== currentProgramme;
-        
-        default:
-          return true;
-      }
-    }).sort((a, b) => {
-      if (a.programme !== b.programme) {
-        return a.programme.localeCompare(b.programme);
-      }
-      if (a.discipline !== b.discipline) {
-        return a.discipline.localeCompare(b.discipline);
-      }
-      return b.year - a.year; // Latest year first
-    });
-  };
-
-  // Function to handle student batch/branch transfer
-  const handleBatchBranchTransfer = async (studentData, transferDetails) => {
-    try {
-      // Frontend validation only
-      const transferValidation = validateTransferCompatibility(
-        transferDetails.currentBatch, 
-        transferDetails.newBatch, 
-        transferDetails.transferType
-      );
-      
-      if (!transferValidation.isValid) {
-        throw new Error(transferValidation.message);
-      }
-
-      // Call backend - it handles everything
-      const result = await performBatchBranchChangeAPI(studentData, transferDetails);
-
-      // Show success notification
-      notifications.show({
-        title: "Transfer Successful",
-        message: result.message || "Student transferred successfully",
-        color: "green",
-        autoClose: 5000,
-      });
-
-      // Refresh data from backend
-      await fetchBatchData(); // Let backend provide updated counts
-
-      // Remove from current view if needed
-      if (selectedBatch && (selectedBatch.id === transferDetails.currentBatch?.id)) {
-        setStudentList((prev) => 
-          prev.filter(student => 
-            (student.id || student.student_id) !== (studentData.id || studentData.student_id)
-          )
-        );
-      }
-
-      return { success: true, message: result.message };
-
-    } catch (error) {
-      notifications.show({
-        title: "Transfer Error",
-        message: `Failed to transfer student: ${error.message}`,
-        color: "red",
-      });
-      return { success: false, error: error.message };
-    }
-  };
-
-
-  // Helper function to determine programme type from batch
-
-
-
-  const handleBranchTransfer = async (studentData, oldBatch, newBatch) => {
-    return await handleBatchBranchTransfer(studentData, {
-      currentBatch: oldBatch,
-      newBatch: newBatch,
-      transferType: 'branch_change',
-      reason: 'Automatic branch transfer'
-    });
-  };
-
-  const { userDetails } = useSelector((state) => state.user);
+function AdminUpcomingBatch() {
   const isMobile = useMediaQuery("(max-width: 768px)");
-
 
   const {
     activeSection,
@@ -197,8 +46,6 @@ const AdminUpcomingBatch = () => {
     setViewAcademicYear,
     searchQuery,
     setSearchQuery,
-    filterYear,
-    setFilterYear,
     filterProgramme,
     setFilterProgramme,
     phdSemesterFilter,
@@ -206,6 +53,13 @@ const AdminUpcomingBatch = () => {
     selectedPhdSemester,
     setSelectedPhdSemester,
   } = useBatchFilters();
+
+  const isViewingCurrentYear = () => {
+    const currentYear = getCurrentBatchYear();
+    const viewYear = parseInt(viewAcademicYear, 10);
+    // Allow reporting for the current academic year (and future years if navigated).
+    return viewYear >= currentYear;
+  };
 
   const {
     ugBatches,
@@ -216,11 +70,9 @@ const AdminUpcomingBatch = () => {
     setUgBatches,
     setPgBatches,
     setPhdBatches,
-    setLoading,
     getCurrentBatches,
     fetchBatchData,
     forceRefreshData,
-    syncBatchData,
   } = useBatchData(activeSection, viewAcademicYear);
 
   const {
@@ -229,7 +81,6 @@ const AdminUpcomingBatch = () => {
     newBatchData,
     setNewBatchData,
     deletingBatchId,
-    setDeletingBatchId,
     showDeleteConfirm,
     setShowDeleteConfirm,
     handleAddBatch,
@@ -270,7 +121,6 @@ const AdminUpcomingBatch = () => {
   } = useStudentList({
     activeSection,
     batchSetters: { setUgBatches, setPgBatches, setPhdBatches },
-    getCurrentBatches,
     forceRefreshData,
     fetchBatchData,
   });
@@ -286,7 +136,6 @@ const AdminUpcomingBatch = () => {
     uploadedFile,
     setUploadedFile,
     isProcessing,
-    setIsProcessing,
     uploadProgress,
     extractedData,
     setExtractedData,
@@ -307,7 +156,6 @@ const AdminUpcomingBatch = () => {
     setProcessedBatchData,
     setAllocationSummary,
     setShowBatchPreview,
-    transformDataForDatabase,
   } = useAddStudents({
     activeSection,
     selectedPhdSemester,
@@ -337,40 +185,7 @@ const AdminUpcomingBatch = () => {
     handleStudentExport,
   } = useExport({ selectedBatch, getFilteredStudents });
 
-
-
-
-  // Helper function to parse backend duplicate errors and return user-friendly messages
-
-
-
-  const handleStatusChange = (rollNo, newStatus) => {
-    setStudents((prevStudents) =>
-      prevStudents.map((student) =>
-        student.rollNo === rollNo ? { ...student, status: newStatus } : student
-      )
-    );
-  };
-
-
-
-
-
-
-
-
-
-  const [modalOpened, setModalOpened] = useState(false);
-  const [entryMode, setEntryMode] = useState("excel");
-
-
-  const [formData, setFormData] = useState(INITIAL_FORM_DATA);
-
-  const [editingBatchId, setEditingBatchId] = useState(null);
-  const [editTotalSeats, setEditTotalSeats] = useState("");
-  const [seatsUpdateLoading, setSeatsUpdateLoading] = useState(false);
-
-  const [editingRow, setEditingRow] = useState(null); 
+  const [editingRow, setEditingRow] = useState(null);
   const [editFormData, setEditFormData] = useState({});
   const [savingBatchEdit, setSavingBatchEdit] = useState(false);
 
@@ -399,7 +214,11 @@ const AdminUpcomingBatch = () => {
         total_seats: editFormData.totalSeats,
       });
       if (result.success) {
-        notifications.show({ title: "Batch Updated", message: "Batch updated successfully.", color: "green" });
+        notifications.show({
+          title: "Batch Updated",
+          message: "Batch updated successfully.",
+          color: "green",
+        });
         setEditingRow(null);
         setEditFormData({});
         forceRefreshData();
@@ -407,26 +226,19 @@ const AdminUpcomingBatch = () => {
         throw new Error(result.message || "Failed to update batch");
       }
     } catch (error) {
-      notifications.show({ title: "Update Failed", message: error.message || "Failed to update batch", color: "red" });
+      notifications.show({
+        title: "Update Failed",
+        message: error.message || "Failed to update batch",
+        color: "red",
+      });
     } finally {
       setSavingBatchEdit(false);
     }
-  }; 
-
-
-
-
+  };
 
   useEffect(() => {
     setFilterProgramme("");
-    syncBatchData();
   }, [activeSection]);
-
-  // Handle editing student data mapping
-
-
-
-  // Automatically sync batch data using backend API
 
   const filteredBatches = getCurrentBatches().filter((batch) => {
     const matchesSearch =
@@ -436,24 +248,24 @@ const AdminUpcomingBatch = () => {
       (batch.displayBranch &&
         batch.displayBranch.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    const matchesYear =
-      filterYear === "" || batch.year.toString() === filterYear;
     const matchesProgramme =
       filterProgramme === "" || batch.programme === filterProgramme;
 
     const matchesViewYear = batch.year === viewAcademicYear;
-    
-    // PhD semester filter
-    const matchesPhdSemester = 
-      activeSection !== "phd" || 
-      phdSemesterFilter === "" || 
-      (batch.name && batch.name.toLowerCase().includes(phdSemesterFilter.toLowerCase()));
 
-    return matchesSearch && matchesProgramme && matchesViewYear && matchesPhdSemester;
+    // PhD semester filter
+    const matchesPhdSemester =
+      activeSection !== "phd" ||
+      phdSemesterFilter === "" ||
+      (batch.name &&
+        batch.name.toLowerCase().includes(phdSemesterFilter.toLowerCase()));
+
+    return (
+      matchesSearch && matchesProgramme && matchesViewYear && matchesPhdSemester
+    );
   });
 
   // Constants for field mapping
-  
 
   // Handle file upload for Excel - Now connected to backend with enhanced programme detection
 
@@ -461,33 +273,17 @@ const AdminUpcomingBatch = () => {
 
   // Export utility functions
 
-
-
-
-
-
-
-
-
   // Filter students based on search query
 
-
-
   // Student table column configuration for organized display
-
 
   // Filter table columns based on programme type
 
   // Enhanced Excel upload with workflow validation
 
-
-
   // Validate Excel data before upload
 
-
   // Manual form navigation and submission
-
-
 
   // ==================== CRUD OPERATIONS ====================
 
@@ -502,21 +298,30 @@ const AdminUpcomingBatch = () => {
         { value: "B.Tech", label: "B.Tech" },
         { value: "B.Des", label: "B.Des" },
       ];
-    } else if (activeSection === "pg") {
+    }
+    if (activeSection === "pg") {
       return [
         { value: "M.Tech AI & ML", label: "M.Tech AI & ML" },
         { value: "M.Tech Data Science", label: "M.Tech Data Science" },
-        { value: "M.Tech Communication and Signal Processing", label: "M.Tech Communication and Signal Processing" },
-        { value: "M.Tech Nanoelectronics and VLSI Design", label: "M.Tech Nanoelectronics and VLSI Design" },
+        {
+          value: "M.Tech Communication and Signal Processing",
+          label: "M.Tech Communication and Signal Processing",
+        },
+        {
+          value: "M.Tech Nanoelectronics and VLSI Design",
+          label: "M.Tech Nanoelectronics and VLSI Design",
+        },
         { value: "M.Tech Power & Control", label: "M.Tech Power & Control" },
         { value: "M.Tech Design", label: "M.Tech Design" },
         { value: "M.Tech CAD/CAM", label: "M.Tech CAD/CAM" },
-        { value: "M.Tech Manufacturing and Automation", label: "M.Tech Manufacturing and Automation" },
+        {
+          value: "M.Tech Manufacturing and Automation",
+          label: "M.Tech Manufacturing and Automation",
+        },
         { value: "M.Des", label: "M.Des" },
       ];
-    } else {
-      return [{ value: "PhD", label: "PhD" }];
     }
+    return [{ value: "PhD", label: "PhD" }];
   };
 
   // Helper function to get discipline options based on programme
@@ -536,19 +341,13 @@ const AdminUpcomingBatch = () => {
 
   // Handle reported status change for students
 
-
   // Helper function to get status display properties
 
   // Helper function to render status badge
 
   // Bulk selection functionality
 
-
-
   // Generalized bulk status change function
-
-
-
 
   // Handle Edit Student
   const handleEditStudent = (student) => {
@@ -557,7 +356,7 @@ const AdminUpcomingBatch = () => {
     setShowStudentModal(false);
     setShowAddModal(true);
     setAddMode("manual");
-    setCurrentStep(0); 
+    setCurrentStep(0);
 
     notifications.show({
       title: "Edit Mode",
@@ -570,12 +369,11 @@ const AdminUpcomingBatch = () => {
 
   // Handle Delete Student
 
-
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: customTableStyles }} />
-      <Container 
-        fluid 
+      <style>{customTableStyles}</style>
+      <Container
+        fluid
         className="content-container"
         style={{ padding: "20px", maxWidth: "95vw" }}
       >
@@ -636,9 +434,9 @@ const AdminUpcomingBatch = () => {
             {backgroundSync && (
               <div
                 className="sync-indicator"
-                style={{ 
-                  display: "flex", 
-                  alignItems: "center", 
+                style={{
+                  display: "flex",
+                  alignItems: "center",
                   gap: "6px",
                   padding: "4px 10px",
                   backgroundColor: "#e3f2fd",
@@ -646,17 +444,17 @@ const AdminUpcomingBatch = () => {
                   borderRadius: "20px",
                   fontSize: "11px",
                   fontWeight: "500",
-                  color: "#1565c0"
+                  color: "#1565c0",
                 }}
               >
-                <div 
+                <div
                   style={{
                     width: "10px",
                     height: "10px",
                     border: "2px solid #2196f3",
                     borderTop: "2px solid transparent",
                     borderRadius: "50%",
-                    animation: "spin 1s linear infinite"
+                    animation: "spin 1s linear infinite",
                   }}
                 />
                 Updating data...
@@ -687,7 +485,7 @@ const AdminUpcomingBatch = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{ minWidth: "250px" }}
             />
-            
+
             {/* Programme Filter - Only show for UG and PG sections, not PhD */}
             {activeSection !== "phd" && (
               <Select
@@ -711,7 +509,7 @@ const AdminUpcomingBatch = () => {
                 style={{ minWidth: 150 }}
               />
             )}
-            
+
             {/* PhD Semester Filter - Only show for PhD section */}
             {activeSection === "phd" && (
               <Select
@@ -740,7 +538,13 @@ const AdminUpcomingBatch = () => {
                 borderRadius: "6px",
               }}
             >
-              <span style={{ fontSize: "14px", fontWeight: "600", color: "#2c5282" }}>
+              <span
+                style={{
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  color: "#2c5282",
+                }}
+              >
                 📅 Academic Year:
               </span>
               <Select
@@ -761,7 +565,7 @@ const AdminUpcomingBatch = () => {
                   },
                   dropdown: {
                     fontSize: "14px",
-                  }
+                  },
                 }}
               />
             </div>
@@ -802,7 +606,7 @@ const AdminUpcomingBatch = () => {
             setProcessedBatchData(null);
             setAllocationSummary(null);
             setShowBatchPreview(false);
-            setSelectedPhdSemester('');
+            setSelectedPhdSemester("");
           }}
           activeSection={activeSection}
           editingStudent={editingStudent}
@@ -919,6 +723,6 @@ const AdminUpcomingBatch = () => {
       </Container>
     </>
   );
-};
+}
 
 export default AdminUpcomingBatch;

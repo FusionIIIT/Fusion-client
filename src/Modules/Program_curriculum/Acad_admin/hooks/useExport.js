@@ -35,7 +35,7 @@ export function useExport({ selectedBatch, getFilteredStudents }) {
   };
 
   const handleToggleAllFields = (event) => {
-    const checked = event.currentTarget.checked;
+    const { checked } = event.currentTarget;
     handleSelectAllFields(checked);
   };
 
