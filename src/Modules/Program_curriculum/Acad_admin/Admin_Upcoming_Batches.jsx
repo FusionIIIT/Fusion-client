@@ -10,7 +10,6 @@ import {
 import { Plus, MagnifyingGlass, Funnel } from "@phosphor-icons/react";
 import { notifications } from "@mantine/notifications";
 import { useMediaQuery } from "@mantine/hooks";
-import { updateBatch } from "../api/api";
 
 import { customTableStyles } from "./AdminUpcomingBatchesConstants";
 
@@ -184,57 +183,6 @@ function AdminUpcomingBatch() {
     handleFieldChange,
     handleStudentExport,
   } = useExport({ selectedBatch, getFilteredStudents });
-
-  const [editingRow, setEditingRow] = useState(null);
-  const [editFormData, setEditFormData] = useState({});
-  const [savingBatchEdit, setSavingBatchEdit] = useState(false);
-
-  const handleEditBatchClick = (batch) => {
-    setEditFormData({
-      programme: batch.programme,
-      discipline: batch.displayBranch || batch.discipline,
-      year: batch.year,
-      totalSeats: batch.totalSeats,
-    });
-    setEditingRow(batch.id);
-  };
-
-  const handleCancelBatchEdit = () => {
-    setEditingRow(null);
-    setEditFormData({});
-  };
-
-  const handleSaveBatchEdit = async () => {
-    setSavingBatchEdit(true);
-    try {
-      const result = await updateBatch(editingRow, {
-        programme: editFormData.programme,
-        discipline: editFormData.discipline,
-        year: editFormData.year,
-        total_seats: editFormData.totalSeats,
-      });
-      if (result.success) {
-        notifications.show({
-          title: "Batch Updated",
-          message: "Batch updated successfully.",
-          color: "green",
-        });
-        setEditingRow(null);
-        setEditFormData({});
-        forceRefreshData();
-      } else {
-        throw new Error(result.message || "Failed to update batch");
-      }
-    } catch (error) {
-      notifications.show({
-        title: "Update Failed",
-        message: error.message || "Failed to update batch",
-        color: "red",
-      });
-    } finally {
-      setSavingBatchEdit(false);
-    }
-  };
 
   useEffect(() => {
     setFilterProgramme("");
@@ -579,15 +527,7 @@ function AdminUpcomingBatch() {
               <BatchTable
                 batches={filteredBatches}
                 loading={loading}
-                editingRow={editingRow}
-                editFormData={editFormData}
-                setEditFormData={setEditFormData}
                 onRowClick={handleBatchRowClick}
-                getProgrammeOptions={getProgrammeOptions}
-                onEditClick={handleEditBatchClick}
-                onSaveEdit={handleSaveBatchEdit}
-                onCancelEdit={handleCancelBatchEdit}
-                savingEdit={savingBatchEdit}
               />
             </div>
           </Grid.Col>
