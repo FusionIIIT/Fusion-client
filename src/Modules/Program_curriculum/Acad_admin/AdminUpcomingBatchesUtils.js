@@ -828,28 +828,21 @@ export const getStudentFieldValue = (student, column) => {
 };
 
 export const getVisibleColumns = (programmeType) => {
-  // Fields to hide for PhD students
+  // Fields to hide for PhD students (no sections; JEE-allotment fields don't apply)
   const phdHiddenFields = [
-    "jeeAppNo",
     "specialization",
+    "section",
     "allottedCategory",
     "allottedGender",
     "jeeRank",
     "categoryRank",
   ];
 
-  // Fields to hide for PG students (JEE doesn't apply — PG admission is GATE-based)
-  const pgHiddenFields = ["jeeAppNo"];
+  // Fields to hide for PG students (no sections; allotted gender is UG-only)
+  const pgHiddenFields = ["section", "allottedGender"];
 
-  // Fields to hide for UG students (GATE/Specialization/Admission Type are PG-only)
-  const ugHiddenFields = [
-    "applicationNo",
-    "specialization",
-    "admissionType",
-    "gateQualified",
-    "gateStream",
-    "gateRank",
-  ];
+  // Fields to hide for UG students (Specialization/Admission/GATE are PG/PhD-only)
+  const ugHiddenFields = ["specialization", "admissionType", "gateQualified"];
 
   if (programmeType === "phd") {
     return STUDENT_TABLE_COLUMNS.filter(

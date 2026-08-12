@@ -836,15 +836,16 @@ export const BRANCH_MAPPINGS = {
 export const STUDENT_TABLE_COLUMNS = [
   {
     key: "jeeAppNo",
-    label: "JEE Application",
-    minWidth: "140px",
-    fields: ["jeeAppNo", "jee_app_no", "Jee Main Application Number"],
-  },
-  {
-    key: "applicationNo",
     label: "Application No.",
-    minWidth: "130px",
-    fields: ["applicationNo", "application_no", "Application No."],
+    minWidth: "140px",
+    fields: [
+      "jeeAppNo",
+      "jee_app_no",
+      "Jee Main Application Number",
+      "applicationNo",
+      "application_no",
+      "Application No.",
+    ],
   },
   {
     key: "rollNumber",
@@ -875,7 +876,14 @@ export const STUDENT_TABLE_COLUMNS = [
     key: "admissionType",
     label: "Admission Type",
     minWidth: "180px",
-    fields: ["admissionType", "admission_type", "Admission Type"],
+    fields: [
+      "admissionMode",
+      "admission_mode",
+      "Admission Mode",
+      "admissionType",
+      "admission_type",
+      "Admission Type",
+    ],
   },
   {
     key: "gateQualified",
@@ -887,18 +895,6 @@ export const STUDENT_TABLE_COLUMNS = [
       "GATE Qualaified",
       "GATE Qualified",
     ],
-  },
-  {
-    key: "gateStream",
-    label: "GATE Stream",
-    minWidth: "110px",
-    fields: ["gateStream", "gate_stream", "GATE Stream"],
-  },
-  {
-    key: "gateRank",
-    label: "GATE Rank",
-    minWidth: "90px",
-    fields: ["gateRank", "gate_rank", "GATE Rank"],
   },
 
   {
@@ -1037,12 +1033,6 @@ export const STUDENT_TABLE_COLUMNS = [
     label: "Nationality",
     minWidth: "100px",
     fields: ["nationality", "Nationality"],
-  },
-  {
-    key: "admissionMode",
-    label: "Admission Mode",
-    minWidth: "150px",
-    fields: ["admissionMode", "admission_mode", "Admission Mode"],
   },
   {
     key: "admissionModeRemarks",
