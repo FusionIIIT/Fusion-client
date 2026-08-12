@@ -10,6 +10,7 @@ import {
   BRANCH_MAPPINGS,
   STUDENT_TABLE_COLUMNS,
 } from "./AdminUpcomingBatchesConstants";
+import { host } from "../../../routes/globalRoutes";
 
 export const batchYearToAcademicYear = (batchYear) => {
   const year = parseInt(batchYear, 10);
@@ -422,8 +423,10 @@ export const getExportableFields = (programmeType) => {
     // Basic Information
     "jeeAppNo",
     "applicationNo",
+    "aadharNo",
     "rollNumber",
     "name",
+    "hindiName",
     "fname",
     "mname",
 
@@ -477,6 +480,8 @@ export const getExportableFields = (programmeType) => {
     "nationality",
     "state",
     "address",
+    "photo",
+    "signature",
     "reportedStatus",
   ];
 
@@ -505,8 +510,10 @@ export const prepareExportData = (students, selectedFieldKeys) => {
   const organizedFieldOrder = [
     "jeeAppNo",
     "applicationNo",
+    "aadharNo",
     "rollNumber",
     "name",
+    "hindiName",
     "fname",
     "mname",
     "gender",
@@ -541,6 +548,8 @@ export const prepareExportData = (students, selectedFieldKeys) => {
     "nationality",
     "state",
     "address",
+    "photo",
+    "signature",
     "reportedStatus",
   ];
 
@@ -642,6 +651,10 @@ export const prepareExportData = (students, selectedFieldKeys) => {
           WITHDRAWAL: "Withdrawal",
         };
         value = statusLabels[statusValue] || statusValue;
+      } else if (fieldKey === "photo" || fieldKey === "signature") {
+        // Export images as a full, clickable URL.
+        const raw = student[fieldKey] || "";
+        value = raw && !raw.startsWith("http") ? `${host}${raw}` : raw;
       } else {
         value = student[fieldKey] || "";
 
