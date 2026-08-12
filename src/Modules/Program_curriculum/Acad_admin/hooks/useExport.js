@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { notifications } from "@mantine/notifications";
-import { STUDENT_FIELDS_CONFIG } from "../AdminUpcomingBatchesConstants";
 import {
   getExportableFields,
   getCurrentProgrammeType,
@@ -64,9 +63,10 @@ export function useExport({ selectedBatch, getFilteredStudents }) {
   const initializeSelectedFields = () => {
     const fields = {};
     exportableFields.forEach((field) => {
-      fields[field.key] = !STUDENT_FIELDS_CONFIG[field.key].systemGenerated;
+      fields[field.key] = true;
     });
     setSelectedFields(fields);
+    setSelectAllFields(true);
   };
 
   const handleSelectAllFields = (checked) => {
@@ -158,8 +158,9 @@ export function useExport({ selectedBatch, getFilteredStudents }) {
     }
   };
 
+  // Re-select every field each time the modal opens (default: all toggles on).
   useEffect(() => {
-    if (showExportModal && Object.keys(selectedFields).length === 0) {
+    if (showExportModal) {
       initializeSelectedFields();
     }
   }, [showExportModal]);
