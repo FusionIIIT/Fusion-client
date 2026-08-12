@@ -1306,6 +1306,7 @@ function AddStudentsModal({
                           placeholder={STUDENT_FIELDS_CONFIG.photo.placeholder}
                           accept="image/png,image/jpeg"
                           clearable
+                          leftSection={<Upload size={16} />}
                           onChange={(file) =>
                             handleImageUpload(file, "photo", 200)
                           }
@@ -1335,6 +1336,7 @@ function AddStudentsModal({
                           }
                           accept="image/png,image/jpeg"
                           clearable
+                          leftSection={<Upload size={16} />}
                           onChange={(file) =>
                             handleImageUpload(file, "signature", 30)
                           }
