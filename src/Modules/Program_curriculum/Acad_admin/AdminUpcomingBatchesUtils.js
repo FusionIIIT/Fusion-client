@@ -819,57 +819,6 @@ export const exportToExcel = async (data, filename, imageColumns = []) => {
     `${filename}.xlsx`,
   );
 };
-
-export const exportToCSV = (data, filename) => {
-  if (data.length === 0) {
-    const blob = new Blob(["No data to export"], {
-      type: "text/csv;charset=utf-8;",
-    });
-    saveAs(blob, `${filename}.csv`);
-    return;
-  }
-
-  const firstRow = data[0];
-  const orderedKeys = [];
-
-  if (firstRow["S.No"] !== undefined) {
-    orderedKeys.push("S.No");
-  }
-
-  const priorityLabels = [
-    "Institute Roll Number",
-    "JEE App. No.",
-    "Full Name",
-    "Institute Email ID",
-  ];
-  priorityLabels.forEach((label) => {
-    if (firstRow[label] !== undefined && !orderedKeys.includes(label)) {
-      orderedKeys.push(label);
-    }
-  });
-
-  Object.keys(firstRow).forEach((key) => {
-    if (!orderedKeys.includes(key)) {
-      orderedKeys.push(key);
-    }
-  });
-
-  const csvContent = [
-    orderedKeys.join(","),
-    ...data.map((row) =>
-      orderedKeys
-        .map((header) => {
-          const value = row[header] || "";
-          return `"${String(value).replace(/"/g, '""')}"`;
-        })
-        .join(","),
-    ),
-  ].join("\n");
-
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  saveAs(blob, `${filename}.csv`);
-};
-
 // Zip every student's photo/signature named <roll>_photo.<ext> / <roll>_sign.<ext>
 // and download it. Returns the number of images added (0 => nothing to export).
 export const exportStudentImages = async (students, filename, hostUrl) => {

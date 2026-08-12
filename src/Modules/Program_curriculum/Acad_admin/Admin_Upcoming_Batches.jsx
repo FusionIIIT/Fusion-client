@@ -168,8 +168,6 @@ function AdminUpcomingBatch() {
     setShowExportModal,
     exportableFields,
     selectedFields,
-    exportFormat,
-    setExportFormat,
     isExporting,
     isExportingImages,
     handleExportImages,
@@ -645,8 +643,6 @@ function AdminUpcomingBatch() {
         <ExportModal
           opened={showExportModal}
           onClose={() => setShowExportModal(false)}
-          exportFormat={exportFormat}
-          setExportFormat={setExportFormat}
           selectAllFields={selectAllFields}
           onToggleAll={handleToggleAllFields}
           fields={exportableFields}

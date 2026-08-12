@@ -9,14 +9,12 @@ import {
   Box,
   Grid,
 } from "@mantine/core";
-import { FileXls, Download } from "@phosphor-icons/react";
+import { Download } from "@phosphor-icons/react";
 
-// Choose format + fields and export the currently-filtered students.
+// Choose fields and export the currently-filtered students as Excel.
 function ExportModal({
   opened,
   onClose,
-  exportFormat,
-  setExportFormat,
   selectAllFields,
   onToggleAll,
   fields,
@@ -54,31 +52,8 @@ function ExportModal({
     >
       <Stack spacing="md">
         <Text size="sm" color="#6b7280">
-          Select export format and fields for data analysis.
+          Select the fields to include in the Excel (.xlsx) export.
         </Text>
-
-        <Group spacing="sm">
-          <Button
-            variant={exportFormat === "excel" ? "filled" : "light"}
-            color={exportFormat === "excel" ? "teal" : "gray"}
-            onClick={() => setExportFormat("excel")}
-            leftSection={<FileXls size={16} />}
-            size="sm"
-            radius="md"
-          >
-            Excel
-          </Button>
-          <Button
-            variant={exportFormat === "csv" ? "filled" : "light"}
-            color={exportFormat === "csv" ? "blue" : "gray"}
-            onClick={() => setExportFormat("csv")}
-            leftSection={<Download size={16} />}
-            size="sm"
-            radius="md"
-          >
-            CSV
-          </Button>
-        </Group>
 
         <Stack spacing="sm">
           <Group justify="space-between" align="center">
@@ -150,13 +125,8 @@ function ExportModal({
             </Text>
             <Text size="xs" color="#6b7280">
               Format:{" "}
-              <Text
-                component="span"
-                weight={600}
-                color="#1e40af"
-                style={{ textTransform: "uppercase" }}
-              >
-                {exportFormat}
+              <Text component="span" weight={600} color="#1e40af">
+                Excel (.xlsx)
               </Text>
             </Text>
           </Group>
@@ -190,8 +160,6 @@ function ExportModal({
 ExportModal.propTypes = {
   opened: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  exportFormat: PropTypes.string.isRequired,
-  setExportFormat: PropTypes.func.isRequired,
   selectAllFields: PropTypes.bool,
   onToggleAll: PropTypes.func.isRequired,
   fields: PropTypes.arrayOf(PropTypes.shape({})).isRequired,

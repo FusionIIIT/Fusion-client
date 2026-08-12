@@ -5,17 +5,15 @@ import {
   getCurrentProgrammeType,
   prepareExportData,
   exportToExcel,
-  exportToCSV,
   exportStudentImages,
 } from "../AdminUpcomingBatchesUtils";
 import { host } from "../../../../routes/globalRoutes";
 
-// Owns the export-modal state (format/fields) and builds the xlsx/csv export.
+// Owns the export-modal state (fields) and builds the xlsx export.
 // selectedBatch + getFilteredStudents are injected from useStudentList.
 export function useExport({ selectedBatch, getFilteredStudents }) {
   const [showExportModal, setShowExportModal] = useState(false);
   const [selectedFields, setSelectedFields] = useState({});
-  const [exportFormat, setExportFormat] = useState("excel");
   const [isExporting, setIsExporting] = useState(false);
   const [isExportingImages, setIsExportingImages] = useState(false);
   const [selectAllFields, setSelectAllFields] = useState(true);
@@ -134,20 +132,11 @@ export function useExport({ selectedBatch, getFilteredStudents }) {
         .filter((field) => field.type === "image" && selectedFields[field.key])
         .map((field) => field.label);
 
-      switch (exportFormat) {
-        case "excel":
-          await exportToExcel(exportData, filename, imageColumns);
-          break;
-        case "csv":
-          exportToCSV(exportData, filename);
-          break;
-        default:
-          throw new Error("Invalid export format");
-      }
+      await exportToExcel(exportData, filename, imageColumns);
 
       notifications.show({
         title: "Export Successful",
-        message: `Data exported successfully as ${exportFormat.toUpperCase()}`,
+        message: "Data exported successfully as Excel.",
         color: "green",
       });
 
@@ -175,8 +164,6 @@ export function useExport({ selectedBatch, getFilteredStudents }) {
     setShowExportModal,
     exportableFields,
     selectedFields,
-    exportFormat,
-    setExportFormat,
     isExporting,
     isExportingImages,
     handleExportImages,
