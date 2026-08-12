@@ -45,7 +45,6 @@ function StudentTable({
   deletingStudent,
   handleEditStudent,
   handleDeleteStudent,
-  isViewingCurrentYear,
   selectedBatch,
 }) {
   return (
@@ -125,52 +124,48 @@ function StudentTable({
                 {column.label}
               </th>
             ))}
-            {isViewingCurrentYear() && (
-              <th
+            <th
+              style={{
+                padding: "16px 12px",
+                textAlign: "center",
+                color: "#1e293b",
+                minWidth: "150px",
+                fontWeight: "bold",
+                fontSize: "13px",
+              }}
+            >
+              <div
                 style={{
-                  padding: "16px 12px",
-                  textAlign: "center",
-                  color: "#1e293b",
-                  minWidth: "150px",
-                  fontWeight: "bold",
-                  fontSize: "13px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
                 }}
               >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "8px",
-                  }}
-                >
-                  <span>Status</span>
-                  <Checkbox
-                    checked={isAllSelected}
-                    indeterminate={selectedStudents.size > 0 && !isAllSelected}
-                    onChange={handleSelectAll}
-                    size="sm"
-                    color="blue"
-                    label=""
-                    aria-label="Select all students"
-                  />
-                </div>
-              </th>
-            )}
-            {isViewingCurrentYear() && (
-              <th
-                style={{
-                  padding: "16px 12px",
-                  textAlign: "center",
-                  color: "#1e293b",
-                  minWidth: "150px",
-                  fontWeight: "bold",
-                  fontSize: "13px",
-                }}
-              >
-                Actions
-              </th>
-            )}
+                <span>Status</span>
+                <Checkbox
+                  checked={isAllSelected}
+                  indeterminate={selectedStudents.size > 0 && !isAllSelected}
+                  onChange={handleSelectAll}
+                  size="sm"
+                  color="blue"
+                  label=""
+                  aria-label="Select all students"
+                />
+              </div>
+            </th>
+            <th
+              style={{
+                padding: "16px 12px",
+                textAlign: "center",
+                color: "#1e293b",
+                minWidth: "150px",
+                fontWeight: "bold",
+                fontSize: "13px",
+              }}
+            >
+              Actions
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -267,106 +262,102 @@ function StudentTable({
                 ))}
 
                 {/* Status and Actions Columns */}
-                {isViewingCurrentYear() && (
-                  <td
+                <td
+                  style={{
+                    padding: "14px 12px",
+                    textAlign: "center",
+                    fontSize: "12px",
+                  }}
+                >
+                  <div
                     style={{
-                      padding: "14px 12px",
-                      textAlign: "center",
-                      fontSize: "12px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "8px",
                     }}
                   >
-                    <div
+                    {getReportedStatusBadge(
+                      student.reportedStatus ||
+                        student.reported_status ||
+                        "NOT_REPORTED",
+                    )}
+                    <Checkbox
+                      checked={selectedStudents.has(
+                        student.id || student.student_id,
+                      )}
+                      onChange={() =>
+                        handleStudentSelect(student.id || student.student_id)
+                      }
+                      size="sm"
+                      color="blue"
+                      aria-label={`Select student ${student.name || student.rollNumber || student.roll_number}`}
+                    />
+                  </div>
+                </td>
+                <td
+                  style={{
+                    padding: "14px 12px",
+                    textAlign: "center",
+                    fontSize: "12px",
+                  }}
+                >
+                  <Flex gap="8px" justify="center" align="center">
+                    <Select
+                      data={[
+                        { value: "REPORTED", label: "Reported" },
+                        { value: "NOT_REPORTED", label: "Not Reported" },
+                        { value: "WITHDRAWAL", label: "Withdrawal" },
+                      ]}
+                      value={
+                        student.reportedStatus ||
+                        student.reported_status ||
+                        "NOT_REPORTED"
+                      }
+                      onChange={(value) =>
+                        handleReportedStatusChange(
+                          student.id || student.student_id,
+                          value,
+                        )
+                      }
+                      size="xs"
+                      variant="filled"
+                      disabled={
+                        updatingReportStatus ===
+                        (student.id || student.student_id)
+                      }
+                      style={{ minWidth: "100px" }}
+                    />
+                    <ActionIcon
+                      size="sm"
+                      variant="outline"
+                      color="blue"
+                      loading={
+                        editingStudent === (student.id || student.student_id)
+                      }
+                      onClick={() => handleEditStudent(student)}
                       style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: "8px",
+                        borderRadius: "6px",
                       }}
                     >
-                      {getReportedStatusBadge(
-                        student.reportedStatus ||
-                          student.reported_status ||
-                          "NOT_REPORTED",
-                      )}
-                      <Checkbox
-                        checked={selectedStudents.has(
-                          student.id || student.student_id,
-                        )}
-                        onChange={() =>
-                          handleStudentSelect(student.id || student.student_id)
-                        }
-                        size="sm"
-                        color="blue"
-                        aria-label={`Select student ${student.name || student.rollNumber || student.roll_number}`}
-                      />
-                    </div>
-                  </td>
-                )}
-                {isViewingCurrentYear() && (
-                  <td
-                    style={{
-                      padding: "14px 12px",
-                      textAlign: "center",
-                      fontSize: "12px",
-                    }}
-                  >
-                    <Flex gap="8px" justify="center" align="center">
-                      <Select
-                        data={[
-                          { value: "REPORTED", label: "Reported" },
-                          { value: "NOT_REPORTED", label: "Not Reported" },
-                          { value: "WITHDRAWAL", label: "Withdrawal" },
-                        ]}
-                        value={
-                          student.reportedStatus ||
-                          student.reported_status ||
-                          "NOT_REPORTED"
-                        }
-                        onChange={(value) =>
-                          handleReportedStatusChange(
-                            student.id || student.student_id,
-                            value,
-                          )
-                        }
-                        size="xs"
-                        variant="filled"
-                        disabled={
-                          updatingReportStatus ===
-                          (student.id || student.student_id)
-                        }
-                        style={{ minWidth: "100px" }}
-                      />
-                      <ActionIcon
-                        size="sm"
-                        variant="outline"
-                        color="blue"
-                        loading={
-                          editingStudent === (student.id || student.student_id)
-                        }
-                        onClick={() => handleEditStudent(student)}
-                        style={{
-                          borderRadius: "6px",
-                        }}
-                      >
-                        <PencilSimple size={14} />
-                      </ActionIcon>
-                      <ActionIcon
-                        size="sm"
-                        variant="outline"
-                        color="red"
-                        loading={
-                          deletingStudent === (student.id || student.student_id)
-                        }
-                        onClick={() => handleDeleteStudent(student)}
-                        style={{
-                          borderRadius: "6px",
-                        }}
-                      >
-                        <X size={14} />
-                      </ActionIcon>
-                    </Flex>
-                  </td>
-                )}
+                      <PencilSimple size={14} />
+                    </ActionIcon>
+                    <ActionIcon
+                      size="sm"
+                      variant="outline"
+                      color="red"
+                      loading={
+                        deletingStudent === (student.id || student.student_id)
+                      }
+                      onClick={() => handleDeleteStudent(student)}
+                      style={{
+                        borderRadius: "6px",
+                      }}
+                    >
+                      <X size={14} />
+                    </ActionIcon>
+                  </Flex>
+                </td>
               </tr>
             );
           })}
@@ -395,7 +386,6 @@ StudentTable.propTypes = {
   deletingStudent: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   handleEditStudent: PropTypes.func,
   handleDeleteStudent: PropTypes.func,
-  isViewingCurrentYear: PropTypes.func,
   selectedBatch: PropTypes.instanceOf(Object),
 };
 

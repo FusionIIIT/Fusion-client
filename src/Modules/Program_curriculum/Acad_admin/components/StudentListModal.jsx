@@ -44,7 +44,6 @@ function StudentListModal({
   handleEditStudent,
   handleDeleteStudent,
   setShowExportModal,
-  isViewingCurrentYear,
 }) {
   return (
     <Modal
@@ -155,7 +154,7 @@ function StudentListModal({
                 students
               </Text>
               {/* Bulk Status Change Buttons */}
-              {isViewingCurrentYear() && selectedStudents.size > 0 && (
+              {selectedStudents.size > 0 && (
                 <Group spacing="sm">
                   <Button
                     leftSection={<Check size={18} />}
@@ -237,7 +236,6 @@ function StudentListModal({
               deletingStudent={deletingStudent}
               handleEditStudent={handleEditStudent}
               handleDeleteStudent={handleDeleteStudent}
-              isViewingCurrentYear={isViewingCurrentYear}
               selectedBatch={selectedBatch}
             />
           </div>
@@ -288,7 +286,6 @@ StudentListModal.propTypes = {
   handleEditStudent: PropTypes.func,
   handleDeleteStudent: PropTypes.func,
   setShowExportModal: PropTypes.func,
-  isViewingCurrentYear: PropTypes.func,
 };
 
 export default StudentListModal;

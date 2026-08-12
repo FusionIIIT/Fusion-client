@@ -52,13 +52,6 @@ function AdminUpcomingBatch() {
     setSelectedPhdSemester,
   } = useBatchFilters();
 
-  const isViewingCurrentYear = () => {
-    const currentYear = getCurrentBatchYear();
-    const viewYear = parseInt(viewAcademicYear, 10);
-    // Allow reporting for the current academic year (and future years if navigated).
-    return viewYear >= currentYear;
-  };
-
   const {
     ugBatches,
     pgBatches,
@@ -615,7 +608,6 @@ function AdminUpcomingBatch() {
           handleEditStudent={handleEditStudent}
           handleDeleteStudent={handleDeleteStudent}
           setShowExportModal={setShowExportModal}
-          isViewingCurrentYear={isViewingCurrentYear}
         />
 
         {/* Add New Batch Modal */}
