@@ -1017,6 +1017,25 @@ export function useAddStudents({
         return;
       }
 
+      // First pass: show the allocation preview for confirmation. The preview's
+      // Save button re-invokes this (showBatchPreview=true) and the save below runs.
+      if (!showBatchPreview) {
+        const branchCounts = {};
+        dataToUpload.forEach((stu) => {
+          const b = stu.branch || stu.discipline || stu.Branch || stu.Discipline || "Unknown";
+          branchCounts[b] = (branchCounts[b] || 0) + 1;
+        });
+        setProcessedBatchData(dataToUpload);
+        setAllocationSummary({
+          programme: activeSection,
+          year: viewAcademicYear,
+          totalStudents: dataToUpload.length,
+          branchCounts,
+        });
+        setShowBatchPreview(true);
+        return;
+      }
+
       const transformedData = transformDataForDatabase(dataToUpload);
       
       // Debug logging
@@ -1303,9 +1322,40 @@ export function useAddStudents({
           if (response.success) {
             let successMessage = "Student updated successfully!";
 
-            // Branch/batch sync to the academic backend is handled by the Batch/Branch Change flow (apply_batch_changes); wired here in Stage 6.
+            // Branch changed during edit: sync the academic batch via the existing
+            // batch-change backend (apply_batch_changes) instead of a bespoke endpoint.
             if (branchChanged && targetBatch) {
-              successMessage = `Student successfully transferred from ${oldBranch} to ${newBranch}.`;
+              try {
+                const token = localStorage.getItem("authToken");
+                const syncResp = await fetch(
+                  `${host}/academic-procedures/api/acad/batch_change/apply/`,
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Token ${token}`,
+                    },
+                    body: JSON.stringify([
+                      {
+                        student_id:
+                          editingStudent.id || editingStudent.student_id,
+                        new_batch_id: targetBatch.id,
+                        new_batch_year: targetBatch.year,
+                      },
+                    ]),
+                  },
+                );
+                const syncData = await syncResp.json().catch(() => ({}));
+                const syncErr =
+                  Array.isArray(syncData.errors) && syncData.errors.length
+                    ? syncData.errors[0].detail
+                    : null;
+                successMessage = syncErr
+                  ? `Student updated, but batch move needs attention: ${syncErr}`
+                  : `Student successfully transferred from ${oldBranch} to ${newBranch}. Academic batch assignment updated.`;
+              } catch (syncError) {
+                successMessage = `Student updated and discipline set to "${newBranch}", but the academic batch move could not be synced — verify in the Batch/Branch Change tab.`;
+              }
             } else if (branchChanged) {
               successMessage += ` Discipline updated to "${newBranch}".`;
             }

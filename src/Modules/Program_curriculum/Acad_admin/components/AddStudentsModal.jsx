@@ -9,9 +9,8 @@ import {
 import { notifications } from "@mantine/notifications";
 import { INITIAL_FORM_DATA, PROGRAMME_TYPES, STUDENT_FIELDS_CONFIG } from "../AdminUpcomingBatchesConstants";
 import {
-  batchYearToAcademicYear, cleanDisciplineName, getBatchYearOptions, parseDuplicateError,
+  batchYearToAcademicYear, cleanDisciplineName, getBatchYearOptions,
 } from "../AdminUpcomingBatchesUtils";
-import { saveStudentsBatch } from "../../api/api";
 
 const PREVIEW_FIELD_ORDER = [
   'jeeAppNo',          // 1. JEE App No (UG/PG)
@@ -70,7 +69,6 @@ function AddStudentsModal({
   currentStep,
   errors,
   extractedData,
-  forceRefreshData,
   generateExcelTemplate,
   handleExcelUpload,
   handleFileUpload,
@@ -87,7 +85,6 @@ function AddStudentsModal({
   setCurrentStep,
   setErrors,
   setExtractedData,
-  setIsProcessing,
   setManualFormData,
   setProcessedBatchData,
   setSelectedBatchYear,
@@ -98,10 +95,8 @@ function AddStudentsModal({
   setUploadedFile,
   showBatchPreview,
   showPreview,
-  transformDataForDatabase,
   uploadProgress,
   uploadedFile,
-  viewAcademicYear,
 }) {
   return (
         <Modal
@@ -1000,68 +995,7 @@ function AddStudentsModal({
                               ← Back to Upload
                             </Button>
                             <Button
-                              onClick={async () => {
-                                try {
-                                  setIsProcessing(true);
-                                  setShowPreview(false);
-
-                                  const transformedData =
-                                    transformDataForDatabase(extractedData);
-
-                                  const response = await saveStudentsBatch(
-                                    transformedData,
-                                    activeSection,
-                                    activeSection === 'phd' ? selectedPhdSemester : null,
-                                    viewAcademicYear  // Pass the current view year so backend targets the right batch year
-                                  );
-
-                                  if (response.success) {
-                                    const uploadCount = response.data?.successful_uploads || response.data?.saved_count || 0;
-                                    notifications.show({
-                                      title: "✅ Upload Successful",
-                                      message: `${uploadCount} student${uploadCount !== 1 ? 's' : ''} saved to database successfully!`,
-                                      color: "green",
-                                    });
-
-                                    setExtractedData([]);
-                                    setShowPreview(false);
-                                    setShowAddModal(false);
-                                    forceRefreshData();
-                                  } else {
-                                    // Show the actual error from backend (batch not found, etc.)
-                                    const errorDetail = response.error_detail || response.message || "Failed to save students";
-                                    const errorList = response.errors;
-                                    let displayMsg = errorDetail;
-                                    if (Array.isArray(errorList) && errorList.length > 0) {
-                                      const firstErr = errorList[0];
-                                      const errText = typeof firstErr === 'string' ? firstErr
-                                        : (firstErr.required_action || firstErr.error || JSON.stringify(firstErr));
-                                      displayMsg = errText || errorDetail;
-                                    }
-                                    notifications.show({
-                                      title: "❌ Upload Failed",
-                                      message: displayMsg,
-                                      color: "red",
-                                      autoClose: false,
-                                    });
-                                  }
-                                } catch (error) {
-                                  const { title, message } =
-                                    parseDuplicateError(
-                                      error,
-                                      "save students to database",
-                                    );
-
-                                  notifications.show({
-                                    title,
-                                    message,
-                                    color: "red",
-                                    autoClose: 8000,
-                                  });
-                                } finally {
-                                  setIsProcessing(false);
-                                }
-                              }}
+                              onClick={handleExcelUpload}
                               size="md"
                               style={{
                                 backgroundColor: "#28a745",
@@ -1073,7 +1007,7 @@ function AddStudentsModal({
                                 size={16}
                                 style={{ marginRight: "8px" }}
                               />
-                              Save Students to Database ({extractedData.length})
+                              Review Allocation ({extractedData.length})
                             </Button>
                           </Group>
                         </Stack>
@@ -2536,7 +2470,6 @@ AddStudentsModal.propTypes = {
   currentStep: PropTypes.any,
   errors: PropTypes.any,
   extractedData: PropTypes.any,
-  forceRefreshData: PropTypes.func,
   generateExcelTemplate: PropTypes.func,
   handleExcelUpload: PropTypes.func,
   handleFileUpload: PropTypes.func,
@@ -2553,7 +2486,6 @@ AddStudentsModal.propTypes = {
   setCurrentStep: PropTypes.func,
   setErrors: PropTypes.func,
   setExtractedData: PropTypes.func,
-  setIsProcessing: PropTypes.func,
   setManualFormData: PropTypes.func,
   setProcessedBatchData: PropTypes.func,
   setSelectedBatchYear: PropTypes.func,
@@ -2564,10 +2496,8 @@ AddStudentsModal.propTypes = {
   setUploadedFile: PropTypes.func,
   showBatchPreview: PropTypes.bool,
   showPreview: PropTypes.bool,
-  transformDataForDatabase: PropTypes.func,
   uploadProgress: PropTypes.any,
   uploadedFile: PropTypes.any,
-  viewAcademicYear: PropTypes.any,
 };
 
 export default AddStudentsModal;

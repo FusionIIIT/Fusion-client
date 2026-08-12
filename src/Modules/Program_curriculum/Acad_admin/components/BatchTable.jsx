@@ -1,5 +1,15 @@
 import PropTypes from "prop-types";
-import { Table, Select, Badge, TextInput, Text } from "@mantine/core";
+import {
+  Table,
+  Select,
+  Badge,
+  TextInput,
+  Text,
+  Button,
+  ActionIcon,
+  Group,
+} from "@mantine/core";
+import { PencilSimple, Check, X } from "@phosphor-icons/react";
 import {
   getDisciplineOptions,
   getDisplayBranchName,
@@ -30,6 +40,10 @@ function BatchTable({
   setEditFormData,
   onRowClick,
   getProgrammeOptions,
+  onEditClick,
+  onSaveEdit,
+  onCancelEdit,
+  savingEdit,
 }) {
   return (
     <Table style={{ backgroundColor: "white", padding: "20px", width: "100%" }}>
@@ -41,7 +55,8 @@ function BatchTable({
           <th style={HEAD_CELL}>Curriculum</th>
           <th style={HEAD_CELL}>Total Seats</th>
           <th style={HEAD_CELL}>Filled Seats</th>
-          <th style={{ ...HEAD_CELL, borderRight: "none" }}>Available Seats</th>
+          <th style={HEAD_CELL}>Available Seats</th>
+          <th style={{ ...HEAD_CELL, borderRight: "none" }}>Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -182,12 +197,54 @@ function BatchTable({
               >
                 {batch.availableSeats}
               </td>
+              <td style={{ ...BODY_CELL, borderRight: "none" }}>
+                {editingRow === batch.id ? (
+                  <Group gap="xs" justify="center" wrap="nowrap">
+                    <ActionIcon
+                      color="green"
+                      variant="light"
+                      loading={savingEdit}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSaveEdit();
+                      }}
+                      aria-label="Save batch"
+                    >
+                      <Check size={16} />
+                    </ActionIcon>
+                    <ActionIcon
+                      color="gray"
+                      variant="light"
+                      disabled={savingEdit}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onCancelEdit();
+                      }}
+                      aria-label="Cancel edit"
+                    >
+                      <X size={16} />
+                    </ActionIcon>
+                  </Group>
+                ) : (
+                  <Button
+                    size="xs"
+                    variant="light"
+                    leftSection={<PencilSimple size={14} />}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditClick(batch);
+                    }}
+                  >
+                    Edit
+                  </Button>
+                )}
+              </td>
             </tr>
           ))
         ) : (
           <tr>
             <td
-              colSpan="7"
+              colSpan="8"
               style={{ padding: "30px", textAlign: "center", color: "#666" }}
             >
               {loading
@@ -209,6 +266,10 @@ BatchTable.propTypes = {
   setEditFormData: PropTypes.func,
   onRowClick: PropTypes.func.isRequired,
   getProgrammeOptions: PropTypes.func.isRequired,
+  onEditClick: PropTypes.func.isRequired,
+  onSaveEdit: PropTypes.func.isRequired,
+  onCancelEdit: PropTypes.func.isRequired,
+  savingEdit: PropTypes.bool,
 };
 
 export default BatchTable;

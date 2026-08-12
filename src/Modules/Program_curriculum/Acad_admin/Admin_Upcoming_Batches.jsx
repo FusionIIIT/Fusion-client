@@ -4,6 +4,7 @@ import { Container, Button, TextInput, Select, Grid, Flex } from "@mantine/core"
 import { Plus, MagnifyingGlass, Funnel } from "@phosphor-icons/react";
 import { notifications } from "@mantine/notifications";
 import { useMediaQuery } from "@mantine/hooks";
+import { updateBatch } from "../api/api";
 
 import { customTableStyles, INITIAL_FORM_DATA } from "./AdminUpcomingBatchesConstants";
 
@@ -370,7 +371,47 @@ const AdminUpcomingBatch = () => {
   const [seatsUpdateLoading, setSeatsUpdateLoading] = useState(false);
 
   const [editingRow, setEditingRow] = useState(null); 
-  const [editFormData, setEditFormData] = useState({}); 
+  const [editFormData, setEditFormData] = useState({});
+  const [savingBatchEdit, setSavingBatchEdit] = useState(false);
+
+  const handleEditBatchClick = (batch) => {
+    setEditFormData({
+      programme: batch.programme,
+      discipline: batch.displayBranch || batch.discipline,
+      year: batch.year,
+      totalSeats: batch.totalSeats,
+    });
+    setEditingRow(batch.id);
+  };
+
+  const handleCancelBatchEdit = () => {
+    setEditingRow(null);
+    setEditFormData({});
+  };
+
+  const handleSaveBatchEdit = async () => {
+    setSavingBatchEdit(true);
+    try {
+      const result = await updateBatch(editingRow, {
+        programme: editFormData.programme,
+        discipline: editFormData.discipline,
+        year: editFormData.year,
+        total_seats: editFormData.totalSeats,
+      });
+      if (result.success) {
+        notifications.show({ title: "Batch Updated", message: "Batch updated successfully.", color: "green" });
+        setEditingRow(null);
+        setEditFormData({});
+        forceRefreshData();
+      } else {
+        throw new Error(result.message || "Failed to update batch");
+      }
+    } catch (error) {
+      notifications.show({ title: "Update Failed", message: error.message || "Failed to update batch", color: "red" });
+    } finally {
+      setSavingBatchEdit(false);
+    }
+  }; 
 
 
 
@@ -739,6 +780,10 @@ const AdminUpcomingBatch = () => {
                 setEditFormData={setEditFormData}
                 onRowClick={handleBatchRowClick}
                 getProgrammeOptions={getProgrammeOptions}
+                onEditClick={handleEditBatchClick}
+                onSaveEdit={handleSaveBatchEdit}
+                onCancelEdit={handleCancelBatchEdit}
+                savingEdit={savingBatchEdit}
               />
             </div>
           </Grid.Col>
@@ -768,7 +813,6 @@ const AdminUpcomingBatch = () => {
           currentStep={currentStep}
           errors={errors}
           extractedData={extractedData}
-          forceRefreshData={forceRefreshData}
           generateExcelTemplate={generateExcelTemplate}
           handleExcelUpload={handleExcelUpload}
           handleFileUpload={handleFileUpload}
@@ -785,7 +829,6 @@ const AdminUpcomingBatch = () => {
           setCurrentStep={setCurrentStep}
           setErrors={setErrors}
           setExtractedData={setExtractedData}
-          setIsProcessing={setIsProcessing}
           setManualFormData={setManualFormData}
           setProcessedBatchData={setProcessedBatchData}
           setSelectedBatchYear={setSelectedBatchYear}
@@ -796,10 +839,8 @@ const AdminUpcomingBatch = () => {
           setUploadedFile={setUploadedFile}
           showBatchPreview={showBatchPreview}
           showPreview={showPreview}
-          transformDataForDatabase={transformDataForDatabase}
           uploadProgress={uploadProgress}
           uploadedFile={uploadedFile}
-          viewAcademicYear={viewAcademicYear}
         />
 
         {/* Student List Modal */}
