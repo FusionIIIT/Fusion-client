@@ -52,6 +52,8 @@ function PhDCourseRegisterForm() {
 
   const [slots, setSlots] = useState([]);
   const [semesterNo, setSemesterNo] = useState(null);
+  const [registrationOpen, setRegistrationOpen] = useState(true);
+  const [registrationMessage, setRegistrationMessage] = useState("");
   const [thesisInfo, setThesisInfo] = useState(null);
   const [seminarInfo, setSeminarInfo] = useState(null);
   const [teachingCreditInfo, setTeachingCreditInfo] = useState(null);
@@ -112,6 +114,8 @@ function PhDCourseRegisterForm() {
       if (isStale()) return;
       setSlots(withCourses);
       setSemesterNo(slotsRes.data.semester_no ?? null);
+      setRegistrationOpen(slotsRes.data.registration_open !== false);
+      setRegistrationMessage(slotsRes.data.registration_message || "");
       setThesisInfo(thesisRes.data);
       setSeminarInfo(seminarRes.data);
       setTeachingCreditInfo(teachingCreditRes.data);
@@ -141,6 +145,27 @@ function PhDCourseRegisterForm() {
   }, [fetchAll]);
 
   const pickCourse = (idx, val) => {
+    const slot = slots[idx];
+    const course = (slot?.courses || []).find(
+      (c) => String(c.id) === String(val),
+    );
+    // BL (backlog) courses: same rule as UG add — only a prior grade below C+
+    // is eligible. Warn immediately on selection and reject the pick, so the
+    // student sees why here instead of a fleeting error at submit time.
+    if (val && course && course.bl_eligible === false) {
+      showNotification({
+        title: "Not eligible for this backlog course",
+        message: course.bl_grade
+          ? `You can only register a BL course if your grade in it is below C+. Your grade in ${course.code} is ${course.bl_grade}.`
+          : `You can only register a BL course you previously took and scored below C+ in. No grade record found for ${course.code}.`,
+        color: "red",
+        autoClose: 8000,
+      });
+      setSlots((prev) =>
+        prev.map((s, i) => (i === idx ? { ...s, selectedCourse: null } : s)),
+      );
+      return;
+    }
     setSlots((prev) =>
       prev.map((s, i) => (i === idx ? { ...s, selectedCourse: val } : s)),
     );
@@ -301,6 +326,7 @@ function PhDCourseRegisterForm() {
         title: "Submit failed",
         message: err.response?.data?.error || err.message,
         color: "red",
+        autoClose: 8000,
       });
     } finally {
       setSubmitting(false);
@@ -320,6 +346,17 @@ function PhDCourseRegisterForm() {
           Your registration request has already been submitted for
           {semesterNo ? ` Semester ${semesterNo}` : " this semester"}. Check the{" "}
           <b>My Requests</b> tab for status.
+        </Text>
+      </Card>
+    );
+  }
+
+  if (!registrationOpen) {
+    return (
+      <Card withBorder p="md">
+        <Text size="sm" ta="center" c="dimmed">
+          {registrationMessage || "Registration is not open right now."} You can view
+          your existing requests in the <b>My Requests</b> tab.
         </Text>
       </Card>
     );
