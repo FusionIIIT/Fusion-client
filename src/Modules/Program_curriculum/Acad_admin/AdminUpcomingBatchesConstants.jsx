@@ -222,7 +222,7 @@ export const STUDENT_FIELDS_CONFIG = {
     ],
   },
   photo: {
-    label: "Photo",
+    label: "Passport Photo",
     placeholder: "Upload passport photo (max 200KB)",
     required: false,
     type: "image",
@@ -943,8 +943,8 @@ export const STUDENT_TABLE_COLUMNS = [
   },
   {
     key: "photo",
-    label: "Photo",
-    minWidth: "80px",
+    label: "Passport Photo",
+    minWidth: "90px",
     type: "image",
     fields: ["photo"],
   },

@@ -48,6 +48,7 @@ import {
   getBatchYearOptions,
 } from "../AdminUpcomingBatchesUtils";
 import { host } from "../../../../routes/globalRoutes";
+import HindiKeyboard from "./HindiKeyboard";
 
 const PREVIEW_FIELD_ORDER = [
   "jeeAppNo", // 1. JEE App No (UG/PG)
@@ -1195,6 +1196,17 @@ function AddStudentsModal({
                               ...manualFormData,
                               hindiName: e.target.value,
                             })
+                          }
+                          rightSection={
+                            <HindiKeyboard
+                              value={manualFormData.hindiName || ""}
+                              onChange={(v) =>
+                                setManualFormData({
+                                  ...manualFormData,
+                                  hindiName: v,
+                                })
+                              }
+                            />
                           }
                           error={errors.hindiName}
                         />
