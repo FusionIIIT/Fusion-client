@@ -841,6 +841,16 @@ export const getVisibleColumns = (programmeType) => {
   // Fields to hide for PG students (JEE doesn't apply — PG admission is GATE-based)
   const pgHiddenFields = ["jeeAppNo"];
 
+  // Fields to hide for UG students (GATE/Specialization/Admission Type are PG-only)
+  const ugHiddenFields = [
+    "applicationNo",
+    "specialization",
+    "admissionType",
+    "gateQualified",
+    "gateStream",
+    "gateRank",
+  ];
+
   if (programmeType === "phd") {
     return STUDENT_TABLE_COLUMNS.filter(
       (column) => !phdHiddenFields.includes(column.key),
@@ -852,7 +862,9 @@ export const getVisibleColumns = (programmeType) => {
     );
   }
   if (programmeType === "ug") {
-    return STUDENT_TABLE_COLUMNS;
+    return STUDENT_TABLE_COLUMNS.filter(
+      (column) => !ugHiddenFields.includes(column.key),
+    );
   }
 
   return STUDENT_TABLE_COLUMNS;
