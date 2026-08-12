@@ -63,6 +63,9 @@ function toRow(type, r) {
     semesterNo: r.semester_no,
     student: r.student?.name ?? r.student,
     studentName: r.student?.name ?? r.student_name,
+    studentRoll: r.student?.roll_no ?? (typeof r.student === "string" ? r.student : ""),
+    discipline: r.discipline ?? r.student?.discipline ?? "",
+    specialization: r.specialization ?? r.student?.specialization ?? "",
     programmeCategory: r.programme_category || null,
   };
   if (type === "course") {
@@ -414,7 +417,8 @@ export default function AdminPhDCourseRequests() {
           <Tabs.Panel value="pending" pt="md">
             {pendingRows.length > 0 ? (
               <Card>
-                <Table highlightOnHover withTableBorder>
+                <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+                <Table highlightOnHover withTableBorder style={{ minWidth: 960 }}>
                   <thead>
                     <tr>
                       <th style={{ width: 50 }}>
@@ -449,9 +453,16 @@ export default function AdminPhDCourseRequests() {
                           />
                         </td>
                         <td>
-                          <Badge variant="outline">{TYPE_LABEL[r.type]}</Badge>
+                          <Badge variant="outline" style={{ whiteSpace: "nowrap" }}>
+                            {TYPE_LABEL[r.type]}
+                          </Badge>
                         </td>
-                        <td>{r.studentName || r.student}</td>
+                        <td>
+                          <div style={{ fontWeight: 500 }}>{r.studentName || r.studentRoll}</div>
+                          <div style={{ fontSize: 12, color: "#868e96" }}>
+                            {[r.studentRoll, r.discipline, r.specialization].filter(Boolean).join(" · ")}
+                          </div>
+                        </td>
                         <td>{r.slot}</td>
                         <td>{r.detail}</td>
                         <td>{r.credits}</td>
@@ -467,6 +478,7 @@ export default function AdminPhDCourseRequests() {
                     ))}
                   </tbody>
                 </Table>
+                </div>
               </Card>
             ) : (
               <Alert color="gray">
@@ -478,7 +490,8 @@ export default function AdminPhDCourseRequests() {
           <Tabs.Panel value="processed" pt="md">
             {processedRows.length > 0 ? (
               <Card>
-                <Table highlightOnHover withTableBorder>
+                <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+                <Table highlightOnHover withTableBorder style={{ minWidth: 960 }}>
                   <thead>
                     <tr>
                       <th>Type</th>
@@ -513,9 +526,16 @@ export default function AdminPhDCourseRequests() {
                     {filteredProcessedRows.map((r) => (
                       <tr key={r.key}>
                         <td>
-                          <Badge variant="outline">{TYPE_LABEL[r.type]}</Badge>
+                          <Badge variant="outline" style={{ whiteSpace: "nowrap" }}>
+                            {TYPE_LABEL[r.type]}
+                          </Badge>
                         </td>
-                        <td>{r.studentName || r.student}</td>
+                        <td>
+                          <div style={{ fontWeight: 500 }}>{r.studentName || r.studentRoll}</div>
+                          <div style={{ fontSize: 12, color: "#868e96" }}>
+                            {[r.studentRoll, r.discipline, r.specialization].filter(Boolean).join(" · ")}
+                          </div>
+                        </td>
                         <td>{r.slot}</td>
                         <td>{r.detail}</td>
                         <td>{r.credits}</td>
@@ -541,6 +561,7 @@ export default function AdminPhDCourseRequests() {
                     ))}
                   </tbody>
                 </Table>
+                </div>
               </Card>
             ) : (
               <Alert color="gray">
