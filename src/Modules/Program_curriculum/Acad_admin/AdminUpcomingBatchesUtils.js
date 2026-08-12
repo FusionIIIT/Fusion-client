@@ -853,8 +853,9 @@ export const getVisibleColumns = (programmeType) => {
   // Fields to hide for PG students (no sections; allotted gender is UG-only)
   const pgHiddenFields = ["section", "allottedGender"];
 
-  // Fields to hide for UG students (Specialization/Admission/GATE are PG/PhD-only)
-  const ugHiddenFields = ["specialization", "admissionType", "gateQualified"];
+  // Fields to hide for UG students (Specialization/GATE are PG/PhD-only;
+  // the merged Admission column shows admission_mode for UG)
+  const ugHiddenFields = ["specialization", "gateQualified"];
 
   if (programmeType === "phd") {
     return STUDENT_TABLE_COLUMNS.filter(
