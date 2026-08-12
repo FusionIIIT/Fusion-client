@@ -151,7 +151,7 @@ export const fetchBatchesSync = async () => {
     );
 
     if (response.data.success) {
-      const mappedBatches = response.data.batches.map(batch => ({
+      const mappedBatches = response.data.batches.map((batch) => ({
         id: batch.batch_id,
         name: batch.name,
         programme: batch.name,
@@ -169,17 +169,17 @@ export const fetchBatchesSync = async () => {
         curriculum_name: batch.curriculum,
         curriculumId: batch.curriculum_id,
         curriculum_id: batch.curriculum_id,
-        status: batch.status
+        status: batch.status,
       }));
 
       return {
         runningBatches: mappedBatches,
         finishedBatches: [],
         filter: response.data.filter || {},
-        total_batches: response.data.total_batches
+        total_batches: response.data.total_batches,
       };
     } else {
-      throw new Error(response.data.message || 'Failed to sync batch data');
+      throw new Error(response.data.message || "Failed to sync batch data");
     }
   } catch (error) {
     throw error;
@@ -690,7 +690,12 @@ export const processExcelUpload = async (file, programmeType) => {
 };
 
 // Save Students Batch - POST /programme_curriculum/api/save_students_batch/
-export const saveStudentsBatch = async (studentsData, programmeType, phdSemester = null, academicYear = null) => {
+export const saveStudentsBatch = async (
+  studentsData,
+  programmeType,
+  phdSemester = null,
+  academicYear = null,
+) => {
   try {
     const token = localStorage.getItem("authToken");
     if (!token) {
@@ -722,7 +727,12 @@ export const saveStudentsBatch = async (studentsData, programmeType, phdSemester
 };
 
 // Add Single Student - POST /programme_curriculum/api/admin_add_single_student/
-export const addSingleStudent = async (studentData, programmeType, phdSemester = null, academicYear = null) => {
+export const addSingleStudent = async (
+  studentData,
+  programmeType,
+  phdSemester = null,
+  academicYear = null,
+) => {
   try {
     const token = localStorage.getItem("authToken");
 
@@ -771,16 +781,25 @@ export const addSingleStudent = async (studentData, programmeType, phdSemester =
       state: studentData.state,
       tenth_marks: studentData.tenthMarks || studentData.tenth_marks,
       twelfth_marks: studentData.twelfthMarks || studentData.twelfth_marks,
-      aadhar_number: studentData.aadharNumber || studentData.aadhar_number,
+      aadhar_number:
+        studentData.aadharNo ||
+        studentData.aadharNumber ||
+        studentData.aadhar_number,
+      hindi_name: studentData.hindiName || studentData.hindi_name,
+      photo: studentData.photo,
+      signature: studentData.signature,
       parent_email: studentData.parentEmail || studentData.parent_email,
       blood_group: studentData.bloodGroup || studentData.blood_group,
-      blood_group_remarks: studentData.bloodGroupRemarks || studentData.blood_group_remarks,
+      blood_group_remarks:
+        studentData.bloodGroupRemarks || studentData.blood_group_remarks,
       country: studentData.country,
       nationality: studentData.nationality,
       admission_mode: studentData.admissionMode || studentData.admission_mode,
-      admission_mode_remarks: studentData.admissionModeRemarks || studentData.admission_mode_remarks,
+      admission_mode_remarks:
+        studentData.admissionModeRemarks || studentData.admission_mode_remarks,
       pwd_category: studentData.pwdCategory || studentData.pwd_category,
-      pwd_category_remarks: studentData.pwdCategoryRemarks || studentData.pwd_category_remarks,
+      pwd_category_remarks:
+        studentData.pwdCategoryRemarks || studentData.pwd_category_remarks,
       income_group: studentData.incomeGroup || studentData.income_group,
       income: studentData.income,
       alternateEmail: studentData.alternateEmail || studentData.personal_email,
@@ -799,19 +818,20 @@ export const addSingleStudent = async (studentData, programmeType, phdSemester =
 
     // Required fields differ by programme type:
     // PhD does not require father/mother names, JEE app number or address.
-    const requiredFields = programmeType === 'phd'
-      ? ["name", "branch", "gender", "category", "pwd"]
-      : [
-          "name",
-          "father_name",
-          "mother_name",
-          "jee_app_no",
-          "branch",
-          "gender",
-          "category",
-          "pwd",
-          "address",
-        ];
+    const requiredFields =
+      programmeType === "phd"
+        ? ["name", "branch", "gender", "category", "pwd"]
+        : [
+            "name",
+            "father_name",
+            "mother_name",
+            "jee_app_no",
+            "branch",
+            "gender",
+            "category",
+            "pwd",
+            "address",
+          ];
     const missingFields = requiredFields.filter(
       (field) => !mappedStudent[field],
     );
@@ -939,30 +959,6 @@ export const createBatch = async (batchData) => {
     const response = await axios.post(
       `${BASE_URL}/programme_curriculum/api/admin_add_batch/`,
       payload,
-      {
-        headers: {
-          Authorization: `Token ${token}`,
-          "Content-Type": "application/json",
-        },
-      },
-    );
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-};
-
-// Update Batch - PUT /programme_curriculum/api/batches/<batch_id>/update/
-export const updateBatch = async (batchId, batchData) => {
-  try {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      throw new Error("Authorization token is required");
-    }
-
-    const response = await axios.put(
-      `${BASE_URL}/programme_curriculum/api/batches/${batchId}/update/`,
-      batchData,
       {
         headers: {
           Authorization: `Token ${token}`,
