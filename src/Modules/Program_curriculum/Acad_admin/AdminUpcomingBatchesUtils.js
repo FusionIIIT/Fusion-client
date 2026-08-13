@@ -789,10 +789,19 @@ export const exportToExcel = async (data, filename, imageColumns = []) => {
             const response = await fetch(row[key]);
             if (!response.ok) return;
             const buffer = await response.arrayBuffer();
-            let ext = (row[key].split(".").pop() || "png")
-              .split("?")[0]
-              .toLowerCase();
-            if (ext === "jpg") ext = "jpeg";
+            // Prefer the served content-type; the DB serve URL has no extension.
+            const ct = (
+              response.headers.get("content-type") || ""
+            ).toLowerCase();
+            let ext = "";
+            if (ct.includes("png")) ext = "png";
+            else if (ct.includes("jpeg") || ct.includes("jpg")) ext = "jpeg";
+            else {
+              ext = (row[key].split(".").pop() || "")
+                .split("?")[0]
+                .toLowerCase();
+              if (ext === "jpg") ext = "jpeg";
+            }
             if (ext !== "png" && ext !== "jpeg") return;
             const imageId = workbook.addImage({ buffer, extension: ext });
             const size = isSignatureCol(key)
@@ -832,7 +841,12 @@ export const exportStudentImages = async (students, filename, hostUrl) => {
       const response = await fetch(fullUrl);
       if (!response.ok) return;
       const blob = await response.blob();
-      const ext = (url.split(".").pop() || "png").split("?")[0].toLowerCase();
+      // Prefer the blob's content-type; the DB serve URL has no extension.
+      const type = (blob.type || "").toLowerCase();
+      let ext = "";
+      if (type.includes("png")) ext = "png";
+      else if (type.includes("jpeg") || type.includes("jpg")) ext = "jpg";
+      else ext = (url.split(".").pop() || "png").split("?")[0].toLowerCase();
       zip.file(`${roll}_${suffix}.${ext}`, blob);
       count += 1;
     } catch (error) {
