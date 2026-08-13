@@ -153,12 +153,23 @@ export default function App() {
     location.pathname.startsWith("/thesis-evaluation/") ||
     location.pathname.startsWith("/thesis-examiner-panel/");
 
+  // Hard gate: a first-login student sees ONLY the completion modal — no routes
+  // render behind it, so nothing else loads or is reachable until they submit.
+  if (!isPublicRoute && mustCompleteProfile) {
+    return (
+      <MantineProvider theme={theme}>
+        <Notifications position="top-center" autoClose={2000} limit={1} />
+        <ValidateAuth />
+        <ProfileCompletionModal />
+      </MantineProvider>
+    );
+  }
+
   return (
     <MantineProvider theme={theme}>
       <Notifications position="top-center" autoClose={2000} limit={1} />
       {!isPublicRoute && <ValidateAuth />}
       {!isPublicRoute && <InactivityHandler />}
-      {!isPublicRoute && mustCompleteProfile && <ProfileCompletionModal />}
 
       <Routes>
         <Route path="/" element={<Navigate to="/accounts/login" replace />} />

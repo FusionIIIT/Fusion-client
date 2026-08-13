@@ -1,25 +1,36 @@
 import { useEffect, useState } from "react";
+import PropTypes from "prop-types";
 import { useDispatch } from "react-redux";
 import axios from "axios";
 import {
   Alert,
+  Box,
   Button,
   Center,
-  Divider,
   FileInput,
   Grid,
   Group,
   Loader,
   Modal,
+  Paper,
   Select,
   Stack,
   Text,
   TextInput,
   Textarea,
+  ThemeIcon,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
-import { Info, Upload } from "@phosphor-icons/react";
+import {
+  IdentificationCard,
+  Info,
+  MapPin,
+  Phone,
+  ShieldCheck,
+  Upload,
+  UsersThree,
+} from "@phosphor-icons/react";
 import { setMustCompleteProfile } from "../redux/userslice";
 import {
   host,
@@ -36,6 +47,28 @@ function imgSrc(value) {
   if (!value) return "";
   return value.startsWith("data:") ? value : `${host}${value}`;
 }
+
+function Section({ icon, title, children }) {
+  return (
+    <Paper withBorder radius="md" p="md" shadow="xs">
+      <Group gap="xs" mb="md">
+        <ThemeIcon variant="light" radius="md" size="lg" color="blue">
+          {icon}
+        </ThemeIcon>
+        <Text fw={600} size="sm">
+          {title}
+        </Text>
+      </Group>
+      <Grid gutter="sm">{children}</Grid>
+    </Paper>
+  );
+}
+
+Section.propTypes = {
+  icon: PropTypes.node.isRequired,
+  title: PropTypes.string.isRequired,
+  children: PropTypes.node.isRequired,
+};
 
 function ProfileCompletionModal() {
   const dispatch = useDispatch();
@@ -192,11 +225,37 @@ function ProfileCompletionModal() {
     }
   };
 
-  const frozen = (label, value, span = THIRD) => (
-    <Grid.Col span={span}>
-      <TextInput label={label} value={value || "—"} readOnly variant="filled" />
+  const frozen = (label, value) => (
+    <Grid.Col span={THIRD}>
+      <TextInput
+        label={label}
+        value={value || "—"}
+        readOnly
+        variant="filled"
+        styles={{ input: { cursor: "default", color: "#495057" } }}
+      />
     </Grid.Col>
   );
+
+  const imgPreview = (value, h) =>
+    value && (
+      <Box
+        mt={8}
+        style={{
+          width: "fit-content",
+          padding: 4,
+          borderRadius: 8,
+          border: "1px solid #e2e8f0",
+          background: "#f8fafc",
+        }}
+      >
+        <img
+          src={imgSrc(value)}
+          alt="preview"
+          style={{ height: h, borderRadius: 4, display: "block" }}
+        />
+      </Box>
+    );
 
   return (
     <Modal
@@ -206,277 +265,322 @@ function ProfileCompletionModal() {
       closeOnClickOutside={false}
       closeOnEscape={false}
       fullScreen={isMobile}
-      size="xl"
+      size="62rem"
       centered
-      title={
-        <Text size="lg" fw={700}>
-          Complete your profile
-        </Text>
-      }
+      radius="lg"
+      padding={0}
+      overlayProps={{ backgroundOpacity: 0.6, blur: 4 }}
+      scrollAreaComponent={undefined}
+      styles={{ body: { padding: 0 } }}
     >
       {loading || !form ? (
-        <Center py="xl">
+        <Center py={80}>
           <Loader />
         </Center>
       ) : (
-        <Stack gap="md">
-          <Alert icon={<Info size={18} />} color="blue">
-            Please verify your details and fill in the required fields to
-            continue.
-          </Alert>
+        <Box>
+          {/* Header band */}
+          <Box
+            p="lg"
+            style={{
+              background: "linear-gradient(135deg,#2563eb,#1e3a8a)",
+              color: "white",
+            }}
+          >
+            <Group gap="sm" wrap="nowrap">
+              <ThemeIcon size={44} radius="md" variant="white" color="blue">
+                <IdentificationCard size={26} />
+              </ThemeIcon>
+              <div>
+                <Text fw={700} size="xl">
+                  Complete your profile
+                </Text>
+                <Text size="sm" c="blue.1">
+                  One-time setup — verify your details and fill the required
+                  fields to access the portal.
+                </Text>
+              </div>
+            </Group>
+          </Box>
 
-          <Divider label="Your details (read-only)" labelPosition="left" />
-          <Grid>
-            {frozen("Roll Number", form.roll_number)}
-            {frozen("Name", form.name)}
-            {frozen("Discipline", form.discipline)}
-            {form.programme_type === "pg" &&
-              frozen("Specialization", form.specialization)}
-            {frozen("Gender", form.gender)}
-            {frozen("Category", form.category)}
-            {frozen("Father's Name", form.father_name)}
-            {frozen("Mother's Name", form.mother_name)}
-            {frozen("Date of Birth", form.date_of_birth)}
-            {frozen("Admission Mode", form.admission_mode)}
-          </Grid>
+          <Stack gap="md" p="lg">
+            <Alert
+              variant="light"
+              color="blue"
+              icon={<Info size={18} />}
+              radius="md"
+            >
+              Fields marked with{" "}
+              <Text span c="red" fw={700}>
+                *
+              </Text>{" "}
+              are required. Your existing details are pre-filled where
+              available.
+            </Alert>
 
-          <Divider label="Complete these details" labelPosition="left" />
-          <Grid>
-            <Grid.Col span={HALF}>
-              <TextInput
-                label="Aadhaar No."
-                placeholder="12-digit Aadhaar number"
-                value={form.aadhar_number || ""}
-                onChange={(e) =>
-                  set(
-                    "aadhar_number",
-                    e.target.value.replace(/\D/g, "").slice(0, 12),
-                  )
-                }
-                maxLength={12}
-                required
-                error={errors.aadhar_number}
-              />
-            </Grid.Col>
-            <Grid.Col span={HALF}>
-              <TextInput
-                label="Name (Hindi)"
-                placeholder="पूरा नाम"
-                value={form.hindi_name || ""}
-                onChange={(e) => set("hindi_name", e.target.value)}
-                rightSection={
-                  <HindiKeyboard
-                    value={form.hindi_name || ""}
-                    onChange={(v) => set("hindi_name", v)}
-                  />
-                }
-                required
-                error={errors.hindi_name}
-              />
-            </Grid.Col>
+            <Section
+              icon={<ShieldCheck size={18} />}
+              title="Verified details (read-only)"
+            >
+              {frozen("Roll Number", form.roll_number)}
+              {frozen("Name", form.name)}
+              {frozen("Discipline", form.discipline)}
+              {form.programme_type === "pg" &&
+                frozen("Specialization", form.specialization)}
+              {frozen("Gender", form.gender)}
+              {frozen("Category", form.category)}
+              {frozen("Father's Name", form.father_name)}
+              {frozen("Mother's Name", form.mother_name)}
+              {frozen("Date of Birth", form.date_of_birth)}
+              {frozen("Admission Mode", form.admission_mode)}
+            </Section>
 
-            <Grid.Col span={HALF}>
-              <FileInput
-                label="Passport Photo"
-                description="PNG, JPG or JPEG • up to 200 KB"
-                placeholder="Upload passport photo"
-                accept="image/png,image/jpeg"
-                clearable
-                leftSection={<Upload size={16} />}
-                onChange={(file) => handleImage(file, "photo", 200)}
-                required
-                error={errors.photo}
-              />
-              {form.photo && (
-                <img
-                  src={imgSrc(form.photo)}
-                  alt="Student passport"
-                  style={{
-                    height: 72,
-                    marginTop: 8,
-                    borderRadius: 4,
-                    border: "1px solid #e2e8f0",
-                  }}
-                />
-              )}
-            </Grid.Col>
-            <Grid.Col span={HALF}>
-              <FileInput
-                label="Signature"
-                description="PNG, JPG or JPEG • up to 30 KB"
-                placeholder="Upload signature"
-                accept="image/png,image/jpeg"
-                clearable
-                leftSection={<Upload size={16} />}
-                onChange={(file) => handleImage(file, "signature", 30)}
-                required
-                error={errors.signature}
-              />
-              {form.signature && (
-                <img
-                  src={imgSrc(form.signature)}
-                  alt="Student signature"
-                  style={{
-                    height: 40,
-                    marginTop: 8,
-                    borderRadius: 4,
-                    border: "1px solid #e2e8f0",
-                  }}
-                />
-              )}
-            </Grid.Col>
-
-            <Grid.Col span={THIRD}>
-              <TextInput
-                label="Mobile No."
-                value={form.phone_number || ""}
-                onChange={(e) => set("phone_number", e.target.value)}
-                required
-                error={errors.phone_number}
-              />
-            </Grid.Col>
-            <Grid.Col span={THIRD}>
-              <TextInput
-                label="Father's Mobile"
-                value={form.father_mobile || ""}
-                onChange={(e) => set("father_mobile", e.target.value)}
-                error={errors.father_mobile}
-              />
-            </Grid.Col>
-            <Grid.Col span={THIRD}>
-              <TextInput
-                label="Mother's Mobile"
-                value={form.mother_mobile || ""}
-                onChange={(e) => set("mother_mobile", e.target.value)}
-              />
-            </Grid.Col>
-
-            <Grid.Col span={HALF}>
-              <TextInput
-                label="Parent's Email ID"
-                value={form.parent_email || ""}
-                onChange={(e) => set("parent_email", e.target.value)}
-                error={errors.parent_email}
-              />
-            </Grid.Col>
-            <Grid.Col span={HALF}>
-              <TextInput
-                label="Minority"
-                value={form.minority || ""}
-                onChange={(e) => set("minority", e.target.value)}
-              />
-            </Grid.Col>
-            <Grid.Col span={HALF}>
-              <TextInput
-                label="Father's Job"
-                value={form.father_occupation || ""}
-                onChange={(e) => set("father_occupation", e.target.value)}
-              />
-            </Grid.Col>
-            <Grid.Col span={HALF}>
-              <TextInput
-                label="Mother's Job"
-                value={form.mother_occupation || ""}
-                onChange={(e) => set("mother_occupation", e.target.value)}
-              />
-            </Grid.Col>
-
-            <Grid.Col span={THIRD}>
-              <Select
-                label="Blood Group"
-                placeholder="Select"
-                data={STUDENT_FIELDS_CONFIG.bloodGroup.options}
-                value={form.blood_group || ""}
-                onChange={(v) => set("blood_group", v)}
-                required
-                searchable
-                error={errors.blood_group}
-              />
-            </Grid.Col>
-            {form.blood_group === "Other" && (
-              <Grid.Col span={THIRD}>
+            <Section
+              icon={<IdentificationCard size={18} />}
+              title="Identity & documents"
+            >
+              <Grid.Col span={HALF}>
                 <TextInput
-                  label="Blood Group (specify)"
-                  value={form.blood_group_remarks || ""}
-                  onChange={(e) => set("blood_group_remarks", e.target.value)}
+                  label="Aadhaar No."
+                  placeholder="12-digit Aadhaar number"
+                  value={form.aadhar_number || ""}
+                  onChange={(e) =>
+                    set(
+                      "aadhar_number",
+                      e.target.value.replace(/\D/g, "").slice(0, 12),
+                    )
+                  }
+                  maxLength={12}
                   required
-                  error={errors.blood_group_remarks}
+                  error={errors.aadhar_number}
                 />
               </Grid.Col>
-            )}
-            <Grid.Col span={THIRD}>
-              <Select
-                label="Income Group"
-                placeholder="Select"
-                data={STUDENT_FIELDS_CONFIG.incomeGroup.options}
-                value={form.income_group || ""}
-                onChange={(v) => set("income_group", v)}
-                required
-                error={errors.income_group}
-              />
-            </Grid.Col>
-            <Grid.Col span={THIRD}>
-              <TextInput
-                label="Income"
-                placeholder="Annual family income"
-                value={form.income || ""}
-                onChange={(e) =>
-                  set("income", e.target.value.replace(/[^\d.]/g, ""))
-                }
-                required
-                error={errors.income}
-              />
-            </Grid.Col>
+              <Grid.Col span={HALF}>
+                <TextInput
+                  label="Name (Hindi)"
+                  placeholder="पूरा नाम"
+                  value={form.hindi_name || ""}
+                  onChange={(e) => set("hindi_name", e.target.value)}
+                  rightSection={
+                    <HindiKeyboard
+                      value={form.hindi_name || ""}
+                      onChange={(v) => set("hindi_name", v)}
+                    />
+                  }
+                  required
+                  error={errors.hindi_name}
+                />
+              </Grid.Col>
+              <Grid.Col span={HALF}>
+                <FileInput
+                  label="Passport Photo"
+                  description="PNG, JPG or JPEG • up to 200 KB"
+                  placeholder="Upload passport photo"
+                  accept="image/png,image/jpeg"
+                  clearable
+                  leftSection={<Upload size={16} />}
+                  onChange={(file) => handleImage(file, "photo", 200)}
+                  required
+                  error={errors.photo}
+                />
+                {imgPreview(form.photo, 84)}
+              </Grid.Col>
+              <Grid.Col span={HALF}>
+                <FileInput
+                  label="Signature"
+                  description="PNG, JPG or JPEG • up to 30 KB"
+                  placeholder="Upload signature"
+                  accept="image/png,image/jpeg"
+                  clearable
+                  leftSection={<Upload size={16} />}
+                  onChange={(file) => handleImage(file, "signature", 30)}
+                  required
+                  error={errors.signature}
+                />
+                {imgPreview(form.signature, 44)}
+              </Grid.Col>
+            </Section>
 
-            <Grid.Col span={THIRD}>
-              <Select
-                label="State"
-                placeholder="Select state"
-                data={STUDENT_FIELDS_CONFIG.state.options}
-                value={form.state || ""}
-                onChange={(v) => set("state", v)}
-                required
-                searchable
-                error={errors.state}
-              />
-            </Grid.Col>
-            <Grid.Col span={THIRD}>
-              <TextInput
-                label="Country"
-                value={form.country || ""}
-                onChange={(e) => set("country", e.target.value)}
-                required
-                error={errors.country}
-              />
-            </Grid.Col>
-            <Grid.Col span={THIRD}>
-              <TextInput
-                label="Nationality"
-                value={form.nationality || ""}
-                onChange={(e) => set("nationality", e.target.value)}
-                required
-                error={errors.nationality}
-              />
-            </Grid.Col>
-            <Grid.Col span={12}>
-              <Textarea
-                label="Address"
-                minRows={2}
-                autosize
-                value={form.address || ""}
-                onChange={(e) => set("address", e.target.value)}
-                required
-                error={errors.address}
-              />
-            </Grid.Col>
-          </Grid>
+            <Section icon={<Phone size={18} />} title="Contact">
+              <Grid.Col span={THIRD}>
+                <TextInput
+                  label="Mobile No."
+                  value={form.phone_number || ""}
+                  onChange={(e) => set("phone_number", e.target.value)}
+                  required
+                  error={errors.phone_number}
+                />
+              </Grid.Col>
+              <Grid.Col span={THIRD}>
+                <TextInput
+                  label="Father's Mobile"
+                  description="At least one parent mobile"
+                  value={form.father_mobile || ""}
+                  onChange={(e) => set("father_mobile", e.target.value)}
+                  error={errors.father_mobile}
+                />
+              </Grid.Col>
+              <Grid.Col span={THIRD}>
+                <TextInput
+                  label="Mother's Mobile"
+                  value={form.mother_mobile || ""}
+                  onChange={(e) => set("mother_mobile", e.target.value)}
+                />
+              </Grid.Col>
+              <Grid.Col span={HALF}>
+                <TextInput
+                  label="Parent's Email ID"
+                  placeholder="Optional"
+                  value={form.parent_email || ""}
+                  onChange={(e) => set("parent_email", e.target.value)}
+                  error={errors.parent_email}
+                />
+              </Grid.Col>
+            </Section>
 
-          <Group justify="flex-end" mt="sm">
-            <Button onClick={handleSubmit} loading={saving} size="md">
-              Submit &amp; Continue
-            </Button>
-          </Group>
-        </Stack>
+            <Section
+              icon={<UsersThree size={18} />}
+              title="Family & background"
+            >
+              <Grid.Col span={HALF}>
+                <TextInput
+                  label="Father's Job"
+                  placeholder="Optional"
+                  value={form.father_occupation || ""}
+                  onChange={(e) => set("father_occupation", e.target.value)}
+                />
+              </Grid.Col>
+              <Grid.Col span={HALF}>
+                <TextInput
+                  label="Mother's Job"
+                  placeholder="Optional"
+                  value={form.mother_occupation || ""}
+                  onChange={(e) => set("mother_occupation", e.target.value)}
+                />
+              </Grid.Col>
+              <Grid.Col span={HALF}>
+                <TextInput
+                  label="Minority"
+                  placeholder="Optional"
+                  value={form.minority || ""}
+                  onChange={(e) => set("minority", e.target.value)}
+                />
+              </Grid.Col>
+              <Grid.Col span={form.blood_group === "Other" ? THIRD : HALF}>
+                <Select
+                  label="Blood Group"
+                  placeholder="Select"
+                  data={STUDENT_FIELDS_CONFIG.bloodGroup.options}
+                  value={form.blood_group || ""}
+                  onChange={(v) => set("blood_group", v)}
+                  required
+                  searchable
+                  error={errors.blood_group}
+                />
+              </Grid.Col>
+              {form.blood_group === "Other" && (
+                <Grid.Col span={THIRD}>
+                  <TextInput
+                    label="Blood Group (specify)"
+                    value={form.blood_group_remarks || ""}
+                    onChange={(e) => set("blood_group_remarks", e.target.value)}
+                    required
+                    error={errors.blood_group_remarks}
+                  />
+                </Grid.Col>
+              )}
+            </Section>
+
+            <Section icon={<MapPin size={18} />} title="Address & financial">
+              <Grid.Col span={THIRD}>
+                <Select
+                  label="State"
+                  placeholder="Select state"
+                  data={STUDENT_FIELDS_CONFIG.state.options}
+                  value={form.state || ""}
+                  onChange={(v) => set("state", v)}
+                  required
+                  searchable
+                  error={errors.state}
+                />
+              </Grid.Col>
+              <Grid.Col span={THIRD}>
+                <TextInput
+                  label="Country"
+                  value={form.country || ""}
+                  onChange={(e) => set("country", e.target.value)}
+                  required
+                  error={errors.country}
+                />
+              </Grid.Col>
+              <Grid.Col span={THIRD}>
+                <TextInput
+                  label="Nationality"
+                  value={form.nationality || ""}
+                  onChange={(e) => set("nationality", e.target.value)}
+                  required
+                  error={errors.nationality}
+                />
+              </Grid.Col>
+              <Grid.Col span={HALF}>
+                <Select
+                  label="Income Group"
+                  placeholder="Select"
+                  data={STUDENT_FIELDS_CONFIG.incomeGroup.options}
+                  value={form.income_group || ""}
+                  onChange={(v) => set("income_group", v)}
+                  required
+                  error={errors.income_group}
+                />
+              </Grid.Col>
+              <Grid.Col span={HALF}>
+                <TextInput
+                  label="Income"
+                  placeholder="Annual family income"
+                  value={form.income || ""}
+                  onChange={(e) =>
+                    set("income", e.target.value.replace(/[^\d.]/g, ""))
+                  }
+                  required
+                  error={errors.income}
+                />
+              </Grid.Col>
+              <Grid.Col span={12}>
+                <Textarea
+                  label="Address"
+                  minRows={2}
+                  autosize
+                  value={form.address || ""}
+                  onChange={(e) => set("address", e.target.value)}
+                  required
+                  error={errors.address}
+                />
+              </Grid.Col>
+            </Section>
+          </Stack>
+
+          {/* Sticky submit bar */}
+          <Box
+            p="md"
+            style={{
+              position: "sticky",
+              bottom: 0,
+              background: "white",
+              borderTop: "1px solid #e9ecef",
+            }}
+          >
+            <Group justify="flex-end">
+              <Button
+                onClick={handleSubmit}
+                loading={saving}
+                size="md"
+                fullWidth={isMobile}
+              >
+                Submit &amp; Continue
+              </Button>
+            </Group>
+          </Box>
+        </Box>
       )}
     </Modal>
   );
