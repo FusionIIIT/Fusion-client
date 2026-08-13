@@ -1,6 +1,7 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
 import { ActionIcon, Button, Group, Popover, Stack } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import { Backspace, Keyboard } from "@phosphor-icons/react";
 
 // Compact on-screen Devanagari keyboard for entering a Hindi name without a
@@ -16,6 +17,7 @@ const KEY_ROWS = [
 
 function HindiKeyboard({ value, onChange }) {
   const [opened, setOpened] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 480px)");
 
   return (
     <Popover
@@ -24,6 +26,9 @@ function HindiKeyboard({ value, onChange }) {
       position="bottom-end"
       withArrow
       shadow="md"
+      withinPortal
+      middlewares={{ flip: true, shift: true }}
+      width={isMobile ? "calc(100vw - 32px)" : 360}
     >
       <Popover.Target>
         <ActionIcon
@@ -35,16 +40,16 @@ function HindiKeyboard({ value, onChange }) {
           <Keyboard size={16} />
         </ActionIcon>
       </Popover.Target>
-      <Popover.Dropdown p="xs">
-        <Stack gap={4}>
+      <Popover.Dropdown p="xs" style={{ maxHeight: "45vh", overflowY: "auto" }}>
+        <Stack gap={6}>
           {KEY_ROWS.map((row) => (
-            <Group key={row.join("")} gap={4} wrap="wrap">
+            <Group key={row.join("")} gap={4} wrap="wrap" justify="center">
               {row.map((ch) => (
                 <Button
                   key={ch}
-                  size="compact-xs"
+                  size="compact-sm"
                   variant="default"
-                  px={6}
+                  px={8}
                   onClick={() => onChange(`${value || ""}${ch}`)}
                 >
                   {ch}
@@ -52,16 +57,16 @@ function HindiKeyboard({ value, onChange }) {
               ))}
             </Group>
           ))}
-          <Group gap={4}>
+          <Group gap={6} justify="center">
             <Button
-              size="compact-xs"
+              size="compact-sm"
               variant="default"
               onClick={() => onChange(`${value || ""} `)}
             >
               Space
             </Button>
             <Button
-              size="compact-xs"
+              size="compact-sm"
               variant="default"
               leftSection={<Backspace size={14} />}
               onClick={() => onChange((value || "").slice(0, -1))}
@@ -69,7 +74,7 @@ function HindiKeyboard({ value, onChange }) {
               Back
             </Button>
             <Button
-              size="compact-xs"
+              size="compact-sm"
               variant="subtle"
               color="red"
               onClick={() => onChange("")}
