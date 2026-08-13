@@ -120,6 +120,27 @@ function AcademicPage() {
     }
 
     if (role === "student") {
+      // PG/PhD students use the self-submit Thesis & Course Registration flow, not the UG pre-reg/final-reg/Swayam/add-drop pipeline.
+      if (isPhdStudent) {
+        return {
+          tabItems: [
+            { title: "Registered Courses" },
+            { title: "Available Courses" },
+            { title: "Thesis & Course Registration" },
+            { title: "Academic Calender" },
+            { title: "Feedback Form" },
+            { title: "Teaching Credit Feedback" },
+          ],
+          tabComponents: [
+            RegisteredCourses,
+            AvailableCourses,
+            PhDCourseRegistration,
+            StudentCalendar,
+            StudentCourseFeedbackForm,
+            TeachingCreditFeedback,
+          ],
+        };
+      }
       return {
         tabItems: [
           { title: "Registered Courses" },
@@ -131,7 +152,6 @@ function AcademicPage() {
           { title: "Add / Drop" },
           { title: "Feedback Form" },
           { title: "Teaching Credit Feedback" },
-          ...(isPhdStudent ? [{ title: "Thesis & Course Registration" }] : []),
         ],
         tabComponents: [
           RegisteredCourses,
@@ -143,7 +163,6 @@ function AcademicPage() {
           StudentAddDropReplace,
           StudentCourseFeedbackForm,
           TeachingCreditFeedback,
-          ...(isPhdStudent ? [PhDCourseRegistration] : []),
         ],
       };
     }
