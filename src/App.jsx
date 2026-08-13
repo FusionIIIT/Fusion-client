@@ -5,6 +5,7 @@ import "@mantine/notifications/styles.css";
 import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Notifications } from "@mantine/notifications";
+import { useSelector } from "react-redux";
 import { Layout } from "./components/layout";
 import Dashboard from "./Modules/Dashboard/dashboardNotifications";
 import Profile from "./Modules/Dashboard/StudentProfile/profilePage";
@@ -18,6 +19,7 @@ import ThesisResearchPage from "./Modules/ThesisResearch/index";
 import ValidateAuth from "./helper/validateauth";
 import FacultyProfessionalProfile from "./Modules/facultyProfessionalProfile/facultyProfessionalProfile";
 import InactivityHandler from "./helper/inactivityhandler";
+import ProfileCompletionModal from "./components/ProfileCompletionModal";
 import Examination from "./Modules/Examination/examination";
 import Database from "./Modules/Database/database";
 import ProgrammeCurriculumRoutes from "./Modules/Program_curriculum/programmCurriculum";
@@ -37,6 +39,10 @@ const theme = createTheme({
 
 export default function App() {
   const location = useLocation();
+  const mustCompleteProfile = useSelector(
+    (state) => state.user.mustCompleteProfile,
+  );
+  const authChecked = useSelector((state) => state.user.authChecked);
 
   // True immediately when sessionStorage already has the token (normal in-session
   // navigation), or when there is no token at all (fresh visit / already logged out).
@@ -148,95 +154,112 @@ export default function App() {
     location.pathname.startsWith("/thesis-evaluation/") ||
     location.pathname.startsWith("/thesis-examiner-panel/");
 
+  // A first-login student must finish the profile popup before anything else:
+  // no routes render until the /api/auth/me check resolves, and while the
+  // student is gated ONLY the modal shows (nothing loads or is reachable).
+  const contentReady = isPublicRoute || (authChecked && !mustCompleteProfile);
+
   return (
     <MantineProvider theme={theme}>
       <Notifications position="top-center" autoClose={2000} limit={1} />
       {!isPublicRoute && <ValidateAuth />}
-      {!isPublicRoute && <InactivityHandler />}
+      {!isPublicRoute && authChecked && !mustCompleteProfile && (
+        <InactivityHandler />
+      )}
+      {!isPublicRoute && !authChecked && (
+        <Center h="100vh">
+          <Loader size="md" />
+        </Center>
+      )}
+      {!isPublicRoute && authChecked && mustCompleteProfile && (
+        <ProfileCompletionModal />
+      )}
 
-      <Routes>
-        <Route path="/" element={<Navigate to="/accounts/login" replace />} />
-        <Route
-          path="/dashboard"
-          element={
-            <Layout>
-              <Dashboard />
-            </Layout>
-          }
-        />
-        <Route
-          path="/academics"
-          element={
-            <Layout>
-              <AcademicPage />
-            </Layout>
-          }
-        />
-        <Route
-          path="/thesis-research"
-          element={
-            <Layout>
-              <ThesisResearchPage />
-            </Layout>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <Layout>
-              <Profile />
-            </Layout>
-          }
-        />
-        <Route
-          path="/facultyprofessionalprofile/*"
-          element={
-            <Layout>
-              <FacultyProfessionalProfile />
-            </Layout>
-          }
-        />
-        <Route
-          path="/programme_curriculum/*"
-          element={
-            <div>
-              <ProgrammeCurriculumRoutes />
-            </div>
-          }
-        />
-        <Route path="/accounts/login" element={<LoginPage />} />
-        <Route
-          path="/reset-password"
-          element={<Navigate to="/accounts/login" replace />}
-        />
-        <Route
-          path="/thesis-invitation/:token/:action"
-          element={<ThesisInvitationResponse />}
-        />
-        <Route
-          path="/thesis-evaluation/:token"
-          element={<ThesisEvaluationForm />}
-        />
-        <Route
-          path="/thesis-examiner-panel/:token/:action"
-          element={<ThesisExaminerPanelResponse />}
-        />
-        <Route
-          path="/thesis-examiner-panel/:token/score"
-          element={<ThesisExaminerPanelScoring />}
-        />
-        <Route path="/examination/*" element={<Examination />} />
-        <Route path="/database/*" element={<Database />} />
-        <Route
-          path="/placement-cell/*"
-          element={
-            <Layout>
-              <PlacementCellRoutes />
-            </Layout>
-          }
-        />
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
+      {contentReady && (
+        <Routes>
+          <Route path="/" element={<Navigate to="/accounts/login" replace />} />
+          <Route
+            path="/dashboard"
+            element={
+              <Layout>
+                <Dashboard />
+              </Layout>
+            }
+          />
+          <Route
+            path="/academics"
+            element={
+              <Layout>
+                <AcademicPage />
+              </Layout>
+            }
+          />
+          <Route
+            path="/thesis-research"
+            element={
+              <Layout>
+                <ThesisResearchPage />
+              </Layout>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <Layout>
+                <Profile />
+              </Layout>
+            }
+          />
+          <Route
+            path="/facultyprofessionalprofile/*"
+            element={
+              <Layout>
+                <FacultyProfessionalProfile />
+              </Layout>
+            }
+          />
+          <Route
+            path="/programme_curriculum/*"
+            element={
+              <div>
+                <ProgrammeCurriculumRoutes />
+              </div>
+            }
+          />
+          <Route path="/accounts/login" element={<LoginPage />} />
+          <Route
+            path="/reset-password"
+            element={<Navigate to="/accounts/login" replace />}
+          />
+          <Route
+            path="/thesis-invitation/:token/:action"
+            element={<ThesisInvitationResponse />}
+          />
+          <Route
+            path="/thesis-evaluation/:token"
+            element={<ThesisEvaluationForm />}
+          />
+          <Route
+            path="/thesis-examiner-panel/:token/:action"
+            element={<ThesisExaminerPanelResponse />}
+          />
+          <Route
+            path="/thesis-examiner-panel/:token/score"
+            element={<ThesisExaminerPanelScoring />}
+          />
+          <Route path="/examination/*" element={<Examination />} />
+          <Route path="/database/*" element={<Database />} />
+          <Route
+            path="/placement-cell/*"
+            element={
+              <Layout>
+                <PlacementCellRoutes />
+              </Layout>
+            }
+          />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      )}
     </MantineProvider>
   );
 }

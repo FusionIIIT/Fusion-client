@@ -10,6 +10,8 @@ import {
   setRole,
   setAccessibleModules,
   setCurrentAccessibleModules,
+  setMustCompleteProfile,
+  setAuthChecked,
   clearUserName,
   clearRoles,
 } from "../redux/userslice";
@@ -45,6 +47,7 @@ function ValidateAuth() {
         accessible_modules = [],
         last_selected_role,
         roll_no,
+        must_complete_profile = false,
       } = data;
 
       // console.log("User Data:", data);
@@ -58,8 +61,11 @@ function ValidateAuth() {
 
       dispatch(setAccessibleModules(accessible_modules));
       dispatch(setCurrentAccessibleModules());
+      dispatch(setMustCompleteProfile(must_complete_profile));
+      dispatch(setAuthChecked(true));
     } catch (error) {
       console.error("User validation failed:", error);
+      dispatch(setAuthChecked(true));
       notifications.show({
         title: "Session Expired",
         message: "Your session has expired. Please log in again.",
