@@ -10,10 +10,14 @@ const userSlice = createSlice({
     accessibleModules: {}, // Format---> {role: {module: true}}
     currentAccessibleModules: {}, // Format---> {module: true}
     mustCompleteProfile: false, // first-login student must finish profile popup
+    authChecked: false, // /api/auth/me has resolved (gates route rendering)
   },
   reducers: {
     setMustCompleteProfile: (state, action) => {
       state.mustCompleteProfile = action.payload;
+    },
+    setAuthChecked: (state, action) => {
+      state.authChecked = action.payload;
     },
     setUserName: (state, action) => {
       state.username = action.payload;
@@ -51,6 +55,7 @@ export const {
   setAccessibleModules,
   setCurrentAccessibleModules,
   setMustCompleteProfile,
+  setAuthChecked,
   clearUserName,
   clearRoles,
 } = userSlice.actions;
