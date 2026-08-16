@@ -324,7 +324,7 @@ export default function AdminPhDCourseRequests() {
   return (
     <>
       <Card>
-        <Stack spacing="md">
+        <Stack gap="md">
           <Group grow align="flex-start">
             <Select
               label="Programme"
@@ -359,7 +359,7 @@ export default function AdminPhDCourseRequests() {
             value={remarks}
             onChange={(e) => setRemarks(e.currentTarget.value)}
           />
-          <Group position="left" spacing="xs">
+          <Group justify="flex-start" gap="xs">
             <Button
               size="sm"
               onClick={fetchAll}
@@ -500,7 +500,7 @@ export default function AdminPhDCourseRequests() {
                       <th>Detail</th>
                       <th>Credits</th>
                       <th>
-                        <Group spacing="xs" position="apart">
+                        <Group gap="xs" justify="space-between">
                           <span>Status</span>
                           <Select
                             placeholder="All"

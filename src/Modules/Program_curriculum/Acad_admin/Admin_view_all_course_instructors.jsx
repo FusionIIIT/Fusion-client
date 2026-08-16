@@ -16,10 +16,12 @@ import { adminFetchCourseInstructorData } from "../api/api";
 import { MagnifyingGlass, PencilSimple, Trash } from "@phosphor-icons/react";
 import { notifications } from "@mantine/notifications";
 import { host } from "../../../routes/globalRoutes";
+import ConfirmDialog from "../../../components/ConfirmDialog";
 
 function Admin_view_all_course_instructors() {
   const [searchQuery, setSearchQuery] = useState("");
   const [instructors, setInstructors] = useState([]);
+  const [pendingDelete, setPendingDelete] = useState(null);
   const [loading, setLoading] = useState(true);
   const isMobile = useMediaQuery("(max-width: 768px)");
 
@@ -92,9 +94,7 @@ function Admin_view_all_course_instructors() {
   });
 
   const handleDelete = async (instructorId) => {
-    if (!window.confirm("Are you sure you want to delete this course instructor?")) {
-      return;
-    }
+    setPendingDelete(null);
 
     try {
       const token = localStorage.getItem("authToken");
@@ -219,7 +219,7 @@ function Admin_view_all_course_instructors() {
               variant="light"
               color="red"
               size="md"
-              onClick={() => handleDelete(element.id)}
+              onClick={() => setPendingDelete(element.id)}
             >
               <Trash size={16} />
             </ActionIcon>
@@ -338,6 +338,12 @@ function Admin_view_all_course_instructors() {
                   )}
                 </tbody>
               </Table>
+              <ConfirmDialog
+                opened={pendingDelete !== null}
+                onCancel={() => setPendingDelete(null)}
+                onConfirm={() => handleDelete(pendingDelete)}
+                message="Are you sure you want to delete this course instructor?"
+              />
             </div>
           </Container>
         </MantineProvider>

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Card, Title, Table, Badge, Center, Loader } from "@mantine/core";
+import { Card, Title, Badge, Center, Loader } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import axios from "axios";
+import FusionTable from "../../../components/FusionTable";
 import { academicOfficeTeachingCreditListRoute } from "../../../routes/academicRoutes";
 import {
   STATUS_LABEL,
@@ -9,6 +10,16 @@ import {
   RESULT_LABEL,
   authHeaders,
 } from "./teachingCreditShared";
+
+const COLUMNS = [
+  "Roll No",
+  "Student",
+  "Discipline",
+  "Semester",
+  "Course",
+  "Status",
+  "Result",
+];
 
 export default function AcademicOfficeTeachingCreditList() {
   const [registrations, setRegistrations] = useState([]);
@@ -44,51 +55,35 @@ export default function AcademicOfficeTeachingCreditList() {
       </Center>
     );
 
+  const rows = registrations.map((r) => ({
+    id: r.id,
+    "Roll No": r.student_roll,
+    Student: r.student_name,
+    Discipline: r.student_discipline,
+    Semester: r.semester_no,
+    Course: r.allocated_course
+      ? `${r.allocated_course.code} — ${r.allocated_course.name}`
+      : "—",
+    Status: (
+      <Badge color={STATUS_COLOR[r.status]}>
+        {STATUS_LABEL[r.status] || r.status}
+      </Badge>
+    ),
+    Result: r.result ? RESULT_LABEL[r.result] : "—",
+  }));
+
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
       <Title order={3} mb="md">
         Teaching Credit — All Registrations
       </Title>
 
-      <Table striped highlightOnHover>
-        <thead>
-          <tr>
-            <th>Roll No</th>
-            <th>Student</th>
-            <th>Discipline</th>
-            <th>Semester</th>
-            <th>Course</th>
-            <th>Status</th>
-            <th>Result</th>
-          </tr>
-        </thead>
-        <tbody>
-          {registrations.length === 0 && (
-            <tr>
-              <td colSpan={7}>No teaching credit registrations found.</td>
-            </tr>
-          )}
-          {registrations.map((r) => (
-            <tr key={r.id}>
-              <td>{r.student_roll}</td>
-              <td>{r.student_name}</td>
-              <td>{r.student_discipline}</td>
-              <td>{r.semester_no}</td>
-              <td>
-                {r.allocated_course
-                  ? `${r.allocated_course.code} — ${r.allocated_course.name}`
-                  : "—"}
-              </td>
-              <td>
-                <Badge color={STATUS_COLOR[r.status]}>
-                  {STATUS_LABEL[r.status] || r.status}
-                </Badge>
-              </td>
-              <td>{r.result ? RESULT_LABEL[r.result] : "—"}</td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+      <FusionTable
+        columnNames={COLUMNS}
+        elements={rows}
+        ariaLabel="Teaching credit registrations"
+        emptyMessage="No teaching credit registrations found."
+      />
     </Card>
   );
 }

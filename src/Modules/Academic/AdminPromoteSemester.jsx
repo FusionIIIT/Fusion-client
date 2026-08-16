@@ -214,7 +214,7 @@ export default function AdminPromoteSemester() {
               </tbody>
             </Table>
           </ScrollArea>
-          <Group position="right" mt="md">
+          <Group justify="flex-end" mt="md">
             <Button
               color="orange"
               variant="outline"
@@ -265,7 +265,7 @@ export default function AdminPromoteSemester() {
             </tbody>
           </Table>
         </ScrollArea>
-        <Group position="right" mt="md">
+        <Group justify="flex-end" mt="md">
           <Button variant="outline" onClick={() => setModalOpen(false)} disabled={loadingApply}>
             Cancel
           </Button>

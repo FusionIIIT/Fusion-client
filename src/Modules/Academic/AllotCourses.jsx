@@ -228,17 +228,17 @@ export default function AllotCourses() {
   return (
     <Card>
       <LoadingOverlay visible={loading} />
-      <Text size="2xl" weight={700} align="center" mb="md">
+      <Text size="2xl" fw={700} ta="center" mb="md">
         Allot Student Courses
       </Text>
       <Button leftSection={<IconDownload />} variant="light" onClick={downloadTemplate} mb="md">
         Download Template
       </Button>
-      <Text size="sm" color="dimmed" mb="sm">
+      <Text size="sm" c="dimmed" mb="sm">
         Format: RollNo | CourseSlot | CourseCode | CourseName
       </Text>
       <Divider mb="lg" />
-      <Stack spacing="md" mb="lg">
+      <Stack gap="md" mb="lg">
         <Select
           clearable
           label="Programme"

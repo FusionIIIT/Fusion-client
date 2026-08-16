@@ -75,7 +75,7 @@ export function useAddStudents({
               <Text size="sm" mb={8}>
                 <strong>Create a curriculum first:</strong>
               </Text>
-              <Text size="xs" color="gray.7">
+              <Text size="xs" c="gray.7">
                 1. Go to Programme Curriculum → Admin Curriculum
                 <br />
                 2. Click "Add Curriculum" to create a new curriculum
@@ -106,7 +106,7 @@ export function useAddStudents({
                   Create batches for {details.academicYear || "current year"}:
                 </strong>
               </Text>
-              <Text size="xs" color="gray.7">
+              <Text size="xs" c="gray.7">
                 1. Curriculum ✅ (completed)
                 <br />
                 2. Create batches and assign curriculum to each
@@ -133,7 +133,7 @@ export function useAddStudents({
               <Text size="sm" mb={8}>
                 <strong>Assign curriculum to batches:</strong>
               </Text>
-              <Text size="xs" color="gray.7">
+              <Text size="xs" c="gray.7">
                 1. Curriculum ✅ (completed)
                 <br />
                 2. Batches ✅ (completed)
@@ -162,7 +162,7 @@ export function useAddStudents({
               <Text size="sm" mb={8}>
                 <strong>All prerequisites completed:</strong>
               </Text>
-              <Text size="xs" color="gray.7">
+              <Text size="xs" c="gray.7">
                 1. Curriculum ✅<br />
                 2. Batches ✅<br />
                 3. Curriculum Assignment ✅<br />
@@ -225,10 +225,6 @@ export function useAddStudents({
           (typeof value === "string" && value.trim() === "");
 
         if (isEmpty) {
-          console.log(
-            `Field ${fieldKey} (${fieldConfig.label}) is missing or empty. Value:`,
-            value,
-          );
           fieldErrors[fieldKey] = `${fieldConfig.label} is required`;
         }
       }
@@ -992,13 +988,8 @@ export function useAddStudents({
   const handleExcelUpload = async () => {
     try {
       // Check if PhD semester is selected for PhD section
-      console.log("handleExcelUpload called:", {
-        activeSection,
-        selectedPhdSemester,
-      });
 
       if (activeSection === "phd" && !selectedPhdSemester) {
-        console.log("Blocked: PhD semester not selected");
         notifications.show({
           title: "Semester Selection Required",
           message:
@@ -1193,11 +1184,6 @@ export function useAddStudents({
       const transformedData = transformDataForDatabase(dataToUpload);
 
       // Debug logging
-      console.log("PhD Upload Debug:", {
-        activeSection,
-        selectedPhdSemester,
-        sendingValue: activeSection === "phd" ? selectedPhdSemester : null,
-      });
 
       const response = await saveStudentsBatch(
         transformedData,
@@ -1352,10 +1338,6 @@ export function useAddStudents({
         );
 
         if (Object.keys(finalErrors).length > 0) {
-          console.log("Validation failed. Errors:", finalErrors);
-          console.log("Form data:", manualFormData);
-          console.log("Active section:", activeSection);
-
           setErrors(finalErrors);
           const phoneErrors = Object.values(finalErrors).filter(
             (error) =>

@@ -9,17 +9,19 @@ import {
   Grid,
   TextInput,
   Button,
-  Table,
-  ActionIcon,
   Pagination,
 } from "@mantine/core";
-import { FloppyDisk, PencilSimple, Trash } from "@phosphor-icons/react";
+import { FloppyDisk } from "@phosphor-icons/react";
 import { useSelector } from "react-redux";
+import FusionTable from "../../../../components/FusionTable";
+import RowActions from "../../../../components/RowActions";
 import {
   deleteAdministrativePosition,
   getAdministrativePosition,
   insertAdministrativePosition,
 } from "../../../../routes/facultyProfessionalProfileRoutes";
+
+const COLUMNS = ["Title", "Description", "From", "To", "Actions"];
 // import { useSelector } from "react-redux";
 
 export default function AdministrativePosition() {
@@ -125,6 +127,21 @@ export default function AdministrativePosition() {
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
   const currentRows = tableData.slice(indexOfFirstRow, indexOfLastRow);
 
+  const rows = currentRows.map((position) => ({
+    id: position.id,
+    Title: position.title,
+    Description: position.description,
+    From: position.from_date,
+    To: position.to_date,
+    Actions: (
+      <RowActions
+        label={position.title || "position"}
+        onEdit={() => handleEdit(position)}
+        onDelete={() => handleDelete(position.id)}
+      />
+    ),
+  }));
+
   return (
     <MantineProvider withGlobalStyles withNormalizeCSS>
       <Container size="2xl" mt="xl">
@@ -207,7 +224,7 @@ export default function AdministrativePosition() {
                   type="submit"
                   mt="md"
                   loading={isLoading}
-                  leftIcon={<FloppyDisk size={16} />}
+                  leftSection={<FloppyDisk size={16} />}
                   style={{ backgroundColor: "#2185d0", color: "#fff" }}
                 >
                   Save
@@ -232,116 +249,12 @@ export default function AdministrativePosition() {
           <Title order={3} mb="lg" style={{ color: "#2185d0" }}>
             Administrative Positions:
           </Title>
-          <Table
-            striped
-            highlightOnHover
-            style={{ minWidth: "100%", borderCollapse: "collapse" }}
-          >
-            <thead>
-              <tr style={{ backgroundColor: "#f8f9fa" }}>
-                {["Title", "Description", "From", "To", "Actions"].map(
-                  (header, index) => (
-                    <th
-                      key={index}
-                      style={{
-                        textAlign: "center",
-                        padding: "12px 16px",
-                        color: "#495057",
-                        fontWeight: "600",
-                        border: "1px solid #dee2e6",
-                        backgroundColor: "#f1f3f5",
-                      }}
-                    >
-                      {header}
-                    </th>
-                  ),
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {currentRows.length > 0 ? (
-                currentRows.map((position, index) => (
-                  <tr key={index} style={{ backgroundColor: "#fff" }}>
-                    <td
-                      style={{
-                        padding: "12px 16px",
-                        textAlign: "center",
-                        border: "1px solid #dee2e6",
-                      }}
-                    >
-                      {position.title}
-                    </td>
-                    <td
-                      style={{
-                        padding: "12px 16px",
-                        textAlign: "center",
-                        border: "1px solid #dee2e6",
-                      }}
-                    >
-                      {position.description}
-                    </td>
-                    <td
-                      style={{
-                        padding: "12px 16px",
-                        textAlign: "center",
-                        border: "1px solid #dee2e6",
-                      }}
-                    >
-                      {position.from_date}
-                    </td>
-                    <td
-                      style={{
-                        padding: "12px 16px",
-                        textAlign: "center",
-                        border: "1px solid #dee2e6",
-                      }}
-                    >
-                      {position.to_date}
-                    </td>
-                    <td
-                      style={{
-                        padding: "12px",
-                        textAlign: "center",
-                        border: "1px solid #dee2e6",
-                        whiteSpace: "nowrap",
-                        width: "100px",
-                      }}
-                    >
-                      <ActionIcon
-                        color="blue"
-                        onClick={() => handleEdit(position)}
-                        variant="light"
-                        style={{ marginRight: "8px" }}
-                      >
-                        <PencilSimple size={16} />
-                      </ActionIcon>
-                      <ActionIcon
-                        color="red"
-                        onClick={() => handleDelete(position.id)}
-                        variant="light"
-                      >
-                        <Trash size={16} />
-                      </ActionIcon>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan={5}
-                    style={{
-                      textAlign: "center",
-                      padding: "20px",
-                      color: "#6c757d",
-                      border: "1px solid #dee2e6",
-                    }}
-                  >
-                    No administrative positions found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </Table>
+          <FusionTable
+            columnNames={COLUMNS}
+            elements={rows}
+            ariaLabel="Administrative positions"
+            emptyMessage="No administrative positions found."
+          />
 
           <Pagination
             total={Math.ceil(tableData.length / rowsPerPage)}

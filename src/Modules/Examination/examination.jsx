@@ -1,201 +1,75 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { lazy, useMemo } from "react";
+import { Route } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { useState, useEffect } from "react";
-import VerifyGrades from "./verifyGrades.jsx";
-import GenerateTranscript from "./generateTranscript.jsx";
-import GenerateGradeSheet from "./generateGradeSheet.jsx";
-import Nav from "./components/nav2.jsx";
-import { Layout } from "../../components/layout.jsx";
-import StudentTranscript from "./components/studentTranscript.jsx";
-import VerifyDean from "./verifyDean.jsx";
-import ValidateDean from "./validateDean.jsx";
-import CheckResult from "./checkResult.jsx";
-import CheckResultProf from "./checkResultsProf.jsx";
-import CustomBreadExam from "./components/customBreadCrumbs.jsx";
-import SubmitGradesProf from "./submitGradesProf.jsx";
+
+import { Layout } from "../../app/AppLayout";
+import { ModuleRoutes } from "../../ui/routing/ModuleRoutes";
+import { pagesForRole } from "../../ui/nav/roles";
 import ProtectedRoute from "./routes/protectedRoutes.jsx";
-import AnnounceResult from "./AnnounceResult.jsx";
-import PublishResultSelection from "./PublishResultSelection.jsx";
-import GradeStatus from "./GradeStatus.jsx";
-import GradeSummary from "./GradeSummary.jsx";
-import GradeValidation from "./GradeValidation.jsx";
+import { EXAMINATION_BASE, EXAMINATION_PAGES } from "./pages";
+
+const COMPONENTS = {
+  submitGradesProf: lazy(() => import("./submitGradesProf.jsx")),
+  verifyGrades: lazy(() => import("./verifyGrades.jsx")),
+  gradeValidation: lazy(() => import("./GradeValidation.jsx")),
+  gradeStatus: lazy(() => import("./GradeStatus.jsx")),
+  gradeSummary: lazy(() => import("./GradeSummary.jsx")),
+  downloadGradesProf: lazy(() => import("./checkResultsProf.jsx")),
+  verifyDean: lazy(() => import("./verifyDean.jsx")),
+  validateDean: lazy(() => import("./validateDean.jsx")),
+  checkResult: lazy(() => import("./checkResult.jsx")),
+  announceResult: lazy(() => import("./AnnounceResult.jsx")),
+  generateTranscript: lazy(() => import("./generateTranscript.jsx")),
+  generateGradeSheet: lazy(() => import("./generateGradeSheet.jsx")),
+};
+
+const StudentTranscript = lazy(
+  () => import("./components/studentTranscript.jsx"),
+);
+const PublishResultSelection = lazy(
+  () => import("./PublishResultSelection.jsx"),
+);
+
+const DETAIL_ROUTES = [
+  <Route
+    key="transcript-detail"
+    path="generate-transcript/:rollNumber"
+    element={
+      <ProtectedRoute roles={["acadadmin"]}>
+        <StudentTranscript />
+      </ProtectedRoute>
+    }
+  />,
+  <Route
+    key="publish-detail"
+    path="result-announcement/:id/publish"
+    element={
+      <ProtectedRoute roles={["acadadmin", "Dean Academic"]}>
+        <PublishResultSelection />
+      </ProtectedRoute>
+    }
+  />,
+];
 
 export default function Examination() {
   const userRole = useSelector((state) => state.user.role);
-  const [isLoaded, setIsLoaded] = useState(false);
 
-  useEffect(() => {
-    if (userRole !== undefined && userRole !== null) {
-      setIsLoaded(true);
-    }
-  }, [userRole]);
+  const pages = useMemo(
+    () => pagesForRole(EXAMINATION_PAGES, userRole),
+    [userRole],
+  );
 
-  if (!isLoaded) return null;
-
-  const defaultRedirectPath = () => {
-    switch (userRole) {
-      case "Associate Professor":
-      case "Assistant Professor":
-      case "Professor":
-        return "/examination/submit-grades-prof";
-      case "acadadmin":
-        return "/examination/submit-grades-prof";
-      case "student":
-        return "/examination/result";
-      case "Dean Academic":
-        return "/examination/update";
-      default:
-        return "/examination/verify-grades"; // Fallback
-    }
-  };
+  if (userRole === undefined || userRole === null) return null;
 
   return (
-    <div>
-      <Layout>
-        <CustomBreadExam />
-        <Nav />
-        <Routes>
-          <Route
-            path="/"
-            element={<Navigate to={defaultRedirectPath()} replace />}
-          />
-          {/* /submit-grades route removed: acadadmin no longer submits grades
-              (per-section faculty submission only). */}
-          <Route
-            path="/verify-grades"
-            element={
-              <ProtectedRoute roles={["acadadmin"]}>
-                <VerifyGrades />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/generate-transcript"
-            element={
-              <ProtectedRoute roles={["acadadmin"]}>
-                <GenerateTranscript />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/generate-transcript/:rollNumber"
-            element={
-              <ProtectedRoute roles={["acadadmin"]}>
-                <StudentTranscript />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/generate-gradesheet"
-            element={
-              <ProtectedRoute roles={["acadadmin"]}>
-                <GenerateGradeSheet />
-              </ProtectedRoute>
-            }
-          />
-          {/* <Route
-            path="/announcement"
-            element={
-              <ProtectedRoute roles={["acadadmin"]}>
-                <Announcement />
-              </ProtectedRoute>
-            }
-          /> */}
-          <Route
-            path="/update"
-            element={
-              <ProtectedRoute roles={["Dean Academic"]}>
-                <VerifyDean />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/validate"
-            element={
-              <ProtectedRoute roles={["Dean Academic"]}>
-                <ValidateDean />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/result"
-            element={
-              <ProtectedRoute roles={["student"]}>
-                <CheckResult />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/submit-grades-prof"
-            element={
-              <ProtectedRoute
-                roles={[
-                  "acadadmin",
-                  "Associate Professor",
-                  "Assistant Professor",
-                  "Professor",
-                ]}
-              >
-                <SubmitGradesProf />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/download-grades-prof"
-            element={
-              <ProtectedRoute
-                roles={[
-                  "Associate Professor",
-                  "Assistant Professor",
-                  "Professor",
-                ]}
-              >
-                <CheckResultProf />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/result-announcement"
-            element={
-              <ProtectedRoute roles={["acadadmin", "Dean Academic"]}>
-                <AnnounceResult />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/result-announcement/:id/publish"
-            element={
-              <ProtectedRoute roles={["acadadmin", "Dean Academic"]}>
-                <PublishResultSelection />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/grade-status"
-            element={
-              <ProtectedRoute roles={["acadadmin", "Dean Academic"]}>
-                <GradeStatus />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/grade-summary"
-            element={
-              <ProtectedRoute roles={["acadadmin", "Dean Academic"]}>
-                <GradeSummary />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/grade-validation"
-            element={
-              <ProtectedRoute roles={["acadadmin"]}>
-                <GradeValidation />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </Layout>
-    </div>
+    <Layout>
+      <ModuleRoutes
+        pages={pages}
+        components={COMPONENTS}
+        extraRoutes={DETAIL_ROUTES}
+        basePath={EXAMINATION_BASE}
+        emptyMessage="No examination pages apply to your role."
+      />
+    </Layout>
   );
 }

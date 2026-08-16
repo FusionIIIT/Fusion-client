@@ -314,7 +314,7 @@ const AdminSwayamDashboard = () => {
       key: 'actions',
       header: 'Actions',
       render: (req) => (
-        <Group spacing="xs">
+        <Group gap="xs">
           {activeStatusTab === 'pending' && (
             <>
               <Tooltip label="Approve">
@@ -386,7 +386,7 @@ const AdminSwayamDashboard = () => {
   return (
     <>
       <Card>
-        <Stack spacing="md">
+        <Stack gap="md">
           <Group grow align="flex-start">
             <Select
               label="Academic Year"
@@ -413,7 +413,7 @@ const AdminSwayamDashboard = () => {
               disabled={semesterOptions.length === 0}
             />
           </Group>
-          <Group position="left">
+          <Group justify="flex-start">
             <Button
               size="sm"
               onClick={fetchRequests}
@@ -441,7 +441,7 @@ const AdminSwayamDashboard = () => {
             padding: "10px 16px",
           }}
         >
-          <Tabs.List style={{ gap: 6, flexWrap: "nowrap" }}>
+          <Tabs.List style={{ gap: 6 }}>
             <Tabs.Tab
               value="replace"
               style={{
@@ -530,12 +530,12 @@ const AdminSwayamDashboard = () => {
                 {["pending", "approved", "rejected"].map((statusVal) => (
                   <Tabs.Panel key={statusVal} value={statusVal}>
                   <Box p="lg" style={{ background: "#fff" }}>
-                    <Group position="apart" mb="md">
+                    <Group justify="space-between" mb="md">
                       <Title order={5} style={{ color: "#333" }}>
                         {activeRequestTab === "extra_credits" ? "Extra Credits" : "Replace with Swayam"}{" "}
                         — {activeStatusTab.charAt(0).toUpperCase() + activeStatusTab.slice(1)} Requests
                       </Title>
-                      <Group spacing="xs">
+                      <Group gap="xs">
                         {activeStatusTab === "pending" && (
                           <>
                             <Button

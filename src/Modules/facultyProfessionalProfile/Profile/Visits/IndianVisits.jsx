@@ -78,12 +78,10 @@ export default function IndianVisits() {
       formData.append("end_date", inputs.toDate);
 
       if (isEdit === false) {
-        const res = await axios.post(insertIVisitsRoute, formData);
-        console.log(res.data);
+        await axios.post(insertIVisitsRoute, formData);
       } else {
         formData.append("ivisit_id", Id);
-        const res = await axios.post(insertIVisitsRoute, formData);
-        console.log(res.data);
+        await axios.post(insertIVisitsRoute, formData);
         setEdit(false);
         setId(0);
       }
@@ -123,7 +121,6 @@ export default function IndianVisits() {
   };
 
   const handleDelete = async (projectId) => {
-    console.log(projectId);
     if (window.confirm("Are you sure you want to delete this Visit?")) {
       try {
         await axios.post(
@@ -266,7 +263,7 @@ export default function IndianVisits() {
                   type="submit"
                   mt="md"
                   loading={isLoading}
-                  leftIcon={<FloppyDisk size={16} />}
+                  leftSection={<FloppyDisk size={16} />}
                   style={{ backgroundColor: "#2185d0", color: "#fff" }} // Custom button styling
                 >
                   Save

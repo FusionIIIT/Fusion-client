@@ -20,6 +20,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { saveAs } from "file-saver";
 import { grade_validation } from "./routes/examinationRoutes.jsx";
+import { computeCreditSummary, fmtCredits } from "../../lib/credits";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const esc = (s) =>
@@ -33,44 +34,22 @@ const fmt1 = (n) => (typeof n === "number" ? n.toFixed(1) : "0.0");
 
 // ── HTML builder ─────────────────────────────────────────────────────────────
 function buildCreditsDetailsHTML(semesters) {
-  // Only graded semesters contribute to earned-credit rows
-  const graded = semesters.filter((s) => !s.is_registered_only);
+  const { rows: summaryRows, totals } = computeCreditSummary(semesters);
+  const fmt = fmtCredits;
 
-  let totalEarned = 0, totalRegular = 0, totalBacklogImp = 0, totalSwayam = 0;
-
-  const rows = graded.map((sem) => {
-    let earned = 0, regular = 0, backlogImp = 0, swayam = 0;
-    for (const c of sem.courses) {
-      const cr    = Number(c.credits) || 0;
-      const rem   = (c.remark || "Regular");
-      const isSW  = (c.code || "").toUpperCase().startsWith("SW");
-      // S earns credit (counted in total); X and failing/missing grades do not.
-      const isFail = !c.grade || ["F","I","X","AU","CD","—"].includes(c.grade);
-
-      if (isFail) continue;          // no earned credit for failing/missing grades
-
-      earned += cr;
-      if (isSW)                                        swayam    += cr;
-      else if (rem === "Backlog" || rem === "Improvement") backlogImp += cr;
-      else                                             regular   += cr;
-    }
-
-    totalEarned    += earned;
-    totalRegular   += regular;
-    totalBacklogImp += backlogImp;
-    totalSwayam    += swayam;
-
-    return `
+  const rows = summaryRows.map((r) => `
       <tr>
-        <td class="cd-sem">${esc(sem.label)}</td>
-        <td class="cd-num">${earned % 1 === 0 ? earned : earned.toFixed(1)}</td>
-        <td class="cd-num">${regular % 1 === 0 ? regular : regular.toFixed(1)}</td>
-        <td class="cd-num">${backlogImp % 1 === 0 ? backlogImp : backlogImp.toFixed(1)}</td>
-        <td class="cd-num">${swayam % 1 === 0 ? swayam : swayam.toFixed(1)}</td>
-      </tr>`;
-  }).join("");
+        <td class="cd-sem">${esc(r.label)}</td>
+        <td class="cd-num">${fmt(r.earned)}</td>
+        <td class="cd-num">${fmt(r.regular)}</td>
+        <td class="cd-num">${fmt(r.backlogImp)}</td>
+        <td class="cd-num">${fmt(r.swayam)}</td>
+      </tr>`).join("");
 
-  const fmt = (n) => n % 1 === 0 ? n : n.toFixed(1);
+  const totalEarned = totals.earned;
+  const totalRegular = totals.regular;
+  const totalBacklogImp = totals.backlogImp;
+  const totalSwayam = totals.swayam;
 
   return `
   <div class="cd-block">
@@ -523,7 +502,7 @@ export default function GradeValidation() {
   // ── Render ───────────────────────────────────────────────────────────────
   return (
     <Card shadow="sm" p="md" radius="md" withBorder>
-      <Stack spacing="md" pos="relative">
+      <Stack gap="md" pos="relative">
         <LoadingOverlay visible={loadingStudents} />
 
         {error && (
@@ -533,8 +512,7 @@ export default function GradeValidation() {
         )}
 
         <Paper shadow="sm" radius="sm" p="md" withBorder>
-          <Stack spacing="md">
-            <Text size="xl" weight={700}>Grade Validation</Text>
+          <Stack gap="md">
             <Box>
               <Select
                 label="Batch"
@@ -559,7 +537,7 @@ export default function GradeValidation() {
               </Button>
               {students.length > 0 && (
                 <Button
-                  leftIcon={<IconPackage size={16} />}
+                  leftSection={<IconPackage size={16} />}
                   onClick={handleExportAll}
                   loading={exportingAll}
                   radius="sm"
@@ -576,7 +554,7 @@ export default function GradeValidation() {
 
         {students.length > 0 && (
           <Paper shadow="sm" radius="sm" p="md" withBorder>
-            <Text size="sm" color="dimmed" mb="sm">
+            <Text size="sm" c="dimmed" mb="sm">
               {students.length} student{students.length !== 1 ? "s" : ""} found
             </Text>
             <Table striped highlightOnHover fontSize="sm" style={{ border: "1px solid #dee2e6" }}>
@@ -604,7 +582,7 @@ export default function GradeValidation() {
                         radius="sm"
                         color="blue"
                         variant="filled"
-                        leftIcon={<IconDownload size={14} />}
+                        leftSection={<IconDownload size={14} />}
                         loading={downloadingRow === s.roll_no}
                         disabled={exportingAll}
                         onClick={() => handleDownload(s.roll_no)}

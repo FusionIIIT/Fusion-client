@@ -176,9 +176,9 @@ const FieldComparisonModal = ({ opened, onClose }) => {
       size="lg"
       centered
     >
-      <Stack spacing="md">
+      <Stack gap="md">
         <Alert color="blue" icon={<Info size={16} />}>
-          <Text size="sm" weight={600}>
+          <Text size="sm" fw={600}>
             Field Synchronization Status
           </Text>
           <Text size="xs" mt={4}>
@@ -187,16 +187,16 @@ const FieldComparisonModal = ({ opened, onClose }) => {
           </Text>
         </Alert>
 
-        <Tabs value={activeTab} onTabChange={setActiveTab}>
+        <Tabs value={activeTab} onChange={setActiveTab}>
           <Tabs.List>
             <Tabs.Tab value="before">Before Sync</Tabs.Tab>
             <Tabs.Tab value="after">After Sync ✅</Tabs.Tab>
           </Tabs.List>
 
           <Tabs.Panel value="before" pt="md">
-            <Stack spacing="sm">
+            <Stack gap="sm">
               <Group>
-                <Text size="sm" weight={600}>
+                <Text size="sm" fw={600}>
                   Status Summary:
                 </Text>
                 <Badge color="green" size="sm">
@@ -223,9 +223,9 @@ const FieldComparisonModal = ({ opened, onClose }) => {
           </Tabs.Panel>
 
           <Tabs.Panel value="after" pt="md">
-            <Stack spacing="sm">
+            <Stack gap="sm">
               <Group>
-                <Text size="sm" weight={600}>
+                <Text size="sm" fw={600}>
                   Status Summary:
                 </Text>
                 <Badge color="green" size="sm">
@@ -266,7 +266,7 @@ const FieldComparisonModal = ({ opened, onClose }) => {
             {currentData.map((field) => (
               <tr key={field.field}>
                 <td>
-                  <Text size="sm" weight={500}>
+                  <Text size="sm" fw={500}>
                     {field.label}
                     {field.required && (
                       <span style={{ color: "red", marginLeft: 4 }}>*</span>
@@ -288,7 +288,7 @@ const FieldComparisonModal = ({ opened, onClose }) => {
           </tbody>
         </Table>
 
-        <Group position="right" mt="md">
+        <Group justify="flex-end" mt="md">
           <Button variant="light" onClick={onClose}>
             Close
           </Button>

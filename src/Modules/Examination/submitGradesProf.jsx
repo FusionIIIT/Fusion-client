@@ -317,7 +317,7 @@ export default function SubmitGradesProf() {
       {error && <Alert color="red" mb="md">{error}</Alert>}
       {errorList.length > 0 && (
         <Alert color="red" mb="md">
-          <Text weight={500}>The following errors occurred:</Text>
+          <Text fw={500}>The following errors occurred:</Text>
           <List withPadding>
             {errorList.map((e,i) => <List.Item key={i}>{e.replace(/^[-\s]+/,"")}</List.Item>)}
           </List>
@@ -420,7 +420,7 @@ export default function SubmitGradesProf() {
           </Grid>
 
           <Box mt="xl">
-            <Text size="sm" mb="xs" weight={500}>
+            <Text size="sm" mb="xs" fw={500}>
               CSV File Format Requirements:
             </Text>
             <List size="sm" spacing="xs" withPadding>
@@ -442,7 +442,7 @@ export default function SubmitGradesProf() {
             >
               <Text 
                 size="xl" 
-                weight={900} 
+                fw={900} 
                 style={{ 
                   color: '#8B0000',
                   fontSize: '22px',
@@ -470,7 +470,7 @@ export default function SubmitGradesProf() {
             )}
           </Box>
 
-          <Group mt="xl" position="apart">
+          <Group mt="xl" justify="space-between">
             <Button
               leftSection={<FileArrowDown />}
               color="green"

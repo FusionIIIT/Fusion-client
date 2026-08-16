@@ -101,13 +101,13 @@ export default function InstructorDashboard() {
       />
 
       <Space h="md" />
-      <Text weight={500}>Your Courses:</Text>
+      <Text fw={500}>Your Courses:</Text>
       <Grid>
         {courses.map((c) => (
           <Grid.Col key={c.course_id} span={4}>
             <Card shadow="xs" p="sm">
-              <Text weight={600}>{c.code}</Text>
-              <Text size="sm" color="dimmed">
+              <Text fw={600}>{c.code}</Text>
+              <Text size="sm" c="dimmed">
                 {c.name}
               </Text>
               <Button
@@ -137,7 +137,7 @@ export default function InstructorDashboard() {
                 return (
                   <Grid.Col key={q.question_id} span={6}>
                     <Paper p="md" shadow="xs">
-                      <Text weight={500}>{q.text}</Text>
+                      <Text fw={500}>{q.text}</Text>
 
                       {chartData.length > 0 ? (
                         <BarChart
@@ -154,7 +154,7 @@ export default function InstructorDashboard() {
                         </BarChart>
                       ) : (
                         <Paper p="sm" mt="md" withBorder>
-                          <Text size="sm" weight={500}>
+                          <Text size="sm" fw={500}>
                             Comments
                           </Text>
                           {q.comments.length > 0 ? (
@@ -164,7 +164,7 @@ export default function InstructorDashboard() {
                               </Text>
                             ))
                           ) : (
-                            <Text color="dimmed" size="sm">
+                            <Text c="dimmed" size="sm">
                               No comments
                             </Text>
                           )}

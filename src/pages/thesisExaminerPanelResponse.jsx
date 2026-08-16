@@ -64,16 +64,16 @@ export default function ThesisExaminerPanelResponse() {
               <Center mb="sm">
                 <IconCheck size={40} color="var(--mantine-color-teal-6)" />
               </Center>
-              <Title order={3} align="center" mb="xs">
+              <Title order={3} ta="center" mb="xs">
                 {action === "accept"
                   ? "Invitation Accepted"
                   : "Invitation Declined"}
               </Title>
-              <Text align="center" c="dimmed">
+              <Text ta="center" c="dimmed">
                 {message}
               </Text>
               {action === "accept" && (
-                <Text align="center" c="dimmed" size="sm" mt="md">
+                <Text ta="center" c="dimmed" size="sm" mt="md">
                   A link to score the batch&apos;s theses will be sent to your
                   email shortly.
                 </Text>

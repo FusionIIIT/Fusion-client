@@ -168,7 +168,7 @@ export default function GenerateTranscript() {
 
   return (
     <Card shadow="sm" p="md" radius="md" withBorder>
-      <Stack spacing="md" pos="relative">
+      <Stack gap="md" pos="relative">
         <LoadingOverlay visible={loading} />
         {error && (
           <Alert color="red" radius="sm">
@@ -176,7 +176,7 @@ export default function GenerateTranscript() {
           </Alert>
         )}
         <Paper shadow="sm" radius="sm" p="md" withBorder>
-          <Stack spacing="md">
+          <Stack gap="md">
             <h1>Transcript Details</h1>
             <form onSubmit={handleSubmit}>
               <SimpleGrid cols={2} spacing="md">
@@ -203,7 +203,7 @@ export default function GenerateTranscript() {
                   />
                 </Box>
               </SimpleGrid>
-              <Group position="right" mt="md">
+              <Group justify="flex-end" mt="md">
                 <Button type="submit" size="md" radius="sm">
                   Generate Transcript
                 </Button>

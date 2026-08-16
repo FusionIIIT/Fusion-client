@@ -46,7 +46,7 @@ export default function AdminStudentDashboard(){
       </>}
       {info&&<>
         <Space h="lg"/>
-        <Text weight={600} mb="sm">Student Details</Text>
+        <Text fw={600} mb="sm">Student Details</Text>
         <Table verticalSpacing="md" highlightOnHover>
           <tbody>
             {Object.entries(info).map(([k,v])=>(

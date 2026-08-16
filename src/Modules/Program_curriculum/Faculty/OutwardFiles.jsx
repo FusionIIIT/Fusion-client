@@ -118,7 +118,6 @@ function OutwardFile() {
       try {
         const response = await fetchFacultyOutwardFilesData(uname, des);
         const data = await response.json();
-        console.log(data);
         const nonArchived = data.courseProposals.filter(
           (file) => !file.sender_archive,
         );

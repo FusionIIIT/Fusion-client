@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
-import "./CourseSlotDetails.css";
+import styles from "./CourseSlotDetails.module.css";
 import axios from "axios";
 import { fetchSeminarSlotData } from "./api/api";
 import { host } from "../../routes/globalRoutes";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 function SeminarSlotDetails() {
   const [seminarSlot, setSeminarSlot] = useState(null);
@@ -63,10 +64,10 @@ function SeminarSlotDetails() {
   return (
     <div className="flex-container">
       <div style={{ display: "flex" }}>
-        <div className="course-slot-container">
-          <div className="course-slot-content">
-            <div className="slot-description">
-              <table className="course-info-table">
+        <div className={styles["course-slot-container"]}>
+          <div className={styles["course-slot-content"]}>
+            <div className={styles["slot-description"]}>
+              <table className={styles["course-info-table"]}>
                 <tbody>
                   <tr>
                     <td colSpan="4">
@@ -82,17 +83,17 @@ function SeminarSlotDetails() {
                       </h3>
                     </td>
                   </tr>
-                  <tr className="course-slot-row">
+                  <tr className={styles["course-slot-row"]}>
                     <td>Info</td>
                     <td colSpan="3">
                       {slot.seminar_slot_info || "-"}
                     </td>
                   </tr>
-                  <tr className="course-slot-row">
+                  <tr className={styles["course-slot-row"]}>
                     <td>Duration</td>
                     <td colSpan="3">{slot.duration} Semesters</td>
                   </tr>
-                  <tr className="course-slot-row">
+                  <tr className={styles["course-slot-row"]}>
                     <td>Min Registration Limit</td>
                     <td>{slot.min_registration_limit}</td>
                     <td>Max Registration Limit</td>
@@ -102,9 +103,9 @@ function SeminarSlotDetails() {
               </table>
 
               {slot.seminars.length > 0 ? (
-                <table className="course-list-table">
+                <table className={styles["course-list-table"]}>
                   <thead>
-                    <tr className="table-header">
+                    <tr className={styles["table-header"]}>
                       <td>Seminar Code</td>
                       <td>Seminar Name</td>
                       <td>Credits</td>
@@ -126,7 +127,7 @@ function SeminarSlotDetails() {
                         <td>
                           <Link
                             to={`/programme_curriculum/admin_edit_seminar_form/${seminar.id}`}
-                            className="edit-btn"
+                            className={styles["edit-btn"]}
                           >
                             Edit
                           </Link>
@@ -136,7 +137,7 @@ function SeminarSlotDetails() {
                   </tbody>
                 </table>
               ) : (
-                <div className="no-courses">
+                <div className={styles["no-courses"]}>
                   No Seminars Available
                 </div>
               )}
@@ -147,49 +148,31 @@ function SeminarSlotDetails() {
         <div className="button-container">
           <Link
             to={`/programme_curriculum/admin_edit_seminar_slot_form/${seminarSlotId}`}
-            className="edit-course-slot-btn"
+            className={styles["edit-course-slot-btn"]}
           >
             Edit Seminar Slot
           </Link>
           <button
-            className="remove-course-slot-btn"
+            className={styles["remove-course-slot-btn"]}
             onClick={() => setShowModal(true)}
           >
             Remove Seminar Slot
           </button>
           <Link
             to={`/programme_curriculum/acad_admin_add_seminar_slot_form?semester=${semesterId}&curriculum=${curriculumId}`}
-            className="add-course-slot-btn"
+            className={styles["add-course-slot-btn"]}
           >
             Add Seminar Slot
           </Link>
         </div>
       </div>
 
-      {showModal && (
-        <div className="modal">
-          <div className="modal-content">
-            <h2>
-              Warning <i className="attention icon" />
-            </h2>
-            <p>Are you sure you want to remove this seminar slot?</p>
-            <div className="modal-actions">
-              <button
-                className="confirm-remove-btn"
-                onClick={handleDeleteSeminarSlot}
-              >
-                Remove
-              </button>
-              <button
-                className="cancel-btn"
-                onClick={() => setShowModal(false)}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        opened={showModal}
+        onCancel={() => setShowModal(false)}
+        onConfirm={handleDeleteSeminarSlot}
+        message="Are you sure you want to remove this seminar slot?"
+      />
     </div>
   );
 }

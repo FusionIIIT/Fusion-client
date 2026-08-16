@@ -219,7 +219,6 @@ export default function CheckResult() {
   return (
     <Card withBorder p={isMobile ? "sm" : "lg"} radius="md">
       <Paper p={isMobile ? "sm" : "md"}>
-        <Title order={3} mb="md" size={isMobile ? "h4" : "h3"}>Check Result</Title>
         {error && <Alert color="red" mb="md">{error}</Alert>}
 
         <Grid>
@@ -254,20 +253,16 @@ export default function CheckResult() {
               mt="xl"
               style={{
                 backgroundColor: '#ffffff',
-                border: '3px solid #000000',
+                border: isMobile ? '2px solid #000000' : '3px solid #000000',
                 fontFamily: '"Times New Roman", Times, serif',
-                fontSize: '12px',
+                fontSize: isMobile ? '10px' : '12px',
                 lineHeight: '1.4',
                 color: '#000000',
                 width: '100%',
-                maxWidth: '100vw',
+                maxWidth: '100%',
                 overflowX: 'auto',
                 margin: '0',
-                boxSizing: 'border-box',
-                '@media (max-width: 768px)': {
-                  border: '2px solid #000000',
-                  fontSize: '10px'
-                }
+                boxSizing: 'border-box'
               }}
             >
 
@@ -342,7 +337,7 @@ export default function CheckResult() {
               <Box className="student-info" style={{ padding: isMobile ? '15px 10px' : '20px', borderBottom: '1px solid #000000' }}>
                 <Grid gutter={0}>
                   <Grid.Col span={isMobile ? 12 : 6}>
-                    <Stack spacing={isMobile ? 4 : 8}>
+                    <Stack gap={isMobile ? 4 : 8}>
                       <Text style={{ fontSize: isMobile ? '10px' : '12px', color: '#000000', margin: '0', lineHeight: '1.4' }}>
                         <span style={{ fontWeight: 'bold' }}>Name of Student:</span> {studentInfo.name}
                       </Text>
@@ -369,7 +364,7 @@ export default function CheckResult() {
                     </Stack>
                   </Grid.Col>
                   <Grid.Col span={isMobile ? 12 : 6}>
-                    <Stack spacing={isMobile ? 4 : 8}>
+                    <Stack gap={isMobile ? 4 : 8}>
                       <Text style={{ fontSize: isMobile ? '10px' : '12px', color: '#000000', margin: '0', lineHeight: '1.4' }}>
                         <span style={{ fontWeight: 'bold' }}>Roll No.:</span> {studentInfo.rollNumber}
                       </Text>
@@ -390,7 +385,7 @@ export default function CheckResult() {
                   <table 
                     style={{
                       width: '100%',
-                      minWidth: isMobile ? '320px' : '600px',
+                      minWidth: isMobile ? 0 : '600px',
                       borderCollapse: 'collapse',
                       border: '1px solid #000000',
                       fontSize: isMobile ? '8px' : '11px',

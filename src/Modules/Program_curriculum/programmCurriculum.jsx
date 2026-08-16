@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Route, Routes, Navigate } from "react-router-dom";
+import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import PropTypes from "prop-types";
-import { Layout } from "../../components/layout";
+import { Layout } from "../../app/AppLayout";
+import { PageHeader } from "../../ui/components/PageHeader";
+import { RouteTrail } from "../../ui/components/RouteTrail";
+import { pagesForRole } from "../../ui/nav/roles";
+import { sidebarPageFor, trailFor } from "../../lib/routeTrail";
+import { CURRICULUM_BASE, CURRICULUM_PAGES, CURRICULUM_TRAILS } from "./pages";
 import AdminViewAllCourses from "./Acad_admin/Admin_view_all_courses";
 import AdminViewACourse from "./Acad_admin/Admin_view_a_course";
 import AdminViewAllBatches from "./Acad_admin/Admin_view_all_batches";
@@ -75,12 +80,9 @@ import AdminEditSeminarForm from "./Acad_admin/Admin_edit_seminar_form";
 import AdminEditTeachingCreditForm from "./Acad_admin/Admin_edit_teaching_credit_form";
 import AdminEditBatchForm from "./Acad_admin/Admin_edit_batch_form";
 import AdminEditCourseInstructor from "./Acad_admin/Admin_edit_course_instructor_form";
-import Breadcrumb from "./BreadCrumbs";
+import "./programCurriculum.shared.css";
 
 // breadcrumb
-import BreadcrumbTabsAcadadmin from "./Acad_admin/BreadcrumbTabsAcadadmin";
-import BreadcrumbTabs from "./Student/BreadcrumbTabsStudent";
-import BreadcrumbTabsFaculty from "./Faculty/BreadcrumbTagsFaculty";
 
 // Define role groups outside component
 const ADMIN_ROLES = ["acadadmin", "studentacadadmin"];
@@ -130,22 +132,19 @@ ProtectedRoute.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
-// NavTab component moved outside
 function NavTab() {
   const role = useSelector((state) => state.user.role);
-  const TabComponent = STUDENT_ROLES.includes(role)
-    ? BreadcrumbTabs
-    : FACULTY_ROLES.includes(role)
-      ? BreadcrumbTabsFaculty
-      : ADMIN_ROLES.includes(role)
-        ? BreadcrumbTabsAcadadmin
-        : () => null;
+  const { pathname } = useLocation();
+  const pages = pagesForRole(CURRICULUM_PAGES, role);
+  const options = { base: CURRICULUM_BASE, pages };
+  const current = sidebarPageFor(pathname, options);
+
+  if (current) return <PageHeader title={current.title} />;
 
   return (
-    <>
-      <Breadcrumb />
-      <TabComponent />
-    </>
+    <RouteTrail
+      items={trailFor(pathname, { ...options, trails: CURRICULUM_TRAILS })}
+    />
   );
 }
 
@@ -536,7 +535,7 @@ export default function ProgrammeCurriculumRoutes() {
       <Route
         path="/student_batches"
         element={
-          <ProtectedRoute allowedRoles={[...STUDENT_ROLES, ...FACULTY_ROLES]}>
+          <ProtectedRoute allowedRoles={FACULTY_ROLES}>
             <Layout>
               <NavTab />
               <ViewAllBatches />

@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom"; // Adjust the import path as needed
+import { Link, useNavigate } from "react-router-dom";
 import { Breadcrumbs, Anchor, Group, Text, Switch, Button, Textarea } from "@mantine/core";
 
 function InstigateSemesterForm() {
+  const navigate = useNavigate();
   const [startSemester, setStartSemester] = useState("");
   const [endSemester, setEndSemester] = useState("");
   const [instigateSemester, setInstigateSemester] = useState(false);
@@ -10,12 +11,6 @@ function InstigateSemesterForm() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log({
-      startSemester,
-      endSemester,
-      instigateSemester,
-      semesterInfo,
-    });
   };
 
   // const breadcrumbItems = [
@@ -32,7 +27,7 @@ function InstigateSemesterForm() {
     <div style={containerStyle}>
       {/* <Breadcrumbs>{breadcrumbItems}</Breadcrumbs>
 
-      <Group spacing="xs" className="program-options" mt="md">
+      <Group gap="xs" className="program-options" mt="md">
         <Text>Programmes</Text>
         <Text className="active">Curriculums</Text>
         <Text>Courses</Text>
@@ -97,7 +92,7 @@ function InstigateSemesterForm() {
           <div style={buttonContainerStyle}>
             <Button
               variant="outline"
-              onClick={() => console.log("Cancelled")}
+              onClick={() => navigate(-1)}
               style={cancelButtonStyle}
             >
               Cancel

@@ -2,7 +2,7 @@ import { ActionIcon, Table } from "@mantine/core";
 import { Bell } from "@phosphor-icons/react";
 import React, { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import "./Admin_view_semesters_of_a_curriculum.css";
+import styles from "./Admin_view_semesters_of_a_curriculum.module.css";
 import { adminFetchCurriculumSemesters } from "../api/api";
 /* eslint-disable jsx-a11y/control-has-associated-label */
 
@@ -69,19 +69,14 @@ function Admin_view_semesters_of_a_curriculum() {
     fetchData();
   }, [curriculumId]);
 
-  // console.log(curriculumData)
-
   if (loading) return <div>Loading...</div>;
   const { curriculum_name, version, batches, unlikedbatches } = curriculumData;
-  // console.log(batches)
   const { semesters } = curriculumData;
   const semesterWiseSlots = curriculumData.semesters.reduce((acc, semester) => {
     acc[`Semester ${semester.semester_no}`] = semester.slots;
     return acc;
   }, {});
-  // console.log(semesterWiseSlots)
   const semester_credits = semesters.map((semester) => semester.credits);
-  // console.log(semester_credits)
   // const semesterscnt = semesters.map(
   //   (semester) => `Semester ${semester.semester_no}`,
   // );
@@ -98,7 +93,7 @@ function Admin_view_semesters_of_a_curriculum() {
       <h2>{curriculum_name} Table</h2>
 
       <button
-        className="options-button"
+        className={styles["options-button"]}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -108,19 +103,19 @@ function Admin_view_semesters_of_a_curriculum() {
       {/* Options visible on hover */}
       {isHovered && (
         <div
-          className={`options-dropdown ${isHovered ? "open" : ""}`}
+          className={`${styles["options-dropdown"]} ${isHovered ? styles.open : ""}`}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
-          <div className="dropdown-section">
-            <h4 className="section-title">CURRICULUM</h4>
+          <div className={styles["dropdown-section"]}>
+            <h4 className={styles["section-title"]}>CURRICULUM</h4>
             <Link
               to={`/programme_curriculum/admin_edit_curriculum_form?curriculum=${
                 curriculumId
               }`}
               style={{ textDecoration: "none" }}
             >
-              <button className="dropdown-btn green-btn">
+              <button className={`dropdown-btn ${styles["green-btn"]}`}>
                 EDIT CURRICULUM
               </button>
             </Link>
@@ -129,12 +124,12 @@ function Admin_view_semesters_of_a_curriculum() {
               onMouseEnter={() => setIsInstigateSemesterHovered(true)}
               onMouseLeave={() => setIsInstigateSemesterHovered(false)}
             >
-              <button className="add-instigate-semester-button">
+              <button className={styles["add-instigate-semester-button"]}>
                 INSTIGATE SEMESTER
               </button>
 
               {isInstigateSemesterHovered && (
-                <div className="instigate-semester-dropdown">
+                <div className={styles["instigate-semester-dropdown"]}>
                   {semesterscnt.map((semester, index) => (
                     <Link
                       to={`/programme_curriculum/acad_admin_instigate_form?semester=${
@@ -142,7 +137,7 @@ function Admin_view_semesters_of_a_curriculum() {
                       }`}
                       style={{ textDecoration: "none" }}
                     >
-                      <div key={index} className="instigate-semester-option">
+                      <div key={index} className={styles["instigate-semester-option"]}>
                         <text>{semester.label}</text>
                         <ActionIcon variant="light">
                           <Bell size={20} />
@@ -155,17 +150,17 @@ function Admin_view_semesters_of_a_curriculum() {
             </div> */}
 
             <div
-              className="add-course-slot"
+              className={styles["add-course-slot"]}
               onMouseEnter={() => setIsAddCourseSlotHovered(true)}
               onMouseLeave={() => setIsAddCourseSlotHovered(false)}
             >
-              <button className="add-course-slot-button">
+              <button className={styles["add-course-slot-button"]}>
                 ADD COURSE SLOT
               </button>
 
               {/* Semester options visible on hover */}
               {isAddCourseSlotHovered && (
-                <div className="semester-dropdown">
+                <div className={styles["semester-dropdown"]}>
                   {semesterscnt.map((semester, index) => (
                     <Link
                       to={`/programme_curriculum/acad_admin_add_courseslot_form?semester=${
@@ -174,7 +169,7 @@ function Admin_view_semesters_of_a_curriculum() {
                       style={{ textDecoration: "none" }}
                       key={index}
                     >
-                      <div key={index} className="semester-option">
+                      <div key={index} className={styles["semester-option"]}>
                         <text>{semester.label}</text>
                         <text>+</text>
                       </div>
@@ -185,16 +180,16 @@ function Admin_view_semesters_of_a_curriculum() {
             </div>
 
             <div
-              className="add-course-slot"
+              className={styles["add-course-slot"]}
               onMouseEnter={() => setIsAddThesisSlotHovered(true)}
               onMouseLeave={() => setIsAddThesisSlotHovered(false)}
             >
-              <button className="add-course-slot-button">
+              <button className={styles["add-course-slot-button"]}>
                 ADD THESIS SLOT
               </button>
 
               {isAddThesisSlotHovered && (
-                <div className="semester-dropdown">
+                <div className={styles["semester-dropdown"]}>
                   {semesterscnt.map((semester, index) => (
                     <Link
                       to={`/programme_curriculum/acad_admin_add_thesis_slot_form?semester=${
@@ -203,7 +198,7 @@ function Admin_view_semesters_of_a_curriculum() {
                       style={{ textDecoration: "none" }}
                       key={index}
                     >
-                      <div key={index} className="semester-option">
+                      <div key={index} className={styles["semester-option"]}>
                         <text>{semester.label}</text>
                         <text>+</text>
                       </div>
@@ -214,16 +209,16 @@ function Admin_view_semesters_of_a_curriculum() {
             </div>
 
             <div
-              className="add-course-slot"
+              className={styles["add-course-slot"]}
               onMouseEnter={() => setIsAddSeminarSlotHovered(true)}
               onMouseLeave={() => setIsAddSeminarSlotHovered(false)}
             >
-              <button className="add-course-slot-button">
+              <button className={styles["add-course-slot-button"]}>
                 ADD SEMINAR SLOT
               </button>
 
               {isAddSeminarSlotHovered && (
-                <div className="semester-dropdown">
+                <div className={styles["semester-dropdown"]}>
                   {semesterscnt.map((semester, index) => (
                     <Link
                       to={`/programme_curriculum/acad_admin_add_seminar_slot_form?semester=${
@@ -232,7 +227,7 @@ function Admin_view_semesters_of_a_curriculum() {
                       style={{ textDecoration: "none" }}
                       key={index}
                     >
-                      <div key={index} className="semester-option">
+                      <div key={index} className={styles["semester-option"]}>
                         <text>{semester.label}</text>
                         <text>+</text>
                       </div>
@@ -243,16 +238,16 @@ function Admin_view_semesters_of_a_curriculum() {
             </div>
 
             <div
-              className="add-course-slot"
+              className={styles["add-course-slot"]}
               onMouseEnter={() => setIsAddTCSlotHovered(true)}
               onMouseLeave={() => setIsAddTCSlotHovered(false)}
             >
-              <button className="add-course-slot-button">
+              <button className={styles["add-course-slot-button"]}>
                 ADD TEACHING CREDIT SLOT
               </button>
 
               {isAddTCSlotHovered && (
-                <div className="semester-dropdown">
+                <div className={styles["semester-dropdown"]}>
                   {semesterscnt.map((semester, index) => (
                     <Link
                       to={`/programme_curriculum/acad_admin_add_teaching_credit_slot_form?semester=${
@@ -261,7 +256,7 @@ function Admin_view_semesters_of_a_curriculum() {
                       style={{ textDecoration: "none" }}
                       key={index}
                     >
-                      <div key={index} className="semester-option">
+                      <div key={index} className={styles["semester-option"]}>
                         <text>{semester.label}</text>
                         <text>+</text>
                       </div>
@@ -272,10 +267,10 @@ function Admin_view_semesters_of_a_curriculum() {
             </div>
           </div>
 
-          <div className="dropdown-section">
-            <h4 className="section-title">BATCHES</h4>
+          <div className={styles["dropdown-section"]}>
+            <h4 className={styles["section-title"]}>BATCHES</h4>
             {batches.length > 0 ? (
-              <button className="dropdown-btn blue-btn" disabled>
+              <button className={`dropdown-btn ${styles["blue-btn"]}`} disabled>
                 BATCH ALREADY ATTACHED
               </button>
             ) : (
@@ -283,30 +278,30 @@ function Admin_view_semesters_of_a_curriculum() {
                 to={`/programme_curriculum/acad_admin_add_batch_form?curriculum_id=${curriculumId}`}
                 style={{ textDecoration: "none" }}
               >
-                <button className="dropdown-btn blue-btn">NEW BATCH</button>
+                <button className={`dropdown-btn ${styles["blue-btn"]}`}>NEW BATCH</button>
               </Link>
             )}
             {/* <a
               href={`/programme_curriculum/acad_admin_add_batch_form?curriculum_id=${curriculumId}`}
               style={{ textDecoration: "none" }}
             >
-              <button className="dropdown-btn blue-btn">NEW BATCH</button>
+              <button className={`dropdown-btn ${styles["blue-btn"]}`}>NEW BATCH</button>
             </a> */}
             {/* <a
               href="/programme_curriculum/admin_edit_batch_form"
               style={{ textDecoration: "none" }}
             >
-              <button className="dropdown-btn blue-btn">EDIT BATCH</button>
+              <button className={`dropdown-btn ${styles["blue-btn"]}`}>EDIT BATCH</button>
             </a> */}
             <div
               className="edit-batch"
               onMouseEnter={() => setIsEditBatchHovered(true)}
               onMouseLeave={() => setIsEditBatchHovered(false)}
             >
-              <button className="dropdown-btn green-btn">EDIT BATCH</button>
+              <button className={`dropdown-btn ${styles["green-btn"]}`}>EDIT BATCH</button>
               {/* Semester options visible on hover */}
               {isEditBatchHovered && (
-                <div className="editbatch-dropdown">
+                <div className={styles["editbatch-dropdown"]}>
                   {batches.length > 0 ? (
                     batches.map((batch, index) => (
                       <Link
@@ -314,13 +309,13 @@ function Admin_view_semesters_of_a_curriculum() {
                         style={{ textDecoration: "none" }}
                         key={index} // Move the key here to avoid React warning
                       >
-                        <div className="editbatch-option">
+                        <div className={styles["editbatch-option"]}>
                           {batch.name} {batch.discipline} {batch.year}
                         </div>
                       </Link>
                     ))
                   ) : (
-                    <div className="editbatch-option">
+                    <div className={styles["editbatch-option"]}>
                       No batch is linked to this curriculum
                     </div>
                   )}
@@ -331,19 +326,19 @@ function Admin_view_semesters_of_a_curriculum() {
               href="/programme_curriculum/admin_edit_batch_form"
               style={{ textDecoration: "none" }}
             >
-              <button className="dropdown-btn blue-btn">LINK BATCH</button>
+              <button className={`dropdown-btn ${styles["blue-btn"]}`}>LINK BATCH</button>
             </a> */}
             <div
               className="Link-slot"
               onMouseEnter={() => setIsLinkedBatchHovered(true)}
               onMouseLeave={() => setIsLinkedBatchHovered(false)}
             >
-              <button className="dropdown-btn green-btn">LINK BATCH</button>
+              <button className={`dropdown-btn ${styles["green-btn"]}`}>LINK BATCH</button>
               {/* Semester options visible on hover */}
               {isLinkedBatchHovered && (
-                <div className="Linkbatch-dropdown">
+                <div className={styles["Linkbatch-dropdown"]}>
                   {batches.length > 0 ? (
-                    <div className="editbatch-option">Batch already linked</div>
+                    <div className={styles["editbatch-option"]}>Batch already linked</div>
                   ) : (
                     unlikedbatches.map((batch, index) => (
                       <Link
@@ -351,7 +346,7 @@ function Admin_view_semesters_of_a_curriculum() {
                         style={{ textDecoration: "none" }}
                         key={index} // Move the key here to avoid React warning
                       >
-                        <div className="Linkbatch-option">
+                        <div className={styles["Linkbatch-option"]}>
                           {batch.name} {batch.discipline} {batch.year}
                         </div>
                       </Link>
@@ -365,7 +360,7 @@ function Admin_view_semesters_of_a_curriculum() {
           </div>
         </div>
       )}
-      <div className="table-container">
+      <div className={styles["table-container"]}>
         <Table
           striped
           highlightOnHover

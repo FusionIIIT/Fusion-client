@@ -120,7 +120,7 @@ export default function GenerateGradeSheet() {
 
   return (
     <Card shadow="sm" p="md" radius="md" withBorder>
-      <Stack spacing="md" pos="relative">
+      <Stack gap="md" pos="relative">
         <LoadingOverlay visible={loading} />
         {error && (
           <Alert color="red" radius="sm">
@@ -128,7 +128,7 @@ export default function GenerateGradeSheet() {
           </Alert>
         )}
         <Paper shadow="sm" radius="sm" p="md" withBorder>
-          <Stack spacing="md">
+          <Stack gap="md">
             <h1>Grade Sheet Details</h1>
             <form onSubmit={handleSubmit}>
               <SimpleGrid cols={2} spacing="md">
@@ -155,7 +155,7 @@ export default function GenerateGradeSheet() {
                   />
                 </Box>
               </SimpleGrid>
-              <Group position="apart" mt="md">
+              <Group justify="space-between" mt="md">
                 <Group gap="sm">
                   <Button type="submit" size="md" radius="sm">
                     Generate Grade Sheet

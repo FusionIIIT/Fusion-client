@@ -296,7 +296,7 @@ export default function AdminDropDashboard() {
   return (
     <>
       <Card>
-        <Stack spacing="md">
+        <Stack gap="md">
           <Group grow align="flex-start">
             <Select
               label="Academic Year"
@@ -324,7 +324,7 @@ export default function AdminDropDashboard() {
             />
           </Group>
 
-          <Group position="left" spacing="xs">
+          <Group justify="flex-start" gap="xs">
             <Button
               size="sm"
               onClick={fetchRequests}
@@ -379,9 +379,9 @@ export default function AdminDropDashboard() {
           <Tabs.Panel value="pending" pt="md">
             {pendingRequests.length > 0 ? (
               <Card>
-                <Group position="apart" mb="md">
+                <Group justify="space-between" mb="md">
                   <Title order={4}>Pending Requests</Title>
-                  <Group spacing="xs">
+                  <Group gap="xs">
                     <Button
                       size="sm"
                       color="red"
@@ -431,7 +431,7 @@ export default function AdminDropDashboard() {
                         <td>
                           <Text size="sm">{r.student}</Text>
                           {r.student_name && (
-                            <Text size="xs" color="dimmed">{r.student_name}</Text>
+                            <Text size="xs" c="dimmed">{r.student_name}</Text>
                           )}
                         </td>
                         <td>{r.semester ?? '-'}</td>
@@ -439,7 +439,7 @@ export default function AdminDropDashboard() {
                         <td>
                           <Text size="sm">{r.course}</Text>
                           {r.course_name && (
-                            <Text size="xs" color="dimmed">{r.course_name}</Text>
+                            <Text size="xs" c="dimmed">{r.course_name}</Text>
                           )}
                         </td>
                         <td>
@@ -471,7 +471,7 @@ export default function AdminDropDashboard() {
           <Tabs.Panel value="processed" pt="md">
             {processedRequests.length > 0 ? (
               <Card>
-                <Group position="apart" mb="md">
+                <Group justify="space-between" mb="md">
                   <Title order={4}>Processed Requests</Title>
                   <Button
                     size="sm"
@@ -489,7 +489,7 @@ export default function AdminDropDashboard() {
                       <th>Slot</th>
                       <th>Course</th>
                       <th>
-                        <Group spacing="xs" position="apart">
+                        <Group gap="xs" justify="space-between">
                           <span>Status</span>
                           <Select
                             placeholder="All"
@@ -516,7 +516,7 @@ export default function AdminDropDashboard() {
                         <td>
                           <Text size="sm">{r.student}</Text>
                           {r.student_name && (
-                            <Text size="xs" color="dimmed">{r.student_name}</Text>
+                            <Text size="xs" c="dimmed">{r.student_name}</Text>
                           )}
                         </td>
                         <td>{r.semester ?? '-'}</td>
@@ -524,7 +524,7 @@ export default function AdminDropDashboard() {
                         <td>
                           <Text size="sm">{r.course}</Text>
                           {r.course_name && (
-                            <Text size="xs" color="dimmed">{r.course_name}</Text>
+                            <Text size="xs" c="dimmed">{r.course_name}</Text>
                           )}
                         </td>
                         <td>
@@ -560,13 +560,13 @@ export default function AdminDropDashboard() {
         closeOnClickOutside={!deleting}
         closeOnEscape={!deleting}
       >
-        <Text size="sm" mb="md" weight={500}>
+        <Text size="sm" mb="md" fw={500}>
           Are you sure you want to permanently delete {deleteModal.ids.length} course drop request{deleteModal.ids.length > 1 ? 's' : ''}?
         </Text>
-        <Text size="sm" color="dimmed" mb="md">
+        <Text size="sm" c="dimmed" mb="md">
           This action cannot be undone.
         </Text>
-        <Group position="right" spacing="sm">
+        <Group justify="flex-end" gap="sm">
           <Button variant="outline" onClick={closeDeleteModal} disabled={deleting}>
             Cancel
           </Button>

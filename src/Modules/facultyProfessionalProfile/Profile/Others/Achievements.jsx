@@ -104,12 +104,10 @@ export default function AchievementsForm() {
       formData.append("details", inputs.title);
 
       if (isEdit === false) {
-        const res = await axios.post(insertAwardRoute, formData);
-        console.log(res.data);
+        await axios.post(insertAwardRoute, formData);
       } else {
         formData.append("ach_id", Id);
-        const res = await axios.post(insertAwardRoute, formData);
-        console.log(res.data);
+        await axios.post(insertAwardRoute, formData);
         setEdit(false);
         setId(0);
       }
@@ -258,7 +256,7 @@ export default function AchievementsForm() {
                   type="submit"
                   mt="md"
                   loading={isLoading}
-                  leftIcon={<FloppyDisk size={16} />}
+                  leftSection={<FloppyDisk size={16} />}
                   style={{ backgroundColor: "#2185d0", color: "#fff" }} // Custom button styling
                 >
                   Save

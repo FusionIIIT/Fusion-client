@@ -92,7 +92,7 @@ function Admin_edit_programme_form() {
               <Text size="sm" mb={8}>
                 <strong>Programme "{submitData.name}" has been updated.</strong>
               </Text>
-              <Text size="xs" color="gray.7">
+              <Text size="xs" c="gray.7">
                 Category: {submitData.category} | Begin Year: {submitData.programme_begin_year}
               </Text>
             </div>
@@ -120,7 +120,7 @@ function Admin_edit_programme_form() {
             <Text size="sm" mb={8}>
               <strong>Unable to update programme. Please try again.</strong>
             </Text>
-            <Text size="xs" color="gray.7">
+            <Text size="xs" c="gray.7">
               Please check your inputs and try again.
             </Text>
           </div>
@@ -174,8 +174,8 @@ function Admin_edit_programme_form() {
                 boxShadow: "0 0 10px rgba(0,0,0,0.1)",
               }}
             >
-              <Stack spacing="lg">
-                <Text size="xl" weight={700} align="center">
+              <Stack gap="lg">
+                <Text size="xl" fw={700} ta="center">
                   Edit Programme Form
                 </Text>
 
@@ -209,7 +209,7 @@ function Admin_edit_programme_form() {
                 />
               </Stack>
 
-              <Group position="right" mt="lg">
+              <Group justify="flex-end" mt="lg">
                 <Button
                   variant="outline"
                   className="cancel-btn"

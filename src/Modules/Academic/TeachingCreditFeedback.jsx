@@ -13,9 +13,6 @@ import TeachingCreditEvaluationSection from "../ThesisResearch/TeachingCredit/Te
 export default function TeachingCreditFeedback() {
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
-      <Title order={3} mb="md">
-        Teaching Credit Feedback
-      </Title>
       <TeachingCreditEvaluationSection />
     </Card>
   );

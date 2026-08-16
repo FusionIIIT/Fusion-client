@@ -1,15 +1,61 @@
-// import { Text } from "@mantine/core";
-// import ProfileButtons from "./components/ProfileButtons";
-import App from "./App";
+import { lazy, useCallback, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 
-function FacultyProfessionalProfile() {
+import CustomBreadcrumbs from "../../components/Breadcrumbs";
+import { ModuleRoutes } from "../../ui/routing/ModuleRoutes";
+import { pagesForRole } from "../../ui/nav/roles";
+import { FPS_BASE, FPS_PAGES } from "./pages";
+
+const COMPONENTS = {
+  publications: lazy(() => import("./Profile/Publications/PublicationsMaster")),
+  projects: lazy(() => import("./Profile/Projects/ProjectMaster")),
+  thesisSupervision: lazy(
+    () => import("./Profile/ThesisSupervision/ThesisSupervisionMaster"),
+  ),
+  conference: lazy(() => import("./Profile/Conference/ConferenceMaster")),
+  others: lazy(() => import("./Profile/Others/OtherMaster")),
+  events: lazy(() => import("./Profile/EventsOrganised/EventMaster")),
+  visits: lazy(() => import("./Profile/Visits/VisitsMaster")),
+  myProfile: lazy(() => import("./Profile/MyProfile/MyProfileMaster")),
+  aboutMe: lazy(() => import("./Profile/AboutMe/AboutMe")),
+  qualifications: lazy(() => import("./Profile/Qualifications/Qualifications")),
+  honors: lazy(() => import("./Profile/Honors/Honors")),
+  professionalExperience: lazy(
+    () => import("./Profile/ProfessionalExperience/ProfessionalExperience"),
+  ),
+  administrativePosition: lazy(
+    () => import("./Profile/AdministrativePosition/AdministrativePosition"),
+  ),
+};
+
+export default function FacultyProfessionalProfile() {
+  const role = useSelector((state) => state.user.role);
+  const [breadCrumbItems, setBreadCrumbItems] = useState([]);
+
+  const pages = useMemo(() => pagesForRole(FPS_PAGES, role), [role]);
+
+  const renderPage = useCallback(
+    (Component) => (
+      <>
+        {breadCrumbItems.length > 0 && (
+          <CustomBreadcrumbs breadCrumbs={breadCrumbItems} />
+        )}
+        <Component
+          breadCrumbItems={breadCrumbItems}
+          setBreadCrumbItems={setBreadCrumbItems}
+        />
+      </>
+    ),
+    [breadCrumbItems],
+  );
+
   return (
-    <>
-      {/* <CustomBreadcrumbs /> */}
-      {/* <Text>facultyProfessionalProfile Page</Text> */}
-      <App />
-    </>
+    <ModuleRoutes
+      pages={pages}
+      components={COMPONENTS}
+      renderPage={renderPage}
+      basePath={FPS_BASE}
+      emptyMessage="The professional profile is not available for your role."
+    />
   );
 }
-
-export default FacultyProfessionalProfile;

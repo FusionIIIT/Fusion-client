@@ -3,9 +3,6 @@ import axios from "axios";
 import {
   Card,
   Text,
-  Table,
-  Radio,
-  Textarea,
   Button,
   Loader,
   Center,
@@ -17,6 +14,7 @@ import {
   studentQuestionsRoute,
   studentSubmitRoute,
 } from "../../../routes/academicRoutes";
+import FeedbackMatrix from "../components/FeedbackMatrix";
 
 export default function StudentFeedback() {
   const sections = [
@@ -54,7 +52,10 @@ export default function StudentFeedback() {
         res.data.questions.forEach((q) => {
           initAnswers[q.id] = {};
           res.data.courses.forEach((c) => {
-            initAnswers[q.id][c.course_id] = { option_id: null, text_answer: "" };
+            initAnswers[q.id][c.course_id] = {
+              option_id: null,
+              text_answer: "",
+            };
           });
         });
         setAnswers(initAnswers);
@@ -81,7 +82,7 @@ export default function StudentFeedback() {
   if (filled)
     return (
       <Card>
-        <Text size="lg" align="center" color="green">
+        <Text size="lg" ta="center" c="green">
           You've already submitted feedback.
         </Text>
       </Card>
@@ -155,12 +156,12 @@ export default function StudentFeedback() {
               section: q.section,
             });
           }
-        })
+        }),
       );
       await axios.post(
         studentSubmitRoute,
         { responses },
-        { headers: { Authorization: `Token ${token}` } }
+        { headers: { Authorization: `Token ${token}` } },
       );
       showNotification({
         title: "Success",
@@ -181,15 +182,20 @@ export default function StudentFeedback() {
 
   return (
     <Card>
-      <Text size="xl" weight={600}>
-        {sec.label} {sec.required && <Text component="span" color="red">*</Text>}
+      <Text size="xl" fw={600}>
+        {sec.label}{" "}
+        {sec.required && (
+          <Text component="span" c="red">
+            *
+          </Text>
+        )}
       </Text>
       <Progress value={progress} mt="md" mb="lg" />
 
       {qs.map((q) => (
         <div key={q.id} style={{ marginBottom: 24 }}>
           <Text
-            weight={600}
+            fw={600}
             style={{
               display: "inline-block",
               maxWidth: "100%",
@@ -214,55 +220,22 @@ export default function StudentFeedback() {
             </Text>
             {q.text}{" "}
             {sec.required && q.options.length > 0 && (
-              <Text component="span" color="red">
+              <Text component="span" c="red">
                 *
               </Text>
             )}
           </Text>
-          <Table striped withColumnBorders mt="sm">
-            <thead>
-              <tr>
-                <th>Course / Instructor</th>
-                {q.options.length > 0
-                  ? q.options.map((o) => <th key={o.id}>{o.text}</th>)
-                  : <th>Your Feedback</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {courses.map((c) => {
-                const label = `${c.code} - ${c.name}` + (c.instructor_name ? ` (${c.instructor_name})` : "");
-                return (
-                  <tr key={c.course_id}>
-                    <td>{label}</td>
-                    {q.options.length > 0 ? (
-                      q.options.map((o) => (
-                        <td key={o.id}>
-                          <Radio
-                            checked={answers[q.id][c.course_id].option_id === o.id}
-                            onChange={() => setOption(q.id, c.course_id, o.id)}
-                          />
-                        </td>
-                      ))
-                    ) : (
-                      <td>
-                        <Textarea
-                          value={answers[q.id][c.course_id].text_answer}
-                          onChange={(e) =>
-                            setText(q.id, c.course_id, e.currentTarget.value)
-                          }
-                          placeholder="Optional feedback..."
-                        />
-                      </td>
-                    )}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </Table>
+          <FeedbackMatrix
+            question={q}
+            courses={courses}
+            answers={answers}
+            onOption={setOption}
+            onText={setText}
+          />
         </div>
       ))}
 
-      <Group position="apart" mt="xl">
+      <Group justify="space-between" mt="xl">
         <Button disabled={secIdx === 0} onClick={prev}>
           Previous
         </Button>

@@ -992,15 +992,12 @@ export default function RegisteredCourses() {
   }
 
   if (error) {
-    return <Text color="red">Error: {error.message}</Text>;
+    return <Text c="red">Error: {error.message}</Text>;
   }
 
   return (
     <>
       <Card shadow="sm" p="lg" radius="md" withBorder>
-        <Text size="lg" weight={700} align="center" mb="md" color="#3B82F6">
-          Registered Courses
-        </Text>
 
         <Select
           label="Select Semester"
@@ -1026,7 +1023,7 @@ export default function RegisteredCourses() {
           />
         </div>
 
-        <Text size="md" weight={700} mt="md">
+        <Text size="md" fw={700} mt="md">
           Total Credits: {totalCredits}
         </Text>
 

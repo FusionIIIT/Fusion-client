@@ -29,7 +29,7 @@ function AchievementsComponent({ achievements }) {
 
   const handleSubmit = async () => {
     try {
-      const response = await axios.put(
+      await axios.put(
         updateProfileDataRoute,
         {
           achievementsubmit: {
@@ -46,7 +46,6 @@ function AchievementsComponent({ achievements }) {
           },
         },
       );
-      console.log(response);
 
       notifications.show({
         message: "Achievement added successfully!",
@@ -56,8 +55,6 @@ function AchievementsComponent({ achievements }) {
       alert("Error adding achievement");
     }
   };
-
-  console.log(achievements);
 
   return (
     <Flex

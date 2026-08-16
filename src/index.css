@@ -1,23 +1,39 @@
 /* Slim scrollbar */
 ::-webkit-scrollbar {
-    width: 10px;
-    height: 8px;
-  }
-  
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 10px;
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    background: #555;
-  }
+  width: 10px;
+  height: 8px;
+}
 
-  .hide-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+:where(*:has(> table)) {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+:where(.mantine-Table-scrollContainer) {
+  overflow-x: auto;
+}
+
+:where(img, video, canvas) {
+  max-width: 100%;
+}
+
+:where(body) {
+  overflow-wrap: break-word;
+}

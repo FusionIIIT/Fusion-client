@@ -52,7 +52,7 @@ const EMPTY_BANK_DETAILS = {
 function DocumentPreview({ title, url }) {
   return (
     <div style={{ marginTop: 16 }}>
-      <Group position="apart" mb={4}>
+      <Group justify="space-between" mb={4}>
         <Text size="sm" fw={500}>{title}</Text>
         <Anchor href={url} target="_blank" rel="noopener noreferrer" size="xs">
           <Group gap={4}>
@@ -200,10 +200,10 @@ export default function ThesisEvaluationForm() {
             <Center mb="sm">
               <IconCheck size={40} color="var(--mantine-color-teal-6)" />
             </Center>
-            <Title order={3} align="center" mb="xs">
+            <Title order={3} ta="center" mb="xs">
               Thank you for your evaluation
             </Title>
-            <Text align="center" c="dimmed">
+            <Text ta="center" c="dimmed">
               Your review has been recorded and submitted to the institute.
             </Text>
           </Card>
@@ -218,10 +218,10 @@ export default function ThesisEvaluationForm() {
     <>
       <InstitutePublicHeader />
       <Container size="md" my="xl">
-        <Title order={3} align="center" mb={4}>
+        <Title order={3} ta="center" mb={4}>
           Examination Report of PhD Student
         </Title>
-        <Text align="center" c="dimmed" size="sm" mb="lg">
+        <Text ta="center" c="dimmed" size="sm" mb="lg">
           {data.student_name} &middot; {data.student_roll} &middot; {data.thesis_title}
         </Text>
 
@@ -254,7 +254,7 @@ export default function ThesisEvaluationForm() {
 
             <Card shadow="sm" p="xl" radius="md" withBorder mt="md">
               <Title order={4} mb="sm">A. General features of Thesis</Title>
-              <Stack spacing="md">
+              <Stack gap="md">
                 <Textarea
                   label="1. Originality &amp; Presentation"
                   minRows={2}
@@ -286,7 +286,7 @@ export default function ThesisEvaluationForm() {
 
             <Card shadow="sm" p="xl" radius="md" withBorder mt="md">
               <Title order={4} mb="sm">B. Comments</Title>
-              <Stack spacing="md">
+              <Stack gap="md">
                 <div>
                   <Text size="sm" fw={500} mb={4}>
                     4. Corrections for punctuation, grammar, spelling, typographical errors or language
@@ -330,7 +330,7 @@ export default function ThesisEvaluationForm() {
             <Card shadow="sm" p="xl" radius="md" withBorder mt="md">
               <Title order={4} mb="sm">E. Specific Recommendation</Title>
               <Radio.Group value={recommendation} onChange={setRecommendation}>
-                <Stack spacing="sm">
+                <Stack gap="sm">
                   {RECOMMENDATION_OPTIONS.map((opt) => (
                     <Radio key={opt.value} value={opt.value} label={opt.label} />
                   ))}
@@ -442,7 +442,7 @@ export default function ThesisEvaluationForm() {
 
             <Card shadow="sm" p="xl" radius="md" withBorder mt="md">
               <Title order={4} mb="sm">Evaluation Summary</Title>
-              <Stack spacing="sm">
+              <Stack gap="sm">
                 <Text size="sm"><b>Originality &amp; Presentation:</b> {originalityPresentation || "-"}</Text>
                 <Text size="sm">
                   <b>Comparable to other universities of repute:</b>{" "}
@@ -474,7 +474,7 @@ export default function ThesisEvaluationForm() {
           </Stepper.Step>
         </Stepper>
 
-        <Group position="right" mb="xl">
+        <Group justify="flex-end" mb="xl">
           {step > 0 && (
             <Button variant="default" onClick={goToPrevStep} disabled={submitting}>
               Back

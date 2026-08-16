@@ -7,7 +7,7 @@ import html2canvas from "html2canvas";
 import axios from "axios";
 import { generate_gradesheet_data } from "../routes/examinationRoutes";
 import { useSelector } from "react-redux";
-import "../styles/transcript.css";
+import styles from "../styles/transcript.module.css";
 
 const PDF_MARGIN = { top: 75, left: 23, right: 23, bottom: 23 }; // 7.5cm top, 2.3cm others
 const PAGE_W_MM = 210;
@@ -725,9 +725,9 @@ const GradeSheet = forwardRef(function GradeSheet({ data, semester, batchLabel }
   useImperativeHandle(ref, () => ({ exportAll, exportingAll }), [exportAll, exportingAll]);
 
   return (
-    <div className="transcript-container">
+    <div className={styles["transcript-container"]}>
       {students.length > 0 ? (
-        <Table striped highlightOnHover captionSide="top" mt="md" className="transcript-table">
+        <Table striped highlightOnHover captionSide="top" mt="md" className={styles["transcript-table"]}>
           <thead>
             <tr>
               <th>Roll Number</th>
@@ -737,9 +737,9 @@ const GradeSheet = forwardRef(function GradeSheet({ data, semester, batchLabel }
           </thead>
           <tbody>
             {students.map((student) => (
-              <tr key={student.id_id} className="table-row">
-                <td className="table-cell">{student.id_id}</td>
-                <td className="table-cell">{student.programme}</td>
+              <tr key={student.id_id} className={styles["table-row"]}>
+                <td className={styles["table-cell"]}>{student.id_id}</td>
+                <td className={styles["table-cell"]}>{student.programme}</td>
                 <td style={{ textAlign: "center" }}>
                   <Group gap="xs" justify="center" align="center" wrap="wrap">
                     <Button

@@ -166,31 +166,31 @@ export default function SupervisorReviewModal({ thesis, onClose, refresh }) {
           <tbody>
             <tr>
               <td>
-                <Text weight={500}>Roll No</Text>
+                <Text fw={500}>Roll No</Text>
               </td>
               <td>{student_roll}</td>
             </tr>
             <tr>
               <td>
-                <Text weight={500}>Name</Text>
+                <Text fw={500}>Name</Text>
               </td>
               <td>{student_name}</td>
             </tr>
             <tr>
               <td>
-                <Text weight={500}>Discipline</Text>
+                <Text fw={500}>Discipline</Text>
               </td>
               <td>{student_discipline}</td>
             </tr>
             <tr>
               <td>
-                <Text weight={500}>Category</Text>
+                <Text fw={500}>Category</Text>
               </td>
               <td>{category}</td>
             </tr>
             <tr>
               <td>
-                <Text weight={500}>Broad Area</Text>
+                <Text fw={500}>Broad Area</Text>
               </td>
               <td>{broad_area}</td>
             </tr>
@@ -219,7 +219,7 @@ export default function SupervisorReviewModal({ thesis, onClose, refresh }) {
 
         {is_supervisor && (
           <>
-            <Text weight={500}>Supervisor Load</Text>
+            <Text fw={500}>Supervisor Load</Text>
             <Table striped highlightOnHover>
               <thead>
                 <tr>
@@ -232,7 +232,7 @@ export default function SupervisorReviewModal({ thesis, onClose, refresh }) {
                 {["PG", "PhD"].map((cat) => (
                   <tr key={cat}>
                     <td>
-                      <Text weight={500}>{cat}</Text>
+                      <Text fw={500}>{cat}</Text>
                     </td>
                     <td>
                       <NumberInput
@@ -291,7 +291,7 @@ export default function SupervisorReviewModal({ thesis, onClose, refresh }) {
               />
             )}
 
-            <Text weight={500}>Select RPC Members (≥ 3 total)</Text>
+            <Text fw={500}>Select RPC Members (≥ 3 total)</Text>
             <RPCCommitteeTable
               supervisor={form.supervisor}
               coSupervisor={form.co_supervisor}

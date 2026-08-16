@@ -96,7 +96,7 @@ function Admin_add_discipline_form() {
               <Text size="sm" mb={8}>
                 <strong>Discipline "{values.disciplineName}" has been created.</strong>
               </Text>
-              <Text size="xs" color="gray.7">
+              <Text size="xs" c="gray.7">
                 Acronym: {values.acronym} | Linked Programmes: {values.linkedProgrammes?.length || 0}
               </Text>
             </div>
@@ -124,7 +124,7 @@ function Admin_add_discipline_form() {
               <Text size="sm" mb={8}>
                 <strong>Unable to create discipline. Please try again.</strong>
               </Text>
-              <Text size="xs" color="gray.7">
+              <Text size="xs" c="gray.7">
                 Please check your inputs and try again.
               </Text>
             </div>
@@ -146,7 +146,7 @@ function Admin_add_discipline_form() {
             <Text size="sm" mb={8}>
               <strong>Connection error occurred while adding discipline.</strong>
             </Text>
-            <Text size="xs" color="gray.7">
+            <Text size="xs" c="gray.7">
               Please check your internet connection and try again.
             </Text>
           </div>
@@ -202,8 +202,8 @@ function Admin_add_discipline_form() {
                 boxShadow: "0 0 10px rgba(0,0,0,0.1)",
               }}
             >
-              <Stack spacing="lg">
-                <Text size="xl" weight={700} align="center">
+              <Stack gap="lg">
+                <Text size="xl" fw={700} ta="center">
                   Discipline Form
                 </Text>
 
@@ -255,7 +255,7 @@ function Admin_add_discipline_form() {
                 </div>
               </Stack>
 
-              <Group position="right" mt="lg">
+              <Group justify="flex-end" mt="lg">
                 <Button
                   variant="outline"
                   className="cancel-btn"

@@ -187,7 +187,7 @@ function Admin_view_all_theses() {
               placeholder="Search by thesis code, name, discipline, or credits..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ width: "400px" }}
+              style={{ width: "100%", maxWidth: 400 }}
             />
             <Link to="/programme_curriculum/admin_add_thesis">
               <Button>Add Thesis</Button>

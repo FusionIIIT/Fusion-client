@@ -1,33 +1,31 @@
 import React, { useState, useEffect } from "react";
-import {
-  MantineProvider,
-  Grid,
-  Table,
-  Flex,
-  Container,
-  Button,
-  Text,
-  TextInput,
-  ScrollArea,
-} from "@mantine/core";
-import { useMediaQuery } from "@mantine/hooks";
+import { Anchor, Button, Container, Text } from "@mantine/core";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
+import FusionTable from "../../components/FusionTable";
+import SearchInput from "../../components/SearchInput";
+import Toolbar from "../../components/Toolbar";
+import { matchesQuery } from "../../lib/search";
 import { fetchAllProgrammes, fetchStudentMyInfo } from "./api/api";
+
+const COLUMNS = ["Programme", "Discipline"];
+
+const SECTIONS = [
+  { value: "ug", label: "UG: Undergraduate" },
+  { value: "pg", label: "PG: Post Graduate" },
+  { value: "phd", label: "PhD: Doctor of Philosophy" },
+];
 
 function ViewAllProgrammes() {
   const role = useSelector((state) => state.user.role);
   const isStudent = role === "student";
-  const [activeSection, setActiveSection] = useState("ug"); // Default to UG
-  const [ugData, setUgData] = useState([]); // State to store UG programs
-  const [pgData, setPgData] = useState([]); // State to store PG programs
-  const [phdData, setPhdData] = useState([]); // State to store PhD programs
-  const [loading, setLoading] = useState(true); // Loading state
-  const [error, setError] = useState(null); // Error state
-  const [studentProgrammeType, setStudentProgrammeType] = useState(null);
-  const isMobile = useMediaQuery("(max-width: 768px)");
-  const [programmeFilter, setProgrammeFilter] = useState("");
-  const [disciplineFilter, setDisciplineFilter] = useState("");
+  const [activeSection, setActiveSection] = useState("ug");
+  const [ugData, setUgData] = useState([]);
+  const [pgData, setPgData] = useState([]);
+  const [phdData, setPhdData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,7 +34,6 @@ function ViewAllProgrammes() {
         const timestamp = localStorage.getItem("programmesTimestamp");
         const isCacheValid =
           timestamp && Date.now() - parseInt(timestamp, 10) < 10 * 60 * 1000;
-        // 10 min cache
 
         if (cachedData && isCacheValid) {
           const data = JSON.parse(cachedData);
@@ -53,7 +50,6 @@ function ViewAllProgrammes() {
           localStorage.setItem("programmesTimestamp", Date.now().toString());
         }
       } catch (fetchError) {
-        console.error("Error fetching data:", fetchError);
         setError("Failed to load data");
       } finally {
         setLoading(false);
@@ -69,7 +65,6 @@ function ViewAllProgrammes() {
       try {
         const info = await fetchStudentMyInfo();
         if (info && info.programme_type) {
-          setStudentProgrammeType(info.programme_type);
           setActiveSection(info.programme_type);
         }
       } catch (err) {
@@ -82,56 +77,6 @@ function ViewAllProgrammes() {
     loadStudentInfo();
   }, [isStudent]);
 
-  const applyFilters = (data) => {
-    return data.filter(
-      (item) =>
-        (item.name ? item.name.toLowerCase() : "").includes(
-          programmeFilter.toLowerCase(),
-        ) &&
-        (item.discipline__name
-          ? item.discipline__name.toLowerCase()
-          : ""
-        ).includes(disciplineFilter.toLowerCase()),
-    );
-  };
-
-  const renderTable = (data) => {
-    const filteredData = applyFilters(data);
-    return filteredData.map((element, index) => (
-      <tr
-        key={`${element.id}-${element.programme}-${index}`}
-        style={{ backgroundColor: index % 2 !== 0 ? "#E6F7FF" : "#ffffff" }}
-      >
-        <td
-          style={{
-            padding: "15px 20px",
-            textAlign: "center",
-            color: "#3498db",
-            width: "33%",
-            borderRight: "1px solid #d3d3d3",
-          }}
-        >
-          <Link
-            to={`/programme_curriculum/curriculums/${element.id}`}
-            style={{ color: "#3498db", textDecoration: "none" }}
-          >
-            {element.name}
-          </Link>
-        </td>
-        <td
-          style={{
-            padding: "15px 20px",
-            textAlign: "center",
-            width: "67%",
-            borderRight: "1px solid #d3d3d3",
-          }}
-        >
-          {element.discipline__name}
-        </td>
-      </tr>
-    ));
-  };
-
   if (loading) {
     return (
       <Container>
@@ -143,227 +88,61 @@ function ViewAllProgrammes() {
   if (error) {
     return (
       <Container>
-        <Text color="red">{error}</Text>
+        <Text c="red">{error}</Text>
       </Container>
     );
   }
 
-  return (
-    <MantineProvider
-      theme={{ colorScheme: "light" }}
-      withGlobalStyles
-      withNormalizeCSS
-    >
-      <Container style={{ padding: "20px", maxWidth: "100%" }}>
-        {/* Buttons for Section Selection */}
-        <Flex justify="flex-start" align="center" mb={10}>
-          {(!isStudent || studentProgrammeType === "ug") && (
-            <Button
-              variant={activeSection === "ug" ? "filled" : "outline"}
-              onClick={() => !isStudent && setActiveSection("ug")}
-              style={{ marginRight: "10px", cursor: isStudent ? "default" : "pointer" }}
-            >
-              UG: Undergraduate
-            </Button>
-          )}
-          {(!isStudent || studentProgrammeType === "pg") && (
-            <Button
-              variant={activeSection === "pg" ? "filled" : "outline"}
-              onClick={() => !isStudent && setActiveSection("pg")}
-              style={{ marginRight: "10px", cursor: isStudent ? "default" : "pointer" }}
-            >
-              PG: Post Graduate
-            </Button>
-          )}
-          {(!isStudent || studentProgrammeType === "phd") && (
-            <Button
-              variant={activeSection === "phd" ? "filled" : "outline"}
-              onClick={() => !isStudent && setActiveSection("phd")}
-              style={{ cursor: isStudent ? "default" : "pointer" }}
-            >
-              PhD: Doctor of Philosophy
-            </Button>
-          )}
-        </Flex>
-        <hr />
+  const dataFor = { ug: ugData, pg: pgData, phd: phdData };
 
-        {/* Table Section */}
-        <Grid>
-          {isMobile && (
-            <Grid.Col span={12}>
-              <ScrollArea>
-                <TextInput
-                  label="Programme:"
-                  placeholder="Search by Programme"
-                  value={programmeFilter}
-                  onChange={(e) => setProgrammeFilter(e.target.value)}
-                />
-                <TextInput
-                  label="Discipline:"
-                  placeholder="Search by Discipline"
-                  value={disciplineFilter}
-                  onChange={(e) => setDisciplineFilter(e.target.value)}
-                />
-              </ScrollArea>
-            </Grid.Col>
-          )}
-          <Grid.Col span={isMobile ? 12 : 9}>
-            <div
-              style={{
-                maxHeight: "61vh",
-                overflowY: "auto",
-                border: "1px solid #d3d3d3",
-                borderRadius: "10px",
-                scrollbarWidth: "none",
-              }}
-            >
-              <style>
-                {`
-                  div::-webkit-scrollbar {
-                    display: none;
-                  }
-                `}
-              </style>
-              {activeSection === "ug" && (
-                <Table
-                  style={{
-                    backgroundColor: "white",
-                    padding: "20px",
-                    flexGrow: 1,
-                  }}
-                >
-                  <thead>
-                    <tr>
-                      <th
-                        style={{
-                          padding: "15px 20px",
-                          backgroundColor: "#C5E2F6",
-                          color: "#3498db",
-                          fontSize: "16px",
-                          textAlign: "center",
-                          borderRight: "1px solid #d3d3d3",
-                        }}
-                      >
-                        Programme
-                      </th>
-                      <th
-                        style={{
-                          padding: "15px 20px",
-                          backgroundColor: "#C5E2F6",
-                          color: "#3498db",
-                          fontSize: "16px",
-                          textAlign: "center",
-                          borderRight: "1px solid #d3d3d3",
-                        }}
-                      >
-                        Discipline
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>{renderTable(ugData)}</tbody>
-                </Table>
-              )}
-              {activeSection === "pg" && (
-                <Table
-                  style={{
-                    backgroundColor: "white",
-                    padding: "20px",
-                    flexGrow: 1,
-                  }}
-                >
-                  <thead>
-                    <tr>
-                      <th
-                        style={{
-                          padding: "15px 20px",
-                          backgroundColor: "#C5E2F6",
-                          color: "#3498db",
-                          fontSize: "16px",
-                          textAlign: "center",
-                          borderRight: "1px solid #d3d3d3",
-                        }}
-                      >
-                        Programme
-                      </th>
-                      <th
-                        style={{
-                          padding: "15px 20px",
-                          backgroundColor: "#C5E2F6",
-                          color: "#3498db",
-                          fontSize: "16px",
-                          textAlign: "center",
-                          borderRight: "1px solid #d3d3d3",
-                        }}
-                      >
-                        Discipline
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>{renderTable(pgData)}</tbody>
-                </Table>
-              )}
-              {activeSection === "phd" && (
-                <Table
-                  style={{
-                    backgroundColor: "white",
-                    padding: "20px",
-                    flexGrow: 1,
-                  }}
-                >
-                  <thead>
-                    <tr>
-                      <th
-                        style={{
-                          padding: "15px 20px",
-                          backgroundColor: "#C5E2F6",
-                          color: "#3498db",
-                          fontSize: "16px",
-                          textAlign: "center",
-                          borderRight: "1px solid #d3d3d3",
-                        }}
-                      >
-                        Programme
-                      </th>
-                      <th
-                        style={{
-                          padding: "15px 20px",
-                          backgroundColor: "#C5E2F6",
-                          color: "#3498db",
-                          fontSize: "16px",
-                          textAlign: "center",
-                          borderRight: "1px solid #d3d3d3",
-                        }}
-                      >
-                        Discipline
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>{renderTable(phdData)}</tbody>
-                </Table>
-              )}
-            </div>
-          </Grid.Col>
-          {!isMobile && (
-            <Grid.Col span={3}>
-              <ScrollArea>
-                <TextInput
-                  label="Programme:"
-                  placeholder="Search by Programme"
-                  value={programmeFilter}
-                  onChange={(e) => setProgrammeFilter(e.target.value)}
-                />
-                <TextInput
-                  label="Discipline:"
-                  placeholder="Search by Discipline"
-                  value={disciplineFilter}
-                  onChange={(e) => setDisciplineFilter(e.target.value)}
-                />
-              </ScrollArea>
-            </Grid.Col>
-          )}
-        </Grid>
-      </Container>
-    </MantineProvider>
+  const rows = (dataFor[activeSection] || [])
+    .filter((item) => matchesQuery(search, [item.name, item.discipline__name]))
+    .map((item, index) => ({
+      id: `${item.id}-${item.programme}-${index}`,
+      Programme: (
+        <Anchor
+          component={Link}
+          to={`/programme_curriculum/curriculums/${item.id}`}
+          underline="hover"
+        >
+          {item.name}
+        </Anchor>
+      ),
+      Discipline: item.discipline__name,
+    }));
+
+  const visibleSections = isStudent ? [] : SECTIONS;
+
+  return (
+    <Container p={0} fluid>
+      <Toolbar
+        search={
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Search programmes or disciplines"
+          />
+        }
+      >
+        {visibleSections.map(({ value, label }) => (
+          <Button
+            key={value}
+            variant={activeSection === value ? "filled" : "outline"}
+            onClick={() => !isStudent && setActiveSection(value)}
+            style={{ cursor: isStudent ? "default" : "pointer" }}
+          >
+            {label}
+          </Button>
+        ))}
+      </Toolbar>
+
+      <FusionTable
+        columnNames={COLUMNS}
+        elements={rows}
+        ariaLabel="Programmes"
+        emptyMessage="No programmes match your search."
+      />
+    </Container>
   );
 }
 

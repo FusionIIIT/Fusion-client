@@ -85,12 +85,10 @@ export default function WorkshopForm() {
       formData.append("event_end_date", inputs.endDate);
 
       if (isEdit === false) {
-        const res = await axios.post(insertEventRoute, formData);
-        console.log(res.data);
+        await axios.post(insertEventRoute, formData);
       } else {
         formData.append("eventpk", eventId);
-        const res = await axios.post(updateEventRoute, formData);
-        console.log(res.data);
+        await axios.post(updateEventRoute, formData);
         setEdit(false);
         setEventId(0);
       }
@@ -109,7 +107,7 @@ export default function WorkshopForm() {
         name: "",
       });
     } catch (e1) {
-      console.log(e1);
+      console.error(e1);
     } finally {
       setIsLoading(false);
     }
@@ -131,7 +129,6 @@ export default function WorkshopForm() {
   };
 
   const handleDelete = async (projectId) => {
-    console.log(projectId);
     if (window.confirm("Are you sure you want to delete this Event?")) {
       try {
         await axios.post(
@@ -310,7 +307,7 @@ export default function WorkshopForm() {
                   type="submit"
                   mt="md"
                   loading={isLoading}
-                  leftIcon={<FloppyDisk size={16} />}
+                  leftSection={<FloppyDisk size={16} />}
                   style={{ backgroundColor: "#2185d0", color: "#fff" }} // Custom button styling
                 >
                   Save

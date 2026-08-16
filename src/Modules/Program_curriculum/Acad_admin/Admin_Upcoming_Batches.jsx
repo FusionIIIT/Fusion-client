@@ -421,7 +421,7 @@ function AdminUpcomingBatch() {
           <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
             <TextInput
               placeholder="Search by programme or discipline..."
-              icon={<MagnifyingGlass size={16} />}
+              leftSection={<MagnifyingGlass size={16} />}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{ minWidth: "250px" }}
@@ -431,7 +431,7 @@ function AdminUpcomingBatch() {
             {activeSection !== "phd" && (
               <Select
                 placeholder="Filter by Programme"
-                icon={<Funnel size={16} />}
+                leftSection={<Funnel size={16} />}
                 data={
                   activeSection === "ug"
                     ? [
@@ -455,7 +455,7 @@ function AdminUpcomingBatch() {
             {activeSection === "phd" && (
               <Select
                 placeholder="Odd / Even"
-                icon={<Funnel size={16} />}
+                leftSection={<Funnel size={16} />}
                 data={[
                   { value: "odd", label: "Odd" },
                   { value: "even", label: "Even" },

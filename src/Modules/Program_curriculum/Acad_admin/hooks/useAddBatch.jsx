@@ -131,7 +131,7 @@ export function useAddBatch({
                 </strong>
               </Text>
               {result.deleted_batch && (
-                <Text size="xs" color="gray.7">
+                <Text size="xs" c="gray.7">
                   Deleted: {result.deleted_batch.name} (
                   {result.deleted_batch.discipline_acronym ||
                     result.deleted_batch.discipline}

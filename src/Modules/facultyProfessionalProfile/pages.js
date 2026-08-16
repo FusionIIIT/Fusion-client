@@ -1,0 +1,112 @@
+export const FPS_BASE = "/facultyprofessionalprofile";
+
+const FPS_ROLES = ["Professor", "Assistant Professor"];
+
+export const FPS_PAGES = [
+  {
+    key: "publications",
+    slug: "publications",
+    title: "Publications",
+    icon: "Newspaper",
+    group: "Research Output",
+    roles: FPS_ROLES,
+  },
+  {
+    key: "projects",
+    slug: "projects",
+    title: "Projects",
+    icon: "Graph",
+    group: "Research Output",
+    roles: FPS_ROLES,
+  },
+  {
+    key: "thesisSupervision",
+    slug: "thesis-supervision",
+    title: "Thesis Supervision",
+    icon: "UserFocus",
+    group: "Research Output",
+    roles: FPS_ROLES,
+  },
+  {
+    key: "conference",
+    slug: "conference",
+    title: "Conference / Symposium",
+    icon: "Microscope",
+    group: "Research Output",
+    roles: FPS_ROLES,
+  },
+  {
+    key: "others",
+    slug: "others",
+    title: "Others",
+    icon: "DotsThree",
+    group: "Research Output",
+    roles: FPS_ROLES,
+  },
+
+  {
+    key: "events",
+    slug: "events",
+    title: "Events Organised",
+    icon: "Megaphone",
+    group: "Activities",
+    roles: FPS_ROLES,
+  },
+  {
+    key: "visits",
+    slug: "visits",
+    title: "Visits",
+    icon: "AirplaneTakeoff",
+    group: "Activities",
+    roles: FPS_ROLES,
+  },
+
+  {
+    key: "myProfile",
+    slug: "my-profile",
+    title: "My Profile",
+    icon: "IdentificationBadge",
+    group: "Personal",
+    roles: FPS_ROLES,
+  },
+  {
+    key: "aboutMe",
+    slug: "about-me",
+    title: "About Me",
+    icon: "UserCircle",
+    group: "Personal",
+    roles: FPS_ROLES,
+  },
+  {
+    key: "qualifications",
+    slug: "qualifications",
+    title: "Qualifications",
+    icon: "GraduationCap",
+    group: "Personal",
+    roles: FPS_ROLES,
+  },
+  {
+    key: "honors",
+    slug: "honors",
+    title: "Honors",
+    icon: "Medal",
+    group: "Personal",
+    roles: FPS_ROLES,
+  },
+  {
+    key: "professionalExperience",
+    slug: "professional-experience",
+    title: "Professional Experience",
+    icon: "Briefcase",
+    group: "Personal",
+    roles: FPS_ROLES,
+  },
+  {
+    key: "administrativePosition",
+    slug: "administrative-position",
+    title: "Administrative Position",
+    icon: "Gavel",
+    group: "Personal",
+    roles: FPS_ROLES,
+  },
+];

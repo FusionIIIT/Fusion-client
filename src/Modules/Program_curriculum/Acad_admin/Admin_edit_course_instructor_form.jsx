@@ -143,7 +143,7 @@ function Admin_edit_course_instructor() {
             <Text size="sm" mb={8}>
               <strong>{result.message || "Course instructor has been updated."}</strong>
             </Text>
-            <Text size="xs" color="gray.7">
+            <Text size="xs" c="gray.7">
               The instructor assignment has been updated.
             </Text>
           </div>
@@ -168,7 +168,7 @@ function Admin_edit_course_instructor() {
             <Text size="sm" mb={8}>
               <strong>Unable to update course instructor. Please try again.</strong>
             </Text>
-            <Text size="xs" color="gray.7">
+            <Text size="xs" c="gray.7">
               Please check your inputs and try again.
             </Text>
           </div>
@@ -204,11 +204,11 @@ function Admin_edit_course_instructor() {
                 boxShadow: "0 0 10px rgba(0,0,0,0.1)",
               }}
             >
-              <Text size="xl" weight={700} align="center">
+              <Text size="xl" fw={700} ta="center">
                 Edit Course Instructor Form
               </Text>
 
-              <Stack spacing="lg">
+              <Stack gap="lg">
                 <Select
                   label="Select Course"
                   placeholder="-- Select Course Name --"
@@ -270,7 +270,7 @@ function Admin_edit_course_instructor() {
                   clearable
                 />
 
-                <Group position="right" mt="lg">
+                <Group justify="flex-end" mt="lg">
                   <Button variant="outline" onClick={handleCancel}>
                     Cancel
                   </Button>

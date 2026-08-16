@@ -25,6 +25,7 @@ import { useMediaQuery } from "@mantine/hooks";
 import { fetchAllProgrammes } from "../api/api";
 import axios from "axios";
 import { host } from "../../../routes/globalRoutes";
+import { errorMessage as toErrorMessage } from "../../../lib/errors";
 
 function AdminViewProgrammes() {
   const [activeSection, setActiveSection] = useState("ug");
@@ -257,7 +258,7 @@ function AdminViewProgrammes() {
                 <strong>Programme "{response.data.deleted_programme?.name || 'Programme'}" has been removed.</strong>
               </Text>
               {response.data.deleted_programme && (
-                <Text size="xs" color="gray.7">
+                <Text size="xs" c="gray.7">
                   Category: {response.data.deleted_programme.category || 'N/A'} | Discipline: {response.data.deleted_programme.discipline || 'N/A'}
                 </Text>
               )}
@@ -296,7 +297,7 @@ function AdminViewProgrammes() {
                   <Text size="sm" mb={8}>
                     <strong>{errorData.message || "This programme has batches associated with it. Please remove all batches first."}</strong>
                   </Text>
-                  <Text size="xs" color="gray.7">
+                  <Text size="xs" c="gray.7">
                     Batch count: {errorData.batch_count || "Unknown"}<br/>
                     You must remove all batches before deleting this programme.
                   </Text>
@@ -324,7 +325,7 @@ function AdminViewProgrammes() {
                   <Text size="sm" mb={8}>
                     <strong>{errorData.message || "This programme has students enrolled."}</strong>
                   </Text>
-                  <Text size="xs" color="gray.7">
+                  <Text size="xs" c="gray.7">
                     Student count: {errorData.student_count || "Unknown"}<br/>
                     All students must be transferred or graduated before deleting this programme.
                   </Text>
@@ -384,7 +385,7 @@ function AdminViewProgrammes() {
   if (error) {
     return (
       <Container>
-        <Text color="red">{error}</Text>
+        <Text c="red">{toErrorMessage(error)}</Text>
       </Container>
     );
   }
@@ -628,7 +629,7 @@ function AdminViewProgrammes() {
               <ThemeIcon color="red" size="lg">
                 <Trash size={20} />
               </ThemeIcon>
-              <Text size="lg" weight={600}>
+              <Text size="lg" fw={600}>
                 Confirm Delete Programme
               </Text>
             </Flex>
@@ -636,7 +637,7 @@ function AdminViewProgrammes() {
           size="md"
           centered
         >
-          <Stack spacing="md">
+          <Stack gap="md">
             {(() => {
               const programmeToDelete = [...ugData, ...pgData, ...phdData]
                 .find(programme => programme.id === deletingProgrammeId);
@@ -649,7 +650,7 @@ function AdminViewProgrammes() {
                   
                   {programmeToDelete && (
                     <Card withBorder p="md" bg="gray.1">
-                      <Text size="sm" weight={500} mb={8}>
+                      <Text size="sm" fw={500} mb={8}>
                         Programme Details:
                       </Text>
                       <Text size="sm">

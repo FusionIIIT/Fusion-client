@@ -296,7 +296,7 @@ function ViewRollList() {
     <Card shadow="sm" p="lg" radius="md" withBorder>
       <Text
         size="lg"
-        weight={700}
+        fw={700}
         mb="md"
         style={{ textAlign: "center", color: "#3B82F6" }}
       >
@@ -338,7 +338,7 @@ function ViewRollList() {
         {filteringCourses && (
           <Text
             size="sm"
-            color="dimmed"
+            c="dimmed"
             style={{ alignSelf: "center", marginTop: 20 }}
           >
             Filtering...

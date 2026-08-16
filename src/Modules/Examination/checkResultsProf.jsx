@@ -154,7 +154,7 @@ export default function GradesDownloadPage() {
 
   return (
     <Card withBorder p="lg">
-      <Stack spacing="md">
+      <Stack gap="md">
         <Title order={1}>Download Course Grades</Title>
 
         {error && (
@@ -163,7 +163,7 @@ export default function GradesDownloadPage() {
           </Alert>
         )}
 
-        <Group spacing="sm">
+        <Group gap="sm">
           <Select
             placeholder="Academic Year"
             data={academicYears}
@@ -193,17 +193,17 @@ export default function GradesDownloadPage() {
 
         <Divider />
 
-        <Stack spacing="sm">
+        <Stack gap="sm">
           {courses.length > 0 ? (
             courses.map((course) => (
               <Card key={course.id} withBorder shadow="sm" p="sm">
-                <Group position="apart" align="flex-start">
-                  <Stack spacing={4}>
-                    <Text weight={600}>{course.name}</Text>
-                    <Text size="sm" color="dimmed">
+                <Group justify="space-between" align="flex-start">
+                  <Stack gap={4}>
+                    <Text fw={600}>{course.name}</Text>
+                    <Text size="sm" c="dimmed">
                       {course.code}
                     </Text>
-                    <Group spacing="xs" mt={4}>
+                    <Group gap="xs" mt={4}>
                       <Badge color="blue">{course.credit} cr</Badge>
                       {course.latest_version && <Badge color="green">Latest</Badge>}
                     </Group>
@@ -221,7 +221,7 @@ export default function GradesDownloadPage() {
               </Card>
             ))
           ) : (
-            !loading && <Text color="dimmed" align="center">No courses to display.</Text>
+            !loading && <Text c="dimmed" ta="center">No courses to display.</Text>
           )}
         </Stack>
       </Stack>

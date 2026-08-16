@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from "react";
-import { Button, Flex, Tabs, Text } from "@mantine/core";
-import { CaretCircleLeft, CaretCircleRight } from "@phosphor-icons/react";
+import { useEffect, useState } from "react";
+import { Text } from "@mantine/core";
+import { PageTabs } from "../../../../ui/components/PageTabs";
 // import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
-import classes from "../../../Dashboard/Dashboard.module.css"; // Ensure the CSS module is properly set
 import ResearchProjects from "./ResearchProjects";
 import Patents from "./Patents";
 import ConsultancyProjects from "./ConsultancyProjects";
@@ -10,7 +9,6 @@ import ConsultancyProjects from "./ConsultancyProjects";
 // eslint-disable-next-line react/prop-types
 function ProjectMaster({ setBreadCrumbItems }) {
   const [activeTab, setActiveTab] = useState("0");
-  const tabsListRef = useRef(null);
 
   // Tab items data
   const tabItems = [
@@ -20,22 +18,8 @@ function ProjectMaster({ setBreadCrumbItems }) {
     // { title: "Thesis Supervision", component: <ThesisSupervisionMaster /> },
   ];
 
-  // Handle tab change (previous/next)
-  const handleTabChange = (direction) => {
-    const newIndex =
-      direction === "next"
-        ? Math.min(parseInt(activeTab, 10) + 1, tabItems.length - 1)
-        : Math.max(parseInt(activeTab, 10) - 1, 0);
-    setActiveTab(String(newIndex));
-    tabsListRef.current.scrollBy({
-      left: direction === "next" ? 50 : -50,
-      behavior: "smooth",
-    });
-  };
-
   useEffect(() => {
     const currentTab = tabItems[parseInt(activeTab, 10)];
-    // console.log(currentTab);
 
     const breadcrumbs = [{ title: currentTab.title, href: "#" }].map(
       (item, index) => (
@@ -55,61 +39,14 @@ function ProjectMaster({ setBreadCrumbItems }) {
     <>
       {/* <CustomBreadcrumbs /> */}
 
-      <Flex
-        justify="flex-start"
-        align="center"
-        gap={{ base: "0.5rem", md: "1rem" }}
-        mt={{ base: "1rem", md: "1.5rem" }}
-        ml={{ md: "lg" }}
-      >
-        {/* Previous Button */}
-        <Button
-          onClick={() => handleTabChange("prev")}
-          variant="default"
-          p={0}
-          style={{ border: "none" }}
-        >
-          <CaretCircleLeft
-            className={classes.fusionCaretCircleIcon}
-            weight="light"
-          />
-        </Button>
-
-        {/* Tabs Section */}
-        <div className={classes.fusionTabsContainer} ref={tabsListRef}>
-          <Tabs value={activeTab} onTabChange={setActiveTab}>
-            <Tabs.List style={{ display: "flex", flexWrap: "nowrap" }}>
-              {tabItems.map((item, index) => (
-                <Tabs.Tab
-                  value={String(index)}
-                  key={index}
-                  onClick={() => setActiveTab(String(index))}
-                  className={
-                    activeTab === String(index)
-                      ? classes.fusionActiveRecentTab
-                      : ""
-                  }
-                >
-                  <Text>{item.title}</Text>
-                </Tabs.Tab>
-              ))}
-            </Tabs.List>
-          </Tabs>
-        </div>
-
-        {/* Next Button */}
-        <Button
-          onClick={() => handleTabChange("next")}
-          variant="default"
-          p={0}
-          style={{ border: "none" }}
-        >
-          <CaretCircleRight
-            className={classes.fusionCaretCircleIcon}
-            weight="light"
-          />
-        </Button>
-      </Flex>
+      <PageTabs
+        value={activeTab}
+        onChange={setActiveTab}
+        tabs={tabItems.map((item, index) => ({
+          value: String(index),
+          label: item.title,
+        }))}
+      />
 
       {/* Display the active tab content */}
       {tabItems[parseInt(activeTab, 10)]?.component}

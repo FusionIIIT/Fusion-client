@@ -1,63 +1,70 @@
-import React, { useEffect, useState } from 'react';
-import {
-  Card, Title, Table, Button, Group,
-  Modal, Text, Loader, Alert, Select
-} from '@mantine/core';
-import { showNotification } from '@mantine/notifications';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import { Card, Button, Group, Modal, Text, Loader, Alert } from "@mantine/core";
+import { showNotification } from "@mantine/notifications";
+import axios from "axios";
+import { courseLabel } from "../../lib/course";
+import SlotCard from "./components/SlotCard";
+import SlotRow from "./components/SlotRow";
+import SlotSelect from "./components/SlotSelect";
 
 import {
   studentAvailableAddCourseSlotsRoute,
   studentAvailableAddCoursesRoute,
   studentAddCourseRoute,
-} from '../../routes/academicRoutes';
+} from "../../routes/academicRoutes";
 
 export default function StudentAddCourse() {
-  const [slots, setSlots]         = useState([]);
-  const [loading, setLoading]     = useState(true);
-  const [error, setError]         = useState(null);
-  const [preview, setPreview]     = useState(false);
+  const [slots, setSlots] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [preview, setPreview] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   // fetch available slots and courses for adding
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem("authToken");
     if (!token) {
-      setError('No auth token found');
+      setError("No auth token found");
       setLoading(false);
       return;
     }
 
     Promise.all([
       axios.get(studentAvailableAddCourseSlotsRoute, {
-        headers: { Authorization: `Token ${token}` }
+        headers: { Authorization: `Token ${token}` },
       }),
       axios.get(studentAvailableAddCoursesRoute, {
-        headers: { Authorization: `Token ${token}` }
-      })
+        headers: { Authorization: `Token ${token}` },
+      }),
     ])
-    .then(([slotsRes, coursesRes]) => {
-      const slotData = Array.isArray(slotsRes.data) ? slotsRes.data : (slotsRes.data.slots || []);
-      const courseData = Array.isArray(coursesRes.data) ? coursesRes.data : (coursesRes.data.courses || []);
-      
-      const enrichedSlots = slotData.map(slot => ({
-        ...slot,
-        courses: courseData.filter(c => c.slot === slot.name && c.id && c.code),
-        selectedCourse: ''
-      }));
-      
-      setSlots(enrichedSlots);
-    })
-    .catch(err => setError(err.response?.data?.error || err.message))
-    .finally(() => setLoading(false));
+      .then(([slotsRes, coursesRes]) => {
+        const slotData = Array.isArray(slotsRes.data)
+          ? slotsRes.data
+          : slotsRes.data.slots || [];
+        const courseData = Array.isArray(coursesRes.data)
+          ? coursesRes.data
+          : coursesRes.data.courses || [];
+
+        const enrichedSlots = slotData.map((slot) => ({
+          ...slot,
+          courses: courseData.filter(
+            (c) => c.slot === slot.name && c.id && c.code,
+          ),
+          selectedCourse: "",
+        }));
+
+        setSlots(enrichedSlots);
+      })
+      .catch((err) => setError(err.response?.data?.error || err.message))
+      .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <Loader />;
-  if (error)   return <Alert color="red">{error}</Alert>;
+  if (error) return <Alert color="red">{error}</Alert>;
   if (!slots.length) return <Text>No slots available for adding courses.</Text>;
 
   const courseOf = (s) =>
-    (s.courses || []).find(c => String(c.id) === s.selectedCourse);
+    (s.courses || []).find((c) => String(c.id) === s.selectedCourse);
 
   // A course not running in the student's own section needs a running section picked.
   const needsSection = (s) => {
@@ -66,39 +73,57 @@ export default function StudentAddCourse() {
   };
 
   const pickCourse = (idx, val) => {
-    setSlots(slots.map((s, i) => {
-      if (i !== idx) return s;
-      const course = (s.courses || []).find(c => String(c.id) === val);
-      // Auto-pick when the course runs in exactly one (other) section.
-      let selectedSection = '';
-      if (course && !course.own_section_running && (course.sections || []).length === 1) {
-        selectedSection = String(course.sections[0].course_instructor_id);
-      }
-      return { ...s, selectedCourse: val, selectedSection };
-    }));
+    setSlots(
+      slots.map((s, i) => {
+        if (i !== idx) return s;
+        const course = (s.courses || []).find((c) => String(c.id) === val);
+        // Auto-pick when the course runs in exactly one (other) section.
+        let selectedSection = "";
+        if (
+          course &&
+          !course.own_section_running &&
+          (course.sections || []).length === 1
+        ) {
+          selectedSection = String(course.sections[0].course_instructor_id);
+        }
+        return { ...s, selectedCourse: val, selectedSection };
+      }),
+    );
   };
 
   const pickSection = (idx, val) => {
-    setSlots(slots.map((s, i) => (i === idx ? { ...s, selectedSection: val } : s)));
+    setSlots(
+      slots.map((s, i) => (i === idx ? { ...s, selectedSection: val } : s)),
+    );
   };
 
-  const toSubmit = slots.filter(s => s.selectedCourse && s.selectedCourse !== '');
+  const toSubmit = slots.filter(
+    (s) => s.selectedCourse && s.selectedCourse !== "",
+  );
 
   const handleSubmit = async () => {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem("authToken");
     if (!token) {
-      showNotification({ title: 'Auth Error', message: 'No token', color: 'red' });
+      showNotification({
+        title: "Auth Error",
+        message: "No token",
+        color: "red",
+      });
       return;
     }
-    const selectedSlots = slots.filter(s => s.selectedCourse && s.selectedCourse !== '');
+    const selectedSlots = slots.filter(
+      (s) => s.selectedCourse && s.selectedCourse !== "",
+    );
 
-    const missingSection = selectedSlots.find(s => needsSection(s) && !s.selectedSection);
+    const missingSection = selectedSlots.find(
+      (s) => needsSection(s) && !s.selectedSection,
+    );
     if (missingSection) {
       const c = courseOf(missingSection);
       showNotification({
-        title: 'Section required',
-        message: `Select a section for ${c ? c.code : 'the course'} — it isn't running in your section.`,
-        color: 'yellow',
+        title: "Section required",
+        message: `Select a section for ${c ? c.code : "the course"} — it isn't running in your section.`,
+        color: "yellow",
       });
       return;
     }
@@ -107,8 +132,9 @@ export default function StudentAddCourse() {
 
     try {
       await Promise.all(
-        selectedSlots.map(s =>
-          axios.post(studentAddCourseRoute,
+        selectedSlots.map((s) =>
+          axios.post(
+            studentAddCourseRoute,
             {
               slot_id: s.id,
               course_id: parseInt(s.selectedCourse, 10),
@@ -116,24 +142,27 @@ export default function StudentAddCourse() {
                 ? { course_instructor_id: parseInt(s.selectedSection, 10) }
                 : {}),
             },
-            { headers: { Authorization: `Token ${token}` } }
-          )
-        )
+            { headers: { Authorization: `Token ${token}` } },
+          ),
+        ),
       );
 
-      showNotification({ 
-        title: 'Success', 
-        message: 'Course addition requests submitted successfully. Awaiting Academic approval.', 
-        color: 'green' 
+      showNotification({
+        title: "Success",
+        message:
+          "Course addition requests submitted successfully. Awaiting Academic approval.",
+        color: "green",
       });
 
-      setSlots(prevSlots => prevSlots.filter(s => !selectedSlots.find(t => t.id === s.id)));
+      setSlots((prevSlots) =>
+        prevSlots.filter((s) => !selectedSlots.find((t) => t.id === s.id)),
+      );
       setPreview(false);
     } catch (err) {
       showNotification({
-        title: 'Submit failed',
+        title: "Submit failed",
         message: err.response?.data?.error || err.message,
-        color: 'red'
+        color: "red",
       });
     } finally {
       setSubmitting(false);
@@ -142,64 +171,58 @@ export default function StudentAddCourse() {
 
   return (
     <Card withBorder p="md">
-      <Title order={3} mb="md">Add Course to Available Slot</Title>
-      <Table highlightOnHover>
-        <thead>
-          <tr>
-            <th>Slot</th>
-            <th>Academic Year</th>
-            <th>Semester</th>
-            <th>Select Course</th>
-          </tr>
-        </thead>
-        <tbody>
-          {slots.map((s, i) => (
-            <tr key={s.id}>
-              <td>{s.name}</td>
-              <td>{s.academic_year}</td>
-              <td>{s.semester_type}</td>
-              <td style={{ minWidth: 250 }}>
-                <Select
-                  placeholder="Select course…"
-                  data={(s.courses || [])
-                    .filter(c => c.id && c.code)
-                    .map(c => ({
-                      value: String(c.id),
-                      label: `${c.code} - ${c.name}`,
-                    }))}
-                  value={s.selectedCourse}
-                  onChange={val => pickCourse(i, val)}
-                  clearable
-                />
-                {needsSection(s) && (
-                  <Select
-                    mt="xs"
-                    placeholder="Select section…"
-                    description="Not running in your section — pick a running one"
-                    data={courseOf(s).sections.map(sec => ({
-                      value: String(sec.course_instructor_id),
-                      label: sec.section
-                        ? `Section ${sec.section} — ${sec.instructor}`
-                        : sec.instructor,
-                    }))}
-                    value={s.selectedSection || ''}
-                    onChange={val => pickSection(i, val)}
-                  />
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
-
-      <Group position="right" mt="xl">
-        <Button
-          disabled={toSubmit.length === 0}
-          onClick={() => setPreview(true)}
+      {slots.map((s, i) => (
+        <SlotCard
+          key={s.id}
+          name={s.name}
+          meta={[s.academic_year, s.semester_type].filter(Boolean).join(" · ")}
         >
-          Review &amp; Submit
-        </Button>
-      </Group>
+          <SlotRow
+            primary="Course"
+            control={
+              <SlotSelect
+                label={`Course for ${s.name}`}
+                placeholder="Select course…"
+                value={s.selectedCourse}
+                onChange={(val) => pickCourse(i, val)}
+                options={(s.courses || [])
+                  .filter((c) => c.id && c.code)
+                  .map((c) => ({ value: String(c.id), label: courseLabel(c) }))}
+              />
+            }
+          />
+          {needsSection(s) && (
+            <SlotRow
+              primary="Section"
+              secondary="Not running in your section — pick a running one"
+              control={
+                <SlotSelect
+                  label={`Section for ${s.name}`}
+                  placeholder="Select section…"
+                  value={s.selectedSection}
+                  onChange={(val) => pickSection(i, val)}
+                  options={courseOf(s).sections.map((sec) => ({
+                    value: String(sec.course_instructor_id),
+                    label: sec.section
+                      ? `Section ${sec.section} — ${sec.instructor}`
+                      : sec.instructor,
+                  }))}
+                />
+              }
+            />
+          )}
+        </SlotCard>
+      ))}
+
+      <Button
+        mt="xl"
+        fullWidth
+        styles={{ label: { whiteSpace: "normal" } }}
+        disabled={toSubmit.length === 0}
+        onClick={() => setPreview(true)}
+      >
+        Review &amp; Submit
+      </Button>
 
       <Modal
         opened={preview}
@@ -211,25 +234,26 @@ export default function StudentAddCourse() {
           <Text>No courses selected.</Text>
         ) : (
           <>
-            <Table>
-              <thead>
-                <tr><th>Slot</th><th>Course</th></tr>
-              </thead>
-              <tbody>
-                {toSubmit.map(s => {
-                  const course = s.courses.find(c => String(c.id) === s.selectedCourse);
-                  return (
-                    <tr key={s.id}>
-                      <td>{s.name}</td>
-                      <td>{course ? `${course.code} – ${course.name}` : 'Invalid'}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </Table>
-            <Group position="right" mt="md">
-              <Button variant="outline" onClick={() => setPreview(false)}>Cancel</Button>
-              <Button onClick={handleSubmit} loading={submitting}>Submit</Button>
+            {toSubmit.map((s) => {
+              const course = s.courses.find(
+                (c) => String(c.id) === s.selectedCourse,
+              );
+              return (
+                <SlotCard key={s.id} name={s.name}>
+                  <SlotRow
+                    primary={course ? courseLabel(course) : "Invalid"}
+                    secondary="Course"
+                  />
+                </SlotCard>
+              );
+            })}
+            <Group justify="flex-end" mt="md">
+              <Button variant="outline" onClick={() => setPreview(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSubmit} loading={submitting}>
+                Submit
+              </Button>
             </Group>
           </>
         )}

@@ -83,7 +83,7 @@ function BatchTable({ batches, loading, onRowClick }) {
                 </Badge>
               </td>
               <td style={{ ...BODY_CELL, fontWeight: "500" }}>
-                <Text weight={500}>{batch.totalSeats}</Text>
+                <Text fw={500}>{batch.totalSeats}</Text>
               </td>
               <td
                 style={{

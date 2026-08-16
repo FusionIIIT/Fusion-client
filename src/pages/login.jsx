@@ -119,10 +119,6 @@ const NOTIFICATION_STYLES = {
       height: '20px',
       minWidth: '20px',
       minHeight: '20px',
-      '&:hover': {
-        backgroundColor: 'rgba(255,255,255,0.2)',
-        transform: 'scale(1.1)',
-      }
     }
   }
 };

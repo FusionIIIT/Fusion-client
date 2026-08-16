@@ -240,7 +240,7 @@ export default function AdminBatchChange() {
               </tbody>
             </Table>
 
-            <Group position="right" mt="md">
+            <Group justify="flex-end" mt="md">
               <Button onClick={submitChanges} disabled={toConfirm.length === 0}>
                 Submit Changes
               </Button>
@@ -281,7 +281,7 @@ export default function AdminBatchChange() {
               })}
             </tbody>
           </Table>
-          <Group position="right" mt="md">
+          <Group justify="flex-end" mt="md">
             <Button variant="outline" onClick={() => setModalOpen(false)}>
               Cancel
             </Button>

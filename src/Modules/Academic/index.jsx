@@ -1,234 +1,84 @@
-import { useEffect, useState, useMemo } from "react";
-import { Flex } from "@mantine/core";
-import { useDispatch, useSelector } from "react-redux";
-import { useSearchParams } from "react-router-dom";
-import axios from "axios";
+import { lazy, useEffect, useMemo } from "react";
+import { useSelector } from "react-redux";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
-import CustomBreadcrumbs from "../../components/Breadcrumbs";
-import ModuleTabs from "../../components/moduleTabs";
-import RegisteredCourses from "./RegisteredCourses";
-import AvailableCourses from "./AvailableCourses";
-import PreRegistration from "./PreRegistration";
-import FinalRegistration from "./FinalRegistration";
-import StudentCourses from "./StudentCourses";
-import DeletePreRegistration from "./DeletePreRegistration";
-import AcademicCalendar from "./AcademicCalendar";
-import GenerateStudentList from "./GenerateStudentList";
-import SectionAssignment from "./SectionAssignment";
-import ViewRollList from "./ViewRollList";
-import AllocateCourses from "./AllocateCourses";
-import VerifyStudentRegistration from "./VerifyStudentRegistration";
-import SwayamRegistration from "./SwayamRegistrationWrapper";
-import AllotCourses from "./AllotCourses";
-import { setActiveTab_ } from "../../redux/moduleslice";
-import { Faculty_TA_Dashboard } from "./Faculty_TA_Dashboard";
-import StudentAddDropReplace from "./StudentAddDropReplace";
-import AdminReplacementDashboard from "./AdminReplacementDashboard";
-import AdminAddDashboard from "./AdminAddDashboard";
-import AdminDropDashboard from "./AdminDropDashboard";
-import StudentCalendar from "./StudentCalendar";
-import AdminStudentDashboard from "./AdminStudentDashboard";
-import StudentCourseFeedbackForm from "./FeedbackForm/StudentCourseFeedbackForm";
-import AdminFeedbackView from "./FeedbackForm/AdminFeedbackView";
-import AdminBatchChange from "./AdminBatchChange";
-import AdminPromoteSemester from "./AdminPromoteSemester";
-import InstructorDashboard from "./FeedbackForm/InstructorDashboard";
-import AdminSwayamDashboard from "./AdminSwayamDashboard";
-import PhDCourseRegistration from "./PhDCourseRegistration";
-import AdminPhDCourseRequests from "./AdminPhDCourseRequests";
-import TeachingCreditFeedback from "./TeachingCreditFeedback";
-import { phdStudentStatusRoute } from "../../routes/academicRoutes";
+import { ModuleRoutes } from "../../ui/routing/ModuleRoutes";
+import { pagesForRole } from "../../ui/nav/roles";
+import {
+  ACADEMIC_BASE,
+  ACADEMIC_NOTIFICATION_SLUGS,
+  ACADEMIC_PAGES,
+} from "./pages";
 
-// Maps a notification's data.module to the tab title(s) that render it, so a
-// click on a notification can deep-link straight to the source tab. Titles
-// differ slightly across roles (and one is misspelled), hence the alias list.
-const MODULE_TAB_ALIASES = {
-  "Academic Calendar": ["Academic Calendar", "Academic Calender"],
-  "PhD Course Registration": [
-    "Thesis & Course Requests",
-    "Thesis & Course Registration",
-  ],
+const COMPONENTS = {
+  adminStudentCourses: lazy(() => import("./StudentCourses")),
+  adminVerifyRegistration: lazy(() => import("./VerifyStudentRegistration")),
+  adminDeletePreRegistration: lazy(() => import("./DeletePreRegistration")),
+  adminAllotCourses: lazy(() => import("./AllotCourses")),
+  adminAllocateCourses: lazy(() => import("./AllocateCourses")),
+  adminAddCourses: lazy(() => import("./AdminAddDashboard")),
+  adminDropCourses: lazy(() => import("./AdminDropDashboard")),
+  adminReplacement: lazy(() => import("./AdminReplacementDashboard")),
+  adminSwayam: lazy(() => import("./AdminSwayamDashboard")),
+  adminStudentDashboard: lazy(() => import("./AdminStudentDashboard")),
+  adminGenerateStudentList: lazy(() => import("./GenerateStudentList")),
+  adminSectionAssignment: lazy(() => import("./SectionAssignment")),
+  adminBatchChange: lazy(() => import("./AdminBatchChange")),
+  adminPromoteSemester: lazy(() => import("./AdminPromoteSemester")),
+  adminAcademicCalendar: lazy(() => import("./AcademicCalendar")),
+  adminFeedbackView: lazy(() => import("./FeedbackForm/AdminFeedbackView")),
+  adminPhdCourseRequests: lazy(() => import("./AdminPhDCourseRequests")),
+
+  studentRegisteredCourses: lazy(() => import("./RegisteredCourses")),
+  studentAvailableCourses: lazy(() => import("./AvailableCourses")),
+  studentPreRegistration: lazy(() => import("./PreRegistration")),
+  studentFinalRegistration: lazy(() => import("./FinalRegistration")),
+  studentPhdCourseRegistration: lazy(() => import("./PhDCourseRegistration")),
+  studentSwayam: lazy(() => import("./SwayamRegistrationWrapper")),
+  studentAddDrop: lazy(() => import("./StudentAddDropReplace")),
+  studentCalendar: lazy(() => import("./StudentCalendar")),
+  studentFeedbackForm: lazy(
+    () => import("./FeedbackForm/StudentCourseFeedbackForm"),
+  ),
+
+  facultyRollList: lazy(() => import("./ViewRollList")),
+  facultyTaDashboard: lazy(() =>
+    import("./Faculty_TA_Dashboard").then((m) => ({
+      default: m.Faculty_TA_Dashboard,
+    })),
+  ),
+  facultyCourseFeedback: lazy(
+    () => import("./FeedbackForm/InstructorDashboard"),
+  ),
 };
 
-function AcademicPage() {
-  const [activeTab, setActiveTab] = useState("0");
-  const [isPhdStudent, setIsPhdStudent] = useState(false);
+export default function AcademicPage() {
   const role = useSelector((state) => state.user.role);
-  const dispatch = useDispatch();
+  const programmeType = useSelector((state) => state.user.programmeType);
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // PhD and PG students both get the "Thesis & Course Registration" tab
-  // (backend treats them the same here, see _is_phd_student); check once so
-  // the tab list doesn't have to show/hide after an initial flash.
-  useEffect(() => {
-    if (role !== "student") return;
-    const token = localStorage.getItem("authToken");
-    if (!token) return;
-    axios
-      .get(phdStudentStatusRoute, {
-        headers: { Authorization: `Token ${token}` },
-      })
-      .then(({ data }) => setIsPhdStudent(Boolean(data?.is_phd)))
-      .catch(() => setIsPhdStudent(false));
-  }, [role]);
-
-  // Memoize tab configuration to avoid unnecessary recalculations.
-  // PhD thesis/seminar UI lives in the ThesisResearch module (/thesis-research),
-  // so the Academic module is course-registration only.
-  const { tabItems, tabComponents } = useMemo(() => {
-    if (role === "acadadmin" || role === "studentacadadmin") {
-      return {
-        tabItems: [
-          { title: "Student Courses" },
-          { title: "Delete Pre-Registration" },
-          { title: "Academic Calendar" },
-          { title: "Generate Student List" },
-          { title: "Section Assignment" },
-          { title: "Allocate Courses" },
-          { title: "Verify Student Registration" },
-          { title: "Allot Courses" },
-          { title: "Replacement Allocation" },
-          { title: "Add BL Courses" },
-          { title: "Drop Courses" },
-          { title: "Swayam" },
-          { title: "Student Dashboard" },
-          { title: "Feedback Responses" },
-          { title: "Batch/Branch Change" },
-          { title: "Promote Students" },
-          { title: "Thesis & Course Requests" },
-        ],
-        tabComponents: [
-          StudentCourses,
-          DeletePreRegistration,
-          AcademicCalendar,
-          GenerateStudentList,
-          SectionAssignment,
-          AllocateCourses,
-          VerifyStudentRegistration,
-          AllotCourses,
-          AdminReplacementDashboard,
-          AdminAddDashboard,
-          AdminDropDashboard,
-          AdminSwayamDashboard,
-          AdminStudentDashboard,
-          AdminFeedbackView,
-          AdminBatchChange,
-          AdminPromoteSemester,
-          AdminPhDCourseRequests,
-        ],
-      };
-    }
-
-    if (role === "student") {
-      // PG/PhD students use the self-submit Thesis & Course Registration flow, not the UG pre-reg/final-reg/Swayam/add-drop pipeline.
-      if (isPhdStudent) {
-        return {
-          tabItems: [
-            { title: "Registered Courses" },
-            { title: "Available Courses" },
-            { title: "Thesis & Course Registration" },
-            { title: "Academic Calender" },
-            { title: "Feedback Form" },
-            { title: "Teaching Credit Feedback" },
-          ],
-          tabComponents: [
-            RegisteredCourses,
-            AvailableCourses,
-            PhDCourseRegistration,
-            StudentCalendar,
-            StudentCourseFeedbackForm,
-            TeachingCreditFeedback,
-          ],
-        };
-      }
-      return {
-        tabItems: [
-          { title: "Registered Courses" },
-          { title: "Available Courses" },
-          { title: "Academic Calender" },
-          { title: "Pre-Registration" },
-          { title: "Final-Registration" },
-          { title: "Swayam" },
-          { title: "Add / Drop" },
-          { title: "Feedback Form" },
-          { title: "Teaching Credit Feedback" },
-        ],
-        tabComponents: [
-          RegisteredCourses,
-          AvailableCourses,
-          StudentCalendar,
-          PreRegistration,
-          FinalRegistration,
-          SwayamRegistration,
-          StudentAddDropReplace,
-          StudentCourseFeedbackForm,
-          TeachingCreditFeedback,
-        ],
-      };
-    }
-
-    if (
-      role === "faculty" ||
-      role === "Associate Professor" ||
-      role === "Assistant Professor" ||
-      role === "Professor"
-    ) {
-      return {
-        tabItems: [
-          { title: "View Roll List" },
-          { title: "TA management" },
-          { title: "Course Feedback" },
-        ],
-        tabComponents: [
-          ViewRollList,
-          Faculty_TA_Dashboard,
-          InstructorDashboard,
-        ],
-      };
-    }
-
-    return {
-      tabItems: [{ title: "Registered Courses" }],
-      tabComponents: [RegisteredCourses],
-    };
-  }, [role, isPhdStudent]);
-
-  useEffect(() => {
-    if (tabItems?.[activeTab]) {
-      dispatch(setActiveTab_(tabItems[activeTab].title));
-    }
-  }, [activeTab, tabItems, dispatch]);
-
-  // Deep-link support: /academics?tab=<module> selects the matching tab for
-  // the current role (falls back to a direct title match for other callers).
-  useEffect(() => {
-    const requested = searchParams.get("tab");
-    if (!requested) return;
-    const candidates = MODULE_TAB_ALIASES[requested] || [requested];
-    const idx = tabItems.findIndex((t) =>
-      candidates.some((c) => c.toLowerCase() === t.title.toLowerCase()),
-    );
-    if (idx >= 0) setActiveTab(String(idx));
-  }, [searchParams, tabItems]);
-
-  const ActiveComponent = useMemo(
-    () => tabComponents[parseInt(activeTab, 10)],
-    [tabComponents, activeTab],
+  const pages = useMemo(
+    () => pagesForRole(ACADEMIC_PAGES, role, { programmeType }),
+    [role, programmeType],
   );
+
+  const requestedTab = searchParams.get("tab");
+  useEffect(() => {
+    if (!requestedTab) return;
+    const candidates = ACADEMIC_NOTIFICATION_SLUGS[requestedTab] ?? [];
+    const target =
+      pages.find((p) => candidates.includes(p.slug)) ??
+      pages.find((p) => p.title.toLowerCase() === requestedTab.toLowerCase());
+    if (target) navigate(`/academics/${target.slug}`, { replace: true });
+  }, [requestedTab, pages, navigate]);
 
   return (
-    <>
-      <CustomBreadcrumbs />
-      <Flex justify="space-between" align="center" mt="lg">
-        <ModuleTabs
-          tabs={tabItems}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-        />
-      </Flex>
-      <ActiveComponent mt="xl" />
-    </>
+    <ModuleRoutes
+      pages={pages}
+      components={COMPONENTS}
+      basePath={ACADEMIC_BASE}
+      emptyMessage="No academic pages apply to your role."
+    />
   );
 }
-
-export default AcademicPage;

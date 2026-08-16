@@ -77,7 +77,7 @@ export default function ViewForeignVisits() {
           </Title>
 
           {error && (
-            <Text color="red" mb="sm" style={{ textAlign: "center" }}>
+            <Text c="red" mb="sm" style={{ textAlign: "center" }}>
               {error}
             </Text>
           )}

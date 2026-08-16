@@ -77,7 +77,6 @@ function Faculty_edit_course_proposal_form() {
 
         // Fetch current course details
         const courseDetails = await fetchCourseDetails(id);
-        console.log("Fetched course details:", courseDetails);
 
         // Map the API response to form fields
         form.setValues({
@@ -132,9 +131,7 @@ function Faculty_edit_course_proposal_form() {
 
   const handleSubmit = async (values) => {
     const apiUrl = `${host}/programme_curriculum/api/new_course_proposal_file/`;
-    console.log("Form Values:", values);
     const user = localStorage.getItem("authToken");
-    console.log(user);
 
     const payload = {
       name: values.courseName,
@@ -166,8 +163,6 @@ function Faculty_edit_course_proposal_form() {
       isUpdate: true,
     };
 
-    console.log("Payload: ", payload);
-
     try {
       const response = await fetch(apiUrl, {
         method: "POST",
@@ -179,9 +174,8 @@ function Faculty_edit_course_proposal_form() {
       });
 
       if (response.ok) {
-        const data = await response.json();
+        await response.json();
         alert("Course updated successfully!");
-        console.log("Response Data:", data);
         navigate("/programme_curriculum/faculty_view_course_proposal");
       } else {
         const errorText = await response.text();
@@ -236,11 +230,11 @@ function Faculty_edit_course_proposal_form() {
                 boxShadow: "0 0 10px rgba(0,0,0,0.1)",
               }}
             >
-              <Stack spacing="lg">
+              <Stack gap="lg">
                 <Text
                   size="xl"
-                  weight={700}
-                  align="center"
+                  fw={700}
+                  ta="center"
                   style={{ padding: "10px", borderRadius: "5px" }}
                 >
                   Edit Course Proposal

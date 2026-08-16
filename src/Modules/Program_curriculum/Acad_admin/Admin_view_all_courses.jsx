@@ -413,7 +413,7 @@ function Admin_view_all_courses() {
               }
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.currentTarget.value)}
-              style={{ width: "400px" }}
+              style={{ width: "100%", maxWidth: 400 }}
             />
             {activeView === "courses" ? (
               <Link to="/programme_curriculum/acad_admin_add_course_proposal_form">
@@ -1166,7 +1166,7 @@ function Admin_view_all_courses() {
                 Are you sure you want to delete the seminar <strong>"{seminarToDelete?.code} - {seminarToDelete?.name}"</strong>?
               </Text>
 
-              <Text size="xs" color="orange" mb="sm">
+              <Text size="xs" c="orange" mb="sm">
                 Warning: This action cannot be undone.
               </Text>
 
@@ -1191,7 +1191,7 @@ function Admin_view_all_courses() {
                 Are you sure you want to delete the teaching credit <strong>"{teachingCreditToDelete?.code} - {teachingCreditToDelete?.name}"</strong>?
               </Text>
 
-              <Text size="xs" color="orange" mb="sm">
+              <Text size="xs" c="orange" mb="sm">
                 Warning: This action cannot be undone.
               </Text>
 
@@ -1216,7 +1216,7 @@ function Admin_view_all_courses() {
                 Are you sure you want to delete the thesis <strong>"{thesisToDelete?.code} - {thesisToDelete?.name}"</strong>?
               </Text>
               
-              <Text size="xs" color="orange" mb="sm">
+              <Text size="xs" c="orange" mb="sm">
                 ⚠️ <strong>Warning:</strong> This action cannot be undone.
               </Text>
               
@@ -1242,11 +1242,11 @@ function Admin_view_all_courses() {
                 (Version: {courseToDelete?.version})?
               </Text>
               
-              <Text size="xs" color="orange" mb="sm">
+              <Text size="xs" c="orange" mb="sm">
                 ⚠️ <strong>Warning:</strong> This action cannot be undone.
               </Text>
               
-              <Text size="xs" color="blue" mb="md">
+              <Text size="xs" c="blue" mb="md">
                 ℹ️ <strong>Note:</strong> If the backend delete API is not yet implemented, 
                 you'll receive a notification about the current status.
               </Text>

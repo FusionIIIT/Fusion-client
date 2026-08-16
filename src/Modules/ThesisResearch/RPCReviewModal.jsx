@@ -310,7 +310,7 @@ export default function RPCReviewModal({ seminarId, onClose }) {
           <Space h="md" />
 
           {/* Committee Consent Status */}
-          <Text weight={500}>
+          <Text fw={500}>
             Committee Consent ({consentedCount}/{committeeSize})
           </Text>
           <Table striped>
@@ -423,7 +423,7 @@ export default function RPCReviewModal({ seminarId, onClose }) {
           <Space h="md" />
 
           {/* Comments Table */}
-          <Text weight={500}>Committee Comments</Text>
+          <Text fw={500}>Committee Comments</Text>
           <Table striped highlightOnHover>
             <thead>
               <tr>

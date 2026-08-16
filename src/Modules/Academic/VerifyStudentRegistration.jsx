@@ -189,7 +189,7 @@ function VerifyStudentRegistration() {
     <Card shadow="sm" p="lg" radius="md" withBorder>
       <Text
         size="lg"
-        weight={700}
+        fw={700}
         mb="md"
         style={{ textAlign: "center", color: "#3B82F6" }}
       >
@@ -211,7 +211,7 @@ function VerifyStudentRegistration() {
         searchable
       />
 
-      <Group position="center" mt="md">
+      <Group justify="center" mt="md">
         <Button
           color="blue"
           onClick={() => handleFetch(false)}
@@ -256,7 +256,7 @@ function VerifyStudentRegistration() {
                 marginBottom: "10px",
               }}
             >
-              <Text size="md" weight={600} align="center">
+              <Text size="md" fw={600} ta="center">
                 Roll No: {student.student_id__id}
               </Text>
 
@@ -313,7 +313,7 @@ function VerifyStudentRegistration() {
                 </Grid.Col> */}
               </Grid>
 
-              <Group position="center" mt="md">
+              <Group justify="center" mt="md">
                 <Button
                   color="green"
                   onClick={() =>
@@ -364,7 +364,7 @@ function VerifyStudentRegistration() {
                 </Grid.Col>
               </Grid>
 
-              <Text size="sm" weight={700} mt="md">
+              <Text size="sm" fw={700} mt="md">
                 Fee Receipt:{" "}
                 <a
                   href={`${mediaRoute}/${student.fee_receipt}`}
@@ -375,7 +375,7 @@ function VerifyStudentRegistration() {
                 </a>
               </Text>
 
-              <Group position="center" mt="md">
+              <Group justify="center" mt="md">
                 <Button
                   color="indigo"
                   onClick={() =>
@@ -395,7 +395,7 @@ function VerifyStudentRegistration() {
                 onChange={(e) => handleRemarkChange(index, e.target.value)}
                 mt="md"
               />
-              <Group position="center" mt="md">
+              <Group justify="center" mt="md">
                 <Button
                   color="red"
                   onClick={() =>
@@ -409,7 +409,7 @@ function VerifyStudentRegistration() {
           ))}
 
           {showNoRecords && (
-            <Text size="lg" weight={700} align="center" color="red" mt="lg">
+            <Text size="lg" fw={700} ta="center" c="red" mt="lg">
               No more records found
             </Text>
           )}
