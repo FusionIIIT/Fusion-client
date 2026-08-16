@@ -41,7 +41,7 @@ const FusionTable = memo(function FusionTable({
           <Table
             striped
             highlightOnHover
-            className={classes.table}
+            withTableBorder={false}
             aria-label={ariaLabel || caption || "Data table"}
           >
             <Table.Thead>

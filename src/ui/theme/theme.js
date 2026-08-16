@@ -1,5 +1,7 @@
 import { createTheme } from "@mantine/core";
 
+import tableClasses from "../styles/table.module.css";
+
 const SANS =
   '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 
@@ -43,7 +45,15 @@ export const theme = createTheme({
     Card: { defaultProps: { radius: "lg", withBorder: true, shadow: "sm" } },
     Paper: { defaultProps: { radius: "lg" } },
     Button: { defaultProps: { radius: "md" } },
-    Table: { defaultProps: { highlightOnHover: true, verticalSpacing: "sm" } },
+    Table: {
+      defaultProps: {
+        highlightOnHover: true,
+        verticalSpacing: "sm",
+        striped: true,
+        withTableBorder: true,
+      },
+      classNames: { table: tableClasses.table },
+    },
     Modal: {
       defaultProps: { radius: "lg", centered: true, overlayProps: { blur: 2 } },
     },

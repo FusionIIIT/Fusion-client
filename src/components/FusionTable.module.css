@@ -5,42 +5,6 @@
   overflow-y: hidden;
 }
 
-.table {
-  --table-striped-color: #e6f7ff;
-  --table-highlight-on-hover-color: #d9efff;
-  --table-border-color: #dfe9f2;
-}
-
-.table thead th {
-  background: #c5e2f6;
-  color: #2b7fc4;
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: normal;
-  text-transform: none;
-  text-align: center;
-  padding: 14px 18px;
-  border-right: 1px solid #b9d8ef;
-  border-bottom: 1px solid #b9d8ef;
-  white-space: nowrap;
-}
-
-.table thead th:last-child {
-  border-right: none;
-}
-
-.table tbody td {
-  font-size: 0.9rem;
-  color: #212529;
-  text-align: center;
-  padding: 14px 18px;
-  border-right: 1px solid #e3edf6;
-}
-
-.table tbody td:last-child {
-  border-right: none;
-}
-
 .cards {
   display: flex;
   flex-direction: column;

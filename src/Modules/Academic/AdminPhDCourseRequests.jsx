@@ -2,6 +2,7 @@ import React, { useState, useCallback, useMemo, useEffect } from "react";
 import {
   Select,
   Group,
+  SimpleGrid,
   Button,
   TextInput,
   Table,
@@ -63,7 +64,8 @@ function toRow(type, r) {
     semesterNo: r.semester_no,
     student: r.student?.name ?? r.student,
     studentName: r.student?.name ?? r.student_name,
-    studentRoll: r.student?.roll_no ?? (typeof r.student === "string" ? r.student : ""),
+    studentRoll:
+      r.student?.roll_no ?? (typeof r.student === "string" ? r.student : ""),
     discipline: r.discipline ?? r.student?.discipline ?? "",
     specialization: r.specialization ?? r.student?.specialization ?? "",
     programmeCategory: r.programme_category || null,
@@ -325,7 +327,7 @@ export default function AdminPhDCourseRequests() {
     <>
       <Card>
         <Stack gap="md">
-          <Group grow align="flex-start">
+          <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="md">
             <Select
               label="Programme"
               placeholder="All (PG + PhD)"
@@ -340,8 +342,6 @@ export default function AdminPhDCourseRequests() {
               }}
               clearable
             />
-          </Group>
-          <Group grow align="flex-start">
             <Select
               label="Semester"
               placeholder="Select semester"
@@ -352,13 +352,13 @@ export default function AdminPhDCourseRequests() {
               value={semester}
               onChange={setSemester}
             />
-          </Group>
-          <TextInput
-            label="Remarks (optional, applied to the selected action)"
-            placeholder="e.g. Reason for rejection"
-            value={remarks}
-            onChange={(e) => setRemarks(e.currentTarget.value)}
-          />
+            <TextInput
+              label="Remarks (optional)"
+              placeholder="e.g. Reason for rejection"
+              value={remarks}
+              onChange={(e) => setRemarks(e.currentTarget.value)}
+            />
+          </SimpleGrid>
           <Group justify="flex-start" gap="xs">
             <Button
               size="sm"
@@ -417,67 +417,83 @@ export default function AdminPhDCourseRequests() {
           <Tabs.Panel value="pending" pt="md">
             {pendingRows.length > 0 ? (
               <Card>
-                <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
-                <Table highlightOnHover withTableBorder style={{ minWidth: 960 }}>
-                  <thead>
-                    <tr>
-                      <th style={{ width: 50 }}>
-                        <Checkbox
-                          checked={
-                            selectedKeys.size === pendingRows.length &&
-                            pendingRows.length > 0
-                          }
-                          onChange={toggleSelectAll}
-                          indeterminate={
-                            selectedKeys.size > 0 &&
-                            selectedKeys.size < pendingRows.length
-                          }
-                        />
-                      </th>
-                      <th>Type</th>
-                      <th>Student</th>
-                      <th>Slot</th>
-                      <th>Detail</th>
-                      <th>Credits</th>
-                      <th>Status</th>
-                      <th>Requested At</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pendingRows.map((r) => (
-                      <tr key={r.key}>
-                        <td>
+                <div
+                  style={{
+                    overflowX: "auto",
+                    WebkitOverflowScrolling: "touch",
+                  }}
+                >
+                  <Table
+                    highlightOnHover
+                    withTableBorder
+                    style={{ minWidth: 960 }}
+                  >
+                    <thead>
+                      <tr>
+                        <th style={{ width: 50 }}>
                           <Checkbox
-                            checked={selectedKeys.has(r.key)}
-                            onChange={() => toggleSelection(r.key)}
+                            checked={
+                              selectedKeys.size === pendingRows.length &&
+                              pendingRows.length > 0
+                            }
+                            onChange={toggleSelectAll}
+                            indeterminate={
+                              selectedKeys.size > 0 &&
+                              selectedKeys.size < pendingRows.length
+                            }
                           />
-                        </td>
-                        <td>
-                          <Badge variant="outline" style={{ whiteSpace: "nowrap" }}>
-                            {TYPE_LABEL[r.type]}
-                          </Badge>
-                        </td>
-                        <td>
-                          <div style={{ fontWeight: 500 }}>{r.studentName || r.studentRoll}</div>
-                          <div style={{ fontSize: 12, color: "#868e96" }}>
-                            {[r.studentRoll, r.discipline, r.specialization].filter(Boolean).join(" · ")}
-                          </div>
-                        </td>
-                        <td>{r.slot}</td>
-                        <td>{r.detail}</td>
-                        <td>{r.credits}</td>
-                        <td>
-                          <Badge color="yellow">Pending</Badge>
-                        </td>
-                        <td>
-                          {r.requestedAt
-                            ? new Date(r.requestedAt).toLocaleString()
-                            : "—"}
-                        </td>
+                        </th>
+                        <th>Type</th>
+                        <th>Student</th>
+                        <th>Slot</th>
+                        <th>Detail</th>
+                        <th>Credits</th>
+                        <th>Status</th>
+                        <th>Requested At</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </Table>
+                    </thead>
+                    <tbody>
+                      {pendingRows.map((r) => (
+                        <tr key={r.key}>
+                          <td>
+                            <Checkbox
+                              checked={selectedKeys.has(r.key)}
+                              onChange={() => toggleSelection(r.key)}
+                            />
+                          </td>
+                          <td>
+                            <Badge
+                              variant="outline"
+                              style={{ whiteSpace: "nowrap" }}
+                            >
+                              {TYPE_LABEL[r.type]}
+                            </Badge>
+                          </td>
+                          <td>
+                            <div style={{ fontWeight: 500 }}>
+                              {r.studentName || r.studentRoll}
+                            </div>
+                            <div style={{ fontSize: 12, color: "#868e96" }}>
+                              {[r.studentRoll, r.discipline, r.specialization]
+                                .filter(Boolean)
+                                .join(" · ")}
+                            </div>
+                          </td>
+                          <td>{r.slot}</td>
+                          <td>{r.detail}</td>
+                          <td>{r.credits}</td>
+                          <td>
+                            <Badge color="yellow">Pending</Badge>
+                          </td>
+                          <td>
+                            {r.requestedAt
+                              ? new Date(r.requestedAt).toLocaleString()
+                              : "—"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
                 </div>
               </Card>
             ) : (
@@ -490,77 +506,95 @@ export default function AdminPhDCourseRequests() {
           <Tabs.Panel value="processed" pt="md">
             {processedRows.length > 0 ? (
               <Card>
-                <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
-                <Table highlightOnHover withTableBorder style={{ minWidth: 960 }}>
-                  <thead>
-                    <tr>
-                      <th>Type</th>
-                      <th>Student</th>
-                      <th>Slot</th>
-                      <th>Detail</th>
-                      <th>Credits</th>
-                      <th>
-                        <Group gap="xs" justify="space-between">
-                          <span>Status</span>
-                          <Select
-                            placeholder="All"
-                            value={statusFilter}
-                            onChange={setStatusFilter}
-                            data={[
-                              { value: "", label: "All" },
-                              { value: "approved", label: "Approved" },
-                              { value: "rejected", label: "Rejected" },
-                            ]}
-                            size="xs"
-                            style={{ width: 100 }}
-                            clearable
-                          />
-                        </Group>
-                      </th>
-                      <th>Remarks</th>
-                      <th>Requested At</th>
-                      <th>Processed At</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredProcessedRows.map((r) => (
-                      <tr key={r.key}>
-                        <td>
-                          <Badge variant="outline" style={{ whiteSpace: "nowrap" }}>
-                            {TYPE_LABEL[r.type]}
-                          </Badge>
-                        </td>
-                        <td>
-                          <div style={{ fontWeight: 500 }}>{r.studentName || r.studentRoll}</div>
-                          <div style={{ fontSize: 12, color: "#868e96" }}>
-                            {[r.studentRoll, r.discipline, r.specialization].filter(Boolean).join(" · ")}
-                          </div>
-                        </td>
-                        <td>{r.slot}</td>
-                        <td>{r.detail}</td>
-                        <td>{r.credits}</td>
-                        <td>
-                          <Badge
-                            color={r.status === "approved" ? "green" : "red"}
-                          >
-                            {r.status === "approved" ? "Approved" : "Rejected"}
-                          </Badge>
-                        </td>
-                        <td>{r.remarks || "—"}</td>
-                        <td>
-                          {r.requestedAt
-                            ? new Date(r.requestedAt).toLocaleString()
-                            : "—"}
-                        </td>
-                        <td>
-                          {r.processedAt
-                            ? new Date(r.processedAt).toLocaleString()
-                            : "—"}
-                        </td>
+                <div
+                  style={{
+                    overflowX: "auto",
+                    WebkitOverflowScrolling: "touch",
+                  }}
+                >
+                  <Table
+                    highlightOnHover
+                    withTableBorder
+                    style={{ minWidth: 960 }}
+                  >
+                    <thead>
+                      <tr>
+                        <th>Type</th>
+                        <th>Student</th>
+                        <th>Slot</th>
+                        <th>Detail</th>
+                        <th>Credits</th>
+                        <th>
+                          <Group gap="xs" justify="space-between">
+                            <span>Status</span>
+                            <Select
+                              placeholder="All"
+                              value={statusFilter}
+                              onChange={setStatusFilter}
+                              data={[
+                                { value: "", label: "All" },
+                                { value: "approved", label: "Approved" },
+                                { value: "rejected", label: "Rejected" },
+                              ]}
+                              size="xs"
+                              style={{ width: 100 }}
+                              clearable
+                            />
+                          </Group>
+                        </th>
+                        <th>Remarks</th>
+                        <th>Requested At</th>
+                        <th>Processed At</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </Table>
+                    </thead>
+                    <tbody>
+                      {filteredProcessedRows.map((r) => (
+                        <tr key={r.key}>
+                          <td>
+                            <Badge
+                              variant="outline"
+                              style={{ whiteSpace: "nowrap" }}
+                            >
+                              {TYPE_LABEL[r.type]}
+                            </Badge>
+                          </td>
+                          <td>
+                            <div style={{ fontWeight: 500 }}>
+                              {r.studentName || r.studentRoll}
+                            </div>
+                            <div style={{ fontSize: 12, color: "#868e96" }}>
+                              {[r.studentRoll, r.discipline, r.specialization]
+                                .filter(Boolean)
+                                .join(" · ")}
+                            </div>
+                          </td>
+                          <td>{r.slot}</td>
+                          <td>{r.detail}</td>
+                          <td>{r.credits}</td>
+                          <td>
+                            <Badge
+                              color={r.status === "approved" ? "green" : "red"}
+                            >
+                              {r.status === "approved"
+                                ? "Approved"
+                                : "Rejected"}
+                            </Badge>
+                          </td>
+                          <td>{r.remarks || "—"}</td>
+                          <td>
+                            {r.requestedAt
+                              ? new Date(r.requestedAt).toLocaleString()
+                              : "—"}
+                          </td>
+                          <td>
+                            {r.processedAt
+                              ? new Date(r.processedAt).toLocaleString()
+                              : "—"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
                 </div>
               </Card>
             ) : (
