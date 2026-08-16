@@ -1,19 +1,32 @@
+import { useMemo } from "react";
 import { Card, Group, Stack, Text } from "@mantine/core";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Bell } from "@phosphor-icons/react";
 
 import { ModulePage } from "../../ui/components/ModulePage";
+import { buildNavGroups } from "../../ui/nav/navigation";
+import { flattenNavLinks } from "../../ui/nav/match";
+import PendingWork from "./PendingWork";
 import StudentCreditSummary from "./StudentCreditSummary";
 
 export default function DashboardHome() {
   const role = useSelector((state) => state.user.role);
   const username = useSelector((state) => state.user.username);
+  const programmeType = useSelector((state) => state.user.programmeType);
   const unreadCount = useSelector((state) => state.notification.unreadCount);
   const accessibleModules = useSelector(
     (state) => state.user.currentAccessibleModules,
   );
   const navigate = useNavigate();
+
+  const reachablePaths = useMemo(
+    () =>
+      flattenNavLinks(
+        buildNavGroups({ role, accessibleModules, programmeType }),
+      ).map((link) => link.to),
+    [role, accessibleModules, programmeType],
+  );
 
   if (role === "student") {
     return (
@@ -33,13 +46,15 @@ export default function DashboardHome() {
   return (
     <ModulePage title={`Welcome, ${username}`}>
       <Stack gap="lg">
-        <Card padding="lg">
-          <Text c="dimmed">
-            {moduleCount
-              ? `You have access to ${moduleCount} module${moduleCount === 1 ? "" : "s"}. Pick one from the sidebar.`
-              : "No modules have been granted to your role yet."}
-          </Text>
-        </Card>
+        <PendingWork reachablePaths={reachablePaths} />
+
+        {!moduleCount && (
+          <Card padding="lg">
+            <Text c="dimmed">
+              No modules have been granted to your role yet.
+            </Text>
+          </Card>
+        )}
 
         <Card
           padding="lg"
