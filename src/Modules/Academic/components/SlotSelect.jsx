@@ -7,11 +7,13 @@ export default function SlotSelect({
   onChange,
   placeholder,
   options,
+  disabled = false,
 }) {
   return (
     <Select
       aria-label={label}
       placeholder={placeholder}
+      disabled={disabled}
       data={options.map((option) => ({
         value: String(option.value),
         label: String(option.label),
@@ -41,4 +43,5 @@ SlotSelect.propTypes = {
       disabled: PropTypes.bool,
     }),
   ).isRequired,
+  disabled: PropTypes.bool,
 };

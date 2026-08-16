@@ -138,6 +138,20 @@ function PhDCourseRegisterForm() {
       setRegistrationOpen(slotsRes.data.registration_open !== false);
       setRegistrationMessage(slotsRes.data.registration_message || "");
       setThesisInfo(thesisRes.data);
+      // PG students have a fixed credit value per evaluation_type -- no free
+      // choice: 3 for a block-graded (S/X) semester, 12 for the decimal-graded
+      // semester (fixed regardless of any earlier block-graded semesters;
+      // those are additional thesis credit, not a substitute for any part of it).
+      if (
+        thesisRes.data.programme_category === "PG" &&
+        thesisRes.data.thesis_slot
+      ) {
+        setThesisCredits(
+          thesisRes.data.thesis_slot.evaluation_type === "blocks_sx"
+            ? "3"
+            : "12",
+        );
+      }
       setSeminarInfo(seminarRes.data);
       setTeachingCreditInfo(teachingCreditRes.data);
       setHasCourseRequestThisSemester(
@@ -525,6 +539,7 @@ function PhDCourseRegisterForm() {
                 <SlotSelect
                   label="Thesis"
                   placeholder="Select thesis…"
+                  disabled={!thesisTopicApproved}
                   value={selectedThesis}
                   onChange={(val) => setSelectedThesis(val || "")}
                   options={(thesisInfo.thesis_slot.theses || []).map((t) => ({
@@ -536,17 +551,28 @@ function PhDCourseRegisterForm() {
             />
             <SlotRow
               primary="Credits"
+              secondary={
+                thesisInfo.programme_category === "PG"
+                  ? "Fixed for your programme"
+                  : null
+              }
               control={
-                <SegmentedControl
-                  disabled={!thesisTopicApproved || !selectedThesis}
-                  value={thesisCredits}
-                  onChange={setThesisCredits}
-                  data={["3", "6", "9", "12"].map((v) => ({
-                    label: v,
-                    value: v,
-                  }))}
-                  color="blue"
-                />
+                thesisInfo.programme_category === "PG" ? (
+                  <Badge color="blue" variant="light">
+                    {thesisCredits} credits
+                  </Badge>
+                ) : (
+                  <SegmentedControl
+                    disabled={!thesisTopicApproved || !selectedThesis}
+                    value={thesisCredits}
+                    onChange={setThesisCredits}
+                    data={["3", "6", "9", "12"].map((v) => ({
+                      label: v,
+                      value: v,
+                    }))}
+                    color="blue"
+                  />
+                )
               }
             />
           </SlotCard>
