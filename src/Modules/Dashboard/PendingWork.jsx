@@ -13,7 +13,7 @@ import axios from "axios";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 
-import { queuesFor } from "./pendingQueues";
+import { queuesFor, requestsFor } from "./pendingQueues";
 import classes from "./PendingWork.module.css";
 
 export default function PendingWork({ reachablePaths }) {
@@ -30,17 +30,20 @@ export default function PendingWork({ reachablePaths }) {
     const token = localStorage.getItem("authToken");
     const headers = { Authorization: `Token ${token}` };
 
-    queues.forEach((queue) => {
+    requestsFor(queues).forEach(({ url, queues: group }) => {
       axios
-        .get(queue.url, { params: queue.params, headers })
+        .get(url, { headers })
         .then(({ data }) => {
           if (!live) return;
-          setCounts((prev) => ({ ...prev, [queue.key]: queue.count(data) }));
+          setCounts((prev) => ({
+            ...prev,
+            ...Object.fromEntries(group.map((q) => [q.key, q.count(data)])),
+          }));
         })
-        // A failed queue is left out rather than shown as a wrong number.
+        // A failed request is left out rather than shown as a wrong number.
         .catch(() => {})
         .then(() => {
-          if (live) setSettled((prev) => [...prev, queue.key]);
+          if (live) setSettled((prev) => [...prev, ...group.map((q) => q.key)]);
         });
     });
 

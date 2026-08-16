@@ -1,8 +1,21 @@
 import { describe, expect, it } from "vitest";
 
-import { PENDING_QUEUES, queuesFor } from "./pendingQueues";
+import { PENDING_QUEUES, queuesFor, requestsFor } from "./pendingQueues";
 
 const queue = (key) => PENDING_QUEUES.find((q) => q.key === key);
+
+const ADMIN_COUNTS = {
+  counts: {
+    swayam: 12,
+    add: 5,
+    drop: 2,
+    replacement: 1,
+    phdCourses: 330,
+    thesisEnrolments: 3,
+    progressSeminars: 0,
+    teachingCredits: 0,
+  },
+};
 
 describe("queuesFor", () => {
   it("offers only queues whose page the role can reach", () => {
@@ -25,44 +38,41 @@ describe("queuesFor", () => {
       expect(typeof q.count).toBe("function");
     });
   });
+});
 
-  // These endpoints cap their reply at 500 rows, so an unfiltered count misses older pending work.
-  it("asks the server for pending rows only", () => {
-    ["add", "drop", "replacement", "swayam"].forEach((key) => {
-      expect(queue(key).params).toEqual({ status: "Pending" });
-    });
+describe("requestsFor", () => {
+  it("collapses queues sharing an endpoint into one request", () => {
+    const admin = queuesFor([
+      "/academics/swayam",
+      "/academics/drop-courses",
+      "/academics/thesis-course-requests",
+    ]);
+    const requests = requestsFor(admin);
+    expect(requests).toHaveLength(1);
+    expect(requests[0].queues.map((q) => q.key)).toEqual(
+      admin.map((q) => q.key),
+    );
+  });
+
+  it("keeps queues on different endpoints apart", () => {
+    const mixed = queuesFor(["/academics/swayam", "/academics/ta-management"]);
+    expect(requestsFor(mixed)).toHaveLength(2);
+  });
+
+  it("asks for nothing when no queue applies", () => {
+    expect(requestsFor([])).toEqual([]);
   });
 });
 
 describe("counting a queue", () => {
-  it("takes the server's own pending count for swayam", () => {
-    expect(
-      queue("swayam").count({ counts: { pending: 12, approved: 3 } }),
-    ).toBe(12);
-    expect(queue("swayam").count({})).toBe(0);
+  it("reads each admin queue from the shared counts payload", () => {
+    expect(queue("swayam").count(ADMIN_COUNTS)).toBe(12);
+    expect(queue("drop").count(ADMIN_COUNTS)).toBe(2);
+    expect(queue("phdCourses").count(ADMIN_COUNTS)).toBe(330);
+    expect(queue("teachingCredits").count(ADMIN_COUNTS)).toBe(0);
   });
 
-  it("counts only Pending rows for add, drop and replacement", () => {
-    const rows = [
-      { status: "Pending" },
-      { status: "Approved" },
-      { status: "Pending" },
-      { status: "Rejected" },
-    ];
-    ["add", "drop", "replacement"].forEach((key) => {
-      expect(queue(key).count(rows)).toBe(2);
-    });
-  });
-
-  it("matches the status whatever its casing", () => {
-    expect(
-      queue("add").count([{ status: "pending" }, { status: "PENDING" }]),
-    ).toBe(2);
-  });
-
-  it("reads the wrapper key each endpoint uses", () => {
-    expect(queue("phdCourses").count({ requests: [1, 2, 3] })).toBe(3);
-    expect(queue("thesisEnrolments").count({ registrations: [1, 2] })).toBe(2);
+  it("reads the wrapper key the faculty and dean endpoints use", () => {
     expect(
       queue("thesisTopics").count({ pending: [1], forwarded: [1, 2] }),
     ).toBe(1);
