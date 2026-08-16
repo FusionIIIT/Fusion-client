@@ -25,6 +25,13 @@ describe("queuesFor", () => {
       expect(typeof q.count).toBe("function");
     });
   });
+
+  // These endpoints cap their reply at 500 rows, so an unfiltered count misses older pending work.
+  it("asks the server for pending rows only", () => {
+    ["add", "drop", "replacement", "swayam"].forEach((key) => {
+      expect(queue(key).params).toEqual({ status: "Pending" });
+    });
+  });
 });
 
 describe("counting a queue", () => {

@@ -19,14 +19,13 @@ const pendingIn = (rows) =>
 
 const listLength = (rows) => (Array.isArray(rows) ? rows.length : 0);
 
-// Each queue names the page that clears it; a queue is only offered to a role
-// when that page is in the role's sidebar, so a card can never link nowhere.
 export const PENDING_QUEUES = [
   {
     key: "swayam",
     label: "Swayam requests",
     to: "/academics/swayam",
     url: adminSwayamListRequestsRoute,
+    params: { status: "Pending" },
     count: (data) => Number(data?.counts?.pending) || 0,
   },
   {
@@ -34,6 +33,7 @@ export const PENDING_QUEUES = [
     label: "Add requests",
     to: "/academics/add-bl-courses",
     url: adminListAddRequestsRoute,
+    params: { status: "Pending" },
     count: pendingIn,
   },
   {
@@ -41,6 +41,7 @@ export const PENDING_QUEUES = [
     label: "Drop requests",
     to: "/academics/drop-courses",
     url: adminListDropRequestsRoute,
+    params: { status: "Pending" },
     count: pendingIn,
   },
   {
@@ -48,6 +49,7 @@ export const PENDING_QUEUES = [
     label: "Replacement requests",
     to: "/academics/replacement-allocation",
     url: adminListRequestsRoute,
+    params: { status: "Pending" },
     count: pendingIn,
   },
   {
