@@ -117,6 +117,20 @@ function PhDCourseRegisterForm() {
       setRegistrationOpen(slotsRes.data.registration_open !== false);
       setRegistrationMessage(slotsRes.data.registration_message || "");
       setThesisInfo(thesisRes.data);
+      // PG students have a fixed credit value per evaluation_type -- no free
+      // choice: 3 for a block-graded (S/X) semester, 12 for the decimal-graded
+      // semester (fixed regardless of any earlier block-graded semesters;
+      // those are additional thesis credit, not a substitute for any part of it).
+      if (
+        thesisRes.data.programme_category === "PG" &&
+        thesisRes.data.thesis_slot
+      ) {
+        setThesisCredits(
+          thesisRes.data.thesis_slot.evaluation_type === "blocks_sx"
+            ? "3"
+            : "12",
+        );
+      }
       setSeminarInfo(seminarRes.data);
       setTeachingCreditInfo(teachingCreditRes.data);
       setHasCourseRequestThisSemester(
@@ -355,8 +369,8 @@ function PhDCourseRegisterForm() {
     return (
       <Card withBorder p="md">
         <Text size="sm" ta="center" c="dimmed">
-          {registrationMessage || "Registration is not open right now."} You can view
-          your existing requests in the <b>My Requests</b> tab.
+          {registrationMessage || "Registration is not open right now."} You can
+          view your existing requests in the <b>My Requests</b> tab.
         </Text>
       </Card>
     );
@@ -459,17 +473,21 @@ function PhDCourseRegisterForm() {
                   />
                 </td>
                 <td style={{ minWidth: 200 }}>
-                  <SegmentedControl
-                    fullWidth
-                    disabled={!thesisTopicApproved || !selectedThesis}
-                    value={thesisCredits}
-                    onChange={setThesisCredits}
-                    data={["3", "6", "9", "12"].map((v) => ({
-                      label: v,
-                      value: v,
-                    }))}
-                    color="blue"
-                  />
+                  {thesisInfo.programme_category === "PG" ? (
+                    <Text size="sm">{thesisCredits} credits (fixed)</Text>
+                  ) : (
+                    <SegmentedControl
+                      fullWidth
+                      disabled={!thesisTopicApproved || !selectedThesis}
+                      value={thesisCredits}
+                      onChange={setThesisCredits}
+                      data={["3", "6", "9", "12"].map((v) => ({
+                        label: v,
+                        value: v,
+                      }))}
+                      color="blue"
+                    />
+                  )}
                 </td>
               </tr>
             </tbody>

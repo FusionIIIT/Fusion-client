@@ -1,10 +1,31 @@
 import React, { useState, useEffect, useRef } from "react";
+import PropTypes from "prop-types";
 import {
-  Select, Button, FileInput, Grid, Card, Box,
-  LoadingOverlay, Alert, Text, Group, List, Title, Table
+  Select,
+  Button,
+  FileInput,
+  Grid,
+  Card,
+  Box,
+  LoadingOverlay,
+  Alert,
+  Text,
+  Group,
+  List,
+  Title,
+  Table,
+  SegmentedControl,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import axios from "axios";
+import {
+  IconBook2,
+  IconFileText,
+  IconPresentation,
+  IconChalkboard,
+} from "@tabler/icons-react";
+import { FileArrowDown, Upload } from "@phosphor-icons/react";
+import { useSelector } from "react-redux";
 import {
   get_course_reg_academic_years,
   submitGradesProf,
@@ -12,11 +33,41 @@ import {
   preview_grades,
   upload_grades_prof,
 } from "./routes/examinationRoutes";
-import { FileArrowDown, Upload } from "@phosphor-icons/react";
-import { useSelector } from "react-redux";
+import PhdMilestoneGradesPanel from "./components/PhdMilestoneGradesPanel.jsx";
 
-export default function SubmitGradesProf() {
-  
+function GradeCategoryLabel({ icon: Icon, label }) {
+  return (
+    <Group gap={6} wrap="nowrap" justify="center">
+      <Icon size={16} />
+      <Text size="sm">{label}</Text>
+    </Group>
+  );
+}
+
+GradeCategoryLabel.propTypes = {
+  icon: PropTypes.elementType.isRequired,
+  label: PropTypes.string.isRequired,
+};
+
+const GRADE_CATEGORIES = [
+  { value: "course", plainLabel: "Course", icon: IconBook2 },
+  { value: "thesis", plainLabel: "Thesis", icon: IconFileText },
+  {
+    value: "progress_seminar",
+    plainLabel: "Progress Seminar",
+    icon: IconPresentation,
+  },
+  {
+    value: "teaching_credit",
+    plainLabel: "Teaching Credit",
+    icon: IconChalkboard,
+  },
+].map((item) => ({
+  ...item,
+  label: <GradeCategoryLabel icon={item.icon} label={item.plainLabel} />,
+}));
+
+function SubmitCourseGradesTab() {
   const semesterTypes = [
     { value: "Odd Semester", label: "Odd Semester" },
     { value: "Even Semester", label: "Even Semester" },
@@ -30,7 +81,7 @@ export default function SubmitGradesProf() {
   const userRole = useSelector((s) => s.user.role);
 
   const [year, setYear] = useState("");
-  const [academicYears, setAcademicYears] = useState([]); 
+  const [academicYears, setAcademicYears] = useState([]);
   const [semesterType, setSemesterType] = useState("");
   const [programmeType, setProgrammeType] = useState("UG");
   const [course, setCourse] = useState("");
@@ -76,11 +127,15 @@ export default function SubmitGradesProf() {
       setError("");
       try {
         const token = localStorage.getItem("authToken");
-        const { data } = await axios.get(
-          get_course_reg_academic_years,
-          { headers: { Authorization: `Token ${token}` } }
+        const { data } = await axios.get(get_course_reg_academic_years, {
+          headers: { Authorization: `Token ${token}` },
+        });
+        setAcademicYears(
+          data.academic_years
+            .slice()
+            .sort((a, b) => b.toString().localeCompare(a.toString()))
+            .map((y) => ({ value: y, label: y })),
         );
-        setAcademicYears(data.academic_years.slice().sort((a, b) => b.toString().localeCompare(a.toString())).map((y) => ({ value: y, label: y })));
       } catch {
         setError("Failed to load academic years.");
       } finally {
@@ -94,19 +149,20 @@ export default function SubmitGradesProf() {
   useEffect(() => {
     if (!year || !semesterType || !programmeType) return;
     setLoading(true);
-    setError(""); setErrorList("");
+    setError("");
+    setErrorList("");
     (async () => {
       try {
         const token = localStorage.getItem("authToken");
         const { data } = await axios.post(
           submitGradesProf,
-          { 
-            Role: userRole, 
-            academic_year: year, 
+          {
+            Role: userRole,
+            academic_year: year,
             semester_type: semesterType,
-            programme_type: programmeType
+            programme_type: programmeType,
           },
-          { headers: { Authorization: `Token ${token}` } }
+          { headers: { Authorization: `Token ${token}` } },
         );
         setCourse(null);
         setSection("");
@@ -118,7 +174,9 @@ export default function SubmitGradesProf() {
         }));
         setCourseOptions(courses);
       } catch (err) {
-        setError(`Error fetching courses: ${err.response?.data?.error || err.message}`);
+        setError(
+          `Error fetching courses: ${err.response?.data?.error || err.message}`,
+        );
       } finally {
         setLoading(false);
       }
@@ -126,15 +184,6 @@ export default function SubmitGradesProf() {
   }, [year, semesterType, userRole, programmeType]);
 
   const handleFileChange = (file) => setExcelFile(file);
-
-  const handleApiError = (error, operation) => {
-    if (error.response?.status === 400 &&
-        error.response?.data?.error?.includes('specify programme_type')) {
-      setError(`${error.response.data.error} The ${programmeType} filter is applied to show only relevant students.`);
-    } else {
-      setError(`Error ${operation}: ${error.response?.data?.error || error.message}`);
-    }
-  };
 
   const handleTemplateDownload = async () => {
     if (!year || !semesterType || !course) {
@@ -147,28 +196,33 @@ export default function SubmitGradesProf() {
     }
 
     setLoading(true);
-    setError(""); setErrorList([]);
-    
+    setError("");
+    setErrorList([]);
+
     try {
       const token = localStorage.getItem("authToken");
-      const payload = { Role: userRole, course: course, year: year, semester_type: semesterType };
+      const payload = {
+        Role: userRole,
+        course,
+        year,
+        semester_type: semesterType,
+      };
 
-      if (programmeType && programmeType !== '' && programmeType !== 'All') {
+      if (programmeType && programmeType !== "" && programmeType !== "All") {
         payload.programme_type = programmeType;
       }
       if (section) payload.section = section;
 
-      const resp = await axios.post(
-        download_template,
-        payload,
-        { headers: { Authorization: `Token ${token}` }, responseType: "blob" }
-      );
-      
+      const resp = await axios.post(download_template, payload, {
+        headers: { Authorization: `Token ${token}` },
+        responseType: "blob",
+      });
+
       // Filename from course code and course name
-      const selectedCourse = courseOptions.find(c => c.value === course);
-      let courseCode = 'Course';
-      let courseName = 'Template';
-      
+      const selectedCourse = courseOptions.find((c) => c.value === course);
+      let courseCode = "Course";
+      let courseName = "Template";
+
       if (selectedCourse) {
         const match = selectedCourse.label.match(/^(.+?)\s*\((.+?)\)/);
         if (match) {
@@ -178,10 +232,12 @@ export default function SubmitGradesProf() {
           courseName = selectedCourse.label;
         }
       }
-      
-      const courseNameClean = courseName.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_-]/g, '');
+
+      const courseNameClean = courseName
+        .replace(/\s+/g, "_")
+        .replace(/[^a-zA-Z0-9_-]/g, "");
       const filename = `${courseCode}_${courseNameClean}_${year}.csv`;
-      
+
       const url = URL.createObjectURL(new Blob([resp.data]));
       const a = document.createElement("a");
       a.href = url;
@@ -223,7 +279,8 @@ export default function SubmitGradesProf() {
       return;
     }
     setLoading(true);
-    setError(""); setErrorList([]);
+    setError("");
+    setErrorList([]);
     try {
       const token = localStorage.getItem("authToken");
       const form = new FormData();
@@ -232,9 +289,9 @@ export default function SubmitGradesProf() {
       form.append("academic_year", year);
       form.append("semester_type", semesterType);
       form.append("csv_file", excelFile);
-      form.append("reSubmit", "false");  // always false
+      form.append("reSubmit", "false"); // always false
 
-      if (programmeType && programmeType !== '' && programmeType !== 'All') {
+      if (programmeType && programmeType !== "" && programmeType !== "All") {
         form.append("programme_type", programmeType);
       }
       if (section) form.append("section", section);
@@ -249,9 +306,12 @@ export default function SubmitGradesProf() {
       setShowPreview(true);
     } catch (err) {
       const msg = err.response?.data?.error || err.message;
-      const parts = msg.split("\n").map((s) => s.trim()).filter((s) => s);
+      const parts = msg
+        .split("\n")
+        .map((s) => s.trim())
+        .filter((s) => s);
       if (parts.length > 1) setErrorList(parts);
-      else                   setError(msg);
+      else setError(msg);
     } finally {
       setLoading(false);
     }
@@ -263,7 +323,9 @@ export default function SubmitGradesProf() {
       return;
     }
     setLoading(true);
-    setError(""); setErrorList([]); setSuccess("");
+    setError("");
+    setErrorList([]);
+    setSuccess("");
     try {
       const token = localStorage.getItem("authToken");
       const form = new FormData();
@@ -272,7 +334,7 @@ export default function SubmitGradesProf() {
       form.append("academic_year", year);
       form.append("semester_type", semesterType);
       form.append("csv_file", excelFile);
-      form.append("reSubmit", "false");  // always false
+      form.append("reSubmit", "false"); // always false
       form.append("programme_type", programmeType); // Always include programme_type
       if (section) form.append("section", section);
 
@@ -283,7 +345,11 @@ export default function SubmitGradesProf() {
         },
       });
 
-      showNotification({ title: "Success", message: "Grades submitted!", color: "green" });
+      showNotification({
+        title: "Success",
+        message: "Grades submitted!",
+        color: "green",
+      });
       setSuccess("Grades uploaded successfully.");
       setShowPreview(false);
       setExcelFile(null);
@@ -291,10 +357,18 @@ export default function SubmitGradesProf() {
       const msg = err.response?.data?.error || err.message;
 
       if (msg.includes("ALREADY BEEN SUBMITTED")) {
-        const progTypeText = programmeType && programmeType !== 'All' ? ` for ${programmeType} students` : '';
-        setError(`This course has already been submitted${progTypeText}. If you need to submit grades for a different programme type (UG/PG/PhD), please contact the administrator or check if separate submissions are allowed.`);
+        const progTypeText =
+          programmeType && programmeType !== "All"
+            ? ` for ${programmeType} students`
+            : "";
+        setError(
+          `This course has already been submitted${progTypeText}. If you need to submit grades for a different programme type (UG/PG/PhD), please contact the administrator or check if separate submissions are allowed.`,
+        );
       } else {
-        const parts = msg.split("\n").map((s) => s.trim()).filter((s) => s);
+        const parts = msg
+          .split("\n")
+          .map((s) => s.trim())
+          .filter((s) => s);
         if (parts.length > 1) setErrorList(parts);
         else setError(msg);
       }
@@ -307,24 +381,38 @@ export default function SubmitGradesProf() {
     setShowPreview(false);
     setPreviewData([]);
     setExcelFile(null);
-    setError(""); setErrorList([]);
+    setError("");
+    setErrorList([]);
   };
 
   return (
-    <Card shadow="sm" p="lg" radius="md" withBorder>
-      <Title order={2} mb="md">Submit Course Grades</Title>
+    <>
+      <Title order={2} mb="md">
+        Submit Course Grades
+      </Title>
 
-      {error && <Alert color="red" mb="md">{error}</Alert>}
+      {error && (
+        <Alert color="red" mb="md">
+          {error}
+        </Alert>
+      )}
       {errorList.length > 0 && (
         <Alert color="red" mb="md">
           <Text weight={500}>The following errors occurred:</Text>
           <List withPadding>
-            {errorList.map((e,i) => <List.Item key={i}>{e.replace(/^[-\s]+/,"")}</List.Item>)}
+            {errorList.map((e, i) => (
+              <List.Item key={i}>{e.replace(/^[-\s]+/, "")}</List.Item>
+            ))}
           </List>
         </Alert>
       )}
       {success && (
-        <Alert color="green" mb="md" withCloseButton onClose={() => setSuccess("")}>
+        <Alert
+          color="green"
+          mb="md"
+          withCloseButton
+          onClose={() => setSuccess("")}
+        >
           {success}
         </Alert>
       )}
@@ -393,7 +481,10 @@ export default function SubmitGradesProf() {
                       ? "This course is allotted in sections; pick one to grade."
                       : "Your assigned section for this course."
                   }
-                  data={selectedCourseSections.map((s) => ({ value: s, label: s }))}
+                  data={selectedCourseSections.map((s) => ({
+                    value: s,
+                    label: s,
+                  }))}
                   value={section}
                   onChange={(v) => setSection(v || "")}
                   // Faculty with a single assigned section see it auto-filled and locked;
@@ -424,47 +515,68 @@ export default function SubmitGradesProf() {
               CSV File Format Requirements:
             </Text>
             <List size="sm" spacing="xs" withPadding>
-              <List.Item>Required: <b>roll_no</b>, <b>grade</b>, <b>remarks</b></List.Item>
-              <List.Item>Required: <b>semester</b> - included in template</List.Item>
+              <List.Item>
+                Required: <b>roll_no</b>, <b>grade</b>, <b>remarks</b>
+              </List.Item>
+              <List.Item>
+                Required: <b>semester</b> - included in template
+              </List.Item>
               <List.Item>Ensure valid roll numbers and grades</List.Item>
             </List>
-            <Alert 
-              color="red" 
-              mt="md" 
-              style={{ 
-                backgroundColor: '#ebf8f6ff', 
-                borderColor: '#DC143C',
-                padding: '20px',
-                border: '4px solid #8B0000',
-                width: 'fit-content',
-                maxWidth: '100%'
+            <Alert
+              color="red"
+              mt="md"
+              style={{
+                backgroundColor: "#ebf8f6ff",
+                borderColor: "#DC143C",
+                padding: "20px",
+                border: "4px solid #8B0000",
+                width: "fit-content",
+                maxWidth: "100%",
               }}
             >
-              <Text 
-                size="xl" 
-                weight={900} 
-                style={{ 
-                  color: '#8B0000',
-                  fontSize: '22px',
-                  letterSpacing: '1px',
-                  textTransform: 'uppercase',
-                  textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
-                  fontFamily: 'Arial Black, sans-serif',
-                  wordWrap: 'break-word',
-                  whiteSpace: 'normal',
-                  display: 'block'
+              <Text
+                size="xl"
+                weight={900}
+                style={{
+                  color: "#8B0000",
+                  fontSize: "22px",
+                  letterSpacing: "1px",
+                  textTransform: "uppercase",
+                  textShadow: "1px 1px 2px rgba(0,0,0,0.3)",
+                  fontFamily: "Arial Black, sans-serif",
+                  wordWrap: "break-word",
+                  whiteSpace: "normal",
+                  display: "block",
                 }}
               >
                 ⚠️ NOTE: DO NOT MODIFY THE SEMESTER COLUMN ⚠️
               </Text>
             </Alert>
-            
-            {programmeType === 'PG' && (
-              <Alert color="blue" mt="md" title="Important Note for PG Students for Grade Submission">
+
+            {programmeType === "PG" && (
+              <Alert
+                color="blue"
+                mt="md"
+                title="Important Note for PG Students for Grade Submission"
+              >
                 <List size="sm" spacing="xs">
-                  <List.Item>For <b>Postgraduate (PG)</b> courses, upload grades by <b>discipline-wise like CSE, not like AI & ML / Data Science, separately</b> (not specialization-wise)</List.Item>
-                  <List.Item>Submit grades for <b>all roll numbers</b> provided in the template</List.Item>
-                  <List.Item>Students from different specializations may appear in the same course list if they are registered in the same Course</List.Item>
+                  <List.Item>
+                    For <b>Postgraduate (PG)</b> courses, upload grades by{" "}
+                    <b>
+                      discipline-wise like CSE, not like AI & ML / Data Science,
+                      separately
+                    </b>{" "}
+                    (not specialization-wise)
+                  </List.Item>
+                  <List.Item>
+                    Submit grades for <b>all roll numbers</b> provided in the
+                    template
+                  </List.Item>
+                  <List.Item>
+                    Students from different specializations may appear in the
+                    same course list if they are registered in the same Course
+                  </List.Item>
                 </List>
               </Alert>
             )}
@@ -476,7 +588,9 @@ export default function SubmitGradesProf() {
               color="green"
               onClick={handleTemplateDownload}
               loading={loading}
-              disabled={!year || !semesterType || !course || sectionMissing || loading}
+              disabled={
+                !year || !semesterType || !course || sectionMissing || loading
+              }
             >
               Download Template
             </Button>
@@ -486,7 +600,14 @@ export default function SubmitGradesProf() {
               color="blue"
               onClick={handlePreview}
               loading={loading}
-              disabled={!year || !semesterType || !course || !excelFile || sectionMissing || loading}
+              disabled={
+                !year ||
+                !semesterType ||
+                !course ||
+                !excelFile ||
+                sectionMissing ||
+                loading
+              }
             >
               Preview
             </Button>
@@ -494,7 +615,9 @@ export default function SubmitGradesProf() {
         </>
       ) : (
         <Box ref={previewRef} mt="md">
-          <Title order={3} mb="sm">Grades Preview</Title>
+          <Title order={3} mb="sm">
+            Grades Preview
+          </Title>
           <Text fw={600} mb="sm">
             Total Students: {previewData.length}
           </Text>
@@ -513,11 +636,16 @@ export default function SubmitGradesProf() {
             </thead>
             <tbody>
               {previewData.map((r, i) => (
-                <tr key={i} style={{ backgroundColor: r.is_registered ? undefined : "#ffe6e6" }}>
-                  <td>{i+1}</td>
+                <tr
+                  key={i}
+                  style={{
+                    backgroundColor: r.is_registered ? undefined : "#ffe6e6",
+                  }}
+                >
+                  <td>{i + 1}</td>
                   <td>{r.roll_no}</td>
                   <td>{r.name}</td>
-                  <td>{r.branch || '-'}</td>
+                  <td>{r.branch || "-"}</td>
                   <td>{r.grades}</td>
                   <td>{r.remarks}</td>
                   <td>{r.semester}</td>
@@ -541,6 +669,41 @@ export default function SubmitGradesProf() {
       )}
 
       <LoadingOverlay visible={loading} />
+    </>
+  );
+}
+
+export default function SubmitGradesProf() {
+  const userRole = useSelector((s) => s.user.role);
+  const isAcadadmin = userRole === "acadadmin";
+  const [category, setCategory] = useState("course");
+
+  // Only acadadmin gets the extra fallback-entry categories for Thesis / Progress
+  // Seminar / Teaching Credit (the backend enforces this too); faculty just see
+  // the course-grading form they already had, unchanged.
+  if (!isAcadadmin) {
+    return (
+      <Card shadow="sm" p="lg" radius="md" withBorder>
+        <SubmitCourseGradesTab />
+      </Card>
+    );
+  }
+
+  return (
+    <Card shadow="sm" p="lg" radius="md" withBorder>
+      <SegmentedControl
+        fullWidth
+        size="md"
+        radius="md"
+        color="#15ABFF"
+        data={GRADE_CATEGORIES}
+        value={category}
+        onChange={setCategory}
+        mb="md"
+      />
+
+      {category === "course" && <SubmitCourseGradesTab />}
+      {category !== "course" && <PhdMilestoneGradesPanel category={category} />}
     </Card>
   );
 }
