@@ -11,13 +11,16 @@ import {
 import { IconCheck, IconAlertCircle } from "@tabler/icons-react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import { useDocumentTitle } from "@mantine/hooks";
 import { examinerPanelInvitationActionRoute } from "../routes/academicRoutes";
 import InstitutePublicHeader from "../components/InstitutePublicHeader";
+import { pageTitle } from "../lib/pageTitle";
 
 // Public page reached from an emailed examiner-panel invitation link. The
 // examiner has no Fusion account -- the token in the URL is the sole
 // credential, so this page must never attach an Authorization header.
 export default function ThesisExaminerPanelResponse() {
+  useDocumentTitle(pageTitle("Examiner Panel"));
   const { token, action } = useParams();
   const [status, setStatus] = useState("loading");
   const [message, setMessage] = useState("");

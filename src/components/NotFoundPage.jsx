@@ -2,8 +2,11 @@ import React from 'react';
 import { Center, Stack, Title, Text, Button } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
+import { useDocumentTitle } from "@mantine/hooks";
+import { pageTitle } from "../lib/pageTitle";
 
 export default function NotFoundPage() {
+  useDocumentTitle(pageTitle("Page not found"));
   const navigate = useNavigate();
 
   return (

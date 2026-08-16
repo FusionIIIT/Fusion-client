@@ -19,10 +19,12 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { notifications } from "@mantine/notifications";
+import { useDocumentTitle } from "@mantine/hooks";
 import { loginRoute, passwordResetSendOtp, passwordResetVerifyOtp, passwordResetReset } from "../routes/globalRoutes";
 import iiitdmjLogo from "../assets/iiitdmj_logo.png";
 import iiitdmjLogoMobile from "../assets/IIITJ_logo.webp";
 import { IconAlertCircle, IconCheck } from "@tabler/icons-react";
+import { pageTitle } from "../lib/pageTitle";
 
 const CONFIG = {
   MOBILE_BREAKPOINT: 768,
@@ -157,6 +159,7 @@ const getResetPasswordStrength = (pw) => {
 };
 
 function LoginPage() {
+  useDocumentTitle(pageTitle());
   const navigate = useNavigate();
 
   const initialIsMobile = useMemo(() => window.innerWidth <= CONFIG.MOBILE_BREAKPOINT, []);

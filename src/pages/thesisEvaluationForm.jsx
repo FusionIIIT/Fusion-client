@@ -9,8 +9,10 @@ import { IconCheck, IconX, IconAlertCircle, IconExternalLink } from "@tabler/ico
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import PropTypes from "prop-types";
+import { useDocumentTitle } from "@mantine/hooks";
 import { reviewDetailRoute } from "../routes/academicRoutes";
 import InstitutePublicHeader from "../components/InstitutePublicHeader";
+import { pageTitle } from "../lib/pageTitle";
 
 const RECOMMENDATION_OPTIONS = [
   {
@@ -50,6 +52,7 @@ const EMPTY_BANK_DETAILS = {
 };
 
 function DocumentPreview({ title, url }) {
+  useDocumentTitle(pageTitle("Thesis Evaluation"));
   return (
     <div style={{ marginTop: 16 }}>
       <Group justify="space-between" mb={4}>
