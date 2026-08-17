@@ -4,8 +4,14 @@ import PropTypes from "prop-types";
 import classes from "./PageTabs.module.css";
 import tabClasses from "../styles/tabs.module.css";
 
+// Splitting the row evenly only reads well for a handful of tabs; past that
+// the labels collide, so a long row sizes to its content and scrolls instead.
+const EVEN_WIDTH_LIMIT = 6;
+
 export function PageTabs({ value, onChange, tabs, mb = "md" }) {
   if (tabs.length < 2) return null;
+
+  const evenWidth = tabs.length <= EVEN_WIDTH_LIMIT;
 
   return (
     <Tabs
@@ -16,12 +22,12 @@ export function PageTabs({ value, onChange, tabs, mb = "md" }) {
       className={classes.root}
       mb={mb}
     >
-      <Tabs.List className={tabClasses.list}>
+      <Tabs.List className={evenWidth ? tabClasses.list : undefined}>
         {tabs.map((tab) => (
           <Tabs.Tab
             key={tab.value}
             value={tab.value}
-            className={tabClasses.tab}
+            className={evenWidth ? tabClasses.tab : undefined}
           >
             <Group gap={6} wrap="nowrap">
               <Text size="sm">{tab.label}</Text>
