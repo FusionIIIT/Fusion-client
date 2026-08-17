@@ -15,6 +15,7 @@ import {
   Divider,
   Modal,
   Stack,
+  Box,
 } from "@mantine/core";
 import {
   IconDownload,
@@ -594,7 +595,7 @@ function AllocateCourses() {
           </Text>
         </Stack>
 
-        <ScrollArea style={{ flex: 1, minHeight: 0 }}>
+        <Box style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
           <Table
             striped
             highlightOnHover
@@ -637,7 +638,7 @@ function AllocateCourses() {
               ))}
             </tbody>
           </Table>
-        </ScrollArea>
+        </Box>
 
         <Group justify="flex-end" mt="sm" style={{ flexShrink: 0 }}>
           <Button

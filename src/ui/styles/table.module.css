@@ -7,15 +7,18 @@
 .table thead th {
   background: #c5e2f6;
   color: #2b7fc4;
-  font-size: 0.95rem;
+  font-size: clamp(0.8rem, 0.62vw + 0.53rem, 0.95rem);
   font-weight: 700;
   letter-spacing: normal;
   text-transform: none;
   text-align: center;
-  padding: 14px 18px;
+  padding: 14px clamp(6px, 0.9vw, 14px);
   border-right: 1px solid #b9d8ef;
   border-bottom: 1px solid #b9d8ef;
-  white-space: nowrap;
+  /* Wrap between words but never inside one, so headings stay readable. */
+  white-space: normal;
+  overflow-wrap: normal;
+  word-break: keep-all;
 }
 
 .table thead th:last-child {
@@ -23,11 +26,12 @@
 }
 
 .table tbody td {
-  font-size: 0.9rem;
+  font-size: clamp(0.78rem, 0.5vw + 0.56rem, 0.9rem);
   color: #212529;
   text-align: center;
-  padding: 14px 18px;
+  padding: 14px clamp(6px, 0.9vw, 14px);
   border-right: 1px solid #e3edf6;
+  overflow-wrap: break-word;
 }
 
 .table tbody td:last-child {

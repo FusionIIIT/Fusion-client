@@ -34,6 +34,16 @@ export function formatTime(value) {
   return `${hour % 12 || 12}:${minutes} ${hour >= 12 ? "PM" : "AM"}`;
 }
 
+// Day and clock separately, so a table column can stack them and stay narrow.
+export function formatStamp(value) {
+  const date = toDate(value);
+  if (!date) return { day: "—", clock: "" };
+  return {
+    day: date.toLocaleDateString("en-GB"),
+    clock: date.toLocaleTimeString("en-GB", { hour12: false }),
+  };
+}
+
 export function formatWhen(date, time) {
   const day = formatDate(date);
   if (!day) return "—";

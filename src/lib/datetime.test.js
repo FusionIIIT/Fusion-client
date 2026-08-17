@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatDate, formatTime, formatWhen } from "./datetime";
+import { formatDate, formatStamp, formatTime, formatWhen } from "./datetime";
 
 describe("formatDate", () => {
   it("reads a Date", () => {
@@ -46,5 +46,19 @@ describe("formatWhen", () => {
 
   it("falls back to an em dash with no date", () => {
     expect(formatWhen(null, "17:00")).toBe("—");
+  });
+});
+
+describe("formatStamp", () => {
+  it("splits a timestamp into day and clock", () => {
+    expect(formatStamp("2026-03-11T02:06:13")).toEqual({
+      day: "11/03/2026",
+      clock: "02:06:13",
+    });
+  });
+
+  it("returns a dash and no clock when there is no value", () => {
+    expect(formatStamp(null)).toEqual({ day: "—", clock: "" });
+    expect(formatStamp("not a date")).toEqual({ day: "—", clock: "" });
   });
 });
