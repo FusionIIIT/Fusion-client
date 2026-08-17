@@ -97,12 +97,4 @@ export const EXAMINATION_PAGES = [
     group: "Documents",
     roles: ACAD,
   },
-  {
-    key: "generateGradeSheet",
-    slug: "generate-gradesheet",
-    title: "Grade Sheet",
-    icon: "Table",
-    group: "Documents",
-    roles: ACAD,
-  },
 ];
