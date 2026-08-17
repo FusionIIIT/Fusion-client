@@ -26,7 +26,6 @@ const GROUP_ICONS = {
   "File Tracking": "FolderOpen",
   Grades: "Stamp",
   Results: "Scroll",
-  Documents: "Table",
   Thesis: "BookOpen",
   Milestones: "Checks",
   Supervision: "UserFocus",

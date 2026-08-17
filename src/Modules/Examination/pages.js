@@ -94,7 +94,7 @@ export const EXAMINATION_PAGES = [
     slug: "generate-transcript",
     title: "Transcript",
     icon: "Scroll",
-    group: "Documents",
+    group: null,
     roles: ACAD,
   },
 ];
