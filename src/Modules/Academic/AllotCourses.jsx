@@ -228,9 +228,6 @@ export default function AllotCourses() {
   return (
     <Card>
       <LoadingOverlay visible={loading} />
-      <Text size="2xl" fw={700} ta="center" mb="md">
-        Allot Student Courses
-      </Text>
       <Button leftSection={<IconDownload />} variant="light" onClick={downloadTemplate} mb="md">
         Download Template
       </Button>

@@ -112,15 +112,6 @@ function RegistrationSearch() {
 
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
-      <Text
-        size="lg"
-        fw={700}
-        mb="md"
-        style={{ textAlign: "center", width: "100%", color: "#3B82F6" }}
-      >
-        Search and Manage Registrations
-      </Text>
-
       <div style={{ maxWidth: "100%", gap: 16, display: "grid" }}>
         <TextInput
           label="Roll No:"

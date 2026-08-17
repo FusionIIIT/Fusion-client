@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Card, Title, Badge, Center, Loader } from "@mantine/core";
+import { Card, Badge, Center, Loader } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import axios from "axios";
 import FusionTable from "../../../components/FusionTable";
@@ -74,10 +74,6 @@ export default function AcademicOfficeTeachingCreditList() {
 
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
-      <Title order={3} mb="md">
-        Teaching Credit — All Registrations
-      </Title>
-
       <FusionTable
         columnNames={COLUMNS}
         elements={rows}

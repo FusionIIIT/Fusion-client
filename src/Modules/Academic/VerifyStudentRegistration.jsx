@@ -187,15 +187,6 @@ function VerifyStudentRegistration() {
 
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
-      <Text
-        size="lg"
-        fw={700}
-        mb="md"
-        style={{ textAlign: "center", color: "#3B82F6" }}
-      >
-        Verify Student Registration
-      </Text>
-
       <Select
         label="Batch"
         placeholder={loading ? "Loading batches..." : "Select Batch"}

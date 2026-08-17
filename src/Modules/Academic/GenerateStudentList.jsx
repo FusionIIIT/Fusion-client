@@ -469,10 +469,6 @@ export default function GenerateStudentList() {
 
         {/* Roll List Tab */}
         <Tabs.Panel value="rolllist" pt="md">
-          <Text size="lg" fw={700} ta="center" mb="md" c="blue">
-            Generate Student Roll List
-          </Text>
-
           <Group grow mb="md">
             <Select
               label="Academic Year"
@@ -567,10 +563,6 @@ export default function GenerateStudentList() {
 
         {/* Pre-Registration Tab */}
         <Tabs.Panel value="preregistration" pt="md">
-          <Text size="lg" fw={700} ta="center" mb="md" c="blue">
-            Pre-Registration Report
-          </Text>
-
           <Group grow mb="md">
             <TextInput
               label="Semester"
