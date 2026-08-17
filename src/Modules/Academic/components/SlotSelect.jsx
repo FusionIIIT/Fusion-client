@@ -19,6 +19,7 @@ export default function SlotSelect({
       }))}
       value={value ? String(value) : null}
       onChange={(next) => onChange(next ?? "")}
+      w="100%"
       miw={150}
       clearable
       maxDropdownHeight={320}

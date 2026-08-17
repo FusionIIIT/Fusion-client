@@ -59,7 +59,9 @@
 }
 
 .control {
-  flex: 0 0 auto;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 620px;
 }
 
 @media (max-width: 575px) {
