@@ -1,6 +1,4 @@
 import { useEffect, useState } from "react";
-import { Text } from "@mantine/core";
-// import CustomBreadcrumbs from "../../../../components/Breadcrumbs";
 // import { useSelector } from "react-redux";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
@@ -11,8 +9,7 @@ import Journal from "./Journal";
 import { setPfNo } from "../../../../redux/pfNoSlice";
 import { getPFRoute } from "../../../../routes/facultyProfessionalProfileRoutes";
 
-// eslint-disable-next-line react/prop-types
-function PublicationMaster({ setBreadCrumbItems }) {
+function PublicationMaster() {
   const [activeTab, setActiveTab] = useState("0");
   const dispatch = useDispatch();
 
@@ -41,27 +38,8 @@ function PublicationMaster({ setBreadCrumbItems }) {
     fetchPfNo();
   }, []);
 
-  useEffect(() => {
-    const currentTab = tabItems[parseInt(activeTab, 10)];
-
-    const breadcrumbs = [{ title: currentTab.title, href: "#" }].map(
-      (item, index) => (
-        <Text key={index} component="a" href={item.href} size="16px" fw={600}>
-          {item.title}
-        </Text>
-      ),
-    );
-
-    setBreadCrumbItems((prevBreadCrumbs) => {
-      const firstThreeEntries = prevBreadCrumbs.slice(0, 3);
-      return [...firstThreeEntries, breadcrumbs];
-    });
-  }, [activeTab]);
-
   return (
     <>
-      {/* <CustomBreadcrumbs /> */}
-
       <PageTabs
         value={activeTab}
         onChange={setActiveTab}

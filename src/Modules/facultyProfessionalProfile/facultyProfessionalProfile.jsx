@@ -1,7 +1,6 @@
-import { lazy, useCallback, useMemo, useState } from "react";
+import { lazy, useMemo } from "react";
 import { useSelector } from "react-redux";
 
-import CustomBreadcrumbs from "../../components/Breadcrumbs";
 import { ModuleRoutes } from "../../ui/routing/ModuleRoutes";
 import { pagesForRole } from "../../ui/nav/roles";
 import { FPS_BASE, FPS_PAGES } from "./pages";
@@ -30,30 +29,13 @@ const COMPONENTS = {
 
 export default function FacultyProfessionalProfile() {
   const role = useSelector((state) => state.user.role);
-  const [breadCrumbItems, setBreadCrumbItems] = useState([]);
 
   const pages = useMemo(() => pagesForRole(FPS_PAGES, role), [role]);
-
-  const renderPage = useCallback(
-    (Component) => (
-      <>
-        {breadCrumbItems.length > 0 && (
-          <CustomBreadcrumbs breadCrumbs={breadCrumbItems} />
-        )}
-        <Component
-          breadCrumbItems={breadCrumbItems}
-          setBreadCrumbItems={setBreadCrumbItems}
-        />
-      </>
-    ),
-    [breadCrumbItems],
-  );
 
   return (
     <ModuleRoutes
       pages={pages}
       components={COMPONENTS}
-      renderPage={renderPage}
       basePath={FPS_BASE}
       emptyMessage="The professional profile is not available for your role."
     />
