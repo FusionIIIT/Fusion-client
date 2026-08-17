@@ -38,6 +38,22 @@
   border-right: none;
 }
 
+/* Label/value tables: the row's own heading cell reads as the label column. */
+.table tbody th {
+  background: #eef7fd;
+  color: #2b7fc4;
+  font-weight: 600;
+  text-align: left;
+  white-space: normal;
+  padding: 14px clamp(8px, 0.9vw, 18px);
+  border-right: 1px solid #dbeaf6;
+  width: 34%;
+}
+
+.table tbody th + td {
+  text-align: left;
+}
+
 /* Mantine clips a Badge to its column; let the column widen instead. */
 .table tbody td :global(.mantine-Badge-root) {
   max-width: none;
