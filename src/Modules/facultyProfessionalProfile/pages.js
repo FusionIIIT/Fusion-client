@@ -2,7 +2,13 @@ export const FPS_BASE = "/facultyprofessionalprofile";
 
 const FPS_ROLES = ["Professor", "Assistant Professor"];
 
-export const FPS_PAGES = [
+// Of the 65 eis endpoints these pages call, only /eis/api/profile/ exists, so
+// every form saves nowhere and every table loads empty. The pages and their
+// components are kept intact; flip this to true once the API is there and the
+// whole module returns to the sidebar and routing.
+export const FPS_BACKEND_READY = false;
+
+const FPS_ALL_PAGES = [
   {
     key: "publications",
     slug: "publications",
@@ -110,3 +116,5 @@ export const FPS_PAGES = [
     roles: FPS_ROLES,
   },
 ];
+
+export const FPS_PAGES = FPS_BACKEND_READY ? FPS_ALL_PAGES : [];

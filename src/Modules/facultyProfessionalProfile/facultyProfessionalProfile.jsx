@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 
 import { ModuleRoutes } from "../../ui/routing/ModuleRoutes";
 import { pagesForRole } from "../../ui/nav/roles";
-import { FPS_BASE, FPS_PAGES } from "./pages";
+import { FPS_BACKEND_READY, FPS_BASE, FPS_PAGES } from "./pages";
 
 const COMPONENTS = {
   publications: lazy(() => import("./Profile/Publications/PublicationsMaster")),
@@ -37,7 +37,11 @@ export default function FacultyProfessionalProfile() {
       pages={pages}
       components={COMPONENTS}
       basePath={FPS_BASE}
-      emptyMessage="The professional profile is not available for your role."
+      emptyMessage={
+        FPS_BACKEND_READY
+          ? "The professional profile is not available for your role."
+          : "The professional profile is not available yet."
+      }
     />
   );
 }
