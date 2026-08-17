@@ -139,3 +139,75 @@ describe("FusionTable — shared behaviour", () => {
     ).toBeInTheDocument();
   });
 });
+
+describe("FusionTable — grouping", () => {
+  const SLOT_COLUMNS = ["Course", "Semester", "Course Slot", "Priority"];
+  const SLOT_ROWS = [
+    { Course: "SWAYAM 7", Semester: 7, "Course Slot": "OE07", Priority: 1 },
+    {
+      Course: "Data Engineering",
+      Semester: 7,
+      "Course Slot": "OE07",
+      Priority: 2,
+    },
+    { Course: "SWAYAM 8", Semester: 7, "Course Slot": "OE08", Priority: 1 },
+  ];
+
+  const renderGrouped = (props = {}) =>
+    render(
+      <MantineProvider theme={theme}>
+        <FusionTable
+          columnNames={SLOT_COLUMNS}
+          elements={SLOT_ROWS}
+          groupBy="Course Slot"
+          /* eslint-disable-next-line react/jsx-props-no-spreading */
+          {...props}
+        />
+      </MantineProvider>,
+    );
+
+  it("leads with the grouped column", () => {
+    renderGrouped();
+    expect(
+      table()
+        .getAllByRole("columnheader")
+        .map((h) => h.textContent),
+    ).toEqual(["Course Slot", "Course", "Semester", "Priority"]);
+  });
+
+  it("prints a slot once and spans it over its rows", () => {
+    renderGrouped();
+    const slot = table().getByText("OE07");
+    expect(slot.closest("td")).toHaveAttribute("rowspan", "2");
+    expect(table().getAllByText("OE07")).toHaveLength(1);
+  });
+
+  it("starts a new span for the next slot", () => {
+    renderGrouped();
+    expect(table().getByText("OE08").closest("td")).toHaveAttribute(
+      "rowspan",
+      "1",
+    );
+  });
+
+  it("keeps every row's own cells alongside its slot", () => {
+    renderGrouped();
+    expect(table().getByText("Data Engineering")).toBeInTheDocument();
+    expect(table().getByText("SWAYAM 8")).toBeInTheDocument();
+  });
+
+  it("heads each group of cards on narrow screens", () => {
+    renderGrouped();
+    expect(cards().getByText("Course Slot: OE07")).toBeInTheDocument();
+    expect(cards().getByText("Course Slot: OE08")).toBeInTheDocument();
+  });
+
+  it("ignores a groupBy that names no column", () => {
+    renderGrouped({ groupBy: "Nonexistent" });
+    expect(
+      table()
+        .getAllByRole("columnheader")
+        .map((h) => h.textContent),
+    ).toEqual(SLOT_COLUMNS);
+  });
+});

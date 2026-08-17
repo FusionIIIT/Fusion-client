@@ -6,6 +6,16 @@ import classes from "./FusionTable.module.css";
 
 const minWidthFor = (columns) => Math.max(560, columns * 140);
 
+function groupRows(elements, groupBy) {
+  const groups = new Map();
+  elements.forEach((row) => {
+    const key = String(row[groupBy] ?? "");
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(row);
+  });
+  return [...groups.entries()].map(([key, rows]) => ({ key, rows }));
+}
+
 const FusionTable = memo(function FusionTable({
   caption = "",
   columnNames,
@@ -14,6 +24,7 @@ const FusionTable = memo(function FusionTable({
   width = "100%",
   ariaLabel,
   emptyMessage = "No data available",
+  groupBy,
 }) {
   if (!Array.isArray(columnNames) || columnNames.length === 0) {
     return <Text c="dimmed">No columns defined</Text>;
@@ -28,6 +39,13 @@ const FusionTable = memo(function FusionTable({
   }
 
   const cell = (row, columnName) => row[columnName] ?? "—";
+
+  const grouping = groupBy && columnNames.includes(groupBy) ? groupBy : null;
+  const columns = grouping
+    ? [grouping, ...columnNames.filter((name) => name !== grouping)]
+    : columnNames;
+  const rest = grouping ? columns.slice(1) : columns;
+  const groups = grouping ? groupRows(elements, grouping) : [];
 
   return (
     <>
@@ -46,7 +64,7 @@ const FusionTable = memo(function FusionTable({
           >
             <Table.Thead>
               <Table.Tr>
-                {columnNames.map((columnName) => (
+                {columns.map((columnName) => (
                   <Table.Th key={columnName} scope="col">
                     {columnName}
                   </Table.Th>
@@ -54,15 +72,35 @@ const FusionTable = memo(function FusionTable({
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
-              {elements.map((row, index) => (
-                <Table.Tr key={row.id ?? index}>
-                  {columnNames.map((columnName) => (
-                    <Table.Td key={columnName}>
-                      {cell(row, columnName)}
-                    </Table.Td>
+              {grouping
+                ? groups.map((group) =>
+                    group.rows.map((row, rowIndex) => (
+                      <Table.Tr key={row.id ?? `${group.key}-${rowIndex}`}>
+                        {rowIndex === 0 && (
+                          <Table.Td
+                            rowSpan={group.rows.length}
+                            className={classes.groupCell}
+                          >
+                            {group.key || "—"}
+                          </Table.Td>
+                        )}
+                        {rest.map((columnName) => (
+                          <Table.Td key={columnName}>
+                            {cell(row, columnName)}
+                          </Table.Td>
+                        ))}
+                      </Table.Tr>
+                    )),
+                  )
+                : elements.map((row, index) => (
+                    <Table.Tr key={row.id ?? index}>
+                      {columns.map((columnName) => (
+                        <Table.Td key={columnName}>
+                          {cell(row, columnName)}
+                        </Table.Td>
+                      ))}
+                    </Table.Tr>
                   ))}
-                </Table.Tr>
-              ))}
             </Table.Tbody>
             {caption && <Table.Caption>{caption}</Table.Caption>}
           </Table>
@@ -75,16 +113,38 @@ const FusionTable = memo(function FusionTable({
           data-testid="fusion-table-cards"
           aria-label={ariaLabel || caption || undefined}
         >
-          {elements.map((row, index) => (
-            <div className={classes.card} key={row.id ?? index}>
-              {columnNames.map((columnName) => (
-                <div className={classes.row} key={columnName}>
-                  <span className={classes.label}>{columnName}</span>
-                  <span className={classes.value}>{cell(row, columnName)}</span>
+          {grouping
+            ? groups.map((group) => (
+                <div key={group.key}>
+                  <div className={classes.groupHeading}>
+                    {grouping}: {group.key || "—"}
+                  </div>
+                  {group.rows.map((row, index) => (
+                    <div className={classes.card} key={row.id ?? index}>
+                      {rest.map((columnName) => (
+                        <div className={classes.row} key={columnName}>
+                          <span className={classes.label}>{columnName}</span>
+                          <span className={classes.value}>
+                            {cell(row, columnName)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              ))
+            : elements.map((row, index) => (
+                <div className={classes.card} key={row.id ?? index}>
+                  {columns.map((columnName) => (
+                    <div className={classes.row} key={columnName}>
+                      <span className={classes.label}>{columnName}</span>
+                      <span className={classes.value}>
+                        {cell(row, columnName)}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               ))}
-            </div>
-          ))}
           {caption && <div className={classes.caption}>{caption}</div>}
         </div>
       </Box>
@@ -111,6 +171,7 @@ FusionTable.propTypes = {
   width: PropTypes.string,
   ariaLabel: PropTypes.string,
   emptyMessage: PropTypes.string,
+  groupBy: PropTypes.string,
 };
 
 export default FusionTable;

@@ -167,6 +167,7 @@ function RegistrationSearch() {
             <FusionTable
               columnNames={columnNames}
               elements={mappedResults}
+              groupBy="Course Slot"
               width="100%"
             />
           </div>

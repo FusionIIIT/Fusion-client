@@ -5,6 +5,23 @@
   overflow-y: hidden;
 }
 
+.groupCell {
+  background: #eef7fd;
+  color: #2b7fc4;
+  font-weight: 700;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.groupHeading {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #2b7fc4;
+  padding: 10px 2px 4px;
+}
+
 .cards {
   display: flex;
   flex-direction: column;
