@@ -6,11 +6,11 @@ import {
   Group,
   Loader,
   Notification,
-  Table,
   Space,
   Text,
 } from "@mantine/core";
 import axios from "axios";
+import DetailList from "../../components/DetailList";
 import { StudentSearchRoute } from "../../routes/academicRoutes";
 
 export default function AdminStudentDashboard() {
@@ -65,18 +65,13 @@ export default function AdminStudentDashboard() {
           <Text fw={600} mb="sm">
             Student Details
           </Text>
-          <Table highlightOnHover>
-            <tbody>
-              {Object.entries(info).map(([k, v]) => (
-                <tr key={k}>
-                  <th scope="row" style={{ textTransform: "capitalize" }}>
-                    {k.replace(/_/g, " ")}
-                  </th>
-                  <td>{v ?? "—"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
+          <DetailList
+            ariaLabel="Student details"
+            items={Object.entries(info).map(([k, v]) => ({
+              label: k.replace(/_/g, " "),
+              value: v,
+            }))}
+          />
         </>
       )}
     </Card>
