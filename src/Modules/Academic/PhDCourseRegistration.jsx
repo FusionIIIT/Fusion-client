@@ -36,6 +36,7 @@ import { StatusBadge } from "../../ui/components/StatusBadge";
 import SlotCard from "./components/SlotCard";
 import SlotRow from "./components/SlotRow";
 import SlotSelect from "./components/SlotSelect";
+import { courseRequestBody, slotReady, sourceOf } from "./lib/blSlot";
 
 const SUMMARY_COLUMNS = ["Type", "Slot", "Detail", "Credits"];
 const REQUEST_COLUMNS = [
@@ -125,7 +126,9 @@ function PhDCourseRegisterForm() {
           return {
             ...slot,
             courses: res.data.courses || [],
+            sourceCourses: res.data.source_courses || null,
             selectedCourse: "",
+            selectedSource: "",
           };
         }),
       );
@@ -167,10 +170,9 @@ function PhDCourseRegisterForm() {
     const course = (slot?.courses || []).find(
       (c) => String(c.id) === String(val),
     );
-    // BL (backlog) courses: same rule as UG add — only a prior grade below C+
-    // is eligible. Warn immediately on selection and reject the pick, so the
-    // student sees why here instead of a fleeting error at submit time.
-    if (val && course && course.bl_eligible === false) {
+    // Only a plain slot gates on a prior grade; a BL slot gates on its source
+    // course instead, and its list here is the replacement pool.
+    if (!slot?.sourceCourses && val && course && course.bl_eligible === false) {
       showNotification({
         title: "Not eligible for this backlog course",
         message: course.bl_grade
@@ -189,6 +191,15 @@ function PhDCourseRegisterForm() {
     );
   };
 
+  // Picking a new source drops any replacement chosen for the previous one.
+  const pickSource = (idx, val) => {
+    setSlots((prev) =>
+      prev.map((s, i) =>
+        i === idx ? { ...s, selectedSource: val, selectedCourse: "" } : s,
+      ),
+    );
+  };
+
   // One combined registration per semester: once anything has been
   // submitted -- a course request, or a thesis/seminar/teaching-credit
   // registration -- that semester's registration is closed. No re-opening
@@ -200,7 +211,7 @@ function PhDCourseRegisterForm() {
     isActiveReg(seminarInfo?.registration) ||
     isActiveReg(teachingCreditInfo?.registration);
 
-  const coursesToSubmit = slots.filter((s) => s.selectedCourse);
+  const coursesToSubmit = slots.filter(slotReady);
   const thesisTopicApproved =
     !!thesisInfo?.thesis_topic?.status &&
     thesisInfo.thesis_topic.status === "dean_approved";
@@ -296,11 +307,9 @@ function PhDCourseRegisterForm() {
     setSubmitting(true);
     try {
       const calls = coursesToSubmit.map((s) =>
-        axios.post(
-          phdSubmitCourseRequestRoute,
-          { slot_id: s.id, course_id: parseInt(s.selectedCourse, 10) },
-          { headers: authHeaders() },
-        ),
+        axios.post(phdSubmitCourseRequestRoute, courseRequestBody(s), {
+          headers: authHeaders(),
+        }),
       );
       if (willEnrollThesis) {
         calls.push(
@@ -398,25 +407,88 @@ function PhDCourseRegisterForm() {
             No course slots available for your current semester.
           </Text>
         ) : (
-          slots.map((s, i) => (
-            <SlotCard key={s.id} name={s.name}>
-              <SlotRow
-                primary="Course"
-                control={
-                  <SlotSelect
-                    label={`Course for ${s.name}`}
-                    placeholder="Select course…"
-                    value={s.selectedCourse}
-                    onChange={(val) => pickCourse(i, val)}
-                    options={(s.courses || []).map((c) => ({
-                      value: String(c.id),
-                      label: courseLabel(c),
-                    }))}
+          slots.map((s, i) => {
+            const source = sourceOf(s);
+            return (
+              <SlotCard key={s.id} name={s.name}>
+                {s.sourceCourses ? (
+                  <>
+                    <SlotRow
+                      primary="Source course"
+                      secondary={
+                        source
+                          ? `Grade ${source.grade} — registers as ${source.registration_type}`
+                          : "A course you scored below C+ in"
+                      }
+                      control={
+                        s.sourceCourses.length === 0 ? (
+                          <Text size="sm" c="dimmed">
+                            No course of yours is below C+.
+                          </Text>
+                        ) : (
+                          <SlotSelect
+                            label={`Source course for ${s.name}`}
+                            placeholder="Select the course to clear…"
+                            value={s.selectedSource}
+                            onChange={(val) => pickSource(i, val)}
+                            options={s.sourceCourses.map((c) => ({
+                              value: String(c.id),
+                              label: `${courseLabel(c)} — ${c.grade} · ${c.registration_type}`,
+                            }))}
+                          />
+                        )
+                      }
+                    />
+                    {source && source.replaceable && (
+                      <SlotRow
+                        primary="Replace with"
+                        secondary={`${source.code} was an open elective, so another course can stand in for it`}
+                        control={
+                          <SlotSelect
+                            label={`Replacement course for ${s.name}`}
+                            placeholder="Select course…"
+                            value={s.selectedCourse}
+                            onChange={(val) => pickCourse(i, val)}
+                            options={(s.courses || []).map((c) => ({
+                              value: String(c.id),
+                              label: courseLabel(c),
+                            }))}
+                          />
+                        }
+                      />
+                    )}
+                    {source && !source.replaceable && (
+                      <SlotRow
+                        primary="Registers"
+                        secondary={`${source.code} was not an open elective, so it has to be cleared by retaking it`}
+                        control={
+                          <Badge color="blue" variant="light">
+                            {source.code} · {source.registration_type}
+                          </Badge>
+                        }
+                      />
+                    )}
+                  </>
+                ) : (
+                  <SlotRow
+                    primary="Course"
+                    control={
+                      <SlotSelect
+                        label={`Course for ${s.name}`}
+                        placeholder="Select course…"
+                        value={s.selectedCourse}
+                        onChange={(val) => pickCourse(i, val)}
+                        options={(s.courses || []).map((c) => ({
+                          value: String(c.id),
+                          label: courseLabel(c),
+                        }))}
+                      />
+                    }
                   />
-                }
-              />
-            </SlotCard>
-          ))
+                )}
+              </SlotCard>
+            );
+          })
         )}
       </Card>
 
