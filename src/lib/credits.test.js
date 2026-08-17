@@ -128,6 +128,33 @@ describe("computeCreditSummary", () => {
     expect(totals.backlogImp).toBe(3);
   });
 
+  it("credits a retaken course at the attempt it was best graded in", () => {
+    // 23BSM070 took SM2007 as a 3-credit course and scored D, then cleared it as
+    // a 4-credit course. The degree total has to follow the better grade, which
+    // is what the transcript counts.
+    const { totals } = computeCreditSummary([
+      { label: "Semester 4", courses: [course("SM2007", 3, "D")] },
+      {
+        label: "Semester 6",
+        courses: [course("SM2007", 4, "C+", "Improvement")],
+      },
+    ]);
+
+    expect(totals.earned).toBe(4);
+  });
+
+  it("keeps the better grade even when it came first", () => {
+    const { totals } = computeCreditSummary([
+      { label: "Semester 4", courses: [course("SM2007", 4, "B")] },
+      {
+        label: "Semester 6",
+        courses: [course("SM2007", 3, "C", "Improvement")],
+      },
+    ]);
+
+    expect(totals.earned).toBe(4);
+  });
+
   it("lets the semester rows add up to more than the total", () => {
     const { rows, totals } = computeCreditSummary([
       { label: "Semester 1", courses: [course("IT1001", 3, "C")] },
