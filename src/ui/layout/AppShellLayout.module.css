@@ -1,0 +1,176 @@
+.navbar {
+  background: linear-gradient(180deg, #0c1526 0%, #080d18 100%);
+  border-right: none;
+}
+
+.header {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 2px solid #0b1220;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+}
+
+.brand {
+  border-left: 3px solid #15abff;
+  padding-left: 14px;
+  background: linear-gradient(
+    90deg,
+    rgba(21, 171, 255, 0.06) 0%,
+    transparent 100%
+  );
+}
+
+.sectionLabel {
+  color: rgba(255, 255, 255, 0.34);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 16px 10px 6px;
+}
+
+.navLink {
+  color: rgba(255, 255, 255, 0.68);
+  border-radius: 9px;
+  font-size: 0.9rem;
+}
+.navLink:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+.navLink[data-active] {
+  background-color: rgba(21, 171, 255, 0.14);
+  color: #fff;
+  box-shadow: inset 2px 0 0 0 #15abff;
+}
+.navLink[data-active]:hover {
+  background-color: rgba(21, 171, 255, 0.2);
+}
+
+.scroll {
+  flex: 1;
+  padding: 0 10px;
+}
+
+.search input {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+.search input::placeholder {
+  color: rgba(255, 255, 255, 0.36);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  margin: 6px 10px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+.footerAvatar {
+  border-radius: 10px;
+  line-height: 0;
+}
+.footerAvatar:hover {
+  opacity: 0.85;
+}
+.footerNameButton {
+  display: block;
+  max-width: 100%;
+  min-width: 0;
+}
+.footerNameButton:hover .footerName {
+  text-decoration: underline;
+}
+.footerName {
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.82rem;
+  line-height: 1.1;
+}
+.footerRole {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.footerRoleSelect {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  max-width: 100%;
+  padding: 1px 16px 1px 0;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  background-image: linear-gradient(
+      45deg,
+      transparent 50%,
+      rgba(255, 255, 255, 0.45) 50%
+    ),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.45) 50%, transparent 50%);
+  background-position:
+    right 5px center,
+    right 1px center;
+  background-size:
+    4px 4px,
+    4px 4px;
+  background-repeat: no-repeat;
+}
+
+.footerRoleSelect:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.footerRoleSelect option {
+  color: #0b1220;
+}
+
+.footerLogout {
+  color: rgba(255, 255, 255, 0.55);
+}
+.footerLogout:hover {
+  color: #ff8787;
+  background: rgba(255, 135, 135, 0.1);
+}
+
+.headerInner {
+  padding-inline: 20px;
+  gap: 12px;
+}
+
+.headerLeft {
+  min-width: 0;
+  flex: 0 1 auto;
+  overflow: hidden;
+}
+
+.headerRight {
+  flex: 0 0 auto;
+}
+
+.bell {
+  cursor: pointer;
+  color: #0b1220;
+}
+.bell:hover {
+  color: #15abff;
+}
+
+@media (max-width: 767px) {
+  .headerInner {
+    padding-inline: 10px;
+    gap: 8px;
+  }
+
+  }

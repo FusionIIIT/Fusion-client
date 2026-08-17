@@ -31,7 +31,6 @@ export default function ViewResearchProject() {
       const sortedProjects = projects.sort(
         (a, b) => new Date(b.submission_date) - new Date(a.submission_date),
       );
-      console.log(sortedProjects);
       setTableData(sortedProjects);
     } catch (error) {
       console.error("Error fetching projects:", error);

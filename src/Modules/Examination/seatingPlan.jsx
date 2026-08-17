@@ -50,14 +50,14 @@ function SeatingPlan() {
 
   return (
     <Container size="xl" p="md">
-      <Stack spacing="lg">
-        <Text size="xl" weight={700}>
+      <Stack gap="lg">
+        <Text size="xl" fw={700}>
           Seating Plan
         </Text>
 
         <Paper shadow="sm" radius="md" p="xl" withBorder>
           <form onSubmit={handleSubmit}>
-            <Stack spacing="lg">
+            <Stack gap="lg">
               {error && (
                 <Alert
                   // eslint-disable-next-line react/jsx-no-undef
@@ -139,7 +139,7 @@ function SeatingPlan() {
                 />
               </SimpleGrid>
 
-              <Group position="right" mt="md">
+              <Group justify="flex-end" mt="md">
                 <Button type="submit" size="md" onClick={handleSubmit}>
                   Generate Seating Plan
                 </Button>
@@ -150,8 +150,8 @@ function SeatingPlan() {
 
         {showResults && (
           <Paper shadow="sm" radius="md" p="xl" withBorder>
-            <Stack spacing="md">
-              <Text weight={600} size="lg">
+            <Stack gap="md">
+              <Text fw={600} size="lg">
                 Selected Options:
               </Text>
               <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs">

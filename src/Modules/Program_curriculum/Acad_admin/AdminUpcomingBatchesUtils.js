@@ -184,25 +184,11 @@ export const getBatchForBranch = (
     if (phdSemester && batch.name) {
       const batchName = batch.name.toLowerCase();
       const semesterMatches = batchName.includes(phdSemester.toLowerCase());
-      console.log(
-        `PhD Batch matching: Branch=${batchBranch}, BatchName=${batch.name}, Semester=${phdSemester}, BranchMatch=${branchMatches}, SemesterMatch=${semesterMatches}`,
-      );
       return branchMatches && semesterMatches;
     }
 
     return branchMatches;
   });
-
-  if (!matchedBatch && phdSemester) {
-    console.log(
-      `No batch found for: Branch=${targetBranch}, Semester=${phdSemester}. Available batches:`,
-      batchesToSearch.map((b) => ({
-        name: b.name,
-        discipline: b.discipline,
-        branch: b.branch,
-      })),
-    );
-  }
 
   return matchedBatch;
 };

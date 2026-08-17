@@ -11,7 +11,7 @@ import {
 import { showNotification } from "@mantine/notifications";
 import { IconAlertCircle } from "@tabler/icons-react";
 import axios from "axios";
-import FusionTable from "./FusionTable";
+import FusionTable from "../../components/FusionTable";
 import DeanReviewModal from "./DeanReviewModal";
 import { deanDashboardRoute } from "../../routes/academicRoutes";
 

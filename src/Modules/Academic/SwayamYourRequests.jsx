@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Table, Alert, Badge, Text, Loader, Center } from "@mantine/core";
+import { Alert, Loader, Center } from "@mantine/core";
 import axios from "axios";
+import { StatusBadge } from "../../ui/components/StatusBadge";
+import FusionTable from "../../components/FusionTable";
+import { courseLabel } from "../../lib/course";
+import { formatDate } from "../../lib/datetime";
 import { studentSwayamRequestsRoute } from "../../routes/academicRoutes";
 
 export default function SwayamYourRequests({ requestType, refreshKey = 0 }) {
@@ -55,68 +59,41 @@ export default function SwayamYourRequests({ requestType, refreshKey = 0 }) {
   if (requests.length === 0) {
     return (
       <Alert color="blue" mb="md">
-        No {requestType === "Swayam_Replace" ? "replacement" : "extra credit"} requests found.
+        No {requestType === "Swayam_Replace" ? "replacement" : "extra credit"}{" "}
+        requests found.
       </Alert>
     );
   }
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "Pending":
-        return "yellow";
-      case "Approved":
-        return "green";
-      case "Rejected":
-        return "red";
-      default:
-        return "gray";
-    }
-  };
+  const isReplace = requestType === "Swayam_Replace";
+
+  const columnNames = [
+    "Requested",
+    "Semester",
+    ...(isReplace ? ["Source course"] : []),
+    "New course",
+    "Slot",
+    "Status",
+  ];
+
+  const rows = requests.map((req) => ({
+    id: req.id,
+    Requested: formatDate(req.submitted_at),
+    Semester: req.semester_no ? `Semester ${req.semester_no}` : "—",
+    ...(isReplace
+      ? { "Source course": req.old_course ? courseLabel(req.old_course) : "—" }
+      : {}),
+    "New course": courseLabel(req.new_course),
+    Slot: req.slot.name,
+    Status: <StatusBadge status={req.status} />,
+  }));
 
   return (
-    <div>
-      <Text size="md" weight={600} mb="md" color="#3B82F6">
-        Your {requestType === "Swayam_Replace" ? "Replacement" : "Extra Credit"} Requests
-      </Text>
-      
-      <div style={{ overflowX: "auto" }}>
-        <Table striped highlightOnHover>
-          <thead>
-            <tr>
-              <th>Request Date</th>
-              {requestType === "Swayam_Replace" && <th>Source Course</th>}
-              <th>Target Course</th>
-              <th>Target Slot</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {requests.map((req) => (
-              <tr key={req.id}>
-                <td>
-                  <Text size="xs">{new Date(req.submitted_at).toLocaleDateString()}</Text>
-                </td>
-                {requestType === "Swayam_Replace" && (
-                  <td>
-                    <Text size="xs">
-                      {req.old_course ? `${req.old_course.code} - ${req.old_course.name}` : 'N/A'}
-                    </Text>
-                  </td>
-                )}
-                <td>
-                  <Text size="xs">
-                    {req.new_course.code} - {req.new_course.name}
-                  </Text>
-                </td>
-                <td>{req.slot.name}</td>
-                <td>
-                  <Badge color={getStatusColor(req.status)}>{req.status}</Badge>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      </div>
-    </div>
+    <FusionTable
+      columnNames={columnNames}
+      elements={rows}
+      ariaLabel={`Your ${isReplace ? "replacement" : "extra credit"} requests`}
+      emptyMessage="No requests found."
+    />
   );
 }

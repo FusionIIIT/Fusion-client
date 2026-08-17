@@ -4,7 +4,7 @@ import { IconEye, IconDownload } from "@tabler/icons-react";
 import axios from "axios";
 import { generate_transcript, download_grades } from "../routes/examinationRoutes";
 import { useSelector } from "react-redux";
-import "../styles/transcript.css";
+import styles from "../styles/transcript.module.css";
 import StudentTranscript from "./studentTranscript";
 
 function Transcript({ data, semester }) {
@@ -128,13 +128,13 @@ function Transcript({ data, semester }) {
   };
 
   return (
-    <div className="transcript-container">
+    <div className={styles["transcript-container"]}>
       {selectedStudent ? (
         <StudentTranscript student={selectedStudent} semester={semester} onBack={handleBack} />
       ) : (
         <>
           {students.length > 0 ? (
-            <Table striped highlightOnHover captionSide="top" mt="md" className="transcript-table">
+            <Table striped highlightOnHover captionSide="top" mt="md" className={styles["transcript-table"]}>
               <thead>
                 <tr>
                   <th>Roll Number</th>
@@ -144,11 +144,11 @@ function Transcript({ data, semester }) {
               </thead>
               <tbody>
                 {students.map((student) => (
-                  <tr key={student.id_id} className="table-row">
-                    <td className="table-cell">
+                  <tr key={student.id_id} className={styles["table-row"]}>
+                    <td className={styles["table-cell"]}>
                       {student.id_id}
                     </td>
-                    <td className="table-cell">{student.programme}</td>
+                    <td className={styles["table-cell"]}>{student.programme}</td>
                     <td style={{ textAlign: 'center' }}>
                       <Group gap="xs" justify="center">
                         <Button

@@ -312,9 +312,6 @@ export default function GradeStatus() {
   return (
     <Card shadow="sm" p="md" radius="md" withBorder>
       <Paper p="md" style={{ position: "relative" }}>
-        <h1>
-          Grade Status
-        </h1>
 
         {error && (
           <Alert color="red" mb="md" title="Error" onClose={() => setError(null)}>
@@ -367,12 +364,12 @@ export default function GradeStatus() {
         )}
 
         {(selectedAcademicYear && selectedSemesterType && !loading && gradeStatusData.length > 0) && (
-          <Stack spacing="md" mt="md">
+          <Stack gap="md" mt="md">
             <Group justify="space-between" align="center">
               <Text fw={600}>
                 Grade Status - {selectedAcademicYear} ({selectedSemesterType})
               </Text>
-              <Group spacing="lg">
+              <Group gap="lg">
                 <Flex align="center" gap="sm">
                   <Switch
                     checked={showSubmitted}
@@ -381,7 +378,7 @@ export default function GradeStatus() {
                     label=""
                     size="sm"
                   />
-                  <Group spacing="xs">
+                  <Group gap="xs">
                     <Badge color="green" variant="filled" size="sm">
                       Submitted
                     </Badge>
@@ -396,7 +393,7 @@ export default function GradeStatus() {
                     label=""
                     size="sm"
                   />
-                  <Group spacing="xs">
+                  <Group gap="xs">
                     <Badge color="red" variant="filled" size="sm">
                       Not Submitted
                     </Badge>
@@ -419,19 +416,19 @@ export default function GradeStatus() {
               {renderTable()}
             </Paper>
 
-            <Group spacing="xl">
+            <Group gap="xl">
               <Text size="sm" c="dimmed">
                 <strong>Legend:</strong>
               </Text>
-              <Group spacing="sm">
+              <Group gap="sm">
                 {getStatusBadge("Submitted", "submitted")}
                 <Text size="xs">Professor Submitted</Text>
               </Group>
-              <Group spacing="sm">
+              <Group gap="sm">
                 {getStatusBadge("Verified", "verified")}
                 <Text size="xs">Admin Verified</Text>
               </Group>
-              <Group spacing="sm">
+              <Group gap="sm">
                 {getStatusBadge("Validated", "validated")}
                 <Text size="xs">Dean Validated</Text>
               </Group>

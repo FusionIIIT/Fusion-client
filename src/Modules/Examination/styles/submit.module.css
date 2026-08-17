@@ -1,0 +1,73 @@
+.page h1 {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.page label {
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+  margin-right: 10px;
+  white-space: nowrap;
+}
+
+.page select {
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #fff;
+  width: 180px;
+}
+
+.page table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.page th,
+.page td {
+  padding: 12px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+.page th {
+  background-color: #f1f1f1;
+  color: #333;
+}
+
+.page td input {
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.page tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.page thead th {
+  font-weight: bold;
+  text-align: left;
+  background-color: #f0f0ff;
+  cursor: pointer;
+  position: relative;
+}
+
+.page thead th:hover {
+  background-color: #e6e6ff;
+}
+
+.page thead th::after {
+  font-size: 12px;
+  margin-left: 5px;
+  color: #555;
+}
+
+.btn-div {
+  display: flex;
+  gap: 10px;
+}

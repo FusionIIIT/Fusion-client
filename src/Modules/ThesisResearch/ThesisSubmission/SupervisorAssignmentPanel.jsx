@@ -183,7 +183,7 @@ function ExaminerList({
       {!readOnly && (
         <Button
           variant="outline"
-          leftIcon={<IconPlus size={16} />}
+          leftSection={<IconPlus size={16} />}
           onClick={onAdd}
           fullWidth
           style={{ borderStyle: "dashed" }}
@@ -340,7 +340,7 @@ export default function SupervisorAssignmentPanel({
           : `Assign Examiners for "${submission.title}"`}
       </Title>
       {!readOnly && (
-        <Text size="sm" color="dimmed" mb="sm">
+        <Text size="sm" c="dimmed" mb="sm">
           Recommended: 5-6 examiners in each category.
         </Text>
       )}
@@ -388,7 +388,7 @@ export default function SupervisorAssignmentPanel({
       <Divider my="md" />
 
       <Group justify="space-between">
-        <Text size="sm" color="dimmed">
+        <Text size="sm" c="dimmed">
           {indian.length} Indian &middot; {foreign.length} Foreign selected
         </Text>
         <Group>

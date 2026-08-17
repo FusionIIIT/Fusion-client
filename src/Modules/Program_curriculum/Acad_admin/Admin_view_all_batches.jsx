@@ -842,7 +842,7 @@ function AdminViewAllBatches() {
               <ThemeIcon color="red" size="lg">
                 <Trash size={20} />
               </ThemeIcon>
-              <Text size="lg" weight={600}>
+              <Text size="lg" fw={600}>
                 Confirm Delete Batch
               </Text>
             </Flex>
@@ -850,7 +850,7 @@ function AdminViewAllBatches() {
           size="md"
           centered
         >
-          <Stack spacing="md">
+          <Stack gap="md">
             {(() => {
               const batchToDelete = [...batches, ...finishedBatches]
                 .find(batch => batch.id === deletingBatchId);
@@ -863,7 +863,7 @@ function AdminViewAllBatches() {
                   
                   {batchToDelete && (
                     <Card withBorder p="md" bg="gray.1">
-                      <Text size="sm" weight={500} mb={8}>
+                      <Text size="sm" fw={500} mb={8}>
                         Batch Details:
                       </Text>
                       <Text size="sm">

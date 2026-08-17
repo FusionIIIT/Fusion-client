@@ -81,12 +81,10 @@ export default function Patents() {
       formData.append("title", inputs.title);
 
       if (isEdit === false) {
-        const res = await axios.post(insertPatentsRoute, formData);
-        console.log(res.data);
+        await axios.post(insertPatentsRoute, formData);
       } else {
         formData.append("patent_id", Id);
-        const res = await axios.post(insertPatentsRoute, formData);
-        console.log(res.data);
+        await axios.post(insertPatentsRoute, formData);
         setEdit(false);
         setId(0);
       }
@@ -104,7 +102,7 @@ export default function Patents() {
         title: "",
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -126,7 +124,6 @@ export default function Patents() {
   };
 
   const handleDelete = async (projectId) => {
-    console.log(projectId);
     if (window.confirm("Are you sure you want to delete this Patent?")) {
       try {
         await axios.post(
@@ -262,7 +259,7 @@ export default function Patents() {
                   type="submit"
                   mt="md"
                   loading={isLoading}
-                  leftIcon={<FloppyDisk size={16} />}
+                  leftSection={<FloppyDisk size={16} />}
                   style={{ backgroundColor: "#2185d0", color: "#fff" }} // Custom button styling
                 >
                   Save

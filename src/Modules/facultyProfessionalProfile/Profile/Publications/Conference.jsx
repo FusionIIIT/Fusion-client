@@ -55,7 +55,6 @@ export default function Conference() {
       const res = await axios.get(getConferenceRoute, {
         params: { pfNo },
       });
-      console.log(res.data);
       setTableData(res.data);
     } catch (error) {
       console.error(error);
@@ -115,7 +114,6 @@ export default function Conference() {
   const handleDelete = async (achievement) => {
     if (window.confirm("Are you sure you want to delete this Conference?")) {
       try {
-        // console.log(achievement)
         await axios.post(
           deleteResearchPaperRoute,
           new URLSearchParams({ pk: achievement }),
@@ -217,7 +215,7 @@ export default function Conference() {
                 <FileInput
                   label="Conference File"
                   placeholder="Choose File"
-                  icon={<UploadSimple size={14} />}
+                  leftSection={<UploadSimple size={14} />}
                   value={inputs.conferenceFile}
                   onChange={(file) =>
                     setInputs({ ...inputs, conferenceFile: file })
@@ -372,7 +370,7 @@ export default function Conference() {
                 <Button
                   type="submit"
                   loading={isLoading}
-                  leftIcon={<FloppyDisk size={16} />}
+                  leftSection={<FloppyDisk size={16} />}
                 >
                   Save
                 </Button>
@@ -419,7 +417,7 @@ export default function Conference() {
                           variant="filled"
                           color="blue"
                           size="xs"
-                          leftIcon={<Pencil size={14} />}
+                          leftSection={<Pencil size={14} />}
                           onClick={() => handleEdit(data)}
                           mr="xs"
                         >
@@ -429,7 +427,7 @@ export default function Conference() {
                           variant="filled"
                           color="red"
                           size="xs"
-                          leftIcon={<Trash size={14} />}
+                          leftSection={<Trash size={14} />}
                           onClick={() => handleDelete(data.id)}
                         >
                           Delete

@@ -267,7 +267,6 @@ export default function GradeSummary() {
   return (
     <Card shadow="sm" p="md" radius="md" withBorder>
       <Paper p="md" style={{ position: "relative" }}>
-        <h1>Grade Summary</h1>
 
         {error && (
           <Alert
@@ -332,7 +331,7 @@ export default function GradeSummary() {
           selectedSemesterType &&
           !loading &&
           gradeSummaryData.length > 0 && (
-            <Stack spacing="md" mt="md">
+            <Stack gap="md" mt="md">
               <Group justify="space-between" align="center">
                 <Text fw={600}>
                   Grade Summary - {selectedAcademicYear} ({selectedSemesterType}
@@ -361,7 +360,7 @@ export default function GradeSummary() {
           gradeSummaryData.length === 0 && (
             <Paper mt="xl" p="xl" withBorder>
               <Center>
-                <Stack align="center" spacing="md">
+                <Stack align="center" gap="md">
                   <Text size="lg" fw={500} c="dimmed">
                     No grades submitted yet
                   </Text>

@@ -221,7 +221,7 @@ function ExaminerList({
       {!readOnly && (
         <Button
           variant="outline"
-          leftIcon={<IconPlus size={16} />}
+          leftSection={<IconPlus size={16} />}
           onClick={onAdd}
           fullWidth
           style={{ borderStyle: "dashed" }}
@@ -405,7 +405,7 @@ export default function DirectorPrioritiesPanel({
       <Divider my="md" />
 
       <Group justify="space-between">
-        <Text size="sm" color="dimmed">
+        <Text size="sm" c="dimmed">
           {indian.length} Indian &middot; {foreign.length} Foreign selected
         </Text>
         <Group>

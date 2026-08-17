@@ -1,0 +1,12 @@
+.list {
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+.item {
+  padding-left: 2px;
+}
+
+.item + .item {
+  margin-top: 3px;
+}

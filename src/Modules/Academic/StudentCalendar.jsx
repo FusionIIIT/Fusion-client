@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
-import { Card, Table, Text, Loader, Center } from "@mantine/core";
+import { Card, Loader, Center } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import axios from "axios";
+import FusionTable from "../../components/FusionTable";
+import { formatWhen } from "../../lib/datetime";
 import { studentCalenderRoute } from "../../routes/academicRoutes";
+
+const COLUMNS = ["Event", "Starts", "Ends"];
 
 function StudentCalendar() {
   const [calendarEvents, setCalendarEvents] = useState([]);
@@ -23,10 +27,8 @@ function StudentCalendar() {
           },
         });
 
-        setCalendarEvents(response.data.calendar_events);
+        setCalendarEvents(response.data.calendar_events || []);
       } catch (error) {
-        console.error("Error fetching calendar:", error);
-
         showNotification({
           title: "Error",
           message: "Failed to fetch calendar data. Please try again.",
@@ -40,36 +42,27 @@ function StudentCalendar() {
     fetchCalendar();
   }, []);
 
-  const rows = calendarEvents.map((event, index) => (
-    <tr key={index}>
-      <td>{event.from_date}</td>
-      <td>{event.to_date}</td>
-      <td>{event.description}</td>
-    </tr>
-  ));
+  if (loading) {
+    return (
+      <Center py="xl">
+        <Loader variant="dots" />
+      </Center>
+    );
+  }
 
   return (
-    <Card>
-      <Text align="center" size="lg" weight={700} color="blue" mb="md">
-        Academic Calendar
-      </Text>
-
-      {loading ? (
-        <Center>
-          <Loader variant="dots" />
-        </Center>
-      ) : (
-        <Table>
-          <thead>
-            <tr>
-              <th>From</th>
-              <th>To</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>{rows}</tbody>
-        </Table>
-      )}
+    <Card shadow="sm" p="lg" radius="md" withBorder>
+      <FusionTable
+        columnNames={COLUMNS}
+        ariaLabel="Academic calendar"
+        emptyMessage="No calendar events found."
+        elements={calendarEvents.map((event, index) => ({
+          id: event.id ?? index,
+          Event: event.description,
+          Starts: formatWhen(event.from_date, event.from_time),
+          Ends: formatWhen(event.to_date, event.to_time),
+        }))}
+      />
     </Card>
   );
 }

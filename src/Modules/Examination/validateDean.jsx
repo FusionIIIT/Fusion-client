@@ -14,7 +14,7 @@ import {
 } from "@mantine/core";
 import { useSelector } from "react-redux";
 import axios from "axios";
-import "./styles/submit.css";
+import styles from "./styles/submit.module.css";
 import {validate_dean,validate_dean_submit} from "./routes/examinationRoutes"
 function ValidateDean() {
   const [courses, setCourses] = useState([]);
@@ -137,6 +137,7 @@ function ValidateDean() {
   return (
     <Container
       size="xl"
+      className={styles.page}
       style={{
         borderRadius: "15px",
         padding: "0 20px",
@@ -216,7 +217,7 @@ function ValidateDean() {
           </small>
         </Box>
 
-        <Box mt="md" className="btn-div">
+        <Box mt="md" className={styles["btn-div"]}>
           <Button
             size="sm"
             color={isFormComplete() ? "blue" : "gray"}

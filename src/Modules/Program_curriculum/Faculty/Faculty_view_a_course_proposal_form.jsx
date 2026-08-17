@@ -8,49 +8,12 @@ function Faculty_view_a_course_proposal_form() {
   // Get the 'id' query parameter
   const id = searchParams.get("proposalid");
   const update = searchParams.get("update");
-  console.log(update)
   const courseProposals = JSON.parse(
     sessionStorage.getItem(update === "0" ? "courseProposals" : "updateProposals")
   );
   const courseProposal = courseProposals.find(
     (proposal) => proposal.pk === parseInt(id, 10),
   );
-  console.log(courseProposal);
-  const courseProposalData = Object.entries(courseProposal.fields);
-  console.log(courseProposalData.length);
-
-  const courseDetails = {
-    createdBy: "atul",
-    code: "CS101",
-    name: "Introduction to Computer Science",
-    version: "1.0",
-    contactHours: {
-      lecture: "3hrs",
-      tutorial: "1hr",
-      lab: "2hrs",
-      discussion: "1hr",
-      project: "1hr",
-    },
-    credits: "3",
-    // prerequisites: 'None',
-    prerequisites: { Info: "none", Courses: "none" },
-    syllabus: `Introduction to Computer Science, Programming Fundamentals, Data Structures, Algorithms, Basic OOP Concepts.`,
-    evaluationSchema: {
-      quiz1: "5%",
-      midSem: "25%",
-      quiz2: "5%",
-      endSem: "40%",
-      project: "10%",
-      labEvaluation: "10%",
-      attendance: "5%",
-    },
-    references: [
-      "Introduction to Computer Science by John Doe",
-      "Data Structures and Algorithms by Jane Smith",
-      "Object-Oriented Programming in Java by Alan Turing",
-    ],
-  };
-  console.log(courseDetails);
 
   return (
     <div
@@ -60,7 +23,7 @@ function Faculty_view_a_course_proposal_form() {
       {/* Course Details Card */}
       <div style={{ display: "flex",width: "100%", justifyContent: "center" }}>
         <Card shadow="sm" padding="lg" className="course-card">
-          <Text size="lg" weight={700} className="course-title">
+          <Text size="lg" fw={700} className="course-title">
             {courseProposal.fields.code} - {courseProposal.fields.name}
           </Text>
           <Table className="course-table" striped highlightOnHover>

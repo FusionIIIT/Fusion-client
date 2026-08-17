@@ -54,7 +54,6 @@ export default function Journal() {
       const res = await axios.get(getJournalRoute, {
         params: { pfNo },
       });
-      // console.log(res.data);
       setTableData(res.data);
     } catch (error) {
       console.error(error);
@@ -115,7 +114,6 @@ export default function Journal() {
   const handleDelete = async (achievement) => {
     if (window.confirm("Are you sure you want to delete this Journal?")) {
       try {
-        // console.log(achievement)
         await axios.post(
           deleteResearchPaperRoute,
           new URLSearchParams({ pk: achievement }),
@@ -256,7 +254,7 @@ export default function Journal() {
                   type="submit"
                   mt="md"
                   loading={isLoading}
-                  leftIcon={<FloppyDisk size={16} />}
+                  leftSection={<FloppyDisk size={16} />}
                   style={{ backgroundColor: "#2185d0", color: "#fff" }} // Custom button styling
                 >
                   {inputs.id ? "Update" : "Save"}
@@ -361,7 +359,7 @@ export default function Journal() {
                   type="submit"
                   mt="md"
                   loading={isLoading}
-                  leftIcon={<FloppyDisk size={16} />}
+                  leftSection={<FloppyDisk size={16} />}
                   style={{ backgroundColor: "#2185d0", color: "#fff" }} // Custom button styling
                 >
                   {inputs.id ? "Update" : "Save"}
@@ -447,7 +445,7 @@ export default function Journal() {
                       <Button
                         variant="subtle"
                         color="blue"
-                        leftIcon={<PencilSimple size={16} />}
+                        leftSection={<PencilSimple size={16} />}
                         onClick={() => handleEdit(project)}
                       >
                         Edit
@@ -455,7 +453,7 @@ export default function Journal() {
                       <Button
                         variant="subtle"
                         color="red"
-                        leftIcon={<Trash size={16} />}
+                        leftSection={<Trash size={16} />}
                         onClick={() => handleDelete(project.id)}
                       >
                         Delete

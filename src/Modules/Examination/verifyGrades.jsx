@@ -319,9 +319,6 @@ function VerifyGrades() {
   return (
     <Card shadow="sm" p="md" radius="md" withBorder>
       <Paper p="md" style={{ position: "relative" }}>
-        <h1>
-          Verify Grades
-        </h1>
         {error && (
           <Alert color="red" mb="md" title="Error" onClose={() => setError(null)}>
             {error}
@@ -393,8 +390,8 @@ function VerifyGrades() {
             {registrations.length > 0 ? (
               <Table striped highlightOnHover captionSide="top" mt="md">
                 <caption>
-                  <Group position="apart">
-                    <Text size="lg" weight={500}>
+                  <Group justify="space-between">
+                    <Text size="lg" fw={500}>
                       {selectedCourseName} - {selectedAcademicYear} ({registrations.length} students)
                     </Text>
                     <Badge color={isAlreadyVerified ? "green" : "blue"} size="md">
@@ -415,7 +412,7 @@ function VerifyGrades() {
                 <tbody>{rows}</tbody>
               </Table>
             ) : (
-              <Text align="center" color="dimmed" mt="md">
+              <Text ta="center" c="dimmed" mt="md">
                 No records found
               </Text>
             )}

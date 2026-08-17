@@ -199,7 +199,7 @@ function Admin_edit_batch_form() {
   }
 
   if (error) {
-    return <Text color="red">{error}</Text>;
+    return <Text c="red">{error}</Text>;
   }
 
   return (
@@ -236,8 +236,8 @@ function Admin_edit_batch_form() {
                 boxShadow: "0 0 10px rgba(0,0,0,0.1)",
               }}
             >
-              <Stack spacing="lg">
-                <Text size="xl" weight={700} align="center">
+              <Stack gap="lg">
+                <Text size="xl" fw={700} ta="center">
                   Edit Batch Form
                 </Text>
 
@@ -305,7 +305,7 @@ function Admin_edit_batch_form() {
                 />
               </Stack>
 
-              <Group position="right" mt="lg">
+              <Group justify="flex-end" mt="lg">
                 <Button
                   variant="outline"
                   className="cancel-btn"

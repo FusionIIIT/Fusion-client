@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
   Card,
-  Title,
   Select,
   Table,
   Button,
@@ -57,10 +56,6 @@ export default function AcademicOfficeComprehensiveExamList() {
 
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
-      <Title order={3} mb="md">
-        Comprehensive Exam — Eligibility Verification
-      </Title>
-
       <Select
         label="Status"
         data={Object.entries(EXAM_STATUS_LABEL).map(([value, label]) => ({

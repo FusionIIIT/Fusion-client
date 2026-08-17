@@ -166,7 +166,7 @@ function Admin_add_batch_form() {
             <Text size="sm" mb={8}>
               <strong>{err.message || "Unable to create batch. Please try again."}</strong>
             </Text>
-            <Text size="xs" color="gray.7">
+            <Text size="xs" c="gray.7">
               Please check your inputs and try again.
             </Text>
           </div>
@@ -188,7 +188,7 @@ function Admin_add_batch_form() {
   }
 
   if (error) {
-    return <Text color="red">{error}</Text>;
+    return <Text c="red">{error}</Text>;
   }
 
   return (
@@ -208,7 +208,7 @@ function Admin_add_batch_form() {
         {/* Buttons Section for Mobile Layout */}
         {isMobile && (
           <Group
-            spacing="md"
+            gap="md"
             direction="column"
             style={{ width: "100%", marginTop: "1rem", paddingLeft: "2rem" }}
           >
@@ -253,8 +253,8 @@ function Admin_add_batch_form() {
                 boxShadow: "0 0 10px rgba(0,0,0,0.1)",
               }}
             >
-              <Stack spacing="lg">
-                <Text size="xl" weight={700} align="center">
+              <Stack gap="lg">
+                <Text size="xl" fw={700} ta="center">
                   Batch Form
                 </Text>
 
@@ -325,7 +325,7 @@ function Admin_add_batch_form() {
                 />
               </Stack>
 
-              <Group position="right" mt="lg">
+              <Group justify="flex-end" mt="lg">
                  <Button
                                                         variant="outline"
                                                         className="cancel-btn"
@@ -350,7 +350,7 @@ function Admin_add_batch_form() {
                 justifyContent: "flex-start",
               }}
             >
-              <Group spacing="md" direction="column" style={{ width: "100%" }}>
+              <Group gap="md" direction="column" style={{ width: "100%" }}>
                 <Link
                   to="/programme_curriculum/acad_admin_add_curriculum_form"
                   style={{ textDecoration: "none" }}

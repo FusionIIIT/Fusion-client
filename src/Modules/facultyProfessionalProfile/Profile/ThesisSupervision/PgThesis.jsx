@@ -82,12 +82,10 @@ export default function PgThesis() {
       formData.append("title", inputs.title);
 
       if (isEdit === false) {
-        const res = await axios.post(insertPGThesisRoute, formData);
-        console.log(res.data);
+        await axios.post(insertPGThesisRoute, formData);
       } else {
         formData.append("pg_id", Id);
-        const res = await axios.post(insertPGThesisRoute, formData);
-        console.log(res.data);
+        await axios.post(insertPGThesisRoute, formData);
         setEdit(false);
         setId(0);
       }
@@ -105,7 +103,6 @@ export default function PgThesis() {
         supervisor: "",
       });
     } catch (error) {
-      console.log(error);
       setError("Failed to submit data. Please try again."); // Set error message
     } finally {
       setIsLoading(false);
@@ -128,7 +125,6 @@ export default function PgThesis() {
   };
 
   const handleDelete = async (projectId) => {
-    console.log(projectId);
     if (window.confirm("Are you sure you want to delete this Thesis?")) {
       try {
         await axios.post(
@@ -282,7 +278,7 @@ export default function PgThesis() {
                   type="submit"
                   mt="md"
                   loading={isLoading}
-                  leftIcon={<FloppyDisk size={16} />}
+                  leftSection={<FloppyDisk size={16} />}
                   style={{ backgroundColor: "#2185d0", color: "#fff" }} // Custom button styling
                 >
                   Save

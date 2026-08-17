@@ -96,7 +96,7 @@ function HindiKeyboard({ value, onChange }) {
       shadow="md"
       withinPortal
       middlewares={{ flip: true, shift: true }}
-      width={isMobile ? "calc(100vw - 32px)" : 340}
+      width={isMobile ? "100%" : 340}
     >
       <Popover.Target>
         <ActionIcon

@@ -157,37 +157,37 @@ export default function DeanReviewModal({ thesis, onClose, refresh }) {
           <tbody>
             <tr>
               <td>
-                <Text weight={500}>Roll No</Text>
+                <Text fw={500}>Roll No</Text>
               </td>
               <td>{form.student_roll}</td>
             </tr>
             <tr>
               <td>
-                <Text weight={500}>Name</Text>
+                <Text fw={500}>Name</Text>
               </td>
               <td>{form.student_name}</td>
             </tr>
             <tr>
               <td>
-                <Text weight={500}>Discipline</Text>
+                <Text fw={500}>Discipline</Text>
               </td>
               <td>{form.student_discipline}</td>
             </tr>
             <tr>
               <td>
-                <Text weight={500}>Category</Text>
+                <Text fw={500}>Category</Text>
               </td>
               <td>{form.category}</td>
             </tr>
             <tr>
               <td>
-                <Text weight={500}>Broad Area</Text>
+                <Text fw={500}>Broad Area</Text>
               </td>
               <td>{form.broad_area}</td>
             </tr>
             <tr>
               <td>
-                <Text weight={500}>Research Theme</Text>
+                <Text fw={500}>Research Theme</Text>
               </td>
               <td>
                 <Textarea
@@ -202,25 +202,25 @@ export default function DeanReviewModal({ thesis, onClose, refresh }) {
               <>
                 <tr>
                   <td>
-                    <Text weight={500}>External Supervisor</Text>
+                    <Text fw={500}>External Supervisor</Text>
                   </td>
                   <td>{form.external.ext_name}</td>
                 </tr>
                 <tr>
                   <td>
-                    <Text weight={500}>Email</Text>
+                    <Text fw={500}>Email</Text>
                   </td>
                   <td>{form.external.ext_email}</td>
                 </tr>
                 <tr>
                   <td>
-                    <Text weight={500}>Discipline</Text>
+                    <Text fw={500}>Discipline</Text>
                   </td>
                   <td>{form.external.ext_discipline}</td>
                 </tr>
                 <tr>
                   <td>
-                    <Text weight={500}>Institution</Text>
+                    <Text fw={500}>Institution</Text>
                   </td>
                   <td>{form.external.ext_institution}</td>
                 </tr>
@@ -229,7 +229,7 @@ export default function DeanReviewModal({ thesis, onClose, refresh }) {
           </tbody>
         </Table>
 
-        <Text weight={500}>Supervisor Load</Text>
+        <Text fw={500}>Supervisor Load</Text>
         <Table striped highlightOnHover>
           <thead>
             <tr>
@@ -242,7 +242,7 @@ export default function DeanReviewModal({ thesis, onClose, refresh }) {
             {["PG", "PhD"].map((cat) => (
               <tr key={cat}>
                 <td>
-                  <Text weight={500}>{cat}</Text>
+                  <Text fw={500}>{cat}</Text>
                 </td>
                 <td>{form.load[`${cat.toLowerCase()}_single`]}</td>
                 <td>{form.load[`${cat.toLowerCase()}_shared`]}</td>
@@ -251,7 +251,7 @@ export default function DeanReviewModal({ thesis, onClose, refresh }) {
           </tbody>
         </Table>
 
-        <Text weight={500}>RPC Committee Members</Text>
+        <Text fw={500}>RPC Committee Members</Text>
         <Table striped highlightOnHover>
           <thead>
             <tr>
@@ -271,10 +271,10 @@ export default function DeanReviewModal({ thesis, onClose, refresh }) {
 
         {form.dean_remarks && (
           <Text
-            color="blue"
+            c="blue"
             style={{ backgroundColor: "#e6f0ff", padding: 10, borderRadius: 4 }}
           >
-            <Text weight={500} component="span">
+            <Text fw={500} component="span">
               Existing Dean's Remarks:
             </Text>{" "}
             {form.dean_remarks}

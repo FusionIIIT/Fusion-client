@@ -68,12 +68,10 @@ export default function ExpertLecturesForm() {
       formData.append("l_date", inputs.date);
 
       if (isEdit === false) {
-        const res = await axios.post(insertTalkRoute, formData);
-        console.log(res.data);
+        await axios.post(insertTalkRoute, formData);
       } else {
         formData.append("lec_id", Id);
-        const res = await axios.post(insertTalkRoute, formData);
-        console.log(res.data);
+        await axios.post(insertTalkRoute, formData);
         setEdit(false);
         setId(0);
       }
@@ -229,7 +227,7 @@ export default function ExpertLecturesForm() {
                   type="submit"
                   mt="md"
                   loading={isLoading}
-                  leftIcon={<FloppyDisk size={16} />}
+                  leftSection={<FloppyDisk size={16} />}
                   style={{ backgroundColor: "#2185d0", color: "#fff" }} // Custom button styling
                 >
                   Save

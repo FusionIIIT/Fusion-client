@@ -105,7 +105,7 @@ export default function ViewBooks() {
   //           PG Thesis
   //         </Title>
   //         {error && (
-  //           <Text color="red" mb="sm">
+  //           <Text c="red" mb="sm">
   //             {error}
   //           </Text>
   //         )}
@@ -172,7 +172,7 @@ export default function ViewBooks() {
           </Title>
 
           {error && (
-            <Text color="red" mb="sm" style={{ textAlign: "center" }}>
+            <Text c="red" mb="sm" style={{ textAlign: "center" }}>
               {error}
             </Text>
           )}

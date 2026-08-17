@@ -318,7 +318,7 @@ export default function VerifyDean() {
       {error   && <Alert color="red"  mb="md">{error}</Alert>}
       {success && <Alert color="green" mb="md">{success}</Alert>}
 
-      <Stack spacing="md">
+      <Stack gap="md">
         <Select
           label="Academic Year"
           placeholder="e.g. 2023-24"
@@ -378,7 +378,7 @@ export default function VerifyDean() {
           </ScrollArea>
 
           <Box my="lg">
-            <Text weight={500}>Grade Distribution</Text>
+            <Text fw={500}>Grade Distribution</Text>
             <ResponsiveContainer width="100%" height={200}>
               <PieChart>
                 <Pie
@@ -398,7 +398,7 @@ export default function VerifyDean() {
             </ResponsiveContainer>
           </Box>
 
-          <Group position="apart" mb="md">
+          <Group justify="space-between" mb="md">
             <Switch
               label="Allow Resubmission"
               checked={allowResub}
@@ -457,7 +457,7 @@ export default function VerifyDean() {
             </tbody>
           </Table>
         </ScrollArea>
-        <Group position="right" mt="md">
+        <Group justify="flex-end" mt="md">
           <Button variant="default" onClick={() => setConfirmOpen(false)}>
             Cancel
           </Button>

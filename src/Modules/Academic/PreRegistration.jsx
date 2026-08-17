@@ -13,86 +13,69 @@ import {
   preCourseRegistrationRoute,
   preCourseRegistrationSubmitRoute,
 } from "../../routes/academicRoutes";
+import { errorMessage } from "../../lib/errors";
+import { courseLabel } from "../../lib/course";
+import SlotCard from "./components/SlotCard";
+import SlotRow from "./components/SlotRow";
+import SlotSelect from "./components/SlotSelect";
 
-const CourseRow = memo(
+const slotMeta = (slot) => `${slot.slot_type} · Semester ${slot.semester}`;
+
+const prevRegLabel = (reg) =>
+  `${courseLabel(reg.course_id)} · Semester ${reg.semester_id?.semester_no ?? "—"}`;
+
+const PriorityRow = memo(
   ({
-    rowData,
-    onPriorityChange,
+    slotId,
+    course,
+    slotLength,
     priorityValue,
     slotPriorities,
-    slotRowSpan,
+    onPriorityChange,
     readOnly,
   }) => {
-    const {
-      isFirst,
-      slotName,
-      slotType,
-      semester,
-      slotId,
-      course,
-      slotLength,
-    } = rowData;
+    const takenByOthers = new Set(
+      Object.entries(slotPriorities)
+        .filter(([courseId]) => courseId !== String(course.id))
+        .map(([, value]) => value),
+    );
 
-    const options = Array.from({ length: slotLength }, (_, i) => {
-      const optionValue = `${i + 1}`;
-      let isDisabled = false;
-      if (slotPriorities) {
-        Object.entries(slotPriorities).forEach(([cId, val]) => {
-          if (cId !== course.id.toString() && val === optionValue) {
-            isDisabled = true;
-          }
-        });
-      }
-      return (
-        <option key={optionValue} value={optionValue} disabled={isDisabled}>
-          {optionValue}
-        </option>
-      );
+    const options = Array.from({ length: slotLength }, (_, index) => {
+      const value = String(index + 1);
+      return { value, label: value, disabled: takenByOthers.has(value) };
     });
 
     return (
-      <tr>
-        {isFirst && (
-          <td style={{ border: "1px solid #ccc", padding: "8px", textAlign: "center" }} rowSpan={slotRowSpan}>
-            {slotName} <br />({slotType}, Sem: {semester})
-          </td>
-        )}
-        <td style={{ border: "1px solid #ccc", padding: "8px" }}>
-          {course.code}: {course.name} ({course.credits} credits)
-        </td>
-        <td style={{ border: "1px solid #ccc", padding: "8px", textAlign: "center" }}>
-          {readOnly ? (
-            <Text>{priorityValue || "Not Selected"}</Text>
+      <SlotRow
+        primary={courseLabel(course)}
+        secondary={`${course.credits} credits`}
+        control={
+          readOnly ? (
+            <Text size="sm" fw={600}>
+              {priorityValue || "Not selected"}
+            </Text>
           ) : (
-            <select
-              value={priorityValue || ""}
-              onChange={(e) =>
-                onPriorityChange(slotId, course.id, e.target.value)
-              }
-              style={{
-                width: "120px",
-                padding: "4px",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-                backgroundColor: "#fff",
-              }}
-            >
-              <option value="">Select</option>
-              {options}
-            </select>
-          )}
-        </td>
-      </tr>
+            <SlotSelect
+              label={`Priority for ${courseLabel(course)}`}
+              placeholder="Select priority"
+              value={priorityValue}
+              onChange={(value) => onPriorityChange(slotId, course.id, value)}
+              options={options}
+            />
+          )
+        }
+      />
     );
   },
-  (prevProps, nextProps) =>
-    prevProps.priorityValue === nextProps.priorityValue &&
-    prevProps.rowData === nextProps.rowData &&
-    JSON.stringify(prevProps.slotPriorities) === JSON.stringify(nextProps.slotPriorities) &&
-    prevProps.readOnly === nextProps.readOnly
+  (prev, next) =>
+    prev.priorityValue === next.priorityValue &&
+    prev.course === next.course &&
+    prev.slotLength === next.slotLength &&
+    prev.readOnly === next.readOnly &&
+    JSON.stringify(prev.slotPriorities) === JSON.stringify(next.slotPriorities),
 );
 
-const BacklogCourseRow = ({
+function BacklogCourseRow({
   slot,
   selectedCourseId,
   selectedPrevRegId,
@@ -101,75 +84,64 @@ const BacklogCourseRow = ({
   usedCourseIds,
   usedPrevRegIds,
   readOnly = false,
-}) => {
+}) {
   const selectedCourse = slot.course_choices.find(
-    (c) => c.id.toString() === selectedCourseId
+    (c) => c.id.toString() === selectedCourseId,
   );
   const selectedPrevReg = slot.prev_registrations.find(
-    (r) => r.id.toString() === selectedPrevRegId
+    (r) => r.id.toString() === selectedPrevRegId,
   );
 
   return (
-    <tr>
-      <td style={{ border: "1px solid #ccc", padding: "8px" }}>
-        {slot.slot_name}
-      </td>
-      <td style={{ border: "1px solid #ccc", padding: "8px" }}>
-        {readOnly ? (
-          selectedCourse ? (
-            `${selectedCourse.code} - ${selectedCourse.name}`
+    <SlotCard name={slot.slot_name}>
+      <SlotRow
+        primary="Course"
+        secondary={readOnly && !selectedCourse ? "Not selected" : null}
+        control={
+          readOnly ? (
+            <Text size="sm">
+              {selectedCourse ? courseLabel(selectedCourse) : "—"}
+            </Text>
           ) : (
-            "Not selected"
+            <SlotSelect
+              label={`Backlog course for ${slot.slot_name}`}
+              placeholder="Select course"
+              value={selectedCourseId}
+              onChange={(value) => onSelectCourse(slot.sno, value)}
+              options={slot.course_choices.map((course) => ({
+                value: String(course.id),
+                label: courseLabel(course),
+                disabled: usedCourseIds.includes(course.id.toString()),
+              }))}
+            />
           )
-        ) : (
-          <select
-            value={selectedCourseId || ""}
-            onChange={(e) => onSelectCourse(slot.sno, e.target.value)}
-            style={{width:'100%'}}
-          >
-            <option value="">Select Course</option>
-            {slot.course_choices.map((course) => (
-              <option
-                key={course.id}
-                value={course.id}
-                disabled={usedCourseIds.includes(course.id.toString())}
-              >
-                {course.code} - {course.name}
-              </option>
-            ))}
-          </select>
-        )}
-      </td>
-      <td style={{ border: "1px solid #ccc", padding: "8px" }}>
-        {readOnly ? (
-          selectedPrevReg ? (
-            `${selectedPrevReg.course_id.code} - ${selectedPrevReg.course_id.name} - sem - ${selectedPrevReg.semester_id?.semester_no}`
+        }
+      />
+      <SlotRow
+        primary="Previous registration"
+        control={
+          readOnly ? (
+            <Text size="sm">
+              {selectedPrevReg ? prevRegLabel(selectedPrevReg) : "Not selected"}
+            </Text>
           ) : (
-            "Not selected"
+            <SlotSelect
+              label={`Previous registration for ${slot.slot_name}`}
+              placeholder="Select previous registration"
+              value={selectedPrevRegId}
+              onChange={(value) => onSelectPrevReg(slot.sno, value)}
+              options={slot.prev_registrations.map((reg) => ({
+                value: String(reg.id),
+                label: prevRegLabel(reg),
+                disabled: usedPrevRegIds.includes(reg.id.toString()),
+              }))}
+            />
           )
-        ) : (
-          <select
-            value={selectedPrevRegId || ""}
-            onChange={(e) => onSelectPrevReg(slot.sno, e.target.value)}
-            style={{width:'100%'}}
-          >
-            <option value="">Select Previous Registration</option>
-            {slot.prev_registrations.map((reg) => (
-              <option
-                key={reg.id}
-                value={reg.id}
-                disabled={usedPrevRegIds.includes(reg.id.toString())}
-              >
-                {reg.course_id.code} - {reg.course_id.name} - sem -{" "}
-                {reg.semester_id?.semester_no}
-              </option>
-            ))}
-          </select>
-        )}
-      </td>
-    </tr>
+        }
+      />
+    </SlotCard>
   );
-};
+}
 
 function PreRegistration() {
   const [coursesData, setCoursesData] = useState([]);
@@ -191,14 +163,16 @@ function PreRegistration() {
       return;
     }
     try {
-      setLoading(true)
+      setLoading(true);
       const response = await axios.get(preCourseRegistrationRoute, {
         headers: { Authorization: `Token ${token}` },
       });
 
       if (response.data.message) {
         setAlreadyRegistered(true);
-        setCoursesData(response.data.data.filter((slot)=> !slot.slot_name.startsWith('BL')))
+        setCoursesData(
+          response.data.data.filter((slot) => !slot.slot_name.startsWith("BL")),
+        );
         setBacklogSlotsReg(response.data.backlog_data);
         const newPriorities = {};
         response.data.data.forEach((slot) => {
@@ -212,8 +186,12 @@ function PreRegistration() {
         });
         setPriorities(newPriorities);
       } else {
-        setCoursesData(response.data.filter((slot) => slot.slot_type !== "Backlog"));
-        setBacklogSlots(response.data.filter((slot) => slot.slot_type === "Backlog"));
+        setCoursesData(
+          response.data.filter((slot) => slot.slot_type !== "Backlog"),
+        );
+        setBacklogSlots(
+          response.data.filter((slot) => slot.slot_type === "Backlog"),
+        );
       }
     } catch (fetchError) {
       setError(fetchError?.response?.data?.error);
@@ -261,7 +239,8 @@ function PreRegistration() {
       if (slot.slot_type === "Optional") return true;
       const slotPriorities = priorities[slot.sno] || {};
       return slot.course_choices.every(
-        (course) => slotPriorities[course.id] && slotPriorities[course.id] !== ""
+        (course) =>
+          slotPriorities[course.id] && slotPriorities[course.id] !== "",
       );
     });
 
@@ -288,17 +267,21 @@ function PreRegistration() {
       slot.course_choices.forEach((course) => {
         const priority = slotPriorities[course.id];
         // Skip optional courses that were not selected
-        if (slot.slot_type === "Optional" && (!priority || priority === "")) return;
+        if (slot.slot_type === "Optional" && (!priority || priority === ""))
+          return;
         registrations.push({
           slot_id: slot.sno,
           course_id: course.id,
-          priority: priority,
+          priority,
         });
       });
     });
 
     const backlogRegistrations = Object.entries(backlogSelections)
-      .filter(([_, { courseId, prevRegistrationId }]) => courseId && prevRegistrationId)
+      .filter(
+        ([_, { courseId, prevRegistrationId }]) =>
+          courseId && prevRegistrationId,
+      )
       .map(([slotId, { courseId, prevRegistrationId }]) => ({
         slot_id: parseInt(slotId),
         course_id: parseInt(courseId),
@@ -318,7 +301,7 @@ function PreRegistration() {
             "Content-Type": "application/json",
             Authorization: `Token ${token}`,
           },
-        }
+        },
       );
       if (response.status === 200 || response.status === 201) {
         fetchCourses();
@@ -330,26 +313,12 @@ function PreRegistration() {
     }
   };
 
-  const rows = [];
-  let serialNumber = 1;
-  coursesData.forEach((slot) => {
-    const slotLength = slot.course_choices.length;
-    slot.course_choices.forEach((course, index) => {
-      rows.push({
-        serial: index === 0 ? serialNumber++ : "",
-        isFirst: index === 0,
-        slotId: slot.sno,
-        slotName: slot.slot_name,
-        slotType: slot.slot_type,
-        semester: slot.semester,
-        slotLength,
-        course,
-      });
-    });
-  });
-
-  const usedCourseIds = Object.values(backlogSelections).map((s) => s.courseId).filter(Boolean);
-  const usedPrevRegIds = Object.values(backlogSelections).map((s) => s.prevRegistrationId).filter(Boolean);
+  const usedCourseIds = Object.values(backlogSelections)
+    .map((s) => s.courseId)
+    .filter(Boolean);
+  const usedPrevRegIds = Object.values(backlogSelections)
+    .map((s) => s.prevRegistrationId)
+    .filter(Boolean);
 
   if (loading)
     return (
@@ -361,120 +330,97 @@ function PreRegistration() {
   if (error)
     return (
       <Alert color="yellow" title="Message" mb="lg">
-        {error}
+        {errorMessage(error)}
       </Alert>
     );
 
   return (
     <>
       <Card shadow="sm" p="lg" radius="md" withBorder>
-        <Text align="center" size="lg" weight={700} mb="md" color="blue">
-          Pre-Registration for Next Semester Courses
-        </Text>
-
         {alreadyRegistered && (
           <Alert color="blue" title="Already Registered" mb="lg">
-            You have already completed pre-registration. Your courses with assigned priorities are shown below.
+            You have already completed pre-registration. Your courses with
+            assigned priorities are shown below.
           </Alert>
         )}
 
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr>
-              <th style={{ border: "1px solid #ccc", padding: "8px" }}>Slot Name</th>
-              <th style={{ border: "1px solid #ccc", padding: "8px" }}>Course</th>
-              <th style={{ border: "1px solid #ccc", padding: "8px" }}>Priority</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, index) => (
-              <CourseRow
-                key={index}
-                rowData={row}
+        {coursesData.map((slot) => (
+          <SlotCard key={slot.sno} name={slot.slot_name} meta={slotMeta(slot)}>
+            {slot.course_choices.map((course) => (
+              <PriorityRow
+                key={course.id}
+                slotId={slot.sno}
+                course={course}
+                slotLength={slot.course_choices.length}
+                priorityValue={priorities[slot.sno]?.[course.id] || ""}
+                slotPriorities={priorities[slot.sno] || {}}
                 onPriorityChange={handlePriorityChange}
-                priorityValue={priorities[row.slotId]?.[row.course.id] || ""}
-                slotPriorities={priorities[row.slotId] || {}}
-                slotRowSpan={row.slotLength}
                 readOnly={alreadyRegistered}
               />
             ))}
-          </tbody>
-        </table>
-
+          </SlotCard>
+        ))}
 
         {alreadyRegistered && backlogSlotsReg.length > 0 && (
           <>
-            <Text weight={600} mt="lg"><b>Backlog Registrations</b></Text>
-            <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "0.5rem" }}>
-              <thead>
-                <tr>
-                  <th style={{ border: "1px solid #ccc", padding: "8px" }}>Slot</th>
-                  <th style={{ border: "1px solid #ccc", padding: "8px" }}>Course</th>
-                  <th style={{ border: "1px solid #ccc", padding: "8px" }}>Previous Registration</th>
-                </tr>
-              </thead>
-              <tbody>
-                {backlogSlotsReg.map((slot) => {
-                  const course = slot.course_choices?.[0];
-                  const prev = slot.prev_registration;
+            <Text fw={700} mt="lg" mb="sm">
+              Backlog Registrations
+            </Text>
+            {backlogSlotsReg.map((slot) => {
+              const course = slot.course_choices?.[0];
+              const prev = slot.prev_registration;
 
-                  return (
-                    <tr key={`backlog-${slot.sno}`}>
-                      <td style={{ border: "1px solid #ccc", padding: "8px" }}>{slot.slot_name}</td>
-                      <td style={{ border: "1px solid #ccc", padding: "8px" }}>
-                        {course ? `${course.code} - ${course.name}` : "Not selected"}
-                      </td>
-                      <td style={{ border: "1px solid #ccc", padding: "8px" }}>
-                        {prev && prev.code
-                          ? `${prev.code} - ${prev.name} (Sem ${prev.semester_no})`
-                          : "N/A"}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+              return (
+                <SlotCard key={`backlog-${slot.sno}`} name={slot.slot_name}>
+                  <SlotRow
+                    primary={course ? courseLabel(course) : "Not selected"}
+                    secondary="Course"
+                  />
+                  <SlotRow
+                    primary={
+                      prev?.code
+                        ? `${courseLabel(prev)} · Semester ${prev.semester_no}`
+                        : "N/A"
+                    }
+                    secondary="Previous registration"
+                  />
+                </SlotCard>
+              );
+            })}
           </>
         )}
 
         {!alreadyRegistered && backlogSlots.length > 0 && (
           <>
-            <Text mt="xl" size="lg" weight={600} color="blue">
+            <Text mt="xl" size="lg" fw={600} c="blue">
               Backlog Course Registration
             </Text>
-            <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "1rem" }}>
-              <thead>
-                <tr>
-                  <th style={{ border: "1px solid #ccc", padding: "8px" }}>Slot</th>
-                  <th style={{ border: "1px solid #ccc", padding: "8px" }}>Select Course</th>
-                  <th style={{ border: "1px solid #ccc", padding: "8px" }}>Select Previous Registration</th>
-                </tr>
-              </thead>
-              <tbody>
-                {backlogSlots.map((slot) => (
-                  <BacklogCourseRow
-                    key={slot.sno}
-                    slot={slot}
-                    selectedCourseId={backlogSelections[slot.sno]?.courseId || ""}
-                    selectedPrevRegId={backlogSelections[slot.sno]?.prevRegistrationId || ""}
-                    onSelectCourse={handleBacklogCourseChange}
-                    onSelectPrevReg={handleBacklogPrevRegChange}
-                    usedCourseIds={usedCourseIds}
-                    usedPrevRegIds={usedPrevRegIds}
-                    readOnly={alreadyRegistered}
-                  />
-                ))}
-              </tbody>
-            </table>
+            <div>
+              {backlogSlots.map((slot) => (
+                <BacklogCourseRow
+                  key={slot.sno}
+                  slot={slot}
+                  selectedCourseId={backlogSelections[slot.sno]?.courseId || ""}
+                  selectedPrevRegId={
+                    backlogSelections[slot.sno]?.prevRegistrationId || ""
+                  }
+                  onSelectCourse={handleBacklogCourseChange}
+                  onSelectPrevReg={handleBacklogPrevRegChange}
+                  usedCourseIds={usedCourseIds}
+                  usedPrevRegIds={usedPrevRegIds}
+                  readOnly={alreadyRegistered}
+                />
+              ))}
+            </div>
           </>
         )}
 
         {!alreadyRegistered && (
           <Button
-            mt="md"
-            style={{ backgroundColor: "#3B82F6", color: "#fff" }}
+            mt="lg"
+            fullWidth
             onClick={() => setConfirmModalOpen(true)}
-            disabled={!isFormComplete()||loading}
+            disabled={!isFormComplete() || loading}
           >
             Register
           </Button>
@@ -499,70 +445,58 @@ function PreRegistration() {
         title="Confirm Registration"
         size="xl"
       >
-        <Text weight={500} mb="sm"><b>Please review your selections before confirming:</b></Text>
-        <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "0.5rem" }}>
-          <thead>
-            <tr>
-              <th style={{ border: "1px solid #ccc", padding: "8px" }}>Slot Name</th>
-              <th style={{ border: "1px solid #ccc", padding: "8px" }}>Course</th>
-              <th style={{ border: "1px solid #ccc", padding: "8px" }}>Priority</th>
-            </tr>
-          </thead>
-          <tbody>
-            {coursesData.map((slot) =>
-              slot.course_choices.map((course, index) => (
-                <tr key={`${slot.sno}-${course.id}`}>
-                  {index === 0 && (
-                    <td
-                      rowSpan={slot.course_choices.length}
-                      style={{ border: "1px solid #ccc", padding: "8px", verticalAlign: "top" }}
-                    >
-                      {slot.slot_name}
-                    </td>
-                  )}
-                  <td style={{ border: "1px solid #ccc", padding: "8px" }}>
-                    {course.code} - {course.name}
-                  </td>
-                  <td style={{ border: "1px solid #ccc", padding: "8px", textAlign: "center" }}>
+        <Text fw={600} mb="sm">
+          Please review your selections before confirming:
+        </Text>
+        {coursesData.map((slot) => (
+          <SlotCard key={slot.sno} name={slot.slot_name} meta={slotMeta(slot)}>
+            {slot.course_choices.map((course) => (
+              <SlotRow
+                key={course.id}
+                primary={courseLabel(course)}
+                control={
+                  <Text size="sm" fw={600}>
                     {priorities[slot.sno]?.[course.id] || "Not selected"}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+                  </Text>
+                }
+              />
+            ))}
+          </SlotCard>
+        ))}
 
         {backlogSlots.length > 0 && (
           <>
-            <Text weight={600} mt="lg"><b>Backlog Registrations</b></Text>
-            <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "0.5rem" }}>
-              <thead>
-                <tr>
-                  <th style={{ border: "1px solid #ccc", padding: "8px" }}>Slot</th>
-                  <th style={{ border: "1px solid #ccc", padding: "8px" }}>Course</th>
-                  <th style={{ border: "1px solid #ccc", padding: "8px" }}>Previous Registration</th>
-                </tr>
-              </thead>
-              <tbody>
-                {backlogSlots.map((slot) => {
-                  const selection = backlogSelections[slot.sno];
-                  const selectedCourse = slot.course_choices.find((c) => c.id.toString() === selection?.courseId);
-                  const selectedPrev = slot.prev_registrations.find((r) => r.id.toString() === selection?.prevRegistrationId);
+            <Text fw={700} mt="lg" mb="sm">
+              Backlog Registrations
+            </Text>
+            {backlogSlots.map((slot) => {
+              const selection = backlogSelections[slot.sno];
+              const selectedCourse = slot.course_choices.find(
+                (c) => c.id.toString() === selection?.courseId,
+              );
+              const selectedPrev = slot.prev_registrations.find(
+                (r) => r.id.toString() === selection?.prevRegistrationId,
+              );
 
-                  return (
-                    <tr key={`backlog-${slot.sno}`}>
-                      <td style={{ border: "1px solid #ccc", padding: "8px" }}>{slot.slot_name}</td>
-                      <td style={{ border: "1px solid #ccc", padding: "8px" }}>
-                        {selectedCourse ? `${selectedCourse.code} - ${selectedCourse.name}` : "Not selected"}
-                      </td>
-                      <td style={{ border: "1px solid #ccc", padding: "8px" }}>
-                        {selectedPrev ? `Semester ${selectedPrev.semester_id?.semester_no}` : "Not selected"}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+              return (
+                <SlotCard key={`backlog-${slot.sno}`} name={slot.slot_name}>
+                  <SlotRow
+                    primary={
+                      selectedCourse
+                        ? courseLabel(selectedCourse)
+                        : "Not selected"
+                    }
+                    secondary="Course"
+                  />
+                  <SlotRow
+                    primary={
+                      selectedPrev ? prevRegLabel(selectedPrev) : "Not selected"
+                    }
+                    secondary="Previous registration"
+                  />
+                </SlotCard>
+              );
+            })}
           </>
         )}
 

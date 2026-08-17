@@ -1,54 +1,94 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Tabs, Table, Button, Group, Badge, Checkbox, Select, ActionIcon, Tooltip, Alert, Loader, Title, Box, Card, Stack } from '@mantine/core';
-import { IconDownload, IconCheck, IconX, IconArrowBackUp, IconTrash } from '@tabler/icons-react';
-import { showNotification } from '@mantine/notifications';
-import * as XLSX from 'xlsx';
-import { 
+import React, { useState, useEffect, useMemo } from "react";
+import {
+  Tabs,
+  Table,
+  Button,
+  Group,
+  Badge,
+  Checkbox,
+  Select,
+  ActionIcon,
+  Tooltip,
+  Alert,
+  Loader,
+  Title,
+  Box,
+  Card,
+  Stack,
+  Text,
+} from "@mantine/core";
+import {
+  IconDownload,
+  IconCheck,
+  IconX,
+  IconArrowBackUp,
+  IconTrash,
+} from "@tabler/icons-react";
+import { showNotification } from "@mantine/notifications";
+import * as XLSX from "xlsx";
+import {
   adminSwayamListRequestsRoute,
   adminSwayamApproveRoute,
   adminSwayamRejectRoute,
   adminSwayamRevertRoute,
-  adminSwayamDeleteRoute
-} from '../../routes/academicRoutes';
+  adminSwayamDeleteRoute,
+} from "../../routes/academicRoutes";
+import Stamp from "../../components/Stamp";
 
 const SEMESTER_CHOICES = [
-  { value: 'Odd Semester', label: 'Odd Semester' },
-  { value: 'Even Semester', label: 'Even Semester' },
-  { value: 'Summer Semester', label: 'Summer Semester' },
+  { value: "Odd Semester", label: "Odd Semester" },
+  { value: "Even Semester", label: "Even Semester" },
+  { value: "Summer Semester", label: "Summer Semester" },
 ];
 
 const generateAcademicYears = () => {
   const endYear = new Date().getFullYear();
   const years = [];
   for (let y = endYear; y >= 2020; y--) {
-    years.push({ value: `${y}-${String(y + 1).slice(-2)}`, label: `${y}-${String(y + 1).slice(-2)}` });
+    years.push({
+      value: `${y}-${String(y + 1).slice(-2)}`,
+      label: `${y}-${String(y + 1).slice(-2)}`,
+    });
   }
   return years;
 };
 
 const AdminSwayamDashboard = () => {
-  const [activeRequestTab, setActiveRequestTab] = useState('replace');
-  const [activeStatusTab, setActiveStatusTab] = useState('pending');
+  const [activeRequestTab, setActiveRequestTab] = useState("replace");
+  const [activeStatusTab, setActiveStatusTab] = useState("pending");
   const [requests, setRequests] = useState([]);
-  const [counts, setCounts] = useState({ pending: 0, approved: 0, rejected: 0, total: 0 });
+  const [counts, setCounts] = useState({
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+    total: 0,
+  });
   const [loading, setLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState([]);
-  const [academicYear, setAcademicYear] = useState('');
-  const [semesterType, setSemesterType] = useState('');
-  const [semesterNo, setSemesterNo] = useState('');
+  const [academicYear, setAcademicYear] = useState("");
+  const [semesterType, setSemesterType] = useState("");
+  const [semesterNo, setSemesterNo] = useState("");
   const academicYears = useMemo(() => generateAcademicYears(), []);
 
   // Distinct semesters in the current request list, for the semester-wise filter.
   const semesterOptions = useMemo(
-    () => Array.from(new Set(requests.map(r => r.semester?.semester_no).filter(s => s != null)))
-      .sort((a, b) => a - b)
-      .map(s => ({ value: String(s), label: `Semester ${s}` })),
-    [requests]
+    () =>
+      Array.from(
+        new Set(
+          requests.map((r) => r.semester?.semester_no).filter((s) => s != null),
+        ),
+      )
+        .sort((a, b) => a - b)
+        .map((s) => ({ value: String(s), label: `Semester ${s}` })),
+    [requests],
   );
 
   const visibleRequests = useMemo(
-    () => semesterNo ? requests.filter(r => String(r.semester?.semester_no) === semesterNo) : requests,
-    [requests, semesterNo]
+    () =>
+      semesterNo
+        ? requests.filter((r) => String(r.semester?.semester_no) === semesterNo)
+        : requests,
+    [requests, semesterNo],
   );
 
   useEffect(() => {
@@ -63,34 +103,45 @@ const AdminSwayamDashboard = () => {
 
     try {
       setLoading(true);
-      const token = sessionStorage.getItem('authToken') || localStorage.getItem('authToken');
-      
-      const requestType = activeRequestTab === 'extra_credits' ? 'Extra_Credits' : 'Swayam_Replace';
-      const statusParam = activeStatusTab === 'pending' ? 'Pending' : 
-                          activeStatusTab === 'approved' ? 'Approved' : 'Rejected';
-      
+      const token =
+        sessionStorage.getItem("authToken") ||
+        localStorage.getItem("authToken");
+
+      const requestType =
+        activeRequestTab === "extra_credits"
+          ? "Extra_Credits"
+          : "Swayam_Replace";
+      const statusParam =
+        activeStatusTab === "pending"
+          ? "Pending"
+          : activeStatusTab === "approved"
+            ? "Approved"
+            : "Rejected";
+
       const response = await fetch(
         `${adminSwayamListRequestsRoute}?request_type=${requestType}&status=${statusParam}&academic_year=${academicYear}&semester_type=${semesterType}`,
         {
           headers: {
             Authorization: `Token ${token}`,
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
-        }
+        },
       );
 
-      if (!response.ok) throw new Error('Failed to fetch requests');
+      if (!response.ok) throw new Error("Failed to fetch requests");
 
       const data = await response.json();
       setRequests(data.requests || []);
-      setCounts(data.counts || { pending: 0, approved: 0, rejected: 0, total: 0 });
+      setCounts(
+        data.counts || { pending: 0, approved: 0, rejected: 0, total: 0 },
+      );
       setSelectedIds([]);
     } catch (error) {
-      console.error('Error fetching requests:', error);
+      console.error("Error fetching requests:", error);
       showNotification({
-        title: 'Error',
-        message: 'Failed to fetch requests',
-        color: 'red',
+        title: "Error",
+        message: "Failed to fetch requests",
+        color: "red",
       });
     } finally {
       setLoading(false);
@@ -99,21 +150,23 @@ const AdminSwayamDashboard = () => {
 
   const handleAction = async (requestId, action) => {
     try {
-      const token = sessionStorage.getItem('authToken') || localStorage.getItem('authToken');
-      
+      const token =
+        sessionStorage.getItem("authToken") ||
+        localStorage.getItem("authToken");
+
       const endpointMap = {
         approve: adminSwayamApproveRoute,
         reject: adminSwayamRejectRoute,
         revert: adminSwayamRevertRoute,
-        delete: adminSwayamDeleteRoute
+        delete: adminSwayamDeleteRoute,
       };
       const endpoint = endpointMap[action];
 
       const response = await fetch(endpoint, {
-        method: 'POST',
+        method: "POST",
         headers: {
           Authorization: `Token ${token}`,
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ request_id: requestId }),
       });
@@ -121,18 +174,18 @@ const AdminSwayamDashboard = () => {
       if (!response.ok) throw new Error(`Failed to ${action} request`);
 
       showNotification({
-        title: 'Success',
+        title: "Success",
         message: `Request ${action}d successfully`,
-        color: 'green',
+        color: "green",
       });
 
       fetchRequests();
     } catch (error) {
       console.error(`Error ${action}ing request:`, error);
       showNotification({
-        title: 'Error',
+        title: "Error",
         message: `Failed to ${action} request`,
-        color: 'red',
+        color: "red",
       });
     }
   };
@@ -140,124 +193,141 @@ const AdminSwayamDashboard = () => {
   const handleBulkAction = async (action) => {
     if (selectedIds.length === 0) {
       showNotification({
-        title: 'Warning',
-        message: 'Please select at least one request',
-        color: 'yellow',
+        title: "Warning",
+        message: "Please select at least one request",
+        color: "yellow",
       });
       return;
     }
 
     try {
-      const token = sessionStorage.getItem('authToken') || localStorage.getItem('authToken');
-      
+      const token =
+        sessionStorage.getItem("authToken") ||
+        localStorage.getItem("authToken");
+
       const endpointMap = {
         approve: adminSwayamApproveRoute,
         reject: adminSwayamRejectRoute,
         revert: adminSwayamRevertRoute,
-        delete: adminSwayamDeleteRoute
+        delete: adminSwayamDeleteRoute,
       };
       const endpoint = endpointMap[action];
-      
+
       for (const id of selectedIds) {
         await fetch(endpoint, {
-          method: 'POST',
+          method: "POST",
           headers: {
             Authorization: `Token ${token}`,
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({ request_id: id }),
         });
       }
 
       showNotification({
-        title: 'Success',
+        title: "Success",
         message: `${selectedIds.length} request(s) ${action}d successfully`,
-        color: 'green',
+        color: "green",
       });
 
       fetchRequests();
     } catch (error) {
       console.error(`Error performing bulk ${action}:`, error);
       showNotification({
-        title: 'Error',
+        title: "Error",
         message: `Failed to ${action} selected requests`,
-        color: 'red',
+        color: "red",
       });
     }
   };
 
   const exportToExcel = () => {
     const exportData = requests.map((req, index) => ({
-      'S. No.': index + 1,
-      'Student Name': req.student.name,
-      'Roll No': req.student.roll_no,
-      'Batch': req.student.batch,
-      'Request Type': req.request_type,
-      'Old Course': req.old_course ? `${req.old_course.code} - ${req.old_course.name}` : 'N/A',
-      'New Course': `${req.new_course.code} - ${req.new_course.name}`,
-      'Slot': req.slot.name,
-      'Status': req.status,
-      'Submitted At': new Date(req.submitted_at).toLocaleString(),
-      'Processed At': req.processed_at ? new Date(req.processed_at).toLocaleString() : 'N/A',
-      'Academic Year': req.academic_year,
-      'Semester Type': req.semester_type,
+      "S. No.": index + 1,
+      "Student Name": req.student.name,
+      "Roll No": req.student.roll_no,
+      Batch: req.student.batch,
+      "Request Type": req.request_type,
+      "Old Course": req.old_course
+        ? `${req.old_course.code} - ${req.old_course.name}`
+        : "N/A",
+      "New Course": `${req.new_course.code} - ${req.new_course.name}`,
+      Slot: req.slot.name,
+      Status: req.status,
+      "Submitted At": new Date(req.submitted_at).toLocaleString(),
+      "Processed At": req.processed_at
+        ? new Date(req.processed_at).toLocaleString()
+        : "N/A",
+      "Academic Year": req.academic_year,
+      "Semester Type": req.semester_type,
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(exportData);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Swayam Requests');
-    
-    const filename = `Swayam_${activeRequestTab}_${activeStatusTab}_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Swayam Requests");
+
+    const filename = `Swayam_${activeRequestTab}_${activeStatusTab}_${new Date().toISOString().split("T")[0]}.xlsx`;
     XLSX.writeFile(workbook, filename);
 
     showNotification({
-      title: 'Success',
-      message: 'Data exported successfully',
-      color: 'green',
+      title: "Success",
+      message: "Data exported successfully",
+      color: "green",
     });
   };
 
   const toggleSelectAll = () => {
     const allVisibleSelected =
-      visibleRequests.length > 0 && visibleRequests.every(r => selectedIds.includes(r.id));
-    setSelectedIds(allVisibleSelected ? [] : visibleRequests.map(r => r.id));
+      visibleRequests.length > 0 &&
+      visibleRequests.every((r) => selectedIds.includes(r.id));
+    setSelectedIds(allVisibleSelected ? [] : visibleRequests.map((r) => r.id));
   };
 
   const toggleSelect = (id) => {
-    setSelectedIds(prev =>
-      prev.includes(id) ? prev.filter(selectedId => selectedId !== id) : [...prev, id]
+    setSelectedIds((prev) =>
+      prev.includes(id)
+        ? prev.filter((selectedId) => selectedId !== id)
+        : [...prev, id],
     );
   };
 
   const getStatusBadgeColor = (status) => {
     switch (status) {
-      case 'Pending':
-        return 'yellow';
-      case 'Approved':
-        return 'green';
-      case 'Rejected':
-        return 'red';
+      case "Pending":
+        return "yellow";
+      case "Approved":
+        return "green";
+      case "Rejected":
+        return "red";
       default:
-        return 'gray';
+        return "gray";
     }
   };
 
   const renderTable = () => {
     if (requests.length === 0) {
       return (
-        <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
-          No {activeStatusTab} {activeRequestTab === 'extra_credits' ? 'Extra Credits' : 'Replace'} requests found
+        <div style={{ textAlign: "center", padding: "40px", color: "#666" }}>
+          No {activeStatusTab}{" "}
+          {activeRequestTab === "extra_credits" ? "Extra Credits" : "Replace"}{" "}
+          requests found
         </div>
       );
     }
 
     const columns = [
       {
-        key: 'checkbox',
+        key: "checkbox",
         header: (
           <Checkbox
-            checked={visibleRequests.length > 0 && visibleRequests.every(r => selectedIds.includes(r.id))}
-            indeterminate={visibleRequests.some(r => selectedIds.includes(r.id)) && !visibleRequests.every(r => selectedIds.includes(r.id))}
+            checked={
+              visibleRequests.length > 0 &&
+              visibleRequests.every((r) => selectedIds.includes(r.id))
+            }
+            indeterminate={
+              visibleRequests.some((r) => selectedIds.includes(r.id)) &&
+              !visibleRequests.every((r) => selectedIds.includes(r.id))
+            }
             onChange={toggleSelectAll}
           />
         ),
@@ -268,60 +338,81 @@ const AdminSwayamDashboard = () => {
           />
         ),
       },
-      { key: 'sno', header: 'S. No.', render: (req, index) => index + 1 },
-      { key: 'student', header: 'Student Name', render: (req) => req.student.name },
-      { key: 'roll', header: 'Roll No', render: (req) => req.student.roll_no },
-      { key: 'batch', header: 'Batch', render: (req) => req.student.batch },
-      { key: 'sem', header: 'Sem', render: (req) => req.semester?.semester_no ?? '-' },
+      { key: "sno", header: "S. No.", render: (req, index) => index + 1 },
+      {
+        key: "student",
+        header: "Student",
+        render: (req) => (
+          <>
+            <Text size="sm">{req.student.roll_no}</Text>
+            <Text size="xs" c="dimmed">
+              {req.student.name}
+            </Text>
+            <Text size="xs" c="dimmed">
+              {req.student.batch}
+            </Text>
+          </>
+        ),
+      },
+      {
+        key: "sem",
+        header: "Sem",
+        render: (req) => req.semester?.semester_no ?? "-",
+      },
     ];
 
-    if (activeRequestTab === 'replace') {
+    if (activeRequestTab === "replace") {
       columns.push({
-        key: 'old_course',
-        header: 'Old Course',
-        render: (req) => req.old_course ? `${req.old_course.code} - ${req.old_course.name}` : 'N/A',
+        key: "old_course",
+        header: "Old Course",
+        render: (req) =>
+          req.old_course
+            ? `${req.old_course.code} - ${req.old_course.name}`
+            : "N/A",
       });
     }
 
     columns.push(
       {
-        key: 'new_course',
-        header: 'New Course',
+        key: "new_course",
+        header: "New Course",
         render: (req) => `${req.new_course.code} - ${req.new_course.name}`,
       },
-      { key: 'slot', header: 'Slot', render: (req) => req.slot.name },
+      { key: "slot", header: "Slot", render: (req) => req.slot.name },
       {
-        key: 'status',
-        header: 'Status',
-        render: (req) => <Badge color={getStatusBadgeColor(req.status)}>{req.status}</Badge>,
+        key: "status",
+        header: "Status",
+        render: (req) => (
+          <Badge color={getStatusBadgeColor(req.status)}>{req.status}</Badge>
+        ),
       },
       {
-        key: 'submitted',
-        header: 'Submitted At',
-        render: (req) => new Date(req.submitted_at).toLocaleString(),
-      }
+        key: "submitted",
+        header: "Submitted At",
+        render: (req) => <Stamp value={req.submitted_at} />,
+      },
     );
 
-    if (activeStatusTab !== 'pending') {
+    if (activeStatusTab !== "pending") {
       columns.push({
-        key: 'processed',
-        header: 'Processed At',
-        render: (req) => req.processed_at ? new Date(req.processed_at).toLocaleString() : 'N/A',
+        key: "processed",
+        header: "Processed At",
+        render: (req) => <Stamp value={req.processed_at} />,
       });
     }
 
     columns.push({
-      key: 'actions',
-      header: 'Actions',
+      key: "actions",
+      header: "Actions",
       render: (req) => (
-        <Group spacing="xs">
-          {activeStatusTab === 'pending' && (
+        <Group gap="xs">
+          {activeStatusTab === "pending" && (
             <>
               <Tooltip label="Approve">
                 <ActionIcon
                   color="green"
                   variant="light"
-                  onClick={() => handleAction(req.id, 'approve')}
+                  onClick={() => handleAction(req.id, "approve")}
                 >
                   <IconCheck size={16} />
                 </ActionIcon>
@@ -330,19 +421,19 @@ const AdminSwayamDashboard = () => {
                 <ActionIcon
                   color="red"
                   variant="light"
-                  onClick={() => handleAction(req.id, 'reject')}
+                  onClick={() => handleAction(req.id, "reject")}
                 >
                   <IconX size={16} />
                 </ActionIcon>
               </Tooltip>
             </>
           )}
-          {activeStatusTab === 'rejected' && (
+          {activeStatusTab === "rejected" && (
             <Tooltip label="Revert to Pending">
               <ActionIcon
                 color="blue"
                 variant="light"
-                onClick={() => handleAction(req.id, 'revert')}
+                onClick={() => handleAction(req.id, "revert")}
               >
                 <IconArrowBackUp size={16} />
               </ActionIcon>
@@ -352,7 +443,7 @@ const AdminSwayamDashboard = () => {
             <ActionIcon
               color="red"
               variant="light"
-              onClick={() => handleAction(req.id, 'delete')}
+              onClick={() => handleAction(req.id, "delete")}
             >
               <IconTrash size={16} />
             </ActionIcon>
@@ -386,7 +477,7 @@ const AdminSwayamDashboard = () => {
   return (
     <>
       <Card>
-        <Stack spacing="md">
+        <Stack gap="md">
           <Group grow align="flex-start">
             <Select
               label="Academic Year"
@@ -413,7 +504,7 @@ const AdminSwayamDashboard = () => {
               disabled={semesterOptions.length === 0}
             />
           </Group>
-          <Group position="left">
+          <Group justify="flex-start">
             <Button
               size="sm"
               onClick={fetchRequests}
@@ -441,7 +532,7 @@ const AdminSwayamDashboard = () => {
             padding: "10px 16px",
           }}
         >
-          <Tabs.List style={{ gap: 6, flexWrap: "nowrap" }}>
+          <Tabs.List style={{ gap: 6 }}>
             <Tabs.Tab
               value="replace"
               style={{
@@ -469,9 +560,19 @@ const AdminSwayamDashboard = () => {
 
         {/* Static panel for each tab */}
         {["replace", "extra_credits"].map((tabVal) => (
-          <Tabs.Panel key={tabVal} value={tabVal} style={{ background: "#fff" }}>
+          <Tabs.Panel
+            key={tabVal}
+            value={tabVal}
+            style={{ background: "#fff" }}
+          >
             {loading ? (
-              <Box style={{ display: "flex", justifyContent: "center", padding: 40 }}>
+              <Box
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  padding: 40,
+                }}
+              >
                 <Loader size="lg" />
               </Box>
             ) : !academicYear || !semesterType ? (
@@ -498,9 +599,18 @@ const AdminSwayamDashboard = () => {
                 >
                   <Tabs.List style={{ gap: 0, border: "none" }}>
                     {[
-                      { value: "pending",  label: `Pending (${counts.pending})` },
-                      { value: "approved", label: `Approved (${counts.approved})` },
-                      { value: "rejected", label: `Rejected (${counts.rejected})` },
+                      {
+                        value: "pending",
+                        label: `Pending (${counts.pending})`,
+                      },
+                      {
+                        value: "approved",
+                        label: `Approved (${counts.approved})`,
+                      },
+                      {
+                        value: "rejected",
+                        label: `Rejected (${counts.rejected})`,
+                      },
                     ].map(({ value, label }) => {
                       const isActive = activeStatusTab === value;
                       return (
@@ -512,7 +622,9 @@ const AdminSwayamDashboard = () => {
                             fontWeight: isActive ? 600 : 400,
                             color: isActive ? "#228be6" : "#6c757d",
                             padding: "10px 20px",
-                            borderBottom: isActive ? "2px solid #228be6" : "2px solid transparent",
+                            borderBottom: isActive
+                              ? "2px solid #228be6"
+                              : "2px solid transparent",
                             marginBottom: -2,
                             background: "transparent",
                             borderRadius: 0,
@@ -529,80 +641,87 @@ const AdminSwayamDashboard = () => {
 
                 {["pending", "approved", "rejected"].map((statusVal) => (
                   <Tabs.Panel key={statusVal} value={statusVal}>
-                  <Box p="lg" style={{ background: "#fff" }}>
-                    <Group position="apart" mb="md">
-                      <Title order={5} style={{ color: "#333" }}>
-                        {activeRequestTab === "extra_credits" ? "Extra Credits" : "Replace with Swayam"}{" "}
-                        — {activeStatusTab.charAt(0).toUpperCase() + activeStatusTab.slice(1)} Requests
-                      </Title>
-                      <Group spacing="xs">
-                        {activeStatusTab === "pending" && (
-                          <>
+                    <Box p="lg" style={{ background: "#fff" }}>
+                      <Group justify="space-between" mb="md">
+                        <Title order={5} style={{ color: "#333" }}>
+                          {activeRequestTab === "extra_credits"
+                            ? "Extra Credits"
+                            : "Replace with Swayam"}{" "}
+                          —{" "}
+                          {activeStatusTab.charAt(0).toUpperCase() +
+                            activeStatusTab.slice(1)}{" "}
+                          Requests
+                        </Title>
+                        <Group gap="xs">
+                          {activeStatusTab === "pending" && (
+                            <>
+                              <Button
+                                size="sm"
+                                color="green"
+                                variant="outline"
+                                leftSection={<IconCheck size={16} />}
+                                onClick={() => handleBulkAction("approve")}
+                                disabled={selectedIds.length === 0}
+                              >
+                                Approve ({selectedIds.length})
+                              </Button>
+                              <Button
+                                size="sm"
+                                color="red"
+                                variant="outline"
+                                leftSection={<IconX size={16} />}
+                                onClick={() => handleBulkAction("reject")}
+                                disabled={selectedIds.length === 0}
+                              >
+                                Reject ({selectedIds.length})
+                              </Button>
+                            </>
+                          )}
+                          {activeStatusTab === "rejected" && (
                             <Button
                               size="sm"
-                              color="green"
+                              color="blue"
                               variant="outline"
-                              leftSection={<IconCheck size={16} />}
-                              onClick={() => handleBulkAction("approve")}
+                              leftSection={<IconArrowBackUp size={16} />}
+                              onClick={() => handleBulkAction("revert")}
                               disabled={selectedIds.length === 0}
                             >
-                              Approve ({selectedIds.length})
+                              Revert to Pending ({selectedIds.length})
                             </Button>
-                            <Button
-                              size="sm"
-                              color="red"
-                              variant="outline"
-                              leftSection={<IconX size={16} />}
-                              onClick={() => handleBulkAction("reject")}
-                              disabled={selectedIds.length === 0}
-                            >
-                              Reject ({selectedIds.length})
-                            </Button>
-                          </>
-                        )}
-                        {activeStatusTab === "rejected" && (
+                          )}
+                          <Button
+                            size="sm"
+                            color="red"
+                            variant="outline"
+                            leftSection={<IconTrash size={16} />}
+                            onClick={() => handleBulkAction("delete")}
+                            disabled={selectedIds.length === 0}
+                          >
+                            Delete ({selectedIds.length})
+                          </Button>
                           <Button
                             size="sm"
                             color="blue"
-                            variant="outline"
-                            leftSection={<IconArrowBackUp size={16} />}
-                            onClick={() => handleBulkAction("revert")}
-                            disabled={selectedIds.length === 0}
+                            leftSection={<IconDownload size={16} />}
+                            onClick={exportToExcel}
                           >
-                            Revert to Pending ({selectedIds.length})
+                            Export to Excel
                           </Button>
-                        )}
-                        <Button
-                          size="sm"
-                          color="red"
-                          variant="outline"
-                          leftSection={<IconTrash size={16} />}
-                          onClick={() => handleBulkAction("delete")}
-                          disabled={selectedIds.length === 0}
-                        >
-                          Delete ({selectedIds.length})
-                        </Button>
-                        <Button
-                          size="sm"
-                          color="blue"
-                          leftSection={<IconDownload size={16} />}
-                          onClick={exportToExcel}
-                        >
-                          Export to Excel
-                        </Button>
+                        </Group>
                       </Group>
-                    </Group>
 
-                    {requests.length > 0 ? (
-                      renderTable()
-                    ) : (
-                      <Alert color="blue">
-                        No {activeStatusTab}{" "}
-                        {activeRequestTab === "extra_credits" ? "Extra Credits" : "Replace with Swayam"}{" "}
-                        requests.
-                      </Alert>
-                    )}
-                  </Box>
+                      {requests.length > 0 ? (
+                        renderTable()
+                      ) : (
+                        <Alert color="blue">
+                          No {activeStatusTab}{" "}
+                          {activeRequestTab === "extra_credits"
+                            ? "Extra Credits"
+                            : "Replace with Swayam"}{" "}
+                          requests.
+                        </Alert>
+                      )}
+                    </Box>
                   </Tabs.Panel>
                 ))}
               </Tabs>

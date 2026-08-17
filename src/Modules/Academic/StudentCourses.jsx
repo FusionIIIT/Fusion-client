@@ -13,12 +13,22 @@ import {
 import { showNotification } from "@mantine/notifications";
 import axios from "axios";
 import FusionTable from "../../components/FusionTable";
+import { courseLabel } from "../../lib/course";
 import {
   addStudentCourseRoute,
+  addStudentThesisRoute,
+  addStudentProgressSeminarRoute,
+  addStudentTeachingCreditRoute,
   dropStudentCourseRoute,
   getStudentCourseRoute,
   getCourseSlotsRoute,
   getCoursesRoute,
+  getThesisSlotsRoute,
+  getThesisCoursesRoute,
+  getProgressSeminarSlotsRoute,
+  getProgressSeminarCoursesRoute,
+  getTeachingCreditSlotsRoute,
+  getTeachingCreditCoursesRoute,
   adminThesisEnrollmentListRoute,
   adminProgressSeminarEnrollmentListRoute,
   adminTeachingCreditEnrollmentListRoute,
@@ -199,11 +209,21 @@ export default function StudentCourses() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [addThesisModalOpen, setAddThesisModalOpen] = useState(false);
+  const [addSeminarModalOpen, setAddSeminarModalOpen] = useState(false);
+  const [addTeachingCreditModalOpen, setAddTeachingCreditModalOpen] =
+    useState(false);
   const [dropModalOpen, setDropModalOpen] = useState(false);
   const [courseToDrop, setCourseToDrop] = useState(null);
   const [courseToDropName, setCourseToDropName] = useState("");
   const [semSlots, setSemSlots] = useState([]);
   const [slotCourses, setSlotCourses] = useState([]);
+  const [thesisSlots, setThesisSlots] = useState([]);
+  const [thesisCourses, setThesisCourses] = useState([]);
+  const [seminarSlots, setSeminarSlots] = useState([]);
+  const [seminarCourses, setSeminarCourses] = useState([]);
+  const [teachingCreditSlots, setTeachingCreditSlots] = useState([]);
+  const [teachingCreditCourses, setTeachingCreditCourses] = useState([]);
   const [academicYears, setAcademicYears] = useState([]);
   const [selectedSemester, setSelectedSemester] = useState(null);
   const [newCourse, setNewCourse] = useState({
@@ -217,13 +237,29 @@ export default function StudentCourses() {
     course_instructor_id: null,
     old_course: null,
   });
+  const [newThesis, setNewThesis] = useState({
+    semester_no: null,
+    thesis_slot_id: null,
+    thesis_id: null,
+    credits: "6",
+  });
+  const [newSeminar, setNewSeminar] = useState({
+    semester_no: null,
+    seminar_slot_id: null,
+    seminar_id: null,
+  });
+  const [newTeachingCredit, setNewTeachingCredit] = useState({
+    semester_no: null,
+    teaching_credit_slot_id: null,
+    teaching_credit_id: null,
+  });
 
   useEffect(() => {
     const now = new Date();
     const year = now.getFullYear();
     const start = now.getMonth() >= 6 ? year : year - 1;
     const yrs = [];
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 5; i += 1) {
       const y1 = start - i;
       const y2 = y1 + 1;
       yrs.push(`${y1}-${String(y2).slice(-2)}`);
@@ -411,6 +447,258 @@ export default function StudentCourses() {
     }
   };
 
+  // Resolve a semester_no (from a Select value) to the actual Semester row id,
+  // same lookup handleSemesterSelect uses for the Add Course modal.
+  const resolveSemesterId = (semesterNo) => {
+    if (studentData && studentData.semester_list) {
+      const found = studentData.semester_list.find(
+        (s) => s.semester_no === Number(semesterNo),
+      );
+      if (found) return found.id;
+    }
+    return semesterNo;
+  };
+
+  // Fetch a slot's catalog entries (Thesis/Seminar/TeachingCredit) -- same
+  // shape as fetchSlotCourses above, one per registration type.
+  const fetchThesisCourses = async (slotId) => {
+    if (!slotId) return;
+    const token = localStorage.getItem("authToken");
+    try {
+      const { data } = await axios.get(getThesisCoursesRoute, {
+        params: { slot_id: slotId },
+        headers: { Authorization: `Token ${token}` },
+      });
+      setThesisCourses(data);
+    } catch {
+      setError("Failed to load theses");
+    }
+  };
+
+  const fetchSeminarCourses = async (slotId) => {
+    if (!slotId) return;
+    const token = localStorage.getItem("authToken");
+    try {
+      const { data } = await axios.get(getProgressSeminarCoursesRoute, {
+        params: { slot_id: slotId },
+        headers: { Authorization: `Token ${token}` },
+      });
+      setSeminarCourses(data);
+    } catch {
+      setError("Failed to load seminars");
+    }
+  };
+
+  const fetchTeachingCreditCourses = async (slotId) => {
+    if (!slotId) return;
+    const token = localStorage.getItem("authToken");
+    try {
+      const { data } = await axios.get(getTeachingCreditCoursesRoute, {
+        params: { slot_id: slotId },
+        headers: { Authorization: `Token ${token}` },
+      });
+      setTeachingCreditCourses(data);
+    } catch {
+      setError("Failed to load teaching credits");
+    }
+  };
+
+  const handleThesisSemesterSelect = async (val) => {
+    clearError();
+    if (!val) return;
+    const semObj = JSON.parse(val);
+    const semesterId = resolveSemesterId(semObj.no);
+    setNewThesis((p) => ({
+      ...p,
+      semester_no: semObj.no,
+      thesis_slot_id: null,
+      thesis_id: null,
+    }));
+    setThesisCourses([]);
+    setThesisSlots([]);
+    const token = localStorage.getItem("authToken");
+    try {
+      const { data } = await axios.get(getThesisSlotsRoute, {
+        params: { semester_id: semesterId },
+        headers: { Authorization: `Token ${token}` },
+      });
+      setThesisSlots(data);
+    } catch {
+      setError("Failed to load thesis slots");
+    }
+  };
+
+  const handleSeminarSemesterSelect = async (val) => {
+    clearError();
+    if (!val) return;
+    const semObj = JSON.parse(val);
+    const semesterId = resolveSemesterId(semObj.no);
+    setNewSeminar((p) => ({
+      ...p,
+      semester_no: semObj.no,
+      seminar_slot_id: null,
+      seminar_id: null,
+    }));
+    setSeminarCourses([]);
+    setSeminarSlots([]);
+    const token = localStorage.getItem("authToken");
+    try {
+      const { data } = await axios.get(getProgressSeminarSlotsRoute, {
+        params: { semester_id: semesterId },
+        headers: { Authorization: `Token ${token}` },
+      });
+      setSeminarSlots(data);
+    } catch {
+      setError("Failed to load progress seminar slots");
+    }
+  };
+
+  const handleTeachingCreditSemesterSelect = async (val) => {
+    clearError();
+    if (!val) return;
+    const semObj = JSON.parse(val);
+    const semesterId = resolveSemesterId(semObj.no);
+    setNewTeachingCredit((p) => ({
+      ...p,
+      semester_no: semObj.no,
+      teaching_credit_slot_id: null,
+      teaching_credit_id: null,
+    }));
+    setTeachingCreditCourses([]);
+    setTeachingCreditSlots([]);
+    const token = localStorage.getItem("authToken");
+    try {
+      const { data } = await axios.get(getTeachingCreditSlotsRoute, {
+        params: { semester_id: semesterId },
+        headers: { Authorization: `Token ${token}` },
+      });
+      setTeachingCreditSlots(data);
+    } catch {
+      setError("Failed to load teaching credit slots");
+    }
+  };
+
+  const handleAddThesis = async () => {
+    clearError();
+    if (!newThesis.semester_no) return setError("Select a semester");
+    if (!newThesis.thesis_slot_id) return setError("Select a thesis slot");
+    if (!newThesis.thesis_id) return setError("Select a thesis");
+    const token = localStorage.getItem("authToken");
+    if (!token) return setError("Auth token missing");
+
+    setLoading(true);
+    try {
+      await axios.post(
+        addStudentThesisRoute,
+        {
+          roll_no: rollNo,
+          semester_id: resolveSemesterId(newThesis.semester_no),
+          thesis_slot_id: newThesis.thesis_slot_id,
+          thesis_id: newThesis.thesis_id,
+          credits: newThesis.credits,
+        },
+        { headers: { Authorization: `Token ${token}` } },
+      );
+      showNotification({
+        title: "Thesis Added",
+        message: "Thesis registration added successfully",
+        color: "green",
+      });
+      setAddThesisModalOpen(false);
+      setNewThesis({
+        semester_no: null,
+        thesis_slot_id: null,
+        thesis_id: null,
+        credits: "6",
+      });
+      await handleGetCourses();
+    } catch (err) {
+      setError(err.response?.data?.error || err.message || "Add failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddSeminar = async () => {
+    clearError();
+    if (!newSeminar.semester_no) return setError("Select a semester");
+    if (!newSeminar.seminar_slot_id) return setError("Select a seminar slot");
+    if (!newSeminar.seminar_id) return setError("Select a seminar");
+    const token = localStorage.getItem("authToken");
+    if (!token) return setError("Auth token missing");
+
+    setLoading(true);
+    try {
+      await axios.post(
+        addStudentProgressSeminarRoute,
+        {
+          roll_no: rollNo,
+          semester_id: resolveSemesterId(newSeminar.semester_no),
+          seminar_slot_id: newSeminar.seminar_slot_id,
+          seminar_id: newSeminar.seminar_id,
+        },
+        { headers: { Authorization: `Token ${token}` } },
+      );
+      showNotification({
+        title: "Progress Seminar Added",
+        message: "Progress seminar registration added successfully",
+        color: "green",
+      });
+      setAddSeminarModalOpen(false);
+      setNewSeminar({
+        semester_no: null,
+        seminar_slot_id: null,
+        seminar_id: null,
+      });
+      await handleGetCourses();
+    } catch (err) {
+      setError(err.response?.data?.error || err.message || "Add failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddTeachingCredit = async () => {
+    clearError();
+    if (!newTeachingCredit.semester_no) return setError("Select a semester");
+    if (!newTeachingCredit.teaching_credit_slot_id)
+      return setError("Select a teaching credit slot");
+    if (!newTeachingCredit.teaching_credit_id)
+      return setError("Select a teaching credit");
+    const token = localStorage.getItem("authToken");
+    if (!token) return setError("Auth token missing");
+
+    setLoading(true);
+    try {
+      await axios.post(
+        addStudentTeachingCreditRoute,
+        {
+          roll_no: rollNo,
+          semester_id: resolveSemesterId(newTeachingCredit.semester_no),
+          teaching_credit_slot_id: newTeachingCredit.teaching_credit_slot_id,
+          teaching_credit_id: newTeachingCredit.teaching_credit_id,
+        },
+        { headers: { Authorization: `Token ${token}` } },
+      );
+      showNotification({
+        title: "Teaching Credit Added",
+        message: "Teaching credit registration added successfully",
+        color: "green",
+      });
+      setAddTeachingCreditModalOpen(false);
+      setNewTeachingCredit({
+        semester_no: null,
+        teaching_credit_slot_id: null,
+        teaching_credit_id: null,
+      });
+      await handleGetCourses();
+    } catch (err) {
+      setError(err.response?.data?.error || err.message || "Add failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSemesterSelect = async (val) => {
     clearError();
     if (!val) return;
@@ -419,7 +707,7 @@ export default function StudentCourses() {
     let semesterId = semObj.no;
     if (studentData && studentData.semester_list) {
       const found = studentData.semester_list.find(
-        (s) => s.semester_no == semObj.no,
+        (s) => String(s.semester_no) === String(semObj.no),
       );
       if (found) {
         semesterId = found.id;
@@ -534,15 +822,21 @@ export default function StudentCourses() {
 
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
-      <TextInput
-        label="Roll Number"
-        value={rollNo}
-        onChange={(e) => setRollNo(e.target.value)}
-        mb="md"
-      />
-      <Button fullWidth onClick={handleGetCourses} mb="md" disabled={loading}>
-        {loading ? <Loader size="xs" /> : "Fetch Courses"}
-      </Button>
+      <Group align="flex-end" gap="sm" wrap="wrap" mb="md">
+        <TextInput
+          label="Roll Number"
+          placeholder="Enter roll number"
+          value={rollNo}
+          onChange={(e) => setRollNo(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && rollNo && !loading) handleGetCourses();
+          }}
+          style={{ flex: 1, minWidth: 200 }}
+        />
+        <Button onClick={handleGetCourses} disabled={!rollNo || loading}>
+          {loading ? <Loader size="xs" /> : "Fetch Courses"}
+        </Button>
+      </Group>
 
       {error && (
         <Alert title="Error" color="red" mb="md">
@@ -563,13 +857,13 @@ export default function StudentCourses() {
             mb="md"
           />
 
-          <Text size="lg" weight={700} mb="sm" align="center" color="blue">
+          <Text size="lg" fw={700} mb="sm" ta="center" c="blue">
             Registered Courses
           </Text>
-          <Text weight={500}>
+          <Text fw={500}>
             Name: {studentData.dict2.firstname} {studentData.dict2.lastname}
           </Text>
-          <Text weight={500} mb="md">
+          <Text fw={500} mb="md">
             Roll No: {studentData.dict2.roll_no}
           </Text>
 
@@ -577,20 +871,46 @@ export default function StudentCourses() {
             <FusionTable columnNames={columns} elements={rows} width="100%" />
           </div>
           {rows.length === 0 && (
-            <Text align="center" color="dimmed" mt="sm">
+            <Text ta="center" c="dimmed" mt="sm">
               No courses found for Semester
             </Text>
           )}
 
-          <Group position="apart" mt="lg">
-            <Button
-              color="green"
-              onClick={() => setAddModalOpen(true)}
-              disabled={loading}
-            >
-              Add Course
-            </Button>
-            <Text weight={700}>Total Credits: {totalCredits}</Text>
+          <Group justify="space-between" mt="lg" wrap="wrap">
+            <Group gap="xs" wrap="wrap">
+              <Button
+                color="green"
+                onClick={() => setAddModalOpen(true)}
+                disabled={loading}
+              >
+                Add Course
+              </Button>
+              <Button
+                color="teal"
+                variant="outline"
+                onClick={() => setAddThesisModalOpen(true)}
+                disabled={loading}
+              >
+                Add Thesis
+              </Button>
+              <Button
+                color="teal"
+                variant="outline"
+                onClick={() => setAddSeminarModalOpen(true)}
+                disabled={loading}
+              >
+                Add Progress Seminar
+              </Button>
+              <Button
+                color="teal"
+                variant="outline"
+                onClick={() => setAddTeachingCreditModalOpen(true)}
+                disabled={loading}
+              >
+                Add Teaching Credit
+              </Button>
+            </Group>
+            <Text fw={700}>Total Credits: {totalCredits}</Text>
           </Group>
         </>
       )}
@@ -633,7 +953,7 @@ export default function StudentCourses() {
           placeholder="Select course"
           data={slotCourses.map((c) => ({
             value: String(c.id),
-            label: `${c.code} - ${c.name} (${c.credit}cr)`,
+            label: `${courseLabel(c)} (${c.credit}cr)`,
           }))}
           value={newCourse.course_id}
           onChange={(v) => setNewCourse((p) => ({ ...p, course_id: v }))}
@@ -708,8 +1028,217 @@ export default function StudentCourses() {
           searchable
           mb="sm"
         />
-        <Group position="right">
+        <Group justify="flex-end">
           <Button onClick={handleAddCourse} loading={loading}>
+            Add
+          </Button>
+        </Group>
+      </Modal>
+
+      {/* Add Thesis Modal */}
+      <Modal
+        opened={addThesisModalOpen}
+        onClose={() => setAddThesisModalOpen(false)}
+        title="Add Thesis"
+      >
+        <Select
+          label="Semester"
+          placeholder="Select semester"
+          data={semesterOptions}
+          value={
+            newThesis.semester_no
+              ? JSON.stringify({
+                  no: newThesis.semester_no,
+                  type: getSemesterType(newThesis.semester_no),
+                })
+              : ""
+          }
+          onChange={handleThesisSemesterSelect}
+          mb="sm"
+        />
+        <Select
+          label="Thesis Slot"
+          placeholder="Select slot"
+          data={thesisSlots.map((s) => ({
+            value: String(s.id),
+            label: s.name,
+          }))}
+          value={newThesis.thesis_slot_id}
+          onChange={(v) => {
+            // PG students have a fixed credit value per slot evaluation type
+            // -- 3 for S/X (block-graded), 12 for decimal -- no free choice.
+            // PhD students keep the free 3/6/9/12 choice below.
+            const isPg = studentData?.dict2?.programme_category === "PG";
+            const slot = thesisSlots.find((s) => String(s.id) === v);
+            const lockedCredits =
+              isPg && slot
+                ? slot.evaluation_type === "blocks_sx"
+                  ? "3"
+                  : "12"
+                : null;
+            setNewThesis((p) => ({
+              ...p,
+              thesis_slot_id: v,
+              thesis_id: null,
+              credits: lockedCredits ?? p.credits,
+            }));
+            fetchThesisCourses(v);
+          }}
+          mb="sm"
+          disabled={!newThesis.semester_no}
+        />
+        <Select
+          label="Thesis"
+          placeholder="Select thesis"
+          data={thesisCourses.map((c) => ({
+            value: String(c.id),
+            label: `${c.code} - ${c.name} (${c.credit}cr)`,
+          }))}
+          value={newThesis.thesis_id}
+          onChange={(v) => setNewThesis((p) => ({ ...p, thesis_id: v }))}
+          mb="sm"
+          disabled={!newThesis.thesis_slot_id}
+        />
+        <Select
+          label="Credits"
+          placeholder="Select credits"
+          data={["3", "6", "9", "12"]}
+          value={newThesis.credits}
+          onChange={(v) => setNewThesis((p) => ({ ...p, credits: v }))}
+          disabled={
+            studentData?.dict2?.programme_category === "PG" &&
+            !!newThesis.thesis_slot_id
+          }
+          description={
+            studentData?.dict2?.programme_category === "PG" &&
+            newThesis.thesis_slot_id
+              ? "Fixed for PG students by the slot's evaluation type"
+              : undefined
+          }
+          mb="md"
+        />
+        <Group justify="flex-end">
+          <Button onClick={handleAddThesis} loading={loading}>
+            Add
+          </Button>
+        </Group>
+      </Modal>
+
+      {/* Add Progress Seminar Modal */}
+      <Modal
+        opened={addSeminarModalOpen}
+        onClose={() => setAddSeminarModalOpen(false)}
+        title="Add Progress Seminar"
+      >
+        <Select
+          label="Semester"
+          placeholder="Select semester"
+          data={semesterOptions}
+          value={
+            newSeminar.semester_no
+              ? JSON.stringify({
+                  no: newSeminar.semester_no,
+                  type: getSemesterType(newSeminar.semester_no),
+                })
+              : ""
+          }
+          onChange={handleSeminarSemesterSelect}
+          mb="sm"
+        />
+        <Select
+          label="Seminar Slot"
+          placeholder="Select slot"
+          data={seminarSlots.map((s) => ({
+            value: String(s.id),
+            label: s.name,
+          }))}
+          value={newSeminar.seminar_slot_id}
+          onChange={(v) => {
+            setNewSeminar((p) => ({
+              ...p,
+              seminar_slot_id: v,
+              seminar_id: null,
+            }));
+            fetchSeminarCourses(v);
+          }}
+          mb="sm"
+          disabled={!newSeminar.semester_no}
+        />
+        <Select
+          label="Seminar"
+          placeholder="Select seminar"
+          data={seminarCourses.map((c) => ({
+            value: String(c.id),
+            label: `${c.code} - ${c.name} (${c.credit}cr)`,
+          }))}
+          value={newSeminar.seminar_id}
+          onChange={(v) => setNewSeminar((p) => ({ ...p, seminar_id: v }))}
+          mb="md"
+          disabled={!newSeminar.seminar_slot_id}
+        />
+        <Group justify="flex-end">
+          <Button onClick={handleAddSeminar} loading={loading}>
+            Add
+          </Button>
+        </Group>
+      </Modal>
+
+      {/* Add Teaching Credit Modal */}
+      <Modal
+        opened={addTeachingCreditModalOpen}
+        onClose={() => setAddTeachingCreditModalOpen(false)}
+        title="Add Teaching Credit"
+      >
+        <Select
+          label="Semester"
+          placeholder="Select semester"
+          data={semesterOptions}
+          value={
+            newTeachingCredit.semester_no
+              ? JSON.stringify({
+                  no: newTeachingCredit.semester_no,
+                  type: getSemesterType(newTeachingCredit.semester_no),
+                })
+              : ""
+          }
+          onChange={handleTeachingCreditSemesterSelect}
+          mb="sm"
+        />
+        <Select
+          label="Teaching Credit Slot"
+          placeholder="Select slot"
+          data={teachingCreditSlots.map((s) => ({
+            value: String(s.id),
+            label: s.name,
+          }))}
+          value={newTeachingCredit.teaching_credit_slot_id}
+          onChange={(v) => {
+            setNewTeachingCredit((p) => ({
+              ...p,
+              teaching_credit_slot_id: v,
+              teaching_credit_id: null,
+            }));
+            fetchTeachingCreditCourses(v);
+          }}
+          mb="sm"
+          disabled={!newTeachingCredit.semester_no}
+        />
+        <Select
+          label="Teaching Credit"
+          placeholder="Select teaching credit"
+          data={teachingCreditCourses.map((c) => ({
+            value: String(c.id),
+            label: `${c.code} - ${c.name} (${c.credit}cr)`,
+          }))}
+          value={newTeachingCredit.teaching_credit_id}
+          onChange={(v) =>
+            setNewTeachingCredit((p) => ({ ...p, teaching_credit_id: v }))
+          }
+          mb="md"
+          disabled={!newTeachingCredit.teaching_credit_slot_id}
+        />
+        <Group justify="flex-end">
+          <Button onClick={handleAddTeachingCredit} loading={loading}>
             Add
           </Button>
         </Group>
@@ -722,7 +1251,7 @@ export default function StudentCourses() {
         title="Confirm Drop"
       >
         <Text>Are you sure you want to drop {courseToDropName}?</Text>
-        <Group position="right" mt="md">
+        <Group justify="flex-end" mt="md">
           <Button variant="outline" onClick={() => setDropModalOpen(false)}>
             Cancel
           </Button>

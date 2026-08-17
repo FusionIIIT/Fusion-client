@@ -24,20 +24,17 @@ import { host } from "../../../routes/globalRoutes";
 
 function Admin_edit_course_slot_form() {
   const { courseslotid } = useParams(); // Get the course slot ID from the URL
-  console.log(courseslotid);
   const [courses, setCourses] = useState([]);
   const [selectedCourses, setSelectedCourses] = useState([]);
   const [options, setOptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchValue, setSearchValue] = useState("");
+  const [, setSearchValue] = useState("");
   const [semesterid, setSemesterid] = useState("");
   const [curriculumid, setCurriculumid] = useState("");
   const [semesterOptions, setSemesterOptions] = useState([]);
-  const [initialData, setInitialData] = useState(null);
+  const [, setInitialData] = useState(null);
   const navigate = useNavigate();
-  console.log(searchValue);
-  console.log(initialData);
 
   const form = useForm({
     initialValues: {
@@ -83,7 +80,6 @@ function Admin_edit_course_slot_form() {
     const loadCourseSlotDetails = async () => {
       try {
         const data = await fetchCourslotData(courseslotid);
-        console.log(data);
         setInitialData(data);
         setSemesterid(data.semester);
         setCurriculumid(data.curriculum_id);
@@ -110,7 +106,6 @@ function Admin_edit_course_slot_form() {
     loadCourses();
     loadCourseSlotDetails();
   }, [courseslotid]);
-  console.log(form.values);
   // const [searchParams] = useSearchParams();
   // const semesterid = searchParams.get("semesterid");
   // const curriculumid = searchParams.get("curriculumid");
@@ -138,8 +133,6 @@ function Admin_edit_course_slot_form() {
   }, [semesterid, curriculumid]);
 
   const handleCourseSelect = (selectedId) => {
-    console.log("Selected courses:", selectedId);
-    // console.log(selectedId);
     form.setFieldValue("courses", selectedId);
     // form.setFieldValue("courses", (prevCourses) => {
     //   // prevCourses is the previous value of the "courses" field
@@ -151,8 +144,6 @@ function Admin_edit_course_slot_form() {
     //   console.log("Updated courses:", updatedCourses);
     //   return updatedCourses;
     // });
-
-    console.log("Updated courses:", selectedId);
   };
 
   // useEffect(() => {
@@ -246,8 +237,8 @@ function Admin_edit_course_slot_form() {
                 boxShadow: "0 0 10px rgba(0,0,0,0.1)",
               }}
             >
-              <Stack spacing="lg">
-                <Text size="xl" weight={700} align="center">
+              <Stack gap="lg">
+                <Text size="xl" fw={700} ta="center">
                   Edit Course Slot Form
                 </Text>
 
@@ -306,7 +297,7 @@ function Admin_edit_course_slot_form() {
                   value={form.values.courses.map((course) => course)}
                   onChange={handleCourseSelect}
                   searchable
-                  nothingFound="No courses available"
+                  nothingFoundMessage="No courses available"
                   required
                 />
 
@@ -335,7 +326,7 @@ function Admin_edit_course_slot_form() {
                 />
               </Stack>
 
-              <Group position="right" mt="lg">
+              <Group justify="flex-end" mt="lg">
                  <Button
                                                  variant="outline"
                                                  className="cancel-btn"

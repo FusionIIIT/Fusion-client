@@ -101,14 +101,12 @@ function Admin_add_course_slot_form() {
   // Get the values from the URL
   const semesterid = searchParams.get("semester");
   const curriculumid = searchParams.get("curriculum");
-  console.log(semesterid, curriculumid);
 
   useEffect(() => {
     const loadSemesterDetails = async () => {
       try {
         if (semesterid && curriculumid) {
           const data = await fetchSemesterDetails(curriculumid, semesterid);
-          console.log(data);
           // Assuming API response contains curriculum name and semester number
           const formattedOptions = data.semesters.map((semester) => ({
             value: semester.semester_id.toString(),
@@ -129,12 +127,10 @@ function Admin_add_course_slot_form() {
   }, [semesterid, curriculumid]);
 
   // const handleCourseSelect = (selectedId) => {
-  //   console.log(selectedId);
   //   // Filter selected courses based on selectedId array
   //   const selectedCourse = courses.filter((course) =>
   //     selectedId.includes(course.id),
   //   );
-  //   console.log(selectedCourse);
   //   // Extract only course IDs from selectedCourse
   //   const selectedCourseIds = selectedCourse.map((course) => course.id);
   //   // Avoid duplicate IDs by checking against form values
@@ -151,10 +147,8 @@ function Admin_add_course_slot_form() {
   //   }
   // };
   const handleCourseSelect = (selectedId) => {
-    console.log(selectedId);
     form.setFieldValue("courses", selectedId);
 
-    console.log("Updated courses:", selectedId);
   };
 
   // const handleRemoveCourse = (courseId) => {
@@ -169,10 +163,8 @@ function Admin_add_course_slot_form() {
   );
 
   // const handleSubmit = (values) => {
-  //   console.log("Form Submitted:", values);
   // };
   // const handleSubmit = (values) => {
-  //   console.log(values);
   // };
 
   // const breadcrumbItems = [
@@ -222,7 +214,6 @@ function Admin_add_course_slot_form() {
       setLoading(false);
     }
   };
-  console.log(form.values);
   const handleCancel = () => {
     navigate(
       `/programme_curriculum/view_curriculum?curriculum=${curriculumid}`,
@@ -235,7 +226,7 @@ function Admin_add_course_slot_form() {
       {/* <Breadcrumbs>{breadcrumbItems}</Breadcrumbs> */}
 
       {/* Options Section */}
-      {/* <Group spacing="xs" className="program-options" position="center" mt="md">
+      {/* <Group gap="xs" className="program-options" justify="center" mt="md">
         <Text>Programmes</Text>
         <Text className="active">Curriculums</Text>
         <Text>Courses</Text>
@@ -274,8 +265,8 @@ function Admin_add_course_slot_form() {
                 boxShadow: "0 0 10px rgba(0,0,0,0.1)",
               }}
             >
-              <Stack spacing="lg">
-                <Text size="xl" weight={700} align="center">
+              <Stack gap="lg">
+                <Text size="xl" fw={700} ta="center">
                   Course Slot Form
                 </Text>
 
@@ -351,17 +342,17 @@ function Admin_add_course_slot_form() {
                   }))}
                   onChange={handleCourseSelect}
                   searchable
-                  nothingFound="No courses available"
+                  nothingFoundMessage="No courses available"
                   required
                 />
 
                 {/* <div>
-                  <Text weight={600} size="md" mb="sm">
+                  <Text fw={600} size="md" mb="sm">
                     Selected Courses
                   </Text>
                   <Stack>
                     {form.values.courses.map((course) => (
-                      <Group key={course.id} position="apart">
+                      <Group key={course.id} justify="space-between">
                         <Text>
                           {course.code} - {course.name} ({course.version})
                         </Text>
@@ -401,7 +392,7 @@ function Admin_add_course_slot_form() {
                 />
               </Stack>
 
-              <Group position="right" mt="lg">
+              <Group justify="flex-end" mt="lg">
                 <Button
                                  variant="outline"
                                  className="cancel-btn"
@@ -425,7 +416,7 @@ function Admin_add_course_slot_form() {
               justifyContent: "flex-start",
             }}
           >
-            {/* <Group spacing="md" direction="column" style={{ width: "100%" }}>
+            {/* <Group gap="md" direction="column" style={{ width: "100%" }}>
               <Button className="right-btn-course-slot">Add Curriculum</Button>
               <Button className="right-btn-course-slot">
                 Add Another Slot

@@ -30,9 +30,9 @@ function ExportModal({
       opened={opened}
       onClose={onClose}
       title={
-        <Group spacing="sm" align="center">
+        <Group gap="sm" align="center">
           <Download size={18} color="#2563eb" />
-          <Text size="md" weight={600} color="#1f2937">
+          <Text size="md" fw={600} c="#1f2937">
             Export Student Data
           </Text>
         </Group>
@@ -50,14 +50,14 @@ function ExportModal({
         body: { padding: "20px" },
       }}
     >
-      <Stack spacing="md">
-        <Text size="sm" color="#6b7280">
+      <Stack gap="md">
+        <Text size="sm" c="#6b7280">
           Select the fields to include in the Excel (.xlsx) export.
         </Text>
 
-        <Stack spacing="sm">
+        <Stack gap="sm">
           <Group justify="space-between" align="center">
-            <Text weight={500} size="sm" color="#374151">
+            <Text fw={500} size="sm" c="#374151">
               Select Fields
             </Text>
             <Switch
@@ -110,27 +110,27 @@ function ExportModal({
             border: "1px solid #e2e8f0",
           }}
         >
-          <Group spacing="lg">
-            <Text size="xs" color="#6b7280">
-              <Text component="span" weight={600} color="#1e40af">
+          <Group gap="lg">
+            <Text size="xs" c="#6b7280">
+              <Text component="span" fw={600} c="#1e40af">
                 {recordCount}
               </Text>{" "}
               records
             </Text>
-            <Text size="xs" color="#6b7280">
-              <Text component="span" weight={600} color="#1e40af">
+            <Text size="xs" c="#6b7280">
+              <Text component="span" fw={600} c="#1e40af">
                 {selectedCount}
               </Text>{" "}
               fields
             </Text>
-            <Text size="xs" color="#6b7280">
+            <Text size="xs" c="#6b7280">
               Format:{" "}
-              <Text component="span" weight={600} color="#1e40af">
+              <Text component="span" fw={600} c="#1e40af">
                 Excel (.xlsx)
               </Text>
             </Text>
           </Group>
-          <Group spacing="sm">
+          <Group gap="sm">
             <Button
               variant="outline"
               color="gray"

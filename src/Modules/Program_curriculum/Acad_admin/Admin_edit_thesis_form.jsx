@@ -232,11 +232,11 @@ function Admin_edit_thesis_form() {
                 boxShadow: "0 0 10px rgba(0,0,0,0.1)",
               }}
             >
-              <Stack spacing="lg">
+              <Stack gap="lg">
                 <Text
                   size="xl"
-                  weight={700}
-                  align="center"
+                  fw={700}
+                  ta="center"
                   style={{ padding: "10px", borderRadius: "5px" }}
                 >
                   Edit Thesis Form
@@ -436,7 +436,7 @@ function Admin_edit_thesis_form() {
                 </Table>
 
                 {/* Submit Buttons */}
-                <Group position="center" mt="xl">
+                <Group justify="center" mt="xl">
                   <Button
                     variant="outline"
                     onClick={() =>

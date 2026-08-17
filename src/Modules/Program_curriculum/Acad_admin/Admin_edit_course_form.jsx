@@ -298,7 +298,7 @@ function Admin_edit_course_form() {
               <Text size="sm" mb={8}>
                 <strong>Failed to update course: {errorData.error || response.statusText}</strong>
               </Text>
-              <Text size="xs" color="gray.7">
+              <Text size="xs" c="gray.7">
                 Please check your inputs and try again.
               </Text>
             </div>
@@ -320,7 +320,7 @@ function Admin_edit_course_form() {
             <Text size="sm" mb={8}>
               <strong>Connection error occurred while updating course.</strong>
             </Text>
-            <Text size="xs" color="gray.7">
+            <Text size="xs" c="gray.7">
               Please check your internet connection and try again.
             </Text>
           </div>
@@ -369,11 +369,11 @@ function Admin_edit_course_form() {
                 boxShadow: "0 0 10px rgba(0,0,0,0.1)",
               }}
             >
-              <Stack spacing="lg">
+              <Stack gap="lg">
                 <Text
                   size="xl"
-                  weight={700}
-                  align="center"
+                  fw={700}
+                  ta="center"
                   style={{ padding: "10px", borderRadius: "5px" }}
                 >
                   Course Form
@@ -850,7 +850,7 @@ function Admin_edit_course_form() {
                   />
                 </Group>
 
-                <Group position="apart">
+                <Group justify="space-between">
                   <Button 
                     variant="outline" 
                     onClick={() => navigate(-1)}
@@ -875,14 +875,14 @@ function Admin_edit_course_form() {
         size="lg"
       >
         {previewInfo && (
-          <Stack spacing="md">
+          <Stack gap="md">
             <Alert 
               color={previewInfo.version_bump_type === 'MAJOR' ? 'red' : 
                      previewInfo.version_bump_type === 'MINOR' ? 'orange' : 
                      previewInfo.version_bump_type === 'PATCH' ? 'green' : 'gray'}
               variant="light"
             >
-              <Text weight={600}>
+              <Text fw={600}>
                 {previewInfo.version_bump_type === 'NONE' ? 
                   '✏️ No version bump required' : 
                   `🔄 ${previewInfo.version_bump_type} version bump detected`
@@ -895,8 +895,8 @@ function Admin_edit_course_form() {
             
             {previewInfo.changed_academic_fields && previewInfo.changed_academic_fields.length > 0 && (
               <div>
-                <Text size="sm" weight={500}>Changed Academic Fields:</Text>
-                <Group spacing="xs" mt={4}>
+                <Text size="sm" fw={500}>Changed Academic Fields:</Text>
+                <Group gap="xs" mt={4}>
                   {previewInfo.changed_academic_fields.map((field, index) => (
                     <Badge key={index} variant="outline" size="sm">
                       {field}
@@ -912,7 +912,7 @@ function Admin_edit_course_form() {
               </Text>
             )}
             
-            <Group position="right" mt="lg">
+            <Group justify="flex-end" mt="lg">
               <Button variant="outline" onClick={() => setShowVersionPreview(false)}>
                 Close
               </Button>

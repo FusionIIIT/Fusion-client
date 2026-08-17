@@ -37,14 +37,12 @@ function VCourseProposalForm() {
   const courseProposal = courseProposals.find(
     (proposal) => proposal.pk === parseInt(id, 10),
   );
-  // console.log(courseProposal);
   const [superiorData, setSuperiorData] = useState(null);
   const [receiverOptions, setReceiverOptions] = useState([]);
   const [designationOptions, setDesignationOptions] = useState([]);
   const [disciplines, setDisciplines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  console.log(form.values);
   // const courseProposalData = Object.entries(courseProposal.fields);
   // console.log(courseProposalData);
   useEffect(() => {
@@ -55,7 +53,6 @@ function VCourseProposalForm() {
           courseProposal.fields.designation,
         );
         const data = await response.json();
-        console.log(data);
         setSuperiorData(data.superior_data);
         if (data.superior_data) {
           setReceiverOptions([
@@ -81,7 +78,6 @@ function VCourseProposalForm() {
     const fetchDisciplines = async () => {
       try {
         const response = await fetchDisciplinesData();
-        // console.log(response);
 
         // const data = [...d.name, ...d.acronym, ...d.id];
 
@@ -156,9 +152,8 @@ function VCourseProposalForm() {
         navigate("/programme_curriculum/faculty_outward_files");
       }
 
-      const responseData = await response.json();
+      await response.json();
       alert("Form submitted successfully!");
-      console.log("Submission successful:", responseData);
       // Optionally redirect or reset the form
       // navigate('/success-page');
       // form.reset();
@@ -202,8 +197,8 @@ function VCourseProposalForm() {
           }}
         >
           <form onSubmit={form.onSubmit(handleSubmit)}>
-            <Stack spacing="lg">
-              <Text size="xl" weight={700} align="center">
+            <Stack gap="lg">
+              <Text size="xl" fw={700} ta="center">
                 Course Proposal Form
               </Text>
 
@@ -247,7 +242,7 @@ function VCourseProposalForm() {
                 value={form.values.receiverId}
                 onChange={(value) => form.setFieldValue("receiverId", value)}
                 disabled={receiverOptions.length === 0}
-                nothingFound="No receivers found"
+                nothingFoundMessage="No receivers found"
                 required
               />
 
@@ -261,7 +256,7 @@ function VCourseProposalForm() {
                 }
                 required
                 disabled={designationOptions.length === 0}
-                nothingFound="No designations found"
+                nothingFoundMessage="No designations found"
               />
 
               <Textarea
@@ -282,11 +277,11 @@ function VCourseProposalForm() {
                 required
                 searchable
                 clearable
-                nothingFound="No disciplines found"
+                nothingFoundMessage="No disciplines found"
               />
             </Stack>
 
-            <Group position="right" mt="lg">
+            <Group justify="flex-end" mt="lg">
               <Button variant="outline" className="cancel-btn">
                 Cancel
               </Button>

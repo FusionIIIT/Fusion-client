@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Table, ScrollArea, Container, Button } from "@mantine/core";
-import "./Faculty_view_all_courses.css";
 
 const CURRICULUM_DATA = {
   info: {

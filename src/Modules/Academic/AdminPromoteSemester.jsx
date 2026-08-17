@@ -41,13 +41,15 @@ export default function AdminPromoteSemester() {
     const token = localStorage.getItem("authToken");
     axios
       .get(listBatchesRoute, { headers: { Authorization: `Token ${token}` } })
-      .then((res) => setBatches(
-        [...(res.data || [])].sort((a, b) => {
-          const yearDiff = (b.year ?? 0) - (a.year ?? 0);
-          if (yearDiff !== 0) return yearDiff;
-          return (a.label ?? "").localeCompare(b.label ?? "");
-        })
-      ))
+      .then((res) =>
+        setBatches(
+          [...(res.data || [])].sort((a, b) => {
+            const yearDiff = (b.year ?? 0) - (a.year ?? 0);
+            if (yearDiff !== 0) return yearDiff;
+            return (a.label ?? "").localeCompare(b.label ?? "");
+          }),
+        ),
+      )
       .catch(() => setError("Failed to load batches."))
       .finally(() => setLoadingBatches(false));
   }, []);
@@ -73,7 +75,7 @@ export default function AdminPromoteSemester() {
         .catch(() => setError("Failed to load students."))
         .finally(() => setLoadingStudents(false));
     },
-    [setStudents, setSelected]
+    [setStudents, setSelected],
   );
 
   // Reload students when batch changes
@@ -129,8 +131,8 @@ export default function AdminPromoteSemester() {
         setModalOpen(false);
         setSuccessMessage(
           isDemote
-            ? "Selected students have been successfully demoted."
-            : "Selected students have been successfully promoted."
+            ? "Selected students have been successfully reverted."
+            : "Selected students have been successfully promoted.",
         );
         setError("");
         fetchStudents(sourceBatch);
@@ -138,7 +140,7 @@ export default function AdminPromoteSemester() {
       .catch(() =>
         setError(
           isDemote
-            ? "Failed to demote students."
+            ? "Failed to revert students."
             : "Failed to promote students.",
         ),
       )
@@ -151,8 +153,10 @@ export default function AdminPromoteSemester() {
   }));
 
   return (
-    <Card style={{ position: 'relative' }}>
-      <LoadingOverlay visible={loadingBatches || loadingStudents || loadingApply} />
+    <Card style={{ position: "relative" }}>
+      <LoadingOverlay
+        visible={loadingBatches || loadingStudents || loadingApply}
+      />
 
       <Select
         label="Select Batch"
@@ -179,12 +183,18 @@ export default function AdminPromoteSemester() {
       )}
 
       {students.length > 0 && (
-        <>          
+        <>
           <Group mb="sm">
-            <Button onClick={selectAll} disabled={loadingStudents || loadingApply}>
+            <Button
+              onClick={selectAll}
+              disabled={loadingStudents || loadingApply}
+            >
               Select All
             </Button>
-            <Button onClick={deselectAll} disabled={loadingStudents || loadingApply}>
+            <Button
+              onClick={deselectAll}
+              disabled={loadingStudents || loadingApply}
+            >
               Deselect All
             </Button>
           </Group>
@@ -193,12 +203,15 @@ export default function AdminPromoteSemester() {
               <thead>
                 <tr>
                   <th>Select</th>
-                  <th>Username</th>
+                  <th>S. No.</th>
+                  <th>Roll No</th>
+                  <th>Name</th>
+                  <th>Discipline</th>
                   <th>Current Semester</th>
                 </tr>
               </thead>
               <tbody>
-                {students.map((st) => (
+                {students.map((st, index) => (
                   <tr key={st.id}>
                     <td>
                       <Checkbox
@@ -207,21 +220,24 @@ export default function AdminPromoteSemester() {
                         disabled={loadingApply}
                       />
                     </td>
+                    <td>{index + 1}</td>
                     <td>{st.username}</td>
+                    <td>{st.name || "—"}</td>
+                    <td>{st.discipline || "—"}</td>
                     <td>{st.current_semester_no}</td>
                   </tr>
                 ))}
               </tbody>
             </Table>
           </ScrollArea>
-          <Group position="right" mt="md">
+          <Group justify="flex-end" mt="md">
             <Button
               color="orange"
               variant="outline"
               onClick={() => submitChanges("demote")}
               disabled={toConfirm.length === 0 || loadingApply}
             >
-              Demote Selected
+              Revert
             </Button>
             <Button
               onClick={() => submitChanges("promote")}
@@ -236,16 +252,17 @@ export default function AdminPromoteSemester() {
       <Modal
         opened={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={isDemote ? "Confirm Demotion" : "Confirm Promotion"}
+        title={isDemote ? "Confirm Revert" : "Confirm Promotion"}
       >
         <Text mb="sm">
-          You are {isDemote ? "demoting" : "promoting"} these students:
+          You are {isDemote ? "reverting" : "promoting"} these students:
         </Text>
         <ScrollArea>
           <Table verticalSpacing="xs">
             <thead>
               <tr>
-                <th>Username</th>
+                <th>Roll No</th>
+                <th>Name</th>
                 <th>Old Semester</th>
                 <th>New Semester</th>
               </tr>
@@ -254,6 +271,7 @@ export default function AdminPromoteSemester() {
               {toConfirm.map((st) => (
                 <tr key={st.id}>
                   <td>{st.username}</td>
+                  <td>{st.name || "—"}</td>
                   <td>{st.current_semester_no}</td>
                   <td>
                     {isDemote
@@ -265,8 +283,12 @@ export default function AdminPromoteSemester() {
             </tbody>
           </Table>
         </ScrollArea>
-        <Group position="right" mt="md">
-          <Button variant="outline" onClick={() => setModalOpen(false)} disabled={loadingApply}>
+        <Group justify="flex-end" mt="md">
+          <Button
+            variant="outline"
+            onClick={() => setModalOpen(false)}
+            disabled={loadingApply}
+          >
             Cancel
           </Button>
           <Button color="red" onClick={confirmApply} loading={loadingApply}>

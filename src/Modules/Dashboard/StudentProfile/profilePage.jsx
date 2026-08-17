@@ -2,8 +2,7 @@ import { Stack, Text, Card, Image, Flex, Box } from "@mantine/core";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
-import CustomBreadcrumbs from "../../../components/Breadcrumbs";
-import ModuleTabs from "../../../components/moduleTabs";
+import { PageTabs } from "../../../ui/components/PageTabs";
 import avatarImage from "../../../assets/avatar.png";
 import ProfileComponent from "./profileComponent";
 import SkillsTechComponent from "./skillsComponent";
@@ -103,8 +102,8 @@ function Profile() {
         />,
         <WorkExperienceComponent
           key="work"
-          experience={profileData?.experience}
-          project={profileData?.project}
+          experience={profileData?.experience ?? []}
+          project={profileData?.project ?? []}
         />,
         <AchievementsComponent key="achievements" achievements={profileData?.achievement} />,
       ]
@@ -112,12 +111,13 @@ function Profile() {
 
   return (
     <Stack>
-      <CustomBreadcrumbs />
-      <ModuleTabs
-        tabs={tabItems}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        badges={[]}
+      <PageTabs
+        value={activeTab}
+        onChange={setActiveTab}
+        tabs={tabItems.map((item, index) => ({
+          value: String(index),
+          label: item.title,
+        }))}
       />
       <Flex
         align="flex-start"

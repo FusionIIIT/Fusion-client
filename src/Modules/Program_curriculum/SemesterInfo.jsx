@@ -36,7 +36,6 @@ export default function SemesterInfo() {
             },
           },
         );
-        // console.log(response)
         setsemCourseSlots(response.data);
       } catch (error) {
         console.error("Error fetching curriculum data:", error);
@@ -48,7 +47,6 @@ export default function SemesterInfo() {
     fetchsemCourseslotData();
   }, []);
 
-  // console.log(semcourseSlots)
   const handleDeleteCourseSlot = async () => {
     const cacheChangeKey = `CurriculumCacheChange_${curriculumId}`;
       localStorage.setItem(cacheChangeKey, "true");
@@ -277,7 +275,7 @@ export default function SemesterInfo() {
     >
       {/* Breadcrumb Section */}
       {/* <Flex justify="flex-start" align="center" mb={20}>
-        <Text size="md" weight={500} style={{ color: "#2C3E50" }}>
+        <Text size="md" fw={500} style={{ color: "#2C3E50" }}>
           Program and Curriculum &gt; Curriculums &gt; CSE UG Curriculum
         </Text>
       </Flex> */}
@@ -291,7 +289,7 @@ export default function SemesterInfo() {
         <Text size="md" mb="xl">
           Are you sure you want to remove this course slot?
         </Text>
-        <Group position="right">
+        <Group justify="flex-end">
           <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>
             Cancel
           </Button>

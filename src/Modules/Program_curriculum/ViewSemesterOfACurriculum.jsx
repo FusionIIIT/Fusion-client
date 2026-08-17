@@ -1,7 +1,7 @@
 import { Table } from "@mantine/core";
 import React, { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
-import "./Acad_admin/Admin_view_semesters_of_a_curriculum.css";
+import styles from "./Acad_admin/Admin_view_semesters_of_a_curriculum.module.css";
 import { fetchSemestersOfCurriculumData } from "./api/api";
 /* eslint-disable jsx-a11y/control-has-associated-label */
 function ViewSemesterOfACurriculum() {

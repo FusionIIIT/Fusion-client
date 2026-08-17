@@ -20,6 +20,7 @@ import {
 } from "@mantine/core";
 import axios from "axios";
 import { showNotification } from "@mantine/notifications";
+import { courseLabel } from "../../lib/course";
 
 import {
   availableCoursesRoute,
@@ -119,7 +120,7 @@ export default function GenerateStudentList() {
       setCourseOptions(
         res.data.map(c => ({
           value: String(c.id),
-          label: `${c.code} - ${c.name}`,
+          label: courseLabel(c),
           instructor: c.instructor || 'TBA',
           sections: c.sections || [],
         }))
@@ -468,10 +469,6 @@ export default function GenerateStudentList() {
 
         {/* Roll List Tab */}
         <Tabs.Panel value="rolllist" pt="md">
-          <Text size="lg" weight={700} align="center" mb="md" color="blue">
-            Generate Student Roll List
-          </Text>
-
           <Group grow mb="md">
             <Select
               label="Academic Year"
@@ -505,7 +502,7 @@ export default function GenerateStudentList() {
             clearable
             mb="xs"
           />
-          <Text size="xs" color="dimmed" mb="md">
+          <Text size="xs" c="dimmed" mb="md">
             💡 If no list type is selected, the system will generate a complete roll list of all students enrolled in the course (Regular, Backlog, Improvement, etc.)
           </Text> */}
 
@@ -566,10 +563,6 @@ export default function GenerateStudentList() {
 
         {/* Pre-Registration Tab */}
         <Tabs.Panel value="preregistration" pt="md">
-          <Text size="lg" weight={700} align="center" mb="md" color="blue">
-            Pre-Registration Report
-          </Text>
-
           <Group grow mb="md">
             <TextInput
               label="Semester"
@@ -604,41 +597,41 @@ export default function GenerateStudentList() {
 
           {preRegData && (
             <Paper withBorder p="md" mt="md">
-              <Stack spacing="md">
+              <Stack gap="md">
 
                 {/* Report title */}
-                <Title order={5} align="center" color="blue">
+                <Title order={5} ta="center" c="blue">
                   {preRegData.title}
                 </Title>
 
                 {/* Stats row */}
-                <Group position="center" spacing="xl">
-                  <Group spacing="xs">
+                <Group justify="center" gap="xl">
+                  <Group gap="xs">
                     <Badge size="lg" color="green" variant="filled" radius="sm">
                       Registered
                     </Badge>
-                    <Text size="xl" weight={700} color="green">
+                    <Text size="xl" fw={700} c="green">
                       {uniqueStudents.registered}
                     </Text>
-                    <Text size="sm" color="dimmed">students</Text>
+                    <Text size="sm" c="dimmed">students</Text>
                   </Group>
-                  <Group spacing="xs">
+                  <Group gap="xs">
                     <Badge size="lg" color="red" variant="filled" radius="sm">
                       Not Registered
                     </Badge>
-                    <Text size="xl" weight={700} color="red">
+                    <Text size="xl" fw={700} c="red">
                       {uniqueStudents.notRegistered}
                     </Text>
-                    <Text size="sm" color="dimmed">students</Text>
+                    <Text size="sm" c="dimmed">students</Text>
                   </Group>
-                  <Group spacing="xs">
+                  <Group gap="xs">
                     <Badge size="lg" color="blue" variant="light" radius="sm">
                       Total
                     </Badge>
-                    <Text size="xl" weight={700}>
+                    <Text size="xl" fw={700}>
                       {uniqueStudents.registered + uniqueStudents.notRegistered}
                     </Text>
-                    <Text size="sm" color="dimmed">students</Text>
+                    <Text size="sm" c="dimmed">students</Text>
                   </Group>
                 </Group>
 
@@ -701,13 +694,12 @@ export default function GenerateStudentList() {
                         borderRadius: "8px",
                         padding: "6px 12px",
                         height: "36px",
-                        "&:focus": { borderColor: "#228be6" },
                       },
                     }}
                   />
 
                   {/* Row count */}
-                  <Text size="xs" color="dimmed" style={{ whiteSpace: "nowrap", flexShrink: 0 }}>
+                  <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap", flexShrink: 0 }}>
                     {filteredPreRegRows.length} rows
                   </Text>
 
@@ -716,7 +708,7 @@ export default function GenerateStudentList() {
 
                   {/* Export */}
                   <Button
-                    leftIcon={<span style={{ fontSize: 13 }}>↓</span>}
+                    leftSection={<span style={{ fontSize: 13 }}>↓</span>}
                     onClick={exportPreRegistrationReport}
                     loading={exportLoading}
                     variant="filled"
@@ -811,7 +803,7 @@ export default function GenerateStudentList() {
         opened={showPreview}
         onClose={() => setShowPreview(false)}
         title={
-          <Text size="lg" weight={700} style={{ color: "#1c7ed6" }}>
+          <Text size="lg" fw={700} style={{ color: "#1c7ed6" }}>
             {programmeType !== 'All' ? `${programmeType} ` : ''}{listType || 'All Registration Types'} Student List Preview
           </Text>
         }
@@ -820,25 +812,25 @@ export default function GenerateStudentList() {
         centered
       >
         <Paper withBorder p="md" style={{ backgroundColor: "#f8f9fa" }}>
-          <Stack spacing="md">
+          <Stack gap="md">
             {/* Course Header Information */}
             <Box style={{ borderBottom: "1px solid #dee2e6", paddingBottom: "10px" }}>
-              <Text align="center" size="lg" weight={700} style={{ color: "#1c7ed6" }}>
+              <Text ta="center" size="lg" fw={700} style={{ color: "#1c7ed6" }}>
                 PDPM INDIAN INSTITUTE OF INFORMATION TECHNOLOGY, DESIGN AND MANUFACTURING JABALPUR
               </Text>
-              <Text align="center" size="md" weight={600} mt="xs">
+              <Text ta="center" size="md" fw={600} mt="xs">
                 {semesterType.toUpperCase()}, {academicYear}
               </Text>
             </Box>
 
             {/* Course Details */}
             <Box>
-              <Text size="sm" weight={500}>Course No.: <Text span>{courseOptions.find(c => c.value === course)?.label?.split(' - ')[0] || 'N/A'}</Text></Text>
-              <Text size="sm" weight={500}>Course Title: <Text span>{courseOptions.find(c => c.value === course)?.label?.split(' - ')[1] || courseOptions.find(c => c.value === course)?.label || 'N/A'}</Text></Text>
-              <Text size="sm" weight={500}>Instructor: <Text span>{
+              <Text size="sm" fw={500}>Course No.: <Text span>{courseOptions.find(c => c.value === course)?.label?.split(' - ')[0] || 'N/A'}</Text></Text>
+              <Text size="sm" fw={500}>Course Title: <Text span>{courseOptions.find(c => c.value === course)?.label?.split(' - ')[1] || courseOptions.find(c => c.value === course)?.label || 'N/A'}</Text></Text>
+              <Text size="sm" fw={500}>Instructor: <Text span>{
                 courseOptions.find(c => c.value === course)?.instructor || 'TBA'
               }</Text></Text>
-              <Text size="sm" weight={500}>List Type: <Text span color={listType ? "blue" : "green"}>
+              <Text size="sm" fw={500}>List Type: <Text span c={listType ? "blue" : "green"}>
                 {programmeType !== 'All' ? `${programmeType} - ` : ""}{listType || "Complete Roll List (All Registration Types)"}
               </Text></Text>
             </Box>
@@ -899,7 +891,7 @@ export default function GenerateStudentList() {
               </Alert>
             )}
 
-            <Group position="right" mt="lg">
+            <Group justify="flex-end" mt="lg">
               <Button variant="outline" onClick={() => setShowPreview(false)}>
                 Cancel
               </Button>

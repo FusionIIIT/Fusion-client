@@ -1,16 +1,15 @@
 import React, { useEffect, useState, useCallback } from "react";
 import {
   Card,
+  Box,
   Title,
   Text,
-  Table,
   Button,
   Group,
   Tabs,
   Modal,
   Loader,
   Alert,
-  Select,
   Badge,
   SegmentedControl,
   Stack,
@@ -19,6 +18,7 @@ import {
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import axios from "axios";
+import { courseLabel } from "../../lib/course";
 
 import {
   phdCourseSlotsRoute,
@@ -29,6 +29,25 @@ import {
   studentProgressSeminarEnrollmentRoute,
   studentTeachingCreditEnrollmentRoute,
 } from "../../routes/academicRoutes";
+import tabClasses from "../../ui/styles/tabs.module.css";
+import FusionTable from "../../components/FusionTable";
+import { formatDate } from "../../lib/datetime";
+import { StatusBadge } from "../../ui/components/StatusBadge";
+import SlotCard from "./components/SlotCard";
+import SlotRow from "./components/SlotRow";
+import SlotSelect from "./components/SlotSelect";
+import { courseRequestBody, slotReady, sourceOf } from "./lib/blSlot";
+
+const SUMMARY_COLUMNS = ["Type", "Slot", "Detail", "Credits"];
+const REQUEST_COLUMNS = [
+  "Type",
+  "Slot",
+  "Detail",
+  "Credits",
+  "Status",
+  "Remarks",
+  "Requested",
+];
 
 const REG_BADGE_COLOR = {
   pending: "yellow",
@@ -107,7 +126,9 @@ function PhDCourseRegisterForm() {
           return {
             ...slot,
             courses: res.data.courses || [],
+            sourceCourses: res.data.source_courses || null,
             selectedCourse: "",
+            selectedSource: "",
           };
         }),
       );
@@ -117,6 +138,20 @@ function PhDCourseRegisterForm() {
       setRegistrationOpen(slotsRes.data.registration_open !== false);
       setRegistrationMessage(slotsRes.data.registration_message || "");
       setThesisInfo(thesisRes.data);
+      // PG students have a fixed credit value per evaluation_type -- no free
+      // choice: 3 for a block-graded (S/X) semester, 12 for the decimal-graded
+      // semester (fixed regardless of any earlier block-graded semesters;
+      // those are additional thesis credit, not a substitute for any part of it).
+      if (
+        thesisRes.data.programme_category === "PG" &&
+        thesisRes.data.thesis_slot
+      ) {
+        setThesisCredits(
+          thesisRes.data.thesis_slot.evaluation_type === "blocks_sx"
+            ? "3"
+            : "12",
+        );
+      }
       setSeminarInfo(seminarRes.data);
       setTeachingCreditInfo(teachingCreditRes.data);
       setHasCourseRequestThisSemester(
@@ -149,10 +184,9 @@ function PhDCourseRegisterForm() {
     const course = (slot?.courses || []).find(
       (c) => String(c.id) === String(val),
     );
-    // BL (backlog) courses: same rule as UG add — only a prior grade below C+
-    // is eligible. Warn immediately on selection and reject the pick, so the
-    // student sees why here instead of a fleeting error at submit time.
-    if (val && course && course.bl_eligible === false) {
+    // Only a plain slot gates on a prior grade; a BL slot gates on its source
+    // course instead, and its list here is the replacement pool.
+    if (!slot?.sourceCourses && val && course && course.bl_eligible === false) {
       showNotification({
         title: "Not eligible for this backlog course",
         message: course.bl_grade
@@ -171,6 +205,15 @@ function PhDCourseRegisterForm() {
     );
   };
 
+  // Picking a new source drops any replacement chosen for the previous one.
+  const pickSource = (idx, val) => {
+    setSlots((prev) =>
+      prev.map((s, i) =>
+        i === idx ? { ...s, selectedSource: val, selectedCourse: "" } : s,
+      ),
+    );
+  };
+
   // One combined registration per semester: once anything has been
   // submitted -- a course request, or a thesis/seminar/teaching-credit
   // registration -- that semester's registration is closed. No re-opening
@@ -182,7 +225,7 @@ function PhDCourseRegisterForm() {
     isActiveReg(seminarInfo?.registration) ||
     isActiveReg(teachingCreditInfo?.registration);
 
-  const coursesToSubmit = slots.filter((s) => s.selectedCourse);
+  const coursesToSubmit = slots.filter(slotReady);
   const thesisTopicApproved =
     !!thesisInfo?.thesis_topic?.status &&
     thesisInfo.thesis_topic.status === "dean_approved";
@@ -266,7 +309,7 @@ function PhDCourseRegisterForm() {
               key: "teaching-credit",
               type: "Teaching Credit",
               slot: slot.name,
-              detail: c ? `${c.code} – ${c.name}` : "Invalid",
+              detail: c ? courseLabel(c) : "Invalid",
               credits: c ? c.credit : "—",
             };
           })(),
@@ -278,11 +321,9 @@ function PhDCourseRegisterForm() {
     setSubmitting(true);
     try {
       const calls = coursesToSubmit.map((s) =>
-        axios.post(
-          phdSubmitCourseRequestRoute,
-          { slot_id: s.id, course_id: parseInt(s.selectedCourse, 10) },
-          { headers: authHeaders() },
-        ),
+        axios.post(phdSubmitCourseRequestRoute, courseRequestBody(s), {
+          headers: authHeaders(),
+        }),
       );
       if (willEnrollThesis) {
         calls.push(
@@ -355,8 +396,8 @@ function PhDCourseRegisterForm() {
     return (
       <Card withBorder p="md">
         <Text size="sm" ta="center" c="dimmed">
-          {registrationMessage || "Registration is not open right now."} You can view
-          your existing requests in the <b>My Requests</b> tab.
+          {registrationMessage || "Registration is not open right now."} You can
+          view your existing requests in the <b>My Requests</b> tab.
         </Text>
       </Card>
     );
@@ -380,34 +421,88 @@ function PhDCourseRegisterForm() {
             No course slots available for your current semester.
           </Text>
         ) : (
-          <Table highlightOnHover>
-            <thead>
-              <tr>
-                <th>Slot</th>
-                <th>Select Course</th>
-              </tr>
-            </thead>
-            <tbody>
-              {slots.map((s, i) => (
-                <tr key={s.id}>
-                  <td>{s.name}</td>
-                  <td style={{ minWidth: 250 }}>
-                    <Select
-                      placeholder="Select course…"
-                      autoComplete="off"
-                      data={(s.courses || []).map((c) => ({
-                        value: String(c.id),
-                        label: `${c.code} - ${c.name}`,
-                      }))}
-                      value={s.selectedCourse}
-                      onChange={(val) => pickCourse(i, val)}
-                      clearable
+          slots.map((s, i) => {
+            const source = sourceOf(s);
+            return (
+              <SlotCard key={s.id} name={s.name}>
+                {s.sourceCourses ? (
+                  <>
+                    <SlotRow
+                      primary="Source course"
+                      secondary={
+                        source
+                          ? `Grade ${source.grade} — registers as ${source.registration_type}`
+                          : "A course you scored below C+ in"
+                      }
+                      control={
+                        s.sourceCourses.length === 0 ? (
+                          <Text size="sm" c="dimmed">
+                            No course of yours is below C+.
+                          </Text>
+                        ) : (
+                          <SlotSelect
+                            label={`Source course for ${s.name}`}
+                            placeholder="Select the course to clear…"
+                            value={s.selectedSource}
+                            onChange={(val) => pickSource(i, val)}
+                            options={s.sourceCourses.map((c) => ({
+                              value: String(c.id),
+                              label: `${courseLabel(c)} — ${c.grade} · ${c.registration_type}`,
+                            }))}
+                          />
+                        )
+                      }
                     />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
+                    {source && source.replaceable && (
+                      <SlotRow
+                        primary="Replace with"
+                        secondary={`${source.code} was an open elective, so another course can stand in for it`}
+                        control={
+                          <SlotSelect
+                            label={`Replacement course for ${s.name}`}
+                            placeholder="Select course…"
+                            value={s.selectedCourse}
+                            onChange={(val) => pickCourse(i, val)}
+                            options={(s.courses || []).map((c) => ({
+                              value: String(c.id),
+                              label: courseLabel(c),
+                            }))}
+                          />
+                        }
+                      />
+                    )}
+                    {source && !source.replaceable && (
+                      <SlotRow
+                        primary="Registers"
+                        secondary={`${source.code} was not an open elective, so it has to be cleared by retaking it`}
+                        control={
+                          <Badge color="blue" variant="light">
+                            {source.code} · {source.registration_type}
+                          </Badge>
+                        }
+                      />
+                    )}
+                  </>
+                ) : (
+                  <SlotRow
+                    primary="Course"
+                    control={
+                      <SlotSelect
+                        label={`Course for ${s.name}`}
+                        placeholder="Select course…"
+                        value={s.selectedCourse}
+                        onChange={(val) => pickCourse(i, val)}
+                        options={(s.courses || []).map((c) => ({
+                          value: String(c.id),
+                          label: courseLabel(c),
+                        }))}
+                      />
+                    }
+                  />
+                )}
+              </SlotCard>
+            );
+          })
         )}
       </Card>
 
@@ -417,7 +512,11 @@ function PhDCourseRegisterForm() {
           <Title order={5}>Thesis</Title>
           {!isActiveReg(thesisInfo?.registration) && !thesisTopicApproved && (
             <Tooltip label="Your thesis topic must be dean-approved before you can enroll.">
-              <Badge color="red" variant="light">
+              <Badge
+                color="red"
+                variant="light"
+                styles={{ label: { whiteSpace: "normal" } }}
+              >
                 Requires Dean-Approved Topic
               </Badge>
             </Tooltip>
@@ -433,34 +532,37 @@ function PhDCourseRegisterForm() {
             No thesis slot configured for your current semester.
           </Text>
         ) : (
-          <Table highlightOnHover>
-            <thead>
-              <tr>
-                <th>Slot</th>
-                <th>Select Thesis</th>
-                <th>Credits</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>{thesisInfo.thesis_slot.name}</td>
-                <td style={{ minWidth: 250 }}>
-                  <Select
-                    placeholder="Select thesis…"
-                    autoComplete="off"
-                    disabled={!thesisTopicApproved}
-                    data={(thesisInfo.thesis_slot.theses || []).map((t) => ({
-                      value: String(t.id),
-                      label: `${t.code} - ${t.name}`,
-                    }))}
-                    value={selectedThesis}
-                    onChange={(val) => setSelectedThesis(val || "")}
-                    clearable
-                  />
-                </td>
-                <td style={{ minWidth: 200 }}>
+          <SlotCard name={thesisInfo.thesis_slot.name}>
+            <SlotRow
+              primary="Thesis"
+              control={
+                <SlotSelect
+                  label="Thesis"
+                  placeholder="Select thesis…"
+                  disabled={!thesisTopicApproved}
+                  value={selectedThesis}
+                  onChange={(val) => setSelectedThesis(val || "")}
+                  options={(thesisInfo.thesis_slot.theses || []).map((t) => ({
+                    value: String(t.id),
+                    label: courseLabel(t),
+                  }))}
+                />
+              }
+            />
+            <SlotRow
+              primary="Credits"
+              secondary={
+                thesisInfo.programme_category === "PG"
+                  ? "Fixed for your programme"
+                  : null
+              }
+              control={
+                thesisInfo.programme_category === "PG" ? (
+                  <Badge color="blue" variant="light">
+                    {thesisCredits} credits
+                  </Badge>
+                ) : (
                   <SegmentedControl
-                    fullWidth
                     disabled={!thesisTopicApproved || !selectedThesis}
                     value={thesisCredits}
                     onChange={setThesisCredits}
@@ -470,10 +572,10 @@ function PhDCourseRegisterForm() {
                     }))}
                     color="blue"
                   />
-                </td>
-              </tr>
-            </tbody>
-          </Table>
+                )
+              }
+            />
+          </SlotCard>
         )}
       </Card>
 
@@ -484,7 +586,11 @@ function PhDCourseRegisterForm() {
           {!isActiveReg(seminarInfo?.registration) &&
             !seminarInfo?.thesis_topic_approved && (
               <Tooltip label="Your thesis topic must be dean-approved before you can enroll.">
-                <Badge color="red" variant="light">
+                <Badge
+                  color="red"
+                  variant="light"
+                  styles={{ label: { whiteSpace: "normal" } }}
+                >
                   Requires Dean-Approved Topic
                 </Badge>
               </Tooltip>
@@ -499,35 +605,25 @@ function PhDCourseRegisterForm() {
             No progress seminar slot configured for your current semester.
           </Text>
         ) : (
-          <Table highlightOnHover>
-            <thead>
-              <tr>
-                <th>Slot</th>
-                <th>Select Seminar</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>{seminarInfo.progress_seminar_slot.name}</td>
-                <td style={{ minWidth: 250 }}>
-                  <Select
-                    placeholder="Select seminar…"
-                    autoComplete="off"
-                    disabled={!seminarInfo?.thesis_topic_approved}
-                    data={(
-                      seminarInfo.progress_seminar_slot.seminars || []
-                    ).map((s) => ({
-                      value: String(s.id),
-                      label: `${s.code} - ${s.name}`,
-                    }))}
-                    value={selectedSeminar}
-                    onChange={(val) => setSelectedSeminar(val || "")}
-                    clearable
-                  />
-                </td>
-              </tr>
-            </tbody>
-          </Table>
+          <SlotCard name={seminarInfo.progress_seminar_slot.name}>
+            <SlotRow
+              primary="Seminar"
+              control={
+                <SlotSelect
+                  label="Progress seminar"
+                  placeholder="Select seminar…"
+                  value={selectedSeminar}
+                  onChange={(val) => setSelectedSeminar(val || "")}
+                  options={(
+                    seminarInfo.progress_seminar_slot.seminars || []
+                  ).map((s) => ({
+                    value: String(s.id),
+                    label: courseLabel(s),
+                  }))}
+                />
+              }
+            />
+          </SlotCard>
         )}
       </Card>
 
@@ -538,7 +634,11 @@ function PhDCourseRegisterForm() {
           {!isActiveReg(teachingCreditInfo?.registration) &&
             !teachingCreditInfo?.comprehensive_exam_passed && (
               <Tooltip label="Comprehensive Examination must be passed before you can enroll.">
-                <Badge color="red" variant="light">
+                <Badge
+                  color="red"
+                  variant="light"
+                  styles={{ label: { whiteSpace: "normal" } }}
+                >
                   Requires Comprehensive Exam
                 </Badge>
               </Tooltip>
@@ -555,44 +655,37 @@ function PhDCourseRegisterForm() {
             No teaching credit slot configured for your current semester.
           </Text>
         ) : (
-          <Table highlightOnHover>
-            <thead>
-              <tr>
-                <th>Slot</th>
-                <th>Select Teaching Credit</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>{teachingCreditInfo.teaching_credit_slot.name}</td>
-                <td style={{ minWidth: 250 }}>
-                  <Select
-                    placeholder="Select teaching credit…"
-                    autoComplete="off"
-                    disabled={!teachingCreditInfo?.comprehensive_exam_passed}
-                    data={(
-                      teachingCreditInfo.teaching_credit_slot
-                        .teaching_credits || []
-                    ).map((t) => ({
-                      value: String(t.id),
-                      label: `${t.code} - ${t.name}`,
-                    }))}
-                    value={selectedTeachingCredit}
-                    onChange={(val) => setSelectedTeachingCredit(val || "")}
-                    clearable
-                  />
-                </td>
-              </tr>
-            </tbody>
-          </Table>
+          <SlotCard name={teachingCreditInfo.teaching_credit_slot.name}>
+            <SlotRow
+              primary="Teaching credit"
+              control={
+                <SlotSelect
+                  label="Teaching credit"
+                  placeholder="Select teaching credit…"
+                  value={selectedTeachingCredit}
+                  onChange={(val) => setSelectedTeachingCredit(val || "")}
+                  options={(
+                    teachingCreditInfo.teaching_credit_slot.teaching_credits ||
+                    []
+                  ).map((t) => ({
+                    value: String(t.id),
+                    label: courseLabel(t),
+                  }))}
+                />
+              }
+            />
+          </SlotCard>
         )}
       </Card>
 
-      <Group justify="flex-end">
-        <Button disabled={nothingSelected} onClick={() => setPreview(true)}>
-          Review &amp; Submit
-        </Button>
-      </Group>
+      <Button
+        fullWidth
+        styles={{ label: { whiteSpace: "normal" } }}
+        disabled={nothingSelected}
+        onClick={() => setPreview(true)}
+      >
+        Review &amp; Submit
+      </Button>
 
       <Modal
         opened={preview}
@@ -605,26 +698,17 @@ function PhDCourseRegisterForm() {
             Nothing selected.
           </Text>
         ) : (
-          <Table highlightOnHover withTableBorder>
-            <thead>
-              <tr>
-                <th>Type</th>
-                <th>Slot</th>
-                <th>Detail</th>
-                <th>Credits</th>
-              </tr>
-            </thead>
-            <tbody>
-              {summaryRows.map((r) => (
-                <tr key={r.key}>
-                  <td>{r.type}</td>
-                  <td>{r.slot}</td>
-                  <td>{r.detail}</td>
-                  <td>{r.credits}</td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
+          <FusionTable
+            columnNames={SUMMARY_COLUMNS}
+            ariaLabel="Registration summary"
+            elements={summaryRows.map((r) => ({
+              id: r.key,
+              Type: r.type,
+              Slot: r.slot,
+              Detail: r.detail,
+              Credits: r.credits,
+            }))}
+          />
         )}
         <Divider my="md" />
         <Group justify="flex-end">
@@ -687,12 +771,6 @@ function PhDMyCourseRequests() {
 
   if (loading) return <Loader />;
   if (error) return <Alert color="red">{error}</Alert>;
-
-  const badgeColor = (status) => {
-    if (status === "Approved" || status === "verified") return "green";
-    if (status === "Rejected" || status === "rejected") return "red";
-    return "yellow";
-  };
 
   const rows = [
     ...requests.map((r) => ({
@@ -788,50 +866,27 @@ function PhDMyCourseRequests() {
           You haven&apos;t submitted any registration requests yet.
         </Text>
       ) : (
-        <Table highlightOnHover withTableBorder>
-          <thead>
-            <tr>
-              <th>Type</th>
-              <th>Slot</th>
-              <th>Detail</th>
-              <th>Credits</th>
-              <th>Status</th>
-              <th>Remarks</th>
-              <th>Requested At</th>
-            </tr>
-          </thead>
-          <tbody>
-            {semesterGroups.map(([semester, groupRows]) => (
-              <React.Fragment key={semester}>
-                <tr>
-                  <td
-                    colSpan={7}
-                    style={{ background: "#f8f9fa", fontWeight: 600 }}
-                  >
-                    Semester {semester}
-                  </td>
-                </tr>
-                {groupRows.map((r) => (
-                  <tr key={r.key}>
-                    <td>{r.type}</td>
-                    <td>{r.slot}</td>
-                    <td>{r.detail}</td>
-                    <td>{r.credits}</td>
-                    <td>
-                      <Badge color={badgeColor(r.status)}>{r.status}</Badge>
-                    </td>
-                    <td>{r.remarks || "—"}</td>
-                    <td>
-                      {r.requestedAt
-                        ? new Date(r.requestedAt).toLocaleString()
-                        : "—"}
-                    </td>
-                  </tr>
-                ))}
-              </React.Fragment>
-            ))}
-          </tbody>
-        </Table>
+        semesterGroups.map(([semester, groupRows]) => (
+          <Box key={semester} mb="lg">
+            <Text fw={600} size="sm" mb="xs">
+              Semester {semester}
+            </Text>
+            <FusionTable
+              columnNames={REQUEST_COLUMNS}
+              ariaLabel={`Semester ${semester} registration requests`}
+              elements={groupRows.map((r) => ({
+                id: r.key,
+                Type: r.type,
+                Slot: r.slot,
+                Detail: r.detail,
+                Credits: r.credits,
+                Status: <StatusBadge status={r.status} />,
+                Remarks: r.remarks || "—",
+                Requested: formatDate(r.requestedAt),
+              }))}
+            />
+          </Box>
+        ))
       )}
     </Card>
   );
@@ -841,16 +896,20 @@ export default function PhDCourseRegistration() {
   const [activeTab, setActiveTab] = useState("register");
 
   return (
-    <Card withBorder p="md">
+    <Card withBorder p={{ base: "sm", sm: "md" }}>
       <Tabs
         value={activeTab}
         onChange={setActiveTab}
-        variant="default"
+        variant="pills"
         color="blue"
       >
-        <Tabs.List grow>
-          <Tabs.Tab value="register">Register</Tabs.Tab>
-          <Tabs.Tab value="requests">My Requests</Tabs.Tab>
+        <Tabs.List className={tabClasses.list}>
+          <Tabs.Tab value="register" className={tabClasses.tab}>
+            Register
+          </Tabs.Tab>
+          <Tabs.Tab value="requests" className={tabClasses.tab}>
+            My Requests
+          </Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel value="register" pt="md">

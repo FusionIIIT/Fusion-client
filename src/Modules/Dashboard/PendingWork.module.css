@@ -1,0 +1,41 @@
+.heading {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8296a8;
+}
+
+.card {
+  display: block;
+  border-radius: 10px;
+}
+
+.card:hover :global(.mantine-Card-root) {
+  border-color: #15abff;
+  box-shadow: 0 6px 18px rgba(21, 171, 255, 0.12);
+}
+
+.card[data-empty="true"] {
+  opacity: 0.55;
+}
+
+.label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #43536b;
+  line-height: 1.3;
+}
+
+.arrow {
+  color: #8296a8;
+  flex-shrink: 0;
+}
+
+.count {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #0b1220;
+  line-height: 1.1;
+  margin-top: 4px;
+}

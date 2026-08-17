@@ -125,7 +125,7 @@ function CourseDetail() {
         {/* Course Details Card - spans 9 columns on desktop, 12 on mobile */}
         <Grid.Col span={isMobile ? 12 : 9} order={isMobile ? 2 : 1}>
           <Card shadow="sm" padding="lg" className="course-card">
-            <Text size="lg" weight={700} className="course-title">
+            <Text size="lg" fw={700} className="course-title">
               {courseDetails.code} - {courseDetails.name} - v
               {courseDetails.version}
             </Text>
@@ -506,7 +506,7 @@ function CourseDetail() {
         title={`📋 Change History - ${courseDetails?.name} (${courseDetails?.code})`}
         size="xl"
       >
-        <Stack spacing="md">
+        <Stack gap="md">
           {auditLoading ? (
             <Text>Loading audit logs...</Text>
           ) : auditLogs.length === 0 ? (
@@ -515,15 +515,15 @@ function CourseDetail() {
             </Alert>
           ) : (
             <>
-              <Stack spacing="sm">
+              <Stack gap="sm">
                 {auditLogs.map((log) => (
                   <Card key={log.id} padding="md" withBorder>
                     <Grid>
                       <Grid.Col span={8}>
-                        <Text size="sm" weight={500}>
+                        <Text size="sm" fw={500}>
                           {log.action} by {log.user}
                         </Text>
-                        <Text size="xs" color="gray.6">
+                        <Text size="xs" c="gray.6">
                           {new Date(log.timestamp).toLocaleString()}
                         </Text>
                       </Grid.Col>
@@ -548,20 +548,20 @@ function CourseDetail() {
                     </Grid>
                     
                     {log.reason && (
-                      <Text size="sm" mt="xs" color="gray.7">
+                      <Text size="sm" mt="xs" c="gray.7">
                         {log.reason}
                       </Text>
                     )}
                     
                     {log.old_version && log.new_version && (
-                      <Text size="xs" mt={4} color="blue.6">
+                      <Text size="xs" mt={4} c="blue.6">
                         Version: {log.old_version} → {log.new_version}
                       </Text>
                     )}
                     
                     {log.changed_fields && log.changed_fields.length > 0 && (
                       <div style={{ marginTop: '8px' }}>
-                        <Text size="xs" color="gray.6">Changed fields:</Text>
+                        <Text size="xs" c="gray.6">Changed fields:</Text>
                         <div style={{ marginTop: '4px' }}>
                           {log.changed_fields.map((field, index) => (
                             <Badge key={index} variant="outline" size="xs" mr={4}>

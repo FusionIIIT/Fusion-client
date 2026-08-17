@@ -1,4 +1,4 @@
-import { createTheme, MantineProvider, Center, Loader } from "@mantine/core";
+import { MantineProvider, Center, Loader } from "@mantine/core";
 import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css";
 import "@mantine/notifications/styles.css";
@@ -6,8 +6,9 @@ import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Notifications } from "@mantine/notifications";
 import { useSelector } from "react-redux";
-import { Layout } from "./components/layout";
-import Dashboard from "./Modules/Dashboard/dashboardNotifications";
+import { Layout } from "./app/AppLayout";
+import DashboardHome from "./Modules/Dashboard/DashboardHome";
+import NotificationsPage from "./Modules/Dashboard/dashboardNotifications";
 import Profile from "./Modules/Dashboard/StudentProfile/profilePage";
 import LoginPage from "./pages/login";
 import ThesisInvitationResponse from "./pages/thesisInvitationResponse";
@@ -23,19 +24,8 @@ import ProfileCompletionModal from "./components/ProfileCompletionModal";
 import Examination from "./Modules/Examination/examination";
 import Database from "./Modules/Database/database";
 import ProgrammeCurriculumRoutes from "./Modules/Program_curriculum/programmCurriculum";
-import PlacementCellRoutes from "./routes/placementCellRoutes/PlacementCellRoutes";
 import NotFoundPage from "./components/NotFoundPage";
-
-const theme = createTheme({
-  breakpoints: {
-    xxs: "300px",
-    xs: "375px",
-    sm: "768px",
-    md: "992px",
-    lg: "1200px",
-    xl: "1408px",
-  },
-});
+import { theme } from "./ui/theme/theme";
 
 export default function App() {
   const location = useLocation();
@@ -182,12 +172,20 @@ export default function App() {
             path="/dashboard"
             element={
               <Layout>
-                <Dashboard />
+                <DashboardHome />
               </Layout>
             }
           />
           <Route
-            path="/academics"
+            path="/notifications"
+            element={
+              <Layout>
+                <NotificationsPage />
+              </Layout>
+            }
+          />
+          <Route
+            path="/academics/*"
             element={
               <Layout>
                 <AcademicPage />
@@ -195,7 +193,7 @@ export default function App() {
             }
           />
           <Route
-            path="/thesis-research"
+            path="/thesis-research/*"
             element={
               <Layout>
                 <ThesisResearchPage />
@@ -249,14 +247,6 @@ export default function App() {
           />
           <Route path="/examination/*" element={<Examination />} />
           <Route path="/database/*" element={<Database />} />
-          <Route
-            path="/placement-cell/*"
-            element={
-              <Layout>
-                <PlacementCellRoutes />
-              </Layout>
-            }
-          />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       )}

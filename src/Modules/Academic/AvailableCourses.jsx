@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card, Text, Loader, Group } from "@mantine/core";
 import axios from "axios";
 import FusionTable from "../../components/FusionTable";
+import CourseList from "./components/CourseList";
 import { nextSemCoursesRoute } from "../../routes/academicRoutes";
 
 function AvailableCourses() {
@@ -40,30 +41,26 @@ function AvailableCourses() {
     "Course",
   ];
 
+  const nextSemester = courses[0]?.semester?.semester_no;
+
   const mappedCourses = courses.map((course) => ({
-    "Slot Name": <Text style={{ whiteSpace: "pre-line" }}>{course.name}</Text>,
+    id: course.id,
+    "Slot Name": course.name,
     "Slot Type": course.type,
     Semester: course.semester.semester_no,
-    Credits: course.courses[0].credit,
-    Course: (
-      <Text style={{ whiteSpace: "pre-line" }}>
-        {course.courses.map((cour) => cour.name).join("\n")}
-      </Text>
-    ),
+    Credits: course.courses[0]?.credit,
+    Course: <CourseList courses={course.courses} />,
   }));
 
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
-      <Text
-        size="lg"
-        weight={700}
-        mb="md"
-        style={{ textAlign: "center", width: "100%", color: "#3B82F6" }}
-      >
-        Available Courses Next Semester
-      </Text>
+      {nextSemester != null && (
+        <Text size="sm" fw={600} mb="md">
+          Semester {nextSemester}
+        </Text>
+      )}
       {loading ? (
-        <Group position="center" py="xl">
+        <Group justify="center" py="xl">
           <Loader variant="dots" />
         </Group>
       ) : (

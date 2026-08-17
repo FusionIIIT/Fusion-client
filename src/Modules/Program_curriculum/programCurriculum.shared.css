@@ -1,0 +1,35 @@
+  .program-options {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 10px 0;
+    font-size: 0.82rem;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .program-options > p {
+    margin: 0;
+    color: #666;
+    cursor: pointer;
+  }
+  
+  .program-options > p:hover {
+    color: #000;
+    text-decoration: underline;
+  }
+  
+  .program-options .active {
+    font-weight: bold;
+    color: #000;
+    text-decoration: none;
+  }
+  
+  .program-options > p::after {
+    content: "|";
+    margin-left: 10px;
+    color: #ddd;
+  }
+  
+  .program-options > p:last-child::after {
+    content: ""; /* Remove the '|' from the last item */
+  }

@@ -50,8 +50,6 @@ function ValidateAuth() {
         must_complete_profile = false,
       } = data;
 
-      // console.log("User Data:", data);
-
       dispatch(setUserName(name));
       dispatch(setRollNo(roll_no));
       dispatch(setRoles(designation_info));
