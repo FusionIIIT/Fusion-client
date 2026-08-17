@@ -312,8 +312,6 @@ export default function SubmitGradesProf() {
 
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
-      <Title order={2} mb="md">Submit Course Grades</Title>
-
       {error && <Alert color="red" mb="md">{error}</Alert>}
       {errorList.length > 0 && (
         <Alert color="red" mb="md">

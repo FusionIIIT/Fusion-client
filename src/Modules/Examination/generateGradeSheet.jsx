@@ -129,7 +129,6 @@ export default function GenerateGradeSheet() {
         )}
         <Paper shadow="sm" radius="sm" p="md" withBorder>
           <Stack gap="md">
-            <h1>Grade Sheet Details</h1>
             <form onSubmit={handleSubmit}>
               <SimpleGrid cols={2} spacing="md">
                 <Box>

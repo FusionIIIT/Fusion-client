@@ -177,7 +177,6 @@ export default function GenerateTranscript() {
         )}
         <Paper shadow="sm" radius="sm" p="md" withBorder>
           <Stack gap="md">
-            <h1>Transcript Details</h1>
             <form onSubmit={handleSubmit}>
               <SimpleGrid cols={2} spacing="md">
                 <Box>
