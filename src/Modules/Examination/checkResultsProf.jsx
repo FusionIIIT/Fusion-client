@@ -3,7 +3,6 @@ import {
   Select,
   Button,
   Card,
-  Title,
   Group,
   Loader,
   Alert,
@@ -155,8 +154,6 @@ export default function GradesDownloadPage() {
   return (
     <Card withBorder p="lg">
       <Stack gap="md">
-        <Title order={1}>Download Course Grades</Title>
-
         {error && (
           <Alert color="red" withCloseButton onClose={() => setError("")}>
             {error}

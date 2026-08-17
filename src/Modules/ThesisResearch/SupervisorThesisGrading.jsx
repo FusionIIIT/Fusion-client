@@ -11,7 +11,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Card,
-  Title,
   Text,
   Select,
   Button,
@@ -714,10 +713,6 @@ export default function SupervisorThesisGrading() {
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder mb="xl">
       <Stack gap="md">
-        {/* Header */}
-        <Title order={3} c="blue" fw={700} ta="center">
-          Thesis Grade Submission
-        </Title>
         <Text size="sm" c="dimmed" ta="center">
           Submit S (Satisfactory) or X (Unsatisfactory) grades for your
           supervised students. All of a student&apos;s grades must be submitted

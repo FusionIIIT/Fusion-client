@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Card, Title, Table, Badge, Center, Loader } from "@mantine/core";
+import { Card, Table, Badge, Center, Loader } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import axios from "axios";
 import { supervisorTeachingCreditListRoute } from "../../../routes/academicRoutes";
@@ -46,10 +46,6 @@ export default function SupervisorTeachingCreditList() {
 
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
-      <Title order={3} mb="md">
-        Teaching Credit — Your Students
-      </Title>
-
       <Table striped highlightOnHover>
         <thead>
           <tr>
