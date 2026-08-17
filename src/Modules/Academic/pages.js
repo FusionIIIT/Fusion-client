@@ -153,7 +153,7 @@ export const ACADEMIC_PAGES = [
     slug: "thesis-course-requests",
     title: "Thesis & Course Requests",
     icon: "Signature",
-    group: "Calendar & Feedback",
+    group: "Course Changes",
     roles: ADMIN_ROLES,
     desktopOnly: true,
   },

@@ -535,15 +535,21 @@ export default function StudentCourses() {
 
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
-      <TextInput
-        label="Roll Number"
-        value={rollNo}
-        onChange={(e) => setRollNo(e.target.value)}
-        mb="md"
-      />
-      <Button fullWidth onClick={handleGetCourses} mb="md" disabled={loading}>
-        {loading ? <Loader size="xs" /> : "Fetch Courses"}
-      </Button>
+      <Group align="flex-end" gap="sm" wrap="wrap" mb="md">
+        <TextInput
+          label="Roll Number"
+          placeholder="Enter roll number"
+          value={rollNo}
+          onChange={(e) => setRollNo(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && rollNo && !loading) handleGetCourses();
+          }}
+          style={{ flex: 1, minWidth: 200 }}
+        />
+        <Button onClick={handleGetCourses} disabled={!rollNo || loading}>
+          {loading ? <Loader size="xs" /> : "Fetch Courses"}
+        </Button>
+      </Group>
 
       {error && (
         <Alert title="Error" color="red" mb="md">

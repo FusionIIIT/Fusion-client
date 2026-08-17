@@ -131,7 +131,7 @@ export default function AdminPromoteSemester() {
         setModalOpen(false);
         setSuccessMessage(
           isDemote
-            ? "Selected students have been successfully demoted."
+            ? "Selected students have been successfully reverted."
             : "Selected students have been successfully promoted.",
         );
         setError("");
@@ -140,7 +140,7 @@ export default function AdminPromoteSemester() {
       .catch(() =>
         setError(
           isDemote
-            ? "Failed to demote students."
+            ? "Failed to revert students."
             : "Failed to promote students.",
         ),
       )
@@ -237,7 +237,7 @@ export default function AdminPromoteSemester() {
               onClick={() => submitChanges("demote")}
               disabled={toConfirm.length === 0 || loadingApply}
             >
-              Demote Selected
+              Revert
             </Button>
             <Button
               onClick={() => submitChanges("promote")}
@@ -252,10 +252,10 @@ export default function AdminPromoteSemester() {
       <Modal
         opened={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={isDemote ? "Confirm Demotion" : "Confirm Promotion"}
+        title={isDemote ? "Confirm Revert" : "Confirm Promotion"}
       >
         <Text mb="sm">
-          You are {isDemote ? "demoting" : "promoting"} these students:
+          You are {isDemote ? "reverting" : "promoting"} these students:
         </Text>
         <ScrollArea>
           <Table verticalSpacing="xs">
