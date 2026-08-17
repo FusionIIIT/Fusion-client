@@ -4,6 +4,15 @@
   --table-border-color: #dfe9f2;
 }
 
+/* Mantine only stripes rows it renders itself; plain <tr> rows get it here. */
+.table tbody tr:not([data-striped]):nth-of-type(odd) {
+  background-color: var(--table-striped-color);
+}
+
+.table tbody tr:not([data-hover]):hover {
+  background-color: var(--table-highlight-on-hover-color);
+}
+
 .table thead th {
   background: #c5e2f6;
   color: #2b7fc4;
