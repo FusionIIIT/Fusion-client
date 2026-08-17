@@ -24,7 +24,7 @@ export const CURRICULUM_PAGES = [
     slug: "admin_courses",
     title: "Courses",
     icon: "Book",
-    group: "Catalogue",
+    group: "Assignments",
     roles: PC_ADMIN,
   },
   {

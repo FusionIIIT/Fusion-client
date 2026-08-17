@@ -93,7 +93,7 @@ export const EXAMINATION_PAGES = [
     key: "generateTranscript",
     slug: "generate-transcript",
     title: "Transcript",
-    icon: "Scroll",
+    icon: "Certificate",
     group: null,
     roles: ACAD,
   },
