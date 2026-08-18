@@ -19,7 +19,6 @@ const GROUP_ICONS = {
   "Course Changes": "ArrowsLeftRight",
   "Student Records": "Users",
   "Calendar & Feedback": "CalendarBlank",
-  Catalogue: "SquaresFour",
   Batches: "Users",
   Assignments: "UserPlus",
   Proposals: "Signature",
@@ -95,31 +94,35 @@ const toLink = (base, page) => ({
   to: `${base}/${page.slug}`,
 });
 
+// Groups and ungrouped links keep the order their pages are declared in.
 function itemsFor(section, base, pages) {
   const grouped = new Map();
-  const loose = [];
+  const order = [];
 
   pages.forEach((page) => {
     if (!page.group) {
-      loose.push(toLink(base, page));
+      order.push({ link: toLink(base, page) });
       return;
     }
-    if (!grouped.has(page.group)) grouped.set(page.group, []);
+    if (!grouped.has(page.group)) {
+      grouped.set(page.group, []);
+      order.push({ group: page.group });
+    }
     grouped.get(page.group).push(toLink(base, page));
   });
 
-  const items = [...grouped.entries()].map(([group, links]) =>
-    links.length === 1
+  return order.map(({ link, group }) => {
+    if (link) return link;
+    const links = grouped.get(group);
+    return links.length === 1
       ? { ...links[0], label: group, icon: GROUP_ICONS[group] ?? links[0].icon }
       : {
           code: `${section}:${group}`,
           label: group,
           icon: GROUP_ICONS[group],
           links,
-        },
-  );
-
-  return [...items, ...loose];
+        };
+  });
 }
 
 function dedupeBySlug(pages) {

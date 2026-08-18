@@ -16,7 +16,23 @@ export const CURRICULUM_PAGES = [
     slug: "acad_view_all_programme",
     title: "Programmes",
     icon: "Bank",
-    group: "Catalogue",
+    group: null,
+    roles: PC_ADMIN,
+  },
+  {
+    key: "adminCurriculums",
+    slug: "acad_view_all_working_curriculums",
+    title: "Curriculums",
+    icon: "Stack",
+    group: null,
+    roles: PC_ADMIN,
+  },
+  {
+    key: "adminDisciplines",
+    slug: "acad_discipline_view",
+    title: "Disciplines",
+    icon: "TreeStructure",
+    group: null,
     roles: PC_ADMIN,
   },
   {
@@ -25,22 +41,6 @@ export const CURRICULUM_PAGES = [
     title: "Courses",
     icon: "Book",
     group: "Assignments",
-    roles: PC_ADMIN,
-  },
-  {
-    key: "adminCurriculums",
-    slug: "acad_view_all_working_curriculums",
-    title: "Curriculums",
-    icon: "Stack",
-    group: "Catalogue",
-    roles: PC_ADMIN,
-  },
-  {
-    key: "adminDisciplines",
-    slug: "acad_discipline_view",
-    title: "Disciplines",
-    icon: "TreeStructure",
-    group: "Catalogue",
     roles: PC_ADMIN,
   },
   {
@@ -81,7 +81,7 @@ export const CURRICULUM_PAGES = [
     slug: "faculty_view_all_programmes",
     title: "Programmes",
     icon: "Bank",
-    group: "Catalogue",
+    group: null,
     roles: PC_FACULTY,
   },
   {
@@ -89,7 +89,7 @@ export const CURRICULUM_PAGES = [
     slug: "faculty_courses",
     title: "Courses",
     icon: "Book",
-    group: "Catalogue",
+    group: null,
     roles: PC_FACULTY,
   },
   {
@@ -97,7 +97,7 @@ export const CURRICULUM_PAGES = [
     slug: "faculty_view_all_working_curriculums",
     title: "Curriculums",
     icon: "Stack",
-    group: "Catalogue",
+    group: null,
     roles: PC_FACULTY,
   },
   {
@@ -105,7 +105,7 @@ export const CURRICULUM_PAGES = [
     slug: "faculty_discipline",
     title: "Disciplines",
     icon: "TreeStructure",
-    group: "Catalogue",
+    group: null,
     roles: PC_FACULTY,
   },
   {
@@ -113,7 +113,7 @@ export const CURRICULUM_PAGES = [
     slug: "faculty_batches",
     title: "Batches",
     icon: "Users",
-    group: "Catalogue",
+    group: null,
     roles: PC_FACULTY,
   },
   {
@@ -121,7 +121,7 @@ export const CURRICULUM_PAGES = [
     slug: "faculty_course_instructor",
     title: "Course Instructors",
     icon: "ChalkboardTeacher",
-    group: "Catalogue",
+    group: null,
     roles: PC_FACULTY,
   },
   {
