@@ -29,5 +29,6 @@ jobs:
 
       - name: Legacy lint backlog (advisory)
         if: always()
+        timeout-minutes: 5
         run: |
           npm run lint:all 2>&1 | tail -5 || true
