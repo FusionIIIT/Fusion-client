@@ -289,6 +289,9 @@ export default function RegisteredCourses() {
 
       if (opts.some((opt) => opt.value === newValue)) {
         setSemesterValue(newValue);
+      } else if (!semJson && opts.length) {
+        const latestSemesterWithCourses = opts[opts.length - 1].value;
+        await fetchCourses(latestSemesterWithCourses, opts);
       } else {
         setSemesterValue("");
       }

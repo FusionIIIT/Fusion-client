@@ -1,15 +1,21 @@
 import { useEffect, useMemo } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Flex, Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 
 import { AppShellLayout } from "../ui/layout/AppShellLayout";
+import { usePendingCounts } from "../Modules/Dashboard/usePendingCounts";
+import { countsByPath } from "../Modules/Dashboard/pendingQueues";
 import { buildNavGroups } from "../ui/nav/navigation";
 import { buildBottomNav } from "../ui/nav/bottomNav";
-import { findActiveLink, findActiveModuleLabel } from "../ui/nav/match";
+import {
+  findActiveLink,
+  findActiveModuleLabel,
+  flattenNavLinks,
+} from "../ui/nav/match";
 import { pageTitle } from "../lib/pageTitle";
 import {
   setRole,
@@ -25,7 +31,7 @@ import {
 } from "../routes/dashboardRoutes";
 import useLogout from "../helper/useLogout";
 
-export function Layout({ children }) {
+export function Layout({ children = null }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -74,6 +80,16 @@ export function Layout({ children }) {
   const bottomNavItems = useMemo(
     () => buildBottomNav({ role, navGroups }),
     [role, navGroups],
+  );
+
+  const reachablePaths = useMemo(
+    () => flattenNavLinks(navGroups).map((link) => link.to),
+    [navGroups],
+  );
+  const { queues, counts } = usePendingCounts(reachablePaths);
+  const navCounts = useMemo(
+    () => countsByPath(queues, counts),
+    [queues, counts],
   );
 
   useEffect(() => {
@@ -136,14 +152,15 @@ export function Layout({ children }) {
       unreadCount={unreadCount}
       onBellClick={() => navigate("/notifications")}
       bottomNavItems={bottomNavItems}
+      navCounts={navCounts}
     >
-      {children}
+      {children ?? <Outlet />}
     </AppShellLayout>
   );
 }
 
 Layout.propTypes = {
-  children: PropTypes.node.isRequired,
+  children: PropTypes.node,
 };
 
 export default Layout;

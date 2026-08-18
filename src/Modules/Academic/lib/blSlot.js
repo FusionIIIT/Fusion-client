@@ -32,3 +32,38 @@ export function courseRequestBody(slot) {
     course_id: source.replaceable ? Number(slot.selectedCourse) : source.id,
   };
 }
+
+export function takenCourseIds(slots) {
+  const taken = new Set();
+  (slots ?? []).forEach((slot) => {
+    if (slot?.selectedSource) taken.add(String(slot.selectedSource));
+    if (slot?.selectedCourse) taken.add(String(slot.selectedCourse));
+  });
+  return taken;
+}
+
+// picked anywhere means gone everywhere, except the field already holding it
+export function offerableCourses(courses, taken, currentValue) {
+  const keep = String(currentValue ?? "");
+  return (courses ?? []).filter((course) => {
+    const id = String(course.id);
+    return id === keep || !taken.has(id);
+  });
+}
+
+const slotOrderKey = (name) => {
+  const match = String(name ?? "").match(/^(\D*)(\d*)/);
+  return [(match?.[1] ?? "").trim().toUpperCase(), Number(match?.[2] || 0)];
+};
+
+export function compareSlots(a, b) {
+  const [aPrefix, aNumber] = slotOrderKey(a?.name);
+  const [bPrefix, bNumber] = slotOrderKey(b?.name);
+  if (aPrefix !== bPrefix) return aPrefix < bPrefix ? -1 : 1;
+  if (aNumber !== bNumber) return aNumber - bNumber;
+  return String(a?.name ?? "").localeCompare(String(b?.name ?? ""));
+}
+
+export function sortSlots(slots) {
+  return [...(slots ?? [])].sort(compareSlots);
+}

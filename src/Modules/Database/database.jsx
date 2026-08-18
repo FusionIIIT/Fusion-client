@@ -1,7 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useSelector } from "react-redux";
 
-import { Layout } from "../../app/AppLayout";
 import { ModulePage } from "../../ui/components/ModulePage";
 import ViewDatabase from "./ViewDatabase.jsx";
 
@@ -11,19 +10,17 @@ export default function Database() {
   if (userRole === undefined || userRole === null) return null;
 
   return (
-    <Layout>
-      <Routes>
-        <Route index element={<Navigate to="/database/view" replace />} />
-        <Route
-          path="view"
-          element={
-            <ModulePage title="Database">
-              <ViewDatabase />
-            </ModulePage>
-          }
-        />
-        <Route path="*" element={<Navigate to="/database/view" replace />} />
-      </Routes>
-    </Layout>
+    <Routes>
+      <Route index element={<Navigate to="/database/view" replace />} />
+      <Route
+        path="view"
+        element={
+          <ModulePage title="Database">
+            <ViewDatabase />
+          </ModulePage>
+        }
+      />
+      <Route path="*" element={<Navigate to="/database/view" replace />} />
+    </Routes>
   );
 }

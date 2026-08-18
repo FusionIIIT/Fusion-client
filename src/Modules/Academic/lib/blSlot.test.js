@@ -4,8 +4,11 @@ import {
   blSlotReady,
   courseRequestBody,
   isBlSlot,
+  offerableCourses,
   slotReady,
+  sortSlots,
   sourceOf,
+  takenCourseIds,
 } from "./blSlot";
 
 const OE_SOURCE = {
@@ -110,5 +113,73 @@ describe("courseRequestBody", () => {
       slot_id: 90,
       course_id: 12,
     });
+  });
+});
+
+describe("takenCourseIds", () => {
+  it("collects every course already picked, as source or as replacement", () => {
+    const taken = takenCourseIds([
+      { selectedSource: "10", selectedCourse: "20" },
+      { selectedSource: "", selectedCourse: "30" },
+      { selectedSource: "40", selectedCourse: "" },
+    ]);
+    expect([...taken].sort()).toEqual(["10", "20", "30", "40"]);
+  });
+
+  it("survives missing and empty slots", () => {
+    expect(takenCourseIds(undefined).size).toBe(0);
+    expect(takenCourseIds([null, {}]).size).toBe(0);
+  });
+});
+
+describe("offerableCourses", () => {
+  const courses = [{ id: 1 }, { id: 2 }, { id: 3 }];
+
+  it("drops a course another slot already claimed", () => {
+    const offered = offerableCourses(courses, new Set(["2"]), "");
+    expect(offered.map((c) => c.id)).toEqual([1, 3]);
+  });
+
+  it("keeps the course this field itself is holding", () => {
+    const offered = offerableCourses(courses, new Set(["2", "3"]), "3");
+    expect(offered.map((c) => c.id)).toEqual([1, 3]);
+  });
+
+  it("offers everything when nothing is taken", () => {
+    expect(offerableCourses(courses, new Set(), "").map((c) => c.id)).toEqual([
+      1, 2, 3,
+    ]);
+  });
+});
+
+describe("sortSlots", () => {
+  it("puts BL1 before BL2, whatever order they arrived in", () => {
+    const sorted = sortSlots([{ name: "BL2" }, { name: "BL1" }]);
+    expect(sorted.map((s) => s.name)).toEqual(["BL1", "BL2"]);
+  });
+
+  it("orders by number, not by text, so BL10 follows BL2", () => {
+    const sorted = sortSlots([
+      { name: "BL10" },
+      { name: "BL2" },
+      { name: "BL1" },
+    ]);
+    expect(sorted.map((s) => s.name)).toEqual(["BL1", "BL2", "BL10"]);
+  });
+
+  it("groups slot families together", () => {
+    const sorted = sortSlots([
+      { name: "TH3" },
+      { name: "BL2" },
+      { name: "SEM3" },
+      { name: "BL1" },
+    ]);
+    expect(sorted.map((s) => s.name)).toEqual(["BL1", "BL2", "SEM3", "TH3"]);
+  });
+
+  it("does not mutate the list it was given", () => {
+    const input = [{ name: "BL2" }, { name: "BL1" }];
+    sortSlots(input);
+    expect(input.map((s) => s.name)).toEqual(["BL2", "BL1"]);
   });
 });

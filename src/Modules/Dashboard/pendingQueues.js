@@ -107,3 +107,12 @@ export function requestsFor(queues) {
   });
   return [...byUrl.entries()].map(([url, group]) => ({ url, queues: group }));
 }
+
+export function countsByPath(queues, counts) {
+  const totals = {};
+  queues.forEach((queue) => {
+    const value = Number(counts?.[queue.key]) || 0;
+    if (value) totals[queue.to] = (totals[queue.to] ?? 0) + value;
+  });
+  return totals;
+}

@@ -862,6 +862,14 @@ export const exportStudentImages = async (students, filename, hostUrl) => {
   return count;
 };
 
+export const categoryLabel = (value) => {
+  const stored = String(value ?? "").trim();
+  const option = (STUDENT_FIELDS_CONFIG.category?.options ?? []).find(
+    (choice) => choice.value === stored,
+  );
+  return option ? option.label : stored;
+};
+
 export const getStudentFieldValue = (student, column) => {
   const fieldName = column.fields.find(
     (name) =>
@@ -878,6 +886,10 @@ export const getStudentFieldValue = (student, column) => {
   // Clean discipline names
   if (column.key === "branch") {
     value = cleanDisciplineName(value);
+  }
+
+  if (column.key === "category") {
+    value = categoryLabel(value);
   }
 
   // Format dates

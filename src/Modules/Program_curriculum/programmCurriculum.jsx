@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import PropTypes from "prop-types";
-import { Layout } from "../../app/AppLayout";
 import { PageHeader } from "../../ui/components/PageHeader";
 import { RouteTrail } from "../../ui/components/RouteTrail";
 import { pagesForRole } from "../../ui/nav/roles";
@@ -156,10 +155,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/admin_courses"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminViewAllCourses />
-            </Layout>
+            <NavTab />
+            <AdminViewAllCourses />
           </ProtectedRoute>
         }
       />
@@ -167,10 +164,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/admin_course/:id"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminViewACourse />
-            </Layout>
+            <NavTab />
+            <AdminViewACourse />
           </ProtectedRoute>
         }
       />
@@ -178,10 +173,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/admin_batches"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminViewAllBatches />
-            </Layout>
+            <NavTab />
+            <AdminViewAllBatches />
           </ProtectedRoute>
         }
       />
@@ -189,10 +182,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/view_curriculum"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminViewSemestersOfACurriculum />
-            </Layout>
+            <NavTab />
+            <AdminViewSemestersOfACurriculum />
           </ProtectedRoute>
         }
       />
@@ -200,10 +191,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/acad_view"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <ProgrammeCurriculumView />
-            </Layout>
+            <NavTab />
+            <ProgrammeCurriculumView />
           </ProtectedRoute>
         }
       />
@@ -211,10 +200,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/acad_discipline_view"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <DisciplineAcad />
-            </Layout>
+            <NavTab />
+            <DisciplineAcad />
           </ProtectedRoute>
         }
       />
@@ -222,10 +209,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/acad_view_all_programme"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminViewAllProgrammes />
-            </Layout>
+            <NavTab />
+            <AdminViewAllProgrammes />
           </ProtectedRoute>
         }
       />
@@ -233,10 +218,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/acad_view_all_working_curriculums"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminViewAllWorkingCurriculum />
-            </Layout>
+            <NavTab />
+            <AdminViewAllWorkingCurriculum />
           </ProtectedRoute>
         }
       />
@@ -244,10 +227,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/admin_course_instructor"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminViewAllCourseInstructors />
-            </Layout>
+            <NavTab />
+            <AdminViewAllCourseInstructors />
           </ProtectedRoute>
         }
       />
@@ -255,10 +236,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/admin_upcoming_batches"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminUpcomingBatch />
-            </Layout>
+            <NavTab />
+            <AdminUpcomingBatch />
           </ProtectedRoute>
         }
       />
@@ -266,10 +245,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/admin_theses"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminViewAllTheses />
-            </Layout>
+            <NavTab />
+            <AdminViewAllTheses />
           </ProtectedRoute>
         }
       />
@@ -277,10 +254,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/admin_add_thesis"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminAddThesisForm />
-            </Layout>
+            <NavTab />
+            <AdminAddThesisForm />
           </ProtectedRoute>
         }
       />
@@ -289,10 +264,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/admin_add_seminar"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminAddSeminarForm />
-            </Layout>
+            <NavTab />
+            <AdminAddSeminarForm />
           </ProtectedRoute>
         }
       />
@@ -301,10 +274,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/admin_add_teaching_credit"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminAddTeachingCreditForm />
-            </Layout>
+            <NavTab />
+            <AdminAddTeachingCreditForm />
           </ProtectedRoute>
         }
       />
@@ -314,10 +285,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/faculty_courses"
         element={
           <ProtectedRoute allowedRoles={FACULTY_ROLES}>
-            <Layout>
-              <NavTab />
-              <FacultyViewAllCourses />
-            </Layout>
+            <NavTab />
+            <FacultyViewAllCourses />
           </ProtectedRoute>
         }
       />
@@ -325,10 +294,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/faculty_course_view/:id"
         element={
           <ProtectedRoute allowedRoles={FACULTY_ROLES}>
-            <Layout>
-              <NavTab />
-              <FacultyViewACourse />
-            </Layout>
+            <NavTab />
+            <FacultyViewACourse />
           </ProtectedRoute>
         }
       />
@@ -336,10 +303,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/view_a_course_proposal_form"
         element={
           <ProtectedRoute allowedRoles={FACULTY_ROLES}>
-            <Layout>
-              <NavTab />
-              <FacultyViewACourseProposalForm />
-            </Layout>
+            <NavTab />
+            <FacultyViewACourseProposalForm />
           </ProtectedRoute>
         }
       />
@@ -347,10 +312,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/faculty_batches"
         element={
           <ProtectedRoute allowedRoles={FACULTY_ROLES}>
-            <Layout>
-              <NavTab />
-              <FacultyViewAllBatches />
-            </Layout>
+            <NavTab />
+            <FacultyViewAllBatches />
           </ProtectedRoute>
         }
       />
@@ -358,10 +321,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/faculty_view_course_proposal"
         element={
           <ProtectedRoute allowedRoles={FACULTY_ROLES}>
-            <Layout>
-              <NavTab />
-              <FacultyCourseProposal />
-            </Layout>
+            <NavTab />
+            <FacultyCourseProposal />
           </ProtectedRoute>
         }
       />
@@ -369,10 +330,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/filetracking"
         element={
           <ProtectedRoute allowedRoles={FACULTY_ROLES}>
-            <Layout>
-              <NavTab />
-              <VCourseProposalForm />
-            </Layout>
+            <NavTab />
+            <VCourseProposalForm />
           </ProtectedRoute>
         }
       />
@@ -380,10 +339,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/new_course_proposal_form"
         element={
           <ProtectedRoute allowedRoles={FACULTY_ROLES}>
-            <Layout>
-              <NavTab />
-              <FacultyAddCourseProposalForm />
-            </Layout>
+            <NavTab />
+            <FacultyAddCourseProposalForm />
           </ProtectedRoute>
         }
       />
@@ -391,10 +348,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/forward_course_forms"
         element={
           <ProtectedRoute allowedRoles={FACULTY_ROLES}>
-            <Layout>
-              <NavTab />
-              <FacultyCourseForwardForm />
-            </Layout>
+            <NavTab />
+            <FacultyCourseForwardForm />
           </ProtectedRoute>
         }
       />
@@ -402,10 +357,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/faculty_view_all_working_curriculums"
         element={
           <ProtectedRoute allowedRoles={FACULTY_ROLES}>
-            <Layout>
-              <NavTab />
-              <FacultyViewAllWorkingCurriculums />
-            </Layout>
+            <NavTab />
+            <FacultyViewAllWorkingCurriculums />
           </ProtectedRoute>
         }
       />
@@ -413,10 +366,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/view_inward_file"
         element={
           <ProtectedRoute allowedRoles={FACULTY_ROLES}>
-            <Layout>
-              <NavTab />
-              <ViewInwardFile />
-            </Layout>
+            <NavTab />
+            <ViewInwardFile />
           </ProtectedRoute>
         }
       />
@@ -424,10 +375,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/faculty_inward_files"
         element={
           <ProtectedRoute allowedRoles={FACULTY_ROLES}>
-            <Layout>
-              <NavTab />
-              <InwardFile />
-            </Layout>
+            <NavTab />
+            <InwardFile />
           </ProtectedRoute>
         }
       />
@@ -435,10 +384,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/faculty_outward_files"
         element={
           <ProtectedRoute allowedRoles={FACULTY_ROLES}>
-            <Layout>
-              <NavTab />
-              <OutwardFile />
-            </Layout>
+            <NavTab />
+            <OutwardFile />
           </ProtectedRoute>
         }
       />
@@ -446,10 +393,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/faculty_view"
         element={
           <ProtectedRoute allowedRoles={FACULTY_ROLES}>
-            <Layout>
-              <NavTab />
-              <ProgrammeCurriculumFacultyView />
-            </Layout>
+            <NavTab />
+            <ProgrammeCurriculumFacultyView />
           </ProtectedRoute>
         }
       />
@@ -457,10 +402,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/faculty_discipline"
         element={
           <ProtectedRoute allowedRoles={FACULTY_ROLES}>
-            <Layout>
-              <NavTab />
-              <Discipline />
-            </Layout>
+            <NavTab />
+            <Discipline />
           </ProtectedRoute>
         }
       />
@@ -468,10 +411,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/faculty_view_all_programmes"
         element={
           <ProtectedRoute allowedRoles={FACULTY_ROLES}>
-            <Layout>
-              <NavTab />
-              <ViewAllProgrammes />
-            </Layout>
+            <NavTab />
+            <ViewAllProgrammes />
           </ProtectedRoute>
         }
       />
@@ -479,10 +420,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/course_slot_details"
         element={
           <ProtectedRoute allowedRoles={[...FACULTY_ROLES, ...ADMIN_ROLES]}>
-            <Layout>
-              <NavTab />
-              <CourseSlotDetails />
-            </Layout>
+            <NavTab />
+            <CourseSlotDetails />
           </ProtectedRoute>
         }
       />
@@ -490,10 +429,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/semester_info"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <SemesterInfo />
-            </Layout>
+            <NavTab />
+            <SemesterInfo />
           </ProtectedRoute>
         }
       />
@@ -501,10 +438,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/faculty_course_instructor"
         element={
           <ProtectedRoute allowedRoles={[...FACULTY_ROLES, ...ADMIN_ROLES]}>
-            <Layout>
-              <NavTab />
-              <AdminViewAllCourseInstructors />
-            </Layout>
+            <NavTab />
+            <AdminViewAllCourseInstructors />
           </ProtectedRoute>
         }
       />
@@ -514,10 +449,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/student_courses"
         element={
           <ProtectedRoute allowedRoles={[...STUDENT_ROLES, ...FACULTY_ROLES]}>
-            <Layout>
-              <NavTab />
-              <ViewAllCourses />
-            </Layout>
+            <NavTab />
+            <ViewAllCourses />
           </ProtectedRoute>
         }
       />
@@ -525,10 +458,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/student_course/:id"
         element={
           <ProtectedRoute allowedRoles={[...STUDENT_ROLES, ...FACULTY_ROLES]}>
-            <Layout>
-              <NavTab />
-              <ViewACourse />
-            </Layout>
+            <NavTab />
+            <ViewACourse />
           </ProtectedRoute>
         }
       />
@@ -536,10 +467,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/student_batches"
         element={
           <ProtectedRoute allowedRoles={FACULTY_ROLES}>
-            <Layout>
-              <NavTab />
-              <ViewAllBatches />
-            </Layout>
+            <NavTab />
+            <ViewAllBatches />
           </ProtectedRoute>
         }
       />
@@ -547,10 +476,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/view_all_programmes"
         element={
           <ProtectedRoute allowedRoles={[...STUDENT_ROLES, ...FACULTY_ROLES]}>
-            <Layout>
-              <NavTab />
-              <ViewAllProgrammes />
-            </Layout>
+            <NavTab />
+            <ViewAllProgrammes />
           </ProtectedRoute>
         }
       />
@@ -558,10 +485,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/view_all_working_curriculums"
         element={
           <ProtectedRoute allowedRoles={[...STUDENT_ROLES, ...FACULTY_ROLES]}>
-            <Layout>
-              <NavTab />
-              <ViewAllWorkingCurriculums />
-            </Layout>
+            <NavTab />
+            <ViewAllWorkingCurriculums />
           </ProtectedRoute>
         }
       />
@@ -569,10 +494,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/curriculums/:id"
         element={
           <ProtectedRoute allowedRoles={[...STUDENT_ROLES, ...FACULTY_ROLES]}>
-            <Layout>
-              <NavTab />
-              <ProgrammeCurriculumStudView />
-            </Layout>
+            <NavTab />
+            <ProgrammeCurriculumStudView />
           </ProtectedRoute>
         }
       />
@@ -580,10 +503,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/stud_discipline_view"
         element={
           <ProtectedRoute allowedRoles={[...STUDENT_ROLES, ...FACULTY_ROLES]}>
-            <Layout>
-              <NavTab />
-              <DisciplineStud />
-            </Layout>
+            <NavTab />
+            <DisciplineStud />
           </ProtectedRoute>
         }
       />
@@ -591,10 +512,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/stud_semester_info/:id"
         element={
           <ProtectedRoute allowedRoles={[...STUDENT_ROLES, ...FACULTY_ROLES]}>
-            <Layout>
-              <NavTab />
-              <StudSemesterInfo />
-            </Layout>
+            <NavTab />
+            <StudSemesterInfo />
           </ProtectedRoute>
         }
       />
@@ -602,10 +521,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/stud_course_slot_details/:id"
         element={
           <ProtectedRoute allowedRoles={[...STUDENT_ROLES, ...FACULTY_ROLES]}>
-            <Layout>
-              <NavTab />
-              <StudCourseSlotDetails />
-            </Layout>
+            <NavTab />
+            <StudCourseSlotDetails />
           </ProtectedRoute>
         }
       />
@@ -613,10 +530,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/stud_curriculum_view/:id"
         element={
           <ProtectedRoute allowedRoles={[...STUDENT_ROLES, ...FACULTY_ROLES]}>
-            <Layout>
-              <NavTab />
-              <ViewSemesterOfACurriculum />
-            </Layout>
+            <NavTab />
+            <ViewSemesterOfACurriculum />
           </ProtectedRoute>
         }
       />
@@ -626,10 +541,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/acad_admin_add_batch_form"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminAddBatchForm />
-            </Layout>
+            <NavTab />
+            <AdminAddBatchForm />
           </ProtectedRoute>
         }
       />
@@ -637,10 +550,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/acad_admin_add_course_proposal_form"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminAddCourseProposalForm />
-            </Layout>
+            <NavTab />
+            <AdminAddCourseProposalForm />
           </ProtectedRoute>
         }
       />
@@ -648,10 +559,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/acad_admin_add_courseslot_form"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminAddCourseSlotForm />
-            </Layout>
+            <NavTab />
+            <AdminAddCourseSlotForm />
           </ProtectedRoute>
         }
       />
@@ -659,10 +568,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/thesis_slot_details"
         element={
           <ProtectedRoute allowedRoles={[...FACULTY_ROLES, ...ADMIN_ROLES]}>
-            <Layout>
-              <NavTab />
-              <ThesisSlotDetails />
-            </Layout>
+            <NavTab />
+            <ThesisSlotDetails />
           </ProtectedRoute>
         }
       />
@@ -670,10 +577,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/seminar_slot_details"
         element={
           <ProtectedRoute allowedRoles={[...FACULTY_ROLES, ...ADMIN_ROLES]}>
-            <Layout>
-              <NavTab />
-              <SeminarSlotDetails />
-            </Layout>
+            <NavTab />
+            <SeminarSlotDetails />
           </ProtectedRoute>
         }
       />
@@ -681,10 +586,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/teaching_credit_slot_details"
         element={
           <ProtectedRoute allowedRoles={[...FACULTY_ROLES, ...ADMIN_ROLES]}>
-            <Layout>
-              <NavTab />
-              <TeachingCreditSlotDetails />
-            </Layout>
+            <NavTab />
+            <TeachingCreditSlotDetails />
           </ProtectedRoute>
         }
       />
@@ -692,10 +595,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/acad_admin_add_thesis_slot_form"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminAddThesisSlotForm />
-            </Layout>
+            <NavTab />
+            <AdminAddThesisSlotForm />
           </ProtectedRoute>
         }
       />
@@ -703,10 +604,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/acad_admin_add_seminar_slot_form"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminAddSeminarSlotForm />
-            </Layout>
+            <NavTab />
+            <AdminAddSeminarSlotForm />
           </ProtectedRoute>
         }
       />
@@ -714,10 +613,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/acad_admin_add_teaching_credit_slot_form"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminAddTeachingCreditSlotForm />
-            </Layout>
+            <NavTab />
+            <AdminAddTeachingCreditSlotForm />
           </ProtectedRoute>
         }
       />
@@ -725,10 +622,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/acad_admin_add_curriculum_form"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminAddCurriculumForm />
-            </Layout>
+            <NavTab />
+            <AdminAddCurriculumForm />
           </ProtectedRoute>
         }
       />
@@ -736,10 +631,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/acad_admin_add_discipline_form"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminAddDisciplineForm />
-            </Layout>
+            <NavTab />
+            <AdminAddDisciplineForm />
           </ProtectedRoute>
         }
       />
@@ -747,10 +640,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/acad_admin_add_programme_form"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminAddProgrammeForm />
-            </Layout>
+            <NavTab />
+            <AdminAddProgrammeForm />
           </ProtectedRoute>
         }
       />
@@ -758,10 +649,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/acad_admin_instigate_form"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <InstigateForm />
-            </Layout>
+            <NavTab />
+            <InstigateForm />
           </ProtectedRoute>
         }
       />
@@ -769,10 +658,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/admin_edit_programme_form/:id"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminEditProgrammeForm />
-            </Layout>
+            <NavTab />
+            <AdminEditProgrammeForm />
           </ProtectedRoute>
         }
       />
@@ -780,10 +667,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/admin_edit_curriculum_form"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminEditCurriculumForm />
-            </Layout>
+            <NavTab />
+            <AdminEditCurriculumForm />
           </ProtectedRoute>
         }
       />
@@ -791,10 +676,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/acad_admin_replicate_curriculum_form"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminReplicateCurriculumform />
-            </Layout>
+            <NavTab />
+            <AdminReplicateCurriculumform />
           </ProtectedRoute>
         }
       />
@@ -802,10 +685,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/admin_edit_course_slot_form/:courseslotid"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminEditCourseSlotForm />
-            </Layout>
+            <NavTab />
+            <AdminEditCourseSlotForm />
           </ProtectedRoute>
         }
       />
@@ -813,10 +694,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/admin_edit_thesis_slot_form/:thesisslotid"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminEditThesisSlotForm />
-            </Layout>
+            <NavTab />
+            <AdminEditThesisSlotForm />
           </ProtectedRoute>
         }
       />
@@ -824,10 +703,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/admin_edit_seminar_slot_form/:seminarslotid"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminEditSeminarSlotForm />
-            </Layout>
+            <NavTab />
+            <AdminEditSeminarSlotForm />
           </ProtectedRoute>
         }
       />
@@ -835,10 +712,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/admin_edit_teaching_credit_slot_form/:tcslotid"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminEditTeachingCreditSlotForm />
-            </Layout>
+            <NavTab />
+            <AdminEditTeachingCreditSlotForm />
           </ProtectedRoute>
         }
       />
@@ -846,10 +721,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/admin_edit_discipline_form"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminAddDisciplineForm />
-            </Layout>
+            <NavTab />
+            <AdminAddDisciplineForm />
           </ProtectedRoute>
         }
       />
@@ -857,10 +730,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/acad_admin_edit_discipline_form/:id"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminEditDisciplineForm />
-            </Layout>
+            <NavTab />
+            <AdminEditDisciplineForm />
           </ProtectedRoute>
         }
       />
@@ -868,10 +739,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/admin_edit_batch_form"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminEditBatchForm />
-            </Layout>
+            <NavTab />
+            <AdminEditBatchForm />
           </ProtectedRoute>
         }
       />
@@ -879,10 +748,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/acad_admin_edit_course_form/:id"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminEditCourseForm />
-            </Layout>
+            <NavTab />
+            <AdminEditCourseForm />
           </ProtectedRoute>
         }
       />
@@ -890,10 +757,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/admin_edit_thesis_form/:id"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminEditThesisForm />
-            </Layout>
+            <NavTab />
+            <AdminEditThesisForm />
           </ProtectedRoute>
         }
       />
@@ -901,10 +766,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/admin_edit_seminar_form/:id"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminEditSeminarForm />
-            </Layout>
+            <NavTab />
+            <AdminEditSeminarForm />
           </ProtectedRoute>
         }
       />
@@ -912,10 +775,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/admin_edit_teaching_credit_form/:id"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminEditTeachingCreditForm />
-            </Layout>
+            <NavTab />
+            <AdminEditTeachingCreditForm />
           </ProtectedRoute>
         }
       />
@@ -923,10 +784,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/acad_admin_add_course_instructor"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminAddCourseInstructor />
-            </Layout>
+            <NavTab />
+            <AdminAddCourseInstructor />
           </ProtectedRoute>
         }
       />
@@ -934,10 +793,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/admin_edit_course_instructor/:id"
         element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-            <Layout>
-              <NavTab />
-              <AdminEditCourseInstructor />
-            </Layout>
+            <NavTab />
+            <AdminEditCourseInstructor />
           </ProtectedRoute>
         }
       />
@@ -945,10 +802,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/forward_course_forms_II"
         element={
           <ProtectedRoute allowedRoles={FACULTY_ROLES}>
-            <Layout>
-              <NavTab />
-              <FacultyCourseProposalFinalForm />
-            </Layout>
+            <NavTab />
+            <FacultyCourseProposalFinalForm />
           </ProtectedRoute>
         }
       />
@@ -956,10 +811,8 @@ export default function ProgrammeCurriculumRoutes() {
         path="/edit_course_proposal_form/:id"
         element={
           <ProtectedRoute allowedRoles={FACULTY_ROLES}>
-            <Layout>
-              <NavTab />
-              <FacultyEditCourseProposalForm />
-            </Layout>
+            <NavTab />
+            <FacultyEditCourseProposalForm />
           </ProtectedRoute>
         }
       />
