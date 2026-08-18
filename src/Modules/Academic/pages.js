@@ -1,9 +1,25 @@
-import { ADMIN_ROLES, FACULTY_ROLES, STUDENT_ROLES } from "../../ui/nav/roles";
+import {
+  FACULTY_ROLES,
+  programmesForRole,
+  SCOPED_ADMIN_ROLES,
+  STUDENT_ROLES,
+} from "../../ui/nav/roles";
 
 export const ACADEMIC_BASE = "/academics";
 
 const isNotUg = ({ programmeType }) => programmeType && programmeType !== "UG";
 const isUg = ({ programmeType }) => !programmeType || programmeType === "UG";
+
+// an admin scoped to one level should not see another level's pages; acadadmin
+// has no scope and keeps everything
+const forUg = ({ role }) => {
+  const programmes = programmesForRole(role);
+  return !programmes || programmes.includes("UG");
+};
+const forPgPhd = ({ role }) => {
+  const programmes = programmesForRole(role);
+  return !programmes || programmes.some((level) => level !== "UG");
+};
 
 export const ACADEMIC_PAGES = [
   {
@@ -12,7 +28,7 @@ export const ACADEMIC_PAGES = [
     title: "Student Courses",
     icon: "Book",
     group: "Registration",
-    roles: ADMIN_ROLES,
+    roles: SCOPED_ADMIN_ROLES,
   },
   {
     key: "adminVerifyRegistration",
@@ -20,7 +36,8 @@ export const ACADEMIC_PAGES = [
     title: "Verify Registration",
     icon: "UserCheck",
     group: "Registration",
-    roles: ADMIN_ROLES,
+    roles: SCOPED_ADMIN_ROLES,
+    when: forUg,
   },
   {
     key: "adminDeletePreRegistration",
@@ -28,7 +45,8 @@ export const ACADEMIC_PAGES = [
     title: "Delete Pre-Registration",
     icon: "Trash",
     group: "Registration",
-    roles: ADMIN_ROLES,
+    roles: SCOPED_ADMIN_ROLES,
+    when: forUg,
   },
   {
     key: "adminAllotCourses",
@@ -36,7 +54,7 @@ export const ACADEMIC_PAGES = [
     title: "Allot Courses",
     icon: "Shuffle",
     group: "Registration",
-    roles: ADMIN_ROLES,
+    roles: SCOPED_ADMIN_ROLES,
   },
   {
     key: "adminAllocateCourses",
@@ -44,7 +62,7 @@ export const ACADEMIC_PAGES = [
     title: "Allocate Courses",
     icon: "Kanban",
     group: "Registration",
-    roles: ADMIN_ROLES,
+    roles: SCOPED_ADMIN_ROLES,
     desktopOnly: true,
   },
 
@@ -54,7 +72,8 @@ export const ACADEMIC_PAGES = [
     title: "Add BL Courses",
     icon: "PlusCircle",
     group: "Course Changes",
-    roles: ADMIN_ROLES,
+    roles: SCOPED_ADMIN_ROLES,
+    when: forUg,
     desktopOnly: true,
   },
   {
@@ -63,7 +82,8 @@ export const ACADEMIC_PAGES = [
     title: "Drop Courses",
     icon: "MinusCircle",
     group: "Course Changes",
-    roles: ADMIN_ROLES,
+    roles: SCOPED_ADMIN_ROLES,
+    when: forUg,
     desktopOnly: true,
   },
   {
@@ -72,7 +92,8 @@ export const ACADEMIC_PAGES = [
     title: "Replacement Allocation",
     icon: "ArrowsLeftRight",
     group: "Course Changes",
-    roles: ADMIN_ROLES,
+    roles: SCOPED_ADMIN_ROLES,
+    when: forUg,
     desktopOnly: true,
   },
   {
@@ -81,7 +102,8 @@ export const ACADEMIC_PAGES = [
     title: "Swayam",
     icon: "BookOpenText",
     group: "Course Changes",
-    roles: ADMIN_ROLES,
+    roles: SCOPED_ADMIN_ROLES,
+    when: forUg,
     desktopOnly: true,
   },
 
@@ -91,7 +113,7 @@ export const ACADEMIC_PAGES = [
     title: "Student Dashboard",
     icon: "ChartBar",
     group: "Student Records",
-    roles: ADMIN_ROLES,
+    roles: SCOPED_ADMIN_ROLES,
     desktopOnly: true,
   },
   {
@@ -100,7 +122,7 @@ export const ACADEMIC_PAGES = [
     title: "Generate Student List",
     icon: "ListNumbers",
     group: "Student Records",
-    roles: ADMIN_ROLES,
+    roles: SCOPED_ADMIN_ROLES,
     desktopOnly: true,
   },
   {
@@ -109,7 +131,7 @@ export const ACADEMIC_PAGES = [
     title: "Section Assignment",
     icon: "Stack",
     group: "Student Records",
-    roles: ADMIN_ROLES,
+    roles: SCOPED_ADMIN_ROLES,
     desktopOnly: true,
   },
   {
@@ -118,7 +140,7 @@ export const ACADEMIC_PAGES = [
     title: "Batch / Branch Change",
     icon: "TreeStructure",
     group: "Student Records",
-    roles: ADMIN_ROLES,
+    roles: SCOPED_ADMIN_ROLES,
     desktopOnly: true,
   },
   {
@@ -127,7 +149,7 @@ export const ACADEMIC_PAGES = [
     title: "Promote Students",
     icon: "ArrowUp",
     group: "Student Records",
-    roles: ADMIN_ROLES,
+    roles: SCOPED_ADMIN_ROLES,
     desktopOnly: true,
   },
 
@@ -137,7 +159,7 @@ export const ACADEMIC_PAGES = [
     title: "Academic Calendar",
     icon: "CalendarBlank",
     group: "Calendar & Feedback",
-    roles: ADMIN_ROLES,
+    roles: SCOPED_ADMIN_ROLES,
   },
   {
     key: "adminFeedbackView",
@@ -145,7 +167,7 @@ export const ACADEMIC_PAGES = [
     title: "Feedback Responses",
     icon: "ChatCircleDots",
     group: "Calendar & Feedback",
-    roles: ADMIN_ROLES,
+    roles: SCOPED_ADMIN_ROLES,
     desktopOnly: true,
   },
   {
@@ -154,7 +176,8 @@ export const ACADEMIC_PAGES = [
     title: "Thesis & Course Requests",
     icon: "Signature",
     group: "Course Changes",
-    roles: ADMIN_ROLES,
+    roles: SCOPED_ADMIN_ROLES,
+    when: forPgPhd,
     desktopOnly: true,
   },
 

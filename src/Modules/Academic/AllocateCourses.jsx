@@ -24,6 +24,8 @@ import {
   IconSearch,
 } from "@tabler/icons-react";
 import axios from "axios";
+import { useSelector } from "react-redux";
+import { allowedProgrammeChoices } from "../../ui/nav/roles";
 import { courseLabel } from "../../lib/course";
 import {
   checkAllocationRoute,
@@ -52,7 +54,15 @@ function AllocateCourses() {
   const [batch, setBatch] = useState(null);
   const [semester, setSemester] = useState(null);
   const [year, setYear] = useState(null);
-  const [programmeType, setProgrammeType] = useState("UG");
+  const userRole = useSelector((state) => state.user.role);
+  const programmeChoices = allowedProgrammeChoices(userRole, [
+    { value: "UG", label: "Undergraduate (UG)" },
+    { value: "PG", label: "Postgraduate (PG)" },
+    { value: "PHD", label: "PhD" },
+  ]);
+  const [programmeType, setProgrammeType] = useState(
+    programmeChoices[0]?.value ?? "UG",
+  );
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
@@ -671,11 +681,7 @@ function AllocateCourses() {
           placeholder="Select programme type"
           value={programmeType}
           onChange={setProgrammeType}
-          data={[
-            { value: "UG", label: "Undergraduate (UG)" },
-            { value: "PG", label: "Postgraduate (PG)" },
-            { value: "PHD", label: "PhD" },
-          ]}
+          data={programmeChoices}
         />
         <Select
           label="Batch"

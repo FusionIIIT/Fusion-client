@@ -26,6 +26,7 @@ import {
 } from "@tabler/icons-react";
 import { FileArrowDown, Upload } from "@phosphor-icons/react";
 import { useSelector } from "react-redux";
+import { programmesForRole, SCOPED_ADMIN_ROLES } from "../../ui/nav/roles";
 import {
   get_course_reg_academic_years,
   submitGradesProf,
@@ -73,17 +74,23 @@ function SubmitCourseGradesTab() {
     { value: "Even Semester", label: "Even Semester" },
     { value: "Summer Semester", label: "Summer Semester" },
   ];
-  const programmeTypes = [
+  const ALL_PROGRAMME_TYPES = [
     { value: "UG", label: "UG (Undergraduate)" },
     { value: "PG", label: "PG (Postgraduate)" },
     { value: "PHD", label: "PhD" },
   ];
   const userRole = useSelector((s) => s.user.role);
+  const allowedProgrammes = programmesForRole(userRole);
+  const programmeTypes = allowedProgrammes
+    ? ALL_PROGRAMME_TYPES.filter((p) => allowedProgrammes.includes(p.value))
+    : ALL_PROGRAMME_TYPES;
 
   const [year, setYear] = useState("");
   const [academicYears, setAcademicYears] = useState([]);
   const [semesterType, setSemesterType] = useState("");
-  const [programmeType, setProgrammeType] = useState("UG");
+  const [programmeType, setProgrammeType] = useState(
+    allowedProgrammes ? allowedProgrammes[0] : "UG",
+  );
   const [course, setCourse] = useState("");
   const [courseOptions, setCourseOptions] = useState([]);
   const [section, setSection] = useState("");
@@ -99,7 +106,7 @@ function SubmitCourseGradesTab() {
 
   const previewRef = useRef();
 
-  const isAcadadmin = userRole === "acadadmin";
+  const isAcadadmin = SCOPED_ADMIN_ROLES.includes(userRole);
 
   // Sections the selected course is allotted in (empty => elective, no section).
   // For faculty this is their own assigned section(s); for acadadmin, all of them.
@@ -671,7 +678,7 @@ function SubmitCourseGradesTab() {
 
 export default function SubmitGradesProf() {
   const userRole = useSelector((s) => s.user.role);
-  const isAcadadmin = userRole === "acadadmin";
+  const isAcadadmin = SCOPED_ADMIN_ROLES.includes(userRole);
   const [category, setCategory] = useState("course");
 
   // Only acadadmin gets the extra fallback-entry categories for Thesis / Progress

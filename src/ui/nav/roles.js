@@ -1,4 +1,25 @@
 export const ADMIN_ROLES = ["acadadmin", "studentacadadmin"];
+
+// programme-level admins; used only where the backend scopes its data
+export const PROGRAMME_ADMIN_ROLES = ["Acad UG", "Acad PG", "Acad Ph.D."];
+
+export const SCOPED_ADMIN_ROLES = [...ADMIN_ROLES, ...PROGRAMME_ADMIN_ROLES];
+
+const PROGRAMMES_BY_ROLE = {
+  "Acad UG": ["UG"],
+  "Acad PG": ["PG"],
+  "Acad Ph.D.": ["PHD"],
+};
+
+export function programmesForRole(role) {
+  return PROGRAMMES_BY_ROLE[role] ?? null;
+}
+
+export function allowedProgrammeChoices(role, choices) {
+  const allowed = programmesForRole(role);
+  if (!allowed) return choices;
+  return choices.filter((choice) => allowed.includes(choice.value));
+}
 export const FACULTY_ROLES = [
   "faculty",
   "Professor",

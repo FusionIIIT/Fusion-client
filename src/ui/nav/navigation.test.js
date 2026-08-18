@@ -208,3 +208,51 @@ describe("buildNavGroups", () => {
     expect(linksOf(groups).map((l) => l.to)).not.toContain("/profile");
   });
 });
+
+describe("label collisions", () => {
+  const EVERY_ROLE = [
+    "acadadmin",
+    "studentacadadmin",
+    "Acad UG",
+    "Acad PG",
+    "Acad Ph.D.",
+    "Professor",
+    "Dean Academic",
+    "HOD*",
+    "student",
+  ];
+  const EVERY_MODULE = {
+    course_registration: true,
+    program_and_curriculum: true,
+    examinations: true,
+    thesis_research: true,
+    database: true,
+  };
+
+  const collisions = (role, programmeType) => {
+    const found = [];
+    buildNavGroups({
+      role,
+      accessibleModules: EVERY_MODULE,
+      programmeType,
+    }).forEach((section) => {
+      section.items.forEach((item) => {
+        (item.links ?? []).forEach((link) => {
+          if (link.label === item.label)
+            found.push(`${role}/${section.section}: ${item.label}`);
+        });
+        if (item.label === section.section)
+          found.push(`${role}: item repeats its section "${section.section}"`);
+      });
+    });
+    return found;
+  };
+
+  it.each(EVERY_ROLE)(
+    "no group repeats its own child's label for %s",
+    (role) => {
+      expect(collisions(role, "UG")).toEqual([]);
+      expect(collisions(role, "PG")).toEqual([]);
+    },
+  );
+});

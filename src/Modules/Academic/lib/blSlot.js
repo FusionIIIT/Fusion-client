@@ -33,6 +33,30 @@ export function courseRequestBody(slot) {
   };
 }
 
+// The course a slot will actually register, which for a retake is the source
+// itself and so is not in the slot's own list.
+export function registeredCourse(slot) {
+  const source = sourceOf(slot);
+  if (source && !source.replaceable) return source;
+  const chosen = (slot?.courses ?? []).find(
+    (c) => String(c.id) === String(slot?.selectedCourse),
+  );
+  if (chosen) return chosen;
+  if (source && String(source.id) === String(slot?.selectedCourse))
+    return source;
+  return null;
+}
+
+// What a BL registration is doing to the course it clears.
+export function sourceNote(courseCode, sourceCode, registrationType) {
+  if (!sourceCode) return "";
+  const what =
+    String(courseCode) === String(sourceCode)
+      ? "Retake"
+      : `Replaces ${sourceCode}`;
+  return registrationType ? `${what} \u00b7 ${registrationType}` : what;
+}
+
 export function takenCourseIds(slots) {
   const taken = new Set();
   (slots ?? []).forEach((slot) => {
@@ -42,12 +66,16 @@ export function takenCourseIds(slots) {
   return taken;
 }
 
-// picked anywhere means gone everywhere, except the field already holding it
-export function offerableCourses(courses, taken, currentValue) {
-  const keep = String(currentValue ?? "");
+// picked anywhere means gone everywhere, except the values this field may keep
+export function offerableCourses(courses, taken, keepValues) {
+  const keep = new Set(
+    (Array.isArray(keepValues) ? keepValues : [keepValues])
+      .filter(Boolean)
+      .map(String),
+  );
   return (courses ?? []).filter((course) => {
     const id = String(course.id);
-    return id === keep || !taken.has(id);
+    return keep.has(id) || !taken.has(id);
   });
 }
 

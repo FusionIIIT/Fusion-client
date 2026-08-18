@@ -19,6 +19,8 @@ import {
   Badge,
 } from "@mantine/core";
 import axios from "axios";
+import { useSelector } from "react-redux";
+import { allowedProgrammeChoices } from "../../ui/nav/roles";
 import { showNotification } from "@mantine/notifications";
 import { courseLabel } from "../../lib/course";
 
@@ -70,7 +72,14 @@ export default function GenerateStudentList() {
   // Roll List states
   const [academicYear, setAcademicYear] = useState("");
   const [semesterType, setSemesterType] = useState("");
-  const [programmeType, setProgrammeType] = useState("All");
+  const userRole = useSelector((state) => state.user.role);
+  const programmeChoices = allowedProgrammeChoices(
+    userRole,
+    PROGRAMME_TYPE_CHOICES,
+  );
+  const [programmeType, setProgrammeType] = useState(
+    programmeChoices[0]?.value ?? "All",
+  );
   const [listType, setListType]         = useState("");
   const [section, setSection]           = useState("");
   const [course, setCourse]             = useState("");
@@ -487,7 +496,7 @@ export default function GenerateStudentList() {
             <Select
               label="Programme Type"
               placeholder="All Programmes"
-              data={PROGRAMME_TYPE_CHOICES}
+              data={programmeChoices}
               value={programmeType}
               onChange={setProgrammeType}
             />

@@ -1,6 +1,7 @@
 export const CURRICULUM_BASE = "/programme_curriculum";
 
 const PC_ADMIN = ["acadadmin", "studentacadadmin"];
+const PC_ADMIN_SCOPED = [...PC_ADMIN, "Acad UG", "Acad PG", "Acad Ph.D."];
 const PC_FACULTY = [
   "Professor",
   "Assistant Professor",
@@ -17,7 +18,7 @@ export const CURRICULUM_PAGES = [
     title: "Programmes",
     icon: "Bank",
     group: null,
-    roles: PC_ADMIN,
+    roles: PC_ADMIN_SCOPED,
   },
   {
     key: "adminCurriculums",
@@ -25,7 +26,7 @@ export const CURRICULUM_PAGES = [
     title: "Curriculums",
     icon: "Stack",
     group: null,
-    roles: PC_ADMIN,
+    roles: PC_ADMIN_SCOPED,
   },
   {
     key: "adminDisciplines",
@@ -33,7 +34,7 @@ export const CURRICULUM_PAGES = [
     title: "Disciplines",
     icon: "TreeStructure",
     group: null,
-    roles: PC_ADMIN,
+    roles: PC_ADMIN_SCOPED,
   },
   {
     key: "adminCourses",
@@ -41,23 +42,23 @@ export const CURRICULUM_PAGES = [
     title: "Courses",
     icon: "Book",
     group: "Assignments",
-    roles: PC_ADMIN,
+    roles: PC_ADMIN_SCOPED,
   },
   {
     key: "adminBatches",
     slug: "admin_batches",
     title: "Batches",
     icon: "Users",
-    group: "Batches",
-    roles: PC_ADMIN,
+    group: null,
+    roles: PC_ADMIN_SCOPED,
   },
   {
     key: "adminUpcomingBatches",
     slug: "admin_upcoming_batches",
     title: "Upcoming Batches",
     icon: "CalendarBlank",
-    group: "Batches",
-    roles: PC_ADMIN,
+    group: null,
+    roles: PC_ADMIN_SCOPED,
   },
   {
     key: "adminCourseInstructors",
@@ -65,7 +66,7 @@ export const CURRICULUM_PAGES = [
     title: "Course Instructors",
     icon: "ChalkboardTeacher",
     group: "Assignments",
-    roles: PC_ADMIN,
+    roles: PC_ADMIN_SCOPED,
   },
   {
     key: "adminTheses",
@@ -73,7 +74,7 @@ export const CURRICULUM_PAGES = [
     title: "Theses",
     icon: "BookOpen",
     group: "Assignments",
-    roles: PC_ADMIN,
+    roles: PC_ADMIN_SCOPED,
   },
 
   {
