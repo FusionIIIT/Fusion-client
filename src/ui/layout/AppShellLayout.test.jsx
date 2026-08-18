@@ -1,16 +1,10 @@
 import { MantineProvider } from "@mantine/core";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AppShellLayout } from "./AppShellLayout";
 import { theme } from "../theme/theme";
-
-const realMatchMedia = window.matchMedia;
-
-afterEach(() => {
-  window.matchMedia = realMatchMedia;
-});
 
 function matchWidth(width) {
   window.matchMedia = vi.fn().mockImplementation((query) => {
@@ -32,6 +26,27 @@ async function collapseAndStepAway(user) {
   await user.click(screen.getByLabelText("Collapse sidebar"));
   await user.unhover(screen.getByLabelText("Main navigation"));
 }
+
+const realMatchMedia = window.matchMedia;
+
+function forgetStoredNavState() {
+  try {
+    window.localStorage.clear();
+  } catch {
+    // some jsdom builds expose no usable localStorage
+  }
+}
+
+// each test states its own width and remembers no sidebar choice, since both
+// differ between jsdom environments
+beforeEach(() => {
+  matchWidth(1920);
+  forgetStoredNavState();
+});
+
+afterEach(() => {
+  window.matchMedia = realMatchMedia;
+});
 
 const NAV = [
   {
