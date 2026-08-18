@@ -36,11 +36,14 @@ import { StatusBadge } from "../../ui/components/StatusBadge";
 import SlotCard from "./components/SlotCard";
 import SlotRow from "./components/SlotRow";
 import SlotSelect from "./components/SlotSelect";
+import RequestDetail from "./components/RequestDetail";
 import {
   courseRequestBody,
   offerableCourses,
+  registeredCourse,
   slotReady,
   sortSlots,
+  sourceNote,
   sourceOf,
   takenCourseIds,
 } from "./lib/blSlot";
@@ -133,7 +136,9 @@ function PhDCourseRegisterForm() {
           return {
             ...slot,
             courses: res.data.courses || [],
-            sourceCourses: res.data.source_courses || null,
+            sourceCourses: res.data.source_courses
+              ? res.data.source_courses.filter((c) => !c.claimed_by)
+              : null,
             selectedCourse: "",
             selectedSource: "",
           };
@@ -262,12 +267,14 @@ function PhDCourseRegisterForm() {
 
   const summaryRows = [
     ...coursesToSubmit.map((s) => {
-      const course = s.courses.find((c) => String(c.id) === s.selectedCourse);
+      const course = registeredCourse(s);
+      const source = sourceOf(s);
       return {
         key: `course-${s.id}`,
         type: "Course",
         slot: s.name,
         detail: course ? `${course.code} – ${course.name}` : "Invalid",
+        note: sourceNote(course?.code, source?.code, source?.registration_type),
         credits: course ? course.credit : "—",
       };
     }),
@@ -468,18 +475,17 @@ function PhDCourseRegisterForm() {
                     {source && source.replaceable && (
                       <SlotRow
                         primary="Replace with"
-                        secondary={`${source.code} was an open elective, so another course can stand in for it`}
+                        secondary={`${source.code} was an open elective, so another course can stand in for it -- or pick it again to retake it`}
                         control={
                           <SlotSelect
                             label={`Replacement course for ${s.name}`}
                             placeholder="Select course…"
                             value={s.selectedCourse}
                             onChange={(val) => pickCourse(i, val)}
-                            options={offerableCourses(
-                              s.courses,
-                              taken,
+                            options={offerableCourses(s.courses, taken, [
                               s.selectedCourse,
-                            ).map((c) => ({
+                              s.selectedSource,
+                            ]).map((c) => ({
                               value: String(c.id),
                               label: courseLabel(c),
                             }))}
@@ -725,7 +731,7 @@ function PhDCourseRegisterForm() {
               id: r.key,
               Type: r.type,
               Slot: r.slot,
-              Detail: r.detail,
+              Detail: <RequestDetail detail={r.detail} note={r.note} />,
               Credits: r.credits,
             }))}
           />
@@ -798,6 +804,7 @@ function PhDMyCourseRequests() {
       type: "Course",
       slot: r.slot,
       detail: r.course_name ? `${r.course} – ${r.course_name}` : r.course,
+      note: sourceNote(r.course, r.source_course, r.registration_type),
       credits: r.credit ?? "—",
       semester: r.semester_no,
       status: r.status,
@@ -898,7 +905,7 @@ function PhDMyCourseRequests() {
                 id: r.key,
                 Type: r.type,
                 Slot: r.slot,
-                Detail: r.detail,
+                Detail: <RequestDetail detail={r.detail} note={r.note} />,
                 Credits: r.credits,
                 Status: <StatusBadge status={r.status} />,
                 Remarks: r.remarks || "—",

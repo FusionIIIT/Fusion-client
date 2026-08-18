@@ -12,7 +12,9 @@ import {
 import { showNotification } from "@mantine/notifications";
 import { IconUpload, IconDownload } from "@tabler/icons-react";
 import axios from "axios";
+import { useSelector } from "react-redux";
 import * as XLSX from "xlsx";
+import { programmesForRole } from "../../ui/nav/roles";
 import {
   allotCoursesRoute,
   allotThesisRoute,
@@ -34,6 +36,10 @@ const REGISTRATION_TYPES = [
 ];
 
 export default function AllotCourses() {
+  const userRole = useSelector((state) => state.user.role);
+  const programmes = programmesForRole(userRole);
+  // undergraduates register for courses only, so the choice is meaningless there
+  const courseOnly = programmes?.length === 1 && programmes[0] === "UG";
   const [programmeOptions, setProgrammeOptions] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileKey, setFileKey] = useState(0);
@@ -439,17 +445,19 @@ export default function AllotCourses() {
   return (
     <Card>
       <LoadingOverlay visible={loading} />
-      <Select
-        label="Registration Type"
-        data={REGISTRATION_TYPES}
-        value={registrationType}
-        onChange={(v) => {
-          setRegistrationType(v);
-          setSelectedFile(null);
-          setFileKey((f) => f + 1);
-        }}
-        mb="md"
-      />
+      {!courseOnly && (
+        <Select
+          label="Registration Type"
+          data={REGISTRATION_TYPES}
+          value={registrationType}
+          onChange={(v) => {
+            setRegistrationType(v);
+            setSelectedFile(null);
+            setFileKey((f) => f + 1);
+          }}
+          mb="md"
+        />
+      )}
       <Button
         leftSection={<IconDownload />}
         variant="light"

@@ -19,7 +19,6 @@ const GROUP_ICONS = {
   "Course Changes": "ArrowsLeftRight",
   "Student Records": "Users",
   "Calendar & Feedback": "CalendarBlank",
-  Batches: "Users",
   Assignments: "UserPlus",
   Proposals: "Signature",
   "File Tracking": "FolderOpen",
@@ -139,7 +138,7 @@ export function buildNavGroups({
   accessibleModules = {},
   programmeType = null,
 } = {}) {
-  const flags = { programmeType };
+  const flags = { programmeType, role };
   const groups = [
     {
       section: "Overview",

@@ -1,4 +1,9 @@
-import { FACULTY_ROLES, STUDENT_ROLES, DEAN_ROLES } from "../../ui/nav/roles";
+import {
+  FACULTY_ROLES,
+  PROGRAMME_ADMIN_ROLES,
+  STUDENT_ROLES,
+  DEAN_ROLES,
+} from "../../ui/nav/roles";
 
 export const EXAMINATION_BASE = "/examination";
 
@@ -13,7 +18,7 @@ export const EXAMINATION_PAGES = [
     title: "Submit Grades",
     icon: "Stamp",
     group: "Grades",
-    roles: [...ACAD, ...TEACHING],
+    roles: [...ACAD, ...TEACHING, ...PROGRAMME_ADMIN_ROLES],
   },
   {
     key: "verifyGrades",
@@ -21,7 +26,7 @@ export const EXAMINATION_PAGES = [
     title: "Verify Grades",
     icon: "Checks",
     group: "Grades",
-    roles: ACAD,
+    roles: [...ACAD, ...PROGRAMME_ADMIN_ROLES],
   },
   {
     key: "gradeValidation",
@@ -29,7 +34,7 @@ export const EXAMINATION_PAGES = [
     title: "Grade Validation",
     icon: "CheckCircle",
     group: "Grades",
-    roles: ACAD,
+    roles: [...ACAD, ...PROGRAMME_ADMIN_ROLES],
   },
   {
     key: "gradeStatus",
@@ -37,7 +42,7 @@ export const EXAMINATION_PAGES = [
     title: "Grade Status",
     icon: "Kanban",
     group: "Grades",
-    roles: ACAD_AND_DEAN,
+    roles: [...ACAD_AND_DEAN, ...PROGRAMME_ADMIN_ROLES],
   },
   {
     key: "gradeSummary",
@@ -45,7 +50,7 @@ export const EXAMINATION_PAGES = [
     title: "Grade Summary",
     icon: "ChartBar",
     group: "Grades",
-    roles: ACAD_AND_DEAN,
+    roles: [...ACAD_AND_DEAN, ...PROGRAMME_ADMIN_ROLES],
   },
   {
     key: "downloadGradesProf",
@@ -86,7 +91,7 @@ export const EXAMINATION_PAGES = [
     title: "Announce Result",
     icon: "Megaphone",
     group: "Results",
-    roles: ACAD_AND_DEAN,
+    roles: [...ACAD_AND_DEAN, ...PROGRAMME_ADMIN_ROLES],
   },
 
   {
@@ -95,6 +100,6 @@ export const EXAMINATION_PAGES = [
     title: "Transcript",
     icon: "Certificate",
     group: null,
-    roles: ACAD,
+    roles: [...ACAD, ...PROGRAMME_ADMIN_ROLES],
   },
 ];

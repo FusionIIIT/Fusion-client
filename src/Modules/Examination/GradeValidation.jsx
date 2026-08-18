@@ -196,6 +196,7 @@ function buildValidationHTML(studentInfo, semesters) {
   .remark-regular     { color: #2f9e44; font-weight: 600; }
   .remark-backlog     { color: #c92a2a; font-weight: 600; }
   .remark-improvement { color: #e67700; font-weight: 600; }
+  .remark-substitute  { color: #1971c2; font-weight: 600; }
 
   /* ── SUMMARY ROW ── */
   .sum-table {

@@ -16,6 +16,10 @@ import {
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import axios from "axios";
+import { useSelector } from "react-redux";
+import { programmesForRole } from "../../ui/nav/roles";
+import RequestDetail from "./components/RequestDetail";
+import { sourceNote } from "./lib/blSlot";
 
 import {
   phdAdminListCourseRequestsRoute,
@@ -75,6 +79,7 @@ function toRow(type, r) {
       ...base,
       slot: r.slot,
       detail: `${r.course} – ${r.course_name}`,
+      note: sourceNote(r.course, r.source_course, r.registration_type),
       credits: r.credit ?? "—",
       requestedAt: r.requested_at,
       processedAt: r.processed_at,
@@ -115,7 +120,12 @@ function toRow(type, r) {
 }
 
 export default function AdminPhDCourseRequests() {
-  const [programmeCategory, setProgrammeCategory] = useState("");
+  const userRole = useSelector((state) => state.user.role);
+  const ownProgrammes = programmesForRole(userRole);
+  const lockedProgramme = ownProgrammes?.length === 1 ? ownProgrammes[0] : null;
+  const [programmeCategory, setProgrammeCategory] = useState(
+    lockedProgramme ?? "",
+  );
   const [semester, setSemester] = useState("");
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -334,13 +344,17 @@ export default function AdminPhDCourseRequests() {
               data={[
                 { value: "PG", label: "PG" },
                 { value: "PHD", label: "PhD" },
-              ]}
+              ].filter(
+                (option) =>
+                  !lockedProgramme || option.value === lockedProgramme,
+              )}
               value={programmeCategory}
               onChange={(value) => {
                 setProgrammeCategory(value || "");
                 setSelectedKeys(new Set());
               }}
-              clearable
+              clearable={!lockedProgramme}
+              readOnly={Boolean(lockedProgramme)}
             />
             <Select
               label="Semester"
@@ -480,7 +494,9 @@ export default function AdminPhDCourseRequests() {
                             </div>
                           </td>
                           <td>{r.slot}</td>
-                          <td>{r.detail}</td>
+                          <td>
+                            <RequestDetail detail={r.detail} note={r.note} />
+                          </td>
                           <td>{r.credits}</td>
                           <td>
                             <Badge color="yellow">Pending</Badge>
@@ -569,7 +585,9 @@ export default function AdminPhDCourseRequests() {
                             </div>
                           </td>
                           <td>{r.slot}</td>
-                          <td>{r.detail}</td>
+                          <td>
+                            <RequestDetail detail={r.detail} note={r.note} />
+                          </td>
                           <td>{r.credits}</td>
                           <td>
                             <Badge

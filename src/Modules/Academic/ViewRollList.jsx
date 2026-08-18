@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
+import { useSelector } from "react-redux";
 import {
   Card,
   Text,
@@ -13,6 +14,7 @@ import {
 } from "@mantine/core";
 import { MagnifyingGlass } from "@phosphor-icons/react";
 import { showNotification } from "@mantine/notifications";
+import { allowedProgrammeChoices } from "../../ui/nav/roles";
 import FusionTable from "../../components/FusionTable";
 import {
   generatexlsheet,
@@ -77,7 +79,14 @@ function ViewRollList() {
   const [downloadingCourseId, setDownloadingCourseId] = useState(null);
   const [filteringCourses, setFilteringCourses] = useState(false);
 
-  const [programmeType, setProgrammeType] = useState("All");
+  const userRole = useSelector((state) => state.user.role);
+  const programmeChoices = allowedProgrammeChoices(
+    userRole,
+    PROGRAMME_TYPE_CHOICES,
+  );
+  const [programmeType, setProgrammeType] = useState(
+    programmeChoices[0]?.value ?? "All",
+  );
   const [selectedAY, setSelectedAY] = useState(DEFAULT_AY);
   const [selectedSem, setSelectedSem] = useState(DEFAULT_SEM);
   const [searchQuery, setSearchQuery] = useState("");
@@ -306,7 +315,7 @@ function ViewRollList() {
       <Group mb="md" align="flex-end" wrap="wrap">
         <Select
           label="Programme Type"
-          data={PROGRAMME_TYPE_CHOICES}
+          data={programmeChoices}
           value={programmeType}
           onChange={handleProgrammeTypeChange}
           style={{ width: 180 }}
