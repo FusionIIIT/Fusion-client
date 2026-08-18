@@ -2,7 +2,6 @@ import { lazy, useMemo } from "react";
 import { Route } from "react-router-dom";
 import { useSelector } from "react-redux";
 
-import { Layout } from "../../app/AppLayout";
 import { ModuleRoutes } from "../../ui/routing/ModuleRoutes";
 import { pagesForRole } from "../../ui/nav/roles";
 import ProtectedRoute from "./routes/protectedRoutes.jsx";
@@ -61,14 +60,12 @@ export default function Examination() {
   if (userRole === undefined || userRole === null) return null;
 
   return (
-    <Layout>
-      <ModuleRoutes
-        pages={pages}
-        components={COMPONENTS}
-        extraRoutes={DETAIL_ROUTES}
-        basePath={EXAMINATION_BASE}
-        emptyMessage="No examination pages apply to your role."
-      />
-    </Layout>
+    <ModuleRoutes
+      pages={pages}
+      components={COMPONENTS}
+      extraRoutes={DETAIL_ROUTES}
+      basePath={EXAMINATION_BASE}
+      emptyMessage="No examination pages apply to your role."
+    />
   );
 }

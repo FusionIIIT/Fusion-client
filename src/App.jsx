@@ -168,62 +168,23 @@ export default function App() {
       {contentReady && (
         <Routes>
           <Route path="/" element={<Navigate to="/accounts/login" replace />} />
-          <Route
-            path="/dashboard"
-            element={
-              <Layout>
-                <DashboardHome />
-              </Layout>
-            }
-          />
-          <Route
-            path="/notifications"
-            element={
-              <Layout>
-                <NotificationsPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/academics/*"
-            element={
-              <Layout>
-                <AcademicPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/thesis-research/*"
-            element={
-              <Layout>
-                <ThesisResearchPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <Layout>
-                <Profile />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facultyprofessionalprofile/*"
-            element={
-              <Layout>
-                <FacultyProfessionalProfile />
-              </Layout>
-            }
-          />
-          <Route
-            path="/programme_curriculum/*"
-            element={
-              <div>
-                <ProgrammeCurriculumRoutes />
-              </div>
-            }
-          />
+          <Route element={<Layout />}>
+            <Route path="/dashboard" element={<DashboardHome />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
+            <Route path="/academics/*" element={<AcademicPage />} />
+            <Route path="/thesis-research/*" element={<ThesisResearchPage />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route
+              path="/facultyprofessionalprofile/*"
+              element={<FacultyProfessionalProfile />}
+            />
+            <Route
+              path="/programme_curriculum/*"
+              element={<ProgrammeCurriculumRoutes />}
+            />
+            <Route path="/examination/*" element={<Examination />} />
+            <Route path="/database/*" element={<Database />} />
+          </Route>
           <Route path="/accounts/login" element={<LoginPage />} />
           <Route
             path="/reset-password"
@@ -245,8 +206,6 @@ export default function App() {
             path="/thesis-examiner-panel/:token/score"
             element={<ThesisExaminerPanelScoring />}
           />
-          <Route path="/examination/*" element={<Examination />} />
-          <Route path="/database/*" element={<Database />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       )}

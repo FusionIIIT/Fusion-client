@@ -36,7 +36,14 @@ import { StatusBadge } from "../../ui/components/StatusBadge";
 import SlotCard from "./components/SlotCard";
 import SlotRow from "./components/SlotRow";
 import SlotSelect from "./components/SlotSelect";
-import { courseRequestBody, slotReady, sourceOf } from "./lib/blSlot";
+import {
+  courseRequestBody,
+  offerableCourses,
+  slotReady,
+  sortSlots,
+  sourceOf,
+  takenCourseIds,
+} from "./lib/blSlot";
 
 const SUMMARY_COLUMNS = ["Type", "Slot", "Detail", "Credits"];
 const REQUEST_COLUMNS = [
@@ -133,7 +140,7 @@ function PhDCourseRegisterForm() {
         }),
       );
       if (isStale()) return;
-      setSlots(withCourses);
+      setSlots(sortSlots(withCourses));
       setSemesterNo(slotsRes.data.semester_no ?? null);
       setRegistrationOpen(slotsRes.data.registration_open !== false);
       setRegistrationMessage(slotsRes.data.registration_message || "");
@@ -423,6 +430,7 @@ function PhDCourseRegisterForm() {
         ) : (
           slots.map((s, i) => {
             const source = sourceOf(s);
+            const taken = takenCourseIds(slots);
             return (
               <SlotCard key={s.id} name={s.name}>
                 {s.sourceCourses ? (
@@ -445,7 +453,11 @@ function PhDCourseRegisterForm() {
                             placeholder="Select the course to clear…"
                             value={s.selectedSource}
                             onChange={(val) => pickSource(i, val)}
-                            options={s.sourceCourses.map((c) => ({
+                            options={offerableCourses(
+                              s.sourceCourses,
+                              taken,
+                              s.selectedSource,
+                            ).map((c) => ({
                               value: String(c.id),
                               label: `${courseLabel(c)} — ${c.grade} · ${c.registration_type}`,
                             }))}
@@ -463,7 +475,11 @@ function PhDCourseRegisterForm() {
                             placeholder="Select course…"
                             value={s.selectedCourse}
                             onChange={(val) => pickCourse(i, val)}
-                            options={(s.courses || []).map((c) => ({
+                            options={offerableCourses(
+                              s.courses,
+                              taken,
+                              s.selectedCourse,
+                            ).map((c) => ({
                               value: String(c.id),
                               label: courseLabel(c),
                             }))}
@@ -492,7 +508,11 @@ function PhDCourseRegisterForm() {
                         placeholder="Select course…"
                         value={s.selectedCourse}
                         onChange={(val) => pickCourse(i, val)}
-                        options={(s.courses || []).map((c) => ({
+                        options={offerableCourses(
+                          s.courses,
+                          taken,
+                          s.selectedCourse,
+                        ).map((c) => ({
                           value: String(c.id),
                           label: courseLabel(c),
                         }))}

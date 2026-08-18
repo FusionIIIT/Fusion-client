@@ -9,7 +9,9 @@ export function PageHeader({
   return (
     <Group justify="space-between" align="flex-end" mb="lg" wrap="wrap">
       <Stack gap={2}>
-        <Title order={2}>{title}</Title>
+        <Title order={1} fz="h2">
+          {title}
+        </Title>
         {subtitle && (
           <Text c="dimmed" size="sm">
             {subtitle}
