@@ -221,6 +221,13 @@ export const STUDENT_FIELDS_CONFIG = {
       "aadhaar number",
     ],
   },
+  apaarId: {
+    label: "APAAR ID",
+    placeholder: "Enter 12-digit APAAR ID",
+    required: false,
+    backendField: "apaar_id",
+    excelColumns: ["apaar id", "apaar", "apaar no", "apaar number", "abc id"],
+  },
   photo: {
     label: "Passport Photo",
     placeholder: "Upload passport photo (max 200KB)",
@@ -792,6 +799,7 @@ export const INITIAL_FORM_DATA = {
   jeeAppNo: "",
   hindiName: "",
   aadharNo: "",
+  apaarId: "",
   photo: "",
   signature: "",
   // PhD identifier
@@ -891,6 +899,12 @@ export const STUDENT_TABLE_COLUMNS = [
     label: "Aadhaar No.",
     minWidth: "140px",
     fields: ["aadharNo", "aadhar_number", "aadharNumber", "Aadhaar No."],
+  },
+  {
+    key: "apaarId",
+    label: "APAAR ID",
+    minWidth: "140px",
+    fields: ["apaarId", "apaar_id", "APAAR ID"],
   },
   {
     key: "rollNumber",

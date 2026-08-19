@@ -41,11 +41,13 @@ import {
   INITIAL_FORM_DATA,
   PROGRAMME_TYPES,
   STUDENT_FIELDS_CONFIG,
+  STUDENT_TABLE_COLUMNS,
 } from "../AdminUpcomingBatchesConstants";
 import {
   batchYearToAcademicYear,
   cleanDisciplineName,
   getBatchYearOptions,
+  getStudentFieldValue,
 } from "../AdminUpcomingBatchesUtils";
 import { host } from "../../../../routes/globalRoutes";
 import HindiKeyboard from "./HindiKeyboard";
@@ -95,6 +97,19 @@ const PREVIEW_FIELD_ORDER = [
   "jeeRank", // 34. JEE Rank (UG/PG)
   "categoryRank", // 35. Category Rank
 ];
+
+const PREVIEW_COLUMNS = Object.fromEntries(
+  STUDENT_TABLE_COLUMNS.map((column) => [column.key, column]),
+);
+
+// The uploaded rows keep the spreadsheet's own headings, so a cell is read
+// through the shared column definitions rather than one guessed property.
+function cellOf(student, key) {
+  const column = PREVIEW_COLUMNS[key];
+  if (!column) return student[key] ?? "";
+  const value = getStudentFieldValue(student, column);
+  return value === "-" ? "" : value;
+}
 
 function AddStudentsModal({
   opened,
@@ -536,7 +551,7 @@ function AddStudentsModal({
                               Object.entries(
                                 allocationSummary.branchCounts,
                               ).map(([branch, count]) => (
-                                <Text key={branch} size="sm">
+                                <Text key={branch} component="div" size="sm">
                                   <Badge variant="light" mr="xs">
                                     {branch}
                                   </Badge>
@@ -623,7 +638,7 @@ function AddStudentsModal({
                                     whiteSpace: "nowrap",
                                   }}
                                 >
-                                  {student.rollNumber}
+                                  {cellOf(student, "rollNumber")}
                                 </Badge>
                               </td>
                               <td
@@ -633,7 +648,7 @@ function AddStudentsModal({
                                   fontSize: "13px",
                                 }}
                               >
-                                {student.name}
+                                {cellOf(student, "name")}
                               </td>
                               <td
                                 style={{
@@ -642,7 +657,7 @@ function AddStudentsModal({
                                   fontSize: "13px",
                                 }}
                               >
-                                {student.fname}
+                                {cellOf(student, "fname")}
                               </td>
                               <td
                                 style={{
@@ -651,7 +666,7 @@ function AddStudentsModal({
                                   fontSize: "13px",
                                 }}
                               >
-                                {student.mname || "N/A"}
+                                {cellOf(student, "mname") || "N/A"}
                               </td>
                               <td
                                 style={{
@@ -666,12 +681,12 @@ function AddStudentsModal({
                                 }}
                               >
                                 <Tooltip
-                                  label={student.address || "N/A"}
+                                  label={cellOf(student, "address") || "N/A"}
                                   multiline
                                   width={300}
                                   disabled={
-                                    !student.address ||
-                                    student.address.length < 50
+                                    !cellOf(student, "address") ||
+                                    cellOf(student, "address").length < 50
                                   }
                                 >
                                   <div
@@ -682,7 +697,7 @@ function AddStudentsModal({
                                       overflow: "hidden",
                                     }}
                                   >
-                                    {student.address || "N/A"}
+                                    {cellOf(student, "address") || "N/A"}
                                   </div>
                                 </Tooltip>
                               </td>
@@ -693,7 +708,7 @@ function AddStudentsModal({
                                   fontFamily: "monospace",
                                 }}
                               >
-                                {student.jeeAppNo || "N/A"}
+                                {cellOf(student, "jeeAppNo") || "N/A"}
                               </td>
                               {(activeSection === "pg" ||
                                 activeSection === "phd") && (
@@ -724,7 +739,7 @@ function AddStudentsModal({
                                     whiteSpace: "nowrap",
                                   }}
                                 >
-                                  {student.branchCode}
+                                  {cellOf(student, "branch")}
                                 </Badge>
                               </td>
                               <td
@@ -735,7 +750,7 @@ function AddStudentsModal({
                                   wordBreak: "break-all",
                                 }}
                               >
-                                {student.instituteEmail}
+                                {cellOf(student, "instituteEmail")}
                               </td>
                               <td style={{ padding: "8px 12px" }}>
                                 <Badge
@@ -759,7 +774,7 @@ function AddStudentsModal({
                                   fontSize: "12px",
                                 }}
                               >
-                                {student.category}
+                                {cellOf(student, "category")}
                               </td>
                               <td
                                 style={{
@@ -768,7 +783,7 @@ function AddStudentsModal({
                                   textAlign: "center",
                                 }}
                               >
-                                {student.pwd}
+                                {cellOf(student, "pwd")}
                               </td>
                             </tr>
                           ))}

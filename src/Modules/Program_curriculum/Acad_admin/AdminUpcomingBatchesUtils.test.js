@@ -48,3 +48,43 @@ describe("getStudentFieldValue", () => {
     expect(getStudentFieldValue({}, categoryColumn)).toBe("-");
   });
 });
+
+describe("upload preview cells", () => {
+  // one row exactly as process_excel_upload returns it for the UG template:
+  // the spreadsheet's own headings, not camelCase
+  const ROW = {
+    jee_app_no: "260310655186",
+    "Institute Roll Number": "26BCS001",
+    Name: "A SRIKANTH",
+    Discipline: "Computer Science and Engineering",
+    Category: "SC",
+    "Institute Email ID": "26BCS001@iiitdmj.ac.in",
+    "Father's Name": "A KRISHNAIAH",
+    "Mother's Name": "A MANGAMMA",
+    "Full Address": "UDITHYAL, BALANAGAR, MAHBUBNAGAR, TELANGANA, 509202",
+  };
+
+  const columnFor = (key) =>
+    STUDENT_TABLE_COLUMNS.find((column) => column.key === key);
+
+  it.each([
+    ["rollNumber", "26BCS001"],
+    ["name", "A SRIKANTH"],
+    ["fname", "A KRISHNAIAH"],
+    ["mname", "A MANGAMMA"],
+    ["jeeAppNo", "260310655186"],
+    ["instituteEmail", "26BCS001@iiitdmj.ac.in"],
+    ["category", "Scheduled Caste"],
+  ])("reads %s from the spreadsheet heading", (key, expected) => {
+    expect(getStudentFieldValue(ROW, columnFor(key))).toBe(expected);
+  });
+
+  it("reads the address and the discipline", () => {
+    expect(getStudentFieldValue(ROW, columnFor("address"))).toContain(
+      "MAHBUBNAGAR",
+    );
+    expect(getStudentFieldValue(ROW, columnFor("branch"))).toContain(
+      "Computer Science",
+    );
+  });
+});

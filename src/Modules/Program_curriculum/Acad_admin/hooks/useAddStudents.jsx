@@ -804,26 +804,34 @@ export function useAddStudents({
 
   const validateBatchPrerequisites = async (academicYear, disciplines = []) => {
     try {
+      const token = localStorage.getItem("authToken");
       const response = await fetch(
         `${host}/programme_curriculum/api/batches/validate_prerequisites/`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            ...(token ? { Authorization: `Token ${token}` } : {}),
           },
           body: JSON.stringify({ academic_year: academicYear, disciplines }),
         },
       );
 
       const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
+      // An error answer is JSON too, so it must not be read as batch data
+      if (
+        !response.ok ||
+        !contentType ||
+        !contentType.includes("application/json")
+      ) {
         return validateBatchPrerequisitesFrontend(academicYear);
       }
 
       const data = await response.json();
 
       if (!data.can_upload_students) {
-        const errorMessages = data.missing_batches
+        const missing = data.missing_batches ?? [];
+        const errorMessages = missing
           .slice(0, 5)
           .map(
             (batch) =>
@@ -832,8 +840,8 @@ export function useAddStudents({
           .join("\n");
 
         const additionalErrors =
-          data.missing_batches.length > 5
-            ? `\n... and ${data.missing_batches.length - 5} more missing batches`
+          missing.length > 5
+            ? `\n... and ${missing.length - 5} more missing batches`
             : "";
 
         notifications.show({

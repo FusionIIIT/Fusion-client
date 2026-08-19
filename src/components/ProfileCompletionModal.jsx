@@ -133,6 +133,7 @@ function ProfileCompletionModal() {
     const e = {};
     const req = [
       ["aadhar_number", "Aadhaar number"],
+      ["apaar_id", "APAAR ID"],
       ["hindi_name", "Name (Hindi)"],
       ["phone_number", "Mobile number"],
       ["blood_group", "Blood group"],
@@ -148,6 +149,8 @@ function ProfileCompletionModal() {
     });
     if (form.aadhar_number && !/^\d{12}$/.test(form.aadhar_number))
       e.aadhar_number = "Aadhaar number must be exactly 12 digits";
+    if (form.apaar_id && !/^\d{12}$/.test(form.apaar_id))
+      e.apaar_id = "APAAR ID must be exactly 12 digits";
     if (!form.photo) e.photo = "Passport photo is required";
     if (!form.signature) e.signature = "Signature is required";
     const father = String(form.father_mobile || "").trim();
@@ -183,6 +186,7 @@ function ProfileCompletionModal() {
       const token = sessionStorage.getItem("authToken");
       const payload = {
         aadhar_number: form.aadhar_number,
+        apaar_id: form.apaar_id,
         hindi_name: form.hindi_name,
         photo: form.photo,
         signature: form.signature,
@@ -353,6 +357,22 @@ function ProfileCompletionModal() {
                   maxLength={12}
                   required
                   error={errors.aadhar_number}
+                />
+              </Grid.Col>
+              <Grid.Col span={HALF}>
+                <TextInput
+                  label="APAAR ID"
+                  placeholder="12-digit APAAR ID"
+                  value={form.apaar_id || ""}
+                  onChange={(e) =>
+                    set(
+                      "apaar_id",
+                      e.target.value.replace(/\D/g, "").slice(0, 12),
+                    )
+                  }
+                  maxLength={12}
+                  required
+                  error={errors.apaar_id}
                 />
               </Grid.Col>
               <Grid.Col span={HALF}>
