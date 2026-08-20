@@ -151,6 +151,15 @@ function ProfileCompletionModal() {
       e.aadhar_number = "Aadhaar number must be exactly 12 digits";
     if (form.apaar_id && !/^\d{12}$/.test(form.apaar_id))
       e.apaar_id = "APAAR ID must be exactly 12 digits";
+    // the Latin spelling is the name field; this one has to be Devanagari
+    if (
+      form.hindi_name &&
+      !(
+        /[\u0900-\u097F]/.test(form.hindi_name) &&
+        /^[\u0900-\u097F\u200c\u200d\s.'-]+$/.test(form.hindi_name)
+      )
+    )
+      e.hindi_name = "Name (Hindi) must be written in Devanagari, not English";
     if (!form.photo) e.photo = "Passport photo is required";
     if (!form.signature) e.signature = "Signature is required";
     const father = String(form.father_mobile || "").trim();
