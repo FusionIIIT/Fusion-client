@@ -50,30 +50,30 @@ describe("getStudentFieldValue", () => {
 });
 
 describe("upload preview cells", () => {
-  // one row exactly as process_excel_upload returns it for the UG template:
-  // the spreadsheet's own headings, not camelCase
+  // shaped as process_excel_upload returns a row for the UG template -- the
+  // spreadsheet's own headings, not camelCase -- with invented values
   const ROW = {
-    jee_app_no: "260310655186",
-    "Institute Roll Number": "26BCS001",
-    Name: "A SRIKANTH",
+    jee_app_no: "100000000001",
+    "Institute Roll Number": "00TST001",
+    Name: "Test Student",
     Discipline: "Computer Science and Engineering",
     Category: "SC",
-    "Institute Email ID": "26BCS001@iiitdmj.ac.in",
-    "Father's Name": "A KRISHNAIAH",
-    "Mother's Name": "A MANGAMMA",
-    "Full Address": "UDITHYAL, BALANAGAR, MAHBUBNAGAR, TELANGANA, 509202",
+    "Institute Email ID": "00TST001@example.test",
+    "Father's Name": "Test Father",
+    "Mother's Name": "Test Mother",
+    "Full Address": "1 Example Road, Example City, 000000",
   };
 
   const columnFor = (key) =>
     STUDENT_TABLE_COLUMNS.find((column) => column.key === key);
 
   it.each([
-    ["rollNumber", "26BCS001"],
-    ["name", "A SRIKANTH"],
-    ["fname", "A KRISHNAIAH"],
-    ["mname", "A MANGAMMA"],
-    ["jeeAppNo", "260310655186"],
-    ["instituteEmail", "26BCS001@iiitdmj.ac.in"],
+    ["rollNumber", "00TST001"],
+    ["name", "Test Student"],
+    ["fname", "Test Father"],
+    ["mname", "Test Mother"],
+    ["jeeAppNo", "100000000001"],
+    ["instituteEmail", "00TST001@example.test"],
     ["category", "Scheduled Caste"],
   ])("reads %s from the spreadsheet heading", (key, expected) => {
     expect(getStudentFieldValue(ROW, columnFor(key))).toBe(expected);
@@ -81,7 +81,7 @@ describe("upload preview cells", () => {
 
   it("reads the address and the discipline", () => {
     expect(getStudentFieldValue(ROW, columnFor("address"))).toContain(
-      "MAHBUBNAGAR",
+      "Example City",
     );
     expect(getStudentFieldValue(ROW, columnFor("branch"))).toContain(
       "Computer Science",
