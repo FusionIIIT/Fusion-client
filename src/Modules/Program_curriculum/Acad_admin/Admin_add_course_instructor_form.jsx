@@ -15,8 +15,14 @@ import { notifications } from "@mantine/notifications";
 import * as XLSX from "xlsx";
 import { fetchAllCourses, fetchFacultiesData } from "../api/api";
 import { host } from "../../../routes/globalRoutes";
+import { useSectionsInUse } from "../../../lib/sections";
 
 export default function Admin_add_course_instructor() {
+  const sectionsInUse = useSectionsInUse();
+  const sectionOptions = sectionsInUse.map((value) => ({
+    value,
+    label: value,
+  }));
   const [activeSection, setActiveSection] = useState("manual");
   const [file, setFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -57,14 +63,14 @@ export default function Admin_add_course_instructor() {
           courseResp.map((c) => ({
             value: String(c.id),
             label: `${c.name} (${c.code})`,
-          }))
+          })),
         );
         const facResp = await fetchFacultiesData();
         setFaculties(
           facResp.map((f) => ({
             value: String(f.id),
             label: `${f.faculty_first_name} ${f.faculty_last_name}`,
-          }))
+          })),
         );
       } catch (err) {
         notifications.show({
@@ -116,36 +122,40 @@ export default function Admin_add_course_instructor() {
           color: "green",
           autoClose: 5000,
           style: {
-            backgroundColor: '#d4edda',
-            borderColor: '#c3e6cb',
-            color: '#155724',
+            backgroundColor: "#d4edda",
+            borderColor: "#c3e6cb",
+            color: "#155724",
           },
         });
-        
+
         setTimeout(() => {
           navigate("/programme_curriculum/admin_course_instructor");
         }, 1500);
       } else {
         const err = await res.json();
-        
+
         notifications.show({
           title: "❌ Failed to Add Course Instructor",
           message: (
             <div>
               <Text size="sm" mb={8}>
-                <strong>{err.error || "Unable to add course instructor. Please try again."}</strong>
+                <strong>
+                  {err.error ||
+                    "Unable to add course instructor. Please try again."}
+                </strong>
               </Text>
               <Text size="xs" c="gray.7">
-                {JSON.stringify(err.details) || "Please check your inputs and try again."}
+                {JSON.stringify(err.details) ||
+                  "Please check your inputs and try again."}
               </Text>
             </div>
           ),
           color: "red",
           autoClose: 7000,
           style: {
-            backgroundColor: '#f8d7da',
-            borderColor: '#f5c6cb',
-            color: '#721c24',
+            backgroundColor: "#f8d7da",
+            borderColor: "#f5c6cb",
+            color: "#721c24",
           },
         });
       }
@@ -155,7 +165,9 @@ export default function Admin_add_course_instructor() {
         message: (
           <div>
             <Text size="sm" mb={8}>
-              <strong>Connection error occurred while adding instructor.</strong>
+              <strong>
+                Connection error occurred while adding instructor.
+              </strong>
             </Text>
             <Text size="xs" c="gray.7">
               Please check your internet connection and try again.
@@ -165,15 +177,15 @@ export default function Admin_add_course_instructor() {
         color: "red",
         autoClose: 7000,
         style: {
-          backgroundColor: '#f8d7da',
-          borderColor: '#f5c6cb',
-          color: '#721c24',
+          backgroundColor: "#f8d7da",
+          borderColor: "#f5c6cb",
+          color: "#721c24",
         },
       });
     }
   };
 
-    const handleUpload = async () => {
+  const handleUpload = async () => {
     if (!file) {
       notifications.show({
         title: "⚠️ File Required",
@@ -183,7 +195,7 @@ export default function Admin_add_course_instructor() {
       });
       return;
     }
-    
+
     if (!file.name.match(/\.(xls|xlsx)$/)) {
       notifications.show({
         title: "⚠️ Invalid File Type",
@@ -213,7 +225,9 @@ export default function Admin_add_course_instructor() {
           message: (
             <div>
               <Text size="sm" mb={8}>
-                <strong>{data.success || "Course instructors have been uploaded."}</strong>
+                <strong>
+                  {data.success || "Course instructors have been uploaded."}
+                </strong>
               </Text>
               <Text size="xs" c="gray.7">
                 Excel file has been processed and instructors have been added.
@@ -223,12 +237,12 @@ export default function Admin_add_course_instructor() {
           color: "green",
           autoClose: 5000,
           style: {
-            backgroundColor: '#d4edda',
-            borderColor: '#c3e6cb',
-            color: '#155724',
+            backgroundColor: "#d4edda",
+            borderColor: "#c3e6cb",
+            color: "#155724",
           },
         });
-        
+
         setTimeout(() => {
           navigate("/programme_curriculum/admin_course_instructor");
         }, 1500);
@@ -251,9 +265,9 @@ export default function Admin_add_course_instructor() {
         color: "red",
         autoClose: 7000,
         style: {
-          backgroundColor: '#f8d7da',
-          borderColor: '#f5c6cb',
-          color: '#721c24',
+          backgroundColor: "#f8d7da",
+          borderColor: "#f5c6cb",
+          color: "#721c24",
         },
       });
     } finally {
@@ -265,7 +279,9 @@ export default function Admin_add_course_instructor() {
     navigate("/programme_curriculum/admin_course_instructor");
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <div
+      style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
+    >
       <Container
         fluid
         style={{
@@ -349,12 +365,9 @@ export default function Admin_add_course_instructor() {
                     />
                     <Select
                       label="Section"
-                      description="Section this faculty teaches (A–F). Leave blank for a single-offering elective."
+                      description="Section this faculty teaches. Leave blank for a single-offering elective."
                       placeholder="No section (elective)"
-                      data={["A", "B", "C", "D", "E", "F"].map((s) => ({
-                        value: s,
-                        label: s,
-                      }))}
+                      data={sectionOptions}
                       {...form.getInputProps("sectionLabel")}
                       clearable
                     />
