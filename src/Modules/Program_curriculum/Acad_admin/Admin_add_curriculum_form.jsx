@@ -176,7 +176,7 @@ function AdminAddCurriculumForm() {
       }}
     >
       {isMobile && (
-        <Group spacing="md" position="center" mb="lg">
+        <Group gap="md" justify="center" mb="lg">
           <Link to="/programme_curriculum/acad_admin_add_programme_form">
             <Button
               className="right-btn-programme"
@@ -213,8 +213,8 @@ function AdminAddCurriculumForm() {
               boxShadow: "0 0 10px rgba(0,0,0,0.1)",
             }}
           >
-            <Stack spacing="lg">
-              <Text size="xl" weight={700} align="center">
+            <Stack gap="lg">
+              <Text size="xl" fw={700} ta="center">
                 Add Curriculum Form
               </Text>
 
@@ -273,7 +273,7 @@ function AdminAddCurriculumForm() {
               />
             </Stack>
 
-            <Group position="right" mt="lg">
+            <Group justify="flex-end" mt="lg">
               <Button
                                                                      variant="outline"
                                                                      className="cancel-btn"
@@ -297,7 +297,7 @@ function AdminAddCurriculumForm() {
               justifyContent: "flex-start",
             }}
           >
-            <Group spacing="md" direction="column" style={{ width: "100%" }}>
+            <Group gap="md" direction="column" style={{ width: "100%" }}>
               <Link to="/programme_curriculum/acad_admin_add_programme_form">
                 <Button
                   className="right-btn-programme"

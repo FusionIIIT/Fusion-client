@@ -41,14 +41,17 @@ import {
   INITIAL_FORM_DATA,
   PROGRAMME_TYPES,
   STUDENT_FIELDS_CONFIG,
+  STUDENT_TABLE_COLUMNS,
 } from "../AdminUpcomingBatchesConstants";
 import {
   batchYearToAcademicYear,
   cleanDisciplineName,
   getBatchYearOptions,
+  getStudentFieldValue,
 } from "../AdminUpcomingBatchesUtils";
 import { host } from "../../../../routes/globalRoutes";
 import HindiKeyboard from "./HindiKeyboard";
+import classes from "./AddStudentsModal.module.css";
 
 const PREVIEW_FIELD_ORDER = [
   "jeeAppNo", // 1. JEE App No (UG/PG)
@@ -95,6 +98,19 @@ const PREVIEW_FIELD_ORDER = [
   "categoryRank", // 35. Category Rank
 ];
 
+const PREVIEW_COLUMNS = Object.fromEntries(
+  STUDENT_TABLE_COLUMNS.map((column) => [column.key, column]),
+);
+
+// The uploaded rows keep the spreadsheet's own headings, so a cell is read
+// through the shared column definitions rather than one guessed property.
+function cellOf(student, key) {
+  const column = PREVIEW_COLUMNS[key];
+  if (!column) return student[key] ?? "";
+  const value = getStudentFieldValue(student, column);
+  return value === "-" ? "" : value;
+}
+
 function AddStudentsModal({
   opened,
   onClose,
@@ -136,6 +152,8 @@ function AddStudentsModal({
   uploadProgress,
   uploadedFile,
 }) {
+  const phdSemesterMissing = activeSection === "phd" && !selectedPhdSemester;
+
   // Validate type + size then store the image as a base64 data URL.
   const handleImageUpload = (file, field, maxKB) => {
     if (!file) {
@@ -207,12 +225,12 @@ function AddStudentsModal({
     >
       {!addMode && (
         <Container size="lg" style={{ padding: 0 }}>
-          <Stack spacing={isMobile ? "md" : "lg"} align="center">
+          <Stack gap={isMobile ? "md" : "lg"} align="center">
             <Text
               size={isMobile ? "lg" : "xl"}
               ta="center"
-              color="#3498db"
-              weight={700}
+              c="#3498db"
+              fw={700}
               style={{
                 fontSize: isMobile ? "18px" : "24px",
                 fontWeight: "bold",
@@ -228,8 +246,8 @@ function AddStudentsModal({
             </Text>
 
             {/* Batch Year Selection */}
-            <Stack spacing="xs" style={{ width: "100%", marginBottom: "20px" }}>
-              <Group position="center" spacing="md">
+            <Stack gap="xs" style={{ width: "100%", marginBottom: "20px" }}>
+              <Group justify="center" gap="md">
                 <Select
                   value={selectedBatchYear.toString()}
                   onChange={(value) =>
@@ -241,7 +259,7 @@ function AddStudentsModal({
                   size="sm"
                 />
               </Group>
-              <Text size="xs" color="dimmed" ta="center">
+              <Text size="xs" c="dimmed" ta="center">
                 {selectedBatchYear &&
                   `Academic Year: ${batchYearToAcademicYear(selectedBatchYear)}`}
               </Text>
@@ -249,16 +267,12 @@ function AddStudentsModal({
 
             {/* PhD Semester Selection - Only for PhD section */}
             {activeSection === "phd" && (
-              <Stack
-                spacing="xs"
-                style={{ width: "100%", marginBottom: "20px" }}
-              >
-                <Group position="center" spacing="md">
+              <Stack gap="xs" style={{ width: "100%", marginBottom: "20px" }}>
+                <Group justify="center" gap="md">
                   <Select
                     label="Select PhD Semester"
                     value={selectedPhdSemester}
                     onChange={(value) => {
-                      console.log("PhD Semester selected:", value);
                       setSelectedPhdSemester(value);
                     }}
                     data={[
@@ -281,7 +295,7 @@ function AddStudentsModal({
                     }}
                   />
                 </Group>
-                <Text size="xs" color="dimmed" ta="center">
+                <Text size="xs" c="dimmed" ta="center">
                   Select whether you want to add students to Odd or Even
                   semester batch
                 </Text>
@@ -299,17 +313,13 @@ function AddStudentsModal({
                   padding={isMobile ? "md" : "xl"}
                   style={{
                     height: isMobile ? "180px" : "240px",
-                    cursor:
-                      activeSection === "phd" && !selectedPhdSemester
-                        ? "not-allowed"
-                        : "pointer",
+                    cursor: phdSemesterMissing ? "not-allowed" : "pointer",
                     border: "2px solid transparent",
                     transition: "all 0.3s ease",
-                    opacity:
-                      activeSection === "phd" && !selectedPhdSemester ? 0.5 : 1,
+                    opacity: phdSemesterMissing ? 0.5 : 1,
                   }}
                   onClick={() => {
-                    if (activeSection === "phd" && !selectedPhdSemester) {
+                    if (phdSemesterMissing) {
                       notifications.show({
                         title: "Semester Selection Required",
                         message:
@@ -320,24 +330,9 @@ function AddStudentsModal({
                     }
                     setAddMode("excel");
                   }}
-                  sx={() => ({
-                    "&:hover": {
-                      transform:
-                        activeSection === "phd" && !selectedPhdSemester
-                          ? "none"
-                          : "translateY(-2px)",
-                      boxShadow:
-                        activeSection === "phd" && !selectedPhdSemester
-                          ? "none"
-                          : "0 8px 32px rgba(52, 152, 219, 0.15)",
-                      borderColor:
-                        activeSection === "phd" && !selectedPhdSemester
-                          ? "transparent"
-                          : "#3498db",
-                    },
-                  })}
+                  className={phdSemesterMissing ? undefined : classes.choice}
                 >
-                  <Stack align="center" spacing="xs" h="100%" justify="center">
+                  <Stack align="center" gap="xs" h="100%" justify="center">
                     <ThemeIcon
                       size={isMobile ? 40 : 50}
                       radius="xl"
@@ -346,12 +341,12 @@ function AddStudentsModal({
                     >
                       <FileXls size={isMobile ? 20 : 24} />
                     </ThemeIcon>
-                    <Text size={isMobile ? "sm" : "md"} weight={600} mt={4}>
+                    <Text size={isMobile ? "sm" : "md"} fw={600} mt={4}>
                       Excel Upload
                     </Text>
                     <Text
                       ta="center"
-                      color="dimmed"
+                      c="dimmed"
                       size="xs"
                       style={{ lineHeight: 1.3 }}
                     >
@@ -372,17 +367,13 @@ function AddStudentsModal({
                   padding={isMobile ? "md" : "xl"}
                   style={{
                     height: isMobile ? "180px" : "240px",
-                    cursor:
-                      activeSection === "phd" && !selectedPhdSemester
-                        ? "not-allowed"
-                        : "pointer",
+                    cursor: phdSemesterMissing ? "not-allowed" : "pointer",
                     border: "2px solid transparent",
                     transition: "all 0.3s ease",
-                    opacity:
-                      activeSection === "phd" && !selectedPhdSemester ? 0.5 : 1,
+                    opacity: phdSemesterMissing ? 0.5 : 1,
                   }}
                   onClick={() => {
-                    if (activeSection === "phd" && !selectedPhdSemester) {
+                    if (phdSemesterMissing) {
                       notifications.show({
                         title: "Semester Selection Required",
                         message:
@@ -393,24 +384,9 @@ function AddStudentsModal({
                     }
                     setAddMode("manual");
                   }}
-                  sx={() => ({
-                    "&:hover": {
-                      transform:
-                        activeSection === "phd" && !selectedPhdSemester
-                          ? "none"
-                          : "translateY(-2px)",
-                      boxShadow:
-                        activeSection === "phd" && !selectedPhdSemester
-                          ? "none"
-                          : "0 8px 32px rgba(52, 152, 219, 0.15)",
-                      borderColor:
-                        activeSection === "phd" && !selectedPhdSemester
-                          ? "transparent"
-                          : "#3498db",
-                    },
-                  })}
+                  className={phdSemesterMissing ? undefined : classes.choice}
                 >
-                  <Stack align="center" spacing="xs" h="100%" justify="center">
+                  <Stack align="center" gap="xs" h="100%" justify="center">
                     <ThemeIcon
                       size={isMobile ? 40 : 50}
                       radius="xl"
@@ -419,12 +395,12 @@ function AddStudentsModal({
                     >
                       <Users size={isMobile ? 20 : 24} />
                     </ThemeIcon>
-                    <Text size={isMobile ? "sm" : "md"} weight={600} mt={4}>
+                    <Text size={isMobile ? "sm" : "md"} fw={600} mt={4}>
                       Manual Entry
                     </Text>
                     <Text
                       ta="center"
-                      color="dimmed"
+                      c="dimmed"
                       size="xs"
                       style={{ lineHeight: 1.3 }}
                     >
@@ -444,14 +420,14 @@ function AddStudentsModal({
       {/* Excel Upload Mode */}
       {addMode === "excel" && (
         <Container size="lg" style={{ padding: 0 }}>
-          <Stack spacing={isMobile ? "md" : "lg"}>
+          <Stack gap={isMobile ? "md" : "lg"}>
             <Group
-              position="apart"
+              justify="space-between"
               style={{ marginBottom: isMobile ? "16px" : "24px" }}
             >
               <Text
                 size={isMobile ? "md" : "lg"}
-                weight={700}
+                fw={700}
                 style={{
                   fontWeight: "bold",
                   color: "#2c3e50",
@@ -484,7 +460,7 @@ function AddStudentsModal({
               radius="md"
               style={{ border: "1px solid #e9ecef" }}
             >
-              <Stack spacing="md">
+              <Stack gap="md">
                 {/* Template Download Section */}
                 <div
                   style={{
@@ -494,12 +470,12 @@ function AddStudentsModal({
                     border: "1px solid #2196f3",
                   }}
                 >
-                  <Group position="apart" align="center">
+                  <Group justify="space-between" align="center">
                     <div>
-                      <Text size="sm" weight={600} color="#1976d2">
+                      <Text size="sm" fw={600} c="#1976d2">
                         📄 Download Excel Template
                       </Text>
-                      <Text size="xs" color="#1976d2" mt={2}>
+                      <Text size="xs" c="#1976d2" mt={2}>
                         Download the standardized template with all required
                         fields for {activeSection.toUpperCase()} students
                       </Text>
@@ -520,21 +496,21 @@ function AddStudentsModal({
                   label="Upload Excel File"
                   description="Select an Excel file (.xlsx, .xls) containing student data using the template format"
                   placeholder="Click to select file"
-                  icon={<Upload size={14} />}
+                  leftSection={<Upload size={14} />}
                   value={uploadedFile}
                   onChange={handleFileUpload}
                   accept=".xlsx,.xls"
                 />
 
                 {isProcessing && (
-                  <Stack spacing="xs">
+                  <Stack gap="xs">
                     <Text size="sm">Processing file...</Text>
                     <Progress value={uploadProgress} />
                   </Stack>
                 )}
 
                 {showBatchPreview && processedBatchData && !isProcessing && (
-                  <Stack spacing="md">
+                  <Stack gap="md">
                     <Alert color="green" icon={<Check size={16} />}>
                       Batch allocation completed!{" "}
                       {processedBatchData?.length || 0} students processed with
@@ -547,7 +523,7 @@ function AddStudentsModal({
                         padding="md"
                         style={{ backgroundColor: "#f8f9fa" }}
                       >
-                        <Text size="md" weight={600} color="#3498db" mb="sm">
+                        <Text size="md" fw={600} c="#3498db" mb="sm">
                           📊 Allocation Summary:
                         </Text>
                         <Grid>
@@ -566,7 +542,7 @@ function AddStudentsModal({
                             </Text>
                           </Grid.Col>
                           <Grid.Col span={6}>
-                            <Text size="sm" weight={600} mb="xs">
+                            <Text size="sm" fw={600} mb="xs">
                               Branch-wise Distribution:
                             </Text>
                             {allocationSummary.branchCounts &&
@@ -575,7 +551,7 @@ function AddStudentsModal({
                               Object.entries(
                                 allocationSummary.branchCounts,
                               ).map(([branch, count]) => (
-                                <Text key={branch} size="sm">
+                                <Text key={branch} component="div" size="sm">
                                   <Badge variant="light" mr="xs">
                                     {branch}
                                   </Badge>
@@ -585,7 +561,7 @@ function AddStudentsModal({
                             {(!allocationSummary.branchCounts ||
                               typeof allocationSummary.branchCounts !==
                                 "object") && (
-                              <Text size="sm" color="dimmed">
+                              <Text size="sm" c="dimmed">
                                 No branch distribution available
                               </Text>
                             )}
@@ -594,7 +570,7 @@ function AddStudentsModal({
                       </Card>
                     )}
 
-                    <Text size="md" weight={600} color="#3498db" mt="md">
+                    <Text size="md" fw={600} c="#3498db" mt="md">
                       🎓 Student Allocation Preview:
                     </Text>
 
@@ -662,7 +638,7 @@ function AddStudentsModal({
                                     whiteSpace: "nowrap",
                                   }}
                                 >
-                                  {student.rollNumber}
+                                  {cellOf(student, "rollNumber")}
                                 </Badge>
                               </td>
                               <td
@@ -672,7 +648,7 @@ function AddStudentsModal({
                                   fontSize: "13px",
                                 }}
                               >
-                                {student.name}
+                                {cellOf(student, "name")}
                               </td>
                               <td
                                 style={{
@@ -681,7 +657,7 @@ function AddStudentsModal({
                                   fontSize: "13px",
                                 }}
                               >
-                                {student.fname}
+                                {cellOf(student, "fname")}
                               </td>
                               <td
                                 style={{
@@ -690,7 +666,7 @@ function AddStudentsModal({
                                   fontSize: "13px",
                                 }}
                               >
-                                {student.mname || "N/A"}
+                                {cellOf(student, "mname") || "N/A"}
                               </td>
                               <td
                                 style={{
@@ -705,12 +681,12 @@ function AddStudentsModal({
                                 }}
                               >
                                 <Tooltip
-                                  label={student.address || "N/A"}
+                                  label={cellOf(student, "address") || "N/A"}
                                   multiline
                                   width={300}
                                   disabled={
-                                    !student.address ||
-                                    student.address.length < 50
+                                    !cellOf(student, "address") ||
+                                    cellOf(student, "address").length < 50
                                   }
                                 >
                                   <div
@@ -721,7 +697,7 @@ function AddStudentsModal({
                                       overflow: "hidden",
                                     }}
                                   >
-                                    {student.address || "N/A"}
+                                    {cellOf(student, "address") || "N/A"}
                                   </div>
                                 </Tooltip>
                               </td>
@@ -732,7 +708,7 @@ function AddStudentsModal({
                                   fontFamily: "monospace",
                                 }}
                               >
-                                {student.jeeAppNo || "N/A"}
+                                {cellOf(student, "jeeAppNo") || "N/A"}
                               </td>
                               {(activeSection === "pg" ||
                                 activeSection === "phd") && (
@@ -763,7 +739,7 @@ function AddStudentsModal({
                                     whiteSpace: "nowrap",
                                   }}
                                 >
-                                  {student.branchCode}
+                                  {cellOf(student, "branch")}
                                 </Badge>
                               </td>
                               <td
@@ -774,7 +750,7 @@ function AddStudentsModal({
                                   wordBreak: "break-all",
                                 }}
                               >
-                                {student.instituteEmail}
+                                {cellOf(student, "instituteEmail")}
                               </td>
                               <td style={{ padding: "8px 12px" }}>
                                 <Badge
@@ -798,7 +774,7 @@ function AddStudentsModal({
                                   fontSize: "12px",
                                 }}
                               >
-                                {student.category}
+                                {cellOf(student, "category")}
                               </td>
                               <td
                                 style={{
@@ -807,7 +783,7 @@ function AddStudentsModal({
                                   textAlign: "center",
                                 }}
                               >
-                                {student.pwd}
+                                {cellOf(student, "pwd")}
                               </td>
                             </tr>
                           ))}
@@ -828,7 +804,7 @@ function AddStudentsModal({
                         message: { color: "#92400e" },
                       }}
                     >
-                      <Text weight={600} size="md">
+                      <Text fw={600} size="md">
                         ⚠️ IMPORTANT: Data Not Saved Yet!
                       </Text>
                       <Text size="sm" mt={4}>
@@ -839,7 +815,7 @@ function AddStudentsModal({
                       </Text>
                     </Alert>
 
-                    <Group position="center" mt="lg" spacing="md">
+                    <Group justify="center" mt="lg" gap="md">
                       <Button
                         variant="outline"
                         color="blue"
@@ -875,7 +851,7 @@ function AddStudentsModal({
                   showPreview &&
                   !isProcessing &&
                   !showBatchPreview && (
-                    <Stack spacing="md">
+                    <Stack gap="md">
                       <Alert color="green" icon={<Check size={16} />}>
                         ✅ Excel file processed successfully!{" "}
                         {extractedData.length} records found.
@@ -893,7 +869,7 @@ function AddStudentsModal({
                         padding="md"
                         style={{ backgroundColor: "#f8f9fa" }}
                       >
-                        <Text size="md" weight={600} color="#3498db" mb="sm">
+                        <Text size="md" fw={600} c="#3498db" mb="sm">
                           📋 Data Preview ({extractedData.length} students):
                         </Text>
 
@@ -1071,7 +1047,7 @@ function AddStudentsModal({
                         </ScrollArea>
                       </Card>
 
-                      <Group position="center" style={{ marginTop: "20px" }}>
+                      <Group justify="center" style={{ marginTop: "20px" }}>
                         <Button
                           variant="outline"
                           onClick={() => {
@@ -1104,7 +1080,7 @@ function AddStudentsModal({
                   !isProcessing &&
                   !showBatchPreview &&
                   !showPreview && (
-                    <Stack spacing="md">
+                    <Stack gap="md">
                       <Alert color="blue" icon={<Info size={16} />}>
                         Raw data extracted. Processing for batch allocation...
                       </Alert>
@@ -1119,14 +1095,14 @@ function AddStudentsModal({
       {/* Manual Entry Mode */}
       {addMode === "manual" && (
         <Container size="lg" style={{ padding: 0 }}>
-          <Stack spacing={isMobile ? "md" : "lg"}>
+          <Stack gap={isMobile ? "md" : "lg"}>
             <Group
-              position="apart"
+              justify="space-between"
               style={{ marginBottom: isMobile ? "16px" : "24px" }}
             >
               <Text
                 size={isMobile ? "md" : "lg"}
-                weight={700}
+                fw={700}
                 style={{
                   fontWeight: "bold",
                   color: "#2c3e50",
@@ -1174,8 +1150,8 @@ function AddStudentsModal({
                   description="Personal information"
                   icon={<User size={18} />}
                 >
-                  <Stack spacing="md" mt="lg">
-                    <Title order={3} size="h4" weight={700} mb="md">
+                  <Stack gap="md" mt="lg">
+                    <Title order={3} size="h4" fw={700} mb="md">
                       Basic Info
                     </Title>
 
@@ -1518,8 +1494,8 @@ function AddStudentsModal({
                   }
                   icon={<GraduationCap size={18} />}
                 >
-                  <Stack spacing="md" mt="lg">
-                    <Title order={3} size="h4" weight={700} mb="md">
+                  <Stack gap="md" mt="lg">
+                    <Title order={3} size="h4" fw={700} mb="md">
                       Additional Info
                     </Title>
 
@@ -1957,8 +1933,8 @@ function AddStudentsModal({
                   description="Branch & marks details"
                   icon={<GraduationCap size={18} />}
                 >
-                  <Stack spacing="md" mt="lg">
-                    <Title order={3} size="h4" weight={700} mb="md">
+                  <Stack gap="md" mt="lg">
+                    <Title order={3} size="h4" fw={700} mb="md">
                       Academic Info
                     </Title>
 
@@ -2278,18 +2254,12 @@ function AddStudentsModal({
                   description="Verify details"
                   icon={<Check size={18} />}
                 >
-                  <Stack spacing="lg" mt="lg">
+                  <Stack gap="lg" mt="lg">
                     <div style={{ textAlign: "center", marginBottom: "20px" }}>
-                      <Title
-                        order={2}
-                        size="h3"
-                        weight={700}
-                        mb="xs"
-                        color="#2c3e50"
-                      >
+                      <Title order={2} size="h3" fw={700} mb="xs" c="#2c3e50">
                         📋 Review & Submit
                       </Title>
-                      <Text size="md" color="dimmed">
+                      <Text size="md" c="dimmed">
                         Please review all the information below before
                         submitting
                       </Text>
@@ -2324,11 +2294,11 @@ function AddStudentsModal({
                             marginRight: "12px",
                           }}
                         >
-                          <Text color="white" size="sm" weight={700}>
+                          <Text c="white" size="sm" fw={700}>
                             👤
                           </Text>
                         </div>
-                        <Title order={4} weight={600} color="#2c3e50">
+                        <Title order={4} fw={600} c="#2c3e50">
                           Basic Information
                         </Title>
                       </div>
@@ -2347,10 +2317,10 @@ function AddStudentsModal({
                             borderRadius: "6px",
                           }}
                         >
-                          <Text size="xs" weight={600} color="dimmed" mb={2}>
+                          <Text size="xs" fw={600} c="dimmed" mb={2}>
                             FULL NAME
                           </Text>
-                          <Text size="sm" weight={500}>
+                          <Text size="sm" fw={500}>
                             {manualFormData.name || "Not provided"}
                           </Text>
                         </div>
@@ -2361,10 +2331,10 @@ function AddStudentsModal({
                             borderRadius: "6px",
                           }}
                         >
-                          <Text size="xs" weight={600} color="dimmed" mb={2}>
+                          <Text size="xs" fw={600} c="dimmed" mb={2}>
                             NAME (HINDI)
                           </Text>
-                          <Text size="sm" weight={500}>
+                          <Text size="sm" fw={500}>
                             {manualFormData.hindiName || "Not provided"}
                           </Text>
                         </div>
@@ -2375,10 +2345,10 @@ function AddStudentsModal({
                             borderRadius: "6px",
                           }}
                         >
-                          <Text size="xs" weight={600} color="dimmed" mb={2}>
+                          <Text size="xs" fw={600} c="dimmed" mb={2}>
                             AADHAAR NO.
                           </Text>
-                          <Text size="sm" weight={500}>
+                          <Text size="sm" fw={500}>
                             {manualFormData.aadharNo || "Not provided"}
                           </Text>
                         </div>
@@ -2389,10 +2359,10 @@ function AddStudentsModal({
                             borderRadius: "6px",
                           }}
                         >
-                          <Text size="xs" weight={600} color="dimmed" mb={2}>
+                          <Text size="xs" fw={600} c="dimmed" mb={2}>
                             FATHER'S NAME
                           </Text>
-                          <Text size="sm" weight={500}>
+                          <Text size="sm" fw={500}>
                             {manualFormData.fname || "Not provided"}
                           </Text>
                         </div>
@@ -2403,10 +2373,10 @@ function AddStudentsModal({
                             borderRadius: "6px",
                           }}
                         >
-                          <Text size="xs" weight={600} color="dimmed" mb={2}>
+                          <Text size="xs" fw={600} c="dimmed" mb={2}>
                             MOTHER'S NAME
                           </Text>
-                          <Text size="sm" weight={500}>
+                          <Text size="sm" fw={500}>
                             {manualFormData.mname || "Not provided"}
                           </Text>
                         </div>
@@ -2417,10 +2387,10 @@ function AddStudentsModal({
                             borderRadius: "6px",
                           }}
                         >
-                          <Text size="xs" weight={600} color="dimmed" mb={2}>
+                          <Text size="xs" fw={600} c="dimmed" mb={2}>
                             GENDER
                           </Text>
-                          <Text size="sm" weight={500}>
+                          <Text size="sm" fw={500}>
                             {manualFormData.gender || "Not selected"}
                           </Text>
                         </div>
@@ -2431,10 +2401,10 @@ function AddStudentsModal({
                             borderRadius: "6px",
                           }}
                         >
-                          <Text size="xs" weight={600} color="dimmed" mb={2}>
+                          <Text size="xs" fw={600} c="dimmed" mb={2}>
                             CATEGORY
                           </Text>
-                          <Text size="sm" weight={500}>
+                          <Text size="sm" fw={500}>
                             {manualFormData.category || "Not selected"}
                           </Text>
                         </div>
@@ -2445,10 +2415,10 @@ function AddStudentsModal({
                             borderRadius: "6px",
                           }}
                         >
-                          <Text size="xs" weight={600} color="dimmed" mb={2}>
+                          <Text size="xs" fw={600} c="dimmed" mb={2}>
                             MINORITY
                           </Text>
-                          <Text size="sm" weight={500}>
+                          <Text size="sm" fw={500}>
                             {manualFormData.minority || "Not specified"}
                           </Text>
                         </div>
@@ -2459,7 +2429,7 @@ function AddStudentsModal({
                             borderRadius: "6px",
                           }}
                         >
-                          <Text size="xs" weight={600} color="dimmed" mb={2}>
+                          <Text size="xs" fw={600} c="dimmed" mb={2}>
                             PASSPORT PHOTO
                           </Text>
                           {manualFormData.photo ? (
@@ -2477,7 +2447,7 @@ function AddStudentsModal({
                               }}
                             />
                           ) : (
-                            <Text size="sm" weight={500}>
+                            <Text size="sm" fw={500}>
                               Not uploaded
                             </Text>
                           )}
@@ -2489,7 +2459,7 @@ function AddStudentsModal({
                             borderRadius: "6px",
                           }}
                         >
-                          <Text size="xs" weight={600} color="dimmed" mb={2}>
+                          <Text size="xs" fw={600} c="dimmed" mb={2}>
                             SIGNATURE
                           </Text>
                           {manualFormData.signature ? (
@@ -2507,7 +2477,7 @@ function AddStudentsModal({
                               }}
                             />
                           ) : (
-                            <Text size="sm" weight={500}>
+                            <Text size="sm" fw={500}>
                               Not uploaded
                             </Text>
                           )}
@@ -2519,10 +2489,10 @@ function AddStudentsModal({
                             borderRadius: "6px",
                           }}
                         >
-                          <Text size="xs" weight={600} color="dimmed" mb={2}>
+                          <Text size="xs" fw={600} c="dimmed" mb={2}>
                             PWD STATUS
                           </Text>
-                          <Text size="sm" weight={500}>
+                          <Text size="sm" fw={500}>
                             {manualFormData.pwd || "Not specified"}
                           </Text>
                         </div>
@@ -2535,15 +2505,10 @@ function AddStudentsModal({
                                 borderRadius: "6px",
                               }}
                             >
-                              <Text
-                                size="xs"
-                                weight={600}
-                                color="dimmed"
-                                mb={2}
-                              >
+                              <Text size="xs" fw={600} c="dimmed" mb={2}>
                                 PWD CATEGORY
                               </Text>
-                              <Text size="sm" weight={500}>
+                              <Text size="sm" fw={500}>
                                 {manualFormData.pwdCategory}
                               </Text>
                             </div>
@@ -2557,15 +2522,10 @@ function AddStudentsModal({
                                 borderRadius: "6px",
                               }}
                             >
-                              <Text
-                                size="xs"
-                                weight={600}
-                                color="dimmed"
-                                mb={2}
-                              >
+                              <Text size="xs" fw={600} c="dimmed" mb={2}>
                                 PWD CATEGORY REMARKS
                               </Text>
-                              <Text size="sm" weight={500}>
+                              <Text size="sm" fw={500}>
                                 {manualFormData.pwdCategoryRemarks}
                               </Text>
                             </div>
@@ -2578,10 +2538,10 @@ function AddStudentsModal({
                               borderRadius: "6px",
                             }}
                           >
-                            <Text size="xs" weight={600} color="dimmed" mb={2}>
+                            <Text size="xs" fw={600} c="dimmed" mb={2}>
                               PHONE NUMBER
                             </Text>
-                            <Text size="sm" weight={500}>
+                            <Text size="sm" fw={500}>
                               {manualFormData.phoneNumber}
                             </Text>
                           </div>
@@ -2594,10 +2554,10 @@ function AddStudentsModal({
                               borderRadius: "6px",
                             }}
                           >
-                            <Text size="xs" weight={600} color="dimmed" mb={2}>
+                            <Text size="xs" fw={600} c="dimmed" mb={2}>
                               PARENT'S EMAIL
                             </Text>
-                            <Text size="sm" weight={500}>
+                            <Text size="sm" fw={500}>
                               {manualFormData.parentEmail}
                             </Text>
                           </div>
@@ -2634,11 +2594,11 @@ function AddStudentsModal({
                             marginRight: "12px",
                           }}
                         >
-                          <Text color="white" size="sm" weight={700}>
+                          <Text c="white" size="sm" fw={700}>
                             📄
                           </Text>
                         </div>
-                        <Title order={4} weight={600} color="#2c3e50">
+                        <Title order={4} fw={600} c="#2c3e50">
                           Additional Information
                         </Title>
                       </div>
@@ -2658,10 +2618,10 @@ function AddStudentsModal({
                               borderRadius: "6px",
                             }}
                           >
-                            <Text size="xs" weight={600} color="dimmed" mb={2}>
+                            <Text size="xs" fw={600} c="dimmed" mb={2}>
                               DATE OF BIRTH
                             </Text>
-                            <Text size="sm" weight={500}>
+                            <Text size="sm" fw={500}>
                               {manualFormData.dob}
                             </Text>
                           </div>
@@ -2674,10 +2634,10 @@ function AddStudentsModal({
                               borderRadius: "6px",
                             }}
                           >
-                            <Text size="xs" weight={600} color="dimmed" mb={2}>
+                            <Text size="xs" fw={600} c="dimmed" mb={2}>
                               BLOOD GROUP
                             </Text>
-                            <Text size="sm" weight={500}>
+                            <Text size="sm" fw={500}>
                               {manualFormData.bloodGroup}
                             </Text>
                           </div>
@@ -2690,10 +2650,10 @@ function AddStudentsModal({
                               borderRadius: "6px",
                             }}
                           >
-                            <Text size="xs" weight={600} color="dimmed" mb={2}>
+                            <Text size="xs" fw={600} c="dimmed" mb={2}>
                               BLOOD GROUP REMARKS
                             </Text>
-                            <Text size="sm" weight={500}>
+                            <Text size="sm" fw={500}>
                               {manualFormData.bloodGroupRemarks}
                             </Text>
                           </div>
@@ -2706,10 +2666,10 @@ function AddStudentsModal({
                               borderRadius: "6px",
                             }}
                           >
-                            <Text size="xs" weight={600} color="dimmed" mb={2}>
+                            <Text size="xs" fw={600} c="dimmed" mb={2}>
                               COUNTRY
                             </Text>
-                            <Text size="sm" weight={500}>
+                            <Text size="sm" fw={500}>
                               {manualFormData.country}
                             </Text>
                           </div>
@@ -2722,10 +2682,10 @@ function AddStudentsModal({
                               borderRadius: "6px",
                             }}
                           >
-                            <Text size="xs" weight={600} color="dimmed" mb={2}>
+                            <Text size="xs" fw={600} c="dimmed" mb={2}>
                               NATIONALITY
                             </Text>
-                            <Text size="sm" weight={500}>
+                            <Text size="sm" fw={500}>
                               {manualFormData.nationality}
                             </Text>
                           </div>
@@ -2738,10 +2698,10 @@ function AddStudentsModal({
                               borderRadius: "6px",
                             }}
                           >
-                            <Text size="xs" weight={600} color="dimmed" mb={2}>
+                            <Text size="xs" fw={600} c="dimmed" mb={2}>
                               ADMISSION MODE
                             </Text>
-                            <Text size="sm" weight={500}>
+                            <Text size="sm" fw={500}>
                               {manualFormData.admissionMode}
                             </Text>
                           </div>
@@ -2756,15 +2716,10 @@ function AddStudentsModal({
                                 borderRadius: "6px",
                               }}
                             >
-                              <Text
-                                size="xs"
-                                weight={600}
-                                color="dimmed"
-                                mb={2}
-                              >
+                              <Text size="xs" fw={600} c="dimmed" mb={2}>
                                 ADMISSION MODE REMARKS
                               </Text>
-                              <Text size="sm" weight={500}>
+                              <Text size="sm" fw={500}>
                                 {manualFormData.admissionModeRemarks}
                               </Text>
                             </div>
@@ -2777,10 +2732,10 @@ function AddStudentsModal({
                               borderRadius: "6px",
                             }}
                           >
-                            <Text size="xs" weight={600} color="dimmed" mb={2}>
+                            <Text size="xs" fw={600} c="dimmed" mb={2}>
                               INCOME GROUP
                             </Text>
-                            <Text size="sm" weight={500}>
+                            <Text size="sm" fw={500}>
                               {manualFormData.incomeGroup}
                             </Text>
                           </div>
@@ -2793,10 +2748,10 @@ function AddStudentsModal({
                               borderRadius: "6px",
                             }}
                           >
-                            <Text size="xs" weight={600} color="dimmed" mb={2}>
+                            <Text size="xs" fw={600} c="dimmed" mb={2}>
                               INCOME
                             </Text>
-                            <Text size="sm" weight={500}>
+                            <Text size="sm" fw={500}>
                               ₹
                               {parseInt(
                                 manualFormData.income,
@@ -2813,10 +2768,10 @@ function AddStudentsModal({
                               borderRadius: "6px",
                             }}
                           >
-                            <Text size="xs" weight={600} color="dimmed" mb={2}>
+                            <Text size="xs" fw={600} c="dimmed" mb={2}>
                               APPLICATION NO.
                             </Text>
-                            <Text size="sm" weight={500}>
+                            <Text size="sm" fw={500}>
                               {manualFormData.applicationNo || "Not provided"}
                             </Text>
                           </div>
@@ -2828,10 +2783,10 @@ function AddStudentsModal({
                               borderRadius: "6px",
                             }}
                           >
-                            <Text size="xs" weight={600} color="dimmed" mb={2}>
+                            <Text size="xs" fw={600} c="dimmed" mb={2}>
                               JEE APPLICATION NO.
                             </Text>
-                            <Text size="sm" weight={500}>
+                            <Text size="sm" fw={500}>
                               {manualFormData.jeeAppNo || "Not provided"}
                             </Text>
                           </div>
@@ -2845,15 +2800,10 @@ function AddStudentsModal({
                                 borderRadius: "6px",
                               }}
                             >
-                              <Text
-                                size="xs"
-                                weight={600}
-                                color="dimmed"
-                                mb={2}
-                              >
+                              <Text size="xs" fw={600} c="dimmed" mb={2}>
                                 ADMISSION TYPE
                               </Text>
-                              <Text size="sm" weight={500}>
+                              <Text size="sm" fw={500}>
                                 {manualFormData.admissionType}
                               </Text>
                             </div>
@@ -2867,15 +2817,10 @@ function AddStudentsModal({
                                 borderRadius: "6px",
                               }}
                             >
-                              <Text
-                                size="xs"
-                                weight={600}
-                                color="dimmed"
-                                mb={2}
-                              >
+                              <Text size="xs" fw={600} c="dimmed" mb={2}>
                                 SPECIALIZATION
                               </Text>
-                              <Text size="sm" weight={500}>
+                              <Text size="sm" fw={500}>
                                 {manualFormData.specialization}
                               </Text>
                             </div>
@@ -2889,10 +2834,10 @@ function AddStudentsModal({
                               gridColumn: "1 / -1",
                             }}
                           >
-                            <Text size="xs" weight={600} color="dimmed" mb={2}>
+                            <Text size="xs" fw={600} c="dimmed" mb={2}>
                               ADDRESS
                             </Text>
-                            <Text size="sm" weight={500}>
+                            <Text size="sm" fw={500}>
                               {manualFormData.address}
                             </Text>
                           </div>
@@ -2905,10 +2850,10 @@ function AddStudentsModal({
                               borderRadius: "6px",
                             }}
                           >
-                            <Text size="xs" weight={600} color="dimmed" mb={2}>
+                            <Text size="xs" fw={600} c="dimmed" mb={2}>
                               STATE
                             </Text>
-                            <Text size="sm" weight={500}>
+                            <Text size="sm" fw={500}>
                               {manualFormData.state}
                             </Text>
                           </div>
@@ -2949,11 +2894,11 @@ function AddStudentsModal({
                               marginRight: "12px",
                             }}
                           >
-                            <Text color="white" size="sm" weight={700}>
+                            <Text c="white" size="sm" fw={700}>
                               👨‍👩‍👧‍👦
                             </Text>
                           </div>
-                          <Title order={4} weight={600} color="#2c3e50">
+                          <Title order={4} fw={600} c="#2c3e50">
                             Family Information
                           </Title>
                         </div>
@@ -2973,15 +2918,10 @@ function AddStudentsModal({
                                 borderRadius: "6px",
                               }}
                             >
-                              <Text
-                                size="xs"
-                                weight={600}
-                                color="dimmed"
-                                mb={2}
-                              >
+                              <Text size="xs" fw={600} c="dimmed" mb={2}>
                                 FATHER'S OCCUPATION
                               </Text>
-                              <Text size="sm" weight={500}>
+                              <Text size="sm" fw={500}>
                                 {manualFormData.fatherOccupation}
                               </Text>
                             </div>
@@ -2994,15 +2934,10 @@ function AddStudentsModal({
                                 borderRadius: "6px",
                               }}
                             >
-                              <Text
-                                size="xs"
-                                weight={600}
-                                color="dimmed"
-                                mb={2}
-                              >
+                              <Text size="xs" fw={600} c="dimmed" mb={2}>
                                 FATHER'S MOBILE
                               </Text>
-                              <Text size="sm" weight={500}>
+                              <Text size="sm" fw={500}>
                                 {manualFormData.fatherMobile}
                               </Text>
                             </div>
@@ -3015,15 +2950,10 @@ function AddStudentsModal({
                                 borderRadius: "6px",
                               }}
                             >
-                              <Text
-                                size="xs"
-                                weight={600}
-                                color="dimmed"
-                                mb={2}
-                              >
+                              <Text size="xs" fw={600} c="dimmed" mb={2}>
                                 MOTHER'S OCCUPATION
                               </Text>
-                              <Text size="sm" weight={500}>
+                              <Text size="sm" fw={500}>
                                 {manualFormData.motherOccupation}
                               </Text>
                             </div>
@@ -3036,15 +2966,10 @@ function AddStudentsModal({
                                 borderRadius: "6px",
                               }}
                             >
-                              <Text
-                                size="xs"
-                                weight={600}
-                                color="dimmed"
-                                mb={2}
-                              >
+                              <Text size="xs" fw={600} c="dimmed" mb={2}>
                                 MOTHER'S MOBILE
                               </Text>
-                              <Text size="sm" weight={500}>
+                              <Text size="sm" fw={500}>
                                 {manualFormData.motherMobile}
                               </Text>
                             </div>
@@ -3082,11 +3007,11 @@ function AddStudentsModal({
                             marginRight: "12px",
                           }}
                         >
-                          <Text color="white" size="sm" weight={700}>
+                          <Text c="white" size="sm" fw={700}>
                             🎓
                           </Text>
                         </div>
-                        <Title order={4} weight={600} color="#2c3e50">
+                        <Title order={4} fw={600} c="#2c3e50">
                           Academic Information
                         </Title>
                       </div>
@@ -3105,10 +3030,10 @@ function AddStudentsModal({
                             borderRadius: "6px",
                           }}
                         >
-                          <Text size="xs" weight={600} color="dimmed" mb={2}>
+                          <Text size="xs" fw={600} c="dimmed" mb={2}>
                             BRANCH
                           </Text>
-                          <Text size="sm" weight={500}>
+                          <Text size="sm" fw={500}>
                             {manualFormData.branch || "Not selected"}
                           </Text>
                         </div>
@@ -3121,15 +3046,10 @@ function AddStudentsModal({
                                 borderRadius: "6px",
                               }}
                             >
-                              <Text
-                                size="xs"
-                                weight={600}
-                                color="dimmed"
-                                mb={2}
-                              >
+                              <Text size="xs" fw={600} c="dimmed" mb={2}>
                                 SPECIALIZATION
                               </Text>
-                              <Text size="sm" weight={500}>
+                              <Text size="sm" fw={500}>
                                 {manualFormData.specialization}
                               </Text>
                             </div>
@@ -3143,15 +3063,10 @@ function AddStudentsModal({
                                 borderRadius: "6px",
                               }}
                             >
-                              <Text
-                                size="xs"
-                                weight={600}
-                                color="dimmed"
-                                mb={2}
-                              >
+                              <Text size="xs" fw={600} c="dimmed" mb={2}>
                                 ADMISSION TYPE
                               </Text>
-                              <Text size="sm" weight={500}>
+                              <Text size="sm" fw={500}>
                                 {manualFormData.admissionType}
                               </Text>
                             </div>
@@ -3165,15 +3080,10 @@ function AddStudentsModal({
                                 borderRadius: "6px",
                               }}
                             >
-                              <Text
-                                size="xs"
-                                weight={600}
-                                color="dimmed"
-                                mb={2}
-                              >
+                              <Text size="xs" fw={600} c="dimmed" mb={2}>
                                 GATE QUALIFIED
                               </Text>
-                              <Text size="sm" weight={500}>
+                              <Text size="sm" fw={500}>
                                 {manualFormData.gateQualified}
                               </Text>
                             </div>
@@ -3187,15 +3097,10 @@ function AddStudentsModal({
                                 borderRadius: "6px",
                               }}
                             >
-                              <Text
-                                size="xs"
-                                weight={600}
-                                color="dimmed"
-                                mb={2}
-                              >
+                              <Text size="xs" fw={600} c="dimmed" mb={2}>
                                 GATE STREAM
                               </Text>
-                              <Text size="sm" weight={500}>
+                              <Text size="sm" fw={500}>
                                 {manualFormData.gateStream}
                               </Text>
                             </div>
@@ -3208,10 +3113,10 @@ function AddStudentsModal({
                               borderRadius: "6px",
                             }}
                           >
-                            <Text size="xs" weight={600} color="dimmed" mb={2}>
+                            <Text size="xs" fw={600} c="dimmed" mb={2}>
                               GATE RANK
                             </Text>
-                            <Text size="sm" weight={500}>
+                            <Text size="sm" fw={500}>
                               {manualFormData.gateRank}
                             </Text>
                           </div>
@@ -3224,10 +3129,10 @@ function AddStudentsModal({
                               borderRadius: "6px",
                             }}
                           >
-                            <Text size="xs" weight={600} color="dimmed" mb={2}>
+                            <Text size="xs" fw={600} c="dimmed" mb={2}>
                               AI RANK
                             </Text>
-                            <Text size="sm" weight={500}>
+                            <Text size="sm" fw={500}>
                               {manualFormData.jeeRank}
                             </Text>
                           </div>
@@ -3240,10 +3145,10 @@ function AddStudentsModal({
                               borderRadius: "6px",
                             }}
                           >
-                            <Text size="xs" weight={600} color="dimmed" mb={2}>
+                            <Text size="xs" fw={600} c="dimmed" mb={2}>
                               CATEGORY RANK
                             </Text>
-                            <Text size="sm" weight={500}>
+                            <Text size="sm" fw={500}>
                               {manualFormData.categoryRank}
                             </Text>
                           </div>
@@ -3256,10 +3161,10 @@ function AddStudentsModal({
                               borderRadius: "6px",
                             }}
                           >
-                            <Text size="xs" weight={600} color="dimmed" mb={2}>
+                            <Text size="xs" fw={600} c="dimmed" mb={2}>
                               ALLOTTED CATEGORY
                             </Text>
-                            <Text size="sm" weight={500}>
+                            <Text size="sm" fw={500}>
                               {manualFormData.allottedCategory}
                             </Text>
                           </div>
@@ -3272,10 +3177,10 @@ function AddStudentsModal({
                               borderRadius: "6px",
                             }}
                           >
-                            <Text size="xs" weight={600} color="dimmed" mb={2}>
+                            <Text size="xs" fw={600} c="dimmed" mb={2}>
                               ALLOTTED GENDER
                             </Text>
-                            <Text size="sm" weight={500}>
+                            <Text size="sm" fw={500}>
                               {manualFormData.allottedGender}
                             </Text>
                           </div>
@@ -3288,10 +3193,10 @@ function AddStudentsModal({
                               borderRadius: "6px",
                             }}
                           >
-                            <Text size="xs" weight={600} color="dimmed" mb={2}>
+                            <Text size="xs" fw={600} c="dimmed" mb={2}>
                               INSTITUTE ROLL NUMBER
                             </Text>
-                            <Text size="sm" weight={500}>
+                            <Text size="sm" fw={500}>
                               {manualFormData.rollNumber}
                             </Text>
                           </div>
@@ -3304,10 +3209,10 @@ function AddStudentsModal({
                               borderRadius: "6px",
                             }}
                           >
-                            <Text size="xs" weight={600} color="dimmed" mb={2}>
+                            <Text size="xs" fw={600} c="dimmed" mb={2}>
                               INSTITUTE EMAIL ID
                             </Text>
-                            <Text size="sm" weight={500}>
+                            <Text size="sm" fw={500}>
                               {manualFormData.instituteEmail}
                             </Text>
                           </div>
@@ -3320,10 +3225,10 @@ function AddStudentsModal({
                               borderRadius: "6px",
                             }}
                           >
-                            <Text size="xs" weight={600} color="dimmed" mb={2}>
+                            <Text size="xs" fw={600} c="dimmed" mb={2}>
                               ALTERNATE EMAIL
                             </Text>
-                            <Text size="sm" weight={500}>
+                            <Text size="sm" fw={500}>
                               {manualFormData.alternateEmail}
                             </Text>
                           </div>
@@ -3341,7 +3246,7 @@ function AddStudentsModal({
                         textAlign: "center",
                       }}
                     >
-                      <Text size="sm" color="#155724" weight={500}>
+                      <Text size="sm" c="#155724" fw={500}>
                         ✅ Please verify all the information above is correct
                         before submitting
                       </Text>
@@ -3350,7 +3255,7 @@ function AddStudentsModal({
                 </Stepper.Step>
               </Stepper>
 
-              <Group position="apart" mt="xl">
+              <Group justify="space-between" mt="xl">
                 <Button
                   variant="default"
                   onClick={prevStep}

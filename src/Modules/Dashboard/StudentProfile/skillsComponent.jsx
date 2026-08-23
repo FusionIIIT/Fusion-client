@@ -70,8 +70,6 @@ function SkillsTechComponent({ data }) {
     }
   };
 
-  console.log(skills);
-
   return (
     <Flex
       w={{ base: "100%", sm: "60%" }}

@@ -41,14 +41,12 @@ export default function Books() {
   // const csrfToken = document.querySelector('meta[name="csrf-token"]');
   //   .getAttribute("content");
   // console.log(csrfToken);
-  // console.log(pfNo);
 
   const fetchAchievements = async () => {
     try {
       const res = await axios.get(getBooksRoute, {
         params: { pfNo },
       });
-      console.log(res.data);
       setTableData(res.data);
     } catch (error) {
       console.error(error);
@@ -110,7 +108,6 @@ export default function Books() {
   const handleDelete = async (achievement) => {
     if (window.confirm("Are you sure you want to delete this Book?")) {
       try {
-        // console.log(achievement)
         await axios.post(
           deleteBooksRoute,
           new URLSearchParams({ pk: achievement }),
@@ -229,7 +226,7 @@ export default function Books() {
                 <Button
                   type="submit"
                   loading={isLoading}
-                  leftIcon={<FloppyDisk size={16} />}
+                  leftSection={<FloppyDisk size={16} />}
                   style={{ backgroundColor: "#2185d0", color: "#fff" }} // Custom button styling
                 >
                   Save

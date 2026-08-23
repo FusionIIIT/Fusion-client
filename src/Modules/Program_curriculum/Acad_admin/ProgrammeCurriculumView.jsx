@@ -3,17 +3,20 @@ import { Copy } from "@phosphor-icons/react";
 import { Link, useLocation } from "react-router-dom";
 import {
   MantineProvider,
-  Flex,
   Table,
+  Tabs,
   ScrollArea,
   Container,
   Button,
   Grid,
-  TextInput,
 } from "@mantine/core";
 import axios from "axios";
 import { useMediaQuery } from "@mantine/hooks";
 import { host } from "../../../routes/globalRoutes";
+import SearchInput from "../../../components/SearchInput";
+import Toolbar from "../../../components/Toolbar";
+import tabClasses from "../../../ui/styles/tabs.module.css";
+import { matchesQuery } from "../../../lib/search";
 
 const CURRICULUM_DATA = {
   info: {
@@ -63,9 +66,8 @@ function BDesAcadView() {
   const [activeTab, setActiveTab] = useState("info");
 
   // New States for Filtering
-  const [searchName, setSearchName] = useState("");
+  const [search, setSearch] = useState("");
   const [batchName, setBatchName] = useState("");
-  const [searchVersion, setSearchVersion] = useState("");
   const [program, setProgram] = useState(null);
   const [workingCurriculums, setWorkingCurriculums] = useState([]);
   const [pastCurriculums, setPastCurriculums] = useState([]);
@@ -90,10 +92,8 @@ function BDesAcadView() {
         setProgram(response.data.program);
         setBatchName(response.data.name);
         setWorkingCurriculums(response.data.working_curriculums);
-        console.log("working curriculums: ", response.data.working_curriculums);
         setPastCurriculums(response.data.past_curriculums);
         // setLoading(false);
-        console.log("response data: ", response.data);
       } catch (FetchError) {
         console.error("Error fetching data: ", error);
         setError("Failed to load data");
@@ -103,7 +103,6 @@ function BDesAcadView() {
 
     fetchCurriculmns();
   }, []);
-  console.log(workingCurriculums);
 
   const [isHovered, setIsHovered] = useState(false);
   const [isAddCourseSlotHovered, setIsAddCourseSlotHovered] = useState(false);
@@ -201,6 +200,9 @@ function BDesAcadView() {
     </div>
   );
 
+  const visible = (list) =>
+    list.filter((curr) => matchesQuery(search, [curr.name, curr.version]));
+
   const renderWorkingCurriculums = () => (
     <div
       style={{
@@ -289,8 +291,8 @@ function BDesAcadView() {
           </tr>
         </thead>
         <tbody>
-          {workingCurriculums.length > 0 ? (
-            workingCurriculums.map((curr, idx) => (
+          {visible(workingCurriculums).length > 0 ? (
+            visible(workingCurriculums).map((curr, idx) => (
               <tr
                 key={idx}
                 style={{
@@ -463,8 +465,8 @@ function BDesAcadView() {
           </tr>
         </thead>
         <tbody>
-          {pastCurriculums.length > 0 ? (
-            pastCurriculums.map((curr, idx) => (
+          {visible(pastCurriculums).length > 0 ? (
+            visible(pastCurriculums).map((curr, idx) => (
               <tr
                 key={idx}
                 style={{
@@ -698,22 +700,6 @@ function BDesAcadView() {
               Edit Programme
             </Button>
           </Link>
-          <TextInput
-            label="Name:"
-            value={searchName}
-            onChange={(e) => setSearchName(e.target.value)}
-            placeholder="Search by Name"
-            mb={5}
-          />
-
-          <TextInput
-            label="Version:"
-            value={searchVersion}
-            onChange={(e) => setSearchVersion(e.target.value)}
-            placeholder="Search by Version"
-            mb={5}
-          />
-
           {/* <button className="dropdown-btn black-btn">LINK BATCH</button> */}
         </div>
       </div>
@@ -727,29 +713,36 @@ function BDesAcadView() {
       withNormalizeCSS
     >
       <Container style={{ padding: "20px", maxWidth: "100%" }}>
-        <Flex justify="flex-start" align="center" mb={10}>
-          <Button
-            onClick={() => setActiveTab("info")}
-            variant={activeTab === "info" ? "filled" : "outline"}
-            style={{ marginRight: "10px" }}
-          >
-            Programme Info
-          </Button>
-          <Button
-            onClick={() => setActiveTab("working")}
-            variant={activeTab === "working" ? "filled" : "outline"}
-            style={{ marginRight: "10px" }}
-          >
-            Working Curriculums
-          </Button>
-          <Button
-            onClick={() => setActiveTab("obsolete")}
-            variant={activeTab === "obsolete" ? "filled" : "outline"}
-            style={{ marginRight: "10px" }}
-          >
-            Obsolete Curriculums
-          </Button>
-        </Flex>
+        <Tabs
+          value={activeTab}
+          onChange={setActiveTab}
+          variant="pills"
+          color="blue"
+          mb="md"
+        >
+          <Tabs.List className={tabClasses.list}>
+            <Tabs.Tab value="info" className={tabClasses.tab}>
+              Programme Info
+            </Tabs.Tab>
+            <Tabs.Tab value="working" className={tabClasses.tab}>
+              Working Curriculums
+            </Tabs.Tab>
+            <Tabs.Tab value="obsolete" className={tabClasses.tab}>
+              Obsolete Curriculums
+            </Tabs.Tab>
+          </Tabs.List>
+        </Tabs>
+        {activeTab !== "info" && (
+          <Toolbar
+            search={
+              <SearchInput
+                value={search}
+                onChange={setSearch}
+                placeholder="Search by name or version"
+              />
+            }
+          />
+        )}
         <hr />
         <Grid>
           {isMobile && (

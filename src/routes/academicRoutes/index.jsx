@@ -101,6 +101,7 @@ export const adminListRequestsRoute = `${host}/academic-procedures/api/acad/repl
 export const allotReplacementCoursesRoute = `${host}/academic-procedures/api/acad/change-requests/allocate_all/`;
 export const revertReplacementRequestsRoute = `${host}/academic-procedures/api/acad/replacement-requests/revert/`;
 export const deleteReplacementRequestsRoute = `${host}/academic-procedures/api/acad/replacement-requests/delete/`;
+export const adminPendingCountsRoute = `${host}/academic-procedures/api/acad/pending-counts/`;
 export const adminListDropRequestsRoute = `${host}/academic-procedures/api/acad/drop-requests/`;
 export const approveDropRequestsRoute = `${host}/academic-procedures/api/acad/drop-requests/approve/`;
 export const deleteDropRequestsRoute = `${host}/academic-procedures/api/acad/drop-requests/delete/`;

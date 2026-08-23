@@ -1,39 +1,33 @@
 import PropTypes from "prop-types";
-import { Modal, Stack, Text, Group, Button } from "@mantine/core";
+import { Stack, Text } from "@mantine/core";
+import ConfirmDialog from "../../../../components/ConfirmDialog";
 
-// Confirm deletion of a single student.
 function DeleteStudentModal({ opened, onClose, student, deleting, onConfirm }) {
   return (
-    <Modal
+    <ConfirmDialog
       opened={opened}
-      onClose={onClose}
+      onCancel={onClose}
+      onConfirm={onConfirm}
+      loading={deleting}
       title="Confirm Delete Student"
+      confirmLabel="Delete Student"
       size="lg"
-      centered
-    >
-      <Stack spacing="md">
-        <Text>
-          Are you sure you want to delete student{" "}
-          <strong>&quot;{student?.name}&quot;</strong>?
-        </Text>
-        <Text size="sm" color="dimmed">
-          This action cannot be undone.
-        </Text>
-        <Text size="sm" color="orange">
-          Note: If this student has associated records in other modules,
-          deletion may not be possible due to database constraints.
-        </Text>
-
-        <Group justify="flex-end" mt="md">
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button color="red" loading={deleting} onClick={onConfirm}>
-            Delete Student
-          </Button>
-        </Group>
-      </Stack>
-    </Modal>
+      message={
+        <Stack gap="md">
+          <Text>
+            Are you sure you want to delete student{" "}
+            <strong>&quot;{student?.name}&quot;</strong>?
+          </Text>
+          <Text size="sm" c="dimmed">
+            This action cannot be undone.
+          </Text>
+          <Text size="sm" c="orange">
+            Note: If this student has associated records in other modules,
+            deletion may not be possible due to database constraints.
+          </Text>
+        </Stack>
+      }
+    />
   );
 }
 

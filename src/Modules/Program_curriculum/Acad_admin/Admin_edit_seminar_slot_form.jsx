@@ -212,8 +212,8 @@ function Admin_edit_seminar_slot_form() {
                 boxShadow: "0 0 10px rgba(0,0,0,0.1)",
               }}
             >
-              <Stack spacing="lg">
-                <Text size="xl" weight={700} align="center">
+              <Stack gap="lg">
+                <Text size="xl" fw={700} ta="center">
                   Edit Seminar Slot Form
                 </Text>
 
@@ -254,12 +254,12 @@ function Admin_edit_seminar_slot_form() {
                   value={form.values.seminars}
                   onChange={handleSeminarSelect}
                   searchable
-                  nothingFound="No seminars available"
+                  nothingFoundMessage="No seminars available"
                   required
                 />
               </Stack>
 
-              <Group position="right" mt="lg">
+              <Group justify="flex-end" mt="lg">
                 <Button
                   variant="outline"
                   className="cancel-btn"

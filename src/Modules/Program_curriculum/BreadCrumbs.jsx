@@ -180,7 +180,7 @@ function Breadcrumb() {
   }, [breadcrumbs]);
 
   return (
-    <Box mt="xs" ml={{ md: "lg" }} style={{ marginBottom: "-4.5vh" }}>
+    <Box mt="xs" ml={{ md: "lg" }} mb="md">
       <div
         ref={scrollContainerRef}
         style={{

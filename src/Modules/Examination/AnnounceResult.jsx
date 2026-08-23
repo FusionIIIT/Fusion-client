@@ -194,7 +194,7 @@ export default function AnnounceResult() {
   if (initialLoading)
     return (
       <Card p="lg" radius="md" withBorder>
-        <Group position="center">
+        <Group justify="center">
           <Loader size="lg" />
           <Text>Loading...</Text>
         </Group>
@@ -212,13 +212,10 @@ export default function AnnounceResult() {
 
   return (
     <Card p="lg" radius="md" withBorder>
-      <Title order={2} mb="md">
-        Announce Result
-      </Title>
 
       <Paper shadow="sm" p="md" withBorder mb="md">
         <form onSubmit={handleCreateAnnouncement}>
-          <Stack spacing="md">
+          <Stack gap="md">
             <SimpleGrid cols={3} spacing="md">
               <Select
                 label="Batch"
@@ -263,7 +260,7 @@ export default function AnnounceResult() {
               />
             </SimpleGrid>
 
-            <Group position="right">
+            <Group justify="flex-end">
               <Button
                 type="submit"
                 variant="outline"
@@ -282,7 +279,7 @@ export default function AnnounceResult() {
           placeholder="Search by batch..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.currentTarget.value)}
-          icon={<IconSearch size={16} />}
+          leftSection={<IconSearch size={16} />}
           mb="md"
         />
         <Table highlightOnHover striped>
@@ -301,7 +298,7 @@ export default function AnnounceResult() {
                 <td>{item.semester_label || item.semester}</td>
                 <td>{item.announced ? "Yes" : "No"}</td>
                 <td>
-                  <Group spacing="xs" noWrap>
+                  <Group gap="xs" noWrap>
                     <Button
                       size="xs"
                       variant="outline"

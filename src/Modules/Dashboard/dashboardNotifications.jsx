@@ -28,9 +28,10 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { showNotification } from "@mantine/notifications";
-import classes from "./Dashboard.module.css";
+import classes from "./dashboardNotifications.module.css";
 import { Empty } from "../../components/empty";
-import CustomBreadcrumbs from "../../components/Breadcrumbs.jsx";
+import { ModulePage } from "../../ui/components/ModulePage";
+import { PageTabs } from "../../ui/components/PageTabs";
 import {
   notificationReadRoute,
   notificationDeleteRoute,
@@ -40,7 +41,6 @@ import {
   updateRoleRoute,
 } from "../../routes/dashboardRoutes";
 import { setRole, setCurrentAccessibleModules } from "../../redux/userslice";
-import ModuleTabs from "../../components/moduleTabs.jsx";
 import CreateAnnouncementForm from "./CreateAnnouncementForm.jsx";
 import {
   incrementUnreadCount,
@@ -488,95 +488,35 @@ function Dashboard() {
   const tabLabel = activeTab === "1" ? "announcements" : "notifications";
 
   return (
-    <>
-      <CustomBreadcrumbs />
+    <ModulePage title="Notifications">
       <Flex
         justify="space-between"
         align="flex-start"
-        mt="lg"
         gap="sm"
         direction={{ base: "column", sm: "row" }}
       >
-        {/* <Flex
-          justify="flex-start"
-          align="center"
-          gap={{ base: "0.5rem", md: "1rem" }}
-          mt={{ base: "1rem", md: "1.5rem" }}
-          ml={{ md: "lg" }}
-        >
-          <Button
-            onClick={() => handleTabChange("prev")}
-            variant="default"
-            p={0}
-            style={{ border: "none" }}
-          >
-            <CaretCircleLeft
-              className={classes.fusionCaretCircleIcon}
-              weight="light"
-            />
-          </Button>
-
-          <div className={classes.fusionTabsContainer} ref={tabsListRef}>
-            <Tabs value={activeTab} onChange={setActiveTab}>
-              <Tabs.List style={{ display: "flex", flexWrap: "nowrap" }}>
-                {tabItems.map((item, index) => (
-                  <Tabs.Tab
-                    value={`${index}`}
-                    key={index}
-                    className={
-                      activeTab === `${index}`
-                        ? classes.fusionActiveRecentTab
-                        : ""
-                    }
-                  >
-                    <Flex gap="4px">
-                      <Text>{item.title}</Text>
-                      {activeTab !== index.toString() && (
-                        <Badge
-                          color={notification_count === 0 ? "grey" : "blue"}
-                          size="sm"
-                          p={6}
-                        >
-                          {notification_count}
-                        </Badge>
-                      )}
-                    </Flex>
-                  </Tabs.Tab>
-                ))}
-              </Tabs.List>
-            </Tabs>
-          </div>
-
-          <Button
-            onClick={() => handleTabChange("next")}
-            variant="default"
-            p={0}
-            style={{ border: "none" }}
-          >
-            <CaretCircleRight
-              className={classes.fusionCaretCircleIcon}
-              weight="light"
-            />
-          </Button>
-        </Flex> */}
-
-        <ModuleTabs
-          tabs={tabItems}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          badges={badges}
+        <PageTabs
+          value={activeTab}
+          onChange={setActiveTab}
+          tabs={tabItems.map((item, index) => ({
+            value: String(index),
+            label: item.title,
+            badge: badges[index],
+          }))}
+          mb={0}
         />
 
-        {activeTab !== "2" && (
+        {activeTab !== "2" && visibleCount > 0 && (
           <Flex
             w={{ base: "100%", sm: "auto" }}
             align="center"
             justify={{ base: "flex-start", sm: "flex-end" }}
-            mt={{ base: "md", sm: 0 }}
-            gap="sm"
-            wrap="wrap"
+            mt={{ base: "sm", sm: 0 }}
+            gap="xs"
+            wrap="nowrap"
           >
             <Button
+              visibleFrom="xs"
               variant="light"
               color="red"
               size="sm"
@@ -587,6 +527,18 @@ function Dashboard() {
             >
               Clear All
             </Button>
+            <ActionIcon
+              hiddenFrom="xs"
+              variant="light"
+              color="red"
+              size={36}
+              radius="md"
+              aria-label="Clear all"
+              onClick={() => setClearModalOpen(true)}
+              disabled={visibleCount === 0}
+            >
+              <Trash size={16} />
+            </ActionIcon>
             <Select
               classNames={{
                 option: classes.selectoptions,
@@ -595,7 +547,7 @@ function Dashboard() {
               variant="filled"
               size="sm"
               radius="md"
-              w={{ base: "100%", xs: 150 }}
+              style={{ flex: "1 1 0", minWidth: 0, maxWidth: 150 }}
               allowDeselect={false}
               leftSection={<Funnel size={16} />}
               data={statusFilters}
@@ -611,7 +563,7 @@ function Dashboard() {
               variant="filled"
               size="sm"
               radius="md"
-              w={{ base: "100%", xs: 170 }}
+              style={{ flex: "1 1 0", minWidth: 0, maxWidth: 170 }}
               allowDeselect={false}
               leftSection={<SortAscending size={16} />}
               data={categories}
@@ -636,16 +588,16 @@ function Dashboard() {
             <Empty />
           ) : (
             displayedNotifications.map((notification) => (
-                <NotificationItem
-                  notification={notification}
-                  key={notification.id}
-                  markAsRead={markAsRead}
-                  markAsUnread={markAsUnread}
-                  deleteNotification={deleteNotification}
-                  onOpen={openNotification}
-                  loading={read_Loading}
-                />
-              ))
+              <NotificationItem
+                notification={notification}
+                key={notification.id}
+                markAsRead={markAsRead}
+                markAsUnread={markAsUnread}
+                deleteNotification={deleteNotification}
+                onOpen={openNotification}
+                loading={read_Loading}
+              />
+            ))
           )}
         </Stack>
       )}
@@ -668,12 +620,16 @@ function Dashboard() {
           >
             Cancel
           </Button>
-          <Button color="red" onClick={clearAllNotifications} loading={clearing}>
+          <Button
+            color="red"
+            onClick={clearAllNotifications}
+            loading={clearing}
+          >
             Clear All
           </Button>
         </Group>
       </Modal>
-    </>
+    </ModulePage>
   );
 }
 

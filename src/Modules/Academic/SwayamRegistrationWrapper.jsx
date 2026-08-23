@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import { Tabs, Box } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
+import tabClasses from "../../ui/styles/tabs.module.css";
 import SwayamExtraCredit from "./SwayamExtraCredit";
 import SwayamReplace from "./SwayamReplace";
 import SwayamYourRequests from "./SwayamYourRequests";
 
 function SwayamRegistrationWrapper() {
+  const compact = useMediaQuery("(max-width: 575px)");
   const [activeMainTab, setActiveMainTab] = useState("replace");
   const [activeRequestsTab, setActiveRequestsTab] = useState("replace");
   const [refreshKey, setRefreshKey] = useState(0);
@@ -45,52 +48,29 @@ function SwayamRegistrationWrapper() {
       >
         {/* Main Tab Bar */}
         <Box
+          px={{ base: "xs", sm: "md" }}
+          py="xs"
           style={{
-            background: "#f1f5f9",
-            borderBottom: "1px solid #dde3ea",
-            padding: "10px 16px",
+            background: "#f4f7fb",
+            borderBottom: "1px solid #e6eaef",
           }}
         >
-          <Tabs.List style={{ gap: 6, flexWrap: "nowrap" }}>
-            <Tabs.Tab
-              value="replace"
-              style={{
-                fontWeight: activeMainTab === "replace" ? 700 : 500,
-                fontSize: 14,
-                padding: "9px 20px",
-                borderRadius: 6,
-              }}
-            >
-              Replace with Swayam
+          <Tabs.List className={tabClasses.list}>
+            <Tabs.Tab value="replace" className={tabClasses.tab}>
+              Replace
             </Tabs.Tab>
-            <Tabs.Tab
-              value="extra"
-              style={{
-                fontWeight: activeMainTab === "extra" ? 700 : 500,
-                fontSize: 14,
-                padding: "9px 20px",
-                borderRadius: 6,
-              }}
-            >
-              Extra Credits
+            <Tabs.Tab value="extra" className={tabClasses.tab}>
+              {compact ? "Extra" : "Extra Credits"}
             </Tabs.Tab>
-            <Tabs.Tab
-              value="requests"
-              style={{
-                fontWeight: activeMainTab === "requests" ? 700 : 500,
-                fontSize: 14,
-                padding: "9px 20px",
-                borderRadius: 6,
-              }}
-            >
-              Your Requests
+            <Tabs.Tab value="requests" className={tabClasses.tab}>
+              {compact ? "Requests" : "Your Requests"}
             </Tabs.Tab>
           </Tabs.List>
         </Box>
 
         {/* Replace Panel */}
         <Tabs.Panel value="replace">
-          <Box p="xl" style={{ background: "#fff" }}>
+          <Box p={{ base: "md", sm: "xl" }} style={{ background: "#fff" }}>
             <SwayamReplace
               showOnlyForm
               onSubmitSuccess={() => handleSubmitSuccess("replace")}
@@ -101,7 +81,7 @@ function SwayamRegistrationWrapper() {
 
         {/* Extra Credits Panel */}
         <Tabs.Panel value="extra">
-          <Box p="xl" style={{ background: "#fff" }}>
+          <Box p={{ base: "md", sm: "xl" }} style={{ background: "#fff" }}>
             <SwayamExtraCredit
               showOnlyForm
               onSubmitSuccess={() => handleSubmitSuccess("extra")}
@@ -122,34 +102,34 @@ function SwayamRegistrationWrapper() {
               style={{
                 background: "#f8f9fa",
                 borderBottom: "2px solid #dee2e6",
-                padding: "0 28px",
+                padding: "0 12px",
                 display: "flex",
                 alignItems: "flex-end",
               }}
             >
-              <Tabs.List style={{ gap: 0, border: "none" }}>
+              <Tabs.List
+                className={tabClasses.list}
+                style={{ gap: 0, border: "none" }}
+              >
                 {[
-                  { value: "replace", label: "Replacement Requests" },
-                  { value: "extra",   label: "Extra Credit Requests" },
+                  { value: "replace", label: "Replacements" },
+                  { value: "extra", label: "Extra credits" },
                 ].map(({ value, label }) => {
                   const isActive = activeRequestsTab === value;
                   return (
                     <Tabs.Tab
                       key={value}
                       value={value}
+                      className={tabClasses.tab}
                       style={{
-                        fontSize: 13,
                         fontWeight: isActive ? 600 : 400,
                         color: isActive ? "#228be6" : "#6c757d",
-                        padding: "10px 20px",
                         borderBottom: isActive
                           ? "2px solid #228be6"
                           : "2px solid transparent",
                         marginBottom: -2,
                         background: "transparent",
                         borderRadius: 0,
-                        cursor: "pointer",
-                        transition: "color 0.15s, border-color 0.15s",
                       }}
                     >
                       {label}
@@ -160,7 +140,7 @@ function SwayamRegistrationWrapper() {
             </Box>
 
             <Tabs.Panel value="replace">
-              <Box p="lg" style={{ background: "#fff" }}>
+              <Box p={{ base: "md", sm: "lg" }} style={{ background: "#fff" }}>
                 <SwayamYourRequests
                   requestType="Swayam_Replace"
                   refreshKey={refreshKey}
@@ -169,7 +149,7 @@ function SwayamRegistrationWrapper() {
             </Tabs.Panel>
 
             <Tabs.Panel value="extra">
-              <Box p="lg" style={{ background: "#fff" }}>
+              <Box p={{ base: "md", sm: "lg" }} style={{ background: "#fff" }}>
                 <SwayamYourRequests
                   requestType="Extra_Credits"
                   refreshKey={refreshKey}
@@ -184,4 +164,3 @@ function SwayamRegistrationWrapper() {
 }
 
 export default SwayamRegistrationWrapper;
-

@@ -1,0 +1,18 @@
+.list {
+  flex-wrap: nowrap;
+}
+
+.tab {
+  flex: 1 1 0;
+  min-width: 0;
+  justify-content: center;
+  text-align: center;
+  white-space: normal;
+}
+
+@media (max-width: 575px) {
+  .tab {
+    font-size: 0.75rem;
+    padding-inline: 6px;
+  }
+}

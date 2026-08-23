@@ -15,7 +15,9 @@
       "env": {
         "node": true
       },
-      "files": [".eslintrc.{js,cjs}"],
+      "files": [
+        ".eslintrc.{js,cjs}"
+      ],
       "parserOptions": {
         "sourceType": "script"
       }
@@ -27,7 +29,10 @@
     "ecmaVersion": "latest",
     "sourceType": "module"
   },
-  "plugins": ["react", "prettier"],
+  "plugins": [
+    "react",
+    "prettier"
+  ],
   "rules": {
     "import/prefer-default-export": "off",
     "no-param-reassign": "off",
@@ -37,7 +42,15 @@
     "react/require-default-props": "off",
     "react/no-array-index-key": 0,
     "react/destructuring-assignment": 0,
-    "no-console": 0,
+    "no-console": [
+      "error",
+      {
+        "allow": [
+          "warn",
+          "error"
+        ]
+      }
+    ],
     "camelcase": 0,
     "no-alert": 0,
     "react/button-has-type": 0,

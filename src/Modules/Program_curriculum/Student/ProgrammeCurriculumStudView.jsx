@@ -1,17 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
-import {
-  MantineProvider,
-  Flex,
-  Table,
-  ScrollArea,
-  Container,
-  Button,
-  Grid,
-  TextInput,
-} from "@mantine/core";
-import { useMediaQuery } from "@mantine/hooks";
+import { MantineProvider, Table, Container, Tabs } from "@mantine/core";
+import SearchInput from "../../../components/SearchInput";
+import Toolbar from "../../../components/Toolbar";
+import tabClasses from "../../../ui/styles/tabs.module.css";
+import { matchesQuery } from "../../../lib/search";
 import { fetchCurriculumData } from "../api/api";
 
 function BDesStudView() {
@@ -19,11 +13,9 @@ function BDesStudView() {
   const [curriculumData, setCurriculumData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("info");
-  const isMobile = useMediaQuery("(max-width: 768px)");
   
   // States for filtering
-  const [searchName, setSearchName] = useState("");
-  const [searchVersion, setSearchVersion] = useState("");
+  const [search, setSearch] = useState("");
   const [batchName, setBatchName] = useState("");
 
   useEffect(() => {
@@ -71,19 +63,15 @@ function BDesStudView() {
 
   // Filter Logic for Working Curriculums
   const filteredWorkingCurriculums = curriculumData.working_curriculums
-    ? curriculumData.working_curriculums.filter(
-        (curr) =>
-          curr.name.toLowerCase().includes(searchName.toLowerCase()) &&
-          curr.version.toLowerCase().includes(searchVersion.toLowerCase())
+    ? curriculumData.working_curriculums.filter((curr) =>
+        matchesQuery(search, [curr.name, curr.version]),
       )
     : [];
 
   // Filter Logic for Obsolete Curriculums
   const filteredObsoleteCurriculums = curriculumData.past_curriculums
-    ? curriculumData.past_curriculums.filter(
-        (curr) =>
-          curr.name.toLowerCase().includes(searchName.toLowerCase()) &&
-          curr.version.toLowerCase().includes(searchVersion.toLowerCase())
+    ? curriculumData.past_curriculums.filter((curr) =>
+        matchesQuery(search, [curr.name, curr.version]),
       )
     : [];
 
@@ -473,29 +461,7 @@ function BDesStudView() {
   );
 
   // Filter Section
-  const renderFilterSection = () => (
-    <ScrollArea>
-      <div>
-        
-        <TextInput
-          label="Name:"
-          value={searchName}
-          onChange={(e) => setSearchName(e.target.value)}
-          placeholder="Search by Name"
-          mb={10}
-          style={{ marginBottom: "15px" }}
-        />
-
-        <TextInput
-          label="Version:"
-          value={searchVersion}
-          onChange={(e) => setSearchVersion(e.target.value)}
-          placeholder="Search by Version"
-          mb={5}
-        />
-      </div>
-    </ScrollArea>
-  );
+  const searchable = activeTab === "working" || activeTab === "obsolete";
 
   return (
     <MantineProvider
@@ -504,51 +470,39 @@ function BDesStudView() {
       withNormalizeCSS
     >
       <Container style={{ padding: "20px", maxWidth: "100%" }}>
-        <Flex justify="flex-start" align="center" mb={10}>
-          <Button
-            onClick={() => setActiveTab("info")}
-            variant={activeTab === "info" ? "filled" : "outline"}
-            style={{ marginRight: "10px" }}
-          >
-            Programme Info
-          </Button>
-          <Button
-            onClick={() => setActiveTab("working")}
-            variant={activeTab === "working" ? "filled" : "outline"}
-            style={{ marginRight: "10px" }}
-          >
-            Working Curriculums
-          </Button>
-          <Button
-            onClick={() => setActiveTab("obsolete")}
-            variant={activeTab === "obsolete" ? "filled" : "outline"}
-            style={{ marginRight: "10px" }}
-          >
-            Obsolete Curriculums
-          </Button>
-        </Flex>
-        <hr />
-        <Grid>
-          {isMobile && (
-            <Grid.Col span={12}>
-              {(activeTab === "working" || activeTab === "obsolete") &&
-                renderFilterSection()}
-            </Grid.Col>
-          )}
-          <Grid.Col span={isMobile ? 12 : 9}>
-            <div>
-              {activeTab === "info" && renderInfo()}
-              {activeTab === "working" && renderWorkingCurriculums()}
-              {activeTab === "obsolete" && renderObsoleteCurriculums()}
-            </div>
-          </Grid.Col>
-          {!isMobile && (
-            <Grid.Col span={3}>
-              {(activeTab === "working" || activeTab === "obsolete") &&
-                renderFilterSection()}
-            </Grid.Col>
-          )}
-        </Grid>
+        <Tabs
+          value={activeTab}
+          onChange={setActiveTab}
+          variant="pills"
+          color="blue"
+          mb="md"
+        >
+          <Tabs.List className={tabClasses.list}>
+            <Tabs.Tab value="info" className={tabClasses.tab}>
+              Programme Info
+            </Tabs.Tab>
+            <Tabs.Tab value="working" className={tabClasses.tab}>
+              Working Curriculums
+            </Tabs.Tab>
+            <Tabs.Tab value="obsolete" className={tabClasses.tab}>
+              Obsolete Curriculums
+            </Tabs.Tab>
+          </Tabs.List>
+        </Tabs>
+        {searchable && (
+          <Toolbar
+            search={
+              <SearchInput
+                value={search}
+                onChange={setSearch}
+                placeholder="Search by name or version"
+              />
+            }
+          />
+        )}
+        {activeTab === "info" && renderInfo()}
+        {activeTab === "working" && renderWorkingCurriculums()}
+        {activeTab === "obsolete" && renderObsoleteCurriculums()}
       </Container>
     </MantineProvider>
   );

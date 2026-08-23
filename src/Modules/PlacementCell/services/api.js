@@ -1,1 +1,0 @@
-export { placementApi } from "../api";

@@ -15,6 +15,7 @@ import {
   Divider,
   Modal,
   Stack,
+  Box,
 } from "@mantine/core";
 import {
   IconDownload,
@@ -23,6 +24,9 @@ import {
   IconSearch,
 } from "@tabler/icons-react";
 import axios from "axios";
+import { useSelector } from "react-redux";
+import { allowedProgrammeChoices } from "../../ui/nav/roles";
+import { courseLabel } from "../../lib/course";
 import {
   checkAllocationRoute,
   startAllocationRoute,
@@ -50,7 +54,15 @@ function AllocateCourses() {
   const [batch, setBatch] = useState(null);
   const [semester, setSemester] = useState(null);
   const [year, setYear] = useState(null);
-  const [programmeType, setProgrammeType] = useState("UG");
+  const userRole = useSelector((state) => state.user.role);
+  const programmeChoices = allowedProgrammeChoices(userRole, [
+    { value: "UG", label: "Undergraduate (UG)" },
+    { value: "PG", label: "Postgraduate (PG)" },
+    { value: "PHD", label: "PhD" },
+  ]);
+  const [programmeType, setProgrammeType] = useState(
+    programmeChoices[0]?.value ?? "UG",
+  );
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
@@ -337,7 +349,7 @@ function AllocateCourses() {
   const renderStudentWise = () => {
     if (!filteredStudents.length)
       return (
-        <Text color="dimmed" mt="sm">
+        <Text c="dimmed" mt="sm">
           {q ? "No results match your search." : "No records found."}
         </Text>
       );
@@ -367,10 +379,10 @@ function AllocateCourses() {
                 <td>{row.student_name}</td>
                 <td>{row.batch}</td>
                 <td>
-                  <Group spacing={4} noWrap={false}>
+                  <Group gap={4} noWrap={false}>
                     {row.courses.map((c) => (
                       <Badge key={c.code} variant="outline" size="sm">
-                        {c.code} — {c.name}
+                        {courseLabel(c)}
                       </Badge>
                     ))}
                   </Group>
@@ -387,17 +399,17 @@ function AllocateCourses() {
   const renderCourseWise = () => {
     if (!filteredCourses.length)
       return (
-        <Text color="dimmed" mt="sm">
+        <Text c="dimmed" mt="sm">
           {q ? "No results match your search." : "No records found."}
         </Text>
       );
 
     return (
       <>
-        <Group position="right" mb="sm">
+        <Group justify="flex-end" mb="sm">
           <Button
             color="teal"
-            leftIcon={<IconArchive size={15} />}
+            leftSection={<IconArchive size={15} />}
             loading={exportingAll}
             onClick={handleExportAll}
           >
@@ -405,7 +417,7 @@ function AllocateCourses() {
           </Button>
         </Group>
 
-        <Stack spacing="sm">
+        <Stack gap="sm">
           {filteredCourses.map((course, idx) => (
             <Card key={course.course_db_id} withBorder p="sm" radius="md">
               <div
@@ -417,24 +429,24 @@ function AllocateCourses() {
                 }}
               >
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <Text weight={600} style={{ wordBreak: "break-word" }}>
-                    <Text component="span" color="dimmed" weight={400} mr={6}>
+                  <Text fw={600} style={{ wordBreak: "break-word" }}>
+                    <Text component="span" c="dimmed" fw={400} mr={6}>
                       {idx + 1}.
                     </Text>
                     {course.course_code} — {course.course_name}
                   </Text>
-                  <Text size="xs" color="dimmed" mt={2}>
+                  <Text size="xs" c="dimmed" mt={2}>
                     Instructor: {course.instructor} &nbsp;|&nbsp;{" "}
                     {course.students.length} students &nbsp;|&nbsp;{" "}
                     {allocationResults.semester_type},{" "}
                     {allocationResults.academic_year}
                   </Text>
                 </div>
-                <Stack spacing={6} style={{ flexShrink: 0 }}>
+                <Stack gap={6} style={{ flexShrink: 0 }}>
                   <Button
                     size="xs"
                     variant="light"
-                    leftIcon={<IconEye size={13} />}
+                    leftSection={<IconEye size={13} />}
                     onClick={() => setPreviewCourse(course)}
                     style={{ minWidth: 120 }}
                   >
@@ -443,7 +455,7 @@ function AllocateCourses() {
                   <Button
                     size="xs"
                     color="green"
-                    leftIcon={<IconDownload size={13} />}
+                    leftSection={<IconDownload size={13} />}
                     loading={exportingId === course.course_db_id}
                     onClick={() => handleExportCourse(course)}
                     style={{ minWidth: 120 }}
@@ -566,34 +578,34 @@ function AllocateCourses() {
           },
         }}
         title={
-          <Text weight={700} color="blue" size="md">
+          <Text fw={700} c="blue" size="md">
             {programme_type} All Registration Types Student List Preview
           </Text>
         }
       >
-        <Stack spacing={2} mb="xs" align="center">
-          <Text weight={700} color="blue" align="center" size="sm">
+        <Stack gap={2} mb="xs" align="center">
+          <Text fw={700} c="blue" ta="center" size="sm">
             PDPM INDIAN INSTITUTE OF INFORMATION TECHNOLOGY, DESIGN AND
             MANUFACTURING JABALPUR
           </Text>
-          <Text weight={600} align="center" size="sm">
+          <Text fw={600} ta="center" size="sm">
             {semester_type.toUpperCase()}, {academic_year}
           </Text>
         </Stack>
 
         <Divider mb="xs" />
 
-        <Stack spacing={2} mb="sm">
+        <Stack gap={2} mb="sm">
           <Text size="sm">Course No.: {course_code}</Text>
           <Text size="sm">Course Title: {course_name}</Text>
           <Text size="sm">Instructor: {instructor}</Text>
-          <Text size="sm" color="blue">
+          <Text size="sm" c="blue">
             List Type: {programme_type} - Complete Roll List (All Registration
             Types)
           </Text>
         </Stack>
 
-        <ScrollArea style={{ flex: 1, minHeight: 0 }}>
+        <Box style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
           <Table
             striped
             highlightOnHover
@@ -636,12 +648,12 @@ function AllocateCourses() {
               ))}
             </tbody>
           </Table>
-        </ScrollArea>
+        </Box>
 
-        <Group position="right" mt="sm" style={{ flexShrink: 0 }}>
+        <Group justify="flex-end" mt="sm" style={{ flexShrink: 0 }}>
           <Button
             color="green"
-            leftIcon={<IconDownload size={14} />}
+            leftSection={<IconDownload size={14} />}
             loading={exportingId === previewCourse.course_db_id}
             onClick={() => handleExportCourse(previewCourse)}
           >
@@ -655,10 +667,6 @@ function AllocateCourses() {
   /* ── main render ── */
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
-      <Text size="lg" weight={700} mb="md" align="center" color="blue">
-        Allocate Courses
-      </Text>
-
       {/* 2-column × 2-row form grid */}
       <div
         style={{
@@ -673,11 +681,7 @@ function AllocateCourses() {
           placeholder="Select programme type"
           value={programmeType}
           onChange={setProgrammeType}
-          data={[
-            { value: "UG", label: "Undergraduate (UG)" },
-            { value: "PG", label: "Postgraduate (PG)" },
-            { value: "PHD", label: "PhD" },
-          ]}
+          data={programmeChoices}
         />
         <Select
           label="Batch"
@@ -773,7 +777,7 @@ function AllocateCourses() {
           {/* Global search bar */}
           <TextInput
             placeholder="Search students, courses, disciplines, emails…"
-            icon={<IconSearch size={15} />}
+            leftSection={<IconSearch size={15} />}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.currentTarget.value)}
             mb="md"

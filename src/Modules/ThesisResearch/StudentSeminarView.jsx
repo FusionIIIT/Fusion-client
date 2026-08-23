@@ -91,7 +91,7 @@ export default function StudentSeminarView({ id }) {
 
   if (!d) {
     return (
-      <Text color="dimmed" ta="center" p="md">
+      <Text c="dimmed" ta="center" p="md">
         No seminar data available
       </Text>
     );

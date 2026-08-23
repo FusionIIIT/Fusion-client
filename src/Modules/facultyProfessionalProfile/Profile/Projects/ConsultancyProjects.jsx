@@ -79,12 +79,10 @@ export default function ConsultancyProjects() {
       formData.append("title", inputs.title);
 
       if (isEdit === false) {
-        const res = await axios.post(insertConsultancyProjectRoute, formData);
-        console.log(res.data);
+        await axios.post(insertConsultancyProjectRoute, formData);
       } else {
         formData.append("consultancy_id", Id);
-        const res = await axios.post(insertConsultancyProjectRoute, formData);
-        console.log(res.data);
+        await axios.post(insertConsultancyProjectRoute, formData);
         setEdit(false);
         setId(0);
       }
@@ -125,7 +123,6 @@ export default function ConsultancyProjects() {
   };
 
   const handleDelete = async (projectId) => {
-    console.log(projectId);
     if (window.confirm("Are you sure you want to delete this project?")) {
       try {
         await axios.post(
@@ -282,7 +279,7 @@ export default function ConsultancyProjects() {
                   type="submit"
                   mt="md"
                   loading={isLoading}
-                  leftIcon={<FloppyDisk size={16} />}
+                  leftSection={<FloppyDisk size={16} />}
                   style={{ backgroundColor: "#2185d0", color: "#fff" }} // Custom button styling
                 >
                   Save

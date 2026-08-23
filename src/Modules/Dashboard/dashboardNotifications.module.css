@@ -1,0 +1,26 @@
+.notificationTabs {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.selectinputs {
+    background-color: #15abff20;
+    border-color: #15abff4d;
+}
+
+.selectoptions:hover {
+  background-color: #15abff10; /* Transparent blue hover background */
+}
+
+.notificationTabs [role="tablist"] {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.notificationTabs [role="tablist"]::-webkit-scrollbar {
+  display: none;
+}
+.notificationTabs [role="tab"] {
+  flex-shrink: 0;
+  white-space: nowrap;
+}

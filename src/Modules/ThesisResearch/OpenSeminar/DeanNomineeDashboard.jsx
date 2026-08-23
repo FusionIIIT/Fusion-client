@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Card, Title, Table, Button, Center, Loader } from "@mantine/core";
+import { Card, Table, Button, Center, Loader } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import axios from "axios";
 import { deanNomineeOpenSeminarDashboardRoute } from "../../../routes/academicRoutes";
@@ -47,10 +47,6 @@ export default function DeanNomineeDashboard() {
 
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
-      <Title order={3} mb="md">
-        Open Seminar — Dean Nominee Reports
-      </Title>
-
       <Table striped highlightOnHover>
         <thead>
           <tr>

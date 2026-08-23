@@ -13,8 +13,16 @@ import {
   Checkbox,
   TextInput,
   Badge,
+  Modal,
+  Stack,
+  ThemeIcon,
 } from "@mantine/core";
-import { IconArrowLeft, IconSearch, IconX } from "@tabler/icons-react";
+import {
+  IconArrowLeft,
+  IconAlertTriangle,
+  IconSearch,
+  IconX,
+} from "@tabler/icons-react";
 import { showNotification } from "@mantine/notifications";
 import axios from "axios";
 import { useSelector } from "react-redux";
@@ -73,6 +81,7 @@ export default function PublishResultSelection() {
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [revertModalOpen, setRevertModalOpen] = useState(false);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
@@ -144,18 +153,8 @@ export default function PublishResultSelection() {
     });
   };
 
-  const handlePublish = async () => {
-    // Publishing with nobody selected hides the result from the whole batch
-    // (acts as a full revert) — confirm before doing that.
-    if (
-      selected.size === 0 &&
-      // eslint-disable-next-line no-alert
-      !window.confirm(
-        "No students are selected. This will hide the result from the entire batch. Continue?",
-      )
-    ) {
-      return;
-    }
+  const publishSelection = async () => {
+    setRevertModalOpen(false);
     setSubmitting(true);
     const token = localStorage.getItem("authToken");
     try {
@@ -185,10 +184,18 @@ export default function PublishResultSelection() {
     }
   };
 
+  const handlePublish = () => {
+    if (selected.size === 0) {
+      setRevertModalOpen(true);
+      return;
+    }
+    publishSelection();
+  };
+
   if (loading)
     return (
       <Card p="lg" radius="md" withBorder>
-        <Group position="center">
+        <Group justify="center">
           <Loader size="lg" />
           <Text>Loading students...</Text>
         </Group>
@@ -214,7 +221,7 @@ export default function PublishResultSelection() {
 
   return (
     <Card p="lg" radius="md" withBorder>
-      <Group position="apart" mb="xs">
+      <Group justify="space-between" mb="xs">
         <Button
           variant="subtle"
           leftSection={<IconArrowLeft size={16} />}
@@ -231,7 +238,7 @@ export default function PublishResultSelection() {
         Publish Result
       </Title>
       {meta && (
-        <Group spacing="xs" mb="md">
+        <Group gap="xs" mb="md">
           <Badge variant="outline">{meta.batch_label}</Badge>
           <Badge variant="outline">{meta.semester_label}</Badge>
         </Group>
@@ -248,7 +255,7 @@ export default function PublishResultSelection() {
           placeholder="Search by roll number or name..."
           value={search}
           onChange={(e) => setSearch(e.currentTarget.value)}
-          icon={<IconSearch size={16} />}
+          leftSection={<IconSearch size={16} />}
           mb="md"
         />
         <Table highlightOnHover striped>
@@ -289,6 +296,41 @@ export default function PublishResultSelection() {
           </tbody>
         </Table>
       </Paper>
+
+      <Modal
+        opened={revertModalOpen}
+        onClose={() => setRevertModalOpen(false)}
+        title={<Text fw={700}>Hide result from the entire batch?</Text>}
+        centered
+      >
+        <Stack gap="md">
+          <Group gap="sm" align="flex-start" wrap="nowrap">
+            <ThemeIcon color="red" variant="light" radius="xl" size={38}>
+              <IconAlertTriangle size={20} />
+            </ThemeIcon>
+            <Text size="sm">
+              No students are selected, so publishing now will{" "}
+              <Text span fw={600}>
+                revert the result for every student in this batch
+              </Text>
+              . They will no longer be able to see it. You can publish again at
+              any time.
+            </Text>
+          </Group>
+          <Group justify="flex-end" gap="sm">
+            <Button
+              variant="default"
+              onClick={() => setRevertModalOpen(false)}
+              disabled={submitting}
+            >
+              Cancel
+            </Button>
+            <Button color="red" onClick={publishSelection} loading={submitting}>
+              Hide from batch
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
     </Card>
   );
 }

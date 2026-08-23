@@ -108,7 +108,7 @@ export default function Admin_add_course_instructor() {
               <Text size="sm" mb={8}>
                 <strong>Course instructor has been added.</strong>
               </Text>
-              <Text size="xs" color="gray.7">
+              <Text size="xs" c="gray.7">
                 The instructor assignment has been created.
               </Text>
             </div>
@@ -135,7 +135,7 @@ export default function Admin_add_course_instructor() {
               <Text size="sm" mb={8}>
                 <strong>{err.error || "Unable to add course instructor. Please try again."}</strong>
               </Text>
-              <Text size="xs" color="gray.7">
+              <Text size="xs" c="gray.7">
                 {JSON.stringify(err.details) || "Please check your inputs and try again."}
               </Text>
             </div>
@@ -157,7 +157,7 @@ export default function Admin_add_course_instructor() {
             <Text size="sm" mb={8}>
               <strong>Connection error occurred while adding instructor.</strong>
             </Text>
-            <Text size="xs" color="gray.7">
+            <Text size="xs" c="gray.7">
               Please check your internet connection and try again.
             </Text>
           </div>
@@ -215,7 +215,7 @@ export default function Admin_add_course_instructor() {
               <Text size="sm" mb={8}>
                 <strong>{data.success || "Course instructors have been uploaded."}</strong>
               </Text>
-              <Text size="xs" color="gray.7">
+              <Text size="xs" c="gray.7">
                 Excel file has been processed and instructors have been added.
               </Text>
             </div>
@@ -243,7 +243,7 @@ export default function Admin_add_course_instructor() {
             <Text size="sm" mb={8}>
               <strong>Upload error: {e.message}</strong>
             </Text>
-            <Text size="xs" color="gray.7">
+            <Text size="xs" c="gray.7">
               Please check your Excel file format and try again.
             </Text>
           </div>
@@ -296,7 +296,7 @@ export default function Admin_add_course_instructor() {
             }}
           >
             <form onSubmit={form.onSubmit(handleSubmit)}>
-              <Text size="xl" weight={700} align="center" mb="md">
+              <Text size="xl" fw={700} ta="center" mb="md">
                 Course Instructor Form
               </Text>
 
@@ -316,7 +316,7 @@ export default function Admin_add_course_instructor() {
                 </Button>
               </Flex>
 
-              <Stack spacing="lg">
+              <Stack gap="lg">
                 {activeSection === "manual" ? (
                   <>
                     <Select
@@ -359,7 +359,7 @@ export default function Admin_add_course_instructor() {
                       clearable
                     />
 
-                    <Group position="right" mt="lg">
+                    <Group justify="flex-end" mt="lg">
                       <Button variant="outline" onClick={handleCancel}>
                         Cancel
                       </Button>
@@ -368,10 +368,10 @@ export default function Admin_add_course_instructor() {
                   </>
                 ) : (
                   <>
-                    <Text size="xl" weight={700}>
+                    <Text size="xl" fw={700}>
                       Upload via Excel
                     </Text>
-                    <Group spacing="sm" mb="md">
+                    <Group gap="sm" mb="md">
                       <FileInput
                         label="Excel file"
                         placeholder="Select .xls/.xlsx"
@@ -413,7 +413,7 @@ export default function Admin_add_course_instructor() {
                         Download Sample
                       </Button>
                     </Group>
-                    <Group position="right" mt="lg">
+                    <Group justify="flex-end" mt="lg">
                       <Button variant="outline" onClick={handleCancel}>
                         Cancel
                       </Button>

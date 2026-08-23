@@ -11,6 +11,7 @@ import {
 } from "@mantine/core";
 import axios from "axios";
 import FusionTable from "../../components/FusionTable";
+import { errorMessage } from "../../lib/errors";
 import {
   deletePreRegistrationRoute,
   searchPreRegistrationRoute,
@@ -111,15 +112,6 @@ function RegistrationSearch() {
 
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
-      <Text
-        size="lg"
-        weight={700}
-        mb="md"
-        style={{ textAlign: "center", width: "100%", color: "#3B82F6" }}
-      >
-        Search and Manage Registrations
-      </Text>
-
       <div style={{ maxWidth: "100%", gap: 16, display: "grid" }}>
         <TextInput
           label="Roll No:"
@@ -148,17 +140,17 @@ function RegistrationSearch() {
 
       {error && (
         <Alert title="Error" color="red" mt="md">
-          {error}
+          {errorMessage(error)}
         </Alert>
       )}
 
       {searchResults && (
         <div style={{ marginTop: 20 }}>
-          <Text weight={600} mb="sm" size="xl">
+          <Text fw={600} mb="sm" size="xl">
             Search Results
           </Text>
 
-          <Text weight={600} size="lg" mb="md" style={{ color: "#3B82F6" }}>
+          <Text fw={600} size="lg" mb="md" style={{ color: "#3B82F6" }}>
             Initial Registrations:
           </Text>
 
@@ -166,17 +158,12 @@ function RegistrationSearch() {
             <FusionTable
               columnNames={columnNames}
               elements={mappedResults}
+              groupBy="Course Slot"
               width="100%"
             />
           </div>
 
-          <Text
-            weight={600}
-            size="lg"
-            mt="lg"
-            mb="md"
-            style={{ color: "#3B82F6" }}
-          >
+          <Text fw={600} size="lg" mt="lg" mb="md" style={{ color: "#3B82F6" }}>
             Student Registration Check:
           </Text>
 
@@ -186,37 +173,37 @@ function RegistrationSearch() {
             withBorder
             style={{ backgroundColor: "#f8f9fa" }}
           >
-            <Group spacing="xs" mb={4}>
-              <Text weight={500}>Student Roll No:</Text>
+            <Group gap="xs" mb={4}>
+              <Text fw={500}>Student Roll No:</Text>
               <Text style={{ fontWeight: 600 }}>
                 {searchResults.student_registration_check.student_id}
               </Text>
             </Group>
-            <Group spacing="xs" mb={4}>
-              <Text weight={500}>Pre-Registration Flag:</Text>
+            <Group gap="xs" mb={4}>
+              <Text fw={500}>Pre-Registration Flag:</Text>
               <Text
-                color={
+                c={
                   searchResults.student_registration_check.pre_registration_flag
                     ? "green"
                     : "red"
                 }
-                weight={600}
+                fw={600}
               >
                 {searchResults.student_registration_check.pre_registration_flag
                   ? "True"
                   : "False"}
               </Text>
             </Group>
-            <Group spacing="xs">
-              <Text weight={500}>Final Registration Flag:</Text>
+            <Group gap="xs">
+              <Text fw={500}>Final Registration Flag:</Text>
               <Text
-                color={
+                c={
                   searchResults.student_registration_check
                     .final_registration_flag
                     ? "green"
                     : "red"
                 }
-                weight={600}
+                fw={600}
               >
                 {searchResults.student_registration_check
                   .final_registration_flag
@@ -224,7 +211,7 @@ function RegistrationSearch() {
                   : "False"}
               </Text>
             </Group>
-            <Group position="right" mt="md">
+            <Group justify="flex-end" mt="md">
               <Button
                 variant="outline"
                 color="red"
@@ -259,10 +246,10 @@ function RegistrationSearch() {
         <Text mb="sm">
           Are you sure you want to delete pre-registration details?
         </Text>
-        <Text weight={600} mb="lg">
+        <Text fw={600} mb="lg">
           This action cannot be undone!
         </Text>
-        <Group position="right">
+        <Group justify="flex-end">
           <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>
             Cancel
           </Button>

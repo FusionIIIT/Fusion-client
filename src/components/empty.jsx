@@ -1,21 +1,29 @@
-import { Container, Text } from "@mantine/core";
-import notfound from "../assets/notfound.svg";
+import { Text } from "@mantine/core";
+import PropTypes from "prop-types";
 
-export function Empty() {
+import notfound from "../assets/notfound.svg";
+import classes from "./empty.module.css";
+
+export function Empty({
+  title = "No new notifications found!",
+  description = "There is no new notification available. Please check back later.",
+}) {
   return (
-    <Container style={{ textAlign: "center", padding: "40px 20px" }}>
-      <img src={notfound} height={200} alt="404" />
-      <Text size="xl" weight={500} mt="lg" mb="sm">
-        No new notifications found!
+    <div className={classes.root}>
+      <img src={notfound} className={classes.art} alt="" />
+      <Text fz="lg" fw={600} mt="md" mb={4}>
+        {title}
       </Text>
-      <Text size="md" c="dimmed" mb="lg">
-        There is no new notification available. Please check back later.
+      <Text size="sm" c="dimmed">
+        {description}
       </Text>
-      {/* <a href="/">
-        <Button variant="filled">
-          Go to home
-        </Button>
-      </a> */}
-    </Container>
+    </div>
   );
 }
+
+Empty.propTypes = {
+  title: PropTypes.string,
+  description: PropTypes.string,
+};
+
+export default Empty;

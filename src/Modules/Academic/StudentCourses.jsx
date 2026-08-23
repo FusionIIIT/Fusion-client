@@ -13,6 +13,7 @@ import {
 import { showNotification } from "@mantine/notifications";
 import axios from "axios";
 import FusionTable from "../../components/FusionTable";
+import { courseLabel } from "../../lib/course";
 import {
   addStudentCourseRoute,
   addStudentThesisRoute,
@@ -821,15 +822,21 @@ export default function StudentCourses() {
 
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
-      <TextInput
-        label="Roll Number"
-        value={rollNo}
-        onChange={(e) => setRollNo(e.target.value)}
-        mb="md"
-      />
-      <Button fullWidth onClick={handleGetCourses} mb="md" disabled={loading}>
-        {loading ? <Loader size="xs" /> : "Fetch Courses"}
-      </Button>
+      <Group align="flex-end" gap="sm" wrap="wrap" mb="md">
+        <TextInput
+          label="Roll Number"
+          placeholder="Enter roll number"
+          value={rollNo}
+          onChange={(e) => setRollNo(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && rollNo && !loading) handleGetCourses();
+          }}
+          style={{ flex: 1, minWidth: 200 }}
+        />
+        <Button onClick={handleGetCourses} disabled={!rollNo || loading}>
+          {loading ? <Loader size="xs" /> : "Fetch Courses"}
+        </Button>
+      </Group>
 
       {error && (
         <Alert title="Error" color="red" mb="md">
@@ -850,13 +857,13 @@ export default function StudentCourses() {
             mb="md"
           />
 
-          <Text size="lg" weight={700} mb="sm" align="center" color="blue">
+          <Text size="lg" fw={700} mb="sm" ta="center" c="blue">
             Registered Courses
           </Text>
-          <Text weight={500}>
+          <Text fw={500}>
             Name: {studentData.dict2.firstname} {studentData.dict2.lastname}
           </Text>
-          <Text weight={500} mb="md">
+          <Text fw={500} mb="md">
             Roll No: {studentData.dict2.roll_no}
           </Text>
 
@@ -864,13 +871,13 @@ export default function StudentCourses() {
             <FusionTable columnNames={columns} elements={rows} width="100%" />
           </div>
           {rows.length === 0 && (
-            <Text align="center" color="dimmed" mt="sm">
+            <Text ta="center" c="dimmed" mt="sm">
               No courses found for Semester
             </Text>
           )}
 
-          <Group position="apart" mt="lg">
-            <Group spacing="xs">
+          <Group justify="space-between" mt="lg" wrap="wrap">
+            <Group gap="xs" wrap="wrap">
               <Button
                 color="green"
                 onClick={() => setAddModalOpen(true)}
@@ -903,7 +910,7 @@ export default function StudentCourses() {
                 Add Teaching Credit
               </Button>
             </Group>
-            <Text weight={700}>Total Credits: {totalCredits}</Text>
+            <Text fw={700}>Total Credits: {totalCredits}</Text>
           </Group>
         </>
       )}
@@ -946,7 +953,7 @@ export default function StudentCourses() {
           placeholder="Select course"
           data={slotCourses.map((c) => ({
             value: String(c.id),
-            label: `${c.code} - ${c.name} (${c.credit}cr)`,
+            label: `${courseLabel(c)} (${c.credit}cr)`,
           }))}
           value={newCourse.course_id}
           onChange={(v) => setNewCourse((p) => ({ ...p, course_id: v }))}
@@ -1021,7 +1028,7 @@ export default function StudentCourses() {
           searchable
           mb="sm"
         />
-        <Group position="right">
+        <Group justify="flex-end">
           <Button onClick={handleAddCourse} loading={loading}>
             Add
           </Button>
@@ -1110,7 +1117,7 @@ export default function StudentCourses() {
           }
           mb="md"
         />
-        <Group position="right">
+        <Group justify="flex-end">
           <Button onClick={handleAddThesis} loading={loading}>
             Add
           </Button>
@@ -1169,7 +1176,7 @@ export default function StudentCourses() {
           mb="md"
           disabled={!newSeminar.seminar_slot_id}
         />
-        <Group position="right">
+        <Group justify="flex-end">
           <Button onClick={handleAddSeminar} loading={loading}>
             Add
           </Button>
@@ -1230,7 +1237,7 @@ export default function StudentCourses() {
           mb="md"
           disabled={!newTeachingCredit.teaching_credit_slot_id}
         />
-        <Group position="right">
+        <Group justify="flex-end">
           <Button onClick={handleAddTeachingCredit} loading={loading}>
             Add
           </Button>
@@ -1244,7 +1251,7 @@ export default function StudentCourses() {
         title="Confirm Drop"
       >
         <Text>Are you sure you want to drop {courseToDropName}?</Text>
-        <Group position="right" mt="md">
+        <Group justify="flex-end" mt="md">
           <Button variant="outline" onClick={() => setDropModalOpen(false)}>
             Cancel
           </Button>

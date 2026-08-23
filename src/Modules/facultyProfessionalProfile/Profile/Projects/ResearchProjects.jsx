@@ -51,12 +51,10 @@ export default function ResearchProjects() {
         params: { pfNo },
       });
       const projects = response.data;
-      console.log(projects);
       // Sort projects by submission date in descending order
       const sortedProjects = projects.sort(
         (a, b) => new Date(b.submission_date) - new Date(a.submission_date),
       );
-      console.log(sortedProjects);
       setTableData(sortedProjects);
     } catch (error) {
       console.error("Error fetching projects:", error);
@@ -84,12 +82,10 @@ export default function ResearchProjects() {
       formData.append("title", inputs.title);
 
       if (isEdit === false) {
-        const res = await axios.post(insertResearchProjectsRoute, formData);
-        console.log(res.data);
+        await axios.post(insertResearchProjectsRoute, formData);
       } else {
         formData.append("project_id", Id);
-        const res = await axios.post(insertResearchProjectsRoute, formData);
-        console.log(res.data);
+        await axios.post(insertResearchProjectsRoute, formData);
         setEdit(false);
         setId(0);
       }
@@ -109,7 +105,7 @@ export default function ResearchProjects() {
         title: "",
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -133,7 +129,6 @@ export default function ResearchProjects() {
   };
 
   const handleDelete = async (projectId) => {
-    console.log(projectId);
     if (window.confirm("Are you sure you want to delete this project?")) {
       try {
         await axios.post(
@@ -306,7 +301,7 @@ export default function ResearchProjects() {
                   type="submit"
                   mt="md"
                   loading={isLoading}
-                  leftIcon={<FloppyDisk size={16} />}
+                  leftSection={<FloppyDisk size={16} />}
                   style={{ backgroundColor: "#2185d0", color: "#fff" }} // Custom button styling
                 >
                   Save

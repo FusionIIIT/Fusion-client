@@ -75,7 +75,6 @@ export default function AboutMePage() {
       const response = await axios.get(getPersonalInfoRoute, {
         params: { pfNo },
       });
-      // console.log(response);
       if (response.data) {
         setInputs({
           aboutMe: response.data[0].about || "",
@@ -118,7 +117,6 @@ export default function AboutMePage() {
       const response = await axios.post(updatePersonalInfoRoute, data);
 
       if (response.status === 200) {
-        console.log("Details updated successfully.");
         fetchUserData(); // Fetch updated data
       }
     } catch (error) {
@@ -261,7 +259,7 @@ export default function AboutMePage() {
                 onChange={handleInputChange}
                 placeholder="Enter your contact number"
                 disabled={!isEdit}
-                icon={<Phone size={16} />}
+                leftSection={<Phone size={16} />}
               />
             </Grid.Col>
             <Grid.Col span={{ base: 12, md: 6, lg: 6 }}>
@@ -272,7 +270,7 @@ export default function AboutMePage() {
                 onChange={handleInputChange}
                 placeholder="Enter your email"
                 disabled={!isEdit}
-                icon={<EnvelopeSimple size={16} />}
+                leftSection={<EnvelopeSimple size={16} />}
               />
             </Grid.Col>
             <Grid.Col span={{ base: 12, md: 6, lg: 6 }}>
@@ -283,7 +281,7 @@ export default function AboutMePage() {
                 onChange={handleInputChange}
                 placeholder="Enter your LinkedIn profile"
                 disabled={!isEdit}
-                icon={<LinkedinLogo size={16} />}
+                leftSection={<LinkedinLogo size={16} />}
               />
             </Grid.Col>
             <Grid.Col span={{ base: 12, md: 6, lg: 6 }}>
@@ -294,7 +292,7 @@ export default function AboutMePage() {
                 onChange={handleInputChange}
                 placeholder="Enter your GitHub profile"
                 disabled={!isEdit}
-                icon={<GithubLogo size={16} />}
+                leftSection={<GithubLogo size={16} />}
               />
             </Grid.Col>
           </Grid>

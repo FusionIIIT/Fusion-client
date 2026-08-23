@@ -84,7 +84,7 @@ function ViewAllProgrammes() {
   if (error) {
     return (
       <Container>
-        <Text color="red">{error}</Text>
+        <Text c="red">{error}</Text>
       </Container>
     );
   }

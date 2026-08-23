@@ -53,7 +53,7 @@ function StudentListModal({
       opened={opened}
       onClose={onClose}
       title={
-        <Text size="lg" weight={600} color="#3498db">
+        <Text size="lg" fw={600} c="#3498db">
           📋 Students in {selectedBatch?.displayBranch || "Branch"} -{" "}
           {selectedBatch?.programme} (
           {selectedBatch
@@ -77,7 +77,7 @@ function StudentListModal({
         },
       }}
     >
-      <Stack spacing="md">
+      <Stack gap="md">
         {selectedBatch && (
           <Card withBorder padding="md" style={{ backgroundColor: "#f8f9fa" }}>
             <Grid>
@@ -139,18 +139,14 @@ function StudentListModal({
                 input: {
                   border: "1px solid #d1d5db",
                   backgroundColor: "#ffffff",
-                  "&:focus": {
-                    borderColor: "#3b82f6",
-                    boxShadow: "0 0 0 3px rgba(59, 130, 246, 0.1)",
-                  },
                 },
               }}
             />
-            <Group spacing="md">
+            <Group gap="md">
               <Text
                 size="sm"
-                color="#6b7280"
-                weight={500}
+                c="#6b7280"
+                fw={500}
                 style={{ minWidth: "120px" }}
               >
                 Showing {getFilteredStudents().length} of {studentList.length}{" "}
@@ -158,7 +154,7 @@ function StudentListModal({
               </Text>
               {/* Bulk Status Change Buttons */}
               {selectedStudents.size > 0 && (
-                <Group spacing="sm">
+                <Group gap="sm">
                   <Button
                     leftSection={<Check size={18} />}
                     onClick={() => handleBulkStatusChange("REPORTED")}
@@ -264,10 +260,10 @@ function StudentListModal({
             padding="xl"
             style={{ textAlign: "center", backgroundColor: "#f8f9fa" }}
           >
-            <Text size="lg" color="dimmed">
+            <Text size="lg" c="dimmed">
               No students found in this batch
             </Text>
-            <Text size="sm" color="dimmed" mt="xs">
+            <Text size="sm" c="dimmed" mt="xs">
               Students will appear here after they are uploaded and allocated
               roll numbers
             </Text>

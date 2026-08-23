@@ -23,7 +23,7 @@ function DeleteBatchModal({ opened, onClose, batch, onConfirm }) {
           <ThemeIcon color="red" size="lg">
             <Trash size={20} />
           </ThemeIcon>
-          <Text size="lg" weight={600}>
+          <Text size="lg" fw={600}>
             Confirm Delete Batch
           </Text>
         </Flex>
@@ -31,7 +31,7 @@ function DeleteBatchModal({ opened, onClose, batch, onConfirm }) {
       size="md"
       centered
     >
-      <Stack spacing="md">
+      <Stack gap="md">
         <Text>
           Are you sure you want to delete this batch? This action cannot be
           undone.
@@ -39,7 +39,7 @@ function DeleteBatchModal({ opened, onClose, batch, onConfirm }) {
 
         {batch && (
           <Card withBorder p="md" bg="gray.1">
-            <Text size="sm" weight={500} mb={8}>
+            <Text size="sm" fw={500} mb={8}>
               Batch Details:
             </Text>
             <Text size="sm">

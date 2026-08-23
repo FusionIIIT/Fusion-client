@@ -75,7 +75,7 @@ export function useAddStudents({
               <Text size="sm" mb={8}>
                 <strong>Create a curriculum first:</strong>
               </Text>
-              <Text size="xs" color="gray.7">
+              <Text size="xs" c="gray.7">
                 1. Go to Programme Curriculum → Admin Curriculum
                 <br />
                 2. Click "Add Curriculum" to create a new curriculum
@@ -106,7 +106,7 @@ export function useAddStudents({
                   Create batches for {details.academicYear || "current year"}:
                 </strong>
               </Text>
-              <Text size="xs" color="gray.7">
+              <Text size="xs" c="gray.7">
                 1. Curriculum ✅ (completed)
                 <br />
                 2. Create batches and assign curriculum to each
@@ -133,7 +133,7 @@ export function useAddStudents({
               <Text size="sm" mb={8}>
                 <strong>Assign curriculum to batches:</strong>
               </Text>
-              <Text size="xs" color="gray.7">
+              <Text size="xs" c="gray.7">
                 1. Curriculum ✅ (completed)
                 <br />
                 2. Batches ✅ (completed)
@@ -162,7 +162,7 @@ export function useAddStudents({
               <Text size="sm" mb={8}>
                 <strong>All prerequisites completed:</strong>
               </Text>
-              <Text size="xs" color="gray.7">
+              <Text size="xs" c="gray.7">
                 1. Curriculum ✅<br />
                 2. Batches ✅<br />
                 3. Curriculum Assignment ✅<br />
@@ -225,10 +225,6 @@ export function useAddStudents({
           (typeof value === "string" && value.trim() === "");
 
         if (isEmpty) {
-          console.log(
-            `Field ${fieldKey} (${fieldConfig.label}) is missing or empty. Value:`,
-            value,
-          );
           fieldErrors[fieldKey] = `${fieldConfig.label} is required`;
         }
       }
@@ -808,26 +804,34 @@ export function useAddStudents({
 
   const validateBatchPrerequisites = async (academicYear, disciplines = []) => {
     try {
+      const token = localStorage.getItem("authToken");
       const response = await fetch(
         `${host}/programme_curriculum/api/batches/validate_prerequisites/`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            ...(token ? { Authorization: `Token ${token}` } : {}),
           },
           body: JSON.stringify({ academic_year: academicYear, disciplines }),
         },
       );
 
       const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
+      // An error answer is JSON too, so it must not be read as batch data
+      if (
+        !response.ok ||
+        !contentType ||
+        !contentType.includes("application/json")
+      ) {
         return validateBatchPrerequisitesFrontend(academicYear);
       }
 
       const data = await response.json();
 
       if (!data.can_upload_students) {
-        const errorMessages = data.missing_batches
+        const missing = data.missing_batches ?? [];
+        const errorMessages = missing
           .slice(0, 5)
           .map(
             (batch) =>
@@ -836,8 +840,8 @@ export function useAddStudents({
           .join("\n");
 
         const additionalErrors =
-          data.missing_batches.length > 5
-            ? `\n... and ${data.missing_batches.length - 5} more missing batches`
+          missing.length > 5
+            ? `\n... and ${missing.length - 5} more missing batches`
             : "";
 
         notifications.show({
@@ -992,13 +996,8 @@ export function useAddStudents({
   const handleExcelUpload = async () => {
     try {
       // Check if PhD semester is selected for PhD section
-      console.log("handleExcelUpload called:", {
-        activeSection,
-        selectedPhdSemester,
-      });
 
       if (activeSection === "phd" && !selectedPhdSemester) {
-        console.log("Blocked: PhD semester not selected");
         notifications.show({
           title: "Semester Selection Required",
           message:
@@ -1193,11 +1192,6 @@ export function useAddStudents({
       const transformedData = transformDataForDatabase(dataToUpload);
 
       // Debug logging
-      console.log("PhD Upload Debug:", {
-        activeSection,
-        selectedPhdSemester,
-        sendingValue: activeSection === "phd" ? selectedPhdSemester : null,
-      });
 
       const response = await saveStudentsBatch(
         transformedData,
@@ -1352,10 +1346,6 @@ export function useAddStudents({
         );
 
         if (Object.keys(finalErrors).length > 0) {
-          console.log("Validation failed. Errors:", finalErrors);
-          console.log("Form data:", manualFormData);
-          console.log("Active section:", activeSection);
-
           setErrors(finalErrors);
           const phoneErrors = Object.values(finalErrors).filter(
             (error) =>

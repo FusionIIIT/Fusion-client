@@ -30,8 +30,8 @@ function Admin_edit_curriculum_form({ existingData }) {
   const [pgData, setPgData] = useState([]);
   const [phdData, setPhdData] = useState([]);
   const [searchParams] = useSearchParams();
-  const [curriculumData, setCurriculumData] = useState(null);
-  const [programmeData, setProgrammeData] = useState(null);
+  const [, setCurriculumData] = useState(null);
+  const [, setProgrammeData] = useState(null);
   const [notification, setNotification] = useState(null);
   const form = useForm({
     initialValues: {
@@ -55,7 +55,6 @@ function Admin_edit_curriculum_form({ existingData }) {
         if (!token) throw new Error("Authorization token not found");
 
         const response = await fetchAllProgrammes(token);
-        console.log("All programs:", response);
 
         setUgData(response.ug_programmes || []);
         setPgData(response.pg_programmes || []);
@@ -113,8 +112,6 @@ function Admin_edit_curriculum_form({ existingData }) {
       fetchData();
     }
   }, [curriculumId]);
-  console.log(curriculumData);
-  console.log(programmeData);
 
   const getProgramOptions = () => {
     const formatProgramData = (program) => ({
@@ -187,10 +184,6 @@ function Admin_edit_curriculum_form({ existingData }) {
   if (loading || loadingPrograms) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
-  console.log("Program Options:", getProgramOptions());
-  console.log("Current form values:", form.values);
-  console.log("Programme Data:", programmeData);
-
   // useEffect(() => {
   //   if (curriculumData) {
   //     form.setValues({
@@ -249,8 +242,8 @@ function Admin_edit_curriculum_form({ existingData }) {
                 boxShadow: "0 0 10px rgba(0,0,0,0.1)",
               }}
             >
-              <Stack spacing="lg">
-                <Text size="xl" weight={700} align="center">
+              <Stack gap="lg">
+                <Text size="xl" fw={700} ta="center">
                   Edit Curriculum Form
                 </Text>
 
@@ -285,7 +278,7 @@ function Admin_edit_curriculum_form({ existingData }) {
                   error={form.errors.programme}
                   required
                   searchable
-                  nothingFound="No programmes found"
+                  nothingFoundMessage="No programmes found"
                   maxDropdownHeight={280}
                   clearable={false}
                 />
@@ -325,7 +318,7 @@ function Admin_edit_curriculum_form({ existingData }) {
                 />
               </Stack>
 
-              <Group position="right" mt="lg">
+              <Group justify="flex-end" mt="lg">
                 <Button
                   variant="outline"
                   className="cancel-btn"
@@ -349,7 +342,7 @@ function Admin_edit_curriculum_form({ existingData }) {
               justifyContent: "flex-start",
             }}
           >
-            <Group spacing="md" direction="column" style={{ width: "100%" }}>
+            <Group gap="md" direction="column" style={{ width: "100%" }}>
               <Link to="/programme_curriculum/acad_admin_add_programme_form">
                 <Button className="right-btn-curriculum">Add Programme</Button>
               </Link>

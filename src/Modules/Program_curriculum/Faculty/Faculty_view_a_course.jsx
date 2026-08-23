@@ -77,7 +77,7 @@ function CourseDetail() {
         {/* Course Details Card - spans 9 columns on desktop, 12 on mobile */}
         <Grid.Col span={isMobile ? 12 : 9} order={isMobile ? 2 : 1}>
           <Card shadow="sm" padding="lg" className="course-card">
-            <Text size="lg" weight={700} className="course-title">
+            <Text size="lg" fw={700} className="course-title">
               {courseDetails.code} - {courseDetails.name} - v
               {courseDetails.version}
             </Text>

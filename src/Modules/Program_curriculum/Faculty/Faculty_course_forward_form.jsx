@@ -91,7 +91,6 @@ function FacultyCourseForwardForm() {
           ]);
         }
       } catch (err) {
-        console.log("Error fetching superior data: ", err.message);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -157,7 +156,7 @@ function FacultyCourseForwardForm() {
               <Text size="sm" mb={8}>
                 <strong>The course proposal has been rejected.</strong>
               </Text>
-              <Text size="xs" color="gray.7">
+              <Text size="xs" c="gray.7">
                 Rejection reason has been recorded.
               </Text>
             </div>
@@ -188,7 +187,7 @@ function FacultyCourseForwardForm() {
             <Text size="sm" mb={8}>
               <strong>Error rejecting proposal: {err.message}</strong>
             </Text>
-            <Text size="xs" color="gray.7">
+            <Text size="xs" c="gray.7">
               Please try again or contact support.
             </Text>
           </div>
@@ -237,7 +236,7 @@ function FacultyCourseForwardForm() {
               <Text size="sm" mb={8}>
                 <strong>The course proposal form has been submitted.</strong>
               </Text>
-              <Text size="xs" color="gray.7">
+              <Text size="xs" c="gray.7">
                 Your submission has been forwarded for review.
               </Text>
             </div>
@@ -268,7 +267,7 @@ function FacultyCourseForwardForm() {
             <Text size="sm" mb={8}>
               <strong>Error submitting form: {e.message}</strong>
             </Text>
-            <Text size="xs" color="gray.7">
+            <Text size="xs" c="gray.7">
               Please check your inputs and try again.
             </Text>
           </div>
@@ -320,8 +319,8 @@ function FacultyCourseForwardForm() {
           }}
         >
           <form onSubmit={form.onSubmit(handleSubmit)}>
-            <Stack spacing="lg">
-              <Text size="xl" weight={700} align="center">
+            <Stack gap="lg">
+              <Text size="xl" fw={700} ta="center">
                 Course Proposal Form
               </Text>
               <h1 style={{ textAlign: "center", fontSize: "20px" }}>
@@ -374,7 +373,7 @@ function FacultyCourseForwardForm() {
                 value={form.values.receiverId}
                 onChange={(value) => form.setFieldValue("receiverId", value)}
                 disabled={receiverOptions.length === 0}
-                nothingFound="No receivers found"
+                nothingFoundMessage="No receivers found"
                 required
               />
 
@@ -388,7 +387,7 @@ function FacultyCourseForwardForm() {
                 }
                 required
                 disabled={designationOptions.length === 0}
-                nothingFound="No designations found"
+                nothingFoundMessage="No designations found"
               />
 
               <Textarea
@@ -409,11 +408,11 @@ function FacultyCourseForwardForm() {
                 required
                 searchable
                 clearable
-                nothingFound="No disciplines found"
+                nothingFoundMessage="No disciplines found"
               />
             </Stack>
 
-            <Group position="right" mt="lg">
+            <Group justify="flex-end" mt="lg">
               <Button
                 variant="outline"
                 className="cancel-btn"

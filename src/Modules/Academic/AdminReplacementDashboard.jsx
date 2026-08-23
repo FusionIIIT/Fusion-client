@@ -404,18 +404,18 @@ export default function AdminReplacementDashboard() {
             </td>
             <td>{index + 1}</td>
             <td>
-              <Text size="sm" weight={500}>{r.student}</Text>
-              <Text size="xs" color="dimmed">{r.student_name}</Text>
+              <Text size="sm" fw={500}>{r.student}</Text>
+              <Text size="xs" c="dimmed">{r.student_name}</Text>
             </td>
             <td>{r.semester ?? '-'}</td>
             <td>{r.slot}</td>
             <td>
-              <Text size="sm" weight={500}>{r.old_course}</Text>
-              <Text size="xs" color="dimmed">{r.old_course_name}</Text>
+              <Text size="sm" fw={500}>{r.old_course}</Text>
+              <Text size="xs" c="dimmed">{r.old_course_name}</Text>
             </td>
             <td>
-              <Text size="sm" weight={500}>{r.new_course}</Text>
-              <Text size="xs" color="dimmed">{r.new_course_name}</Text>
+              <Text size="sm" fw={500}>{r.new_course}</Text>
+              <Text size="xs" c="dimmed">{r.new_course_name}</Text>
             </td>
             <td>
               <Badge color="yellow" variant="filled">{r.status}</Badge>
@@ -457,7 +457,7 @@ export default function AdminReplacementDashboard() {
           <th>Old</th>
           <th>New</th>
           <th>
-            <Group spacing="xs" position="apart">
+            <Group gap="xs" justify="space-between">
               <span>Status</span>
               {showFilter && (
                 <Select
@@ -494,18 +494,18 @@ export default function AdminReplacementDashboard() {
             )}
             <td>{index + 1}</td>
             <td>
-              <Text size="sm" weight={500}>{r.student}</Text>
-              <Text size="xs" color="dimmed">{r.student_name}</Text>
+              <Text size="sm" fw={500}>{r.student}</Text>
+              <Text size="xs" c="dimmed">{r.student_name}</Text>
             </td>
             <td>{r.semester ?? '-'}</td>
             <td>{r.slot}</td>
             <td>
-              <Text size="sm" weight={500}>{r.old_course}</Text>
-              <Text size="xs" color="dimmed">{r.old_course_name}</Text>
+              <Text size="sm" fw={500}>{r.old_course}</Text>
+              <Text size="xs" c="dimmed">{r.old_course_name}</Text>
             </td>
             <td>
-              <Text size="sm" weight={500}>{r.new_course}</Text>
-              <Text size="xs" color="dimmed">{r.new_course_name}</Text>
+              <Text size="sm" fw={500}>{r.new_course}</Text>
+              <Text size="xs" c="dimmed">{r.new_course_name}</Text>
             </td>
             <td>
               <Badge
@@ -541,7 +541,7 @@ export default function AdminReplacementDashboard() {
   return (
     <>
       <Card>
-        <Stack spacing="md">
+        <Stack gap="md">
           <Group grow align="flex-start">
             <Select
               label="Academic Year"
@@ -568,7 +568,7 @@ export default function AdminReplacementDashboard() {
             />
           </Group>
 
-          <Group position="left" spacing="xs">
+          <Group justify="flex-start" gap="xs">
             <Button 
               size="sm" 
               onClick={fetchRequests} 
@@ -614,9 +614,9 @@ export default function AdminReplacementDashboard() {
           <Tabs.Panel value="pending" pt="md">
             {pendingRequests.length > 0 ? (
               <Card>
-                <Group position="apart" mb="md">
+                <Group justify="space-between" mb="md">
                   <Title order={4}>Pending Requests</Title>
-                  <Group spacing="xs">
+                  <Group gap="xs">
                     <Button
                       size="sm"
                       color="red"
@@ -646,9 +646,9 @@ export default function AdminReplacementDashboard() {
           <Tabs.Panel value="processed" pt="md">
             {processedRequests.length > 0 ? (
               <Card>
-                <Group position="apart" mb="md">
+                <Group justify="space-between" mb="md">
                   <Title order={4}>Processed Requests</Title>
-                  <Group spacing="xs">
+                  <Group gap="xs">
                     {statusFilter === 'Rejected' && (
                       <Button
                         size="sm"
@@ -689,13 +689,13 @@ export default function AdminReplacementDashboard() {
         closeOnClickOutside={!deleting}
         closeOnEscape={!deleting}
       >
-        <Text size="sm" mb="md" weight={500}>
+        <Text size="sm" mb="md" fw={500}>
           Are you sure you want to permanently delete {deleteModal.ids.length} replacement request{deleteModal.ids.length > 1 ? 's' : ''}?
         </Text>
-        <Text size="sm" color="dimmed" mb="md">
+        <Text size="sm" c="dimmed" mb="md">
           This action cannot be undone.
         </Text>
-        <Group position="right" spacing="sm">
+        <Group justify="flex-end" gap="sm">
           <Button variant="outline" onClick={closeDeleteModal} disabled={deleting}>
             Cancel
           </Button>
@@ -713,13 +713,13 @@ export default function AdminReplacementDashboard() {
         closeOnClickOutside={!reverting}
         closeOnEscape={!reverting}
       >
-        <Text size="sm" mb="md" weight={500}>
+        <Text size="sm" mb="md" fw={500}>
           Are you sure you want to revert {revertModal.ids.length} rejected request{revertModal.ids.length > 1 ? 's' : ''} back to Pending status?
         </Text>
-        <Text size="sm" color="dimmed" mb="md">
+        <Text size="sm" c="dimmed" mb="md">
           The request{revertModal.ids.length > 1 ? 's' : ''} will be moved back to the Pending Requests tab.
         </Text>
-        <Group position="right" spacing="sm">
+        <Group justify="flex-end" gap="sm">
           <Button variant="outline" onClick={closeRevertModal} disabled={reverting}>
             Cancel
           </Button>

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import {
   Card,
-  Text,
   Button,
   Alert,
   Modal,
@@ -9,7 +8,6 @@ import {
   TextInput,
   Loader,
   FileInput,
-  Table,
 } from "@mantine/core";
 import axios from "axios";
 import { IconUpload } from "@tabler/icons-react";
@@ -25,6 +23,11 @@ import {
 import AudienceSelector, {
   defaultAudienceValue,
 } from "../../components/AudienceSelector.jsx";
+import FusionTable from "../../components/FusionTable";
+import RowActions from "../../components/RowActions";
+import { formatWhen } from "../../lib/datetime";
+
+const COLUMNS = ["Event", "Starts", "Ends", "Actions"];
 
 function AcademicCalendar() {
   const [events, setEvents] = useState([]);
@@ -82,26 +85,6 @@ function AcademicCalendar() {
       mounted = false;
     };
   }, [refreshTrigger]);
-
-  // Format dates for display
-  const formatDate = (d) =>
-    d
-      ? d.toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        })
-      : "";
-
-  // "14:30" / "14:30:00" -> "2:30 PM"; empty for whole-day (no time set)
-  const formatTime = (t) => {
-    if (!t) return "—";
-    const [h, m] = t.split(":");
-    const hr = Number(h);
-    const period = hr >= 12 ? "PM" : "AM";
-    const hr12 = hr % 12 || 12;
-    return `${hr12}:${m} ${period}`;
-  };
 
   // Open modals
   const handleAdd = () => {
@@ -286,13 +269,9 @@ function AcademicCalendar() {
 
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
-      <Text size="lg" weight={700} mb="md" align="center" color="#3B82F6">
-        Academic Calendar Management
-      </Text>
-
       {/* Initial loader or error */}
       {loading ? (
-        <Group position="center" py="xl">
+        <Group justify="center" py="xl">
           <Loader />
         </Group>
       ) : (
@@ -308,59 +287,25 @@ function AcademicCalendar() {
             </Alert>
           )}
 
-          {/* Events table */}
-          <Table striped highlightOnHover>
-            <thead>
-              <tr>
-                <th>Description</th>
-                <th>Start Date</th>
-                <th>Start Time</th>
-                <th>End Date</th>
-                <th>End Time</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Array.isArray(events) && events.length ? (
-                events.map((ev) => (
-                  <tr key={ev.id}>
-                    <td>{ev.description}</td>
-                    <td>{formatDate(ev.from_date)}</td>
-                    <td>{formatTime(ev.from_time)}</td>
-                    <td>{formatDate(ev.to_date)}</td>
-                    <td>{formatTime(ev.to_time)}</td>
-                    <td>
-                      <Group spacing="xs">
-                        <Button
-                          variant="outline"
-                          size="xs"
-                          onClick={() => handleEdit(ev)}
-                          disabled={processing}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="outline"
-                          color="red"
-                          size="xs"
-                          onClick={() => handleDelete(ev)}
-                          disabled={processing}
-                        >
-                          Delete
-                        </Button>
-                      </Group>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={6} align="center">
-                    No events found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </Table>
+          <FusionTable
+            columnNames={COLUMNS}
+            ariaLabel="Academic calendar events"
+            emptyMessage="No events found"
+            elements={events.map((ev) => ({
+              id: ev.id,
+              Event: ev.description,
+              Starts: formatWhen(ev.from_date, ev.from_time),
+              Ends: formatWhen(ev.to_date, ev.to_time),
+              Actions: (
+                <RowActions
+                  label={ev.description || "event"}
+                  disabled={processing}
+                  onEdit={() => handleEdit(ev)}
+                  onDelete={() => handleDelete(ev)}
+                />
+              ),
+            }))}
+          />
 
           {/* Action buttons */}
           <Group mt="md">
@@ -390,7 +335,7 @@ function AcademicCalendar() {
                 setFile(f);
                 handleFileUpload(f);
               }}
-              icon={<IconUpload size={16} />}
+              leftSection={<IconUpload size={16} />}
               disabled={processing}
             />
           </Group>
@@ -473,7 +418,7 @@ function AcademicCalendar() {
           mb="md"
           disabled={processing}
         />
-        <Group position="right" mt="lg">
+        <Group justify="flex-end" mt="lg">
           <Button onClick={handleSaveEdit} disabled={processing}>
             {processing ? "Saving…" : "Save Changes"}
           </Button>
@@ -486,7 +431,6 @@ function AcademicCalendar() {
         onClose={() => setAddModalOpen(false)}
         title="Add New Event"
         size="lg"
-        overlayOpacity={0.3}
       >
         <TextInput
           label="Description"
@@ -547,7 +491,7 @@ function AcademicCalendar() {
           disabled={processing}
         />
         <AudienceSelector value={audience} onChange={setAudience} />
-        <Group position="right" mt="lg">
+        <Group justify="flex-end" mt="lg">
           <Button onClick={handleAddEvent} disabled={processing}>
             {processing ? "Adding…" : "Add Event"}
           </Button>

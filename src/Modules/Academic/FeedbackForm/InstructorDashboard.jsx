@@ -19,6 +19,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
+  ResponsiveContainer,
 } from "recharts";
 import {
   instCoursesRoute,
@@ -101,13 +102,13 @@ export default function InstructorDashboard() {
       />
 
       <Space h="md" />
-      <Text weight={500}>Your Courses:</Text>
+      <Text fw={500}>Your Courses:</Text>
       <Grid>
         {courses.map((c) => (
-          <Grid.Col key={c.course_id} span={4}>
+          <Grid.Col key={c.course_id} span={{ base: 12, xs: 6, sm: 4 }}>
             <Card shadow="xs" p="sm">
-              <Text weight={600}>{c.code}</Text>
-              <Text size="sm" color="dimmed">
+              <Text fw={600}>{c.code}</Text>
+              <Text size="sm" c="dimmed">
                 {c.name}
               </Text>
               <Button
@@ -135,26 +136,32 @@ export default function InstructorDashboard() {
                   ([name, val]) => ({ name, val })
                 );
                 return (
-                  <Grid.Col key={q.question_id} span={6}>
+                  <Grid.Col key={q.question_id} span={{ base: 12, md: 6 }}>
                     <Paper p="md" shadow="xs">
-                      <Text weight={500}>{q.text}</Text>
+                      <Text fw={500}>{q.text}</Text>
 
                       {chartData.length > 0 ? (
-                        <BarChart
-                          width={300}
-                          height={250}
-                          data={chartData}
-                          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="name" interval={0} angle={-90} textAnchor="end" height={60} />
-                          <YAxis allowDecimals={false} />
-                          <Tooltip />
-                          <Bar dataKey="val" fill="#4C6EF5" />
-                        </BarChart>
+                        <ResponsiveContainer width="100%" height={250}>
+                          <BarChart
+                            data={chartData}
+                            margin={{ top: 20, right: 12, left: 0, bottom: 5 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis
+                              dataKey="name"
+                              interval={0}
+                              angle={-90}
+                              textAnchor="end"
+                              height={60}
+                            />
+                            <YAxis allowDecimals={false} />
+                            <Tooltip />
+                            <Bar dataKey="val" fill="#4C6EF5" />
+                          </BarChart>
+                        </ResponsiveContainer>
                       ) : (
                         <Paper p="sm" mt="md" withBorder>
-                          <Text size="sm" weight={500}>
+                          <Text size="sm" fw={500}>
                             Comments
                           </Text>
                           {q.comments.length > 0 ? (
@@ -164,7 +171,7 @@ export default function InstructorDashboard() {
                               </Text>
                             ))
                           ) : (
-                            <Text color="dimmed" size="sm">
+                            <Text c="dimmed" size="sm">
                               No comments
                             </Text>
                           )}

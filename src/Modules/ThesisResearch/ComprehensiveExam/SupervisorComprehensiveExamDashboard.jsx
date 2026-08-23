@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Card,
-  Title,
   Tabs,
   Button,
   Center,
@@ -155,10 +154,6 @@ export default function SupervisorComprehensiveExamDashboard() {
 
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
-      <Title order={3} mb="md">
-        Comprehensive Examinations
-      </Title>
-
       <Tabs defaultValue="supervisor">
         <Tabs.List>
           <Tabs.Tab value="supervisor">

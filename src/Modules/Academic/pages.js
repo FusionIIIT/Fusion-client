@@ -1,0 +1,295 @@
+import {
+  FACULTY_ROLES,
+  programmesForRole,
+  SCOPED_ADMIN_ROLES,
+  STUDENT_ROLES,
+} from "../../ui/nav/roles";
+
+export const ACADEMIC_BASE = "/academics";
+
+const isNotUg = ({ programmeType }) => programmeType && programmeType !== "UG";
+const isUg = ({ programmeType }) => !programmeType || programmeType === "UG";
+
+// an admin scoped to one level should not see another level's pages; acadadmin
+// has no scope and keeps everything
+const forUg = ({ role }) => {
+  const programmes = programmesForRole(role);
+  return !programmes || programmes.includes("UG");
+};
+const forPgPhd = ({ role }) => {
+  const programmes = programmesForRole(role);
+  return !programmes || programmes.some((level) => level !== "UG");
+};
+
+export const ACADEMIC_PAGES = [
+  {
+    key: "adminStudentCourses",
+    slug: "student-courses",
+    title: "Student Courses",
+    icon: "Book",
+    group: "Registration",
+    roles: SCOPED_ADMIN_ROLES,
+  },
+  {
+    key: "adminVerifyRegistration",
+    slug: "verify-student-registration",
+    title: "Verify Registration",
+    icon: "UserCheck",
+    group: "Registration",
+    roles: SCOPED_ADMIN_ROLES,
+    when: forUg,
+  },
+  {
+    key: "adminDeletePreRegistration",
+    slug: "delete-pre-registration",
+    title: "Delete Pre-Registration",
+    icon: "Trash",
+    group: "Registration",
+    roles: SCOPED_ADMIN_ROLES,
+    when: forUg,
+  },
+  {
+    key: "adminAllotCourses",
+    slug: "allot-courses",
+    title: "Allot Courses",
+    icon: "Shuffle",
+    group: "Registration",
+    roles: SCOPED_ADMIN_ROLES,
+  },
+  {
+    key: "adminAllocateCourses",
+    slug: "allocate-courses",
+    title: "Allocate Courses",
+    icon: "Kanban",
+    group: "Registration",
+    roles: SCOPED_ADMIN_ROLES,
+    desktopOnly: true,
+  },
+
+  {
+    key: "adminAddCourses",
+    slug: "add-bl-courses",
+    title: "Add BL Courses",
+    icon: "PlusCircle",
+    group: "Course Changes",
+    roles: SCOPED_ADMIN_ROLES,
+    when: forUg,
+    desktopOnly: true,
+  },
+  {
+    key: "adminDropCourses",
+    slug: "drop-courses",
+    title: "Drop Courses",
+    icon: "MinusCircle",
+    group: "Course Changes",
+    roles: SCOPED_ADMIN_ROLES,
+    when: forUg,
+    desktopOnly: true,
+  },
+  {
+    key: "adminReplacement",
+    slug: "replacement-allocation",
+    title: "Replacement Allocation",
+    icon: "ArrowsLeftRight",
+    group: "Course Changes",
+    roles: SCOPED_ADMIN_ROLES,
+    when: forUg,
+    desktopOnly: true,
+  },
+  {
+    key: "adminSwayam",
+    slug: "swayam",
+    title: "Swayam",
+    icon: "BookOpenText",
+    group: "Course Changes",
+    roles: SCOPED_ADMIN_ROLES,
+    when: forUg,
+    desktopOnly: true,
+  },
+
+  {
+    key: "adminStudentDashboard",
+    slug: "student-dashboard",
+    title: "Student Dashboard",
+    icon: "ChartBar",
+    group: "Student Records",
+    roles: SCOPED_ADMIN_ROLES,
+    desktopOnly: true,
+  },
+  {
+    key: "adminGenerateStudentList",
+    slug: "generate-student-list",
+    title: "Generate Student List",
+    icon: "ListNumbers",
+    group: "Student Records",
+    roles: SCOPED_ADMIN_ROLES,
+    desktopOnly: true,
+  },
+  {
+    key: "adminSectionAssignment",
+    slug: "section-assignment",
+    title: "Section Assignment",
+    icon: "Stack",
+    group: "Student Records",
+    roles: SCOPED_ADMIN_ROLES,
+    desktopOnly: true,
+  },
+  {
+    key: "adminBatchChange",
+    slug: "batch-branch-change",
+    title: "Batch / Branch Change",
+    icon: "TreeStructure",
+    group: "Student Records",
+    roles: SCOPED_ADMIN_ROLES,
+    desktopOnly: true,
+  },
+  {
+    key: "adminPromoteSemester",
+    slug: "promote-students",
+    title: "Promote Students",
+    icon: "ArrowUp",
+    group: "Student Records",
+    roles: SCOPED_ADMIN_ROLES,
+    desktopOnly: true,
+  },
+
+  {
+    key: "adminAcademicCalendar",
+    slug: "academic-calendar",
+    title: "Academic Calendar",
+    icon: "CalendarBlank",
+    group: "Calendar & Feedback",
+    roles: SCOPED_ADMIN_ROLES,
+  },
+  {
+    key: "adminFeedbackView",
+    slug: "feedback-responses",
+    title: "Feedback Responses",
+    icon: "ChatCircleDots",
+    group: "Calendar & Feedback",
+    roles: SCOPED_ADMIN_ROLES,
+    desktopOnly: true,
+  },
+  {
+    key: "adminPhdCourseRequests",
+    slug: "thesis-course-requests",
+    title: "Thesis & Course Requests",
+    icon: "Signature",
+    group: "Course Changes",
+    roles: SCOPED_ADMIN_ROLES,
+    when: forPgPhd,
+    desktopOnly: true,
+  },
+
+  {
+    key: "studentRegisteredCourses",
+    slug: "registered-courses",
+    title: "Registered Courses",
+    icon: "Book",
+    group: "Registration",
+    roles: STUDENT_ROLES,
+  },
+  {
+    key: "studentAvailableCourses",
+    slug: "available-courses",
+    title: "Available Courses",
+    icon: "BookOpen",
+    group: "Registration",
+    roles: STUDENT_ROLES,
+  },
+  {
+    key: "studentPreRegistration",
+    slug: "pre-registration",
+    title: "Pre-Registration",
+    icon: "ClipboardText",
+    group: "Registration",
+    roles: STUDENT_ROLES,
+    when: isUg,
+  },
+  {
+    key: "studentFinalRegistration",
+    slug: "final-registration",
+    title: "Final Registration",
+    icon: "Checks",
+    group: "Registration",
+    roles: STUDENT_ROLES,
+    when: isUg,
+  },
+  {
+    key: "studentPhdCourseRegistration",
+    slug: "thesis-course-registration",
+    title: "Thesis & Course Registration",
+    icon: "Signature",
+    group: "Registration",
+    roles: STUDENT_ROLES,
+    when: isNotUg,
+  },
+  {
+    key: "studentSwayam",
+    slug: "swayam",
+    title: "Swayam",
+    icon: "BookOpenText",
+    group: "Course Changes",
+    roles: STUDENT_ROLES,
+    when: isUg,
+  },
+  {
+    key: "studentAddDrop",
+    slug: "add-drop",
+    title: "Add / Drop",
+    icon: "ArrowsLeftRight",
+    group: "Course Changes",
+    roles: STUDENT_ROLES,
+    when: isUg,
+  },
+  {
+    key: "studentCalendar",
+    slug: "calendar",
+    title: "Academic Calendar",
+    icon: "CalendarBlank",
+    group: "Calendar & Feedback",
+    roles: STUDENT_ROLES,
+  },
+  {
+    key: "studentFeedbackForm",
+    slug: "feedback-form",
+    title: "Feedback Form",
+    icon: "ChatCircleDots",
+    group: "Calendar & Feedback",
+    roles: STUDENT_ROLES,
+  },
+
+  {
+    key: "facultyRollList",
+    slug: "roll-list",
+    title: "View Roll List",
+    icon: "ListNumbers",
+    group: null,
+    roles: FACULTY_ROLES,
+  },
+  {
+    key: "facultyTaDashboard",
+    slug: "ta-management",
+    title: "TA Management",
+    icon: "UsersThree",
+    group: null,
+    roles: FACULTY_ROLES,
+    desktopOnly: true,
+  },
+  {
+    key: "facultyCourseFeedback",
+    slug: "course-feedback",
+    title: "Course Feedback",
+    icon: "ChatCircleDots",
+    group: null,
+    roles: FACULTY_ROLES,
+  },
+];
+
+export const ACADEMIC_NOTIFICATION_SLUGS = {
+  "Academic Calendar": ["academic-calendar", "calendar"],
+  "PhD Course Registration": [
+    "thesis-course-requests",
+    "thesis-course-registration",
+  ],
+};

@@ -279,7 +279,7 @@ function Admin_view_all_working_curriculums() {
               placeholder="Search by name, version, batch, or semesters..."
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.currentTarget.value)}
-              style={{ width: "400px" }}
+              style={{ width: "100%", maxWidth: 400 }}
             />
             <Button 
               variant="outline" 
@@ -424,11 +424,11 @@ function Admin_view_all_working_curriculums() {
             (Version: {curriculumToDelete?.version})?
           </Text>
           
-          <Text size="xs" color="orange" mb="sm">
+          <Text size="xs" c="orange" mb="sm">
             ⚠️ <strong>Warning:</strong> This action cannot be undone.
           </Text>
           
-          <Text size="xs" color="blue" mb="md">
+          <Text size="xs" c="blue" mb="md">
             ℹ️ <strong>Note:</strong> If the backend delete API is not yet implemented, 
             you'll receive a notification about the current status.
           </Text>

@@ -26,6 +26,7 @@ import {
 } from "@tabler/icons-react";
 import { FileArrowDown, Upload } from "@phosphor-icons/react";
 import { useSelector } from "react-redux";
+import { programmesForRole, SCOPED_ADMIN_ROLES } from "../../ui/nav/roles";
 import {
   get_course_reg_academic_years,
   submitGradesProf,
@@ -73,17 +74,23 @@ function SubmitCourseGradesTab() {
     { value: "Even Semester", label: "Even Semester" },
     { value: "Summer Semester", label: "Summer Semester" },
   ];
-  const programmeTypes = [
+  const ALL_PROGRAMME_TYPES = [
     { value: "UG", label: "UG (Undergraduate)" },
     { value: "PG", label: "PG (Postgraduate)" },
     { value: "PHD", label: "PhD" },
   ];
   const userRole = useSelector((s) => s.user.role);
+  const allowedProgrammes = programmesForRole(userRole);
+  const programmeTypes = allowedProgrammes
+    ? ALL_PROGRAMME_TYPES.filter((p) => allowedProgrammes.includes(p.value))
+    : ALL_PROGRAMME_TYPES;
 
   const [year, setYear] = useState("");
   const [academicYears, setAcademicYears] = useState([]);
   const [semesterType, setSemesterType] = useState("");
-  const [programmeType, setProgrammeType] = useState("UG");
+  const [programmeType, setProgrammeType] = useState(
+    allowedProgrammes ? allowedProgrammes[0] : "UG",
+  );
   const [course, setCourse] = useState("");
   const [courseOptions, setCourseOptions] = useState([]);
   const [section, setSection] = useState("");
@@ -99,7 +106,7 @@ function SubmitCourseGradesTab() {
 
   const previewRef = useRef();
 
-  const isAcadadmin = userRole === "acadadmin";
+  const isAcadadmin = SCOPED_ADMIN_ROLES.includes(userRole);
 
   // Sections the selected course is allotted in (empty => elective, no section).
   // For faculty this is their own assigned section(s); for acadadmin, all of them.
@@ -387,10 +394,6 @@ function SubmitCourseGradesTab() {
 
   return (
     <>
-      <Title order={2} mb="md">
-        Submit Course Grades
-      </Title>
-
       {error && (
         <Alert color="red" mb="md">
           {error}
@@ -398,7 +401,7 @@ function SubmitCourseGradesTab() {
       )}
       {errorList.length > 0 && (
         <Alert color="red" mb="md">
-          <Text weight={500}>The following errors occurred:</Text>
+          <Text fw={500}>The following errors occurred:</Text>
           <List withPadding>
             {errorList.map((e, i) => (
               <List.Item key={i}>{e.replace(/^[-\s]+/, "")}</List.Item>
@@ -511,7 +514,7 @@ function SubmitCourseGradesTab() {
           </Grid>
 
           <Box mt="xl">
-            <Text size="sm" mb="xs" weight={500}>
+            <Text size="sm" mb="xs" fw={500}>
               CSV File Format Requirements:
             </Text>
             <List size="sm" spacing="xs" withPadding>
@@ -537,7 +540,7 @@ function SubmitCourseGradesTab() {
             >
               <Text
                 size="xl"
-                weight={900}
+                fw={900}
                 style={{
                   color: "#8B0000",
                   fontSize: "22px",
@@ -582,7 +585,7 @@ function SubmitCourseGradesTab() {
             )}
           </Box>
 
-          <Group mt="xl" position="apart">
+          <Group mt="xl" justify="space-between">
             <Button
               leftSection={<FileArrowDown />}
               color="green"
@@ -675,7 +678,7 @@ function SubmitCourseGradesTab() {
 
 export default function SubmitGradesProf() {
   const userRole = useSelector((s) => s.user.role);
-  const isAcadadmin = userRole === "acadadmin";
+  const isAcadadmin = SCOPED_ADMIN_ROLES.includes(userRole);
   const [category, setCategory] = useState("course");
 
   // Only acadadmin gets the extra fallback-entry categories for Thesis / Progress

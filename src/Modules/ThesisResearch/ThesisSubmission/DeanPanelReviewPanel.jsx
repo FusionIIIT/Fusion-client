@@ -221,7 +221,7 @@ export default function DeanPanelReviewPanel({ submission, onClose }) {
         />
       )}
 
-      <Group position="right" mt="md">
+      <Group justify="flex-end" mt="md">
         <Button variant="default" onClick={onClose} disabled={submitting}>
           Close
         </Button>

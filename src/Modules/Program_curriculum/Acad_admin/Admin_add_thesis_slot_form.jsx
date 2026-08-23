@@ -195,8 +195,8 @@ function Admin_add_thesis_slot_form() {
                 boxShadow: "0 0 10px rgba(0,0,0,0.1)",
               }}
             >
-              <Stack spacing="lg">
-                <Text size="xl" weight={700} align="center">
+              <Stack gap="lg">
+                <Text size="xl" fw={700} ta="center">
                   Thesis Slot Form
                 </Text>
 
@@ -236,7 +236,7 @@ function Admin_add_thesis_slot_form() {
                   }))}
                   onChange={handleThesisSelect}
                   searchable
-                  nothingFound="No theses available"
+                  nothingFoundMessage="No theses available"
                   required
                 />
 
@@ -256,7 +256,7 @@ function Admin_add_thesis_slot_form() {
                 )}
               </Stack>
 
-              <Group position="right" mt="lg">
+              <Group justify="flex-end" mt="lg">
                 <Button
                   variant="outline"
                   className="cancel-btn"

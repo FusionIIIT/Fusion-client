@@ -19,7 +19,7 @@ function AddBatchModal({
       size="md"
       centered
     >
-      <Stack spacing="md">
+      <Stack gap="md">
         <Select
           label="Programme"
           placeholder="Select programme"

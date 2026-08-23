@@ -1,44 +1,59 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
-  Title, Select, Group, Button,
-  Table, Text, Loader, Alert,
-  Card, Stack, Checkbox, Badge, Tabs, Modal, ActionIcon
-} from '@mantine/core';
-import { showNotification } from '@mantine/notifications';
-import { IconTrash } from '@tabler/icons-react';
-import axios from 'axios';
+  Title,
+  Select,
+  Group,
+  Button,
+  Table,
+  Text,
+  Loader,
+  Alert,
+  Card,
+  Stack,
+  Checkbox,
+  Badge,
+  Tabs,
+  Modal,
+  ActionIcon,
+} from "@mantine/core";
+import { showNotification } from "@mantine/notifications";
+import { IconTrash } from "@tabler/icons-react";
+import axios from "axios";
 
 import {
   adminListDropRequestsRoute,
   approveDropRequestsRoute,
   deleteDropRequestsRoute,
-} from '../../routes/academicRoutes';
+} from "../../routes/academicRoutes";
 
 const SEMESTER_CHOICES = [
-  { value: 'Odd Semester', label: 'Odd Semester' },
-  { value: 'Even Semester', label: 'Even Semester' },
-  { value: 'Summer Semester', label: 'Summer Semester' },
+  { value: "Odd Semester", label: "Odd Semester" },
+  { value: "Even Semester", label: "Even Semester" },
+  { value: "Summer Semester", label: "Summer Semester" },
 ];
 
 const generateAcademicYears = () => {
   const endYear = new Date().getFullYear();
   const years = [];
   for (let y = endYear; y >= 2020; y--) {
-    years.push({ value: `${y}-${String(y + 1).slice(-2)}`, label: `${y}-${String(y + 1).slice(-2)}` });
+    years.push({
+      value: `${y}-${String(y + 1).slice(-2)}`,
+      label: `${y}-${String(y + 1).slice(-2)}`,
+    });
   }
   return years;
 };
 
 export default function AdminDropDashboard() {
-  const [year, setYear] = useState('');
-  const [semester, setSemester] = useState('');
-  const [semesterNo, setSemesterNo] = useState('');
+  const [year, setYear] = useState("");
+  const [semester, setSemester] = useState("");
+  const [semesterNo, setSemesterNo] = useState("");
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [processing, setProcessing] = useState(false);
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState("");
   const [deleteModal, setDeleteModal] = useState({ open: false, ids: [] });
   const [deleting, setDeleting] = useState(false);
 
@@ -47,9 +62,9 @@ export default function AdminDropDashboard() {
   const fetchRequests = useCallback(async () => {
     if (!year || !semester) return;
 
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem("authToken");
     if (!token) {
-      setError('Authentication required');
+      setError("Authentication required");
       return;
     }
 
@@ -64,8 +79,9 @@ export default function AdminDropDashboard() {
       });
       setRequests(Array.isArray(data) ? data : []);
     } catch (err) {
-      const errorMsg = err.response?.data?.error || err.response?.data?.detail || err.message;
-      setError(errorMsg || 'Failed to load requests');
+      const errorMsg =
+        err.response?.data?.error || err.response?.data?.detail || err.message;
+      setError(errorMsg || "Failed to load requests");
     } finally {
       setLoading(false);
     }
@@ -76,7 +92,7 @@ export default function AdminDropDashboard() {
   }, [fetchRequests]);
 
   const toggleSelection = useCallback((id) => {
-    setSelectedIds(prev => {
+    setSelectedIds((prev) => {
       const newSet = new Set(prev);
       newSet.has(id) ? newSet.delete(id) : newSet.add(id);
       return newSet;
@@ -84,101 +100,120 @@ export default function AdminDropDashboard() {
   }, []);
 
   const pendingRequests = useMemo(
-    () => requests.filter(r => r.status === 'Pending'),
-    [requests]
+    () => requests.filter((r) => r.status === "Pending"),
+    [requests],
   );
 
   const processedRequests = useMemo(
-    () => requests.filter(r => r.status !== 'Pending'),
-    [requests]
+    () => requests.filter((r) => r.status !== "Pending"),
+    [requests],
   );
 
   // Distinct semesters across all requests, for the semester-wise filter.
   const semesterOptions = useMemo(
-    () => Array.from(new Set(requests.map(r => r.semester).filter(s => s != null)))
-      .sort((a, b) => a - b)
-      .map(s => ({ value: String(s), label: `Semester ${s}` })),
-    [requests]
+    () =>
+      Array.from(
+        new Set(requests.map((r) => r.semester).filter((s) => s != null)),
+      )
+        .sort((a, b) => a - b)
+        .map((s) => ({ value: String(s), label: `Semester ${s}` })),
+    [requests],
   );
 
   const visiblePending = useMemo(
-    () => semesterNo ? pendingRequests.filter(r => String(r.semester) === semesterNo) : pendingRequests,
-    [pendingRequests, semesterNo]
+    () =>
+      semesterNo
+        ? pendingRequests.filter((r) => String(r.semester) === semesterNo)
+        : pendingRequests,
+    [pendingRequests, semesterNo],
   );
 
   const filteredProcessedRequests = useMemo(
-    () => processedRequests
-      .filter(r => (statusFilter ? r.status === statusFilter : true))
-      .filter(r => (semesterNo ? String(r.semester) === semesterNo : true)),
-    [processedRequests, statusFilter, semesterNo]
+    () =>
+      processedRequests
+        .filter((r) => (statusFilter ? r.status === statusFilter : true))
+        .filter((r) => (semesterNo ? String(r.semester) === semesterNo : true)),
+    [processedRequests, statusFilter, semesterNo],
   );
 
   const toggleSelectAll = useCallback(() => {
     const allVisibleSelected =
-      visiblePending.length > 0 && visiblePending.every(r => selectedIds.has(r.id));
-    setSelectedIds(prev => {
+      visiblePending.length > 0 &&
+      visiblePending.every((r) => selectedIds.has(r.id));
+    setSelectedIds((prev) => {
       const next = new Set(prev);
-      visiblePending.forEach(r => (allVisibleSelected ? next.delete(r.id) : next.add(r.id)));
+      visiblePending.forEach((r) =>
+        allVisibleSelected ? next.delete(r.id) : next.add(r.id),
+      );
       return next;
     });
   }, [selectedIds, visiblePending]);
 
-  const handleAction = useCallback(async (action) => {
-    if (selectedIds.size === 0) {
-      showNotification({
-        title: 'No Selection',
-        message: `Please select at least one request to ${action}.`,
-        color: 'yellow',
-      });
-      return;
-    }
+  const handleAction = useCallback(
+    async (action) => {
+      if (selectedIds.size === 0) {
+        showNotification({
+          title: "No Selection",
+          message: `Please select at least one request to ${action}.`,
+          color: "yellow",
+        });
+        return;
+      }
 
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      showNotification({
-        title: 'Authentication Error',
-        message: 'Please login again',
-        color: 'red'
-      });
-      return;
-    }
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        showNotification({
+          title: "Authentication Error",
+          message: "Please login again",
+          color: "red",
+        });
+        return;
+      }
 
-    setProcessing(true);
-    try {
-      const response = await axios.post(
-        approveDropRequestsRoute,
-        {
-          request_ids: Array.from(selectedIds),
-          action
-        },
-        { headers: { Authorization: `Token ${token}` } }
-      );
+      setProcessing(true);
+      try {
+        const response = await axios.post(
+          approveDropRequestsRoute,
+          {
+            request_ids: Array.from(selectedIds),
+            action,
+          },
+          { headers: { Authorization: `Token ${token}` } },
+        );
 
-      const summary = response.data?.summary;
-      showNotification({
-        title: 'Success',
-        message: summary
-          ? `Processed ${summary.success} request(s) successfully`
-          : `${action === 'approve' ? 'Approved' : 'Rejected'} ${selectedIds.size} request(s)`,
-        color: 'green'
-      });
+        const summary = response.data?.summary;
+        showNotification({
+          title: "Success",
+          message: summary
+            ? `Processed ${summary.success} request(s) successfully`
+            : `${action === "approve" ? "Approved" : "Rejected"} ${selectedIds.size} request(s)`,
+          color: "green",
+        });
 
-      setSelectedIds(new Set());
-      await fetchRequests();
-    } catch (err) {
-      const errorMsg = err.response?.data?.error || err.message;
-      showNotification({
-        title: `${action === 'approve' ? 'Approval' : 'Rejection'} Error`,
-        message: errorMsg || `Failed to ${action} requests`,
-        color: 'red',
-      });
-    } finally {
-      setProcessing(false);
-    }
-  }, [selectedIds, fetchRequests]);
+        setSelectedIds(new Set());
+        await fetchRequests();
+      } catch (err) {
+        const errorMsg = err.response?.data?.error || err.message;
+        showNotification({
+          title: `${action === "approve" ? "Approval" : "Rejection"} Error`,
+          message: errorMsg || `Failed to ${action} requests`,
+          color: "red",
+        });
+      } finally {
+        setProcessing(false);
+      }
+    },
+    [selectedIds, fetchRequests],
+  );
 
-  const handleApprove = useCallback(() => handleAction('approve'), [handleAction]);
-  const handleReject = useCallback(() => handleAction('reject'), [handleAction]);
+  const handleApprove = useCallback(
+    () => handleAction("approve"),
+    [handleAction],
+  );
+  const handleReject = useCallback(
+    () => handleAction("reject"),
+    [handleAction],
+  );
 
   const openDeleteModal = useCallback((ids) => {
     setDeleteModal({ open: true, ids: Array.isArray(ids) ? ids : [ids] });
@@ -192,12 +227,12 @@ export default function AdminDropDashboard() {
     const { ids } = deleteModal;
     if (ids.length === 0) return;
 
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem("authToken");
     if (!token) {
       showNotification({
-        title: 'Authentication Error',
-        message: 'Please login again',
-        color: 'red'
+        title: "Authentication Error",
+        message: "Please login again",
+        color: "red",
       });
       return;
     }
@@ -207,28 +242,28 @@ export default function AdminDropDashboard() {
       const response = await axios.post(
         deleteDropRequestsRoute,
         { request_ids: ids },
-        { headers: { Authorization: `Token ${token}` } }
+        { headers: { Authorization: `Token ${token}` } },
       );
 
       showNotification({
-        title: 'Success',
+        title: "Success",
         message: `Deleted ${response.data.deleted} request(s)`,
-        color: 'green'
+        color: "green",
       });
 
-      setSelectedIds(prev => {
+      setSelectedIds((prev) => {
         const newSet = new Set(prev);
-        ids.forEach(id => newSet.delete(id));
+        ids.forEach((id) => newSet.delete(id));
         return newSet;
       });
-      
+
       closeDeleteModal();
       await fetchRequests();
     } catch (err) {
       showNotification({
-        title: 'Delete Failed',
+        title: "Delete Failed",
         message: err.response?.data?.error || err.message,
-        color: 'red',
+        color: "red",
       });
     } finally {
       setDeleting(false);
@@ -238,65 +273,77 @@ export default function AdminDropDashboard() {
   const handleBulkDelete = useCallback(() => {
     if (selectedIds.size === 0) {
       showNotification({
-        title: 'No Selection',
-        message: 'Please select at least one request to delete',
-        color: 'yellow',
+        title: "No Selection",
+        message: "Please select at least one request to delete",
+        color: "yellow",
       });
       return;
     }
     openDeleteModal(Array.from(selectedIds));
   }, [selectedIds, openDeleteModal]);
 
-  const exportToExcel = useCallback((data, filename) => {
-    if (data.length === 0) {
-      showNotification({
-        title: 'No Data',
-        message: 'No data available to export',
-        color: 'yellow',
-      });
-      return;
-    }
+  const exportToExcel = useCallback(
+    (data, filename) => {
+      if (data.length === 0) {
+        showNotification({
+          title: "No Data",
+          message: "No data available to export",
+          color: "yellow",
+        });
+        return;
+      }
 
-    const headers = ['Student ID', 'Student Name', 'Slot', 'Course Code', 'Course Name', 'Status', 'Requested At', 'Processed At'];
-    const csvRows = [headers.join(',')];
-
-    data.forEach(r => {
-      const row = [
-        r.student || '',
-        r.student_name || '',
-        r.slot || '',
-        r.course || '',
-        r.course_name || '',
-        r.status || '',
-        r.created_at ? new Date(r.created_at).toLocaleString() : '',
-        r.processed_at ? new Date(r.processed_at).toLocaleString() : ''
+      const headers = [
+        "Student ID",
+        "Student Name",
+        "Slot",
+        "Course Code",
+        "Course Name",
+        "Status",
+        "Requested At",
+        "Processed At",
       ];
-      csvRows.push(row.map(val => `"${val}"`).join(','));
-    });
+      const csvRows = [headers.join(",")];
 
-    const csvContent = csvRows.join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    
-    link.setAttribute('href', url);
-    link.setAttribute('download', `${filename}_${year}_${semester}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      data.forEach((r) => {
+        const row = [
+          r.student || "",
+          r.student_name || "",
+          r.slot || "",
+          r.course || "",
+          r.course_name || "",
+          r.status || "",
+          r.created_at ? new Date(r.created_at).toLocaleString() : "",
+          r.processed_at ? new Date(r.processed_at).toLocaleString() : "",
+        ];
+        csvRows.push(row.map((val) => `"${val}"`).join(","));
+      });
 
-    showNotification({
-      title: 'Success',
-      message: 'Data exported successfully',
-      color: 'green',
-    });
-  }, [year, semester]);
+      const csvContent = csvRows.join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+
+      link.setAttribute("href", url);
+      link.setAttribute("download", `${filename}_${year}_${semester}.csv`);
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      showNotification({
+        title: "Success",
+        message: "Data exported successfully",
+        color: "green",
+      });
+    },
+    [year, semester],
+  );
 
   return (
     <>
       <Card>
-        <Stack spacing="md">
+        <Stack gap="md">
           <Group grow align="flex-start">
             <Select
               label="Academic Year"
@@ -324,7 +371,7 @@ export default function AdminDropDashboard() {
             />
           </Group>
 
-          <Group position="left" spacing="xs">
+          <Group justify="flex-start" gap="xs">
             <Button
               size="sm"
               onClick={fetchRequests}
@@ -360,8 +407,10 @@ export default function AdminDropDashboard() {
           <Loader size="lg" />
         </Card>
       ) : error ? (
-        <Alert title="Error" color="red" mt="md">{error}</Alert>
-      ) : (!year || !semester) ? (
+        <Alert title="Error" color="red" mt="md">
+          {error}
+        </Alert>
+      ) : !year || !semester ? (
         <Alert color="gray" mt="md">
           Select academic year and semester to view drop requests.
         </Alert>
@@ -379,9 +428,9 @@ export default function AdminDropDashboard() {
           <Tabs.Panel value="pending" pt="md">
             {pendingRequests.length > 0 ? (
               <Card>
-                <Group position="apart" mb="md">
+                <Group justify="space-between" mb="md">
                   <Title order={4}>Pending Requests</Title>
-                  <Group spacing="xs">
+                  <Group gap="xs">
                     <Button
                       size="sm"
                       color="red"
@@ -394,7 +443,9 @@ export default function AdminDropDashboard() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => exportToExcel(pendingRequests, 'pending_requests')}
+                      onClick={() =>
+                        exportToExcel(pendingRequests, "pending_requests")
+                      }
                     >
                       Export to Excel
                     </Button>
@@ -405,11 +456,18 @@ export default function AdminDropDashboard() {
                     <tr>
                       <th style={{ width: 50 }}>
                         <Checkbox
-                          checked={visiblePending.length > 0 && visiblePending.every(r => selectedIds.has(r.id))}
+                          checked={
+                            visiblePending.length > 0 &&
+                            visiblePending.every((r) => selectedIds.has(r.id))
+                          }
                           onChange={toggleSelectAll}
-                          indeterminate={visiblePending.some(r => selectedIds.has(r.id)) && !visiblePending.every(r => selectedIds.has(r.id))}
+                          indeterminate={
+                            visiblePending.some((r) => selectedIds.has(r.id)) &&
+                            !visiblePending.every((r) => selectedIds.has(r.id))
+                          }
                         />
                       </th>
+                      <th>S. No.</th>
                       <th>Student</th>
                       <th>Sem</th>
                       <th>Slot</th>
@@ -420,7 +478,7 @@ export default function AdminDropDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {visiblePending.map(r => (
+                    {visiblePending.map((r, index) => (
                       <tr key={r.id}>
                         <td>
                           <Checkbox
@@ -428,18 +486,23 @@ export default function AdminDropDashboard() {
                             onChange={() => toggleSelection(r.id)}
                           />
                         </td>
+                        <td>{index + 1}</td>
                         <td>
                           <Text size="sm">{r.student}</Text>
                           {r.student_name && (
-                            <Text size="xs" color="dimmed">{r.student_name}</Text>
+                            <Text size="xs" c="dimmed">
+                              {r.student_name}
+                            </Text>
                           )}
                         </td>
-                        <td>{r.semester ?? '-'}</td>
+                        <td>{r.semester ?? "-"}</td>
                         <td>{r.slot}</td>
                         <td>
                           <Text size="sm">{r.course}</Text>
                           {r.course_name && (
-                            <Text size="xs" color="dimmed">{r.course_name}</Text>
+                            <Text size="xs" c="dimmed">
+                              {r.course_name}
+                            </Text>
                           )}
                         </td>
                         <td>
@@ -471,12 +534,17 @@ export default function AdminDropDashboard() {
           <Tabs.Panel value="processed" pt="md">
             {processedRequests.length > 0 ? (
               <Card>
-                <Group position="apart" mb="md">
+                <Group justify="space-between" mb="md">
                   <Title order={4}>Processed Requests</Title>
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => exportToExcel(filteredProcessedRequests, 'processed_requests')}
+                    onClick={() =>
+                      exportToExcel(
+                        filteredProcessedRequests,
+                        "processed_requests",
+                      )
+                    }
                   >
                     Export to Excel
                   </Button>
@@ -484,21 +552,22 @@ export default function AdminDropDashboard() {
                 <Table highlightOnHover withTableBorder>
                   <thead>
                     <tr>
+                      <th>S. No.</th>
                       <th>Student</th>
                       <th>Sem</th>
                       <th>Slot</th>
                       <th>Course</th>
                       <th>
-                        <Group spacing="xs" position="apart">
+                        <Group gap="xs" justify="space-between">
                           <span>Status</span>
                           <Select
                             placeholder="All"
                             value={statusFilter}
                             onChange={setStatusFilter}
                             data={[
-                              { value: '', label: 'All' },
-                              { value: 'Approved', label: 'Approved' },
-                              { value: 'Rejected', label: 'Rejected' },
+                              { value: "", label: "All" },
+                              { value: "Approved", label: "Approved" },
+                              { value: "Rejected", label: "Rejected" },
                             ]}
                             size="xs"
                             style={{ width: 100 }}
@@ -511,24 +580,31 @@ export default function AdminDropDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredProcessedRequests.map(r => (
+                    {filteredProcessedRequests.map((r, index) => (
                       <tr key={r.id}>
+                        <td>{index + 1}</td>
                         <td>
                           <Text size="sm">{r.student}</Text>
                           {r.student_name && (
-                            <Text size="xs" color="dimmed">{r.student_name}</Text>
+                            <Text size="xs" c="dimmed">
+                              {r.student_name}
+                            </Text>
                           )}
                         </td>
-                        <td>{r.semester ?? '-'}</td>
+                        <td>{r.semester ?? "-"}</td>
                         <td>{r.slot}</td>
                         <td>
                           <Text size="sm">{r.course}</Text>
                           {r.course_name && (
-                            <Text size="xs" color="dimmed">{r.course_name}</Text>
+                            <Text size="xs" c="dimmed">
+                              {r.course_name}
+                            </Text>
                           )}
                         </td>
                         <td>
-                          <Badge color={r.status === 'Approved' ? 'green' : 'red'}>
+                          <Badge
+                            color={r.status === "Approved" ? "green" : "red"}
+                          >
                             {r.status}
                           </Badge>
                         </td>
@@ -536,7 +612,7 @@ export default function AdminDropDashboard() {
                         <td>
                           {r.processed_at
                             ? new Date(r.processed_at).toLocaleString()
-                            : '—'}
+                            : "—"}
                         </td>
                       </tr>
                     ))}
@@ -560,14 +636,19 @@ export default function AdminDropDashboard() {
         closeOnClickOutside={!deleting}
         closeOnEscape={!deleting}
       >
-        <Text size="sm" mb="md" weight={500}>
-          Are you sure you want to permanently delete {deleteModal.ids.length} course drop request{deleteModal.ids.length > 1 ? 's' : ''}?
+        <Text size="sm" mb="md" fw={500}>
+          Are you sure you want to permanently delete {deleteModal.ids.length}{" "}
+          course drop request{deleteModal.ids.length > 1 ? "s" : ""}?
         </Text>
-        <Text size="sm" color="dimmed" mb="md">
+        <Text size="sm" c="dimmed" mb="md">
           This action cannot be undone.
         </Text>
-        <Group position="right" spacing="sm">
-          <Button variant="outline" onClick={closeDeleteModal} disabled={deleting}>
+        <Group justify="flex-end" gap="sm">
+          <Button
+            variant="outline"
+            onClick={closeDeleteModal}
+            disabled={deleting}
+          >
             Cancel
           </Button>
           <Button color="red" onClick={handleDelete} loading={deleting}>

@@ -78,7 +78,6 @@ function ViewInward() {
   const [viewfileData, setViewFileData] = useState([]); // State to hold the fetched data
   const [viewcourseData, setViewCourseData] = useState([]); // State to hold the fetched data
   const [activeTab, setActiveTab] = useState("notesheet"); // State to track the active tab
-  // console.log(viewfileData, viewcourseData);
   useEffect(() => {
     const fetchData = async (uname, des) => {
       try {
@@ -87,7 +86,6 @@ function ViewInward() {
           throw new Error("Network response was not ok");
         }
         const data = await response.json();
-        console.log(data);
         setNoteData({
           createdBy: data.data.proposal?.uploader || "",
           designation: data.data.proposal?.designation || "",
@@ -220,7 +218,7 @@ function ViewInward() {
   return (
     <Box style={pageStyle}>
       {/* Toggle Buttons */}
-      <Group position="center" mb="lg" mt="lg">
+      <Group justify="center" mb="lg" mt="lg">
         <Button
           variant={activeTab === "notesheet" ? "filled" : "outline"}
           onClick={() => setActiveTab("notesheet")}
@@ -236,7 +234,7 @@ function ViewInward() {
       </Group>
 
       <Box className="course-top">
-        <Group position="apart">
+        <Group justify="space-between">
           <Box>
             <Text style={{ fontWeight: "bold", marginLeft: "10px" }}>
               Created By: {noteData.createdBy} - {noteData.designation}
@@ -268,7 +266,7 @@ function ViewInward() {
               Subject - {noteData.subject}
             </Text>
              <Textarea value={`Description: ${noteData.description}`} readOnly style={{ backgroundColor: '#fff',marginTop: '10px', border: 'none' }} />
-            <Group position="apart" style={{ marginTop: '10px' }}>
+            <Group justify="space-between" style={{ marginTop: '10px' }}>
             <Text style={textStyle}>Sent By: {noteData.sentBy}</Text>
             <Text style={textStyle}>Received By: {noteData.receivedBy}</Text>
             </Group>
@@ -311,7 +309,7 @@ function ViewInward() {
                 borderRadius: "4px",
               }}
             >
-              {/* <Group position="apart" style={{ marginTop: "10px" }}> */}
+              {/* <Group justify="space-between" style={{ marginTop: "10px" }}> */}
               <Text style={textStyle}>
                 {" "}
                 <b>Sent By:</b> {noteData.sentBy} - {noteData.sentByDesignation}, {formatDateWithRounding(noteData.forwarddate)}
@@ -381,7 +379,7 @@ function ViewInward() {
 
       {activeTab === "attachments" && (
         <Card shadow="sm" padding="lg" className="course-card">
-          <Text size="lg" weight={700} className="course-title">
+          <Text size="lg" fw={700} className="course-title">
             {courseDetails.code} - {courseDetails.name}
           </Text>
           <hr style={{ width: "80%" }} />

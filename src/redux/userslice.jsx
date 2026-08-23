@@ -1,5 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+import { displayName } from "../lib/displayName";
+
 const userSlice = createSlice({
   name: "user",
   initialState: {
@@ -11,8 +13,12 @@ const userSlice = createSlice({
     currentAccessibleModules: {}, // Format---> {module: true}
     mustCompleteProfile: false, // first-login student must finish profile popup
     authChecked: false, // /api/auth/me has resolved (gates route rendering)
+    programmeType: null, // UG | PG | PHD — decides which academic pages exist
   },
   reducers: {
+    setProgrammeType: (state, action) => {
+      state.programmeType = action.payload;
+    },
     setMustCompleteProfile: (state, action) => {
       state.mustCompleteProfile = action.payload;
     },
@@ -20,7 +26,7 @@ const userSlice = createSlice({
       state.authChecked = action.payload;
     },
     setUserName: (state, action) => {
-      state.username = action.payload;
+      state.username = displayName(action.payload, "User");
     },
     setRollNo: (state, action) => {
       state.roll_no = action.payload;
@@ -56,6 +62,7 @@ export const {
   setCurrentAccessibleModules,
   setMustCompleteProfile,
   setAuthChecked,
+  setProgrammeType,
   clearUserName,
   clearRoles,
 } = userSlice.actions;

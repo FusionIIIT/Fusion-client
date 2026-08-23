@@ -1,0 +1,246 @@
+.tile {
+  position: relative;
+  overflow: hidden;
+}
+
+.tileRule {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+}
+
+.tileLabel {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6b7684;
+  line-height: 1.25;
+  min-width: 0;
+}
+
+.labelShort {
+  display: none;
+}
+
+.tileIcon {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  flex: none;
+}
+
+.tileIcon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.tileValue {
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.05;
+  color: #0b1220;
+  margin-top: 4px;
+}
+
+@media (max-width: 767px) {
+  .labelFull {
+    display: none;
+  }
+
+  .labelShort {
+    display: inline;
+  }
+
+  .tileIcon {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+  }
+
+  .tileIcon svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  .tileValue {
+    font-size: 1.35rem;
+    margin-top: 2px;
+  }
+}
+
+.panel {
+  overflow: hidden;
+}
+
+.panelHead {
+  padding: 14px 20px;
+  border-bottom: 1px solid #e9ecef;
+  border-left: 3px solid #15abff;
+  background: linear-gradient(
+    90deg,
+    rgba(11, 18, 32, 0.035) 0%,
+    transparent 60%
+  );
+}
+
+.panelTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0b1220;
+}
+
+.panelHint {
+  font-size: 0.75rem;
+  color: #6b7684;
+  margin-top: 2px;
+}
+
+.table thead th {
+  background: #f4f7fb;
+  color: #0b1220;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-bottom: 1px solid #dde3ea;
+  white-space: nowrap;
+}
+
+.table tbody td {
+  font-size: 0.88rem;
+  color: #212529;
+  border-bottom: 1px solid #f1f3f5;
+}
+
+.cellSem {
+  font-weight: 600;
+  color: #0b1220;
+  white-space: nowrap;
+}
+
+.cellNum {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #212529;
+}
+
+.totalRow td {
+  background: #eef4fb;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #0b1220;
+  border-top: 1px solid #dde3ea;
+  border-bottom: none;
+}
+
+.mList {
+  padding: 8px;
+}
+
+.mCard {
+  border: 1px solid #eef1f4;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+
+.mCardTotal {
+  border: 1px solid #cfe0f2;
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: #eef4fb;
+}
+
+.mCardTitle {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #0b1220;
+}
+
+.mCardLabel {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #6b7684;
+}
+
+.mCardValue {
+  font-size: 0.9rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #0b1220;
+}
+
+.formula {
+  padding: 16px 20px;
+  border-top: 1px solid #e9ecef;
+  background: linear-gradient(90deg, #f7fbff 0%, #ffffff 70%);
+}
+
+.formulaText {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.formulaLabel {
+  font-size: 0.88rem;
+  font-weight: 650;
+  color: #0b1220;
+}
+
+.formulaWorking {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.74rem;
+  color: #6b7684;
+  font-variant-numeric: tabular-nums;
+}
+
+.formulaNote {
+  font-size: 0.72rem;
+  color: #8296a8;
+}
+
+.formulaValue {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #0b1220;
+  padding-left: 14px;
+  border-left: 3px solid #15abff;
+  line-height: 1.15;
+}
+
+@media (max-width: 767px) {
+  .panelHead {
+    padding: 10px 12px;
+  }
+
+  .panelHint {
+    display: none;
+  }
+
+  .mList {
+    padding: 6px;
+  }
+
+  .mCard,
+  .mCardTotal {
+    padding: 9px 11px;
+  }
+
+  .mCard {
+    margin-bottom: 6px;
+  }
+
+  .formula {
+    padding: 12px;
+    row-gap: 6px;
+  }
+
+  .formulaValue {
+    padding-left: 10px;
+    font-size: 1.35rem;
+  }
+}

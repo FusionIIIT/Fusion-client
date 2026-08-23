@@ -1,0 +1,19 @@
+.trail {
+  flex-wrap: wrap;
+  row-gap: 2px;
+  margin-bottom: 12px;
+  color: #8296a8;
+}
+
+.link {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #2b7fc4;
+}
+
+.current {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #43536b;
+  overflow-wrap: anywhere;
+}

@@ -412,7 +412,6 @@ function InwardFile() {
       try {
         const response = await fetchFacultyInwardFilesData(uname, des);
         const data = await response.json();
-        console.log(data);
         sessionStorage.setItem("inwardFilesData", JSON.stringify(data));
         const nonArchived = data.courseProposals.filter(
           (file) => !file.sender_archive,

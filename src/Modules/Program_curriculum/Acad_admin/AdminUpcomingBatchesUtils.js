@@ -184,25 +184,11 @@ export const getBatchForBranch = (
     if (phdSemester && batch.name) {
       const batchName = batch.name.toLowerCase();
       const semesterMatches = batchName.includes(phdSemester.toLowerCase());
-      console.log(
-        `PhD Batch matching: Branch=${batchBranch}, BatchName=${batch.name}, Semester=${phdSemester}, BranchMatch=${branchMatches}, SemesterMatch=${semesterMatches}`,
-      );
       return branchMatches && semesterMatches;
     }
 
     return branchMatches;
   });
-
-  if (!matchedBatch && phdSemester) {
-    console.log(
-      `No batch found for: Branch=${targetBranch}, Semester=${phdSemester}. Available batches:`,
-      batchesToSearch.map((b) => ({
-        name: b.name,
-        discipline: b.discipline,
-        branch: b.branch,
-      })),
-    );
-  }
 
   return matchedBatch;
 };
@@ -876,6 +862,14 @@ export const exportStudentImages = async (students, filename, hostUrl) => {
   return count;
 };
 
+export const categoryLabel = (value) => {
+  const stored = String(value ?? "").trim();
+  const option = (STUDENT_FIELDS_CONFIG.category?.options ?? []).find(
+    (choice) => choice.value === stored,
+  );
+  return option ? option.label : stored;
+};
+
 export const getStudentFieldValue = (student, column) => {
   const fieldName = column.fields.find(
     (name) =>
@@ -892,6 +886,10 @@ export const getStudentFieldValue = (student, column) => {
   // Clean discipline names
   if (column.key === "branch") {
     value = cleanDisciplineName(value);
+  }
+
+  if (column.key === "category") {
+    value = categoryLabel(value);
   }
 
   // Format dates

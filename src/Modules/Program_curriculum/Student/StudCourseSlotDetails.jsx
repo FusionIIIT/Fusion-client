@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom"; // Assuming you're using react-router for routing
-import "../CourseSlotDetails.css"; // Separate CSS file for styling
+import styles from "../CourseSlotDetails.module.css"; // Separate CSS file for styling
 import { studentFetchCourseSlotDetails } from "../api/api";
 
 function StudCourseSlotDetails() {
@@ -12,7 +12,6 @@ function StudCourseSlotDetails() {
   useEffect(() => {
     const getCourseSlotData = async () => {
       try {
-        console.log("Fetching course slot data for ID:", id);
         const data = await studentFetchCourseSlotDetails(id);
         setCourseSlot(data);
       } catch (err) {
@@ -37,10 +36,10 @@ function StudCourseSlotDetails() {
     <div className="flex-container">
       {/* Course Slot Details */}
       <div style={{ display: "flex" }}>
-        <div className="course-slot-container">
-          <div className="course-slot-content">
-            <div className="slot-description">
-              <table className="course-info-table">
+        <div className={styles["course-slot-container"]}>
+          <div className={styles["course-slot-content"]}>
+            <div className={styles["slot-description"]}>
+              <table className={styles["course-info-table"]}>
                 <tbody>
                   <tr>
                     <td colSpan="4">
@@ -57,15 +56,15 @@ function StudCourseSlotDetails() {
                       <h4>Type: {courseSlot.type}</h4>
                     </td>
                   </tr>
-                  <tr className="course-slot-row">
+                  <tr className={styles["course-slot-row"]}>
                     <td>Info</td>
                     <td colSpan="3">{courseSlot.course_slot_info}</td>
                   </tr>
-                  <tr className="course-slot-row">
+                  <tr className={styles["course-slot-row"]}>
                     <td>Duration</td>
                     <td colSpan="3">{courseSlot.duration} Semesters</td>
                   </tr>
-                  <tr className="course-slot-row">
+                  <tr className={styles["course-slot-row"]}>
                     <td>Min Registration Limit</td>
                     <td>{courseSlot.min_registration_limit}</td>
                     <td>Max Registration Limit</td>
@@ -75,9 +74,9 @@ function StudCourseSlotDetails() {
               </table>
 
               {courseSlot.courses.length > 0 ? (
-                <table className="course-list-table">
+                <table className={styles["course-list-table"]}>
                   <thead>
-                    <tr className="table-header">
+                    <tr className={styles["table-header"]}>
                       <td>Course Code</td>
                       <td>Course Name</td>
                       <td>Credits</td>
@@ -101,7 +100,7 @@ function StudCourseSlotDetails() {
                   </tbody>
                 </table>
               ) : (
-                <div className="no-courses">No Courses Available</div>
+                <div className={styles["no-courses"]}>No Courses Available</div>
               )}
             </div>
           </div>

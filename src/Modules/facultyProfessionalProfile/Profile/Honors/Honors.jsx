@@ -9,18 +9,20 @@ import {
   Grid,
   TextInput,
   Button,
-  Table,
-  ActionIcon,
   Pagination,
   Textarea,
 } from "@mantine/core";
-import { FloppyDisk, PencilSimple, Trash } from "@phosphor-icons/react";
+import { FloppyDisk } from "@phosphor-icons/react";
 import { useSelector } from "react-redux";
+import FusionTable from "../../../../components/FusionTable";
+import RowActions from "../../../../components/RowActions";
 import {
   deleteHonors,
   getHonors,
   insertHonors,
 } from "../../../../routes/facultyProfessionalProfileRoutes";
+
+const COLUMNS = ["Title", "Period", "Description", "Actions"];
 
 export default function Honors() {
   const [inputs, setInputs] = useState({
@@ -115,6 +117,20 @@ export default function Honors() {
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
   const currentRows = tableData.slice(indexOfFirstRow, indexOfLastRow);
 
+  const rows = currentRows.map((honor) => ({
+    id: honor.id,
+    Title: honor.title,
+    Period: honor.period,
+    Description: honor.description,
+    Actions: (
+      <RowActions
+        label={honor.title || "honor"}
+        onEdit={() => handleEdit(honor)}
+        onDelete={() => handleDelete(honor.id)}
+      />
+    ),
+  }));
+
   return (
     <MantineProvider withGlobalStyles withNormalizeCSS>
       <Container size="2xl" mt="xl">
@@ -185,7 +201,7 @@ export default function Honors() {
                   type="submit"
                   mt="md"
                   loading={isLoading}
-                  leftIcon={<FloppyDisk size={16} />}
+                  leftSection={<FloppyDisk size={16} />}
                   style={{ backgroundColor: "#2185d0", color: "#fff" }}
                 >
                   Save
@@ -210,107 +226,12 @@ export default function Honors() {
           <Title order={3} mb="lg" style={{ color: "#2185d0" }}>
             Honors:
           </Title>
-          <Table
-            striped
-            highlightOnHover
-            style={{ minWidth: "100%", borderCollapse: "collapse" }}
-          >
-            <thead>
-              <tr style={{ backgroundColor: "#f8f9fa" }}>
-                {["Title", "Period", "Description", "Actions"].map(
-                  (header, index) => (
-                    <th
-                      key={index}
-                      style={{
-                        textAlign: "center",
-                        padding: "12px 16px",
-                        color: "#495057",
-                        fontWeight: "600",
-                        border: "1px solid #dee2e6",
-                        backgroundColor: "#f1f3f5",
-                      }}
-                    >
-                      {header}
-                    </th>
-                  ),
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {currentRows.length > 0 ? (
-                currentRows.map((honor, index) => (
-                  <tr key={index} style={{ backgroundColor: "#fff" }}>
-                    <td
-                      style={{
-                        padding: "12px 16px",
-                        textAlign: "center",
-                        border: "1px solid #dee2e6",
-                      }}
-                    >
-                      {honor.title}
-                    </td>
-                    <td
-                      style={{
-                        padding: "12px 16px",
-                        textAlign: "center",
-                        border: "1px solid #dee2e6",
-                      }}
-                    >
-                      {honor.period}
-                    </td>
-                    <td
-                      style={{
-                        padding: "12px 16px",
-                        textAlign: "center",
-                        border: "1px solid #dee2e6",
-                      }}
-                    >
-                      {honor.description}
-                    </td>
-                    <td
-                      style={{
-                        padding: "12px",
-                        textAlign: "center",
-                        border: "1px solid #dee2e6",
-                        whiteSpace: "nowrap",
-                        width: "100px",
-                      }}
-                    >
-                      <ActionIcon
-                        color="blue"
-                        onClick={() => handleEdit(honor)}
-                        variant="light"
-                        style={{ marginRight: "8px" }}
-                      >
-                        <PencilSimple size={16} />
-                      </ActionIcon>
-                      <ActionIcon
-                        color="red"
-                        onClick={() => handleDelete(honor.id)}
-                        variant="light"
-                      >
-                        <Trash size={16} />
-                      </ActionIcon>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan={4}
-                    style={{
-                      textAlign: "center",
-                      padding: "20px",
-                      color: "#6c757d",
-                      border: "1px solid #dee2e6",
-                    }}
-                  >
-                    No honors found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </Table>
+          <FusionTable
+            columnNames={COLUMNS}
+            elements={rows}
+            ariaLabel="Honors"
+            emptyMessage="No honors found."
+          />
 
           <Pagination
             total={Math.ceil(tableData.length / rowsPerPage)}

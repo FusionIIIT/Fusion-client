@@ -61,13 +61,12 @@ function FacultyCourseProposalFinalForm() {
   // const { id } = useParams();
   const [disciplines, setDisciplines] = useState([]);
   const [courses, setCourses] = useState([]);
-  const [course, setCourse] = useState([]);
+  const [, setCourse] = useState([]);
 
   useEffect(() => {
     const fetchDisciplines = async () => {
       try {
         const response = await fetchDisciplinesData();
-        // console.log(response);
 
         // const data = [...d.name, ...d.acronym, ...d.id];
 
@@ -84,7 +83,6 @@ function FacultyCourseProposalFinalForm() {
     const fetchCourses = async () => {
       try {
         const response = await fetchAllCourses();
-        console.log("Courses data:", response);
 
         const courseList = response.map((c) => ({
           name: `${c.name} (${c.code})`,
@@ -100,9 +98,7 @@ function FacultyCourseProposalFinalForm() {
       try {
         const response = await fetchFacultyCourseProposalCourseData(id);
         const data = await response.json();
-        console.log(data.data);
         setCourse(data.data.proposal);
-        console.log(course);
         form.setValues({
           courseName: data.data.proposal.name,
           courseCode: data.data.proposal.code,
@@ -140,12 +136,10 @@ function FacultyCourseProposalFinalForm() {
     fetchCourses();
     loadCourseDetails();
   }, [id]);
-  console.log(form.values);
 
   const handleSubmit = async (values) => {
     const apiUrl = `${host}/programme_curriculum/api/forward_course_forms/${id}/?username=${username}&des=${role}`;
     const token = localStorage.getItem("authToken");
-    console.log("Form Values:", values);
 
     const payload = {
       name: values.courseName,
@@ -172,7 +166,6 @@ function FacultyCourseProposalFinalForm() {
       maxSeats: values.maxSeats,
       working_course: values.workingCourse,
     };
-    console.log("Payload: ", payload);
     try {
       const response = await fetch(apiUrl, {
         method: "POST",
@@ -184,9 +177,8 @@ function FacultyCourseProposalFinalForm() {
 
       if (response.ok) {
         localStorage.setItem("FacultyCoursesCachechange", "true");
-        const data = await response.json();
+        await response.json();
         alert("Course added successfully!");
-        console.log("Response Data:", data);
         navigate("/programme_curriculum/faculty_courses");
       } else {
         const errorText = await response.text();
@@ -261,11 +253,11 @@ function FacultyCourseProposalFinalForm() {
                 boxShadow: "0 0 10px rgba(0,0,0,0.1)",
               }}
             >
-              <Stack spacing="lg">
+              <Stack gap="lg">
                 <Text
                   size="xl"
-                  weight={700}
-                  align="center"
+                  fw={700}
+                  ta="center"
                   style={{ padding: "10px", borderRadius: "5px" }}
                 >
                   Course Form
@@ -573,7 +565,7 @@ function FacultyCourseProposalFinalForm() {
                   required
                   searchable
                   clearable
-                  nothingFound="No disciplines found"
+                  nothingFoundMessage="No disciplines found"
                 /> */}
                 <Textarea
                   label="Pre-requisites"
@@ -752,7 +744,7 @@ function FacultyCourseProposalFinalForm() {
                   />
                 </Group>
 
-                <Group position="right" mt="md">
+                <Group justify="flex-end" mt="md">
                   <Button
                     type="button"
                     variant="outline"

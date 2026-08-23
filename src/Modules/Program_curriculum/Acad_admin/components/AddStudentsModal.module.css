@@ -1,0 +1,5 @@
+.choice:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(52, 152, 219, 0.15);
+  border-color: #3498db;
+}

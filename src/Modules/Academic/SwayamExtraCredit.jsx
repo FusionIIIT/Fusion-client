@@ -1,10 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { Alert, Select, Button, Table, Text, Loader, Center } from "@mantine/core";
+import { Alert, Button, Tabs, Text, Loader, Center } from "@mantine/core";
 import axios from "axios";
-import { swayamRegistrationRoute, swayamRegistrationSubmitRoute } from "../../routes/academicRoutes";
+import {
+  swayamRegistrationRoute,
+  swayamRegistrationSubmitRoute,
+} from "../../routes/academicRoutes";
+import { courseLabel } from "../../lib/course";
+import SlotCard from "./components/SlotCard";
+import SlotRow from "./components/SlotRow";
+import SlotSelect from "./components/SlotSelect";
 import SwayamYourRequests from "./SwayamYourRequests";
 
-export default function SwayamExtraCredit({ showOnlyForm = false, onSubmitSuccess, refreshKey = 0 }) {
+export default function SwayamExtraCredit({
+  showOnlyForm = false,
+  onSubmitSuccess,
+  refreshKey = 0,
+}) {
   const [activeTab, setActiveTab] = useState("submit");
   const [courseSlots, setCourseSlots] = useState([]);
   const [choicesSelections, setChoicesSelections] = useState({});
@@ -25,7 +36,7 @@ export default function SwayamExtraCredit({ showOnlyForm = false, onSubmitSucces
       setError("Authentication required. Please login again.");
       return;
     }
-    
+
     setLoading(true);
     try {
       const response = await axios.get(swayamRegistrationRoute, {
@@ -59,7 +70,8 @@ export default function SwayamExtraCredit({ showOnlyForm = false, onSubmitSucces
 
   const isFormComplete = () =>
     courseSlots.some(
-      (slot) => choicesSelections[slot.sno] && choicesSelections[slot.sno] !== ""
+      (slot) =>
+        choicesSelections[slot.sno] && choicesSelections[slot.sno] !== "",
     );
 
   const handleSubmit = async () => {
@@ -71,7 +83,9 @@ export default function SwayamExtraCredit({ showOnlyForm = false, onSubmitSucces
       const selectedCourseIdStr = choicesSelections[slot.sno];
       if (selectedCourseIdStr) {
         const selectedCourseId = parseInt(selectedCourseIdStr, 10);
-        const course = slot.course_choices.find((c) => c.id === selectedCourseId);
+        const course = slot.course_choices.find(
+          (c) => c.id === selectedCourseId,
+        );
         if (course) {
           return sum + course.credits;
         }
@@ -80,7 +94,10 @@ export default function SwayamExtraCredit({ showOnlyForm = false, onSubmitSucces
     }, 0);
 
     const registrations = courseSlots
-      .filter((slot) => choicesSelections[slot.sno] && choicesSelections[slot.sno] !== "")
+      .filter(
+        (slot) =>
+          choicesSelections[slot.sno] && choicesSelections[slot.sno] !== "",
+      )
       .map((slot) => ({
         slot_id: slot.sno,
         course_id: parseInt(choicesSelections[slot.sno], 10),
@@ -98,16 +115,20 @@ export default function SwayamExtraCredit({ showOnlyForm = false, onSubmitSucces
     }
 
     try {
-      const response = await axios.post(swayamRegistrationSubmitRoute, payload, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Token ${token}`,
+      const response = await axios.post(
+        swayamRegistrationSubmitRoute,
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Token ${token}`,
+          },
         },
-      });
+      );
 
       if (response.status === 201 || response.status === 200) {
         setSuccessMessage(
-          `Successfully submitted ${registrations.length} Swayam course(s) for approval! Your request is pending Academic Admin review.`
+          `Successfully submitted ${registrations.length} Swayam course(s) for approval! Your request is pending Academic Admin review.`,
         );
         setChoicesSelections({});
         await fetchAvailableSlots();
@@ -134,21 +155,39 @@ export default function SwayamExtraCredit({ showOnlyForm = false, onSubmitSucces
   const formContent = (
     <>
       {initialLoad ? (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "200px",
+          }}
+        >
           <Loader size="lg" />
         </div>
       ) : (
         <>
           {hasPendingRequest && !error && (
-            <Alert color="yellow" mb="md" withCloseButton onClose={() => setHasPendingRequest(false)}>
-              <Text weight={500}>
-                You have a pending Extra Credit request. You can continue to register for other available slots.
+            <Alert
+              color="yellow"
+              mb="md"
+              withCloseButton
+              onClose={() => setHasPendingRequest(false)}
+            >
+              <Text fw={500}>
+                You have a pending Extra Credit request. You can continue to
+                register for other available slots.
               </Text>
             </Alert>
           )}
 
           {error ? (
-            <Alert color="red" mb="md" withCloseButton onClose={() => setError(null)}>
+            <Alert
+              color="red"
+              mb="md"
+              withCloseButton
+              onClose={() => setError(null)}
+            >
               {error}
             </Alert>
           ) : loading ? (
@@ -157,59 +196,64 @@ export default function SwayamExtraCredit({ showOnlyForm = false, onSubmitSucces
             </Center>
           ) : courseSlots.length === 0 ? (
             <Alert color={successMessage ? "teal" : "blue"} mb="md">
-              {successMessage || "No Swayam slots available for Extra Credit registration."}
+              {successMessage ||
+                "No Swayam slots available for Extra Credit registration."}
             </Alert>
           ) : (
             <>
               {successMessage && (
-                <Alert color="green" mb="md" withCloseButton onClose={() => setSuccessMessage(null)}>
+                <Alert
+                  color="green"
+                  mb="md"
+                  withCloseButton
+                  onClose={() => setSuccessMessage(null)}
+                >
                   {successMessage}
                 </Alert>
               )}
 
-              <Table striped highlightOnHover withTableBorder>
-                <thead>
-                  <tr>
-                    <th>S. No</th>
-                    <th>Slot Name</th>
-                    <th>Type</th>
-                    <th>Semester</th>
-                    <th>Course Options</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {courseSlots.map((slot, index) => (
-                    <tr key={slot.sno}>
-                      <td>{index + 1}</td>
-                      <td>{slot.slot_name}</td>
-                      <td>{slot.slot_type}</td>
-                      <td>{slot.semester}</td>
-                      <td>
-                        <Select
-                          placeholder="Select course"
-                          data={slot.course_choices
-                            .filter((course) => course.id !== undefined && course.id !== null)
-                            .map((course) => ({
-                              value: String(course.id),
-                              label: `${course.code} - ${course.name} (${course.credits} credits)`,
-                            }))}
-                          value={choicesSelections[slot.sno] || ""}
-                          onChange={(value) => handleChoiceChange(slot.sno, value)}
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
+              {courseSlots.map((slot) => (
+                <SlotCard
+                  key={slot.sno}
+                  name={slot.slot_name}
+                  meta={`${slot.slot_type} · Semester ${slot.semester}`}
+                >
+                  <SlotRow
+                    primary="Course"
+                    control={
+                      <SlotSelect
+                        label={`Course for ${slot.slot_name}`}
+                        placeholder="Select course"
+                        value={choicesSelections[slot.sno]}
+                        onChange={(value) =>
+                          handleChoiceChange(slot.sno, value)
+                        }
+                        options={slot.course_choices
+                          .filter(
+                            (course) =>
+                              course.id !== undefined && course.id !== null,
+                          )
+                          .map((course) => ({
+                            value: String(course.id),
+                            label: `${courseLabel(course)} (${course.credits} credits)`,
+                          }))}
+                      />
+                    }
+                  />
+                </SlotCard>
+              ))}
 
               <Button
-                mt="md"
-                color="blue"
+                mt="xl"
+                fullWidth
+                styles={{ label: { whiteSpace: "normal" } }}
                 onClick={handleSubmit}
                 disabled={!isFormComplete() || submitting}
                 loading={submitting}
               >
-                {submitting ? "Submitting..." : "Submit Extra Credit Registration"}
+                {submitting
+                  ? "Submitting..."
+                  : "Submit Extra Credit Registration"}
               </Button>
             </>
           )}

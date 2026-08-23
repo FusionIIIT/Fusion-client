@@ -188,7 +188,7 @@ export default function AdminFeedbackView() {
         onClose={() => setModalOpened(false)}
         size="80%"
         title={
-          <Title order={3} weight={700}>
+          <Title order={3} fw={700}>
             Feedback Analysis
           </Title>
         }
@@ -203,7 +203,7 @@ export default function AdminFeedbackView() {
           ) : (
             data.sections?.map((sec) => (
               <Card key={sec.section} withBorder mb="lg">
-                <Title order={4} weight={700} mb="sm">
+                <Title order={4} fw={700} mb="sm">
                   {sectionLabel(sec.section)}
                 </Title>
                 <Grid gutter="lg">
@@ -212,7 +212,7 @@ export default function AdminFeedbackView() {
                     return (
                       <Grid.Col key={q.question_id} span={6}>
                         <Paper p="md" shadow="xs">
-                          <Text weight={500}>{q.text}</Text>
+                          <Text fw={500}>{q.text}</Text>
                           {chartData.length > 0 ? (
                             <BarChart
                               width={400}
@@ -239,7 +239,7 @@ export default function AdminFeedbackView() {
                                   <Text key={i} size="sm" mb="xs">– {cmt}</Text>
                                 ))
                               ) : (
-                                <Text color="dimmed" size="sm">No comments</Text>
+                                <Text c="dimmed" size="sm">No comments</Text>
                               )}
                             </Paper>
                           )}
@@ -252,7 +252,7 @@ export default function AdminFeedbackView() {
             ))
           )
         ) : (
-          <Text color="dimmed">Select a course to view feedback.</Text>
+          <Text c="dimmed">Select a course to view feedback.</Text>
         )}
       </Modal>
     </>

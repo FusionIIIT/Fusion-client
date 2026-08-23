@@ -151,7 +151,7 @@ function Faculty_add_course_proposal_form() {
               <Text size="sm" mb={8}>
                 <strong>Course proposal "{values.courseName}" ({values.courseCode}) has been submitted.</strong>
               </Text>
-              <Text size="xs" color="gray.7">
+              <Text size="xs" c="gray.7">
                 Credits: {values.courseCredit} | Version: {values.courseVersion}
               </Text>
             </div>
@@ -179,7 +179,7 @@ function Faculty_add_course_proposal_form() {
               <Text size="sm" mb={8}>
                 <strong>Unable to submit course proposal. Please try again.</strong>
               </Text>
-              <Text size="xs" color="gray.7">
+              <Text size="xs" c="gray.7">
                 Please check your inputs and try again.
               </Text>
             </div>
@@ -201,7 +201,7 @@ function Faculty_add_course_proposal_form() {
             <Text size="sm" mb={8}>
               <strong>Connection error occurred while submitting proposal.</strong>
             </Text>
-            <Text size="xs" color="gray.7">
+            <Text size="xs" c="gray.7">
               Please check your internet connection and try again.
             </Text>
           </div>
@@ -251,11 +251,11 @@ function Faculty_add_course_proposal_form() {
                 boxShadow: "0 0 10px rgba(0,0,0,0.1)",
               }}
             >
-              <Stack spacing="lg">
+              <Stack gap="lg">
                 <Text
                   size="xl"
-                  weight={700}
-                  align="center"
+                  fw={700}
+                  ta="center"
                   style={{ padding: "10px", borderRadius: "5px" }}
                 >
                   Course Form

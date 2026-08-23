@@ -11,12 +11,31 @@ import {
   Alert,
 } from "@mantine/core";
 import FusionTable from "../../components/FusionTable";
+import { formatDate } from "../../lib/datetime";
 import {
   finalRegistrationPageRoute,
   finalRegistrationRoute,
 } from "../../routes/academicRoutes";
 
 const inputStyle = { width: "100%" };
+
+export function closedMessage({
+  frd_configured: configured,
+  frd_from: from,
+  frd_to: to,
+}) {
+  if (!configured) {
+    return "Final Registration has not been scheduled yet. Please contact the academic office.";
+  }
+  const today = new Date().toISOString().slice(0, 10);
+  if (from && today < from) {
+    return `Final Registration opens on ${formatDate(from)}.`;
+  }
+  if (to && today > to) {
+    return `Final Registration closed on ${formatDate(to)}.`;
+  }
+  return "Final Registration is not open for the next semester.";
+}
 
 function FinalRegistration() {
   const [courses, setCourses] = useState([]);
@@ -51,9 +70,11 @@ function FinalRegistration() {
         const data = await response.json();
 
         if (data.final_registration_flag) {
-          setMessage("You have already done final registration for next semester.");
+          setMessage(
+            "You have already done final registration for next semester.",
+          );
         } else if (!data.frd) {
-          setMessage("Final Registration has not yet started for the next semester.");
+          setMessage(closedMessage(data));
         } else {
           setCourses(data.final_registration || []);
           setPaymentDetails((prev) => ({
@@ -123,12 +144,7 @@ function FinalRegistration() {
   }
 
   if (message) {
-    return (
-        <Alert color="yellow"
-        >
-          {message}
-        </Alert>
-    );
+    return <Alert color="yellow">{message}</Alert>;
   }
 
   const mappedCourses = courses.map((course) => ({
@@ -148,7 +164,7 @@ function FinalRegistration() {
     <Card shadow="sm" p="lg" radius="md" withBorder>
       <Text
         size="lg"
-        weight={700}
+        fw={700}
         mb="md"
         style={{ textAlign: "center", color: "#3B82F6" }}
       >
@@ -165,12 +181,12 @@ function FinalRegistration() {
         elements={mappedCourses}
         width="100%"
       />
-      <Text size="md" weight={700} mt="md">
+      <Text size="md" fw={700} mt="md">
         Total Credits: {totalCredits}
       </Text>
 
       <Card mt="lg" p="md" shadow="xs" withBorder>
-        <Text size="md" weight={700} color="blue" mb="md">
+        <Text size="md" fw={700} c="blue" mb="md">
           Payment Details
         </Text>
         <Grid gutter="md">

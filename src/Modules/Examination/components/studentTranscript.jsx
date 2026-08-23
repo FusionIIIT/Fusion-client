@@ -18,7 +18,7 @@ import {
   IconArrowLeft,
 } from "@tabler/icons-react";
 import { useSelector } from "react-redux";
-import "../styles/transcript.css";
+import styles from "../styles/transcript.module.css";
 import InstiLogo from "../../../assets/Insti_logo.svg";
 
 function StudentTranscript({ student, semester, onBack }) {
@@ -220,7 +220,7 @@ function StudentTranscript({ student, semester, onBack }) {
     return (
       <Box style={{ padding: '2rem' }}>
         <Paper p="md" withBorder>
-          <Text align="center" size="lg">
+          <Text ta="center" size="lg">
             Marks not yet submitted.
           </Text>
         </Paper>
@@ -246,22 +246,16 @@ function StudentTranscript({ student, semester, onBack }) {
         id="printable-transcript" 
         style={{
           backgroundColor: '#ffffff',
-          border: '3px solid #000000',
+          border: isMobile ? '2px solid #000000' : '3px solid #000000',
           fontFamily: '"Times New Roman", Times, serif',
-          fontSize: '12px',
+          fontSize: isMobile ? '10px' : '12px',
           lineHeight: '1.4',
           color: '#000000',
           width: '100%',
-          maxWidth: '100vw',
+          maxWidth: '100%',
           overflowX: 'auto',
           margin: '0',
           boxSizing: 'border-box'
-        }}
-        sx={{
-          '@media (max-width: 768px)': {
-            border: '2px solid #000000',
-            fontSize: '10px'
-          }
         }}
       >
         <Box 
@@ -335,7 +329,7 @@ function StudentTranscript({ student, semester, onBack }) {
         <Box className="student-info" style={{ padding: isMobile ? '15px 10px' : '20px', borderBottom: '1px solid #000000' }}>
           <Grid gutter={0}>
             <Grid.Col span={isMobile ? 12 : 6}>
-              <Stack spacing={isMobile ? 4 : 8}>
+              <Stack gap={isMobile ? 4 : 8}>
                 <Text style={{ fontSize: isMobile ? '10px' : '12px', color: '#000000', margin: '0', lineHeight: '1.4' }}>
                   <span style={{ fontWeight: 'bold' }}>Name of Student:</span> {studentInfo.name}
                 </Text>
@@ -362,7 +356,7 @@ function StudentTranscript({ student, semester, onBack }) {
               </Stack>
             </Grid.Col>
             <Grid.Col span={isMobile ? 12 : 6}>
-              <Stack spacing={isMobile ? 4 : 8}>
+              <Stack gap={isMobile ? 4 : 8}>
                 <Text style={{ fontSize: isMobile ? '10px' : '12px', color: '#000000', margin: '0', lineHeight: '1.4' }}>
                   <span style={{ fontWeight: 'bold' }}>Roll No.:</span> {studentInfo.rollNumber}
                 </Text>
@@ -383,7 +377,7 @@ function StudentTranscript({ student, semester, onBack }) {
             <table 
               style={{
                 width: '100%',
-                minWidth: isMobile ? '320px' : '600px',
+                minWidth: isMobile ? 0 : '600px',
                 borderCollapse: 'collapse',
                 border: '1px solid #000000',
                 fontSize: isMobile ? '8px' : '11px',

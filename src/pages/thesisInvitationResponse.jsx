@@ -5,13 +5,16 @@ import {
 import { IconCheck, IconAlertCircle } from "@tabler/icons-react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import { useDocumentTitle } from "@mantine/hooks";
 import { invitationActionRoute } from "../routes/academicRoutes";
 import InstitutePublicHeader from "../components/InstitutePublicHeader";
+import { pageTitle } from "../lib/pageTitle";
 
 // Public page reached from an emailed invitation link. The examiner has no
 // Fusion account -- the token in the URL is the sole credential, so this
 // page must never attach an Authorization header.
 export default function ThesisInvitationResponse() {
+  useDocumentTitle(pageTitle("Thesis Invitation"));
   const { token, action } = useParams();
   const [status, setStatus] = useState("loading");
   const [message, setMessage] = useState("");
@@ -53,14 +56,14 @@ export default function ThesisInvitationResponse() {
               <Center mb="sm">
                 <IconCheck size={40} color="var(--mantine-color-teal-6)" />
               </Center>
-              <Title order={3} align="center" mb="xs">
+              <Title order={3} ta="center" mb="xs">
                 {action === "accept" ? "Invitation Accepted" : "Invitation Declined"}
               </Title>
-              <Text align="center" c="dimmed">
+              <Text ta="center" c="dimmed">
                 {message}
               </Text>
               {action === "accept" && (
-                <Text align="center" c="dimmed" size="sm" mt="md">
+                <Text ta="center" c="dimmed" size="sm" mt="md">
                   A link to review the thesis will be sent to your email shortly.
                 </Text>
               )}

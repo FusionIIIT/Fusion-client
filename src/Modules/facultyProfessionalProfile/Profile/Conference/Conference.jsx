@@ -128,7 +128,6 @@ export default function ConferenceSymposium() {
   };
 
   const handleDelete = async (projectId) => {
-    console.log(projectId);
     if (
       window.confirm(
         "Are you sure you want to delete this Conference/Symposium?",
@@ -277,7 +276,7 @@ export default function ConferenceSymposium() {
                   type="submit"
                   mt="md"
                   loading={isLoading}
-                  leftIcon={<FloppyDisk size={16} />}
+                  leftSection={<FloppyDisk size={16} />}
                   style={{ backgroundColor: "#2185d0", color: "#fff" }} // Custom button styling
                 >
                   Save

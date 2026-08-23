@@ -9,18 +9,20 @@ import {
   Grid,
   TextInput,
   Button,
-  Table,
-  ActionIcon,
   Pagination,
   Textarea,
 } from "@mantine/core";
-import { FloppyDisk, PencilSimple, Trash } from "@phosphor-icons/react";
+import { FloppyDisk } from "@phosphor-icons/react";
 import { useSelector } from "react-redux";
+import FusionTable from "../../../../components/FusionTable";
+import RowActions from "../../../../components/RowActions";
 import {
   deleteQualifications,
   getQualifications,
   insertQualifications,
 } from "../../../../routes/facultyProfessionalProfileRoutes";
+
+const COLUMNS = ["Degree", "College", "Description", "Actions"];
 
 export default function Qualifications() {
   const [inputs, setInputs] = useState({
@@ -119,6 +121,20 @@ export default function Qualifications() {
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
   const currentRows = tableData.slice(indexOfFirstRow, indexOfLastRow);
 
+  const rows = currentRows.map((qualification) => ({
+    id: qualification.id,
+    Degree: qualification.degree,
+    College: qualification.college,
+    Description: qualification.description,
+    Actions: (
+      <RowActions
+        label={qualification.degree || "qualification"}
+        onEdit={() => handleEdit(qualification)}
+        onDelete={() => handleDelete(qualification.id)}
+      />
+    ),
+  }));
+
   return (
     <MantineProvider withGlobalStyles withNormalizeCSS>
       <Container size="2xl" mt="xl">
@@ -190,7 +206,7 @@ export default function Qualifications() {
                   type="submit"
                   mt="md"
                   loading={isLoading}
-                  leftIcon={<FloppyDisk size={16} />}
+                  leftSection={<FloppyDisk size={16} />}
                   style={{ backgroundColor: "#2185d0", color: "#fff" }}
                 >
                   Save
@@ -215,107 +231,12 @@ export default function Qualifications() {
           <Title order={3} mb="lg" style={{ color: "#2185d0" }}>
             Qualifications:
           </Title>
-          <Table
-            striped
-            highlightOnHover
-            style={{ minWidth: "100%", borderCollapse: "collapse" }}
-          >
-            <thead>
-              <tr style={{ backgroundColor: "#f8f9fa" }}>
-                {["Degree", "College", "Description", "Actions"].map(
-                  (header, index) => (
-                    <th
-                      key={index}
-                      style={{
-                        textAlign: "center",
-                        padding: "12px 16px",
-                        color: "#495057",
-                        fontWeight: "600",
-                        border: "1px solid #dee2e6",
-                        backgroundColor: "#f1f3f5",
-                      }}
-                    >
-                      {header}
-                    </th>
-                  ),
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {currentRows.length > 0 ? (
-                currentRows.map((qualification, index) => (
-                  <tr key={index} style={{ backgroundColor: "#fff" }}>
-                    <td
-                      style={{
-                        padding: "12px 16px",
-                        textAlign: "center",
-                        border: "1px solid #dee2e6",
-                      }}
-                    >
-                      {qualification.degree}
-                    </td>
-                    <td
-                      style={{
-                        padding: "12px 16px",
-                        textAlign: "center",
-                        border: "1px solid #dee2e6",
-                      }}
-                    >
-                      {qualification.college}
-                    </td>
-                    <td
-                      style={{
-                        padding: "12px 16px",
-                        textAlign: "center",
-                        border: "1px solid #dee2e6",
-                      }}
-                    >
-                      {qualification.description}
-                    </td>
-                    <td
-                      style={{
-                        padding: "12px",
-                        textAlign: "center",
-                        border: "1px solid #dee2e6",
-                        whiteSpace: "nowrap",
-                        width: "100px",
-                      }}
-                    >
-                      <ActionIcon
-                        color="blue"
-                        onClick={() => handleEdit(qualification)}
-                        variant="light"
-                        style={{ marginRight: "8px" }}
-                      >
-                        <PencilSimple size={16} />
-                      </ActionIcon>
-                      <ActionIcon
-                        color="red"
-                        onClick={() => handleDelete(qualification.id)}
-                        variant="light"
-                      >
-                        <Trash size={16} />
-                      </ActionIcon>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan={4}
-                    style={{
-                      textAlign: "center",
-                      padding: "20px",
-                      color: "#6c757d",
-                      border: "1px solid #dee2e6",
-                    }}
-                  >
-                    No qualifications found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </Table>
+          <FusionTable
+            columnNames={COLUMNS}
+            elements={rows}
+            ariaLabel="Qualifications"
+            emptyMessage="No qualifications found."
+          />
 
           <Pagination
             total={Math.ceil(tableData.length / rowsPerPage)}

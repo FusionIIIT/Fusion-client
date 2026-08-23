@@ -20,14 +20,7 @@ import { FileArrowDown, Upload } from "@phosphor-icons/react";
 import { submit_phd_milestone_grades } from "../routes/examinationRoutes";
 import { buildSemesterNumberOptions } from "../constants/semesterOptions";
 
-const CATEGORY_META = {
-  thesis: { title: "Submit Thesis Grades" },
-  progress_seminar: { title: "Submit Progress Seminar Grades" },
-  teaching_credit: { title: "Submit Teaching Credit Grades" },
-};
-
 export default function PhdMilestoneGradesPanel({ category }) {
-  const meta = CATEGORY_META[category];
   const semesterTypes = [
     { value: "Odd Semester", label: "Odd Semester" },
     { value: "Even Semester", label: "Even Semester" },
@@ -201,10 +194,6 @@ export default function PhdMilestoneGradesPanel({ category }) {
   return (
     <Box pos="relative">
       <LoadingOverlay visible={loading} />
-      <Title order={2} mb="md">
-        {meta.title}
-      </Title>
-
       {error && (
         <Alert color="red" mb="md">
           {error}
@@ -279,7 +268,7 @@ export default function PhdMilestoneGradesPanel({ category }) {
           </Group>
 
           {students && (
-            <Table highlightOnHover mt="md" withBorder>
+            <Table highlightOnHover mt="md">
               <thead>
                 <tr>
                   <th>Roll No</th>
@@ -292,7 +281,7 @@ export default function PhdMilestoneGradesPanel({ category }) {
                 {students.length === 0 && (
                   <tr>
                     <td colSpan={category === "thesis" ? 4 : 3}>
-                      <Text color="dimmed" size="sm">
+                      <Text c="dimmed" size="sm">
                         No eligible students found for this semester.
                       </Text>
                     </td>
@@ -315,7 +304,7 @@ export default function PhdMilestoneGradesPanel({ category }) {
           )}
 
           <Box mt="xl">
-            <Text size="sm" mb="xs" weight={500}>
+            <Text size="sm" mb="xs" fw={500}>
               CSV File Format Requirements:
             </Text>
             <List size="sm" spacing="xs" withPadding>
@@ -333,7 +322,7 @@ export default function PhdMilestoneGradesPanel({ category }) {
             </List>
           </Box>
 
-          <Group mt="xl" position="apart">
+          <Group mt="xl" justify="space-between">
             <Button
               leftSection={<FileArrowDown />}
               color="green"
@@ -367,10 +356,10 @@ export default function PhdMilestoneGradesPanel({ category }) {
           <Title order={4} mb="sm">
             Preview
           </Title>
-          <Text fw={600} mb="xs" color="green">
+          <Text fw={600} mb="xs" c="green">
             Valid Rows: {previewData.valid_rows.length}
           </Text>
-          <Table highlightOnHover withBorder mb="md">
+          <Table highlightOnHover mb="md">
             <thead>
               <tr>
                 <th>Roll No</th>
@@ -393,11 +382,11 @@ export default function PhdMilestoneGradesPanel({ category }) {
             </tbody>
           </Table>
 
-          <Text fw={600} mb="xs" color="red">
+          <Text fw={600} mb="xs" c="red">
             Invalid Rows: {previewData.invalid_rows.length}
           </Text>
           {previewData.invalid_rows.length > 0 && (
-            <Table highlightOnHover withBorder mb="md">
+            <Table highlightOnHover mb="md">
               <thead>
                 <tr>
                   <th>Roll No</th>

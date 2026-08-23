@@ -19,12 +19,14 @@ import { showNotification } from "@mantine/notifications";
 import { IconAlertCircle } from "@tabler/icons-react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import { useDocumentTitle } from "@mantine/hooks";
 import {
   examinerPanelBatchDetailRoute,
   examinerPanelSubmitScoreRoute,
 } from "../routes/academicRoutes";
 import { dynamicApiHost } from "../routes/globalRoutes";
 import InstitutePublicHeader from "../components/InstitutePublicHeader";
+import { pageTitle } from "../lib/pageTitle";
 
 const fileUrl = (url) =>
   url.startsWith("http")
@@ -37,6 +39,7 @@ const fileUrl = (url) =>
 // lists EVERY student in the batch, since one examiner covers the whole
 // batch, not one thesis.
 export default function ThesisExaminerPanelScoring() {
+  useDocumentTitle(pageTitle("Examiner Scoring"));
   const { token } = useParams();
   const [batchName, setBatchName] = useState("");
   const [examinerName, setExaminerName] = useState("");

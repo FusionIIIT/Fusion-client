@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Card,
-  Title,
   Tabs,
   Button,
   Center,
@@ -153,10 +152,6 @@ export default function SupervisorOpenSeminarDashboard() {
 
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
-      <Title order={3} mb="md">
-        Open Seminars
-      </Title>
-
       <Tabs defaultValue="supervisor">
         <Tabs.List>
           <Tabs.Tab value="supervisor">

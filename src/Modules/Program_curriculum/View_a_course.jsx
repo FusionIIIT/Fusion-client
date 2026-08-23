@@ -25,8 +25,6 @@ function CourseDetail() {
     loadCourseDetails(); // Call the fetch function when the component mounts
   }, [id]);
 
-  console.log(courseDetails);
-
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
 
@@ -41,7 +39,7 @@ function CourseDetail() {
       {/* Course Details Card */}
       <div style={{ display: "flex" }}>
         <Card shadow="sm" padding="lg" className="course-card">
-          <Text size="lg" weight={700} className="course-title">
+          <Text size="lg" fw={700} className="course-title">
             {courseDetails.code} - {courseDetails.name} - v
             {courseDetails.version}
           </Text>

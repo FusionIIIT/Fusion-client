@@ -33,9 +33,8 @@ export const get_course_reg_academic_years = `${host}/examination/api/unique-cou
 export const get_student_grades_academic_years = `${host}/examination/api/unique-stu-grades-years/`;
 
 export const get_result_semesters = `${host}/examination/api/student/result_semesters/`;
+export const student_credit_summary = `${host}/examination/api/student/credit_summary/`;
 export const grade_status = `${host}/examination/api/grade_status/`;
 export const grade_summary = `${host}/examination/api/grade_summary/`;
-export const generate_gradesheet_data = `${host}/examination/api/generate_gradesheet_data/`;
-export const generate_gradesheet_form = `${host}/examination/api/generate_gradesheet_form/`;
 export const grade_validation = `${host}/examination/api/grade_validation/`;
 export const submit_phd_milestone_grades = `${host}/examination/api/submit_phd_milestone_grades/`;

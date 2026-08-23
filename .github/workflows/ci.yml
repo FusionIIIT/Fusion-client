@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [acad-main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # Gates the architected surface only. The legacy backlog is reported
+      # below without failing the build, so this count can only go down.
+      - name: Lint (architected paths — must pass)
+        run: npm run lint:strict
+
+      - run: npm test
+
+      - run: npm run build
+
+      - name: Legacy lint backlog (advisory)
+        if: always()
+        timeout-minutes: 5
+        run: |
+          npm run lint:all 2>&1 | tail -5 || true

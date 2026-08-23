@@ -55,9 +55,6 @@ export default function HonorariumDashboard() {
 
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
-      <Title order={3} mb="md" ta="center">
-        Examiner Honorarium
-      </Title>
       {rows.length === 0 ? (
         <Text c="dimmed" ta="center">
           No examiner has completed a review yet.

@@ -1,0 +1,19 @@
+.root {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.root [role="tablist"] {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.root [role="tablist"]::-webkit-scrollbar {
+  display: none;
+}
+
+.root [role="tab"] {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
