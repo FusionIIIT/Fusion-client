@@ -141,6 +141,7 @@ export const applyDemoteRoute = `${host}/academic-procedures/api/acad/demote/app
 export const sectionBatchesRoute = `${host}/aims/api/section/batches/`;
 export const sectionStudentsRoute = `${host}/aims/api/section/students/`;
 export const assignSectionRoute = `${host}/aims/api/section/assign/`;
+export const sectionsInUseRoute = `${host}/aims/api/section/in-use/`;
 
 export const courseRegistrationReceiptRoute = `${host}/academic-procedures/course_reg_receipt/`;
 

@@ -882,6 +882,12 @@ export const BRANCH_MAPPINGS = {
 
 export const STUDENT_TABLE_COLUMNS = [
   {
+    key: "rollNumber",
+    label: "Roll Number",
+    minWidth: "120px",
+    fields: ["rollNumber", "roll_number", "Institute Roll Number"],
+  },
+  {
     key: "jeeAppNo",
     label: "Application No.",
     minWidth: "140px",
@@ -905,12 +911,6 @@ export const STUDENT_TABLE_COLUMNS = [
     label: "APAAR ID",
     minWidth: "140px",
     fields: ["apaarId", "apaar_id", "APAAR ID"],
-  },
-  {
-    key: "rollNumber",
-    label: "Roll Number",
-    minWidth: "120px",
-    fields: ["rollNumber", "roll_number", "Institute Roll Number"],
   },
   { key: "name", label: "Name", minWidth: "180px", fields: ["name", "Name"] },
   {

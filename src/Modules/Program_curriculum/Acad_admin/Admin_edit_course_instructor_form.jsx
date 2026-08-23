@@ -1,12 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  Select,
-  Button,
-  Group,
-  Text,
-  Container,
-  Stack,
-} from "@mantine/core";
+import { Select, Button, Group, Text, Container, Stack } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useNavigate, useParams } from "react-router-dom";
 import { notifications } from "@mantine/notifications";
@@ -16,8 +9,14 @@ import {
   adminFetchCourseInstructorData,
 } from "../api/api";
 import { host } from "../../../routes/globalRoutes";
+import { useSectionsInUse } from "../../../lib/sections";
 
 function Admin_edit_course_instructor() {
+  const sectionsInUse = useSectionsInUse();
+  const sectionOptions = sectionsInUse.map((value) => ({
+    value,
+    label: value,
+  }));
   const [courses, setCourses] = useState([]);
   const [faculties, setFaculties] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -129,19 +128,22 @@ function Admin_edit_course_instructor() {
             semester_type: values.semesterType,
             section_label: values.sectionLabel || "",
           }),
-        }
+        },
       );
 
-      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+      if (!response.ok)
+        throw new Error(`HTTP error! Status: ${response.status}`);
 
       const result = await response.json();
-      
+
       notifications.show({
         title: "✅ Course Instructor Updated Successfully!",
         message: (
           <div>
             <Text size="sm" mb={8}>
-              <strong>{result.message || "Course instructor has been updated."}</strong>
+              <strong>
+                {result.message || "Course instructor has been updated."}
+              </strong>
             </Text>
             <Text size="xs" c="gray.7">
               The instructor assignment has been updated.
@@ -151,12 +153,12 @@ function Admin_edit_course_instructor() {
         color: "green",
         autoClose: 5000,
         style: {
-          backgroundColor: '#d4edda',
-          borderColor: '#c3e6cb',
-          color: '#155724',
+          backgroundColor: "#d4edda",
+          borderColor: "#c3e6cb",
+          color: "#155724",
         },
       });
-      
+
       setTimeout(() => {
         navigate("/programme_curriculum/admin_course_instructor");
       }, 1500);
@@ -166,7 +168,9 @@ function Admin_edit_course_instructor() {
         message: (
           <div>
             <Text size="sm" mb={8}>
-              <strong>Unable to update course instructor. Please try again.</strong>
+              <strong>
+                Unable to update course instructor. Please try again.
+              </strong>
             </Text>
             <Text size="xs" c="gray.7">
               Please check your inputs and try again.
@@ -176,9 +180,9 @@ function Admin_edit_course_instructor() {
         color: "red",
         autoClose: 7000,
         style: {
-          backgroundColor: '#f8d7da',
-          borderColor: '#f5c6cb',
-          color: '#721c24',
+          backgroundColor: "#f8d7da",
+          borderColor: "#f5c6cb",
+          color: "#721c24",
         },
       });
     }
@@ -191,9 +195,18 @@ function Admin_edit_course_instructor() {
   if (loading) return <div>Loading...</div>;
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <div
+      style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
+    >
       <Container fluid style={{ margin: "0 0 0 -3.2vw" }}>
-        <div style={{ maxWidth: "290vw", padding: "2rem", display: "flex", gap: "2rem" }}>
+        <div
+          style={{
+            maxWidth: "290vw",
+            padding: "2rem",
+            display: "flex",
+            gap: "2rem",
+          }}
+        >
           <div style={{ width: "100%" }}>
             <form
               onSubmit={form.onSubmit(handleSubmit)}
@@ -240,7 +253,9 @@ function Admin_edit_course_instructor() {
                   placeholder="-- Select Academic Year --"
                   data={generateAcademicYears()}
                   value={form.values.academicYear}
-                  onChange={(value) => form.setFieldValue("academicYear", value)}
+                  onChange={(value) =>
+                    form.setFieldValue("academicYear", value)
+                  }
                   required
                 />
 
@@ -253,20 +268,21 @@ function Admin_edit_course_instructor() {
                     { value: "Summer Semester", label: "Summer Semester" },
                   ]}
                   value={form.values.semesterType}
-                  onChange={(value) => form.setFieldValue("semesterType", value)}
+                  onChange={(value) =>
+                    form.setFieldValue("semesterType", value)
+                  }
                   required
                 />
 
                 <Select
                   label="Section"
-                  description="Section this faculty teaches (A–F). Leave blank for a single-offering elective."
+                  description="Section this faculty teaches. Leave blank for a single-offering elective."
                   placeholder="No section (elective)"
-                  data={["A", "B", "C", "D", "E", "F"].map((s) => ({
-                    value: s,
-                    label: s,
-                  }))}
+                  data={sectionOptions}
                   value={form.values.sectionLabel}
-                  onChange={(value) => form.setFieldValue("sectionLabel", value || "")}
+                  onChange={(value) =>
+                    form.setFieldValue("sectionLabel", value || "")
+                  }
                   clearable
                 />
 
