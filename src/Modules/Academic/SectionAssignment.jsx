@@ -21,11 +21,12 @@ import {
   sectionStudentsRoute,
   assignSectionRoute,
 } from "../../routes/academicRoutes";
+import { useSectionsInUse } from "../../lib/sections";
 
-const SECTION_OPTIONS = ["A", "B", "C", "D", "E", "F"];
 const OTHER = "__OTHER__";
 
 function SectionAssignment() {
+  const sectionOptions = useSectionsInUse();
   const [batches, setBatches] = useState([]);
 
   // Cascading selection: year (Batch) -> discipline -> resolved batch id.
@@ -254,7 +255,7 @@ function SectionAssignment() {
 
   const openEditModal = (student) => {
     setEditRoll(student.roll_no);
-    const isKnown = SECTION_OPTIONS.includes(student.section);
+    const isKnown = sectionOptions.includes(student.section);
     setChosenSection(
       student.section ? (isKnown ? student.section : OTHER) : "",
     );
@@ -491,7 +492,7 @@ function SectionAssignment() {
           Choose a section
         </Text>
         <Group mb="md">
-          {SECTION_OPTIONS.map((opt) => (
+          {sectionOptions.map((opt) => (
             <Button
               key={opt}
               variant={chosenSection === opt ? "filled" : "outline"}
