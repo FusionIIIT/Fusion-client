@@ -847,39 +847,6 @@ export const INITIAL_FORM_DATA = {
   income: "",
 };
 
-export const BRANCH_MAPPINGS = {
-  "computer science and engineering": [
-    "CSE",
-    "Computer Science and Engineering",
-    "Computer Science",
-    "CS",
-  ],
-  cse: ["CSE", "Computer Science and Engineering", "Computer Science", "CS"],
-  "electronics and communication engineering": [
-    "ECE",
-    "Electronics and Communication Engineering",
-    "Electronics",
-    "EC",
-  ],
-  ece: [
-    "ECE",
-    "Electronics and Communication Engineering",
-    "Electronics",
-    "EC",
-  ],
-  "mechanical engineering": [
-    "ME",
-    "Mechanical Engineering",
-    "Mechanical",
-    "Mech",
-  ],
-  me: ["ME", "Mechanical Engineering", "Mechanical", "Mech"],
-  "smart manufacturing": ["SM", "Smart Manufacturing"],
-  sm: ["SM", "Smart Manufacturing"],
-  design: ["Design", "Des.", "DES", "Des"],
-  des: ["Design", "Des.", "DES", "Des"],
-};
-
 export const STUDENT_TABLE_COLUMNS = [
   {
     key: "rollNumber",
