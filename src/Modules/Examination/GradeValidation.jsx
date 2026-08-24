@@ -11,8 +11,9 @@ import {
   Alert,
   LoadingOverlay,
   Box,
+  Modal,
 } from "@mantine/core";
-import { IconDownload, IconPackage } from "@tabler/icons-react";
+import { IconDownload, IconEye, IconPackage } from "@tabler/icons-react";
 import { showNotification } from "@mantine/notifications";
 import axios from "axios";
 import { useSelector } from "react-redux";
@@ -401,6 +402,8 @@ export default function GradeValidation() {
   const [batchId, setBatchId]               = useState(null);
   const [students, setStudents]             = useState([]);
   const [loadingStudents, setLoadingStudents] = useState(false);
+  const [previewingRow, setPreviewingRow]   = useState(null);
+  const [previewData, setPreviewData]       = useState(null);
   const [downloadingRow, setDownloadingRow] = useState(null);
   const [exportingAll, setExportingAll]     = useState(false);
   const [error, setError]                   = useState(null);
@@ -454,11 +457,35 @@ export default function GradeValidation() {
     }
   };
 
-  // ── Single download ──────────────────────────────────────────────────────
-  const handleDownload = async (rollNo) => {
-    setDownloadingRow(rollNo);
+  const handlePreview = async (rollNo) => {
+    setPreviewingRow(rollNo);
     try {
       const data = await fetchAllGrades(rollNo);
+      if (!data.semesters?.length) {
+        showNotification({
+          title: "No grades",
+          message: "No grade records found.",
+          color: "yellow",
+        });
+        return;
+      }
+      setPreviewData(data);
+    } catch (e) {
+      showNotification({
+        title: "Preview failed",
+        message: e.response?.data?.error || e.message,
+        color: "red",
+      });
+    } finally {
+      setPreviewingRow(null);
+    }
+  };
+
+  // ── Single download ──────────────────────────────────────────────────────
+  const handleDownload = async (rollNo, loadedData = null) => {
+    setDownloadingRow(rollNo);
+    try {
+      const data = loadedData || (await fetchAllGrades(rollNo));
       if (!data.semesters?.length) {
         showNotification({ title: "No grades", message: "No grade records found.", color: "yellow" });
         return;
@@ -520,7 +547,11 @@ export default function GradeValidation() {
                 placeholder="Select Batch"
                 data={batches}
                 value={batchId}
-                onChange={(v) => { setBatchId(v); setStudents([]); }}
+                onChange={(v) => {
+                  setBatchId(v);
+                  setStudents([]);
+                  setPreviewData(null);
+                }}
                 radius="sm"
                 searchable
                 style={{ maxWidth: 520 }}
@@ -578,18 +609,34 @@ export default function GradeValidation() {
                     <td style={{ padding: "8px 12px" }}>{s.programme}</td>
                     <td style={{ padding: "8px 12px" }}>{s.discipline || "—"}</td>
                     <td style={{ padding: "8px 12px", textAlign: "center" }}>
-                      <Button
-                        size="xs"
-                        radius="sm"
-                        color="blue"
-                        variant="filled"
-                        leftSection={<IconDownload size={14} />}
-                        loading={downloadingRow === s.roll_no}
-                        disabled={exportingAll}
-                        onClick={() => handleDownload(s.roll_no)}
-                      >
-                        Download
-                      </Button>
+                      <Group justify="center" gap="xs" wrap="nowrap">
+                        <Button
+                          size="xs"
+                          radius="sm"
+                          color="blue"
+                          variant="outline"
+                          leftSection={<IconEye size={14} />}
+                          loading={previewingRow === s.roll_no}
+                          disabled={
+                            exportingAll || downloadingRow === s.roll_no
+                          }
+                          onClick={() => handlePreview(s.roll_no)}
+                        >
+                          Preview
+                        </Button>
+                        <Button
+                          size="xs"
+                          radius="sm"
+                          color="blue"
+                          variant="filled"
+                          leftSection={<IconDownload size={14} />}
+                          loading={downloadingRow === s.roll_no}
+                          disabled={exportingAll || previewingRow === s.roll_no}
+                          onClick={() => handleDownload(s.roll_no)}
+                        >
+                          Download
+                        </Button>
+                      </Group>
                     </td>
                   </tr>
                 ))}
@@ -598,6 +645,47 @@ export default function GradeValidation() {
           </Paper>
         )}
       </Stack>
+
+      <Modal
+        opened={Boolean(previewData)}
+        onClose={() => setPreviewData(null)}
+        title={
+          previewData
+            ? `${previewData.student_info.roll_no} Grade Validation Preview`
+            : "Grade Validation Preview"
+        }
+        size="xl"
+        centered
+      >
+        {previewData && (
+          <Stack gap="sm">
+            <Group justify="flex-end">
+              <Button
+                size="sm"
+                leftSection={<IconDownload size={16} />}
+                loading={downloadingRow === previewData.student_info.roll_no}
+                onClick={() =>
+                  handleDownload(previewData.student_info.roll_no, previewData)
+                }
+              >
+                Download PDF
+              </Button>
+            </Group>
+            <iframe
+              title={`${previewData.student_info.roll_no} grade validation preview`}
+              srcDoc={buildValidationHTML(
+                previewData.student_info,
+                previewData.semesters,
+              )}
+              style={{
+                width: "100%",
+                height: "70vh",
+                border: "1px solid #dee2e6",
+              }}
+            />
+          </Stack>
+        )}
+      </Modal>
     </Card>
   );
 }
