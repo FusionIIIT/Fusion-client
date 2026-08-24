@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   categoryLabel,
+  getBatchForBranch,
   getStudentFieldValue,
 } from "./AdminUpcomingBatchesUtils";
 import {
@@ -46,6 +47,35 @@ describe("getStudentFieldValue", () => {
 
   it("still shows a dash when the student has no category", () => {
     expect(getStudentFieldValue({}, categoryColumn)).toBe("-");
+  });
+});
+
+describe("getBatchForBranch", () => {
+  const batches = [
+    {
+      id: 1,
+      name: "PhD (Odd)",
+      discipline: "QS",
+      disciplineName: "Quantum Systems",
+    },
+    {
+      id: 2,
+      name: "PhD (Even)",
+      discipline: "QS",
+      disciplineName: "Quantum Systems",
+    },
+  ];
+
+  it("matches database-provided discipline names without a lookup table", () => {
+    expect(getBatchForBranch("Quantum Systems", batches, "odd")?.id).toBe(1);
+  });
+
+  it("also accepts the database-provided acronym", () => {
+    expect(getBatchForBranch("QS", batches, "even")?.id).toBe(2);
+  });
+
+  it("does not allocate a student to another intake", () => {
+    expect(getBatchForBranch("Quantum Systems", batches, "summer")).toBeNull();
   });
 });
 
