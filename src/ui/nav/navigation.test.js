@@ -198,6 +198,18 @@ describe("buildNavGroups", () => {
     expect(exam.items[0].links).toBeUndefined();
   });
 
+  it("names the acadadmin result announcement link explicitly", () => {
+    const exam = buildNavGroups({
+      role: "acadadmin",
+      accessibleModules: ALL_MODULES,
+    }).find((g) => g.section === "Examination");
+    const announceResult = exam.items.find(
+      (item) => item.to === "/examination/result-announcement",
+    );
+
+    expect(announceResult.label).toBe("Announce Result");
+  });
+
   it("offers no sidebar profile link, since the footer opens it", () => {
     const groups = buildNavGroups({
       role: "student",
