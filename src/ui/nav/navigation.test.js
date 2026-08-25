@@ -105,6 +105,31 @@ describe("buildNavGroups", () => {
     expect(groups.map((g) => g.section)).toContain("Academics");
   });
 
+  it("shows Bonafide Certificate only to acadadmin", () => {
+    const acadadmin = buildNavGroups({
+      role: "acadadmin",
+      accessibleModules: ALL_MODULES,
+    });
+    const certificate = acadadmin.find(
+      (group) => group.section === "Certificate",
+    );
+
+    expect(certificate.items).toEqual([
+      expect.objectContaining({
+        label: "Bonafide Certificate",
+        to: "/certificates/bonafide-certificate",
+      }),
+    ]);
+
+    const studentAdmin = buildNavGroups({
+      role: "studentacadadmin",
+      accessibleModules: ALL_MODULES,
+    });
+    expect(studentAdmin.some((group) => group.section === "Certificate")).toBe(
+      false,
+    );
+  });
+
   it("always offers the dashboard", () => {
     const groups = buildNavGroups({ role: "Guest-User" });
     expect(linksOf(groups).map((l) => l.to)).toContain("/dashboard");
