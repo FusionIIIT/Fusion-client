@@ -105,6 +105,31 @@ describe("buildNavGroups", () => {
     expect(groups.map((g) => g.section)).toContain("Academics");
   });
 
+  it("shows Bonafide Certificate only to acadadmin", () => {
+    const acadadmin = buildNavGroups({
+      role: "acadadmin",
+      accessibleModules: ALL_MODULES,
+    });
+    const certificate = acadadmin.find(
+      (group) => group.section === "Certificate",
+    );
+
+    expect(certificate.items).toEqual([
+      expect.objectContaining({
+        label: "Bonafide Certificate",
+        to: "/certificates/bonafide-certificate",
+      }),
+    ]);
+
+    const studentAdmin = buildNavGroups({
+      role: "studentacadadmin",
+      accessibleModules: ALL_MODULES,
+    });
+    expect(studentAdmin.some((group) => group.section === "Certificate")).toBe(
+      false,
+    );
+  });
+
   it("always offers the dashboard", () => {
     const groups = buildNavGroups({ role: "Guest-User" });
     expect(linksOf(groups).map((l) => l.to)).toContain("/dashboard");
@@ -196,6 +221,18 @@ describe("buildNavGroups", () => {
     expect(exam.items[0].label).toBe("Results");
     expect(exam.items[0].to).toBe("/examination/result");
     expect(exam.items[0].links).toBeUndefined();
+  });
+
+  it("names the acadadmin result announcement link explicitly", () => {
+    const exam = buildNavGroups({
+      role: "acadadmin",
+      accessibleModules: ALL_MODULES,
+    }).find((g) => g.section === "Examination");
+    const announceResult = exam.items.find(
+      (item) => item.to === "/examination/result-announcement",
+    );
+
+    expect(announceResult.label).toBe("Announce Result");
   });
 
   it("offers no sidebar profile link, since the footer opens it", () => {
