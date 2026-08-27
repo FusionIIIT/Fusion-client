@@ -35,6 +35,9 @@ export const verifyRegistrationRoute = `${host}/academic-procedures/api/acad/ver
 export const batchesRoute = `${host}/programme_curriculum/api/admin_batches/`;
 export const bonafideStudentRoute = `${host}/academic-procedures/api/acad/bonafide/student/`;
 export const bonafidePdfRoute = `${host}/academic-procedures/api/acad/bonafide/pdf/`;
+export const bonafideCertificatesRoute = `${host}/academic-procedures/api/acad/bonafide/certificates/`;
+export const bonafideCertificatePdfRoute = (certificateId) =>
+  `${bonafideCertificatesRoute}${certificateId}/pdf/`;
 export const checkAllocationRoute = `${host}/aims/api/check-allocation`;
 export const startAllocationRoute = `${host}/aims/api/start-allocation`;
 export const addCourseToSlotsRoute = `${host}/aims/api/add-course-to-slots`;
