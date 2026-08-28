@@ -116,15 +116,15 @@ function GradeCell({ ev, grade, onGradeChange }) {
   return (
     <Select
       size="xs"
-      placeholder="— Not graded —"
+      placeholder="—"
       value={grade ?? null}
       onChange={(v) => onGradeChange(ev.block_number, v)}
       data={[
-        { value: "S", label: "S — Satisfactory" },
-        { value: "X", label: "X — Unsatisfactory" },
+        { value: "S", label: "S" },
+        { value: "X", label: "X" },
       ]}
       clearable
-      w={150}
+      w={60}
     />
   );
 }
@@ -260,7 +260,7 @@ function RegistrationGradeRow({ blocksByNumber, submittedByName, onGraded }) {
         <ThesisTitleCell title={reg.thesis_title} />
       </Table.Td>
       <Table.Td>
-        <Group gap="sm" wrap="wrap">
+        <Group gap="sm" wrap="nowrap">
           {blocks.map((ev) => (
             <GradeCell
               key={ev.block_number}
@@ -826,44 +826,51 @@ export default function SupervisorThesisGrading() {
                 No grade entries found for the selected filters.
               </Text>
             ) : (
-              <Table striped highlightOnHover withTableBorder withColumnBorders>
-                <Table.Thead>
-                  <Table.Tr>
-                    <Table.Th>Roll No</Table.Th>
-                    <Table.Th>Student</Table.Th>
-                    <Table.Th>Semester</Table.Th>
-                    <Table.Th>Thesis Code</Table.Th>
-                    <Table.Th>Thesis Title</Table.Th>
-                    <Table.Th>Grades</Table.Th>
-                    <Table.Th>Remarks</Table.Th>
-                    <Table.Th>Action</Table.Th>
-                  </Table.Tr>
-                </Table.Thead>
-                <Table.Tbody>
-                  {groupedRegistrations.map(
-                    ([registrationId, blocksByNumber]) => {
-                      const blocks = Object.values(blocksByNumber);
-                      if (blocks[0].evaluation_type === "decimal") {
+              <ScrollArea>
+                <Table
+                  striped
+                  highlightOnHover
+                  withTableBorder
+                  withColumnBorders
+                >
+                  <Table.Thead>
+                    <Table.Tr>
+                      <Table.Th>Roll No</Table.Th>
+                      <Table.Th>Student</Table.Th>
+                      <Table.Th>Semester</Table.Th>
+                      <Table.Th>Thesis Code</Table.Th>
+                      <Table.Th>Thesis Title</Table.Th>
+                      <Table.Th>Grades</Table.Th>
+                      <Table.Th>Remarks</Table.Th>
+                      <Table.Th>Action</Table.Th>
+                    </Table.Tr>
+                  </Table.Thead>
+                  <Table.Tbody>
+                    {groupedRegistrations.map(
+                      ([registrationId, blocksByNumber]) => {
+                        const blocks = Object.values(blocksByNumber);
+                        if (blocks[0].evaluation_type === "decimal") {
+                          return (
+                            <DecimalGradeRow
+                              key={registrationId}
+                              ev={blocks[0]}
+                              onGraded={handleGraded}
+                            />
+                          );
+                        }
                         return (
-                          <DecimalGradeRow
+                          <RegistrationGradeRow
                             key={registrationId}
-                            ev={blocks[0]}
+                            blocksByNumber={blocksByNumber}
+                            submittedByName={getUserName()}
                             onGraded={handleGraded}
                           />
                         );
-                      }
-                      return (
-                        <RegistrationGradeRow
-                          key={registrationId}
-                          blocksByNumber={blocksByNumber}
-                          submittedByName={getUserName()}
-                          onGraded={handleGraded}
-                        />
-                      );
-                    },
-                  )}
-                </Table.Tbody>
-              </Table>
+                      },
+                    )}
+                  </Table.Tbody>
+                </Table>
+              </ScrollArea>
             )}
           </Stack>
         )}

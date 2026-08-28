@@ -272,6 +272,15 @@ export const deanSendInvitationsRoute = `${host}/academic-procedures/api/thesis/
 export const directorDashboardRoute = `${host}/academic-procedures/api/thesis/director-dashboard/`;
 export const directorApproveRoute = `${host}/academic-procedures/api/thesis/director-approve/`;
 
+// Post-evaluation workflow (both examiner reports in -> revise/reconfirm loop -> defense)
+export const studentSubmitRevisionRoute = `${host}/academic-procedures/api/thesis/submit-revision/`;
+export const supervisorReportsDecisionRoute = `${host}/academic-procedures/api/thesis/supervisor-reports-decision/`;
+export const supervisorFinalizeRevisionRoute = `${host}/academic-procedures/api/thesis/supervisor-finalize-revision/`;
+export const deanForwardReportsRoute = `${host}/academic-procedures/api/thesis/dean-forward-reports/`;
+export const deanFinalReviewRoute = `${host}/academic-procedures/api/thesis/dean-final-review/`;
+export const thesisRevisionRpcListRoute = `${host}/academic-procedures/api/thesis/revision-rpc/`;
+export const thesisRevisionRpcConsentRoute = `${host}/academic-procedures/api/thesis/revision-rpc/consent/`;
+
 // External Reviewer (token-based). Reached via emailed links from arbitrary
 // networks -- uses dynamicApiHost, not host, so it works regardless of what
 // domain the page is actually opened on.

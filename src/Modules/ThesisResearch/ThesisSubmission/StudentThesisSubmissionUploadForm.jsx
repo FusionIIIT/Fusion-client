@@ -23,6 +23,7 @@ import {
   thesisSubmitRoute,
   thesisSubmissionStatusRoute,
   studentThesisRoute,
+  studentSubmitRevisionRoute,
 } from "../../../routes/academicRoutes";
 import { host } from "../../../routes/globalRoutes";
 
@@ -35,9 +36,11 @@ const STATUS_COLOR = {
   director_review: "yellow",
   dean_invite_pending: "yellow",
   in_review: "blue",
-  completed: "teal",
-  approved: "green",
-  rejected: "red",
+  examiner_reports_ready: "blue",
+  supervisor_reports_review: "blue",
+  student_revision_pending: "orange",
+  supervisor_revision_review: "blue",
+  approved_for_defense: "green",
 };
 
 const fileUrl = (url) =>
@@ -51,6 +54,8 @@ export default function StudentThesisSubmissionUploadForm() {
   const [submission, setSubmission] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [revisedFile, setRevisedFile] = useState(null);
+  const [revisionSubmitting, setRevisionSubmitting] = useState(false);
 
   const authHeaders = () => ({
     Authorization: `Token ${localStorage.getItem("authToken")}`,
@@ -178,6 +183,52 @@ export default function StudentThesisSubmissionUploadForm() {
     }
   };
 
+  const handleRevisionSubmit = async () => {
+    if (!revisedFile) return;
+    if (revisedFile.type !== "application/pdf") {
+      showNotification({
+        message: "The revised thesis must be a PDF.",
+        color: "red",
+        icon: <IconX />,
+      });
+      return;
+    }
+    if (revisedFile.size > MAX_THESIS_SIZE) {
+      showNotification({
+        message: "Revised thesis must be ≤ 25MB",
+        color: "red",
+        icon: <IconX />,
+      });
+      return;
+    }
+
+    const data = new FormData();
+    data.append("submission_id", submission.id);
+    data.append("revised_thesis", revisedFile);
+
+    setRevisionSubmitting(true);
+    try {
+      await axios.post(studentSubmitRevisionRoute, data, {
+        headers: { ...authHeaders(), "Content-Type": "multipart/form-data" },
+      });
+      showNotification({
+        message: "Revised thesis submitted successfully",
+        color: "teal",
+        icon: <IconCheck />,
+      });
+      setRevisedFile(null);
+      fetchStatus();
+    } catch (e) {
+      showNotification({
+        message: e.response?.data?.error || e.message || "Submission failed",
+        color: "red",
+        icon: <IconX />,
+      });
+    } finally {
+      setRevisionSubmitting(false);
+    }
+  };
+
   if (loading) {
     return (
       <Center style={{ height: 200 }}>
@@ -251,6 +302,31 @@ export default function StudentThesisSubmissionUploadForm() {
                   <b>Director:</b> {submission.director_remarks}
                 </Text>
               )}
+            </>
+          )}
+          {submission.status === "student_revision_pending" && (
+            <>
+              <Divider label="Revision Requested" labelPosition="left" />
+              <Text size="sm">
+                The examiners&apos; reports have been reviewed by your
+                supervisor and call for a revision. Upload your revised thesis
+                below.
+              </Text>
+              <FileInput
+                label="Revised Thesis (PDF, ≤25MB)"
+                accept="application/pdf"
+                leftSection={<IconUpload size={14} />}
+                value={revisedFile}
+                onChange={setRevisedFile}
+                disabled={revisionSubmitting}
+              />
+              <Button
+                onClick={handleRevisionSubmit}
+                loading={revisionSubmitting}
+                disabled={!revisedFile}
+              >
+                Submit Revised Thesis
+              </Button>
             </>
           )}
           <Text size="xs" c="dimmed">

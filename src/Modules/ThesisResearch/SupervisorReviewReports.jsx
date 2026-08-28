@@ -10,10 +10,19 @@ import {
   Stack,
   Group,
   Divider,
+  Button,
+  Anchor,
+  List,
 } from "@mantine/core";
+import { showNotification } from "@mantine/notifications";
+import { IconCheck, IconX } from "@tabler/icons-react";
 import axios from "axios";
 import PropTypes from "prop-types";
-import { supervisorReviewReportsRoute } from "../../routes/academicRoutes";
+import {
+  supervisorReviewReportsRoute,
+  supervisorReportsDecisionRoute,
+  supervisorFinalizeRevisionRoute,
+} from "../../routes/academicRoutes";
 
 const RECOMMENDATION_LABEL = {
   accept: "Accept as-is",
@@ -34,7 +43,7 @@ const CATEGORY_COLOR = {
   foreign: "cyan",
 };
 
-function ReviewCard({ review }) {
+export function ReviewCard({ review }) {
   return (
     <Card
       withBorder
@@ -125,10 +134,69 @@ ReviewCard.propTypes = {
   }).isRequired,
 };
 
+export function RevisionRoundStatus({ round }) {
+  if (!round) return null;
+  return (
+    <Card withBorder radius="md" p="sm" mt="md" bg="gray.0">
+      <Text size="sm" fw={500} mb={4}>
+        Revision round {round.round_number}
+      </Text>
+      {round.revised_thesis_url ? (
+        <Anchor
+          size="sm"
+          href={round.revised_thesis_url}
+          target="_blank"
+          rel="noreferrer"
+        >
+          View revised thesis
+        </Anchor>
+      ) : (
+        <Text size="sm" c="dimmed">
+          Waiting for the student to upload the revised thesis.
+        </Text>
+      )}
+      {round.committee_size > 0 && (
+        <>
+          <Text size="sm" mt="xs">
+            RPC consent: {round.consented_count} / {round.committee_size}
+          </Text>
+          <List size="sm" spacing={2}>
+            {round.committee.map((m) => (
+              <List.Item key={m.member_name}>
+                {m.member_name} &middot; {m.consented ? "Consented" : "Pending"}
+              </List.Item>
+            ))}
+          </List>
+        </>
+      )}
+    </Card>
+  );
+}
+
+RevisionRoundStatus.propTypes = {
+  round: PropTypes.shape({
+    round_number: PropTypes.number,
+    revised_thesis_url: PropTypes.string,
+    committee_size: PropTypes.number,
+    consented_count: PropTypes.number,
+    committee: PropTypes.arrayOf(
+      PropTypes.shape({
+        member_name: PropTypes.string,
+        consented: PropTypes.bool,
+      }),
+    ),
+  }),
+};
+
+RevisionRoundStatus.defaultProps = {
+  round: null,
+};
+
 export default function SupervisorReviewReports() {
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [submittingId, setSubmittingId] = useState(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -148,6 +216,64 @@ export default function SupervisorReviewReports() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const authConfig = () => ({
+    headers: { Authorization: `Token ${localStorage.getItem("authToken")}` },
+  });
+
+  const handleReportsDecision = async (submissionId, action) => {
+    setSubmittingId(submissionId);
+    try {
+      const res = await axios.post(
+        supervisorReportsDecisionRoute,
+        { submission_id: submissionId, action },
+        authConfig(),
+      );
+      showNotification({
+        title: "Success",
+        message: res.data.detail,
+        color: "teal",
+        icon: <IconCheck />,
+      });
+      fetchData();
+    } catch (e) {
+      showNotification({
+        title: "Error",
+        message: e.response?.data?.error || e.message,
+        color: "red",
+        icon: <IconX />,
+      });
+    } finally {
+      setSubmittingId(null);
+    }
+  };
+
+  const handleFinalizeRevision = async (submissionId) => {
+    setSubmittingId(submissionId);
+    try {
+      const res = await axios.post(
+        supervisorFinalizeRevisionRoute,
+        { submission_id: submissionId },
+        authConfig(),
+      );
+      showNotification({
+        title: "Success",
+        message: res.data.detail,
+        color: "teal",
+        icon: <IconCheck />,
+      });
+      fetchData();
+    } catch (e) {
+      showNotification({
+        title: "Error",
+        message: e.response?.data?.error || e.message,
+        color: "red",
+        icon: <IconX />,
+      });
+    } finally {
+      setSubmittingId(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -175,9 +301,14 @@ export default function SupervisorReviewReports() {
     <Stack gap="md">
       {submissions.map((sub) => (
         <Card key={sub.id} shadow="sm" p="lg" radius="md" withBorder>
-          <Title order={4} mb={4}>
-            {sub.title}
-          </Title>
+          <Group justify="space-between" mb={4}>
+            <Title order={4}>{sub.title}</Title>
+            {sub.status_label && (
+              <Badge color="blue" variant="light">
+                {sub.status_label}
+              </Badge>
+            )}
+          </Group>
           <Text size="sm" c="dimmed" mb="md">
             {sub.student_name} &middot; Roll No: {sub.student_roll}
           </Text>
@@ -190,6 +321,52 @@ export default function SupervisorReviewReports() {
               />
             ))}
           </Stack>
+
+          {sub.status === "supervisor_reports_review" && (
+            <Group justify="flex-end" mt="md">
+              <Button
+                color="orange"
+                loading={submittingId === sub.id}
+                onClick={() =>
+                  handleReportsDecision(sub.id, "forward_to_student")
+                }
+              >
+                Forward to Student for Revision
+              </Button>
+              <Button
+                color="teal"
+                loading={submittingId === sub.id}
+                onClick={() =>
+                  handleReportsDecision(sub.id, "no_revision_needed")
+                }
+              >
+                No Revision Needed
+              </Button>
+            </Group>
+          )}
+
+          {(sub.status === "student_revision_pending" ||
+            sub.status === "supervisor_revision_review") && (
+            <>
+              <RevisionRoundStatus round={sub.current_round} />
+              {sub.status === "supervisor_revision_review" && (
+                <Group justify="flex-end" mt="md">
+                  <Button
+                    color="teal"
+                    loading={submittingId === sub.id}
+                    disabled={
+                      !sub.current_round ||
+                      sub.current_round.consented_count <
+                        sub.current_round.committee_size
+                    }
+                    onClick={() => handleFinalizeRevision(sub.id)}
+                  >
+                    Forward to Dean
+                  </Button>
+                </Group>
+              )}
+            </>
+          )}
         </Card>
       ))}
     </Stack>

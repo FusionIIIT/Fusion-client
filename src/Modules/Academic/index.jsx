@@ -41,6 +41,7 @@ const COMPONENTS = {
   studentFeedbackForm: lazy(
     () => import("./FeedbackForm/StudentCourseFeedbackForm"),
   ),
+  studentTeachingCreditFeedback: lazy(() => import("./TeachingCreditFeedback")),
 
   facultyRollList: lazy(() => import("./ViewRollList")),
   facultyTaDashboard: lazy(() =>

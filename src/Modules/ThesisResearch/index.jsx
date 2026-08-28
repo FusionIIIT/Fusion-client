@@ -42,6 +42,9 @@ const COMPONENTS = {
     () => import("./ThesisSubmission/SupervisorDashboardSub"),
   ),
   supervisorReviewReports: lazy(() => import("./SupervisorReviewReports")),
+  thesisRevisionRpc: lazy(
+    () => import("./ThesisSubmission/ThesisRevisionRPCDashboard"),
+  ),
 
   hodDashboard: lazy(() => import("./HODDashboard")),
   hodComprehensiveExam: lazy(
