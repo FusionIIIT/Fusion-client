@@ -16,6 +16,7 @@ const COMPONENTS = {
   adminDeletePreRegistration: lazy(() => import("./DeletePreRegistration")),
   adminAllotCourses: lazy(() => import("./AllotCourses")),
   adminAllocateCourses: lazy(() => import("./AllocateCourses")),
+  adminPreRegistrationReport: lazy(() => import("./PreRegistrationReport")),
   adminAddCourses: lazy(() => import("./AdminAddDashboard")),
   adminDropCourses: lazy(() => import("./AdminDropDashboard")),
   adminReplacement: lazy(() => import("./AdminReplacementDashboard")),

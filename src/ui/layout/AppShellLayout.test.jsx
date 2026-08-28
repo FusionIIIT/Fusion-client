@@ -1,5 +1,5 @@
 import { MantineProvider } from "@mantine/core";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -230,6 +230,52 @@ describe("AppShellLayout", () => {
       "aria-expanded",
       "true",
     );
+  });
+
+  it("does not scroll the navigation when a group is toggled", async () => {
+    const scrollBy = vi.fn();
+    const scrollByDescriptor = Object.getOwnPropertyDescriptor(
+      Element.prototype,
+      "scrollBy",
+    );
+    Element.prototype.scrollBy = scrollBy;
+    const rect = vi
+      .spyOn(Element.prototype, "getBoundingClientRect")
+      .mockImplementation(function getRect() {
+        return this.hasAttribute("data-active")
+          ? { top: -100, bottom: -60 }
+          : { top: 0, bottom: 100 };
+      });
+
+    try {
+      setup({ activePath: "/academics/swayam" });
+      await act(
+        () =>
+          new Promise((resolve) => {
+            setTimeout(resolve, 300);
+          }),
+      );
+      scrollBy.mockClear();
+
+      await userEvent.click(screen.getByText("Registration"));
+      await act(
+        () =>
+          new Promise((resolve) => {
+            setTimeout(resolve, 300);
+          }),
+      );
+
+      expect(scrollBy).not.toHaveBeenCalled();
+    } finally {
+      rect.mockRestore();
+      if (scrollByDescriptor)
+        Object.defineProperty(
+          Element.prototype,
+          "scrollBy",
+          scrollByDescriptor,
+        );
+      else delete Element.prototype.scrollBy;
+    }
   });
 
   it("flags a collapsed group that holds the current page", async () => {
