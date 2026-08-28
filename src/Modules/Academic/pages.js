@@ -258,6 +258,14 @@ export const ACADEMIC_PAGES = [
     group: "Calendar & Feedback",
     roles: STUDENT_ROLES,
   },
+  {
+    key: "studentTeachingCreditFeedback",
+    slug: "teaching-credit-feedback",
+    title: "Teaching Credit Feedback",
+    icon: "ChatCircleDots",
+    group: "Calendar & Feedback",
+    roles: STUDENT_ROLES,
+  },
 
   {
     key: "facultyRollList",

@@ -18,6 +18,9 @@ const ACTION_COLOR = {
   approve_panel: "yellow",
   reconsider_panel: "red",
   send_invitations: "indigo",
+  forward_reports: "indigo",
+  send_back_to_examiner: "red",
+  approve_for_defense: "teal",
 };
 
 export default function DeanPanelDashboard() {

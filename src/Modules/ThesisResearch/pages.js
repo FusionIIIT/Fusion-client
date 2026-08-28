@@ -151,6 +151,14 @@ export const THESIS_PAGES = [
     group: "Examiners",
     roles: FACULTY_ROLES,
   },
+  {
+    key: "thesisRevisionRpc",
+    slug: "thesis-revision-rpc",
+    title: "Thesis Revision RPC",
+    icon: "ChatCircleDots",
+    group: "Examiners",
+    roles: FACULTY_ROLES,
+  },
 
   {
     key: "hodDashboard",

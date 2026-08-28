@@ -8,6 +8,8 @@ import {
   Group,
   Badge,
   Textarea,
+  Divider,
+  Stack,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import { IconCheck, IconX } from "@tabler/icons-react";
@@ -16,7 +18,10 @@ import PropTypes from "prop-types";
 import {
   deanPanelApproveRoute,
   deanSendInvitationsRoute,
+  deanForwardReportsRoute,
+  deanFinalReviewRoute,
 } from "../../../routes/academicRoutes";
+import { ReviewCard, RevisionRoundStatus } from "../SupervisorReviewReports";
 
 const STATUS_COLOR = {
   pending: "gray",
@@ -161,6 +166,60 @@ export default function DeanPanelReviewPanel({ submission, onClose }) {
     }
   };
 
+  const handleForwardReports = async () => {
+    setSubmitting(true);
+    try {
+      await axios.post(
+        deanForwardReportsRoute,
+        { submission_id: submission.id },
+        { headers: { Authorization: `Token ${authToken()}` } },
+      );
+      showNotification({
+        title: "Success",
+        message: "Reports forwarded to the Supervisor.",
+        color: "teal",
+        icon: <IconCheck />,
+      });
+      onClose();
+    } catch (e) {
+      showNotification({
+        title: "Error",
+        message: e.response?.data?.error || e.message,
+        color: "red",
+        icon: <IconX />,
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleFinalReview = async () => {
+    setSubmitting(true);
+    try {
+      const res = await axios.post(
+        deanFinalReviewRoute,
+        { submission_id: submission.id },
+        { headers: { Authorization: `Token ${authToken()}` } },
+      );
+      showNotification({
+        title: "Success",
+        message: res.data.detail,
+        color: "teal",
+        icon: <IconCheck />,
+      });
+      onClose();
+    } catch (e) {
+      showNotification({
+        title: "Error",
+        message: e.response?.data?.error || e.message,
+        color: "red",
+        icon: <IconX />,
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <Card shadow="xs" p="md" mt="lg" withBorder>
       <Title order={4} mb={4}>
@@ -181,6 +240,24 @@ export default function DeanPanelReviewPanel({ submission, onClose }) {
         category="foreign"
         examiners={submission.foreign_examiners || []}
       />
+
+      {submission.reviews && submission.reviews.length > 0 && (
+        <>
+          <Divider my="md" label="Examiner Reports" labelPosition="center" />
+          <Stack gap="md">
+            {submission.reviews.map((review) => (
+              <ReviewCard
+                key={`${review.examiner_type}-${review.examiner_email}`}
+                review={review}
+              />
+            ))}
+          </Stack>
+        </>
+      )}
+
+      {submission.current_round && (
+        <RevisionRoundStatus round={submission.current_round} />
+      )}
 
       {submission.dean_panel_remarks && (
         <Text
@@ -252,6 +329,24 @@ export default function DeanPanelReviewPanel({ submission, onClose }) {
             Send Invitations to Rank 1 Examiners
           </Button>
         )}
+        {submission.status === "examiner_reports_ready" && (
+          <Button
+            color="indigo"
+            onClick={handleForwardReports}
+            loading={submitting}
+          >
+            Forward Reports to Supervisor
+          </Button>
+        )}
+        {submission.status === "dean_final_review" && (
+          <Button
+            color={submission.action === "approve_for_defense" ? "teal" : "red"}
+            onClick={handleFinalReview}
+            loading={submitting}
+          >
+            {submission.action_label}
+          </Button>
+        )}
       </Group>
     </Card>
   );
@@ -268,6 +363,12 @@ DeanPanelReviewPanel.propTypes = {
     director_remarks: PropTypes.string,
     indian_examiners: PropTypes.arrayOf(examinerShape),
     foreign_examiners: PropTypes.arrayOf(examinerShape),
+    action: PropTypes.string,
+    action_label: PropTypes.string,
+    // eslint-disable-next-line react/forbid-prop-types
+    reviews: PropTypes.array,
+    // eslint-disable-next-line react/forbid-prop-types
+    current_round: PropTypes.object,
   }).isRequired,
   onClose: PropTypes.func.isRequired,
 };
