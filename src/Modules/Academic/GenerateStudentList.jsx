@@ -103,9 +103,8 @@ export default function GenerateStudentList() {
   const [error, setError]               = useState(null);
   const [exportAllLoading, setExportAllLoading] = useState(false);
 
-  // Sections the currently-selected course is split into (empty => no sections).
-  const selectedCourseSections =
-    courseOptions.find((c) => c.value === course)?.sections || [];
+  const selectedCourseOption = courseOptions.find((c) => c.value === course);
+  const selectedCourseSections = selectedCourseOption?.sections || [];
 
   // 1) Fetch available courses once year+semester are set
   const fetchCourses = useCallback(async () => {
@@ -127,12 +126,14 @@ export default function GenerateStudentList() {
       });
       // Expect [{ id, code, name, instructor, sections }, ...]
       setCourseOptions(
-        res.data.map(c => ({
+        res.data.map((c) => ({
           value: String(c.id),
           label: courseLabel(c),
-          instructor: c.instructor || 'TBA',
+          code: c.code,
+          name: c.name,
+          instructor: c.instructor || "TBA",
           sections: c.sections || [],
-        }))
+        })),
       );
     } catch (err) {
       console.error(err);
@@ -282,18 +283,8 @@ export default function GenerateStudentList() {
 
       // Filename from course code and course name
       const selectedCourse = courseOptions.find(c => c.value === course);
-      let courseCode = 'Course';
-      let courseName = 'List';
-      
-      if (selectedCourse) {
-        const parts = selectedCourse.label.split(' - ');
-        if (parts.length >= 2) {
-          courseCode = parts[0].trim();
-          courseName = parts[1].trim();
-        } else {
-          courseName = selectedCourse.label;
-        }
-      }
+      const courseCode = selectedCourse?.code || 'Course';
+      const courseName = selectedCourse?.name || 'List';
       const courseNameClean = courseName.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_-]/g, '');
       const filename = `${courseCode}_${courseNameClean}.xlsx`;
 
@@ -834,10 +825,10 @@ export default function GenerateStudentList() {
 
             {/* Course Details */}
             <Box>
-              <Text size="sm" fw={500}>Course No.: <Text span>{courseOptions.find(c => c.value === course)?.label?.split(' - ')[0] || 'N/A'}</Text></Text>
-              <Text size="sm" fw={500}>Course Title: <Text span>{courseOptions.find(c => c.value === course)?.label?.split(' - ')[1] || courseOptions.find(c => c.value === course)?.label || 'N/A'}</Text></Text>
+              <Text size="sm" fw={500}>Course No.: <Text span>{selectedCourseOption?.code || 'N/A'}</Text></Text>
+              <Text size="sm" fw={500}>Course Title: <Text span>{selectedCourseOption?.name || 'N/A'}</Text></Text>
               <Text size="sm" fw={500}>Instructor: <Text span>{
-                courseOptions.find(c => c.value === course)?.instructor || 'TBA'
+                selectedCourseOption?.instructor || 'TBA'
               }</Text></Text>
               <Text size="sm" fw={500}>List Type: <Text span c={listType ? "blue" : "green"}>
                 {programmeType !== 'All' ? `${programmeType} - ` : ""}{listType || "Complete Roll List (All Registration Types)"}

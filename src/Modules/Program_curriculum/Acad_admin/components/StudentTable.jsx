@@ -132,7 +132,7 @@ function StudentTable({
                   fontSize: "13px",
                   ...(index === 0
                     ? {
-                        // JEE Application Number - First sticky column
+                        // Roll Number, frozen beside S.No
                         position: "sticky",
                         left: "60px",
                         backgroundColor: "#f8fafc",
@@ -140,17 +140,7 @@ function StudentTable({
                         borderRight: "2px solid #e2e8f0",
                         borderBottom: "2px solid #e2e8f0",
                       }
-                    : index === 1
-                      ? {
-                          // Roll Number - Second sticky column
-                          position: "sticky",
-                          left: "200px",
-                          backgroundColor: "#f8fafc",
-                          zIndex: 20,
-                          borderRight: "2px solid #e2e8f0",
-                          borderBottom: "2px solid #e2e8f0",
-                        }
-                      : {}),
+                    : {}),
                 }}
               >
                 {column.label}
@@ -250,15 +240,14 @@ function StudentTable({
                     key={column.key}
                     style={{
                       padding: "14px 12px",
-                      textAlign:
-                        colIndex === 0 || colIndex === 1 ? "left" : "center",
+                      textAlign: colIndex === 0 ? "left" : "center",
                       fontSize: "12px",
                       color: "#374151",
                       wordBreak: "break-word",
                       whiteSpace: "normal",
                       ...(colIndex === 0
                         ? {
-                            // JEE Application Number - First sticky column
+                            // Roll Number, frozen beside S.No
                             position: "sticky",
                             left: "60px",
                             backgroundColor: "#ffffff",
@@ -268,19 +257,7 @@ function StudentTable({
                             fontWeight: "500",
                             color: "#111827",
                           }
-                        : colIndex === 1
-                          ? {
-                              // Roll Number - Second sticky column
-                              position: "sticky",
-                              left: "200px",
-                              backgroundColor: "#ffffff",
-                              zIndex: 10,
-                              borderRight: "2px solid #e5e7eb",
-                              fontSize: "13px",
-                              fontWeight: "500",
-                              color: "#111827",
-                            }
-                          : {}),
+                        : {}),
                     }}
                   >
                     {renderStudentCell(student, column, colIndex)}

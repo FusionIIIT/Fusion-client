@@ -768,12 +768,11 @@ export function useAddStudents({
             .filter(Boolean);
 
     const missingDiscipline = requiredDisciplines.find((disciplineName) => {
-      const matchingBatch = batchesForYear.find((batch) => {
-        const batchDiscipline = (batch.discipline || batch.branch || "")
-          .trim()
-          .toLowerCase();
-        return batchDiscipline === disciplineName.trim().toLowerCase();
-      });
+      const matchingBatch = getBatchForBranch(
+        disciplineName,
+        batchesForYear,
+        activeSection === "phd" ? selectedPhdSemester : null,
+      );
       return !matchingBatch;
     });
 
@@ -813,7 +812,12 @@ export function useAddStudents({
             "Content-Type": "application/json",
             ...(token ? { Authorization: `Token ${token}` } : {}),
           },
-          body: JSON.stringify({ academic_year: academicYear, disciplines }),
+          body: JSON.stringify({
+            academic_year: academicYear,
+            disciplines,
+            programme_type: activeSection,
+            phd_semester: activeSection === "phd" ? selectedPhdSemester : null,
+          }),
         },
       );
 
@@ -824,7 +828,7 @@ export function useAddStudents({
         !contentType ||
         !contentType.includes("application/json")
       ) {
-        return validateBatchPrerequisitesFrontend(academicYear);
+        return validateBatchPrerequisitesFrontend(academicYear, disciplines);
       }
 
       const data = await response.json();
@@ -867,15 +871,8 @@ export function useAddStudents({
       }
 
       return true;
-    } catch (error) {
-      if (
-        error.message.includes("Unexpected token") ||
-        error.message.includes("<!doctype")
-      ) {
-        return validateBatchPrerequisitesFrontend(academicYear, disciplines);
-      }
-
-      return true;
+    } catch {
+      return validateBatchPrerequisitesFrontend(academicYear, disciplines);
     }
   };
 
@@ -1073,8 +1070,9 @@ export function useAddStudents({
       const currentBatches = getCurrentBatches();
       const batchValidationErrors = [];
       const studentBatchMap = new Map();
+      const studentBatchIds = [];
 
-      dataToUpload.forEach((student) => {
+      dataToUpload.forEach((student, index) => {
         const studentBranch =
           student.branch ||
           student.discipline ||
@@ -1088,17 +1086,7 @@ export function useAddStudents({
           activeSection === "phd" ? selectedPhdSemester : null,
         );
 
-        let finalMatchingBatch = matchingBatch;
-        if (!finalMatchingBatch) {
-          finalMatchingBatch = currentBatches.find((batch) => {
-            const batchBranch = batch.discipline || batch.branch;
-            return batchBranch === studentBranch && batch.year === studentYear;
-          });
-        }
-
-        if (finalMatchingBatch && finalMatchingBatch.year !== studentYear) {
-          finalMatchingBatch = null;
-        }
+        const finalMatchingBatch = matchingBatch;
 
         if (!finalMatchingBatch) {
           const semesterInfo =
@@ -1112,6 +1100,7 @@ export function useAddStudents({
             message: `No existing batch found for ${studentBranch} ${studentYear}${semesterInfo}`,
           });
         } else {
+          studentBatchIds[index] = finalMatchingBatch.id;
           const studentsForThisBatch =
             studentBatchMap.get(finalMatchingBatch.id) || [];
           studentsForThisBatch.push(student);
@@ -1189,9 +1178,12 @@ export function useAddStudents({
         return;
       }
 
-      const transformedData = transformDataForDatabase(dataToUpload);
-
-      // Debug logging
+      const transformedData = transformDataForDatabase(dataToUpload).map(
+        (student, index) => ({
+          ...student,
+          batch_id: studentBatchIds[index],
+        }),
+      );
 
       const response = await saveStudentsBatch(
         transformedData,
@@ -1390,6 +1382,7 @@ export function useAddStudents({
         }
 
         const transformedData = transformDataForDatabase([manualFormData]);
+        let manualTargetBatch = null;
 
         if (!editingStudent) {
           // Use viewAcademicYear (the admin-selected year) for batch lookup.
@@ -1423,13 +1416,13 @@ export function useAddStudents({
           );
           const studentBranch = manualFormData.branch;
 
-          const matchingBatch = getBatchForBranch(
+          manualTargetBatch = getBatchForBranch(
             studentBranch,
             batchesForYear,
             activeSection === "phd" ? selectedPhdSemester : null,
           );
 
-          if (!matchingBatch) {
+          if (!manualTargetBatch) {
             const academicYearStr = batchYearToAcademicYear(studentYear);
             const availableBranches = batchesForYear
               .map((b) => b.discipline || b.branch)
@@ -1463,11 +1456,12 @@ export function useAddStudents({
             return;
           }
 
-          const totalStudentsForBatch = (matchingBatch.filledSeats || 0) + 1;
-          if (totalStudentsForBatch > matchingBatch.totalSeats) {
+          const totalStudentsForBatch =
+            (manualTargetBatch.filledSeats || 0) + 1;
+          if (totalStudentsForBatch > manualTargetBatch.totalSeats) {
             notifications.show({
               title: "Batch Full",
-              message: `Batch ${studentBranch} ${studentYear} is full (${matchingBatch.filledSeats}/${matchingBatch.totalSeats} seats)`,
+              message: `Batch ${studentBranch} ${studentYear} is full (${manualTargetBatch.filledSeats}/${manualTargetBatch.totalSeats} seats)`,
               color: "red",
               autoClose: 5000,
             });
@@ -1599,7 +1593,7 @@ export function useAddStudents({
           }
         } else {
           const response = await addSingleStudent(
-            transformedData[0],
+            { ...transformedData[0], batch_id: manualTargetBatch.id },
             activeSection,
             activeSection === "phd" ? selectedPhdSemester : null,
             viewAcademicYear, // Pass current view year so backend uses the right batch year

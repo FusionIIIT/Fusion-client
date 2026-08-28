@@ -35,6 +35,17 @@ const REGISTRATION_TYPES = [
   { value: "teaching_credit", label: "Teaching Credit" },
 ];
 
+// Turns the backend's per-row failures into one readable line.
+function describeRowErrors(data) {
+  const reasons =
+    data?.reasons ||
+    [...new Set((data?.failed_rows || []).map((r) => r.error))].slice(0, 3);
+  if (!reasons?.length) return "";
+  const first = (data?.failed_rows || [])[0];
+  const where = first?.row ? ` First failing row: ${first.row}.` : "";
+  return `${reasons.join(" ")}${where}`;
+}
+
 export default function AllotCourses() {
   const userRole = useSelector((state) => state.user.role);
   const programmes = programmesForRole(userRole);
@@ -397,23 +408,32 @@ export default function AllotCourses() {
           Authorization: `Token ${token}`,
         },
       })
-      .then(() => {
-        showNotification({
-          title: "Success",
-          message: "Allotted successfully",
-          color: "green",
-        });
+      .then(({ data }) => {
+        if (data?.failed_rows_count) {
+          showNotification({
+            title: "Allotted with errors",
+            message: `${data.inserted_rows} row(s) allotted, ${data.failed_rows_count} skipped. ${describeRowErrors(data)}`,
+            color: "yellow",
+            autoClose: false,
+          });
+        } else {
+          showNotification({
+            title: "Success",
+            message: "Allotted successfully",
+            color: "green",
+          });
+        }
         resetForm();
       })
       .catch((err) => {
-        const msg =
-          err.response?.data?.error ||
-          err.response?.data?.message ||
-          err.message;
+        const data = err.response?.data;
+        const msg = data?.error || data?.message || err.message;
+        const detail = describeRowErrors(data);
         showNotification({
           title: "Error",
-          message: msg || "Upload failed",
+          message: [msg || "Upload failed", detail].filter(Boolean).join(" "),
           color: "red",
+          autoClose: detail ? false : undefined,
         });
         setSelectedFile(null);
         setFileKey((f) => f + 1);

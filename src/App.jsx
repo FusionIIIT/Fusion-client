@@ -24,6 +24,7 @@ import ProfileCompletionModal from "./components/ProfileCompletionModal";
 import Examination from "./Modules/Examination/examination";
 import Database from "./Modules/Database/database";
 import ProgrammeCurriculumRoutes from "./Modules/Program_curriculum/programmCurriculum";
+import Certificates from "./Modules/Certificates";
 import NotFoundPage from "./components/NotFoundPage";
 import { theme } from "./ui/theme/theme";
 
@@ -183,6 +184,7 @@ export default function App() {
               element={<ProgrammeCurriculumRoutes />}
             />
             <Route path="/examination/*" element={<Examination />} />
+            <Route path="/certificates/*" element={<Certificates />} />
             <Route path="/database/*" element={<Database />} />
           </Route>
           <Route path="/accounts/login" element={<LoginPage />} />

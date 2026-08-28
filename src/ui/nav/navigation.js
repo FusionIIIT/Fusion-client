@@ -12,6 +12,10 @@ import {
   FPS_BASE,
   FPS_PAGES,
 } from "../../Modules/facultyProfessionalProfile/pages";
+import {
+  CERTIFICATES_BASE,
+  CERTIFICATE_PAGES,
+} from "../../Modules/Certificates/pages";
 import { pagesForRole, STUDENT_ROLES } from "./roles";
 
 const GROUP_ICONS = {
@@ -40,6 +44,12 @@ const MODULE_SECTIONS = [
     section: "Academics",
     base: ACADEMIC_BASE,
     pages: ACADEMIC_PAGES,
+  },
+  {
+    id: "course_registration",
+    section: "Certificate",
+    base: CERTIFICATES_BASE,
+    pages: CERTIFICATE_PAGES,
   },
   {
     id: "program_and_curriculum",

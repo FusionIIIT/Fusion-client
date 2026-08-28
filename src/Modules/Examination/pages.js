@@ -90,7 +90,7 @@ export const EXAMINATION_PAGES = [
     slug: "result-announcement",
     title: "Announce Result",
     icon: "Megaphone",
-    group: "Results",
+    group: null,
     roles: [...ACAD_AND_DEAN, ...PROGRAMME_ADMIN_ROLES],
   },
 

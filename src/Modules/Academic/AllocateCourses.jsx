@@ -67,6 +67,7 @@ function AllocateCourses() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [showStartButton, setShowStartButton] = useState(false);
+  const [continueAllocation, setContinueAllocation] = useState(false);
   const [allocationResults, setAllocationResults] = useState(null);
   const [resultsLoading, setResultsLoading] = useState(false);
   const [previewCourse, setPreviewCourse] = useState(null);
@@ -112,6 +113,7 @@ function AllocateCourses() {
     setSuccess("");
     setLoading(true);
     setShowStartButton(false);
+    setContinueAllocation(false);
     setAllocationResults(null);
     setSearchQuery("");
 
@@ -141,7 +143,8 @@ function AllocateCourses() {
         return;
       }
       if (r.status === 1) {
-        setError("Courses not yet allocated. Start allocation.");
+        setContinueAllocation((r.allocated_allocations || 0) > 0);
+        setError(r.message || "Courses not yet allocated. Start allocation.");
         setShowStartButton(true);
       } else if (r.status === -1) {
         setError("Registration is under process.");
@@ -190,8 +193,19 @@ function AllocateCourses() {
       );
       if (res.data.status === 1) {
         setSlotIssues(null);
-        setSuccess(res.data.message || "Course allocation successful!");
-        setShowStartButton(false);
+        const remaining = res.data.progress?.remaining_allocations || 0;
+        if (remaining > 0) {
+          setError(
+            res.data.message || "Some students still require allocation.",
+          );
+          setSuccess("");
+          setContinueAllocation(true);
+          setShowStartButton(true);
+        } else {
+          setSuccess(res.data.message || "Course allocation successful!");
+          setShowStartButton(false);
+          setContinueAllocation(false);
+        }
         // stop this spinner before the results spinner starts
         setLoading(false);
         await fetchAllocationResults();
@@ -643,7 +657,7 @@ function AllocateCourses() {
                     {s.email}
                   </td>
                   <td>{s.registration_type}</td>
-                  <td />
+                  <td aria-label="Signature" />
                 </tr>
               ))}
             </tbody>
@@ -749,7 +763,7 @@ function AllocateCourses() {
           onClick={handleStartAllocation}
           loading={loading}
         >
-          Start Allocation
+          {continueAllocation ? "Continue Allocation" : "Start Allocation"}
         </Button>
       )}
 

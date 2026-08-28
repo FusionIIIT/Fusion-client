@@ -6,7 +6,6 @@ import JSZip from "jszip";
 import {
   PROGRAMME_TYPES,
   STUDENT_FIELDS_CONFIG,
-  BRANCH_MAPPINGS,
   STUDENT_TABLE_COLUMNS,
 } from "./AdminUpcomingBatchesConstants";
 import { host } from "../../../routes/globalRoutes";
@@ -153,9 +152,13 @@ export const getCurrentAcademicYearString = () => {
 };
 
 export const normalizeBranchName = (branchName) => {
-  if (!branchName) return null;
-  const normalized = branchName.toLowerCase().trim();
-  return BRANCH_MAPPINGS[normalized] || [branchName];
+  if (!branchName) return "";
+  return branchName
+    .toString()
+    .normalize("NFKC")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLocaleLowerCase("en");
 };
 
 export const getBatchForBranch = (
@@ -166,18 +169,19 @@ export const getBatchForBranch = (
   if (!targetBranch || !batchesToSearch || batchesToSearch.length === 0)
     return null;
 
-  const targetVariants = normalizeBranchName(targetBranch);
+  const normalizedTarget = normalizeBranchName(targetBranch);
 
   const matchedBatch = batchesToSearch.find((batch) => {
-    const batchBranch = (batch.discipline || batch.branch || "").trim();
-    if (!batchBranch) return false;
-
-    const batchVariants = normalizeBranchName(batchBranch);
-
-    const branchMatches = targetVariants.some((target) =>
-      batchVariants.some(
-        (batchVar) => target.toLowerCase() === batchVar.toLowerCase(),
-      ),
+    const disciplineReferences = [
+      batch.disciplineName,
+      batch.fullDisciplineName,
+      batch.discipline_name,
+      batch.discipline,
+      batch.branch,
+      batch.displayBranch,
+    ];
+    const branchMatches = disciplineReferences.some(
+      (reference) => normalizeBranchName(reference) === normalizedTarget,
     );
 
     // If PhD and semester is specified, also check batch name
@@ -190,7 +194,7 @@ export const getBatchForBranch = (
     return branchMatches;
   });
 
-  return matchedBatch;
+  return matchedBatch || null;
 };
 
 export const getCurrentProgrammeType = (batch) => {

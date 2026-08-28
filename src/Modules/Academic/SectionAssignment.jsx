@@ -21,11 +21,12 @@ import {
   sectionStudentsRoute,
   assignSectionRoute,
 } from "../../routes/academicRoutes";
+import { useSectionsInUse } from "../../lib/sections";
 
-const SECTION_OPTIONS = ["A", "B", "C", "D", "E", "F"];
 const OTHER = "__OTHER__";
 
 function SectionAssignment() {
+  const sectionOptions = useSectionsInUse();
   const [batches, setBatches] = useState([]);
 
   // Cascading selection: year (Batch) -> discipline -> resolved batch id.
@@ -254,7 +255,7 @@ function SectionAssignment() {
 
   const openEditModal = (student) => {
     setEditRoll(student.roll_no);
-    const isKnown = SECTION_OPTIONS.includes(student.section);
+    const isKnown = sectionOptions.includes(student.section);
     setChosenSection(
       student.section ? (isKnown ? student.section : OTHER) : "",
     );
@@ -271,15 +272,15 @@ function SectionAssignment() {
     if (!section) {
       showNotification({
         title: "Pick a section",
-        message: "Choose A–F or enter a section under Other.",
+        message: "Choose one of the listed sections, or enter one under Other.",
         color: "yellow",
       });
       return;
     }
-    if (!/^[A-Z]{1,2}$/.test(section)) {
+    if (!/^[A-Z0-9]{1,8}$/.test(section)) {
       showNotification({
         title: "Invalid section",
-        message: "Section must be one or two letters.",
+        message: "Section can be up to 8 letters or digits.",
         color: "yellow",
       });
       return;
@@ -491,7 +492,7 @@ function SectionAssignment() {
           Choose a section
         </Text>
         <Group mb="md">
-          {SECTION_OPTIONS.map((opt) => (
+          {sectionOptions.map((opt) => (
             <Button
               key={opt}
               variant={chosenSection === opt ? "filled" : "outline"}
@@ -511,9 +512,9 @@ function SectionAssignment() {
         {chosenSection === OTHER && (
           <TextInput
             label="Enter section"
-            placeholder="e.g. G"
+            placeholder="e.g. G, A1, CS2"
             value={otherSection}
-            maxLength={2}
+            maxLength={8}
             onChange={(e) => setOtherSection(e.currentTarget.value)}
             mb="md"
           />

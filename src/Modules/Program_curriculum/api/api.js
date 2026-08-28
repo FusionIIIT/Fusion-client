@@ -742,6 +742,7 @@ export const addSingleStudent = async (
       mother_name: studentData.mname || studentData.mother_name,
       jee_app_no: studentData.jeeAppNo || studentData.jee_app_no,
       branch: studentData.branch,
+      batch_id: studentData.batch_id,
       specialization: studentData.specialization,
       gender: studentData.gender,
       category: studentData.category,

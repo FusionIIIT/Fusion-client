@@ -793,7 +793,8 @@ export default function StudentCourses() {
     "Course Code": c.course_id,
     "Course Name": c.course_name,
     Credits: c.credits,
-    Semester: c.sem,
+    Semester:
+      c.semester_type === "Summer Semester" ? `${c.sem} (Summer)` : c.sem,
     Type: c.registration_type,
     "Replaced By":
       c.replaced_by && c.replaced_by.length > 0
