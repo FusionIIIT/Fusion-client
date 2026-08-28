@@ -189,7 +189,7 @@ export function AppShellLayout({
         viewport.scrollBy({ top: link.bottom - frame.bottom + 12 });
     }, 260);
     return () => clearTimeout(timer);
-  }, [activeTo, openGroups, compactNav, query]);
+  }, [activeTo, compactNav, query]);
 
   const results = query.trim()
     ? allLinks.filter((l) =>

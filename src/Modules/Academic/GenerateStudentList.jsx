@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import PropTypes from "prop-types";
 import {
   Card,
   Text,
@@ -20,8 +21,8 @@ import {
 } from "@mantine/core";
 import axios from "axios";
 import { useSelector } from "react-redux";
-import { allowedProgrammeChoices } from "../../ui/nav/roles";
 import { showNotification } from "@mantine/notifications";
+import { allowedProgrammeChoices } from "../../ui/nav/roles";
 import { courseLabel } from "../../lib/course";
 
 import {
@@ -35,11 +36,10 @@ import {
 const generateAcademicYears = () => {
   const currentYear = new Date().getFullYear();
   const endYear = currentYear;
-  const years = [];
-  for (let y = endYear; y >= 2020; y--) {
-    years.push(`${y}-${String(y + 1).slice(-2)}`);
-  }
-  return years;
+  return Array.from({ length: endYear - 2019 }, (_, index) => {
+    const year = endYear - index;
+    return `${year}-${String(year + 1).slice(-2)}`;
+  });
 };
 
 const ACADEMIC_YEARS = generateAcademicYears();
@@ -57,17 +57,8 @@ const PROGRAMME_TYPE_CHOICES = [
   { value: "All", label: "All Programmes" },
 ];
 
-const LIST_TYPE_CHOICES = [
-  { value: "Regular", label: "Regular" },
-  { value: "Backlog", label: "Backlog" },
-  { value: "Improvement", label: "Improvement" },
-  { value: "Audit", label: "Audit" },
-  { value: "Extra Credits", label: "Extra Credits" },
-  { value: "Replacement", label: "Replacement" },
-];
-
-export default function GenerateStudentList() {
-  const [activeTab, setActiveTab]       = useState("rolllist");
+export default function GenerateStudentList({ view = "rolllist" }) {
+  const activeTab = view;
 
   // Roll List states
   const [academicYear, setAcademicYear] = useState("");
@@ -80,27 +71,27 @@ export default function GenerateStudentList() {
   const [programmeType, setProgrammeType] = useState(
     programmeChoices[0]?.value ?? "All",
   );
-  const [listType, setListType]         = useState("");
-  const [section, setSection]           = useState("");
-  const [course, setCourse]             = useState("");
+  const [listType] = useState("");
+  const [section, setSection] = useState("");
+  const [course, setCourse] = useState("");
   const [courseOptions, setCourseOptions] = useState([]);
   const [showPreview, setShowPreview] = useState(false);
   const [previewData, setPreviewData] = useState([]);
   const [previewLoading, setPreviewLoading] = useState(false);
 
   // Pre-Registration states
-  const [batch, setBatch]                     = useState("");
-  const [semester, setSemester]               = useState("");
-  const [batchOptions, setBatchOptions]       = useState([]);
-  const [preRegData, setPreRegData]           = useState(null);   // { title, batch_name, semester, students, max_choices }
-  const [preRegLoading, setPreRegLoading]     = useState(false);
-  const [preRegError, setPreRegError]         = useState(null);
-  const [preRegSearch, setPreRegSearch]       = useState("");
+  const [batch, setBatch] = useState("");
+  const [semester, setSemester] = useState("");
+  const [batchOptions, setBatchOptions] = useState([]);
+  const [preRegData, setPreRegData] = useState(null); // { title, batch_name, semester, students, max_choices }
+  const [preRegLoading, setPreRegLoading] = useState(false);
+  const [preRegError, setPreRegError] = useState(null);
+  const [preRegSearch, setPreRegSearch] = useState("");
   const [preRegStatusFilter, setPreRegStatusFilter] = useState("All");
-  const [exportLoading, setExportLoading]     = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
 
-  const [loading, setLoading]           = useState(false);
-  const [error, setError]               = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [exportAllLoading, setExportAllLoading] = useState(false);
 
   const selectedCourseOption = courseOptions.find((c) => c.value === course);
@@ -169,13 +160,13 @@ export default function GenerateStudentList() {
         course,
         preview_only: true,
       };
-      if (listType && listType.trim() !== '') {
+      if (listType && listType.trim() !== "") {
         payload.list_type = listType;
       }
-      if (programmeType && programmeType !== 'All') {
+      if (programmeType && programmeType !== "All") {
         payload.programme_type = programmeType;
       }
-      if (section && section.trim() !== '') {
+      if (section && section.trim() !== "") {
         payload.section = section;
       }
 
@@ -185,20 +176,25 @@ export default function GenerateStudentList() {
           "Content-Type": "application/json",
         },
       });
-      
-      let students = res.data.students || res.data || [];
-      
+
+      const students = res.data.students || res.data || [];
+
       setPreviewData(students);
       setShowPreview(true);
     } catch (err) {
-      if (err.response?.status === 400 || err.response?.data?.detail?.includes("preview_only")) {
+      if (
+        err.response?.status === 400 ||
+        err.response?.data?.detail?.includes("preview_only")
+      ) {
         setPreviewData([]);
         setShowPreview(true);
       } else {
-        showNotification({ 
-          title: "Error", 
-          message: "Failed to fetch preview data: " + (err.response?.data?.detail || err.message), 
-          color: "red" 
+        showNotification({
+          title: "Error",
+          message: `Failed to fetch preview data: ${
+            err.response?.data?.detail || err.message
+          }`,
+          color: "red",
         });
       }
     } finally {
@@ -211,12 +207,19 @@ export default function GenerateStudentList() {
     setExportAllLoading(true);
     const token = localStorage.getItem("authToken");
     try {
-      const payload = { academic_year: academicYear, semester_type: semesterType };
+      const payload = {
+        academic_year: academicYear,
+        semester_type: semesterType,
+      };
       if (listType && listType.trim()) payload.list_type = listType;
-      if (programmeType && programmeType !== "All") payload.programme_type = programmeType;
+      if (programmeType && programmeType !== "All")
+        payload.programme_type = programmeType;
 
       const res = await axios.post(exportAllCoursesZipRoute, payload, {
-        headers: { Authorization: `Token ${token}`, "Content-Type": "application/json" },
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
         responseType: "blob",
       });
 
@@ -230,9 +233,17 @@ export default function GenerateStudentList() {
       a.remove();
       window.URL.revokeObjectURL(url);
 
-      showNotification({ title: "Downloaded", message: `${courseOptions.length} courses exported as ZIP`, color: "green" });
+      showNotification({
+        title: "Downloaded",
+        message: `${courseOptions.length} courses exported as ZIP`,
+        color: "green",
+      });
     } catch (err) {
-      showNotification({ title: "Export failed", message: err.response?.data?.error || err.message, color: "red" });
+      showNotification({
+        title: "Export failed",
+        message: err.response?.data?.error || err.message,
+        color: "red",
+      });
     } finally {
       setExportAllLoading(false);
     }
@@ -263,13 +274,13 @@ export default function GenerateStudentList() {
         course,
       };
 
-      if (listType && listType.trim() !== '') {
+      if (listType && listType.trim() !== "") {
         payload.list_type = listType;
       }
-      if (programmeType && programmeType !== 'All') {
+      if (programmeType && programmeType !== "All") {
         payload.programme_type = programmeType;
       }
-      if (section && section.trim() !== '') {
+      if (section && section.trim() !== "") {
         payload.section = section;
       }
 
@@ -282,10 +293,12 @@ export default function GenerateStudentList() {
       });
 
       // Filename from course code and course name
-      const selectedCourse = courseOptions.find(c => c.value === course);
-      const courseCode = selectedCourse?.code || 'Course';
-      const courseName = selectedCourse?.name || 'List';
-      const courseNameClean = courseName.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_-]/g, '');
+      const selectedCourse = courseOptions.find((c) => c.value === course);
+      const courseCode = selectedCourse?.code || "Course";
+      const courseName = selectedCourse?.name || "List";
+      const courseNameClean = courseName
+        .replace(/\s+/g, "_")
+        .replace(/[^a-zA-Z0-9_-]/g, "");
       const filename = `${courseCode}_${courseNameClean}.xlsx`;
 
       const url = window.URL.createObjectURL(new Blob([res.data]));
@@ -296,10 +309,11 @@ export default function GenerateStudentList() {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-      
+
       setShowPreview(false);
       const listTypeName = listType || "All";
-      const progTypeName = programmeType && programmeType !== 'All' ? ` (${programmeType})` : '';
+      const progTypeName =
+        programmeType && programmeType !== "All" ? ` (${programmeType})` : "";
       showNotification({
         title: "Success",
         message: `${listTypeName} student list${progTypeName} generated successfully`,
@@ -307,10 +321,10 @@ export default function GenerateStudentList() {
       });
     } catch (err) {
       console.error("Generate List Error:", err);
-      showNotification({ 
-        title: "Error", 
-        message: err.response?.data?.detail || err.message, 
-        color: "red" 
+      showNotification({
+        title: "Error",
+        message: err.response?.data?.detail || err.message,
+        color: "red",
       });
     } finally {
       setLoading(false);
@@ -331,12 +345,12 @@ export default function GenerateStudentList() {
         const res = await axios.get(listBatchesRoute, {
           headers: { Authorization: `Token ${token}` },
         });
-        
+
         setBatchOptions(
-          (res.data.batches || res.data).map(b => ({
+          (res.data.batches || res.data).map((b) => ({
             value: String(b.batch_id || b.id),
-            label: `${b.name || b.label || `Batch ${b.year}`} ${b.discipline || ''}`,
-          }))
+            label: `${b.name || b.label || `Batch ${b.year}`} ${b.discipline || ""}`,
+          })),
         );
       } catch (err) {
         console.error(err);
@@ -350,7 +364,11 @@ export default function GenerateStudentList() {
   // 6) Fetch Pre-Registration data for inline display
   const fetchPreRegistrationReport = async () => {
     if (!semester || !batch) {
-      showNotification({ title: "Missing fields", message: "Select semester and batch", color: "yellow" });
+      showNotification({
+        title: "Missing fields",
+        message: "Select semester and batch",
+        color: "yellow",
+      });
       return;
     }
     setPreRegLoading(true);
@@ -364,12 +382,16 @@ export default function GenerateStudentList() {
         generateprereport,
         { semester_no: semester, batch_branch: batch, preview_only: true },
         {
-          headers: { Authorization: `Token ${token}`, "Content-Type": "application/json" },
-        }
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
+          },
+        },
       );
       setPreRegData(res.data);
     } catch (err) {
-      const msg = err.response?.data?.detail || err.message || "Failed to fetch report";
+      const msg =
+        err.response?.data?.detail || err.message || "Failed to fetch report";
       setPreRegError(msg);
       showNotification({ title: "Error", message: msg, color: "red" });
     } finally {
@@ -386,19 +408,24 @@ export default function GenerateStudentList() {
       const payload = { semester_no: semester, batch_branch: batch };
       // Pass filter so backend exports only the relevant subset
       if (preRegStatusFilter !== "All") {
-        payload.status_filter = preRegStatusFilter;  // "Registered" | "Not Registered"
+        payload.status_filter = preRegStatusFilter; // "Registered" | "Not Registered"
       }
 
       const res = await axios.post(generateprereport, payload, {
-        headers: { Authorization: `Token ${token}`, "Content-Type": "application/json" },
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
         responseType: "blob",
       });
 
       // Filename: {BatchLabel}_Sem{N}_{Filter}.xlsx
-      const batchLabel = batchOptions.find(b => b.value === batch)?.label || `Batch_${batch}`;
-      const filterSuffix = preRegStatusFilter !== "All"
-        ? `_${preRegStatusFilter.replace(/\s+/g, "_")}`
-        : "";
+      const batchLabel =
+        batchOptions.find((b) => b.value === batch)?.label || `Batch_${batch}`;
+      const filterSuffix =
+        preRegStatusFilter !== "All"
+          ? `_${preRegStatusFilter.replace(/\s+/g, "_")}`
+          : "";
       const safeName = `${batchLabel}_Sem${semester}${filterSuffix}`
         .replace(/\s+/g, "_")
         .replace(/[^a-zA-Z0-9_-]/g, "");
@@ -413,9 +440,17 @@ export default function GenerateStudentList() {
       link.remove();
       window.URL.revokeObjectURL(url);
 
-      showNotification({ title: "Exported", message: `Downloaded as ${filename}`, color: "green" });
+      showNotification({
+        title: "Exported",
+        message: `Downloaded as ${filename}`,
+        color: "green",
+      });
     } catch (err) {
-      showNotification({ title: "Export failed", message: err.response?.data?.detail || err.message, color: "red" });
+      showNotification({
+        title: "Export failed",
+        message: err.response?.data?.detail || err.message,
+        color: "red",
+      });
     } finally {
       setExportLoading(false);
     }
@@ -425,24 +460,30 @@ export default function GenerateStudentList() {
   const uniqueStudents = (() => {
     if (!preRegData?.students) return { registered: 0, notRegistered: 0 };
     const seen = new Set();
-    let registered = 0, notRegistered = 0;
-    for (const row of preRegData.students) {
-      if (!seen.has(row.roll_no)) {
+    return preRegData.students.reduce(
+      (counts, row) => {
+        if (seen.has(row.roll_no)) return counts;
         seen.add(row.roll_no);
-        if (row.status === "Registered") registered++;
-        else notRegistered++;
-      }
-    }
-    return { registered, notRegistered };
+        return row.status === "Registered"
+          ? { ...counts, registered: counts.registered + 1 }
+          : { ...counts, notRegistered: counts.notRegistered + 1 };
+      },
+      { registered: 0, notRegistered: 0 },
+    );
   })();
 
   // Filtered + sorted rows for the inline table
   const filteredPreRegRows = (() => {
     if (!preRegData?.students) return [];
     const q = preRegSearch.trim().toLowerCase();
-    const filtered = preRegData.students.filter(row => {
-      if (preRegStatusFilter === "Registered" && row.status !== "Registered") return false;
-      if (preRegStatusFilter === "Not Registered" && row.status !== "Not Registered") return false;
+    const filtered = preRegData.students.filter((row) => {
+      if (preRegStatusFilter === "Registered" && row.status !== "Registered")
+        return false;
+      if (
+        preRegStatusFilter === "Not Registered" &&
+        row.status !== "Not Registered"
+      )
+        return false;
       if (!q) return true;
       return (
         row.roll_no?.toLowerCase().includes(q) ||
@@ -450,30 +491,28 @@ export default function GenerateStudentList() {
         row.department?.toLowerCase().includes(q) ||
         row.status?.toLowerCase().includes(q) ||
         row.course_slot?.toLowerCase().includes(q) ||
-        row.choices?.some(c => c?.toLowerCase().includes(q))
+        row.choices?.some((c) => c?.toLowerCase().includes(q))
       );
     });
     // Always sort by roll_no ascending
     return filtered.slice().sort((a, b) =>
-      (a.roll_no || "").localeCompare(b.roll_no || "", undefined, { numeric: true, sensitivity: "base" })
+      (a.roll_no || "").localeCompare(b.roll_no || "", undefined, {
+        numeric: true,
+        sensitivity: "base",
+      }),
     );
   })();
 
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
-      <Tabs value={activeTab} onChange={setActiveTab}>
-        <Tabs.List grow>
-          <Tabs.Tab value="rolllist">Roll List</Tabs.Tab>
-          <Tabs.Tab value="preregistration">Pre-Registration</Tabs.Tab>
-        </Tabs.List>
-
+      <Tabs value={activeTab}>
         {/* Roll List Tab */}
         <Tabs.Panel value="rolllist" pt="md">
           <Group grow mb="md">
             <Select
               label="Academic Year"
               placeholder="2024-25"
-              data={ACADEMIC_YEARS.map(y => ({ value: y, label: y }))}
+              data={ACADEMIC_YEARS.map((y) => ({ value: y, label: y }))}
               value={academicYear}
               onChange={setAcademicYear}
             />
@@ -492,20 +531,6 @@ export default function GenerateStudentList() {
               onChange={setProgrammeType}
             />
           </Group>
-{/* 
-          <Select
-            label="List Type (Optional)"
-            placeholder="Leave empty for all enrolled students"
-            data={LIST_TYPE_CHOICES}
-            value={listType}
-            onChange={setListType}
-            clearable
-            mb="xs"
-          />
-          <Text size="xs" c="dimmed" mb="md">
-            💡 If no list type is selected, the system will generate a complete roll list of all students enrolled in the course (Regular, Backlog, Improvement, etc.)
-          </Text> */}
-
           {error ? (
             <Alert color="red">{error}</Alert>
           ) : (
@@ -539,17 +564,20 @@ export default function GenerateStudentList() {
           )}
 
           {/* Export All — shown only when courses are loaded and none is selected */}
-          {!course && courseOptions.length > 0 && academicYear && semesterType && (
-            <Button
-              fullWidth
-              color="teal"
-              mb="sm"
-              loading={exportAllLoading}
-              onClick={handleExportAllZip}
-            >
-              Export All ({courseOptions.length} courses) as ZIP
-            </Button>
-          )}
+          {!course &&
+            courseOptions.length > 0 &&
+            academicYear &&
+            semesterType && (
+              <Button
+                fullWidth
+                color="teal"
+                mb="sm"
+                loading={exportAllLoading}
+                onClick={handleExportAllZip}
+              >
+                Export All ({courseOptions.length} courses) as ZIP
+              </Button>
+            )}
 
           <Button
             fullWidth
@@ -557,7 +585,8 @@ export default function GenerateStudentList() {
             loading={loading || previewLoading}
             disabled={!academicYear || !semesterType || !course}
           >
-            Preview {programmeType !== 'All' ? `${programmeType} ` : ''}{listType || 'All'} Students
+            Preview {programmeType !== "All" ? `${programmeType} ` : ""}
+            {listType || "All"} Students
           </Button>
         </Tabs.Panel>
 
@@ -568,14 +597,18 @@ export default function GenerateStudentList() {
               label="Semester"
               placeholder="e.g. 7"
               value={semester}
-              onChange={e => setSemester(e.target.value)}
+              onChange={(e) => setSemester(e.target.value)}
             />
             <Select
               label="Batch"
               placeholder="Select Batch"
               data={batchOptions}
               value={batch}
-              onChange={v => { setBatch(v); setPreRegData(null); setPreRegError(null); }}
+              onChange={(v) => {
+                setBatch(v);
+                setPreRegData(null);
+                setPreRegError(null);
+              }}
               searchable
             />
           </Group>
@@ -590,7 +623,12 @@ export default function GenerateStudentList() {
           </Button>
 
           {preRegError && (
-            <Alert color="red" mt="md" withCloseButton onClose={() => setPreRegError(null)}>
+            <Alert
+              color="red"
+              mt="md"
+              withCloseButton
+              onClose={() => setPreRegError(null)}
+            >
               {preRegError}
             </Alert>
           )}
@@ -598,7 +636,6 @@ export default function GenerateStudentList() {
           {preRegData && (
             <Paper withBorder p="md" mt="md">
               <Stack gap="md">
-
                 {/* Report title */}
                 <Title order={5} ta="center" c="blue">
                   {preRegData.title}
@@ -613,7 +650,9 @@ export default function GenerateStudentList() {
                     <Text size="xl" fw={700} c="green">
                       {uniqueStudents.registered}
                     </Text>
-                    <Text size="sm" c="dimmed">students</Text>
+                    <Text size="sm" c="dimmed">
+                      students
+                    </Text>
                   </Group>
                   <Group gap="xs">
                     <Badge size="lg" color="red" variant="filled" radius="sm">
@@ -622,7 +661,9 @@ export default function GenerateStudentList() {
                     <Text size="xl" fw={700} c="red">
                       {uniqueStudents.notRegistered}
                     </Text>
-                    <Text size="sm" c="dimmed">students</Text>
+                    <Text size="sm" c="dimmed">
+                      students
+                    </Text>
                   </Group>
                   <Group gap="xs">
                     <Badge size="lg" color="blue" variant="light" radius="sm">
@@ -631,26 +672,45 @@ export default function GenerateStudentList() {
                     <Text size="xl" fw={700}>
                       {uniqueStudents.registered + uniqueStudents.notRegistered}
                     </Text>
-                    <Text size="sm" c="dimmed">students</Text>
+                    <Text size="sm" c="dimmed">
+                      students
+                    </Text>
                   </Group>
                 </Group>
 
                 {/* Filter + Search + Export bar */}
-                <div style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "12px",
-                  background: "#f8f9fa",
-                  border: "1px solid #e9ecef",
-                  borderRadius: "10px",
-                  padding: "10px 14px",
-                }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                    background: "#f8f9fa",
+                    border: "1px solid #e9ecef",
+                    borderRadius: "10px",
+                    padding: "10px 14px",
+                  }}
+                >
                   {/* Pill filter buttons */}
                   <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
                     {[
-                      { value: "All",            label: "All",            activeColor: "#228be6", activeBg: "#e7f5ff" },
-                      { value: "Registered",     label: "Registered",     activeColor: "#2f9e44", activeBg: "#ebfbee" },
-                      { value: "Not Registered", label: "Not Registered", activeColor: "#c92a2a", activeBg: "#fff5f5" },
+                      {
+                        value: "All",
+                        label: "All",
+                        activeColor: "#228be6",
+                        activeBg: "#e7f5ff",
+                      },
+                      {
+                        value: "Registered",
+                        label: "Registered",
+                        activeColor: "#2f9e44",
+                        activeBg: "#ebfbee",
+                      },
+                      {
+                        value: "Not Registered",
+                        label: "Not Registered",
+                        activeColor: "#c92a2a",
+                        activeBg: "#fff5f5",
+                      },
                     ].map(({ value, label, activeColor, activeBg }) => {
                       const active = preRegStatusFilter === value;
                       return (
@@ -678,13 +738,20 @@ export default function GenerateStudentList() {
                   </div>
 
                   {/* Divider */}
-                  <div style={{ width: "1px", height: "28px", background: "#dee2e6", flexShrink: 0 }} />
+                  <div
+                    style={{
+                      width: "1px",
+                      height: "28px",
+                      background: "#dee2e6",
+                      flexShrink: 0,
+                    }}
+                  />
 
                   {/* Search */}
                   <TextInput
                     placeholder="Search by roll no, name, department, slot, course…"
                     value={preRegSearch}
-                    onChange={e => setPreRegSearch(e.target.value)}
+                    onChange={(e) => setPreRegSearch(e.target.value)}
                     style={{ flex: 1, minWidth: 0 }}
                     styles={{
                       input: {
@@ -699,12 +766,23 @@ export default function GenerateStudentList() {
                   />
 
                   {/* Row count */}
-                  <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap", flexShrink: 0 }}>
+                  <Text
+                    size="xs"
+                    c="dimmed"
+                    style={{ whiteSpace: "nowrap", flexShrink: 0 }}
+                  >
                     {filteredPreRegRows.length} rows
                   </Text>
 
                   {/* Divider */}
-                  <div style={{ width: "1px", height: "28px", background: "#dee2e6", flexShrink: 0 }} />
+                  <div
+                    style={{
+                      width: "1px",
+                      height: "28px",
+                      background: "#dee2e6",
+                      flexShrink: 0,
+                    }}
+                  />
 
                   {/* Export */}
                   <Button
@@ -731,25 +809,116 @@ export default function GenerateStudentList() {
                       striped
                       highlightOnHover
                       fontSize="xs"
-                      style={{ border: "1px solid #dee2e6", tableLayout: "auto", width: "100%" }}
+                      style={{
+                        border: "1px solid #dee2e6",
+                        tableLayout: "auto",
+                        width: "100%",
+                      }}
                     >
                       <thead>
                         <tr style={{ backgroundColor: "#e7f5ff" }}>
-                          <th style={{ padding: "10px 10px", whiteSpace: "nowrap", position: "sticky", top: 0, backgroundColor: "#e7f5ff", zIndex: 2 }}>#</th>
-                          <th style={{ padding: "10px 10px", whiteSpace: "nowrap", position: "sticky", top: 0, backgroundColor: "#e7f5ff", zIndex: 2 }}>Roll No</th>
-                          <th style={{ padding: "10px 10px", whiteSpace: "nowrap", position: "sticky", top: 0, backgroundColor: "#e7f5ff", zIndex: 2 }}>Name</th>
-                          <th style={{ padding: "10px 10px", whiteSpace: "nowrap", position: "sticky", top: 0, backgroundColor: "#e7f5ff", zIndex: 2 }}>Department</th>
-                          <th style={{ padding: "10px 10px", whiteSpace: "nowrap", position: "sticky", top: 0, backgroundColor: "#e7f5ff", zIndex: 2 }}>Status</th>
-                          <th style={{ padding: "10px 10px", whiteSpace: "nowrap", position: "sticky", top: 0, backgroundColor: "#e7f5ff", zIndex: 2 }}>Timestamp</th>
-                          <th style={{ padding: "10px 10px", whiteSpace: "nowrap", position: "sticky", top: 0, backgroundColor: "#e7f5ff", zIndex: 2 }}>Course Slot</th>
-                          {Array.from({ length: preRegData.max_choices }, (_, i) => (
-                            <th
-                              key={i}
-                              style={{ padding: "10px 10px", whiteSpace: "nowrap", position: "sticky", top: 0, backgroundColor: "#e7f5ff", zIndex: 2 }}
-                            >
-                              Choice {i + 1}
-                            </th>
-                          ))}
+                          <th
+                            style={{
+                              padding: "10px 10px",
+                              whiteSpace: "nowrap",
+                              position: "sticky",
+                              top: 0,
+                              backgroundColor: "#e7f5ff",
+                              zIndex: 2,
+                            }}
+                          >
+                            #
+                          </th>
+                          <th
+                            style={{
+                              padding: "10px 10px",
+                              whiteSpace: "nowrap",
+                              position: "sticky",
+                              top: 0,
+                              backgroundColor: "#e7f5ff",
+                              zIndex: 2,
+                            }}
+                          >
+                            Roll No
+                          </th>
+                          <th
+                            style={{
+                              padding: "10px 10px",
+                              whiteSpace: "nowrap",
+                              position: "sticky",
+                              top: 0,
+                              backgroundColor: "#e7f5ff",
+                              zIndex: 2,
+                            }}
+                          >
+                            Name
+                          </th>
+                          <th
+                            style={{
+                              padding: "10px 10px",
+                              whiteSpace: "nowrap",
+                              position: "sticky",
+                              top: 0,
+                              backgroundColor: "#e7f5ff",
+                              zIndex: 2,
+                            }}
+                          >
+                            Department
+                          </th>
+                          <th
+                            style={{
+                              padding: "10px 10px",
+                              whiteSpace: "nowrap",
+                              position: "sticky",
+                              top: 0,
+                              backgroundColor: "#e7f5ff",
+                              zIndex: 2,
+                            }}
+                          >
+                            Status
+                          </th>
+                          <th
+                            style={{
+                              padding: "10px 10px",
+                              whiteSpace: "nowrap",
+                              position: "sticky",
+                              top: 0,
+                              backgroundColor: "#e7f5ff",
+                              zIndex: 2,
+                            }}
+                          >
+                            Timestamp
+                          </th>
+                          <th
+                            style={{
+                              padding: "10px 10px",
+                              whiteSpace: "nowrap",
+                              position: "sticky",
+                              top: 0,
+                              backgroundColor: "#e7f5ff",
+                              zIndex: 2,
+                            }}
+                          >
+                            Course Slot
+                          </th>
+                          {Array.from(
+                            { length: preRegData.max_choices },
+                            (_, i) => (
+                              <th
+                                key={i}
+                                style={{
+                                  padding: "10px 10px",
+                                  whiteSpace: "nowrap",
+                                  position: "sticky",
+                                  top: 0,
+                                  backgroundColor: "#e7f5ff",
+                                  zIndex: 2,
+                                }}
+                              >
+                                Choice {i + 1}
+                              </th>
+                            ),
+                          )}
                         </tr>
                       </thead>
                       <tbody>
@@ -757,7 +926,11 @@ export default function GenerateStudentList() {
                           <tr>
                             <td
                               colSpan={7 + preRegData.max_choices}
-                              style={{ textAlign: "center", padding: "2rem", color: "#868e96" }}
+                              style={{
+                                textAlign: "center",
+                                padding: "2rem",
+                                color: "#868e96",
+                              }}
                             >
                               No records match your filter / search.
                             </td>
@@ -766,24 +939,80 @@ export default function GenerateStudentList() {
                           filteredPreRegRows.map((row, idx) => (
                             <tr key={idx}>
                               <td style={{ padding: "6px 10px" }}>{idx + 1}</td>
-                              <td style={{ padding: "6px 10px", fontWeight: 500, whiteSpace: "nowrap" }}>{row.roll_no || "—"}</td>
-                              <td style={{ padding: "6px 10px", whiteSpace: "nowrap" }}>{row.name || "—"}</td>
-                              <td style={{ padding: "6px 10px", whiteSpace: "nowrap" }}>{row.department || "—"}</td>
-                              <td style={{ padding: "6px 10px", whiteSpace: "nowrap" }}>
-                                <span style={{
-                                  color: row.status === "Registered" ? "#2f9e44" : "#c92a2a",
-                                  fontWeight: 600,
-                                }}>
+                              <td
+                                style={{
+                                  padding: "6px 10px",
+                                  fontWeight: 500,
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {row.roll_no || "—"}
+                              </td>
+                              <td
+                                style={{
+                                  padding: "6px 10px",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {row.name || "—"}
+                              </td>
+                              <td
+                                style={{
+                                  padding: "6px 10px",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {row.department || "—"}
+                              </td>
+                              <td
+                                style={{
+                                  padding: "6px 10px",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    color:
+                                      row.status === "Registered"
+                                        ? "#2f9e44"
+                                        : "#c92a2a",
+                                    fontWeight: 600,
+                                  }}
+                                >
                                   {row.status || "—"}
                                 </span>
                               </td>
-                              <td style={{ padding: "6px 10px", color: "#868e96", whiteSpace: "nowrap" }}>{row.timestamp || "—"}</td>
-                              <td style={{ padding: "6px 10px", whiteSpace: "nowrap" }}>{row.course_slot || "—"}</td>
-                              {Array.from({ length: preRegData.max_choices }, (_, i) => (
-                                <td key={i} style={{ padding: "6px 10px", whiteSpace: "nowrap" }}>
-                                  {row.choices?.[i] || "—"}
-                                </td>
-                              ))}
+                              <td
+                                style={{
+                                  padding: "6px 10px",
+                                  color: "#868e96",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {row.timestamp || "—"}
+                              </td>
+                              <td
+                                style={{
+                                  padding: "6px 10px",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {row.course_slot || "—"}
+                              </td>
+                              {Array.from(
+                                { length: preRegData.max_choices },
+                                (_, i) => (
+                                  <td
+                                    key={i}
+                                    style={{
+                                      padding: "6px 10px",
+                                      whiteSpace: "nowrap",
+                                    }}
+                                  >
+                                    {row.choices?.[i] || "—"}
+                                  </td>
+                                ),
+                              )}
                             </tr>
                           ))
                         )}
@@ -791,7 +1020,6 @@ export default function GenerateStudentList() {
                     </Table>
                   </div>
                 </ScrollArea>
-
               </Stack>
             </Paper>
           )}
@@ -804,7 +1032,8 @@ export default function GenerateStudentList() {
         onClose={() => setShowPreview(false)}
         title={
           <Text size="lg" fw={700} style={{ color: "#1c7ed6" }}>
-            {programmeType !== 'All' ? `${programmeType} ` : ''}{listType || 'All Registration Types'} Student List Preview
+            {programmeType !== "All" ? `${programmeType} ` : ""}
+            {listType || "All Registration Types"} Student List Preview
           </Text>
         }
         size="xl"
@@ -814,9 +1043,15 @@ export default function GenerateStudentList() {
         <Paper withBorder p="md" style={{ backgroundColor: "#f8f9fa" }}>
           <Stack gap="md">
             {/* Course Header Information */}
-            <Box style={{ borderBottom: "1px solid #dee2e6", paddingBottom: "10px" }}>
+            <Box
+              style={{
+                borderBottom: "1px solid #dee2e6",
+                paddingBottom: "10px",
+              }}
+            >
               <Text ta="center" size="lg" fw={700} style={{ color: "#1c7ed6" }}>
-                PDPM INDIAN INSTITUTE OF INFORMATION TECHNOLOGY, DESIGN AND MANUFACTURING JABALPUR
+                PDPM INDIAN INSTITUTE OF INFORMATION TECHNOLOGY, DESIGN AND
+                MANUFACTURING JABALPUR
               </Text>
               <Text ta="center" size="md" fw={600} mt="xs">
                 {semesterType.toUpperCase()}, {academicYear}
@@ -825,14 +1060,25 @@ export default function GenerateStudentList() {
 
             {/* Course Details */}
             <Box>
-              <Text size="sm" fw={500}>Course No.: <Text span>{selectedCourseOption?.code || 'N/A'}</Text></Text>
-              <Text size="sm" fw={500}>Course Title: <Text span>{selectedCourseOption?.name || 'N/A'}</Text></Text>
-              <Text size="sm" fw={500}>Instructor: <Text span>{
-                selectedCourseOption?.instructor || 'TBA'
-              }</Text></Text>
-              <Text size="sm" fw={500}>List Type: <Text span c={listType ? "blue" : "green"}>
-                {programmeType !== 'All' ? `${programmeType} - ` : ""}{listType || "Complete Roll List (All Registration Types)"}
-              </Text></Text>
+              <Text size="sm" fw={500}>
+                Course No.:{" "}
+                <Text span>{selectedCourseOption?.code || "N/A"}</Text>
+              </Text>
+              <Text size="sm" fw={500}>
+                Course Title:{" "}
+                <Text span>{selectedCourseOption?.name || "N/A"}</Text>
+              </Text>
+              <Text size="sm" fw={500}>
+                Instructor:{" "}
+                <Text span>{selectedCourseOption?.instructor || "TBA"}</Text>
+              </Text>
+              <Text size="sm" fw={500}>
+                List Type:{" "}
+                <Text span c={listType ? "blue" : "green"}>
+                  {programmeType !== "All" ? `${programmeType} - ` : ""}
+                  {listType || "Complete Roll List (All Registration Types)"}
+                </Text>
+              </Text>
             </Box>
 
             {previewLoading ? (
@@ -842,39 +1088,121 @@ export default function GenerateStudentList() {
               </Box>
             ) : previewData.length > 0 ? (
               <ScrollArea style={{ height: "400px" }}>
-                <Table striped highlightOnHover style={{ border: "1px solid #dee2e6" }}>
+                <Table
+                  striped
+                  highlightOnHover
+                  style={{ border: "1px solid #dee2e6" }}
+                >
                   <thead style={{ backgroundColor: "#e7f5ff" }}>
                     <tr>
-                      <th style={{ padding: "12px 8px", fontSize: "13px", fontWeight: "600" }}>S. No</th>
-                      <th style={{ padding: "12px 8px", fontSize: "13px", fontWeight: "600" }}>Roll No</th>
-                      <th style={{ padding: "12px 8px", fontSize: "13px", fontWeight: "600" }}>Name</th>
-                      <th style={{ padding: "12px 8px", fontSize: "13px", fontWeight: "600" }}>Discipline</th>
-                      <th style={{ padding: "12px 8px", fontSize: "13px", fontWeight: "600" }}>Email</th>
-                      <th style={{ padding: "12px 8px", fontSize: "13px", fontWeight: "600" }}>Reg. Type</th>
-                      <th style={{ padding: "12px 8px", fontSize: "13px", fontWeight: "600" }}>Signature</th>
+                      <th
+                        style={{
+                          padding: "12px 8px",
+                          fontSize: "13px",
+                          fontWeight: "600",
+                        }}
+                      >
+                        S. No
+                      </th>
+                      <th
+                        style={{
+                          padding: "12px 8px",
+                          fontSize: "13px",
+                          fontWeight: "600",
+                        }}
+                      >
+                        Roll No
+                      </th>
+                      <th
+                        style={{
+                          padding: "12px 8px",
+                          fontSize: "13px",
+                          fontWeight: "600",
+                        }}
+                      >
+                        Name
+                      </th>
+                      <th
+                        style={{
+                          padding: "12px 8px",
+                          fontSize: "13px",
+                          fontWeight: "600",
+                        }}
+                      >
+                        Discipline
+                      </th>
+                      <th
+                        style={{
+                          padding: "12px 8px",
+                          fontSize: "13px",
+                          fontWeight: "600",
+                        }}
+                      >
+                        Email
+                      </th>
+                      <th
+                        style={{
+                          padding: "12px 8px",
+                          fontSize: "13px",
+                          fontWeight: "600",
+                        }}
+                      >
+                        Reg. Type
+                      </th>
+                      <th
+                        style={{
+                          padding: "12px 8px",
+                          fontSize: "13px",
+                          fontWeight: "600",
+                        }}
+                      >
+                        Signature
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {previewData.map((student, index) => (
                       <tr key={student.roll_number || index}>
-                        <td style={{ padding: "8px", fontSize: "12px" }}>{index + 1}</td>
-                        <td style={{ padding: "8px", fontSize: "12px", fontWeight: "500" }}>
-                          {student.roll_number || student.roll_no || student.id || 'N/A'}
+                        <td style={{ padding: "8px", fontSize: "12px" }}>
+                          {index + 1}
+                        </td>
+                        <td
+                          style={{
+                            padding: "8px",
+                            fontSize: "12px",
+                            fontWeight: "500",
+                          }}
+                        >
+                          {student.roll_number ||
+                            student.roll_no ||
+                            student.id ||
+                            "N/A"}
                         </td>
                         <td style={{ padding: "8px", fontSize: "12px" }}>
-                          {student.name || student.full_name || student.student_name || 'N/A'}
+                          {student.name ||
+                            student.full_name ||
+                            student.student_name ||
+                            "N/A"}
                         </td>
                         <td style={{ padding: "8px", fontSize: "12px" }}>
-                          {student.branch || student.discipline || student.department || 'N/A'}
+                          {student.branch ||
+                            student.discipline ||
+                            student.department ||
+                            "N/A"}
                         </td>
                         <td style={{ padding: "8px", fontSize: "12px" }}>
-                          {student.email || 'N/A'}
+                          {student.email || "N/A"}
                         </td>
                         <td style={{ padding: "8px", fontSize: "12px" }}>
-                          {student.registration_type || student.status || listType || 'Regular'}
+                          {student.registration_type ||
+                            student.status ||
+                            listType ||
+                            "Regular"}
                         </td>
-                        <td style={{ padding: "8px", fontSize: "12px" }}>
-                        </td>
+                        <td
+                          aria-label="Signature"
+                          style={{ padding: "8px", fontSize: "12px" }}
+                        />
                       </tr>
                     ))}
                   </tbody>
@@ -882,12 +1210,11 @@ export default function GenerateStudentList() {
               </ScrollArea>
             ) : (
               <Alert color="blue">
-                {programmeType !== 'All' 
-                  ? `No ${programmeType} students found${listType ? ` with "${listType}" registration type` : ''} in this course.`
-                  : listType 
+                {programmeType !== "All"
+                  ? `No ${programmeType} students found${listType ? ` with "${listType}" registration type` : ""} in this course.`
+                  : listType
                     ? `No students found with "${listType}" registration type in this course.`
-                    : 'No students enrolled in this course (checked all registration types: Regular, Backlog, Improvement, etc.).'
-                }
+                    : "No students enrolled in this course (checked all registration types: Regular, Backlog, Improvement, etc.)."}
               </Alert>
             )}
 
@@ -895,7 +1222,7 @@ export default function GenerateStudentList() {
               <Button variant="outline" onClick={() => setShowPreview(false)}>
                 Cancel
               </Button>
-              <Button 
+              <Button
                 onClick={handleConfirmGenerate}
                 loading={loading}
                 disabled={previewData.length === 0}
@@ -910,3 +1237,7 @@ export default function GenerateStudentList() {
     </Card>
   );
 }
+
+GenerateStudentList.propTypes = {
+  view: PropTypes.oneOf(["rolllist", "preregistration"]),
+};

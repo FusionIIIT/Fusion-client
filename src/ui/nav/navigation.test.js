@@ -59,23 +59,39 @@ describe("buildNavGroups", () => {
     named.forEach((icon) => expect(ICONS).toHaveProperty(icon));
   });
 
-  it("keeps every acadadmin academic page reachable, in groups", () => {
+  it("keeps every acadadmin academic page reachable", () => {
     const groups = buildNavGroups({
       role: "acadadmin",
       accessibleModules: ALL_MODULES,
     });
     const academics = groups.find((g) => g.section === "Academics");
 
-    expect(linksOf([academics])).toHaveLength(17);
+    expect(linksOf([academics])).toHaveLength(18);
     expect(academics.items.map((i) => i.label)).toEqual([
       "Registration",
       "Course Changes",
       "Student Records",
       "Calendar & Feedback",
     ]);
-    academics.items.forEach((item) =>
-      expect(item.links.length).toBeLessThanOrEqual(5),
+    const registration = academics.items.find(
+      (item) => item.label === "Registration",
     );
+    expect(registration.links.map((link) => link.label)).toEqual([
+      "Student Courses",
+      "Pre-Registration",
+      "Delete Pre-Registration",
+      "Verify Registration",
+      "Allot Courses",
+      "Allocate Courses",
+    ]);
+    expect(registration.links).toContainEqual(
+      expect.objectContaining({
+        label: "Pre-Registration",
+        to: "/academics/pre-registration-report",
+        icon: "ListChecks",
+      }),
+    );
+    expect(registration.links).toHaveLength(6);
   });
 
   it("swaps the UG registration pipeline for the research one", () => {
