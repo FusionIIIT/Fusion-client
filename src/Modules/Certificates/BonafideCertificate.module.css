@@ -26,7 +26,7 @@
   background: #fff;
   box-shadow: var(--mantine-shadow-sm);
   font-family: Arial, sans-serif;
-  font-size: 11.5pt;
+  font-size: 13.5pt;
 }
 
 .certificateHeader {
@@ -34,7 +34,7 @@
   grid-template-columns: 1fr 1fr;
   gap: 24px;
   font-weight: 700;
-  line-height: 1.4;
+  line-height: 1.55;
 }
 
 .reference {
@@ -44,13 +44,13 @@
 .heading {
   margin: 46pt 0 36pt;
   text-align: center;
-  font-size: 13pt;
+  font-size: 15pt;
   text-decoration: underline;
 }
 
 .body {
   margin: 0;
-  line-height: 1.5;
+  line-height: 1.65;
   text-align: justify;
 }
 
@@ -65,7 +65,7 @@
 
 .note {
   margin-top: 8pt;
-  font-size: 11.5pt;
+  font-size: 13.5pt;
   font-weight: 400;
   text-align: justify;
 }
