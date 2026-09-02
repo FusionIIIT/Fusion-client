@@ -324,7 +324,7 @@ export default function BonafideCertificate() {
                   </strong>{" "}
                   (Roll No. {preview.student.roll_number}){" "}
                   {preview.student.relation}{" "}
-                  <strong>Mr. {preview.student.father_name}</strong> is a
+                  <strong>MR. {preview.student.father_name}</strong> is a
                   student of{" "}
                   <strong>{preview.student.year_ordinal} Year</strong> (
                   {preview.student.semester_ordinal} Semester){" "}
