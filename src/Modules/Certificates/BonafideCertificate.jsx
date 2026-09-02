@@ -62,6 +62,18 @@ const filenameFrom = (header, fallback) => {
   return match?.[1] || fallback;
 };
 
+// Renders an ordinal such as "4th" with the suffix raised, as the PDF does.
+function ordinalWithSuperscript(value) {
+  const match = /^(\d+)(st|nd|rd|th)$/.exec((value ?? "").trim());
+  if (!match) return value;
+  return (
+    <>
+      {match[1]}
+      <sup>{match[2]}</sup>
+    </>
+  );
+}
+
 export default function BonafideCertificate() {
   const [rollNumber, setRollNumber] = useState("");
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -326,9 +338,11 @@ export default function BonafideCertificate() {
                   {preview.student.relation}{" "}
                   <strong>MR. {preview.student.father_name}</strong> is a
                   student of{" "}
-                  <strong>{preview.student.year_ordinal} Year</strong> (
-                  {preview.student.semester_ordinal} Semester){" "}
-                  <strong>{preview.student.programme}</strong> in{" "}
+                  <strong>
+                    {ordinalWithSuperscript(preview.student.year_ordinal)} Year
+                  </strong>{" "}
+                  ({ordinalWithSuperscript(preview.student.semester_ordinal)}{" "}
+                  Semester) <strong>{preview.student.programme}</strong> in{" "}
                   <strong>{preview.student.discipline}</strong> ({" "}
                   {preview.student.duration_text} course duration:{" "}
                   <strong>{preview.student.start_year}</strong> to{" "}
