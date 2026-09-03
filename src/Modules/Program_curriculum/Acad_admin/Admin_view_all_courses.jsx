@@ -8,13 +8,69 @@ import {
   ActionIcon,
   Modal,
   Text,
+  FileButton,
+  Divider,
 } from "@mantine/core";
-import { IconEdit, IconTrash } from "@tabler/icons-react";
+import {
+  IconEdit,
+  IconTrash,
+  IconUpload,
+  IconDownload,
+} from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { fetchAllCourses } from "../api/api";
 import { host } from "../../../routes/globalRoutes";
+
+// Columns the bulk upload understands; blanks take the course defaults.
+const BULK_REQUIRED_COLUMNS = [
+  "Course Code",
+  "Course Name",
+  "Credits",
+  "Max Seats",
+  "Disciplines",
+];
+const BULK_OPTIONAL_COLUMNS = [
+  "Version",
+  "Lecture Hours",
+  "Tutorial Hours",
+  "Practical Hours",
+  "Discussion Hours",
+  "Project Hours",
+  "Pre-requisites",
+  "Syllabus",
+  "Reference Books",
+];
+
+function downloadBulkCourseTemplate() {
+  const header = [...BULK_REQUIRED_COLUMNS, ...BULK_OPTIONAL_COLUMNS];
+  const example = {
+    "Course Code": "CS1001",
+    "Course Name": "Introduction to Computing",
+    Credits: "4",
+    "Max Seats": "90",
+    Disciplines: "CSE;ME",
+    Version: "1.0",
+    "Lecture Hours": "3",
+    "Tutorial Hours": "0",
+    "Practical Hours": "1",
+  };
+  const row = header.map((column) => example[column] ?? "");
+  const csv = `${header.join(",")}\n${row.join(",")}\n`;
+  const url = URL.createObjectURL(
+    new Blob([csv], { type: "text/csv;charset=utf-8" }),
+  );
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "course_upload_template.csv";
+  link.style.display = "none";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  // Chrome aborts the download if the blob URL is released in the same tick.
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
 
 function Admin_view_all_courses() {
   const [courses, setCourses] = useState([]);
@@ -24,6 +80,9 @@ function Admin_view_all_courses() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [bulkModalOpened, setBulkModalOpened] = useState(false);
+  const [bulkFile, setBulkFile] = useState(null);
+  const [bulkUploading, setBulkUploading] = useState(false);
   const [deleteModalOpened, setDeleteModalOpened] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState(null);
   const [thesisToDelete, setThesisToDelete] = useState(null);
@@ -202,6 +261,66 @@ function Admin_view_all_courses() {
       tc.credits.toString().includes(searchLower)
     );
   });
+
+  const handleBulkUpload = async () => {
+    if (!bulkFile) return;
+    setBulkUploading(true);
+    const form = new FormData();
+    form.append("courses_file", bulkFile);
+    const token = localStorage.getItem("authToken");
+
+    try {
+      const response = await fetch(
+        `${host}/programme_curriculum/api/admin_add_courses_bulk/`,
+        {
+          method: "POST",
+          headers: token ? { Authorization: `Token ${token}` } : {},
+          body: form,
+        },
+      );
+      const data = await response.json();
+      const reasons = (data.reasons || []).join(" ");
+
+      if (data.created_count) {
+        localStorage.setItem("AdminCoursesCachechange", "true");
+        const refreshed = await fetchAllCourses();
+        setCourses(refreshed);
+        notifications.show({
+          title: data.failed_count ? "Added with errors" : "Courses added",
+          message: `${data.message} ${reasons}`.trim(),
+          color: data.failed_count ? "yellow" : "green",
+          autoClose: data.failed_count ? false : 4000,
+        });
+        setBulkModalOpened(false);
+        setBulkFile(null);
+      } else {
+        notifications.show({
+          title: "Nothing was added",
+          message: `${data.message || "The upload failed."} ${reasons}`.trim(),
+          color: "red",
+          autoClose: false,
+        });
+      }
+
+      if (data.unknown_columns?.length) {
+        notifications.show({
+          title: "Columns ignored",
+          message: `These headings were not recognised: ${data.unknown_columns.join(", ")}`,
+          color: "orange",
+          autoClose: 6000,
+        });
+      }
+    } catch (uploadError) {
+      notifications.show({
+        title: "Network Error",
+        message: "Could not reach the server. Please try again.",
+        color: "red",
+        autoClose: 3000,
+      });
+    } finally {
+      setBulkUploading(false);
+    }
+  };
 
   const handleDeleteClick = (course) => {
     setCourseToDelete(course);
@@ -413,14 +532,29 @@ function Admin_view_all_courses() {
               }
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.currentTarget.value)}
-              style={{ width: "100%", maxWidth: 400 }}
+              style={{ flex: 1, minWidth: 180, maxWidth: 400 }}
             />
             {activeView === "courses" ? (
-              <Link to="/programme_curriculum/acad_admin_add_course_proposal_form">
-                <Button variant="filled" color="blue" radius="sm">
-                  Add Course
+              <>
+                <Button
+                  variant="outline"
+                  color="blue"
+                  radius="sm"
+                  leftSection={<IconUpload size={16} />}
+                  onClick={() => setBulkModalOpened(true)}
+                  style={{ flexShrink: 0 }}
+                >
+                  Bulk Add
                 </Button>
-              </Link>
+                <Link
+                  to="/programme_curriculum/acad_admin_add_course_proposal_form"
+                  style={{ flexShrink: 0 }}
+                >
+                  <Button variant="filled" color="blue" radius="sm">
+                    Add Course
+                  </Button>
+                </Link>
+              </>
             ) : activeView === "theses" ? (
               <Link to="/programme_curriculum/admin_add_thesis">
                 <Button variant="filled" color="blue" radius="sm">
@@ -1152,6 +1286,58 @@ function Admin_view_all_courses() {
             </tbody>
           </Table>
         </div>
+
+        <Modal
+          opened={bulkModalOpened}
+          onClose={() => {
+            setBulkModalOpened(false);
+            setBulkFile(null);
+          }}
+          title="Add courses from a file"
+          centered
+        >
+          <Button
+            leftSection={<IconDownload />}
+            variant="light"
+            onClick={downloadBulkCourseTemplate}
+            fullWidth
+            mb="md"
+          >
+            Download Template
+          </Button>
+          <Text size="sm" c="dimmed" mb="sm">
+            Required: {BULK_REQUIRED_COLUMNS.join(" | ")}
+          </Text>
+          <Text size="sm" c="dimmed" mb="md">
+            One row per course, .xlsx .xls or .csv. For a course shared across
+            disciplines, list them in the one cell separated by semicolons —
+            CSE;ME — using either acronyms or full names.
+          </Text>
+          <Divider mb="lg" />
+          <FileButton onChange={setBulkFile} accept=".xlsx,.xls,.csv">
+            {({ onClick }) => (
+              <Button
+                onClick={onClick}
+                leftSection={<IconUpload />}
+                variant="outline"
+                fullWidth
+                mb="md"
+              >
+                {bulkFile ? bulkFile.name : "Choose Excel file"}
+              </Button>
+            )}
+          </FileButton>
+          <Button
+            fullWidth
+            size="md"
+            leftSection={<IconUpload />}
+            loading={bulkUploading}
+            onClick={handleBulkUpload}
+            disabled={!bulkFile}
+          >
+            Upload & Add
+          </Button>
+        </Modal>
 
         <Modal
           opened={deleteModalOpened}
