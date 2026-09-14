@@ -167,6 +167,32 @@ export const studentThesisRoute = `${host}/academic-procedures/api/stu/thesis/`;
 export const studentThesisDownloadRoute = `${host}/academic-procedures/api/stu/thesis/download/`;
 export const facultyListRoute = `${host}/academic-procedures/api/faculty/`;
 
+// Thesis Topic Change Request (post-approval amendment)
+export const studentThesisChangeRequestsRoute = `${host}/academic-procedures/api/stu/thesis/change-requests/`;
+export const studentThesisChangeRequestCreateRoute = `${host}/academic-procedures/api/stu/thesis/change-request/`;
+export const facultyThesisChangeRequestsPendingConsentRoute = `${host}/academic-procedures/api/faculty/thesis/change-requests/pending-consent/`;
+export const thesisChangeRequestConsentRoute = (pk) =>
+  `${host}/academic-procedures/api/faculty/thesis/change-request/${pk}/consent/`;
+export const hodThesisChangeRequestDashboardRoute = `${host}/academic-procedures/api/hod/thesis/change-requests/`;
+export const hodThesisChangeRequestReviewRoute = (pk) =>
+  `${host}/academic-procedures/api/hod/thesis/change-request/${pk}/review/`;
+export const deanThesisChangeRequestDashboardRoute = `${host}/academic-procedures/api/dean/thesis/change-requests/`;
+export const deanThesisChangeRequestReviewRoute = (pk) =>
+  `${host}/academic-procedures/api/dean/thesis/change-request/${pk}/review/`;
+
+// Thesis Committee (RPC) Change Request
+export const supervisorCommitteeChangeRequestsRoute = `${host}/academic-procedures/api/supervisor/thesis/committee-change-requests/`;
+export const supervisorProposeCommitteeChangeRoute = (thesisPk) =>
+  `${host}/academic-procedures/api/supervisor/thesis/${thesisPk}/committee-change/propose/`;
+export const supervisorResubmitCommitteeChangeRoute = (pk) =>
+  `${host}/academic-procedures/api/supervisor/thesis/committee-change/${pk}/resubmit/`;
+export const hodCommitteeChangeDashboardRoute = `${host}/academic-procedures/api/hod/thesis/committee-change-requests/`;
+export const hodCommitteeChangeReviewRoute = (pk) =>
+  `${host}/academic-procedures/api/hod/thesis/committee-change/${pk}/review/`;
+export const deanCommitteeChangeDashboardRoute = `${host}/academic-procedures/api/dean/thesis/committee-change-requests/`;
+export const deanCommitteeChangeReviewRoute = (pk) =>
+  `${host}/academic-procedures/api/dean/thesis/committee-change/${pk}/review/`;
+
 // PhD Thesis Enrollment (semester-level registration)
 export const studentThesisEnrollmentRoute = `${host}/academic-procedures/api/stu/thesis-enrollment/`;
 export const adminThesisEnrollmentListRoute = `${host}/academic-procedures/api/acadadmin/thesis-enrollments/`;

@@ -24,7 +24,8 @@ export default function downloadCourseRegistrationReceipt({
     : "Prev. Sem. CPI: -";
 
   try {
-    const doc = new jsPDF({
+    const JsPDF = jsPDF;
+    const doc = new JsPDF({
       orientation: "portrait",
       unit: "mm",
       format: "legal",
@@ -60,7 +61,6 @@ export default function downloadCourseRegistrationReceipt({
       `Semester: ${studentInfo.semester || ""}`,
     ];
 
-    const tableWidth = pageWidth - 40;
     const tableStartX = 20;
     const tableEndX = pageWidth - 20;
     const availableWidth = tableEndX - tableStartX;
@@ -215,7 +215,6 @@ export default function downloadCourseRegistrationReceipt({
       `Semester: ${studentInfo.semester || ""}`,
     ];
 
-    const academicTableWidth = pageWidth - 40;
     const academicTableStartX = 20;
     const academicTableEndX = pageWidth - 20;
     const academicAvailableWidth = academicTableEndX - academicTableStartX;

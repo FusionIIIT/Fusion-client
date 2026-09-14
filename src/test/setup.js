@@ -6,7 +6,11 @@ const realError = console.error;
 
 const format = (args) => {
   let i = 1;
-  return String(args[0]).replace(/%s/g, () => String(args[i++] ?? ""));
+  return String(args[0]).replace(/%s/g, () => {
+    const value = String(args[i] ?? "");
+    i += 1;
+    return value;
+  });
 };
 
 let propTypeFailures = [];

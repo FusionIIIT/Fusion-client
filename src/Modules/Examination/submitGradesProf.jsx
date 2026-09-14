@@ -638,25 +638,33 @@ function SubmitCourseGradesTab() {
               </tr>
             </thead>
             <tbody>
-              {previewData.map((r, i) => (
-                <tr
-                  key={i}
-                  style={{
-                    backgroundColor: r.is_registered ? undefined : "#ffe6e6",
-                  }}
-                >
-                  <td>{i + 1}</td>
-                  <td>{r.roll_no}</td>
-                  <td>{r.name}</td>
-                  <td>{r.branch || "-"}</td>
-                  <td>{r.grades}</td>
-                  <td>{r.remarks}</td>
-                  <td>{r.semester}</td>
-                  <td style={{ color: r.is_registered ? "green" : "red" }}>
-                    {r.is_registered ? "Registered" : "Missing Registration"}
-                  </td>
-                </tr>
-              ))}
+              {previewData.map((r, i) => {
+                const hasIssue = !r.is_registered || r.grade_valid === false;
+                const statusText = !r.is_registered
+                  ? "Missing Registration"
+                  : r.grade_valid === false
+                    ? r.grade_error
+                    : "Registered";
+                return (
+                  <tr
+                    key={i}
+                    style={{
+                      backgroundColor: hasIssue ? "#ffe6e6" : undefined,
+                    }}
+                  >
+                    <td>{i + 1}</td>
+                    <td>{r.roll_no}</td>
+                    <td>{r.name}</td>
+                    <td>{r.branch || "-"}</td>
+                    <td>{r.grades}</td>
+                    <td>{r.remarks}</td>
+                    <td>{r.semester}</td>
+                    <td style={{ color: hasIssue ? "red" : "green" }}>
+                      {statusText}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </Table>
 

@@ -13,13 +13,23 @@ import { IconAlertCircle } from "@tabler/icons-react";
 import axios from "axios";
 import FusionTable from "../../components/FusionTable";
 import HODReviewModal from "./HODReviewModal";
-import { hodDashboardRoute } from "../../routes/academicRoutes";
+import HODThesisChangeRequestModal from "./HODThesisChangeRequestModal";
+import HODCommitteeChangeModal from "./HODCommitteeChangeModal";
+import {
+  hodDashboardRoute,
+  hodThesisChangeRequestDashboardRoute,
+  hodCommitteeChangeDashboardRoute,
+} from "../../routes/academicRoutes";
 
 export default function HODDashboard() {
   const [data, setData] = useState({ pending: [], approved: [], rejected: [] });
+  const [changeRequests, setChangeRequests] = useState([]);
+  const [committeeChangeRequests, setCommitteeChangeRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sel, setSel] = useState(null);
+  const [selChange, setSelChange] = useState(null);
+  const [selCommitteeChange, setSelCommitteeChange] = useState(null);
   const [activeTab, setActiveTab] = useState("pending");
 
   const fetchData = useCallback(async () => {
@@ -36,13 +46,16 @@ export default function HODDashboard() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-      const res = await axios.get(hodDashboardRoute, {
-        headers,
-        signal: controller.signal,
-      });
+      const [res, crRes, ccRes] = await Promise.all([
+        axios.get(hodDashboardRoute, { headers, signal: controller.signal }),
+        axios.get(hodThesisChangeRequestDashboardRoute, { headers }),
+        axios.get(hodCommitteeChangeDashboardRoute, { headers }),
+      ]);
 
       clearTimeout(timeoutId);
       setData(res.data || { pending: [], approved: [], rejected: [] });
+      setChangeRequests(crRes.data.pending || []);
+      setCommitteeChangeRequests(ccRes.data.pending || []);
       setError(null);
     } catch (e) {
       if (axios.isCancel(e)) {
@@ -103,8 +116,26 @@ export default function HODDashboard() {
     [],
   );
 
+  const changeCols = useMemo(() => ["Roll No", "Student", "Action"], []);
+
+  const makeChangeRows = useCallback(
+    (list, setSelected = setSelChange) =>
+      list.map((cr) => ({
+        "Roll No": cr.student_roll || "N/A",
+        Student: cr.student_name || "N/A",
+        Action: (
+          <Button size="xs" onClick={() => setSelected(cr)}>
+            Review
+          </Button>
+        ),
+      })),
+    [],
+  );
+
   const handleRefresh = useCallback(() => {
     setSel(null);
+    setSelChange(null);
+    setSelCommitteeChange(null);
     fetchData();
   }, [fetchData]);
 
@@ -144,6 +175,12 @@ export default function HODDashboard() {
           <Tabs.Tab value="pending">{`Pending (${data.pending.length})`}</Tabs.Tab>
           <Tabs.Tab value="approved">{`Approved (${data.approved.length})`}</Tabs.Tab>
           <Tabs.Tab value="rejected">{`Rejected (${data.rejected.length})`}</Tabs.Tab>
+          <Tabs.Tab value="changeRequests">
+            {`Change Requests (${changeRequests.length})`}
+          </Tabs.Tab>
+          <Tabs.Tab value="committeeChangeRequests">
+            {`Committee Changes (${committeeChangeRequests.length})`}
+          </Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel value="pending" pt="xs">
@@ -155,12 +192,41 @@ export default function HODDashboard() {
         <Tabs.Panel value="rejected" pt="xs">
           <FusionTable columnNames={cols} elements={makeRows(data.rejected)} />
         </Tabs.Panel>
+        <Tabs.Panel value="changeRequests" pt="xs">
+          <FusionTable
+            columnNames={changeCols}
+            elements={makeChangeRows(changeRequests)}
+          />
+        </Tabs.Panel>
+        <Tabs.Panel value="committeeChangeRequests" pt="xs">
+          <FusionTable
+            columnNames={changeCols}
+            elements={makeChangeRows(
+              committeeChangeRequests,
+              setSelCommitteeChange,
+            )}
+          />
+        </Tabs.Panel>
       </Tabs>
 
       {sel && (
         <HODReviewModal
           thesis={sel}
           onClose={() => setSel(null)}
+          refresh={handleRefresh}
+        />
+      )}
+      {selChange && (
+        <HODThesisChangeRequestModal
+          request={selChange}
+          onClose={() => setSelChange(null)}
+          refresh={handleRefresh}
+        />
+      )}
+      {selCommitteeChange && (
+        <HODCommitteeChangeModal
+          request={selCommitteeChange}
+          onClose={() => setSelCommitteeChange(null)}
           refresh={handleRefresh}
         />
       )}

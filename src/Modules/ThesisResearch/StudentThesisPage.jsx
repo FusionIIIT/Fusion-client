@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Card,
   Text,
@@ -25,7 +25,33 @@ import {
   studentThesisRoute,
   studentThesisDownloadRoute,
   facultyListRoute,
+  studentThesisChangeRequestsRoute,
 } from "../../routes/academicRoutes";
+import RequestThesisChangeModal from "./RequestThesisChangeModal";
+
+const CHANGE_STATUS_LABEL = {
+  pending_consents: "Pending Consents",
+  declined: "Declined",
+  hod_pending: "Pending with HOD",
+  hod_rejected: "Rejected by HOD",
+  dean_pending: "Pending with Dean",
+  dean_rejected: "Rejected by Dean",
+  approved: "Approved",
+};
+const CHANGE_STATUS_COLOR = {
+  pending_consents: "yellow",
+  declined: "red",
+  hod_pending: "orange",
+  hod_rejected: "red",
+  dean_pending: "orange",
+  dean_rejected: "red",
+  approved: "green",
+};
+const ACTIVE_CHANGE_STATUSES = [
+  "pending_consents",
+  "hod_pending",
+  "dean_pending",
+];
 
 const TOPIC_COLOR = {
   supervisor_pending: "yellow",
@@ -62,52 +88,57 @@ export default function StudentThesisPage() {
   const [error, setError] = useState(null);
   const [preview, setPreview] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [changeRequests, setChangeRequests] = useState([]);
+  const [requestingChange, setRequestingChange] = useState(false);
+
+  const load = useCallback(async () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      setError(new Error("No auth token. Please log in."));
+      setLoading(false);
+      return;
+    }
+    const headers = { Authorization: `Token ${token}` };
+
+    try {
+      const [tRes, fRes, crRes] = await Promise.all([
+        axios.get(studentThesisRoute, { headers }),
+        axios.get(facultyListRoute, { headers }),
+        axios.get(studentThesisChangeRequestsRoute, { headers }),
+      ]);
+      const t = tRes.data;
+      if (t.id) {
+        setThesis(t);
+        setForm({
+          category: t.category,
+          broad_area: t.broad_area,
+          research_theme: t.research_theme,
+          supervisor_id: t.supervisor.id,
+          co_supervisor_id: t.co_supervisor?.id || null,
+          external_name: t.external.ext_name,
+          external_email: t.external.ext_email,
+          external_discipline: t.external.ext_discipline,
+          external_institution: t.external.ext_institution,
+        });
+      }
+      setFacOpts(
+        fRes.data.map((f) => ({
+          value: f.id,
+          label: f.name,
+          discipline: f.discipline,
+        })),
+      );
+      setChangeRequests(crRes.data.change_requests || []);
+    } catch (e) {
+      setError(e);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    async function load() {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        setError(new Error("No auth token. Please log in."));
-        setLoading(false);
-        return;
-      }
-      const headers = { Authorization: `Token ${token}` };
-
-      try {
-        const [tRes, fRes] = await Promise.all([
-          axios.get(studentThesisRoute, { headers }),
-          axios.get(facultyListRoute, { headers }),
-        ]);
-        const t = tRes.data;
-        if (t.id) {
-          setThesis(t);
-          setForm({
-            category: t.category,
-            broad_area: t.broad_area,
-            research_theme: t.research_theme,
-            supervisor_id: t.supervisor.id,
-            co_supervisor_id: t.co_supervisor?.id || null,
-            external_name: t.external.ext_name,
-            external_email: t.external.ext_email,
-            external_discipline: t.external.ext_discipline,
-            external_institution: t.external.ext_institution,
-          });
-        }
-        setFacOpts(
-          fRes.data.map((f) => ({
-            value: f.id,
-            label: f.name,
-            discipline: f.discipline,
-          })),
-        );
-      } catch (e) {
-        setError(e);
-      } finally {
-        setLoading(false);
-      }
-    }
     load();
-  }, []);
+  }, [load]);
 
   if (loading)
     return (
@@ -125,6 +156,10 @@ export default function StudentThesisPage() {
   const status = thesis?.status;
   const canEdit = !thesis;
   const isApproved = status === "dean_approved";
+  const activeChangeRequest = changeRequests.find((cr) =>
+    ACTIVE_CHANGE_STATUSES.includes(cr.status),
+  );
+  const latestChangeRequest = changeRequests[0];
 
   const handleSubmit = async () => {
     const token = localStorage.getItem("authToken");
@@ -458,6 +493,61 @@ export default function StudentThesisPage() {
         >
           Download Approved Form (PDF)
         </Button>
+      )}
+
+      {isApproved && (
+        <>
+          {latestChangeRequest && (
+            <Card p="sm" radius="sm" mt="md" withBorder>
+              <Group justify="space-between">
+                <Text size="sm" c="dimmed">
+                  Latest Change Request
+                </Text>
+                <Badge
+                  color={
+                    CHANGE_STATUS_COLOR[latestChangeRequest.status] || "gray"
+                  }
+                  variant="filled"
+                >
+                  {CHANGE_STATUS_LABEL[latestChangeRequest.status] ||
+                    latestChangeRequest.status}
+                </Badge>
+              </Group>
+              {(latestChangeRequest.hod_remarks ||
+                latestChangeRequest.dean_remarks ||
+                latestChangeRequest.decline_remarks) && (
+                <Text size="sm" mt="xs">
+                  Remarks:{" "}
+                  {latestChangeRequest.hod_remarks ||
+                    latestChangeRequest.dean_remarks ||
+                    latestChangeRequest.decline_remarks}
+                </Text>
+              )}
+            </Card>
+          )}
+          <Button
+            fullWidth
+            variant="outline"
+            mt="sm"
+            disabled={!!activeChangeRequest}
+            onClick={() => setRequestingChange(true)}
+          >
+            {activeChangeRequest
+              ? "Change Request In Progress"
+              : "Request Topic / Supervisor Change"}
+          </Button>
+        </>
+      )}
+
+      {requestingChange && (
+        <RequestThesisChangeModal
+          thesis={thesis}
+          onClose={() => setRequestingChange(false)}
+          refresh={() => {
+            setRequestingChange(false);
+            load();
+          }}
+        />
       )}
     </Card>
   );
