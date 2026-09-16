@@ -253,7 +253,7 @@ function AddStudentsModal({
                   onChange={(value) =>
                     setSelectedBatchYear(parseInt(value, 10))
                   }
-                  data={getBatchYearOptions(activeSection)}
+                  data={getBatchYearOptions()}
                   style={{ width: isMobile ? "250px" : "300px" }}
                   placeholder="Select batch year"
                   size="sm"

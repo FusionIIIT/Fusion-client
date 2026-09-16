@@ -24,6 +24,7 @@ import { useSelector } from "react-redux";
 import { showNotification } from "@mantine/notifications";
 import { allowedProgrammeChoices } from "../../ui/nav/roles";
 import { courseLabel } from "../../lib/course";
+import { buildSessionLabels } from "../../lib/academicYear";
 
 import {
   availableCoursesRoute,
@@ -33,14 +34,8 @@ import {
   generateprereport,
 } from "../../routes/academicRoutes";
 
-const generateAcademicYears = () => {
-  const currentYear = new Date().getFullYear();
-  const endYear = currentYear;
-  return Array.from({ length: endYear - 2019 }, (_, index) => {
-    const year = endYear - index;
-    return `${year}-${String(year + 1).slice(-2)}`;
-  });
-};
+const generateAcademicYears = () =>
+  buildSessionLabels(new Date().getFullYear());
 
 const ACADEMIC_YEARS = generateAcademicYears();
 
