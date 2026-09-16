@@ -25,6 +25,7 @@ import {
   instCoursesRoute,
   instAllStatsRoute,
 } from "../../../routes/academicRoutes";
+import { buildSessionOptions } from "../../../lib/academicYear";
 
 export default function InstructorDashboard() {
   const [session, setSession] = useState("2024-25");
@@ -86,7 +87,7 @@ export default function InstructorDashboard() {
     <Card>
       <Select
         label="Session"
-        data={(() => { const e = new Date().getFullYear(); const r = []; for (let y = e; y >= 2020; y--) r.push(`${y}-${String(y+1).slice(-2)}`); return r.map(s => ({ value: s, label: s })); })()}
+        data={buildSessionOptions(new Date().getFullYear())}
         value={session}
         onChange={setSession}
         mb="md"

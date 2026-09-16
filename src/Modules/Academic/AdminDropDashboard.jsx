@@ -25,6 +25,7 @@ import {
   approveDropRequestsRoute,
   deleteDropRequestsRoute,
 } from "../../routes/academicRoutes";
+import { buildSessionOptions } from "../../lib/academicYear";
 
 const SEMESTER_CHOICES = [
   { value: "Odd Semester", label: "Odd Semester" },
@@ -32,17 +33,7 @@ const SEMESTER_CHOICES = [
   { value: "Summer Semester", label: "Summer Semester" },
 ];
 
-const generateAcademicYears = () => {
-  const endYear = new Date().getFullYear();
-  const years = [];
-  for (let y = endYear; y >= 2020; y--) {
-    years.push({
-      value: `${y}-${String(y + 1).slice(-2)}`,
-      label: `${y}-${String(y + 1).slice(-2)}`,
-    });
-  }
-  return years;
-};
+const generateAcademicYears = () => buildSessionOptions(new Date().getFullYear());
 
 export default function AdminDropDashboard() {
   const [year, setYear] = useState("");
