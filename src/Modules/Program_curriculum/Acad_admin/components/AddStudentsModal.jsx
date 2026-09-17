@@ -142,6 +142,7 @@ function AddStudentsModal({
   setManualFormData,
   setProcessedBatchData,
   setSelectedBatchYear,
+  setViewAcademicYear,
   setSelectedPhdSemester,
   setShowAddModal,
   setShowBatchPreview,
@@ -250,9 +251,11 @@ function AddStudentsModal({
               <Group justify="center" gap="md">
                 <Select
                   value={selectedBatchYear.toString()}
-                  onChange={(value) =>
-                    setSelectedBatchYear(parseInt(value, 10))
-                  }
+                  onChange={(value) => {
+                    const year = parseInt(value, 10);
+                    setSelectedBatchYear(year);
+                    setViewAcademicYear(year);
+                  }}
                   data={getBatchYearOptions()}
                   style={{ width: isMobile ? "250px" : "300px" }}
                   placeholder="Select batch year"
@@ -3323,6 +3326,7 @@ AddStudentsModal.propTypes = {
   setManualFormData: PropTypes.func,
   setProcessedBatchData: PropTypes.func,
   setSelectedBatchYear: PropTypes.func,
+  setViewAcademicYear: PropTypes.func,
   setSelectedPhdSemester: PropTypes.func,
   setShowAddModal: PropTypes.func,
   setShowBatchPreview: PropTypes.func,
