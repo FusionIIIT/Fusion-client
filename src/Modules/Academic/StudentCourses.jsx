@@ -15,6 +15,7 @@ import axios from "axios";
 import FusionTable from "../../components/FusionTable";
 import { courseLabel } from "../../lib/course";
 import { buildAdminSemesterOptions } from "../../lib/semester";
+import { buildSessionLabels } from "../../lib/academicYear";
 import downloadCourseRegistrationReceipt from "./courseRegistrationReceipt";
 import {
   addStudentCourseRoute,
@@ -187,13 +188,7 @@ export default function StudentCourses() {
     const now = new Date();
     const year = now.getFullYear();
     const start = now.getMonth() >= 6 ? year : year - 1;
-    const yrs = [];
-    for (let i = 0; i < 5; i += 1) {
-      const y1 = start - i;
-      const y2 = y1 + 1;
-      yrs.push(`${y1}-${String(y2).slice(-2)}`);
-    }
-    setAcademicYears(yrs);
+    setAcademicYears(buildSessionLabels(start));
   }, []);
 
   const clearError = () => setError("");
