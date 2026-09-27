@@ -28,6 +28,7 @@ import {
   SWAYAM_CREDIT_CAP,
   computeCreditSummary,
   fmtCredits,
+  hasCompletedDegree,
   remainingCreditRequirement,
   swayamAboveCap,
 } from "../../lib/credits";
@@ -274,7 +275,27 @@ export default function StudentCreditSummary() {
           <SemesterCard label="Total" row={totals} emphasis />
         </Stack>
 
-        {isUg && (
+        {isUg && hasCompletedDegree(totals) && (
+          <Group
+            justify="space-between"
+            align="center"
+            wrap="wrap"
+            gap="sm"
+            className={classes.formula}
+          >
+            <Stack gap={2} className={classes.formulaText}>
+              <Text className={classes.formulaLabel}>
+                Congratulations, you have completed your degree successfully
+              </Text>
+              <Text className={classes.formulaNote}>
+                All {DEGREE_CREDIT_REQUIREMENT} credits required for the degree
+                have been earned.
+              </Text>
+            </Stack>
+          </Group>
+        )}
+
+        {isUg && !hasCompletedDegree(totals) && (
           <Group
             justify="space-between"
             align="center"
