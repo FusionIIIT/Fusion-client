@@ -1,6 +1,10 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
+// Printed beside the notes line on both copies, so the office can tell at a
+// glance which registrations are backlog or improvement attempts.
+const NOTES_HINT = "For Backlog/Improvement course";
+
 // The course registration receipt: student copy and academic copy on one page.
 // Shared so the student's own download and the academic office's download of
 // any student's receipt cannot drift apart.
@@ -19,9 +23,15 @@ export default function downloadCourseRegistrationReceipt({
   const printedOn = `${String(now.getDate()).padStart(2, "0")}.${String(
     now.getMonth() + 1,
   ).padStart(2, "0")}.${now.getFullYear()}`;
-  const prevCpiLabel = studentInfo.prevSemCpi
-    ? `Prev. Sem. CPI: ${studentInfo.prevSemCpi}`
-    : "Prev. Sem. CPI: -";
+  // A first-semester student has no previous semester, so the label is omitted
+  // rather than printed with a placeholder.
+  const isFirstSemester = Number(studentInfo.semester) === 1;
+  let prevCpiLabel = "";
+  if (!isFirstSemester) {
+    prevCpiLabel = studentInfo.prevSemCpi
+      ? `Prev. Sem. CPI: ${studentInfo.prevSemCpi}`
+      : "Prev. Sem. CPI: -";
+  }
 
   try {
     const doc = new jsPDF({
@@ -37,7 +47,14 @@ export default function downloadCourseRegistrationReceipt({
 
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
-    doc.text("STUDENT COPY", pageWidth / 2, yPosition, { align: "center" });
+    doc.text(
+      "Course Confirmation Form (Student Copy)",
+      pageWidth / 2,
+      yPosition,
+      {
+        align: "center",
+      },
+    );
     doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
     doc.text(`Date: ${printedOn}`, pageWidth - 20, yPosition, {
@@ -142,7 +159,9 @@ export default function downloadCourseRegistrationReceipt({
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.text(`Total Credits: ${totalCredits}`, 20, yPosition);
-    doc.text(prevCpiLabel, pageWidth - 20, yPosition, { align: "right" });
+    if (prevCpiLabel) {
+      doc.text(prevCpiLabel, pageWidth - 20, yPosition, { align: "right" });
+    }
     yPosition += 6;
 
     doc.setFont("helvetica", "normal");
@@ -161,6 +180,11 @@ export default function downloadCourseRegistrationReceipt({
 
     doc.setFont("helvetica", "bold");
     doc.text("Additional notes:", 20, yPosition);
+    doc.text(
+      NOTES_HINT,
+      20 + doc.getTextWidth("Additional notes: "),
+      yPosition,
+    );
     yPosition += 5;
 
     doc.setLineWidth(0.3);
@@ -180,7 +204,9 @@ export default function downloadCourseRegistrationReceipt({
     doc.line(20, yPosition + 5, leftSigX + 50, yPosition + 5);
     doc.line(rightSigX - 20, yPosition + 5, pageWidth - 20, yPosition + 5);
 
-    yPosition += 15;
+    doc.text("Mobile Number:", 20, yPosition + 14);
+
+    yPosition += 20;
 
     doc.setLineWidth(0.2);
     doc.setLineDashPattern([1, 1], 0);
@@ -192,7 +218,14 @@ export default function downloadCourseRegistrationReceipt({
 
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
-    doc.text("ACADEMIC COPY", pageWidth / 2, yPosition, { align: "center" });
+    doc.text(
+      "Course Confirmation Form (Academic Copy)",
+      pageWidth / 2,
+      yPosition,
+      {
+        align: "center",
+      },
+    );
     doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
     doc.text(`Date: ${printedOn}`, pageWidth - 20, yPosition, {
@@ -293,7 +326,9 @@ export default function downloadCourseRegistrationReceipt({
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.text(`Total Credits: ${totalCredits}`, 20, yPosition);
-    doc.text(prevCpiLabel, pageWidth - 20, yPosition, { align: "right" });
+    if (prevCpiLabel) {
+      doc.text(prevCpiLabel, pageWidth - 20, yPosition, { align: "right" });
+    }
     yPosition += 6;
 
     doc.setFont("helvetica", "normal");
@@ -312,6 +347,11 @@ export default function downloadCourseRegistrationReceipt({
 
     doc.setFont("helvetica", "bold");
     doc.text("Additional notes:", 20, yPosition);
+    doc.text(
+      NOTES_HINT,
+      20 + doc.getTextWidth("Additional notes: "),
+      yPosition,
+    );
     yPosition += 5;
 
     doc.setLineWidth(0.3);
@@ -335,6 +375,8 @@ export default function downloadCourseRegistrationReceipt({
       pageWidth - 20,
       yPosition + 5,
     );
+
+    doc.text("Mobile Number:", 20, yPosition + 14);
 
     doc.save(filename);
   } catch (error) {
