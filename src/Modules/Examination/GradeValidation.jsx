@@ -80,6 +80,25 @@ function buildCreditsDetailsHTML(semesters) {
 }
 
 function buildValidationHTML(studentInfo, semesters) {
+  // Decided by the server, which owns what this record says; blank for the
+  // programmes the 148-credit rule does not describe.
+  const standingText = studentInfo.standing_text || "";
+  const completionRow = standingText
+    ? `
+  <tr>
+    <td class="standing" colspan="4">${esc(standingText)}</td>
+  </tr>`
+    : "";
+
+  const lastGraded = studentInfo.last_graded_semester || "";
+  const lastGradedRow = lastGraded
+    ? `
+  <tr>
+    <td class="lbl">Last Graded Semester</td>
+    <td class="val" colspan="3">${esc(lastGraded)}</td>
+  </tr>`
+    : "";
+
   const semesterBlocks = semesters
     .map((sem) => {
       const isReg = sem.is_registered_only === true;
@@ -110,7 +129,10 @@ function buildValidationHTML(studentInfo, semesters) {
 
       return `
       <div class="sem-block">
-        <div class="sem-heading" style="background:${headingBg}">${esc(sem.label)}</div>
+        <div class="sem-heading" style="background:${headingBg}">
+          <span>${esc(sem.label)}</span>
+          <span class="sem-year">${esc(sem.academic_year || "")}</span>
+        </div>
         <table class="course-table">
           <thead>
             <tr>
@@ -166,6 +188,16 @@ function buildValidationHTML(studentInfo, semesters) {
     background: #dce7f3;
     border: 1pt solid #000;
     border-bottom: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .sem-year { font-weight: bold; }
+
+  .standing {
+    text-align: center;
+    font-weight: bold;
+    color: #c00000;
   }
 
   .course-table {
@@ -264,7 +296,7 @@ function buildValidationHTML(studentInfo, semesters) {
     <td class="val">${esc(studentInfo.name)}</td>
     <td class="lbl">Discipline</td>
     <td class="val">${esc(studentInfo.discipline)}</td>
-  </tr>
+  </tr>${lastGradedRow}${completionRow}
 </table>
 
 ${semesterBlocks}
