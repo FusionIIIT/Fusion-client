@@ -57,6 +57,56 @@ describe("StudentCreditSummary", () => {
     );
   });
 
+  it("congratulates a UG student who has met the requirement, and drops the sum", async () => {
+    axios.get.mockResolvedValue({
+      data: {
+        semesters: [
+          {
+            label: "Semester 1",
+            courses: [
+              { code: "CS1010", credits: 148, grade: "A", remark: "Regular" },
+            ],
+          },
+        ],
+        programme_category: "UG",
+      },
+    });
+    renderPanel();
+
+    await waitFor(() =>
+      expect(screen.getByText("Credits Details")).toBeInTheDocument(),
+    );
+
+    expect(
+      screen.getByText(
+        "Congratulations, you have completed your degree successfully",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("Remaining Credits requirement for degree"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("still shows the remaining requirement while credits are outstanding", async () => {
+    axios.get.mockResolvedValue({
+      data: { semesters: SEMESTERS, programme_category: "UG" },
+    });
+    renderPanel();
+
+    await waitFor(() =>
+      expect(screen.getByText("Credits Details")).toBeInTheDocument(),
+    );
+
+    expect(
+      screen.getByText("Remaining Credits requirement for degree"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(
+        "Congratulations, you have completed your degree successfully",
+      ),
+    ).not.toBeInTheDocument();
+  });
+
   it("totals the credits and states the degree requirement", async () => {
     axios.get.mockResolvedValue({
       data: { semesters: SEMESTERS, programme_category: "UG" },

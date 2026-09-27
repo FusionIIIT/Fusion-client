@@ -416,7 +416,7 @@ export default function RegisteredCourses() {
               paddingBottom: "5px",
             }}
           >
-            STUDENT COPY
+            Course Confirmation Form (Student Copy)
           </div>
 
           <div
@@ -473,7 +473,8 @@ export default function RegisteredCourses() {
             2. The above courses do not clash with any other courses.
             <br />
             <br />
-            <strong>Additional notes:</strong>
+            <strong>Additional notes:</strong>{" "}
+            <strong>For Backlog/Improvement course</strong>
             <br />
             <div
               style={{
@@ -508,6 +509,16 @@ export default function RegisteredCourses() {
               />
               <div style={{ fontSize: "9px", fontWeight: "bold" }}>
                 Student's Signature
+              </div>
+              <div
+                style={{
+                  fontSize: "9px",
+                  fontWeight: "bold",
+                  textAlign: "left",
+                  marginTop: "6px",
+                }}
+              >
+                Mobile Number:
               </div>
             </div>
             <div style={{ textAlign: "center", width: "180px" }}>
@@ -553,7 +564,7 @@ export default function RegisteredCourses() {
               paddingBottom: "5px",
             }}
           >
-            ACADEMIC COPY
+            Course Confirmation Form (Academic Copy)
           </div>
 
           <div
@@ -610,7 +621,8 @@ export default function RegisteredCourses() {
             2. The above courses do not clash with any other courses.
             <br />
             <br />
-            <strong>Additional notes:</strong>
+            <strong>Additional notes:</strong>{" "}
+            <strong>For Backlog/Improvement course</strong>
             <br />
             <div
               style={{
@@ -645,6 +657,16 @@ export default function RegisteredCourses() {
               />
               <div style={{ fontSize: "9px", fontWeight: "bold" }}>
                 Student's Signature
+              </div>
+              <div
+                style={{
+                  fontSize: "9px",
+                  fontWeight: "bold",
+                  textAlign: "left",
+                  marginTop: "6px",
+                }}
+              >
+                Mobile Number:
               </div>
             </div>
             <div style={{ textAlign: "center", width: "180px" }}>
