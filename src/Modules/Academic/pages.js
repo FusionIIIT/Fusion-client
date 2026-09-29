@@ -301,6 +301,15 @@ export const ACADEMIC_PAGES = [
     group: null,
     roles: FACULTY_ROLES,
   },
+  {
+    key: "adminFeeStructure",
+    slug: "fee-structure",
+    title: "Fee Structure",
+    icon: "Money",
+    group: "Fee Structure",
+    roles: ["acadadmin"],
+    desktopOnly: true,
+  },
 ];
 
 export const ACADEMIC_NOTIFICATION_SLUGS = {

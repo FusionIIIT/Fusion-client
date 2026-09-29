@@ -36,6 +36,8 @@ const GROUP_ICONS = {
   "Research Output": "Newspaper",
   Activities: "Megaphone",
   Personal: "IdentificationBadge",
+  Certificates: "Certificate",
+  "Fee Structure": "Money",
 };
 
 const MODULE_SECTIONS = [

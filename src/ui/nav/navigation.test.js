@@ -66,12 +66,13 @@ describe("buildNavGroups", () => {
     });
     const academics = groups.find((g) => g.section === "Academics");
 
-    expect(linksOf([academics])).toHaveLength(18);
+    expect(linksOf([academics])).toHaveLength(19);
     expect(academics.items.map((i) => i.label)).toEqual([
       "Registration",
       "Course Changes",
       "Student Records",
       "Calendar & Feedback",
+      "Fee Structure",
     ]);
     const registration = academics.items.find(
       (item) => item.label === "Registration",
@@ -121,7 +122,7 @@ describe("buildNavGroups", () => {
     expect(groups.map((g) => g.section)).toContain("Academics");
   });
 
-  it("shows Bonafide Certificate only to acadadmin", () => {
+  it("shows the certificate pages only to acadadmin", () => {
     const acadadmin = buildNavGroups({
       role: "acadadmin",
       accessibleModules: ALL_MODULES,
@@ -130,10 +131,20 @@ describe("buildNavGroups", () => {
       (group) => group.section === "Certificate",
     );
 
+    // One expandable holding every certificate, as Registration does.
     expect(certificate.items).toEqual([
       expect.objectContaining({
-        label: "Bonafide Certificate",
-        to: "/certificates/bonafide-certificate",
+        label: "Certificates",
+        links: [
+          expect.objectContaining({
+            label: "Bonafide Certificate",
+            to: "/certificates/bonafide-certificate",
+          }),
+          expect.objectContaining({
+            label: "Paid / Unpaid Certificate",
+            to: "/certificates/fee-certificate",
+          }),
+        ],
       }),
     ]);
 

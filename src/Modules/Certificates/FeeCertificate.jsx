@@ -10,6 +10,7 @@ import {
   Group,
   Loader,
   Paper,
+  SegmentedControl,
   Select,
   Stack,
   Text,
@@ -27,8 +28,8 @@ import {
 } from "@phosphor-icons/react";
 
 import {
-  bonafidePdfRoute,
-  bonafideStudentRoute,
+  feeCertificatePdfRoute,
+  feeCertificateStudentRoute,
 } from "../../routes/academicRoutes";
 import classes from "./BonafideCertificate.module.css";
 import GeneratedCertificatesModal from "./GeneratedCertificatesModal";
@@ -43,13 +44,16 @@ const responseMessage = async (error) => {
   const payload = error?.response?.data;
   if (payload instanceof Blob) {
     try {
-      return JSON.parse(await payload.text()).error;
+      const parsed = JSON.parse(await payload.text());
+      return [parsed.error, ...(parsed.details ?? [])]
+        .filter(Boolean)
+        .join(" ");
     } catch {
       return "Certificate generation failed.";
     }
   }
   return (
-    payload?.error ||
+    [payload?.error, ...(payload?.details ?? [])].filter(Boolean).join(" ") ||
     payload?.message ||
     payload?.detail ||
     "Unable to complete the request."
@@ -73,9 +77,25 @@ function ordinalWithSuperscript(value) {
   );
 }
 
-export default function BonafideCertificate() {
+const totalOf = (rows) =>
+  rows.reduce((sum, row) => sum + Number(row.amount || 0), 0);
+
+// 1,05,250.00 — grouped in lakhs, matching the certificate.
+const indianCurrency = (value) => {
+  const [whole, fraction] = Number(value).toFixed(2).split(".");
+  const head = whole.slice(0, -3);
+  const tail = whole.slice(-3);
+  const grouped = head
+    ? `${head.replace(/\B(?=(\d{2})+(?!\d))/g, ",")},${tail}`
+    : tail;
+  return `${grouped}.${fraction}`;
+};
+
+export default function FeeCertificate() {
   const [rollNumber, setRollNumber] = useState("");
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [fee, setFee] = useState(null);
+  const [rows, setRows] = useState([]);
   const [purposes, setPurposes] = useState([]);
   const [certificateMeta, setCertificateMeta] = useState(null);
   const [purpose, setPurpose] = useState(null);
@@ -87,6 +107,8 @@ export default function BonafideCertificate() {
 
   const clearStudent = () => {
     setSelectedStudent(null);
+    setFee(null);
+    setRows([]);
     setPurposes([]);
     setCertificateMeta(null);
     setPurpose(null);
@@ -102,11 +124,13 @@ export default function BonafideCertificate() {
     setRollNumber(normalizedRollNumber);
     setFetchingStudent(true);
     try {
-      const { data } = await axios.get(bonafideStudentRoute, {
+      const { data } = await axios.get(feeCertificateStudentRoute, {
         ...authConfig(),
         params: { roll_number: normalizedRollNumber },
       });
       setSelectedStudent(data.student || null);
+      setFee(data.fee || null);
+      setRows(data.fee?.rows ?? []);
       setPurposes(data.purposes || []);
       setCertificateMeta(data.certificate || null);
     } catch (error) {
@@ -120,6 +144,15 @@ export default function BonafideCertificate() {
     }
   };
 
+  const setStatus = (semester, status) => {
+    setRows((current) =>
+      current.map((row) =>
+        row.semester === semester ? { ...row, status } : row,
+      ),
+    );
+    setPreview(null);
+  };
+
   const showPreview = () => {
     if (!selectedStudent || !purpose || !certificateMeta) return;
     const effectivePurpose =
@@ -128,7 +161,8 @@ export default function BonafideCertificate() {
     setPreview({
       student: selectedStudent,
       purpose: effectivePurpose,
-      isInternship: purpose === "Internship",
+      rows,
+      fee,
       meta: certificateMeta,
     });
   };
@@ -138,17 +172,18 @@ export default function BonafideCertificate() {
     setDownloading(true);
     try {
       const response = await axios.post(
-        bonafidePdfRoute,
+        feeCertificatePdfRoute,
         {
           student_id: selectedStudent.student_id,
           purpose,
           custom_purpose: purpose === "Other" ? customPurpose.trim() : "",
+          rows: rows.map(({ semester, status }) => ({ semester, status })),
         },
         { ...authConfig(), responseType: "blob" },
       );
       const filename = filenameFrom(
         response.headers["content-disposition"],
-        `${selectedStudent.roll_number}_Bonafide_Certificate.pdf`,
+        `${selectedStudent.roll_number}_Fee_Certificate.pdf`,
       );
       saveAs(response.data, filename);
       notifications.show({
@@ -167,10 +202,13 @@ export default function BonafideCertificate() {
     }
   };
 
+  const unmarked = rows.filter((row) => !row.status);
   const ready = Boolean(
     selectedStudent?.is_ready &&
     purpose &&
-    (purpose !== "Other" || customPurpose.trim()),
+    (purpose !== "Other" || customPurpose.trim()) &&
+    rows.length &&
+    !unmarked.length,
   );
 
   return (
@@ -180,7 +218,7 @@ export default function BonafideCertificate() {
           <Paper withBorder p="lg" radius="md" className={classes.controls}>
             <Stack gap="md">
               <div>
-                <Title order={3}>Generate certificate</Title>
+                <Title order={3}>Generate fee certificate</Title>
                 <Text c="dimmed" size="sm" mt={4}>
                   Enter a roll number to fetch the student details.
                 </Text>
@@ -230,6 +268,11 @@ export default function BonafideCertificate() {
                     {selectedStudent.year_ordinal} Year,{" "}
                     {selectedStudent.semester_ordinal} Semester
                   </Text>
+                  {fee?.is_concession && (
+                    <Badge mt="xs" color="blue" variant="light">
+                      Concession fee applied
+                    </Badge>
+                  )}
                 </Paper>
               )}
 
@@ -237,7 +280,7 @@ export default function BonafideCertificate() {
                 <Alert
                   color="red"
                   icon={<Warning size={18} />}
-                  title="Student data incomplete"
+                  title="Cannot issue this certificate"
                 >
                   {selectedStudent.validation_errors.join(" ")}
                 </Alert>
@@ -270,6 +313,40 @@ export default function BonafideCertificate() {
                   maxLength={150}
                   required
                 />
+              )}
+
+              {rows.length > 0 && (
+                <Stack gap="xs">
+                  <Text fw={600} size="sm">
+                    Paid / Unpaid
+                  </Text>
+                  {rows.map((row) => (
+                    <Group
+                      key={row.semester}
+                      justify="space-between"
+                      wrap="nowrap"
+                    >
+                      <Text size="sm" style={{ minWidth: 110 }}>
+                        {row.label}
+                      </Text>
+                      <SegmentedControl
+                        size="xs"
+                        data={[
+                          { label: "Paid", value: "Paid" },
+                          { label: "Unpaid", value: "Unpaid" },
+                        ]}
+                        value={row.status || null}
+                        onChange={(value) => setStatus(row.semester, value)}
+                      />
+                    </Group>
+                  ))}
+                  {unmarked.length > 0 && (
+                    <Alert color="orange" icon={<Warning size={16} />} p="xs">
+                      Mark {unmarked.map((row) => row.label).join(", ")} before
+                      generating.
+                    </Alert>
+                  )}
+                </Stack>
               )}
 
               <Group grow>
@@ -337,22 +414,45 @@ export default function BonafideCertificate() {
                   {preview.student.duration_text} course duration:{" "}
                   <strong>{preview.student.start_year}</strong> to{" "}
                   <strong>{preview.student.end_year}</strong>) at{" "}
-                  {preview.meta.institute_name}.
+                  {preview.meta.institute_name}. The fee details of{" "}
+                  <strong>{preview.student.programme_short}</strong> Programme
+                  for the purpose of applying for{" "}
+                  <strong>{preview.purpose}</strong> are given below:
                 </p>
-                <p className={`${classes.body} ${classes.secondParagraph}`}>
-                  This certificate is being issued to{" "}
-                  <strong>
-                    {preview.student.salutation} {preview.student.name}
-                  </strong>{" "}
-                  on {preview.student.pronoun} request for{" "}
-                  <strong>{preview.purpose}</strong>.
-                </p>
-                {preview.isInternship && (
-                  <p className={classes.note}>
-                    Note: No objection certificate will be issued by the
-                    placement cell.
-                  </p>
-                )}
+                <ul className={classes.body}>
+                  <li>
+                    <strong>Semester Wise Fee Details:</strong>
+                  </li>
+                </ul>
+                <table className={classes.feeTable}>
+                  <tbody>
+                    {preview.rows.map((row) => (
+                      <tr key={row.semester}>
+                        <td>{row.semester}</td>
+                        <td>
+                          {ordinalWithSuperscript(
+                            row.label.replace(" Semester", ""),
+                          )}{" "}
+                          Semester
+                        </td>
+                        <td>{row.amount_display}</td>
+                        <td>{row.status}</td>
+                      </tr>
+                    ))}
+                    <tr>
+                      <td colSpan={2} style={{ textAlign: "center" }}>
+                        Total
+                      </td>
+                      <td>{indianCurrency(totalOf(preview.rows))}</td>
+                      <td aria-label="No status for the total row" />
+                    </tr>
+                  </tbody>
+                </table>
+                <ul className={classes.body}>
+                  {(preview.fee?.notes ?? []).map((note) => (
+                    <li key={note}>{note}</li>
+                  ))}
+                </ul>
                 <div className={classes.signature}>
                   ({preview.meta.signatory_name})
                 </div>
@@ -364,9 +464,9 @@ export default function BonafideCertificate() {
               icon={<Info size={18} />}
               title="Certificate preview"
             >
-              Enter a roll number, fetch the student, select a purpose, and
-              choose Preview. The certificate can then be printed or downloaded
-              as PDF.
+              Enter a roll number, fetch the student, select a purpose, mark
+              each semester Paid or Unpaid, and choose Preview. The certificate
+              can then be printed or downloaded as PDF.
             </Alert>
           )}
         </Grid.Col>
@@ -374,6 +474,7 @@ export default function BonafideCertificate() {
       <GeneratedCertificatesModal
         opened={historyOpened}
         onClose={() => setHistoryOpened(false)}
+        variant="fee"
       />
     </>
   );

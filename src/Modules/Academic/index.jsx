@@ -43,6 +43,7 @@ const COMPONENTS = {
   ),
   studentTeachingCreditFeedback: lazy(() => import("./TeachingCreditFeedback")),
 
+  adminFeeStructure: lazy(() => import("./FeeStructure")),
   facultyRollList: lazy(() => import("./ViewRollList")),
   facultyTaDashboard: lazy(() =>
     import("./Faculty_TA_Dashboard").then((m) => ({
