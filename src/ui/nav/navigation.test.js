@@ -66,12 +66,13 @@ describe("buildNavGroups", () => {
     });
     const academics = groups.find((g) => g.section === "Academics");
 
-    expect(linksOf([academics])).toHaveLength(18);
+    expect(linksOf([academics])).toHaveLength(19);
     expect(academics.items.map((i) => i.label)).toEqual([
       "Registration",
       "Course Changes",
       "Student Records",
       "Calendar & Feedback",
+      "Fee Structure",
     ]);
     const registration = academics.items.find(
       (item) => item.label === "Registration",
@@ -121,7 +122,7 @@ describe("buildNavGroups", () => {
     expect(groups.map((g) => g.section)).toContain("Academics");
   });
 
-  it("shows Bonafide Certificate only to acadadmin", () => {
+  it("shows the certificate pages only to acadadmin", () => {
     const acadadmin = buildNavGroups({
       role: "acadadmin",
       accessibleModules: ALL_MODULES,
@@ -130,10 +131,20 @@ describe("buildNavGroups", () => {
       (group) => group.section === "Certificate",
     );
 
+    // One expandable holding every certificate, as Registration does.
     expect(certificate.items).toEqual([
       expect.objectContaining({
-        label: "Bonafide Certificate",
-        to: "/certificates/bonafide-certificate",
+        label: "Certificates",
+        links: [
+          expect.objectContaining({
+            label: "Bonafide Certificate",
+            to: "/certificates/bonafide-certificate",
+          }),
+          expect.objectContaining({
+            label: "Paid / Unpaid Certificate",
+            to: "/certificates/fee-certificate",
+          }),
+        ],
       }),
     ]);
 
@@ -332,5 +343,79 @@ describe("department staff", () => {
     });
     const labels = groups.flatMap((g) => g.items.map((i) => i.label));
     expect(labels).not.toContain("Assistantship");
+  });
+});
+
+describe("modules served by another Fusion app", () => {
+  it("shows Placement Cell only when the IAM granted it", () => {
+    const withIt = buildNavGroups({
+      role: "student",
+      accessibleModules: { placement_cell: true },
+    });
+    expect(withIt.map((g) => g.section)).toContain("Placement");
+
+    const without = buildNavGroups({ role: "student", accessibleModules: {} });
+    expect(without.map((g) => g.section)).not.toContain("Placement");
+  });
+
+  it("routes inside this shell, so the sidebar never changes", () => {
+    const groups = buildNavGroups({
+      role: "faculty",
+      accessibleModules: { leave: true },
+    });
+    const leave = groups.find((g) => g.section === "Leave").items[0];
+    expect(leave.to).toBe("/leave");
+  });
+});
+
+describe("a plugged module's own screens", () => {
+  const plugged = [
+    {
+      section: "Placement",
+      items: [
+        {
+          code: "placement_cell",
+          label: "Placement Cell",
+          icon: "Briefcase",
+          links: [
+            {
+              code: "p.postings",
+              label: "Opportunities",
+              icon: "ClipboardText",
+              to: "/placement/postings",
+            },
+            {
+              code: "p.offers",
+              label: "My Offers",
+              icon: "Signature",
+              to: "/placement/offers",
+            },
+          ],
+        },
+      ],
+    },
+  ];
+
+  it("expands into the screens the other service sent", () => {
+    const groups = buildNavGroups({
+      role: "student",
+      accessibleModules: { placement_cell: true },
+      pluggedNavigation: plugged,
+    });
+    const item = groups.find((g) => g.section === "Placement").items[0];
+    expect(item.links.map((l) => l.label)).toEqual([
+      "Opportunities",
+      "My Offers",
+    ]);
+  });
+
+  it("stays a single link when the service sent no menu", () => {
+    const groups = buildNavGroups({
+      role: "student",
+      accessibleModules: { placement_cell: true },
+    });
+    const item = groups.find((g) => g.section === "Placement").items[0];
+    expect(item.to).toBe("/placement");
+    expect(item.links).toBeUndefined();
   });
 });

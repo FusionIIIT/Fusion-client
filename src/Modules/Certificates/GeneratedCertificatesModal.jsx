@@ -22,6 +22,8 @@ import PropTypes from "prop-types";
 import {
   bonafideCertificatePdfRoute,
   bonafideCertificatesRoute,
+  feeCertificateHistoryPdfRoute,
+  feeCertificatesRoute,
 } from "../../routes/academicRoutes";
 import classes from "./GeneratedCertificatesModal.module.css";
 
@@ -53,7 +55,12 @@ const filenameFrom = (header, fallback) => {
   return match?.[1] || fallback;
 };
 
-export default function GeneratedCertificatesModal({ opened, onClose }) {
+export default function GeneratedCertificatesModal({ opened, onClose, variant }) {
+  const isFee = variant === "fee";
+  const listRoute = isFee ? feeCertificatesRoute : bonafideCertificatesRoute;
+  const pdfRoute = isFee
+    ? feeCertificateHistoryPdfRoute
+    : bonafideCertificatePdfRoute;
   const [search, setSearch] = useState("");
   const [debouncedSearch] = useDebouncedValue(search.trim(), 300);
   const [page, setPage] = useState(1);
@@ -73,7 +80,7 @@ export default function GeneratedCertificatesModal({ opened, onClose }) {
     const controller = new AbortController();
     setLoading(true);
     axios
-      .get(bonafideCertificatesRoute, {
+      .get(listRoute, {
         ...authConfig(),
         params: {
           page,
@@ -116,7 +123,7 @@ export default function GeneratedCertificatesModal({ opened, onClose }) {
     setPreviewingId(certificate.id);
     try {
       const response = await axios.get(
-        bonafideCertificatePdfRoute(certificate.id),
+        pdfRoute(certificate.id),
         { ...authConfig(), responseType: "blob" },
       );
       setPdfPreview({
@@ -138,7 +145,7 @@ export default function GeneratedCertificatesModal({ opened, onClose }) {
     setDownloadingId(certificate.id);
     try {
       const response = await axios.get(
-        bonafideCertificatePdfRoute(certificate.id),
+        pdfRoute(certificate.id),
         {
           ...authConfig(),
           params: { download: 1 },
@@ -304,4 +311,9 @@ export default function GeneratedCertificatesModal({ opened, onClose }) {
 GeneratedCertificatesModal.propTypes = {
   opened: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
+  variant: PropTypes.oneOf(["bonafide", "fee"]),
+};
+
+GeneratedCertificatesModal.defaultProps = {
+  variant: "bonafide",
 };

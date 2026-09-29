@@ -39,6 +39,19 @@ export const bonafidePdfRoute = `${host}/academic-procedures/api/acad/bonafide/p
 export const bonafideCertificatesRoute = `${host}/academic-procedures/api/acad/bonafide/certificates/`;
 export const bonafideCertificatePdfRoute = (certificateId) =>
   `${bonafideCertificatesRoute}${certificateId}/pdf/`;
+
+export const feeCertificateStudentRoute = `${host}/academic-procedures/api/acad/fee-certificate/student/`;
+export const feeCertificatePdfRoute = `${host}/academic-procedures/api/acad/fee-certificate/pdf/`;
+export const feeCertificatesRoute = `${host}/academic-procedures/api/acad/fee-certificate/certificates/`;
+export const feeCertificateHistoryPdfRoute = (certificateId) =>
+  `${feeCertificatesRoute}${certificateId}/pdf/`;
+
+export const feeStructuresRoute = `${host}/academic-procedures/api/acad/fee-structures/`;
+export const feeStructureTemplateRoute = `${feeStructuresRoute}template/`;
+export const feeStructureDetailRoute = (structureId) =>
+  `${feeStructuresRoute}${structureId}/`;
+export const feeStructureReplicateRoute = (structureId) =>
+  `${feeStructuresRoute}${structureId}/replicate/`;
 export const checkAllocationRoute = `${host}/aims/api/check-allocation`;
 export const startAllocationRoute = `${host}/aims/api/start-allocation`;
 export const addCourseToSlotsRoute = `${host}/aims/api/add-course-to-slots`;
