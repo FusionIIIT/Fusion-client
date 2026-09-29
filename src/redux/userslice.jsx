@@ -15,6 +15,7 @@ const userSlice = createSlice({
     authChecked: false, // /api/auth/me has resolved (gates route rendering)
     programmeType: null, // UG | PG | PHD — decides which academic pages exist
     profilePhoto: "", // student's own photo, shown on the sidebar avatar
+    pluggedNavigation: [], // menus contributed by modules another service serves
   },
   reducers: {
     setProgrammeType: (state, action) => {
@@ -41,6 +42,9 @@ const userSlice = createSlice({
     setRole: (state, action) => {
       state.role = action.payload;
     },
+    setPluggedNavigation: (state, action) => {
+      state.pluggedNavigation = action.payload ?? [];
+    },
     setAccessibleModules: (state, action) => {
       state.accessibleModules = action.payload;
     },
@@ -63,6 +67,7 @@ export const {
   setRoles,
   setRole,
   setAccessibleModules,
+  setPluggedNavigation,
   setCurrentAccessibleModules,
   setMustCompleteProfile,
   setAuthChecked,

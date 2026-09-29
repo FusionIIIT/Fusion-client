@@ -46,6 +46,9 @@ export function Layout({ children = null }) {
   const accessibleModules = useSelector(
     (state) => state.user.currentAccessibleModules,
   );
+  const pluggedNavigation = useSelector(
+    (state) => state.user.pluggedNavigation,
+  );
   const unreadCount = useSelector((state) => state.notification.unreadCount);
   const profilePhoto = useSelector((state) => state.user.profilePhoto);
 
@@ -90,8 +93,14 @@ export function Layout({ children = null }) {
   }, [dispatch, role, profilePhoto]);
 
   const navGroups = useMemo(
-    () => buildNavGroups({ role, accessibleModules, programmeType }),
-    [role, accessibleModules, programmeType],
+    () =>
+      buildNavGroups({
+        role,
+        accessibleModules,
+        programmeType,
+        pluggedNavigation,
+      }),
+    [role, accessibleModules, programmeType, pluggedNavigation],
   );
 
   const bottomNavItems = useMemo(

@@ -96,6 +96,24 @@ const OTHER_MODULES = [
   },
 ];
 
+// Modules another service serves, gated and routed exactly like ours.
+const INTEGRATED_MODULES = [
+  {
+    id: "placement_cell",
+    label: "Placement Cell",
+    icon: "Briefcase",
+    to: "/placement",
+    section: "Placement",
+  },
+  {
+    id: "leave",
+    label: "Leave",
+    icon: "CalendarBlank",
+    to: "/leave",
+    section: "Leave",
+  },
+];
+
 const toLink = (base, page) => ({
   code: page.key,
   label: page.title,
@@ -147,6 +165,7 @@ export function buildNavGroups({
   role,
   accessibleModules = {},
   programmeType = null,
+  pluggedNavigation = [],
 } = {}) {
   const flags = { programmeType, role };
   const groups = [
@@ -190,6 +209,27 @@ export function buildNavGroups({
     (m) => ({ code: m.id, label: m.label, icon: m.icon, to: m.to }),
   );
   if (others.length) groups.push({ section: "Modules", items: others });
+
+  INTEGRATED_MODULES.filter((m) => accessibleModules[m.id]).forEach((m) => {
+    // The payload is sections, and the module code sits on the entries inside.
+    const entry = pluggedNavigation
+      .flatMap((g) => g.items ?? [])
+      .find((i) => i.code === m.id);
+    const links = (entry?.links ?? []).map((l) => ({
+      code: l.code,
+      label: l.label,
+      icon: l.icon,
+      to: l.to,
+    }));
+    groups.push({
+      section: m.section,
+      items: [
+        links.length
+          ? { code: m.id, label: m.label, icon: m.icon, links }
+          : { code: m.id, label: m.label, icon: m.icon, to: m.to },
+      ],
+    });
+  });
 
   const fpsPages = dedupeBySlug(pagesForRole(FPS_PAGES, role, flags));
   if (fpsPages.length) {

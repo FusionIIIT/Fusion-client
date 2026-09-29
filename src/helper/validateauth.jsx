@@ -9,6 +9,7 @@ import {
   setRoles,
   setRole,
   setAccessibleModules,
+  setPluggedNavigation,
   setCurrentAccessibleModules,
   setMustCompleteProfile,
   setAuthChecked,
@@ -48,6 +49,7 @@ function ValidateAuth() {
         last_selected_role,
         roll_no,
         must_complete_profile = false,
+        plugged_navigation = [],
       } = data;
 
       dispatch(setUserName(name));
@@ -58,6 +60,7 @@ function ValidateAuth() {
       if (selectedRole) dispatch(setRole(selectedRole));
 
       dispatch(setAccessibleModules(accessible_modules));
+      dispatch(setPluggedNavigation(plugged_navigation));
       dispatch(setCurrentAccessibleModules());
       dispatch(setMustCompleteProfile(must_complete_profile));
       dispatch(setAuthChecked(true));
