@@ -49,7 +49,7 @@ function ValidateAuth() {
         last_selected_role,
         roll_no,
         must_complete_profile = false,
-        plugged_navigation = [],
+        plugged_navigation = {},
       } = data;
 
       dispatch(setUserName(name));

@@ -47,7 +47,7 @@ export function Layout({ children = null }) {
     (state) => state.user.currentAccessibleModules,
   );
   const pluggedNavigation = useSelector(
-    (state) => state.user.pluggedNavigation,
+    (state) => state.user.currentPluggedNavigation,
   );
   const unreadCount = useSelector((state) => state.notification.unreadCount);
   const profilePhoto = useSelector((state) => state.user.profilePhoto);

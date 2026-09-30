@@ -26,7 +26,10 @@ export function PluggedModule({ title }) {
       className={classes.frame}
       src={src}
       title={title}
-      // Same institute, same session; it needs its cookie and nothing beyond.
+      // Not a boundary: same-origin plus scripts lets the frame drop its own
+      // sandbox, and it needs both. The frame is trusted because it is ours and
+      // the origin is ours; what keeps that true is that nothing else — an
+      // upload above all — is ever served from this origin as a page.
       sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-downloads"
     />
   );
