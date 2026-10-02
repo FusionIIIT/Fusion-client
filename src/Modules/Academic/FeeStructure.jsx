@@ -18,9 +18,17 @@ import {
   TextInput,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { Copy, Info, PencilSimple, Plus, Trash } from "@phosphor-icons/react";
+import {
+  Bank,
+  Copy,
+  Info,
+  PencilSimple,
+  Plus,
+  Trash,
+} from "@phosphor-icons/react";
 
 import {
+  demandLetterBankAccountsRoute,
   feeStructureDetailRoute,
   feeStructureReplicateRoute,
   feeStructureTemplateRoute,
@@ -99,6 +107,8 @@ export default function FeeStructure() {
   const [replicating, setReplicating] = useState(null);
   const [category, setCategory] = useState("UG");
   const [preview, setPreview] = useState(null);
+  const [bankDraft, setBankDraft] = useState(null);
+  const [bankSaving, setBankSaving] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -193,6 +203,42 @@ export default function FeeStructure() {
     }
   };
 
+  const openBankDetails = async () => {
+    try {
+      const { data } = await axios.get(
+        demandLetterBankAccountsRoute,
+        authConfig(),
+      );
+      setBankDraft(data);
+    } catch (error) {
+      notifications.show({
+        color: "red",
+        title: "Could not load bank account details",
+        message: message(error, "Please try again."),
+      });
+    }
+  };
+
+  const saveBankDetails = async () => {
+    setBankSaving(true);
+    try {
+      await axios.put(demandLetterBankAccountsRoute, bankDraft, authConfig());
+      notifications.show({
+        color: "green",
+        message: "Bank account details saved.",
+      });
+      setBankDraft(null);
+    } catch (error) {
+      notifications.show({
+        color: "red",
+        title: "Not saved",
+        message: message(error, "Please try again."),
+      });
+    } finally {
+      setBankSaving(false);
+    }
+  };
+
   const visible = useMemo(
     () => rows.filter((row) => row.programme_category === category),
     [rows, category],
@@ -212,12 +258,21 @@ export default function FeeStructure() {
             </Button>
           ))}
         </Group>
-        <Button
-          leftSection={<Plus size={16} />}
-          onClick={() => startNew(category)}
-        >
-          Add Fee Structure
-        </Button>
+        <Group gap="xs">
+          <Button
+            variant="default"
+            leftSection={<Bank size={16} />}
+            onClick={openBankDetails}
+          >
+            Bank Account Details
+          </Button>
+          <Button
+            leftSection={<Plus size={16} />}
+            onClick={() => startNew(category)}
+          >
+            Add Fee Structure
+          </Button>
+        </Group>
       </Group>
 
       <Paper withBorder radius="md" p={0}>
@@ -337,6 +392,59 @@ export default function FeeStructure() {
           saving={saving}
           onClose={() => setDraft(null)}
         />
+      )}
+
+      {bankDraft && (
+        <Modal
+          opened
+          onClose={() => setBankDraft(null)}
+          title="Bank Account Details for the Demand Letter"
+          size="lg"
+          centered
+        >
+          <Stack gap="md">
+            <Text size="xs" c="dimmed">
+              One shared record -- printed on every Demand Letter, for every
+              programme and every academic year.
+            </Text>
+            <Group grow align="flex-start">
+              <BankAccountFields
+                heading="Academic Fee"
+                account={bankDraft.academic_fee_account ?? {}}
+                onChange={(field, value) =>
+                  setBankDraft((current) => ({
+                    ...current,
+                    academic_fee_account: {
+                      ...current.academic_fee_account,
+                      [field]: value,
+                    },
+                  }))
+                }
+              />
+              <BankAccountFields
+                heading="Mess Fee"
+                account={bankDraft.mess_fee_account ?? {}}
+                onChange={(field, value) =>
+                  setBankDraft((current) => ({
+                    ...current,
+                    mess_fee_account: {
+                      ...current.mess_fee_account,
+                      [field]: value,
+                    },
+                  }))
+                }
+              />
+            </Group>
+            <Group justify="flex-end">
+              <Button variant="default" onClick={() => setBankDraft(null)}>
+                Cancel
+              </Button>
+              <Button onClick={saveBankDetails} loading={bankSaving}>
+                Save
+              </Button>
+            </Group>
+          </Stack>
+        </Modal>
       )}
     </Stack>
   );
@@ -790,6 +898,55 @@ function AmountField({ value, semesters, allowPerSemester, onChange }) {
     </Stack>
   );
 }
+
+function BankAccountFields({ heading, account, onChange }) {
+  return (
+    <Stack gap="xs">
+      <Text fw={600} size="sm">
+        {heading}
+      </Text>
+      <TextInput
+        label="Account Name"
+        value={account.name ?? ""}
+        onChange={(event) => onChange("name", event.currentTarget.value)}
+      />
+      <TextInput
+        label="Account Number"
+        value={account.number ?? ""}
+        onChange={(event) => onChange("number", event.currentTarget.value)}
+      />
+      <TextInput
+        label="IFSC"
+        value={account.ifsc ?? ""}
+        onChange={(event) => onChange("ifsc", event.currentTarget.value)}
+      />
+      <TextInput
+        label="Bank & Branch"
+        value={account.bank_branch ?? ""}
+        onChange={(event) => onChange("bank_branch", event.currentTarget.value)}
+      />
+      <TextInput
+        label="Account Type"
+        value={account.account_type ?? ""}
+        onChange={(event) =>
+          onChange("account_type", event.currentTarget.value)
+        }
+      />
+    </Stack>
+  );
+}
+
+BankAccountFields.propTypes = {
+  heading: PropTypes.string.isRequired,
+  account: PropTypes.shape({
+    name: PropTypes.string,
+    number: PropTypes.string,
+    ifsc: PropTypes.string,
+    bank_branch: PropTypes.string,
+    account_type: PropTypes.string,
+  }).isRequired,
+  onChange: PropTypes.func.isRequired,
+};
 
 function NotesEditor({ notes, onChange }) {
   return (
