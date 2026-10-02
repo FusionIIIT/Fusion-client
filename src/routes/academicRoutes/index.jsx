@@ -46,12 +46,25 @@ export const feeCertificatesRoute = `${host}/academic-procedures/api/acad/fee-ce
 export const feeCertificateHistoryPdfRoute = (certificateId) =>
   `${feeCertificatesRoute}${certificateId}/pdf/`;
 
+export const demandLetterStudentRoute = `${host}/academic-procedures/api/acad/demand-letter/student/`;
+export const demandLetterPdfRoute = `${host}/academic-procedures/api/acad/demand-letter/pdf/`;
+export const demandLettersRoute = `${host}/academic-procedures/api/acad/demand-letter/certificates/`;
+export const demandLetterHistoryPdfRoute = (certificateId) =>
+  `${demandLettersRoute}${certificateId}/pdf/`;
+
+export const feeStructureCertificateStudentRoute = `${host}/academic-procedures/api/acad/fee-structure-certificate/student/`;
+export const feeStructureCertificatePdfRoute = `${host}/academic-procedures/api/acad/fee-structure-certificate/pdf/`;
+export const feeStructureCertificatesRoute = `${host}/academic-procedures/api/acad/fee-structure-certificate/certificates/`;
+export const feeStructureCertificateHistoryPdfRoute = (certificateId) =>
+  `${feeStructureCertificatesRoute}${certificateId}/pdf/`;
+
 export const feeStructuresRoute = `${host}/academic-procedures/api/acad/fee-structures/`;
 export const feeStructureTemplateRoute = `${feeStructuresRoute}template/`;
 export const feeStructureDetailRoute = (structureId) =>
   `${feeStructuresRoute}${structureId}/`;
 export const feeStructureReplicateRoute = (structureId) =>
   `${feeStructuresRoute}${structureId}/replicate/`;
+export const demandLetterBankAccountsRoute = `${host}/academic-procedures/api/acad/demand-letter-bank-accounts/`;
 export const checkAllocationRoute = `${host}/aims/api/check-allocation`;
 export const startAllocationRoute = `${host}/aims/api/start-allocation`;
 export const addCourseToSlotsRoute = `${host}/aims/api/add-course-to-slots`;

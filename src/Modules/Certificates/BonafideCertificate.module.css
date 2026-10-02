@@ -135,3 +135,80 @@
   font-size: 12.5pt;
   line-height: 16pt;
 }
+
+.certificateSmall {
+  font-size: 12pt;
+}
+
+.certificateSmall .heading {
+  font-size: 13.5pt;
+}
+
+.demandFeeTable {
+  width: auto;
+}
+
+.demandFeeTable td {
+  white-space: nowrap;
+}
+
+.bankTables {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin: 0.3rem 0 0;
+}
+
+.bankTableHeading {
+  margin: 0 0 4pt;
+  text-align: center;
+  font-weight: 700;
+}
+
+.bankTable {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.bankTable td {
+  border: 1px solid #000;
+  padding: 2.5pt 6pt;
+  font-size: 11pt;
+  line-height: 14pt;
+}
+
+.bankTable td:first-child {
+  font-weight: 700;
+  width: 30%;
+}
+
+.structureDetails {
+  display: grid;
+  grid-template-columns: auto auto auto 1fr;
+  column-gap: 10pt;
+  row-gap: 4pt;
+  margin: 0 0 8pt;
+}
+
+.structureDetailsSpan {
+  grid-column: 2 / span 3;
+}
+
+.structureTable {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.structureTable td,
+.structureTable th {
+  border: 1px solid #000;
+  padding: 2.5pt 6pt;
+  font-size: 12pt;
+  line-height: 15pt;
+  text-align: left;
+}
+
+.structureTable th {
+  white-space: nowrap;
+  font-weight: 700;
+}
