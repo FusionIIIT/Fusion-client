@@ -144,6 +144,14 @@ describe("buildNavGroups", () => {
             label: "Paid / Unpaid Certificate",
             to: "/certificates/fee-certificate",
           }),
+          expect.objectContaining({
+            label: "Demand Letter",
+            to: "/certificates/demand-letter",
+          }),
+          expect.objectContaining({
+            label: "Fee Structure Certificate",
+            to: "/certificates/fee-structure-certificate",
+          }),
         ],
       }),
     ]);
