@@ -130,8 +130,8 @@ export const ACADEMIC_PAGES = [
     slug: "generate-student-list",
     title: "Generate Student List",
     icon: "ListNumbers",
-    group: "Student Records",
-    roles: SCOPED_ADMIN_ROLES,
+    group: "Courses Roll List",
+    roles: [...SCOPED_ADMIN_ROLES, ...FACULTY_ROLES, ...STUDENT_ROLES],
     desktopOnly: true,
   },
   {
