@@ -10,6 +10,7 @@ import {
   Group,
   Loader,
   Paper,
+  Select,
   Stack,
   Text,
   TextInput,
@@ -63,6 +64,17 @@ const filenameFrom = (header, fallback) => {
   return match?.[1] || fallback;
 };
 
+function ordinalWithSuperscript(value) {
+  const match = /^(\d+)(st|nd|rd|th)$/.exec((value ?? "").trim());
+  if (!match) return value;
+  return (
+    <>
+      {match[1]}
+      <sup>{match[2]}</sup>
+    </>
+  );
+}
+
 const indianCurrency = (value) => {
   const [whole, fraction] = Number(value).toFixed(2).split(".");
   const head = whole.slice(0, -3);
@@ -80,6 +92,8 @@ export default function FeeStructureCertificate() {
   const [rollNumber, setRollNumber] = useState("");
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [structure, setStructure] = useState(null);
+  const [financialYears, setFinancialYears] = useState([]);
+  const [selectedSemester, setSelectedSemester] = useState(null);
   const [certificateMeta, setCertificateMeta] = useState(null);
   const [preview, setPreview] = useState(null);
   const [fetchingStudent, setFetchingStudent] = useState(false);
@@ -89,25 +103,31 @@ export default function FeeStructureCertificate() {
   const clearStudent = () => {
     setSelectedStudent(null);
     setStructure(null);
+    setFinancialYears([]);
+    setSelectedSemester(null);
     setCertificateMeta(null);
     setPreview(null);
   };
 
-  const fetchStudent = async () => {
-    const normalizedRollNumber = rollNumber.trim().toUpperCase();
-    if (!normalizedRollNumber || fetchingStudent) return;
-
-    clearStudent();
-    setRollNumber(normalizedRollNumber);
+  const fetchStudent = async (roll, semester) => {
+    if (!roll || fetchingStudent) return;
     setFetchingStudent(true);
     try {
       const { data } = await axios.get(feeStructureCertificateStudentRoute, {
         ...authConfig(),
-        params: { roll_number: normalizedRollNumber },
+        params: { roll_number: roll, semester: semester || undefined },
       });
       setSelectedStudent(data.student || null);
       setStructure(data.structure || null);
+      setFinancialYears(
+        (data.financial_years || []).map((item) => ({
+          value: String(item.value),
+          label: item.label,
+        })),
+      );
+      setSelectedSemester(data.selected_semester ?? null);
       setCertificateMeta(data.certificate || null);
+      setPreview(null);
     } catch (error) {
       notifications.show({
         color: "red",
@@ -117,6 +137,21 @@ export default function FeeStructureCertificate() {
     } finally {
       setFetchingStudent(false);
     }
+  };
+
+  const searchStudent = () => {
+    const normalizedRollNumber = rollNumber.trim().toUpperCase();
+    if (!normalizedRollNumber) return;
+    clearStudent();
+    setRollNumber(normalizedRollNumber);
+    fetchStudent(normalizedRollNumber);
+  };
+
+  const changeFinancialYear = (value) => {
+    const semester = Number(value);
+    setSelectedSemester(semester);
+    setPreview(null);
+    fetchStudent(rollNumber, semester);
   };
 
   const showPreview = () => {
@@ -135,7 +170,7 @@ export default function FeeStructureCertificate() {
     try {
       const response = await axios.post(
         feeStructureCertificatePdfRoute,
-        { student_id: selectedStudent.student_id },
+        { student_id: selectedStudent.student_id, semester: selectedSemester },
         { ...authConfig(), responseType: "blob" },
       );
       const filename = filenameFrom(
@@ -159,7 +194,9 @@ export default function FeeStructureCertificate() {
     }
   };
 
-  const ready = Boolean(selectedStudent?.is_ready && structure?.rows?.length);
+  const ready = Boolean(
+    selectedStudent?.is_ready && structure?.rows?.length && selectedSemester,
+  );
 
   return (
     <>
@@ -185,7 +222,7 @@ export default function FeeStructureCertificate() {
                 onKeyDown={(event) => {
                   if (event.key === "Enter") {
                     event.preventDefault();
-                    fetchStudent();
+                    searchStudent();
                   }
                 }}
                 rightSection={
@@ -195,7 +232,7 @@ export default function FeeStructureCertificate() {
               <Button
                 variant="light"
                 leftSection={<MagnifyingGlass size={18} />}
-                onClick={fetchStudent}
+                onClick={searchStudent}
                 disabled={!rollNumber.trim()}
                 loading={fetchingStudent}
                 fullWidth
@@ -215,8 +252,9 @@ export default function FeeStructureCertificate() {
                     {selectedStudent.programme} in {selectedStudent.discipline}
                   </Text>
                   <Text size="sm">
-                    {selectedStudent.year_ordinal} Year,{" "}
-                    {selectedStudent.semester_ordinal} Semester
+                    {ordinalWithSuperscript(selectedStudent.year_ordinal)} Year,{" "}
+                    {ordinalWithSuperscript(selectedStudent.semester_ordinal)}{" "}
+                    Semester
                   </Text>
                   {structure?.academic_year_label && (
                     <Text size="sm">
@@ -234,6 +272,21 @@ export default function FeeStructureCertificate() {
                 >
                   {selectedStudent.validation_errors.join(" ")}
                 </Alert>
+              )}
+
+              {financialYears.length > 0 && (
+                <Select
+                  label="Financial year"
+                  description={
+                    selectedSemester
+                      ? `Covers Semester ${selectedSemester} & ${selectedSemester + 1}`
+                      : undefined
+                  }
+                  data={financialYears}
+                  value={selectedSemester ? String(selectedSemester) : null}
+                  onChange={changeFinancialYear}
+                  searchable
+                />
               )}
 
               <Group grow>
@@ -299,7 +352,9 @@ export default function FeeStructureCertificate() {
                   <strong>Branch:</strong>
                   <span>{preview.student.discipline}</span>
                   <strong>Semester:</strong>
-                  <span>{preview.student.semester_ordinal}</span>
+                  <span>
+                    {ordinalWithSuperscript(preview.student.semester_ordinal)}
+                  </span>
                   <strong>Programme:</strong>
                   <span>{preview.student.programme_short}</span>
                   <strong>Financial Year:</strong>
