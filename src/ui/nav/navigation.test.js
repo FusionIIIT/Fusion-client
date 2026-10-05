@@ -71,6 +71,7 @@ describe("buildNavGroups", () => {
       "Registration",
       "Course Changes",
       "Student Records",
+      "Courses Roll List",
       "Calendar & Feedback",
       "Fee Structure",
     ]);
