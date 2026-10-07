@@ -4,6 +4,7 @@ import StudentCreditTotalsReport from "./reports/StudentCreditTotalsReport";
 import CourseRegistrationCountsReport from "./reports/CourseRegistrationCountsReport";
 import SwayamRegistrationsReport from "./reports/SwayamRegistrationsReport";
 import SemesterRegistrationsReport from "./reports/SemesterRegistrationsReport";
+import CreditsEarnedReport from "./reports/CreditsEarnedReport";
 
 // One entry per report. Adding a report means adding an entry here; the list
 // page and the report page both read from this.
@@ -50,6 +51,14 @@ export const DATABASE_REPORTS = [
     summary: "Every course a batch registered in one semester, with credits",
     filters: "Batch, semester",
     Component: SemesterRegistrationsReport,
+  },
+  {
+    id: "credits-earned",
+    title: "Total credits earned",
+    summary:
+      "Regular, backlog/improvement and swayam credits each student of a batch has earned so far",
+    filters: "Batch",
+    Component: CreditsEarnedReport,
   },
 ];
 
