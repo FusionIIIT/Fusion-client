@@ -10,6 +10,7 @@ import {
   studentDropRegistrationsRoute,
   studentDropCourseRoute,
 } from "../../routes/academicRoutes";
+import { getApiErrorMessage } from "../../helper/apiError";
 
 export default function StudentDropCourse() {
   const [regs, setRegs] = useState([]);
@@ -35,7 +36,7 @@ export default function StudentDropCourse() {
       setError(null);
     } catch (err) {
       const errorMsg =
-        err.response?.data?.error || err.response?.data?.message || err.message;
+        getApiErrorMessage(err);
       setError(errorMsg || "Failed to load courses");
     } finally {
       setLoading(false);
@@ -83,7 +84,7 @@ export default function StudentDropCourse() {
       closeModal();
     } catch (err) {
       const errorMsg =
-        err.response?.data?.error || err.response?.data?.message || err.message;
+        getApiErrorMessage(err);
       showNotification({
         title: "Drop Request Failed",
         message: errorMsg || "Failed to submit drop request",
