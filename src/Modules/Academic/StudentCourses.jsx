@@ -36,6 +36,7 @@ import {
   adminProgressSeminarEnrollmentListRoute,
   adminTeachingCreditEnrollmentListRoute,
 } from "../../routes/academicRoutes";
+import { getApiErrorMessage } from "../../helper/apiError";
 
 function authHeaders() {
   return { Authorization: `Token ${localStorage.getItem("authToken")}` };
@@ -225,7 +226,7 @@ export default function StudentCourses() {
         });
       }
     } catch (err) {
-      setError(err.response?.data?.error || err.message || "Fetch failed");
+      setError(getApiErrorMessage(err, "Fetch failed"));
     } finally {
       setLoading(false);
     }
@@ -291,7 +292,7 @@ export default function StudentCourses() {
       });
       await handleGetCourses();
     } catch (err) {
-      setError(err.response?.data?.error || err.message || "Drop failed");
+      setError(getApiErrorMessage(err, "Drop failed"));
     } finally {
       setLoading(false);
       setDropModalOpen(false);
@@ -361,10 +362,7 @@ export default function StudentCourses() {
       }
     } catch (err) {
       setError(
-        err.response?.data?.error ||
-          err.response?.data?.detail ||
-          err.message ||
-          "Add failed",
+        getApiErrorMessage(err, "Add failed"),
       );
     } finally {
       setLoading(false);
@@ -537,7 +535,7 @@ export default function StudentCourses() {
       });
       await handleGetCourses();
     } catch (err) {
-      setError(err.response?.data?.error || err.message || "Add failed");
+      setError(getApiErrorMessage(err, "Add failed"));
     } finally {
       setLoading(false);
     }
@@ -576,7 +574,7 @@ export default function StudentCourses() {
       });
       await handleGetCourses();
     } catch (err) {
-      setError(err.response?.data?.error || err.message || "Add failed");
+      setError(getApiErrorMessage(err, "Add failed"));
     } finally {
       setLoading(false);
     }
@@ -617,7 +615,7 @@ export default function StudentCourses() {
       });
       await handleGetCourses();
     } catch (err) {
-      setError(err.response?.data?.error || err.message || "Add failed");
+      setError(getApiErrorMessage(err, "Add failed"));
     } finally {
       setLoading(false);
     }
