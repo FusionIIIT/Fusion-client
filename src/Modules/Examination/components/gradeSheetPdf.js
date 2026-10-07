@@ -1,4 +1,4 @@
-import jsPDF from "jspdf";
+import JsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
 const PDF_MARGIN = { top: 75, left: 23, right: 23, bottom: 25 };
@@ -10,7 +10,7 @@ const CONTENT_W_PX = Math.round(CONTENT_W_MM * (96 / 25.4));
 const CONTENT_H_PX = Math.round(CONTENT_H_MM * (96 / 25.4));
 
 export async function saveGradeSheetPDF(html, filename) {
-  const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  const pdf = new JsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   let firstPage = true;
 
   const cleanHTML = html
@@ -40,10 +40,14 @@ export async function saveGradeSheetPDF(html, filename) {
     iDoc.write(cleanHTML);
     iDoc.close();
 
-    await new Promise((r) => setTimeout(r, 250));
+    await new Promise((r) => {
+      setTimeout(r, 250);
+    });
     iDoc.body.style.cssText = `margin:0;padding:0;width:${CONTENT_W_PX}px;background:#fff;`;
     iframe.style.height = `${iDoc.body.scrollHeight}px`;
-    await new Promise((r) => setTimeout(r, 100));
+    await new Promise((r) => {
+      setTimeout(r, 100);
+    });
 
     const shedOverflowingPages = (pageDivs) => {
       for (let i = 0; i < pageDivs.length; i += 1) {
@@ -145,7 +149,9 @@ export async function saveGradeSheetPDF(html, filename) {
     });
 
     iframe.style.height = `${iDoc.body.scrollHeight}px`;
-    await new Promise((r) => setTimeout(r, 100));
+    await new Promise((r) => {
+      setTimeout(r, 100);
+    });
 
     const BORDER = "1px solid #000";
     const NONE = "none";
@@ -209,7 +215,9 @@ export async function saveGradeSheetPDF(html, filename) {
     const pageNodes = Array.from(iDoc.querySelectorAll(".gs-page"));
     const nodesToRender = pageNodes.length > 0 ? pageNodes : [iDoc.body];
 
-    for (const node of nodesToRender) {
+    for (let i = 0; i < nodesToRender.length; i += 1) {
+      const node = nodesToRender[i];
+      // eslint-disable-next-line no-await-in-loop
       const canvas = await html2canvas(node, {
         scale: 2,
         useCORS: true,

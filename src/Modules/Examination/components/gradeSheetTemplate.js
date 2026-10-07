@@ -25,7 +25,7 @@ function toRoman(n) {
   ];
   let r = "";
   let num = n;
-  for (let i = 0; i < vals.length; i++) {
+  for (let i = 0; i < vals.length; i += 1) {
     while (num >= vals[i]) {
       r += syms[i];
       num -= vals[i];
