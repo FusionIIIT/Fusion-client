@@ -64,6 +64,24 @@ const filenameFrom = (header, fallback) => {
   return match?.[1] || fallback;
 };
 
+const ROMAN_NUMERALS = {
+  1: "I",
+  2: "II",
+  3: "III",
+  4: "IV",
+  5: "V",
+  6: "VI",
+  7: "VII",
+  8: "VIII",
+  9: "IX",
+  10: "X",
+  11: "XI",
+  12: "XII",
+};
+
+const semesterRoman = (semester) =>
+  ROMAN_NUMERALS[semester] ?? String(semester);
+
 function ordinalWithSuperscript(value) {
   const match = /^(\d+)(st|nd|rd|th)$/.exec((value ?? "").trim());
   if (!match) return value;
@@ -380,8 +398,8 @@ export default function FeeStructureCertificate() {
                     <tr>
                       <th>S.No.</th>
                       <th>Fee Head(s)</th>
-                      <th>Semester-I</th>
-                      <th>Semester-II</th>
+                      <th>Semester-{semesterRoman(selectedSemester)}</th>
+                      <th>Semester-{semesterRoman(selectedSemester + 1)}</th>
                       <th>Total</th>
                     </tr>
                   </thead>
