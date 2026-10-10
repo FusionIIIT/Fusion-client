@@ -6,6 +6,9 @@ import SwayamRegistrationsReport from "./reports/SwayamRegistrationsReport";
 import SemesterRegistrationsReport from "./reports/SemesterRegistrationsReport";
 import CreditsEarnedReport from "./reports/CreditsEarnedReport";
 
+import BatchWiseStudentCountReport from "./reports/BatchWiseStudentCountReport";
+import BranchWiseStudentCountReport from "./reports/BranchWiseStudentCountReport";
+
 // One entry per report. Adding a report means adding an entry here; the list
 // page and the report page both read from this.
 export const DATABASE_REPORTS = [
@@ -59,6 +62,21 @@ export const DATABASE_REPORTS = [
       "Regular, backlog/improvement and swayam credits each student of a batch has earned so far",
     filters: "Batch",
     Component: CreditsEarnedReport,
+  },
+  {
+    id: "batch-wise-student-count",
+    title: "Batch-wise student count",
+    summary: "Male, female, and total candidate count for batches 2020 to 2026",
+    filters: "None",
+    Component: BatchWiseStudentCountReport,
+  },
+  {
+    id: "branch-wise-student-count",
+    title: "Branch-wise student count",
+    summary:
+      "Male, female, and total candidate count per discipline for batches 2020 to 2026",
+    filters: "None",
+    Component: BranchWiseStudentCountReport,
   },
 ];
 
