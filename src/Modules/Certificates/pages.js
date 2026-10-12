@@ -37,4 +37,13 @@ export const CERTIFICATE_PAGES = [
     roles: ["acadadmin"],
     desktopOnly: true,
   },
+  {
+    key: "mediumOfInstructionCertificate",
+    slug: "medium-of-instruction",
+    title: "Medium of Instruction",
+    icon: "Scroll",
+    group: "Certificates",
+    roles: ["acadadmin"],
+    desktopOnly: true,
+  },
 ];
