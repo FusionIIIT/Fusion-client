@@ -111,7 +111,7 @@ export default function PointerConversionCertificate() {
     setPreview({
       student: selectedStudent,
       meta: certificateMeta,
-      cpiText: cpiText.trim() || selectedStudent.cpi_display,
+      cpiText: cpiText.trim() || selectedStudent.cpi_display || "……………",
       minCpi: minCpi.trim() || "5.0",
     });
   };
@@ -124,7 +124,7 @@ export default function PointerConversionCertificate() {
         pointerConversionPdfRoute,
         {
           student_id: selectedStudent.student_id,
-          cpi_text: cpiText.trim() || selectedStudent.cpi_display,
+          cpi_text: cpiText.trim() || selectedStudent.cpi_display || "……………",
           min_cpi: minCpi.trim() || "5.0",
         },
         { ...authConfig(), responseType: "blob" },
@@ -227,7 +227,12 @@ export default function PointerConversionCertificate() {
                 <>
                   <TextInput
                     label="CPI"
-                    placeholder="Enter CPI (e.g. 7.3 or 7.3 (Till VI Sem))"
+                    placeholder="e.g. 7.3 or 7.3 (Till VI Sem)"
+                    description={
+                      selectedStudent.cpi > 0
+                        ? "Automatically calculated from course grades."
+                        : "No grades found in records. Enter CPI manually, or leave blank to display dots."
+                    }
                     value={cpiText}
                     onChange={(event) => {
                       setCpiText(event.currentTarget.value);
