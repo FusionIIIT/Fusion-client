@@ -103,6 +103,14 @@ export const EXAMINATION_PAGES = [
     roles: [...ACAD, ...PROGRAMME_ADMIN_ROLES],
   },
   {
+    key: "gradeSheet",
+    slug: "grade-sheet",
+    title: "Grade Sheet",
+    icon: "FileText",
+    group: null,
+    roles: [...ACAD, ...PROGRAMME_ADMIN_ROLES],
+  },
+  {
     key: "seatingArrangement",
     slug: "seating-arrangement",
     title: "Seating Arrangement",

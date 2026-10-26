@@ -34,6 +34,7 @@ import {
   adminVerifyTeachingCreditEnrollmentsRoute,
   adminRejectTeachingCreditEnrollmentsRoute,
 } from "../../routes/academicRoutes";
+import { getApiErrorMessage } from "../../helper/apiError";
 
 const TYPE_LABEL = {
   course: "Course",
@@ -179,7 +180,7 @@ export default function AdminPhDCourseRequests() {
       setRows(merged);
     } catch (err) {
       setError(
-        err.response?.data?.error || err.message || "Failed to load requests",
+        getApiErrorMessage(err, "Failed to load requests"),
       );
     } finally {
       setLoading(false);
@@ -319,7 +320,7 @@ export default function AdminPhDCourseRequests() {
       } catch (err) {
         showNotification({
           title: `${action === "approve" ? "Approval" : "Rejection"} Error`,
-          message: err.response?.data?.error || err.message,
+          message: getApiErrorMessage(err),
           color: "red",
         });
       } finally {

@@ -71,6 +71,7 @@ describe("buildNavGroups", () => {
       "Registration",
       "Course Changes",
       "Student Records",
+      "Courses Roll List",
       "Calendar & Feedback",
       "Fee Structure",
     ]);
@@ -93,6 +94,20 @@ describe("buildNavGroups", () => {
       }),
     );
     expect(registration.links).toHaveLength(6);
+  });
+
+  it("shows generate student list for faculty in the academics sidebar", () => {
+    const groups = buildNavGroups({
+      role: "Professor",
+      accessibleModules: ALL_MODULES,
+    });
+
+    const academics = groups.find((g) => g.section === "Academics");
+    expect(
+      linksOf([academics]).some(
+        (link) => link.to === "/academics/generate-student-list",
+      ),
+    ).toBe(true);
   });
 
   it("swaps the UG registration pipeline for the research one", () => {

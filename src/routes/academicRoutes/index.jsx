@@ -93,6 +93,7 @@ export const databaseStudentCreditTotalsRoute = `${host}/aims/api/database/stude
 export const databaseCourseRegistrationCountsRoute = `${host}/aims/api/database/course-registration-counts/`;
 export const databaseSwayamRegistrationsRoute = `${host}/aims/api/database/swayam-registrations/`;
 export const databaseSemesterRegistrationsRoute = `${host}/aims/api/database/semester-registrations/`;
+export const databaseCreditsEarnedRoute = `${host}/aims/api/database/credits-earned/`;
 export const academicProceduresFaculty = `${host}/academic-procedures/api/fac/academic_procedures_faculty`;
 export const getAllCourses = `${host}/academic-procedures/api/acad/get_all_courses`;
 export const generateprereport = `${host}/aims/api/generate_preregistration_report/`;

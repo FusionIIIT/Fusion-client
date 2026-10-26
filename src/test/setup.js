@@ -5,8 +5,11 @@ import { afterEach, beforeEach, vi } from "vitest";
 const realError = console.error;
 
 const format = (args) => {
-  let i = 1;
-  return String(args[0]).replace(/%s/g, () => String(args[i++] ?? ""));
+  let i = 0;
+  return String(args[0]).replace(/%s/g, () => {
+    i += 1;
+    return String(args[i] ?? "");
+  });
 };
 
 let propTypeFailures = [];
