@@ -110,4 +110,12 @@ export const EXAMINATION_PAGES = [
     group: null,
     roles: [...ACAD, ...PROGRAMME_ADMIN_ROLES],
   },
+  {
+    key: "seatingArrangement",
+    slug: "seating-arrangement",
+    title: "Seating Arrangement",
+    icon: "Table",
+    group: null,
+    roles: [...ACAD, ...PROGRAMME_ADMIN_ROLES],
+  },
 ];
