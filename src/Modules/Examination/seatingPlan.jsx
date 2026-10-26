@@ -1906,14 +1906,14 @@ function ViewSeating({ rooms, initialFilters }) {
         <Stack gap="md">
           <Alert color="red" variant="light">
             <Text size="sm">
-              Aap pehle se generated seating arrangement ko yahan se delete kar sakte hain. Kripya option chunein:
+              You can remove previously generated seating arrangements from here. Please select an option below:
             </Text>
           </Alert>
 
           {filters.exam_date && (
             <Paper withBorder p="sm" radius="md">
               <Text size="sm" fw={600} mb={4}>
-                Option 1: Sirf Current Selection Delete Karein
+                Option 1: Delete Current Selection Only
               </Text>
               <Text size="xs" c="dimmed" mb="xs">
                 Date: <b>{filters.exam_date}</b>
@@ -1935,10 +1935,10 @@ function ViewSeating({ rooms, initialFilters }) {
 
           <Paper withBorder p="sm" radius="md" style={{ borderColor: "#fca5a5" }}>
             <Text size="sm" fw={600} c="red" mb={4}>
-              Option 2: Sabhi Generated Seating Delete Karein (Clear All)
+              Option 2: Delete All Generated Seating (Clear All)
             </Text>
             <Text size="xs" c="dimmed" mb="xs">
-              System me se sabhi dates, shifts aur rooms ki seating arrangements permanent delete ho jayengi.
+              All generated seating arrangements across all dates, shifts, and rooms will be permanently deleted from the system.
             </Text>
             <Button
               fullWidth
@@ -1948,7 +1948,7 @@ function ViewSeating({ rooms, initialFilters }) {
               onClick={() => {
                 if (
                   window.confirm(
-                    "Kripya confirm karein: Kya aap sach me system ke SABHI seating arrangements ko delete karna chahte hain?"
+                    "Please confirm: Are you sure you want to permanently delete ALL seating arrangements from the system?"
                   )
                 ) {
                   handleClearSeating(true);
