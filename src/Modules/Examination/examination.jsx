@@ -19,6 +19,7 @@ const COMPONENTS = {
   checkResult: lazy(() => import("./checkResult.jsx")),
   announceResult: lazy(() => import("./AnnounceResult.jsx")),
   generateTranscript: lazy(() => import("./generateTranscript.jsx")),
+  seatingArrangement: lazy(() => import("./seatingPlan.jsx")),
 };
 
 const StudentTranscript = lazy(
