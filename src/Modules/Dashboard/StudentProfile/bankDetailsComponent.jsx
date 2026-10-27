@@ -1,178 +1,159 @@
-import { useState } from "react";
-import PropTypes from "prop-types";
+import { useState, useEffect } from "react";
 import {
-  Alert,
-  Button,
-  Grid,
-  Group,
-  Stack,
+  Table,
   Text,
+  Button,
+  Flex,
+  Divider,
   TextInput,
+  Center,
+  Loader,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { Bank, Check, Info, PencilSimple, X } from "@phosphor-icons/react";
 import axios from "axios";
-import { studentProfileUpdateRoute } from "../../../routes/globalRoutes";
-import { DASH, Field, HALF, ReadOnlyValue, SectionCard } from "./profileUi";
+import { studentBankDetailsRoute } from "../../../routes/dashboardRoutes";
 
 const FIELDS = [
-  {
-    key: "bank_name",
-    label: "Bank Name",
-    placeholder: "e.g. State Bank of India",
-  },
-  {
-    key: "bank_account_no",
-    label: "Bank Account No.",
-    placeholder: "9 to 18 digits",
-    clean: (value) => String(value || "").replace(/\D/g, ""),
-  },
-  {
-    key: "ifsc_code",
-    label: "IFSC Code",
-    placeholder: "e.g. SBIN0001234",
-    clean: (value) =>
-      String(value || "")
-        .toUpperCase()
-        .replace(/[^A-Z0-9]/g, "")
-        .slice(0, 11),
-  },
+  { key: "account_holder_name", label: "Account Holder Name" },
+  { key: "bank_name", label: "Bank Name" },
+  { key: "branch_name", label: "Branch Name" },
+  { key: "account_number", label: "Account Number" },
+  { key: "ifsc_code", label: "IFSC Code" },
 ];
 
-export default function BankDetailsComponent({ record, onSaved }) {
-  const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState({});
-  const [errors, setErrors] = useState({});
-  const [saving, setSaving] = useState(false);
+function BankDetailsComponent() {
+  const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [bankDetails, setBankDetails] = useState({
+    account_holder_name: "",
+    bank_name: "",
+    branch_name: "",
+    account_number: "",
+    ifsc_code: "",
+  });
 
-  const value = (key) => (key in form ? form[key] : (record?.[key] ?? ""));
-
-  const cancel = () => {
-    setForm({});
-    setErrors({});
-    setEditing(false);
-  };
-
-  const save = async () => {
-    const changed = Object.fromEntries(
-      Object.entries(form).filter(
-        ([key]) => form[key] !== (record?.[key] ?? ""),
-      ),
-    );
-    if (!Object.keys(changed).length) {
-      cancel();
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      setLoading(false);
       return;
     }
-    setSaving(true);
-    try {
-      const token = localStorage.getItem("authToken");
-      const { data } = await axios.post(studentProfileUpdateRoute, changed, {
-        headers: token ? { Authorization: `Token ${token}` } : {},
-      });
-      onSaved(data.data);
-      notifications.show({ message: "Bank details saved.", color: "green" });
-      cancel();
-    } catch (err) {
-      const body = err.response?.data;
-      setErrors(body?.errors || {});
+    axios
+      .get(studentBankDetailsRoute, {
+        headers: { Authorization: `Token ${token}` },
+      })
+      .then((res) => {
+        if (res.data && Object.keys(res.data).length > 0) {
+          setBankDetails((prev) => ({ ...prev, ...res.data }));
+        }
+      })
+      .catch(() => {
+        notifications.show({
+          message: "Error fetching bank details.",
+          color: "red",
+        });
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleChange = (field, value) => {
+    setBankDetails((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleEditClick = async () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
       notifications.show({
-        title: "Could not save",
-        message: body?.message || "Please try again.",
+        message: "Authentication required. Please log in again.",
+        color: "red",
+      });
+      return;
+    }
+    if (!isEditing) {
+      setIsEditing(true);
+      return;
+    }
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      const res = await axios.post(studentBankDetailsRoute, bankDetails, {
+        headers: { Authorization: `Token ${token}` },
+      });
+      setBankDetails((prev) => ({ ...prev, ...res.data }));
+      notifications.show({
+        message: "Bank details updated successfully!",
+        color: "green",
+      });
+      setIsEditing(false);
+    } catch {
+      notifications.show({
+        message: "Error updating bank details. Please try again.",
         color: "red",
       });
     } finally {
-      setSaving(false);
+      setSubmitting(false);
     }
   };
 
-  const actions = editing ? (
-    <Group gap="xs" wrap="nowrap">
-      <Button
-        size="xs"
-        variant="default"
-        leftSection={<X size={14} />}
-        onClick={cancel}
-        disabled={saving}
-      >
-        Cancel
-      </Button>
-      <Button
-        size="xs"
-        leftSection={<Check size={14} />}
-        onClick={save}
-        loading={saving}
-      >
-        Save changes
-      </Button>
-    </Group>
-  ) : (
-    <Button
-      size="xs"
-      variant="light"
-      leftSection={<PencilSimple size={14} />}
-      onClick={() => setEditing(true)}
-    >
-      Edit details
-    </Button>
-  );
+  if (loading) {
+    return (
+      <Center style={{ height: 150 }}>
+        <Loader />
+      </Center>
+    );
+  }
 
   return (
-    <Stack gap="md" w="100%">
-      <SectionCard
-        icon={<Bank size={18} />}
-        title="Bank Details"
-        description="Used for stipend and reimbursement payments"
-        action={actions}
+    <Flex
+      w={{ base: "100%", sm: "60%" }}
+      p="md"
+      gap="md"
+      style={{ border: "1px solid lightgray", borderRadius: "5px" }}
+      direction="column"
+      justify="space-evenly"
+    >
+      <Flex
+        w="100%"
+        p="md"
+        direction="column"
+        style={{ border: "1px solid lightgray", borderRadius: "5px" }}
       >
-        <Grid gutter="md">
-          {FIELDS.map((field) => (
-            <Field key={field.key} label={field.label} span={HALF}>
-              {editing ? (
-                <TextInput
-                  value={String(value(field.key) ?? "")}
-                  error={errors[field.key]}
-                  placeholder={field.placeholder}
-                  onChange={(event) => {
-                    const next = field.clean
-                      ? field.clean(event.currentTarget.value)
-                      : event.currentTarget.value;
-                    setForm((prev) => ({ ...prev, [field.key]: next }));
-                    setErrors((prev) => ({ ...prev, [field.key]: undefined }));
-                  }}
-                />
-              ) : (
-                <ReadOnlyValue>
-                  {String(record?.[field.key] || "").trim() || DASH}
-                </ReadOnlyValue>
-              )}
-            </Field>
-          ))}
-        </Grid>
-
-        <Alert
-          variant="light"
-          color="blue"
-          radius="md"
-          icon={<Info size={18} />}
-          mt="md"
-        >
-          <Text size="sm">
-            Keep this the account in your own name. Payments fail if the name on
-            the account does not match your records.
+        <Flex w="100%" justify="space-between" align="center">
+          <Text fw={500} size="1.2rem">
+            Bank Account Details
           </Text>
-        </Alert>
-      </SectionCard>
-    </Stack>
+          <Button
+            onClick={handleEditClick}
+            color={isEditing ? "green" : "red"}
+            loading={submitting}
+          >
+            {isEditing ? "Save" : "Edit"}
+          </Button>
+        </Flex>
+        <Divider my="sm" />
+        <Table striped highlightOnHover withTableBorder withColumnBorders>
+          <Table.Tbody>
+            {FIELDS.map(({ key, label }) => (
+              <Table.Tr key={key}>
+                <Table.Td fw={500}>{label}</Table.Td>
+                <Table.Td>
+                  {isEditing ? (
+                    <TextInput
+                      value={bankDetails[key] || ""}
+                      onChange={(e) => handleChange(key, e.target.value)}
+                    />
+                  ) : (
+                    bankDetails[key] || "—"
+                  )}
+                </Table.Td>
+              </Table.Tr>
+            ))}
+          </Table.Tbody>
+        </Table>
+      </Flex>
+    </Flex>
   );
 }
 
-BankDetailsComponent.propTypes = {
-  record: PropTypes.shape({
-    bank_name: PropTypes.string,
-    bank_account_no: PropTypes.string,
-    ifsc_code: PropTypes.string,
-  }),
-  onSaved: PropTypes.func.isRequired,
-};
-
-BankDetailsComponent.defaultProps = { record: null };
+export default BankDetailsComponent;

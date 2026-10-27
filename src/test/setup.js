@@ -5,10 +5,11 @@ import { afterEach, beforeEach, vi } from "vitest";
 const realError = console.error;
 
 const format = (args) => {
-  let i = 0;
+  let i = 1;
   return String(args[0]).replace(/%s/g, () => {
+    const value = String(args[i] ?? "");
     i += 1;
-    return String(args[i] ?? "");
+    return value;
   });
 };
 
