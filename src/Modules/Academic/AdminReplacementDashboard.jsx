@@ -15,6 +15,8 @@ import {
   revertReplacementRequestsRoute,
   deleteReplacementRequestsRoute,
 } from '../../routes/academicRoutes';
+import { buildSessionLabels } from '../../lib/academicYear';
+import { getApiErrorMessage } from "../../helper/apiError";
 
 const SEMESTER_CHOICES = [
   { value: 'Odd Semester', label: 'Odd Semester' },
@@ -22,14 +24,8 @@ const SEMESTER_CHOICES = [
   { value: 'Summer Semester', label: 'Summer Semester' },
 ];
 
-const generateAcademicYears = () => {
-  const endYear = new Date().getFullYear();
-  const years = [];
-  for (let y = endYear; y >= 2020; y--) {
-    years.push(`${y}-${String(y + 1).slice(-2)}`);
-  }
-  return years;
-};
+const generateAcademicYears = () =>
+  buildSessionLabels(new Date().getFullYear());
 
 export default function AdminReplacementDashboard() {
   const [year, setYear] = useState('');
@@ -104,7 +100,7 @@ export default function AdminReplacementDashboard() {
       headers: { Authorization: `Token ${token}` },
     })
     .then(({ data }) => setRequests(Array.isArray(data) ? data : []))
-    .catch(err => setError(err.response?.data?.detail || err.message))
+    .catch(err => setError(getApiErrorMessage(err)))
     .finally(() => setLoading(false));
   }, [year, semester]);
 
@@ -155,7 +151,7 @@ export default function AdminReplacementDashboard() {
     .catch(err => {
       showNotification({
         title: 'Allocation Error',
-        message: err.response?.data?.detail || err.message,
+        message: getApiErrorMessage(err),
         color: 'red',
       });
     })
@@ -256,7 +252,7 @@ export default function AdminReplacementDashboard() {
     } catch (err) {
       showNotification({
         title: 'Delete Failed',
-        message: err.response?.data?.error || err.message,
+        message: getApiErrorMessage(err),
         color: 'red',
       });
     } finally {
@@ -313,7 +309,7 @@ export default function AdminReplacementDashboard() {
     } catch (err) {
       showNotification({
         title: 'Revert Failed',
-        message: err.response?.data?.error || err.message,
+        message: getApiErrorMessage(err),
         color: 'red',
       });
     } finally {

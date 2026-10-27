@@ -22,6 +22,12 @@ import PropTypes from "prop-types";
 import {
   bonafideCertificatePdfRoute,
   bonafideCertificatesRoute,
+  demandLetterHistoryPdfRoute,
+  demandLettersRoute,
+  feeCertificateHistoryPdfRoute,
+  feeCertificatesRoute,
+  feeStructureCertificateHistoryPdfRoute,
+  feeStructureCertificatesRoute,
 } from "../../routes/academicRoutes";
 import classes from "./GeneratedCertificatesModal.module.css";
 
@@ -53,7 +59,25 @@ const filenameFrom = (header, fallback) => {
   return match?.[1] || fallback;
 };
 
-export default function GeneratedCertificatesModal({ opened, onClose }) {
+const ROUTES_BY_VARIANT = {
+  bonafide: {
+    list: bonafideCertificatesRoute,
+    pdf: bonafideCertificatePdfRoute,
+  },
+  fee: { list: feeCertificatesRoute, pdf: feeCertificateHistoryPdfRoute },
+  demand: { list: demandLettersRoute, pdf: demandLetterHistoryPdfRoute },
+  feeStructure: {
+    list: feeStructureCertificatesRoute,
+    pdf: feeStructureCertificateHistoryPdfRoute,
+  },
+};
+
+export default function GeneratedCertificatesModal({
+  opened,
+  onClose,
+  variant,
+}) {
+  const { list: listRoute, pdf: pdfRoute } = ROUTES_BY_VARIANT[variant];
   const [search, setSearch] = useState("");
   const [debouncedSearch] = useDebouncedValue(search.trim(), 300);
   const [page, setPage] = useState(1);
@@ -73,7 +97,7 @@ export default function GeneratedCertificatesModal({ opened, onClose }) {
     const controller = new AbortController();
     setLoading(true);
     axios
-      .get(bonafideCertificatesRoute, {
+      .get(listRoute, {
         ...authConfig(),
         params: {
           page,
@@ -115,10 +139,10 @@ export default function GeneratedCertificatesModal({ opened, onClose }) {
   const previewCertificate = async (certificate) => {
     setPreviewingId(certificate.id);
     try {
-      const response = await axios.get(
-        bonafideCertificatePdfRoute(certificate.id),
-        { ...authConfig(), responseType: "blob" },
-      );
+      const response = await axios.get(pdfRoute(certificate.id), {
+        ...authConfig(),
+        responseType: "blob",
+      });
       setPdfPreview({
         url: URL.createObjectURL(response.data),
         title: `${certificate.roll_number} — ${certificate.purpose}`,
@@ -137,14 +161,11 @@ export default function GeneratedCertificatesModal({ opened, onClose }) {
   const downloadCertificate = async (certificate) => {
     setDownloadingId(certificate.id);
     try {
-      const response = await axios.get(
-        bonafideCertificatePdfRoute(certificate.id),
-        {
-          ...authConfig(),
-          params: { download: 1 },
-          responseType: "blob",
-        },
-      );
+      const response = await axios.get(pdfRoute(certificate.id), {
+        ...authConfig(),
+        params: { download: 1 },
+        responseType: "blob",
+      });
       saveAs(
         response.data,
         filenameFrom(
@@ -304,4 +325,9 @@ export default function GeneratedCertificatesModal({ opened, onClose }) {
 GeneratedCertificatesModal.propTypes = {
   opened: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
+  variant: PropTypes.oneOf(["bonafide", "fee", "demand", "feeStructure"]),
+};
+
+GeneratedCertificatesModal.defaultProps = {
+  variant: "bonafide",
 };

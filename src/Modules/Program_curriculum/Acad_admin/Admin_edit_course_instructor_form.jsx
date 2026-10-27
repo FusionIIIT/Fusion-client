@@ -10,6 +10,7 @@ import {
 } from "../api/api";
 import { host } from "../../../routes/globalRoutes";
 import { useSectionsInUse } from "../../../lib/sections";
+import { buildSessionOptions } from "../../../lib/academicYear";
 
 function Admin_edit_course_instructor() {
   const sectionsInUse = useSectionsInUse();
@@ -33,17 +34,7 @@ function Admin_edit_course_instructor() {
     },
   });
 
-  const generateAcademicYears = () => {
-    const years = [];
-    const currentYear = new Date().getFullYear();
-    for (let i = currentYear + 1; i >= currentYear - 5; i--) {
-      years.push({
-        label: `${i - 1}-${String(i).slice(2)}`,
-        value: `${i - 1}-${String(i).slice(2)}`,
-      });
-    }
-    return years;
-  };
+  const generateAcademicYears = () => buildSessionOptions(new Date().getFullYear());
 
   useEffect(() => {
     const fetchData = async () => {

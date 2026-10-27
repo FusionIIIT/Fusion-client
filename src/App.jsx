@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { Notifications } from "@mantine/notifications";
 import { useSelector } from "react-redux";
 import { Layout } from "./app/AppLayout";
+import { PluggedModule } from "./ui/routing/PluggedModule";
 import DashboardHome from "./Modules/Dashboard/DashboardHome";
 import NotificationsPage from "./Modules/Dashboard/dashboardNotifications";
 import Profile from "./Modules/Dashboard/StudentProfile/profilePage";
@@ -187,6 +188,12 @@ export default function App() {
             <Route path="/examination/*" element={<Examination />} />
             <Route path="/certificates/*" element={<Certificates />} />
             <Route path="/database/*" element={<Database />} />
+            {/* Served by Fusion-Integrated, shown inside this shell. */}
+            <Route
+              path="/placement/*"
+              element={<PluggedModule title="Placement Cell" />}
+            />
+            <Route path="/leave/*" element={<PluggedModule title="Leave" />} />
             <Route
               path="/scholarship/assistantship"
               element={<AssistantshipPage />}

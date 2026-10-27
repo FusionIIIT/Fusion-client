@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   computeCreditSummary,
   fmtCredits,
+  hasCompletedDegree,
   remainingCreditRequirement,
 } from "./credits";
 
@@ -249,5 +250,22 @@ describe("remainingCreditRequirement", () => {
 
   it("goes negative once the requirement is already exceeded", () => {
     expect(remainingCreditRequirement({ earned: 151, swayam: 5 })).toBe(-3);
+  });
+});
+
+describe("hasCompletedDegree", () => {
+  it("is false while credits are still outstanding", () => {
+    expect(hasCompletedDegree({ earned: 122, swayam: 6 })).toBe(false);
+    expect(hasCompletedDegree({ earned: 147, swayam: 0 })).toBe(false);
+  });
+
+  it("is true on exactly the requirement, and on a surplus", () => {
+    expect(hasCompletedDegree({ earned: 148, swayam: 0 })).toBe(true);
+    expect(hasCompletedDegree({ earned: 151, swayam: 5 })).toBe(true);
+  });
+
+  it("does not count swayam credits above the cap towards completion", () => {
+    // 150 earned, but 4 of the 10 swayam credits do not count: 146 < 148.
+    expect(hasCompletedDegree({ earned: 150, swayam: 10 })).toBe(false);
   });
 });

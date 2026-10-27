@@ -15,6 +15,8 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import * as XLSX from "xlsx";
 import { programmesForRole } from "../../ui/nav/roles";
+import { buildAdminSemesterOptions } from "../../lib/semester";
+import { buildSessionOptions } from "../../lib/academicYear";
 import {
   allotCoursesRoute,
   allotThesisRoute,
@@ -22,6 +24,7 @@ import {
   allotTeachingCreditRoute,
   listBatchesRoute,
 } from "../../routes/academicRoutes";
+import { getApiErrorMessage } from "../../helper/apiError";
 
 // Course needs a per-row slot/course lookup + academic year + semester type.
 // Thesis/Seminar/Teaching Credit each have at most one slot per semester, so
@@ -64,91 +67,10 @@ export default function AllotCourses() {
   const [academicYear, setAcademicYear] = useState(null); // Changed to null
   const [academicYearOptions, setAcademicYearOptions] = useState([]);
 
-  const semesterOptions = [
-    {
-      value: JSON.stringify({ no: 1, type: "Odd Semester" }),
-      label: "Semester 1 (Odd)",
-    },
-    {
-      value: JSON.stringify({ no: 2, type: "Even Semester" }),
-      label: "Semester 2 (Even)",
-    },
-    {
-      value: JSON.stringify({ no: 2, type: "Summer Semester" }),
-      label: "Summer Term 1",
-    },
-    {
-      value: JSON.stringify({ no: 3, type: "Odd Semester" }),
-      label: "Semester 3 (Odd)",
-    },
-    {
-      value: JSON.stringify({ no: 4, type: "Even Semester" }),
-      label: "Semester 4 (Even)",
-    },
-    {
-      value: JSON.stringify({ no: 4, type: "Summer Semester" }),
-      label: "Summer Term 2",
-    },
-    {
-      value: JSON.stringify({ no: 5, type: "Odd Semester" }),
-      label: "Semester 5 (Odd)",
-    },
-    {
-      value: JSON.stringify({ no: 6, type: "Even Semester" }),
-      label: "Semester 6 (Even)",
-    },
-    {
-      value: JSON.stringify({ no: 6, type: "Summer Semester" }),
-      label: "Summer Term 3",
-    },
-    {
-      value: JSON.stringify({ no: 7, type: "Odd Semester" }),
-      label: "Semester 7 (Odd)",
-    },
-    {
-      value: JSON.stringify({ no: 8, type: "Even Semester" }),
-      label: "Semester 8 (Even)",
-    },
-    {
-      value: JSON.stringify({ no: 8, type: "Summer Semester" }),
-      label: "Summer Term 4",
-    },
-    {
-      value: JSON.stringify({ no: 9, type: "Odd Semester" }),
-      label: "Semester 9 (Odd)",
-    },
-    {
-      value: JSON.stringify({ no: 10, type: "Even Semester" }),
-      label: "Semester 10 (Even)",
-    },
-    {
-      value: JSON.stringify({ no: 10, type: "Summer Semester" }),
-      label: "Summer Term 5",
-    },
-    {
-      value: JSON.stringify({ no: 11, type: "Odd Semester" }),
-      label: "Semester 11 (Odd)",
-    },
-    {
-      value: JSON.stringify({ no: 12, type: "Even Semester" }),
-      label: "Semester 12 (Even)",
-    },
-    {
-      value: JSON.stringify({ no: 12, type: "Summer Semester" }),
-      label: "Summer Term 6",
-    },
-  ];
+  const semesterOptions = buildAdminSemesterOptions();
 
   useEffect(() => {
-    const endYear = new Date().getFullYear();
-    const yrs = [];
-    for (let y = endYear; y >= 2020; y -= 1) {
-      yrs.push({
-        value: `${y}-${String(y + 1).slice(-2)}`,
-        label: `${y}-${String(y + 1).slice(-2)}`,
-      });
-    }
-    setAcademicYearOptions(yrs);
+    setAcademicYearOptions(buildSessionOptions(new Date().getFullYear()));
   }, []);
 
   useEffect(() => {
@@ -219,8 +141,7 @@ export default function AllotCourses() {
         console.error("API Error:", err);
         const errorMsg =
           err.response?.data?.message ||
-          err.response?.data?.error ||
-          err.message;
+          getApiErrorMessage(err);
         showNotification({
           title: "Error fetching batches",
           message: errorMsg,

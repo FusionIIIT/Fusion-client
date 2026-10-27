@@ -23,7 +23,6 @@ import {
   Eye,
   Info,
   MagnifyingGlass,
-  Printer,
   Warning,
 } from "@phosphor-icons/react";
 
@@ -135,7 +134,7 @@ export default function BonafideCertificate() {
   };
 
   const download = async () => {
-    if (!selectedStudent || !purpose) return;
+    if (!selectedStudent || !purpose || downloading) return;
     setDownloading(true);
     try {
       const response = await axios.post(
@@ -283,23 +282,14 @@ export default function BonafideCertificate() {
                   Preview
                 </Button>
                 <Button
-                  variant="default"
-                  leftSection={<Printer size={18} />}
-                  onClick={() => window.print()}
-                  disabled={!preview}
+                  leftSection={<DownloadSimple size={18} />}
+                  onClick={download}
+                  disabled={!ready}
+                  loading={downloading}
                 >
-                  Print
+                  Download
                 </Button>
               </Group>
-              <Button
-                leftSection={<DownloadSimple size={18} />}
-                onClick={download}
-                disabled={!ready}
-                loading={downloading}
-                fullWidth
-              >
-                Download
-              </Button>
               <Button
                 variant="light"
                 leftSection={<ClockCounterClockwise size={18} />}

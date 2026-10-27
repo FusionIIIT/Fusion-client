@@ -17,6 +17,7 @@ import {
 import axios from "axios";
 import InstiLogo from "../../assets/Insti_logo.svg";
 import { get_result_semesters, check_result, download_grades } from "./routes/examinationRoutes";
+import { summerNumber } from "../../lib/semester";
 
 export default function CheckResult() {
   const [selection, setSelection] = useState(null);
@@ -183,15 +184,7 @@ export default function CheckResult() {
       // Create proper filename with summer semester mapping
       let semesterLabel;
       if (semester_type && semester_type.toLowerCase().includes('summer')) {
-        const summerMapping = {
-          2: "Summer1",
-          4: "Summer2", 
-          6: "Summer3",
-          8: "Summer4",
-          10: "Summer5",
-          12: "Summer6"
-        };
-        semesterLabel = summerMapping[semester_no] || `Summer${semester_no}`;
+        semesterLabel = `Summer${summerNumber(semester_no)}`;
       } else {
         semesterLabel = `sem${semester_no}`;
       }

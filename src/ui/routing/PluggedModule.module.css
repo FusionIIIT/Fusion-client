@@ -1,0 +1,12 @@
+/* Fills the content pane; the shell around it is this app's. */
+.frame {
+  display: block;
+  width: 100%;
+  height: calc(100vh - 66px - 2rem);
+  border: 0;
+}
+
+.unavailable {
+  color: var(--mantine-color-dimmed);
+  padding: 2rem 0;
+}

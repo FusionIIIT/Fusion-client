@@ -22,6 +22,7 @@ import {
   assignSectionRoute,
 } from "../../routes/academicRoutes";
 import { useSectionsInUse } from "../../lib/sections";
+import { getApiErrorMessage } from "../../helper/apiError";
 
 const OTHER = "__OTHER__";
 
@@ -60,7 +61,7 @@ function SectionAssignment() {
       } catch (err) {
         showNotification({
           title: "Failed to load batches",
-          message: err.response?.data?.detail || err.message,
+          message: getApiErrorMessage(err),
           color: "red",
         });
       }
@@ -108,7 +109,7 @@ function SectionAssignment() {
       } catch (err) {
         showNotification({
           title: "Failed to load students",
-          message: err.response?.data?.detail || err.message,
+          message: getApiErrorMessage(err),
           color: "red",
         });
         setStudents([]);
@@ -311,7 +312,7 @@ function SectionAssignment() {
     } catch (err) {
       showNotification({
         title: "Assignment failed",
-        message: err.response?.data?.detail || err.message,
+        message: getApiErrorMessage(err),
         color: "red",
       });
     } finally {

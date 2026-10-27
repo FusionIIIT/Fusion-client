@@ -14,6 +14,8 @@ import { showNotification } from "@mantine/notifications";
 import axios from "axios";
 import FusionTable from "../../components/FusionTable";
 import { courseLabel } from "../../lib/course";
+import { buildAdminSemesterOptions } from "../../lib/semester";
+import { buildSessionLabels } from "../../lib/academicYear";
 import downloadCourseRegistrationReceipt from "./courseRegistrationReceipt";
 import {
   addStudentCourseRoute,
@@ -34,6 +36,7 @@ import {
   adminProgressSeminarEnrollmentListRoute,
   adminTeachingCreditEnrollmentListRoute,
 } from "../../routes/academicRoutes";
+import { getApiErrorMessage } from "../../helper/apiError";
 
 function authHeaders() {
   return { Authorization: `Token ${localStorage.getItem("authToken")}` };
@@ -129,80 +132,7 @@ async function fetchPhdExtraDetails(rollNo) {
   }
 }
 
-const defaultSemesterOptions = [
-  {
-    value: JSON.stringify({ no: 1, type: "Odd Semester" }),
-    label: "Semester 1 (Odd)",
-  },
-  {
-    value: JSON.stringify({ no: 2, type: "Even Semester" }),
-    label: "Semester 2 (Even)",
-  },
-  {
-    value: JSON.stringify({ no: 2, type: "Summer Semester" }),
-    label: "Summer Term 1",
-  },
-  {
-    value: JSON.stringify({ no: 3, type: "Odd Semester" }),
-    label: "Semester 3 (Odd)",
-  },
-  {
-    value: JSON.stringify({ no: 4, type: "Even Semester" }),
-    label: "Semester 4 (Even)",
-  },
-  {
-    value: JSON.stringify({ no: 4, type: "Summer Semester" }),
-    label: "Summer Term 2",
-  },
-  {
-    value: JSON.stringify({ no: 5, type: "Odd Semester" }),
-    label: "Semester 5 (Odd)",
-  },
-  {
-    value: JSON.stringify({ no: 6, type: "Even Semester" }),
-    label: "Semester 6 (Even)",
-  },
-  {
-    value: JSON.stringify({ no: 6, type: "Summer Semester" }),
-    label: "Summer Term 3",
-  },
-  {
-    value: JSON.stringify({ no: 7, type: "Odd Semester" }),
-    label: "Semester 7 (Odd)",
-  },
-  {
-    value: JSON.stringify({ no: 8, type: "Even Semester" }),
-    label: "Semester 8 (Even)",
-  },
-  {
-    value: JSON.stringify({ no: 8, type: "Summer Semester" }),
-    label: "Summer Term 4",
-  },
-  {
-    value: JSON.stringify({ no: 9, type: "Odd Semester" }),
-    label: "Semester 9 (Odd)",
-  },
-  {
-    value: JSON.stringify({ no: 10, type: "Even Semester" }),
-    label: "Semester 10 (Even)",
-  },
-  {
-    value: JSON.stringify({ no: 10, type: "Summer Semester" }),
-    label: "Summer Term 5",
-  },
-  {
-    value: JSON.stringify({ no: 11, type: "Odd Semester" }),
-    label: "Semester 11 (Odd)",
-  },
-  {
-    value: JSON.stringify({ no: 12, type: "Even Semester" }),
-    label: "Semester 12 (Even)",
-  },
-  {
-    value: JSON.stringify({ no: 12, type: "Summer Semester" }),
-    label: "Summer Term 6",
-  },
-];
+const defaultSemesterOptions = buildAdminSemesterOptions();
 
 export default function StudentCourses() {
   const [rollNo, setRollNo] = useState("");
@@ -259,13 +189,7 @@ export default function StudentCourses() {
     const now = new Date();
     const year = now.getFullYear();
     const start = now.getMonth() >= 6 ? year : year - 1;
-    const yrs = [];
-    for (let i = 0; i < 5; i += 1) {
-      const y1 = start - i;
-      const y2 = y1 + 1;
-      yrs.push(`${y1}-${String(y2).slice(-2)}`);
-    }
-    setAcademicYears(yrs);
+    setAcademicYears(buildSessionLabels(start));
   }, []);
 
   const clearError = () => setError("");
@@ -302,7 +226,7 @@ export default function StudentCourses() {
         });
       }
     } catch (err) {
-      setError(err.response?.data?.error || err.message || "Fetch failed");
+      setError(getApiErrorMessage(err, "Fetch failed"));
     } finally {
       setLoading(false);
     }
@@ -368,7 +292,7 @@ export default function StudentCourses() {
       });
       await handleGetCourses();
     } catch (err) {
-      setError(err.response?.data?.error || err.message || "Drop failed");
+      setError(getApiErrorMessage(err, "Drop failed"));
     } finally {
       setLoading(false);
       setDropModalOpen(false);
@@ -438,10 +362,7 @@ export default function StudentCourses() {
       }
     } catch (err) {
       setError(
-        err.response?.data?.error ||
-          err.response?.data?.detail ||
-          err.message ||
-          "Add failed",
+        getApiErrorMessage(err, "Add failed"),
       );
     } finally {
       setLoading(false);
@@ -614,7 +535,7 @@ export default function StudentCourses() {
       });
       await handleGetCourses();
     } catch (err) {
-      setError(err.response?.data?.error || err.message || "Add failed");
+      setError(getApiErrorMessage(err, "Add failed"));
     } finally {
       setLoading(false);
     }
@@ -653,7 +574,7 @@ export default function StudentCourses() {
       });
       await handleGetCourses();
     } catch (err) {
-      setError(err.response?.data?.error || err.message || "Add failed");
+      setError(getApiErrorMessage(err, "Add failed"));
     } finally {
       setLoading(false);
     }
@@ -694,7 +615,7 @@ export default function StudentCourses() {
       });
       await handleGetCourses();
     } catch (err) {
-      setError(err.response?.data?.error || err.message || "Add failed");
+      setError(getApiErrorMessage(err, "Add failed"));
     } finally {
       setLoading(false);
     }

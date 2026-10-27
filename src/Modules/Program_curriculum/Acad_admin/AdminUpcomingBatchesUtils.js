@@ -4,11 +4,11 @@
 import { saveAs } from "file-saver";
 import JSZip from "jszip";
 import {
-  PROGRAMME_TYPES,
   STUDENT_FIELDS_CONFIG,
   STUDENT_TABLE_COLUMNS,
 } from "./AdminUpcomingBatchesConstants";
 import { host } from "../../../routes/globalRoutes";
+import { MIN_ACADEMIC_YEAR } from "../../../lib/academicYear";
 
 export const batchYearToAcademicYear = (batchYear) => {
   const year = parseInt(batchYear, 10);
@@ -88,33 +88,14 @@ export const getCurrentBatchYear = () => {
   }
   return currentYear - 1;
 };
-// Automatically adds new years in July, separate for UG/PG/PHD
-export const getBatchYearOptions = (programmeType) => {
+// Automatically adds new years in July. Same floor for UG/PG/PHD -- an admin
+// correcting an older student's batch link needs to reach that far back
+// regardless of programme.
+export const getBatchYearOptions = () => {
   const currentBatchYear = getCurrentBatchYear();
   const options = [];
-  const baseStartYear = 2016;
-  let startYear;
-  let endYear;
-
-  switch (programmeType) {
-    case PROGRAMME_TYPES.UG:
-      startYear = Math.max(baseStartYear, currentBatchYear - 3);
-      endYear = currentBatchYear;
-      break;
-    case PROGRAMME_TYPES.PG:
-      startYear = Math.max(baseStartYear, currentBatchYear - 1);
-      endYear = currentBatchYear;
-      break;
-    case PROGRAMME_TYPES.PHD:
-      startYear = Math.max(baseStartYear, currentBatchYear - 5);
-      // PhD Even and Odd batches both use batch_year = academic year start.
-      // e.g. Jan 2026 intake → batch_year=2025 (academic year 2025-26).
-      endYear = currentBatchYear;
-      break;
-    default:
-      startYear = baseStartYear;
-      endYear = currentBatchYear;
-  }
+  const startYear = MIN_ACADEMIC_YEAR;
+  const endYear = currentBatchYear;
   for (let year = endYear; year >= startYear; year -= 1) {
     const academicYear = batchYearToAcademicYear(year);
     options.push({
@@ -130,7 +111,7 @@ export const getViewAcademicYearOptions = () => {
   const options = [];
   // Show one year ahead so admins can browse upcoming academic years.
   const displayEndYear = currentBatchYear + 1;
-  for (let year = displayEndYear; year >= currentBatchYear - 5; year -= 1) {
+  for (let year = displayEndYear; year >= MIN_ACADEMIC_YEAR; year -= 1) {
     const academicYear = batchYearToAcademicYear(year);
     options.push({
       value: year.toString(),

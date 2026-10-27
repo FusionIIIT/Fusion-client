@@ -47,6 +47,7 @@ import {
   sourceOf,
   takenCourseIds,
 } from "./lib/blSlot";
+import { getApiErrorMessage } from "../../helper/apiError";
 
 const SUMMARY_COLUMNS = ["Type", "Slot", "Detail", "Credits"];
 const REQUEST_COLUMNS = [
@@ -176,7 +177,7 @@ function PhDCourseRegisterForm() {
     } catch (err) {
       if (isStale()) return;
       if (err.response?.status !== 403) {
-        setError(err.response?.data?.error || err.message);
+        setError(getApiErrorMessage(err));
       }
     } finally {
       if (!isStale()) setLoading(false);
@@ -379,7 +380,7 @@ function PhDCourseRegisterForm() {
     } catch (err) {
       showNotification({
         title: "Submit failed",
-        message: err.response?.data?.error || err.message,
+        message: getApiErrorMessage(err),
         color: "red",
         autoClose: 8000,
       });
@@ -785,7 +786,7 @@ function PhDMyCourseRequests() {
       setSeminarInfo(seminarRes.data);
       setTeachingCreditInfo(teachingCreditRes.data);
     } catch (err) {
-      setError(err.response?.data?.error || err.message);
+      setError(getApiErrorMessage(err));
     } finally {
       setLoading(false);
     }

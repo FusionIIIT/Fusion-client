@@ -98,3 +98,7 @@ export const creditsTowardsDegree = (totals) =>
 export function remainingCreditRequirement(totals) {
   return DEGREE_CREDIT_REQUIREMENT - creditsTowardsDegree(totals);
 }
+
+// Nothing left to earn, so a student carrying surplus credits counts as done.
+export const hasCompletedDegree = (totals) =>
+  remainingCreditRequirement(totals) <= 0;

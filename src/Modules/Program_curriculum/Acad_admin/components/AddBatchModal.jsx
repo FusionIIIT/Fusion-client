@@ -54,7 +54,7 @@ function AddBatchModal({
             })
           }
           type="number"
-          min="2020"
+          min="2018"
           max="2030"
           required
         />

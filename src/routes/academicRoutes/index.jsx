@@ -39,6 +39,32 @@ export const bonafidePdfRoute = `${host}/academic-procedures/api/acad/bonafide/p
 export const bonafideCertificatesRoute = `${host}/academic-procedures/api/acad/bonafide/certificates/`;
 export const bonafideCertificatePdfRoute = (certificateId) =>
   `${bonafideCertificatesRoute}${certificateId}/pdf/`;
+
+export const feeCertificateStudentRoute = `${host}/academic-procedures/api/acad/fee-certificate/student/`;
+export const feeCertificatePdfRoute = `${host}/academic-procedures/api/acad/fee-certificate/pdf/`;
+export const feeCertificatesRoute = `${host}/academic-procedures/api/acad/fee-certificate/certificates/`;
+export const feeCertificateHistoryPdfRoute = (certificateId) =>
+  `${feeCertificatesRoute}${certificateId}/pdf/`;
+
+export const demandLetterStudentRoute = `${host}/academic-procedures/api/acad/demand-letter/student/`;
+export const demandLetterPdfRoute = `${host}/academic-procedures/api/acad/demand-letter/pdf/`;
+export const demandLettersRoute = `${host}/academic-procedures/api/acad/demand-letter/certificates/`;
+export const demandLetterHistoryPdfRoute = (certificateId) =>
+  `${demandLettersRoute}${certificateId}/pdf/`;
+
+export const feeStructureCertificateStudentRoute = `${host}/academic-procedures/api/acad/fee-structure-certificate/student/`;
+export const feeStructureCertificatePdfRoute = `${host}/academic-procedures/api/acad/fee-structure-certificate/pdf/`;
+export const feeStructureCertificatesRoute = `${host}/academic-procedures/api/acad/fee-structure-certificate/certificates/`;
+export const feeStructureCertificateHistoryPdfRoute = (certificateId) =>
+  `${feeStructureCertificatesRoute}${certificateId}/pdf/`;
+
+export const feeStructuresRoute = `${host}/academic-procedures/api/acad/fee-structures/`;
+export const feeStructureTemplateRoute = `${feeStructuresRoute}template/`;
+export const feeStructureDetailRoute = (structureId) =>
+  `${feeStructuresRoute}${structureId}/`;
+export const feeStructureReplicateRoute = (structureId) =>
+  `${feeStructuresRoute}${structureId}/replicate/`;
+export const demandLetterBankAccountsRoute = `${host}/academic-procedures/api/acad/demand-letter-bank-accounts/`;
 export const checkAllocationRoute = `${host}/aims/api/check-allocation`;
 export const startAllocationRoute = `${host}/aims/api/start-allocation`;
 export const addCourseToSlotsRoute = `${host}/aims/api/add-course-to-slots`;
@@ -67,6 +93,7 @@ export const databaseStudentCreditTotalsRoute = `${host}/aims/api/database/stude
 export const databaseCourseRegistrationCountsRoute = `${host}/aims/api/database/course-registration-counts/`;
 export const databaseSwayamRegistrationsRoute = `${host}/aims/api/database/swayam-registrations/`;
 export const databaseSemesterRegistrationsRoute = `${host}/aims/api/database/semester-registrations/`;
+export const databaseCreditsEarnedRoute = `${host}/aims/api/database/credits-earned/`;
 export const academicProceduresFaculty = `${host}/academic-procedures/api/fac/academic_procedures_faculty`;
 export const getAllCourses = `${host}/academic-procedures/api/acad/get_all_courses`;
 export const generateprereport = `${host}/aims/api/generate_preregistration_report/`;

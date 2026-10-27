@@ -16,6 +16,7 @@ import * as XLSX from "xlsx";
 import { fetchAllCourses, fetchFacultiesData } from "../api/api";
 import { host } from "../../../routes/globalRoutes";
 import { useSectionsInUse } from "../../../lib/sections";
+import { buildSessionOptions } from "../../../lib/academicYear";
 
 export default function Admin_add_course_instructor() {
   const sectionsInUse = useSectionsInUse();
@@ -30,14 +31,9 @@ export default function Admin_add_course_instructor() {
   const [faculties, setFaculties] = useState([]);
   const navigate = useNavigate();
 
-  // Academic Year options
+  // Academic Year options, oldest first, one year ahead of the current one.
   const currentYear = new Date().getFullYear();
-  const academicYearOptions = Array.from({ length: 6 }, (_, i) => {
-    const start = currentYear - 4 + i;
-    const end = start + 1;
-    const label = `${start}-${String(end).slice(-2)}`;
-    return { value: label, label };
-  });
+  const academicYearOptions = buildSessionOptions(currentYear + 1).reverse();
 
   const semesterTypeOptions = [
     { value: "Odd Semester", label: "Odd Semester" },

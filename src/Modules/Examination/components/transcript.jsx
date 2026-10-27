@@ -6,6 +6,7 @@ import { generate_transcript, download_grades } from "../routes/examinationRoute
 import { useSelector } from "react-redux";
 import styles from "../styles/transcript.module.css";
 import StudentTranscript from "./studentTranscript";
+import { summerNumber } from "../../../lib/semester";
 
 function Transcript({ data, semester }) {
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -93,14 +94,7 @@ function Transcript({ data, semester }) {
 
       let semesterLabel;
       if (semester_type && semester_type.toLowerCase().includes('summer')) {
-        // Map semester numbers to correct summer labels
-        const summerMapping = {
-          2: "Summer1",
-          4: "Summer2", 
-          6: "Summer3",
-          8: "Summer4"
-        };
-        semesterLabel = summerMapping[semester_no] || `Summer${semester_no}`;
+        semesterLabel = `Summer${summerNumber(semester_no)}`;
       } else {
         semesterLabel = `sem${semester_no}`;
       }

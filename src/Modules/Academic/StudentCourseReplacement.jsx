@@ -21,6 +21,7 @@ import {
   studentBatchCreateRoute,
   studentListRequestsRoute,
 } from "../../routes/academicRoutes";
+import { getApiErrorMessage } from "../../helper/apiError";
 
 export default function StudentCourseReplacement() {
   const [slots, setSlots] = useState([]);
@@ -59,7 +60,7 @@ export default function StudentCourseReplacement() {
         }
       })
       .catch((err) => {
-        setError(err.response?.data?.error || err.message);
+        setError(getApiErrorMessage(err));
       })
       .finally(() => setLoading(false));
   }, []);
@@ -120,7 +121,7 @@ export default function StudentCourseReplacement() {
     } catch (err) {
       showNotification({
         title: "Submit failed",
-        message: err.response?.data?.error || err.message,
+        message: getApiErrorMessage(err),
         color: "red",
       });
     } finally {

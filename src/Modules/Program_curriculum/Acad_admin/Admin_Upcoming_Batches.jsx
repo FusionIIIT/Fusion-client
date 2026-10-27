@@ -570,6 +570,7 @@ function AdminUpcomingBatch() {
           setProcessedBatchData={setProcessedBatchData}
           setSelectedBatchYear={setSelectedBatchYear}
           setSelectedPhdSemester={setSelectedPhdSemester}
+          setViewAcademicYear={setViewAcademicYear}
           setShowAddModal={setShowAddModal}
           setShowBatchPreview={setShowBatchPreview}
           setShowPreview={setShowPreview}

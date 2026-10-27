@@ -7,6 +7,9 @@ import { CERTIFICATES_BASE, CERTIFICATE_PAGES } from "./pages";
 
 const COMPONENTS = {
   bonafideCertificate: lazy(() => import("./BonafideCertificate")),
+  feeCertificate: lazy(() => import("./FeeCertificate")),
+  demandLetter: lazy(() => import("./DemandLetter")),
+  feeStructureCertificate: lazy(() => import("./FeeStructureCertificate")),
 };
 
 export default function Certificates() {

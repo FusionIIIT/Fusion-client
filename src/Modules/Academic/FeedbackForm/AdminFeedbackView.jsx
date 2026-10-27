@@ -28,6 +28,7 @@ import {
   adminCoursesRoute,
   adminAllStatsRoute,
 } from "../../../routes/academicRoutes";
+import { buildSessionOptions } from "../../../lib/academicYear";
 
 // Section display labels (order enforced by the API).
 const SECTION_META = {
@@ -111,7 +112,7 @@ export default function AdminFeedbackView() {
         <Select
           label="Session"
           placeholder="Select academic year / session"
-          data={(() => { const e = new Date().getFullYear(); const r = []; for (let y = e; y >= 2020; y--) r.push(`${y}-${String(y+1).slice(-2)}`); return r.map(s => ({ value: s, label: s })); })()}
+          data={buildSessionOptions(new Date().getFullYear())}
           value={session}
           onChange={setSession}
           clearable

@@ -27,6 +27,8 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import { allowedProgrammeChoices } from "../../ui/nav/roles";
 import { courseLabel } from "../../lib/course";
+import { MAX_ADMIN_SEMESTER } from "../../lib/semester";
+import { buildYearOptions } from "../../lib/academicYear";
 import {
   checkAllocationRoute,
   startAllocationRoute,
@@ -39,12 +41,9 @@ import {
 /* ── helpers ── */
 const CURRENT_YEAR = new Date().getFullYear();
 
-const yearOptions = Array.from({ length: CURRENT_YEAR - 2021 + 1 }, (_, i) => {
-  const y = String(CURRENT_YEAR - i);
-  return { value: y, label: y };
-});
+const yearOptions = buildYearOptions(CURRENT_YEAR);
 
-const semesterOptions = Array.from({ length: 8 }, (_, i) => ({
+const semesterOptions = Array.from({ length: MAX_ADMIN_SEMESTER }, (_, i) => ({
   value: String(i + 1),
   label: String(i + 1),
 }));

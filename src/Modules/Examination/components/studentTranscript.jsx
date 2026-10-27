@@ -20,6 +20,7 @@ import {
 import { useSelector } from "react-redux";
 import styles from "../styles/transcript.module.css";
 import InstiLogo from "../../../assets/Insti_logo.svg";
+import { summerNumber } from "../../../lib/semester";
 
 function StudentTranscript({ student, semester, onBack }) {
   const userRole = useSelector((state) => state.user.role);
@@ -158,14 +159,7 @@ function StudentTranscript({ student, semester, onBack }) {
       // Create proper filename with summer semester mapping
       let semesterLabel;
       if (semester_type && semester_type.toLowerCase().includes('summer')) {
-        // Map semester numbers to correct summer labels
-        const summerMapping = {
-          2: "Summer1",
-          4: "Summer2", 
-          6: "Summer3",
-          8: "Summer4"
-        };
-        semesterLabel = summerMapping[semester_no] || `Summer${semester_no}`;
+        semesterLabel = `Summer${summerNumber(semester_no)}`;
       } else {
         // Regular semester - just use the number
         semesterLabel = `sem${semester_no}`;
@@ -341,13 +335,7 @@ function StudentTranscript({ student, semester, onBack }) {
                     if (!semester) return 'N/A';
                     
                     if (semester.type && semester.type.toLowerCase().includes('summer')) {
-                      const summerMapping = {
-                        2: "Summer 1",
-                        4: "Summer 2", 
-                        6: "Summer 3",
-                        8: "Summer 4"
-                      };
-                      return summerMapping[semester.no] || `Summer ${semester.no}`;
+                      return `Summer ${summerNumber(semester.no)}`;
                     } else {
                       return semester.no || 'N/A';
                     }
