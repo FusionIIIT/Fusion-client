@@ -11,6 +11,7 @@ const COLUMNS = [
   { key: "roll_no", label: "Roll No" },
   { key: "semester", label: "Semester" },
   { key: "student_name", label: "Student Name" },
+  { key: "branch", label: "Branch" },
   { key: "course_code", label: "Course Code" },
   { key: "course_name", label: "Course Name" },
   { key: "credit", label: "Credit" },
