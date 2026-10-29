@@ -8,10 +8,12 @@ const userSlice = createSlice({
     username: "User",
     roll_no: "",
     roles: ["Guest-User"],
+    leavableRoles: [],
     role: "Guest-User",
     accessibleModules: {}, // Format---> {role: {module: true}}
     currentAccessibleModules: {}, // Format---> {module: true}
     mustCompleteProfile: false, // first-login student must finish profile popup
+    isSystemAdmin: false,
     authChecked: false, // /api/auth/me has resolved (gates route rendering)
     programmeType: null, // UG | PG | PHD — decides which academic pages exist
     profilePhoto: "", // student's own photo, shown on the sidebar avatar
@@ -28,6 +30,9 @@ const userSlice = createSlice({
     setMustCompleteProfile: (state, action) => {
       state.mustCompleteProfile = action.payload;
     },
+    setIsSystemAdmin: (state, action) => {
+      state.isSystemAdmin = Boolean(action.payload);
+    },
     setAuthChecked: (state, action) => {
       state.authChecked = action.payload;
     },
@@ -39,6 +44,9 @@ const userSlice = createSlice({
     },
     setRoles: (state, action) => {
       state.roles = action.payload;
+    },
+    setLeavableRoles: (state, action) => {
+      state.leavableRoles = action.payload ?? [];
     },
     setRole: (state, action) => {
       state.role = action.payload;
@@ -60,6 +68,7 @@ const userSlice = createSlice({
     },
     clearRoles: (state) => {
       state.roles = null;
+      state.leavableRoles = [];
     },
   },
 });
@@ -68,11 +77,13 @@ export const {
   setUserName,
   setRollNo,
   setRoles,
+  setLeavableRoles,
   setRole,
   setAccessibleModules,
   setPluggedNavigation,
   setCurrentAccessibleModules,
   setMustCompleteProfile,
+  setIsSystemAdmin,
   setAuthChecked,
   setProgrammeType,
   setProfilePhoto,

@@ -1,0 +1,77 @@
+.notice {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border: 1px solid #d8e7f1;
+  border-radius: 14px;
+  background: linear-gradient(110deg, #f2f8fc, #ffffff);
+}
+
+.noticeIcon,
+.summaryIcon {
+  flex: 0 0 auto;
+  color: #1689cb;
+  background: #e7f4fc;
+}
+
+.summaryCard,
+.directoryCard {
+  border: 1px solid #e5eaf0;
+  box-shadow: 0 5px 18px rgb(18 45 69 / 4%);
+}
+
+.summaryLabel {
+  color: #687789;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.summaryValue {
+  color: #122d43;
+  font-size: 28px;
+  font-weight: 750;
+  line-height: 1.15;
+}
+
+.sectionTitle {
+  color: #122d43;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.readOnlyBadge {
+  color: #087db7;
+  background: #e8f5fc;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(170px, 220px);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.loading {
+  display: flex;
+  min-height: 180px;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+@media (max-width: 640px) {
+  .filters {
+    grid-template-columns: 1fr;
+  }
+
+  .directoryCard {
+    padding: 14px;
+  }
+}

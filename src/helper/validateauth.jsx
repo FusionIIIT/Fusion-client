@@ -7,11 +7,13 @@ import {
   setUserName,
   setRollNo,
   setRoles,
+  setLeavableRoles,
   setRole,
   setAccessibleModules,
   setPluggedNavigation,
   setCurrentAccessibleModules,
   setMustCompleteProfile,
+  setIsSystemAdmin,
   setAuthChecked,
   clearUserName,
   clearRoles,
@@ -45,16 +47,19 @@ function ValidateAuth() {
       const {
         name,
         designation_info = [],
+        leavable_roles = [],
         accessible_modules = [],
         last_selected_role,
         roll_no,
         must_complete_profile = false,
+        is_system_admin = false,
         plugged_navigation = {},
       } = data;
 
       dispatch(setUserName(name));
       dispatch(setRollNo(roll_no));
       dispatch(setRoles(designation_info));
+      dispatch(setLeavableRoles(leavable_roles));
 
       const selectedRole = last_selected_role || designation_info[0] || null;
       if (selectedRole) dispatch(setRole(selectedRole));
@@ -63,6 +68,7 @@ function ValidateAuth() {
       dispatch(setPluggedNavigation(plugged_navigation));
       dispatch(setCurrentAccessibleModules());
       dispatch(setMustCompleteProfile(must_complete_profile));
+      dispatch(setIsSystemAdmin(is_system_admin));
       dispatch(setAuthChecked(true));
     } catch (error) {
       console.error("User validation failed:", error);
@@ -76,6 +82,7 @@ function ValidateAuth() {
       localStorage.removeItem("authToken");
       dispatch(clearUserName());
       dispatch(clearRoles());
+      dispatch(setIsSystemAdmin(false));
       navigate("/accounts/login");
     }
   }, [dispatch, navigate]);

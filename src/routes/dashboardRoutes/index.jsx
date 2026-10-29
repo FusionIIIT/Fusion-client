@@ -2,6 +2,7 @@ import { host } from "../globalRoutes";
 
 export const logoutRoute = `${host}/api/auth/logout/`;
 export const updateRoleRoute = `${host}/api/update-role/`;
+export const leaveRoleRoute = `${host}/api/leave-role/`;
 export const getNotificationsRoute = `${host}/api/notification/`;
 export const unreadNotificationCountRoute = `${host}/api/notification/unread-count/`;
 export const notificationReadRoute = `${host}/api/notificationread`;
@@ -13,3 +14,5 @@ export const updateProfileDataRoute = `${host}/api/profile_update/`;
 export const createAnnouncementRoute = `${host}/api/announcements/create/`;
 export const announcementAudienceOptionsRoute = `${host}/api/announcements/audience-options/`;
 export const announcementSearchUsersRoute = `${host}/api/announcements/search-users/`;
+export const systemAdminRoleAssignmentsRoute = `${host}/api/system-admin/role-assignments/`;
+export const systemAdminActivityRoute = `${host}/api/system-admin/activity/`;

@@ -8,6 +8,7 @@ import {
   Button,
   Group,
   Indicator,
+  Modal,
   NavLink,
   ScrollArea,
   Text,
@@ -99,8 +100,10 @@ export function AppShellLayout({
   user,
   onLogout,
   roles = [],
+  leavableRoles = [],
   role = null,
   onRoleChange = () => {},
+  onLeaveRole = async () => false,
   unreadCount = 0,
   onBellClick = () => {},
   bottomNavItems = [],
@@ -109,6 +112,7 @@ export function AppShellLayout({
 }) {
   const [opened, { toggle }] = useDisclosure();
   const [query, setQuery] = useState("");
+  const [leaveRoleOpen, setLeaveRoleOpen] = useState(false);
   const activeGroup = findActiveGroupCode(navGroups, activePath);
   const [openGroups, setOpenGroups] = useState(() => {
     const stored = readStored(OPEN_GROUPS_KEY, []);
@@ -123,6 +127,9 @@ export function AppShellLayout({
     getInitialValueInEffect: false,
   });
   const showBottomNav = Boolean(isNarrow && bottomNavItems.length);
+  const canLeaveCurrentRole = leavableRoles.some(
+    (candidate) => candidate.toLowerCase() === String(role || "").toLowerCase(),
+  );
   const rail = (railOverride ?? isCompact) && !isNarrow;
   const [hovered, setHovered] = useState(false);
   const [focusWithin, setFocusWithin] = useState(false);
@@ -567,6 +574,16 @@ export function AppShellLayout({
                 {user.roleLabel}
               </Text>
             )}
+            {canLeaveCurrentRole && (
+              <Button
+                variant="subtle"
+                size="xs"
+                className={classes.footerLeaveRole}
+                onClick={() => setLeaveRoleOpen(true)}
+              >
+                Leave role
+              </Button>
+            )}
           </div>
           <Tooltip label="Log out" position="top" withArrow>
             <ActionIcon
@@ -601,6 +618,39 @@ export function AppShellLayout({
           />
         </AppShell.Footer>
       )}
+
+      <Modal
+        opened={leaveRoleOpen}
+        onClose={() => setLeaveRoleOpen(false)}
+        title={`Leave ${role || "this role"}?`}
+        centered
+      >
+        <Text size="sm">
+          Your access through this role will end immediately. Fusion will save
+          the end time and retain the role history.
+        </Text>
+        {roles.length <= 1 && (
+          <Text size="sm" c="red" mt="sm">
+            This is your only active role. Leaving it will remove access to
+            Fusion modules until another role is assigned. You can still sign
+            out.
+          </Text>
+        )}
+        <Group justify="flex-end" mt="lg">
+          <Button variant="default" onClick={() => setLeaveRoleOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            color="red"
+            onClick={async () => {
+              const completed = await onLeaveRole(role);
+              if (completed) setLeaveRoleOpen(false);
+            }}
+          >
+            Leave role
+          </Button>
+        </Group>
+      </Modal>
     </AppShell>
   );
 }
@@ -637,8 +687,10 @@ AppShellLayout.propTypes = {
   }).isRequired,
   onLogout: PropTypes.func.isRequired,
   roles: PropTypes.arrayOf(PropTypes.string),
+  leavableRoles: PropTypes.arrayOf(PropTypes.string),
   role: PropTypes.string,
   onRoleChange: PropTypes.func,
+  onLeaveRole: PropTypes.func,
   unreadCount: PropTypes.number,
   onBellClick: PropTypes.func,
   bottomNavItems: PropTypes.arrayOf(linkShape),
