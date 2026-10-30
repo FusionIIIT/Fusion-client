@@ -91,16 +91,17 @@ export const DATABASE_REPORTS = [
   },
   {
     id: "batch-wise-student-count",
-    title: "Batch-wise student count",
-    summary: "Male, female, and total candidate count for batches 2020 to 2026",
+    title: "Batch Wise Student Count",
+    summary:
+      "Students in each batch from 2020, with male and female counts from the 2025 batch",
     filters: "None",
     Component: BatchWiseStudentCountReport,
   },
   {
     id: "branch-wise-student-count",
-    title: "Branch-wise student count",
+    title: "Branch Wise Student Count",
     summary:
-      "Male, female, and total candidate count per discipline for batches 2020 to 2026",
+      "Students in each programme and discipline of every batch from 2020, with male and female counts from the 2025 batch",
     filters: "None",
     Component: BranchWiseStudentCountReport,
   },
