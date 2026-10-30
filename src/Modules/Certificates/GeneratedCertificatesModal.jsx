@@ -28,6 +28,8 @@ import {
   feeCertificatesRoute,
   feeStructureCertificateHistoryPdfRoute,
   feeStructureCertificatesRoute,
+  pointerConversionCertificatePdfRoute,
+  pointerConversionCertificatesRoute,
 } from "../../routes/academicRoutes";
 import classes from "./GeneratedCertificatesModal.module.css";
 
@@ -69,6 +71,10 @@ const ROUTES_BY_VARIANT = {
   feeStructure: {
     list: feeStructureCertificatesRoute,
     pdf: feeStructureCertificateHistoryPdfRoute,
+  },
+  pointerConversion: {
+    list: pointerConversionCertificatesRoute,
+    pdf: pointerConversionCertificatePdfRoute,
   },
 };
 
@@ -325,7 +331,13 @@ export default function GeneratedCertificatesModal({
 GeneratedCertificatesModal.propTypes = {
   opened: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  variant: PropTypes.oneOf(["bonafide", "fee", "demand", "feeStructure"]),
+  variant: PropTypes.oneOf([
+    "bonafide",
+    "fee",
+    "demand",
+    "feeStructure",
+    "pointerConversion",
+  ]),
 };
 
 GeneratedCertificatesModal.defaultProps = {

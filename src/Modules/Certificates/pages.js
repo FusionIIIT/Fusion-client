@@ -37,4 +37,13 @@ export const CERTIFICATE_PAGES = [
     roles: ["acadadmin"],
     desktopOnly: true,
   },
+  {
+    key: "pointerConversionCertificate",
+    slug: "pointer-conversion-certificate",
+    title: "Pointer Conversion Certificate",
+    icon: "Certificate",
+    group: "Certificates",
+    roles: ["acadadmin"],
+    desktopOnly: true,
+  },
 ];

@@ -10,6 +10,9 @@ const COMPONENTS = {
   feeCertificate: lazy(() => import("./FeeCertificate")),
   demandLetter: lazy(() => import("./DemandLetter")),
   feeStructureCertificate: lazy(() => import("./FeeStructureCertificate")),
+  pointerConversionCertificate: lazy(
+    () => import("./PointerConversionCertificate"),
+  ),
 };
 
 export default function Certificates() {
