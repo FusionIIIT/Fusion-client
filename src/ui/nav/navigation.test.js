@@ -167,6 +167,10 @@ describe("buildNavGroups", () => {
             label: "Fee Structure Certificate",
             to: "/certificates/fee-structure-certificate",
           }),
+          expect.objectContaining({
+            label: "Medium of Instruction",
+            to: "/certificates/medium-of-instruction",
+          }),
         ],
       }),
     ]);

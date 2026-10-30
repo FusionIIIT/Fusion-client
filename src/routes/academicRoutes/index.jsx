@@ -58,6 +58,12 @@ export const feeStructureCertificatesRoute = `${host}/academic-procedures/api/ac
 export const feeStructureCertificateHistoryPdfRoute = (certificateId) =>
   `${feeStructureCertificatesRoute}${certificateId}/pdf/`;
 
+export const mediumOfInstructionStudentRoute = `${host}/academic-procedures/api/acad/medium-of-instruction/student/`;
+export const mediumOfInstructionPdfRoute = `${host}/academic-procedures/api/acad/medium-of-instruction/pdf/`;
+export const mediumOfInstructionCertificatesRoute = `${host}/academic-procedures/api/acad/medium-of-instruction/certificates/`;
+export const mediumOfInstructionCertificatePdfRoute = (certificateId) =>
+  `${mediumOfInstructionCertificatesRoute}${certificateId}/pdf/`;
+
 export const feeStructuresRoute = `${host}/academic-procedures/api/acad/fee-structures/`;
 export const feeStructureTemplateRoute = `${feeStructuresRoute}template/`;
 export const feeStructureDetailRoute = (structureId) =>
@@ -94,6 +100,10 @@ export const databaseCourseRegistrationCountsRoute = `${host}/aims/api/database/
 export const databaseSwayamRegistrationsRoute = `${host}/aims/api/database/swayam-registrations/`;
 export const databaseSemesterRegistrationsRoute = `${host}/aims/api/database/semester-registrations/`;
 export const databaseCreditsEarnedRoute = `${host}/aims/api/database/credits-earned/`;
+export const databaseActiveBacklogsRoute = `${host}/aims/api/database/active-backlogs/`;
+export const databaseReportCoursesRoute = `${host}/aims/api/database/report-courses/`;
+export const databaseCoreCourseGradesRoute = `${host}/aims/api/database/core-course-grades/`;
+export const databaseRemainingCoreGradesRoute = `${host}/aims/api/database/remaining-core-grades/`;
 export const databaseBatchWiseStudentCountRoute = `${host}/aims/api/database/batch-wise-student-count/`;
 export const databaseBranchWiseStudentCountRoute = `${host}/aims/api/database/branch-wise-student-count/`;
 export const academicProceduresFaculty = `${host}/academic-procedures/api/fac/academic_procedures_faculty`;

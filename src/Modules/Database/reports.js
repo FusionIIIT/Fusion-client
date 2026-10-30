@@ -5,7 +5,9 @@ import CourseRegistrationCountsReport from "./reports/CourseRegistrationCountsRe
 import SwayamRegistrationsReport from "./reports/SwayamRegistrationsReport";
 import SemesterRegistrationsReport from "./reports/SemesterRegistrationsReport";
 import CreditsEarnedReport from "./reports/CreditsEarnedReport";
-
+import ActiveBacklogsReport from "./reports/ActiveBacklogsReport";
+import CoreCourseGradesReport from "./reports/CoreCourseGradesReport";
+import RemainingCoreGradesReport from "./reports/RemainingCoreGradesReport";
 import BatchWiseStudentCountReport from "./reports/BatchWiseStudentCountReport";
 import BranchWiseStudentCountReport from "./reports/BranchWiseStudentCountReport";
 
@@ -62,6 +64,30 @@ export const DATABASE_REPORTS = [
       "Regular, backlog/improvement and swayam credits each student of a batch has earned so far",
     filters: "Batch",
     Component: CreditsEarnedReport,
+  },
+  {
+    id: "active-backlogs",
+    title: "Active Backlogs Batch Wise",
+    summary:
+      "Courses each student failed and has not cleared yet, with the semester, grade and instructor",
+    filters: "Batch (optional)",
+    Component: ActiveBacklogsReport,
+  },
+  {
+    id: "core-course-grades",
+    title: "Common Courses Grades Inter-disciplinary",
+    summary:
+      "Credits each student of a batch has earned, with their grade in each common course you add",
+    filters: "Batch, discipline (optional), courses",
+    Component: CoreCourseGradesReport,
+  },
+  {
+    id: "remaining-core-grades",
+    title: "Remaining Core Courses Grades",
+    summary:
+      "Credits each student of a batch has earned, with their grade in each remaining core course you add",
+    filters: "Batch, discipline (optional), courses",
+    Component: RemainingCoreGradesReport,
   },
   {
     id: "batch-wise-student-count",
