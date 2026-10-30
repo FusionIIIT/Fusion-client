@@ -276,24 +276,15 @@ export default function MediumOfInstructionCertificate() {
                   <strong>
                     {preview.student.salutation} {preview.student.name}
                   </strong>{" "}
-                  (Roll No. {preview.student.roll_number}){" "}
-                  {preview.student.relation}{" "}
-                  <strong>MR. {preview.student.father_name}</strong> is a
-                  student of{" "}
-                  <strong>
-                    {ordinalWithSuperscript(preview.student.year_ordinal)} Year
-                  </strong>{" "}
-                  ({ordinalWithSuperscript(preview.student.semester_ordinal)}{" "}
-                  Semester) <strong>{preview.student.programme}</strong> in{" "}
-                  <strong>{preview.student.discipline}</strong> ({" "}
-                  {preview.student.duration_text} course duration:{" "}
-                  <strong>{preview.student.start_year}</strong> to{" "}
-                  <strong>{preview.student.end_year}</strong>) at{" "}
-                  {preview.meta.institute_name}.
-                </p>
-                <p className={`${classes.body} ${classes.secondParagraph}`}>
-                  Institute provides education mode of instruction to the
-                  students in English only.
+                  (Roll No. {preview.student.roll_number}),{" "}
+                  {preview.student.relation} Mr. {preview.student.father_name},
+                  is a student of{" "}
+                  {ordinalWithSuperscript(preview.student.year_ordinal)} Year (
+                  {ordinalWithSuperscript(preview.student.semester_ordinal)}{" "}
+                  Semester) <strong>{preview.student.programme_short}</strong>{" "}
+                  programme from <strong>{preview.student.discipline}</strong>{" "}
+                  discipline. Institute provides education mode of instruction
+                  to the students in English only.
                 </p>
                 <div className={classes.signature}>
                   ({preview.meta.signatory_name})
