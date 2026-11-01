@@ -171,6 +171,10 @@ describe("buildNavGroups", () => {
             label: "Medium of Instruction",
             to: "/certificates/medium-of-instruction",
           }),
+          expect.objectContaining({
+            label: "Pointer Conversion Certificate",
+            to: "/certificates/pointer-conversion-certificate",
+          }),
         ],
       }),
     ]);

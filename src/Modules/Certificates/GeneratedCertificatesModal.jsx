@@ -30,6 +30,8 @@ import {
   feeStructureCertificatesRoute,
   mediumOfInstructionCertificatePdfRoute,
   mediumOfInstructionCertificatesRoute,
+  pointerConversionCertificatePdfRoute,
+  pointerConversionCertificatesRoute,
 } from "../../routes/academicRoutes";
 import classes from "./GeneratedCertificatesModal.module.css";
 
@@ -75,6 +77,10 @@ const ROUTES_BY_VARIANT = {
   mediumOfInstruction: {
     list: mediumOfInstructionCertificatesRoute,
     pdf: mediumOfInstructionCertificatePdfRoute,
+  },
+  pointerConversion: {
+    list: pointerConversionCertificatesRoute,
+    pdf: pointerConversionCertificatePdfRoute,
   },
 };
 
@@ -341,6 +347,7 @@ GeneratedCertificatesModal.propTypes = {
     "demand",
     "feeStructure",
     "mediumOfInstruction",
+    "pointerConversion",
   ]),
 };
 

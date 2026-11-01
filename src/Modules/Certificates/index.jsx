@@ -13,6 +13,9 @@ const COMPONENTS = {
   mediumOfInstructionCertificate: lazy(
     () => import("./MediumOfInstructionCertificate"),
   ),
+  pointerConversionCertificate: lazy(
+    () => import("./PointerConversionCertificate"),
+  ),
 };
 
 export default function Certificates() {
