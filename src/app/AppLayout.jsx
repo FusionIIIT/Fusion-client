@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Flex, Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
@@ -27,6 +27,7 @@ import { setCurrentModule } from "../redux/moduleslice";
 import { setUnreadCount } from "../redux/notificationSlice";
 import {
   getProfileDataRoute,
+  leaveRoleRoute,
   updateRoleRoute,
   unreadNotificationCountRoute,
 } from "../routes/dashboardRoutes";
@@ -41,7 +42,9 @@ export function Layout({ children = null }) {
 
   const username = useSelector((state) => state.user.username);
   const role = useSelector((state) => state.user.role);
+  const isSystemAdmin = useSelector((state) => state.user.isSystemAdmin);
   const roles = useSelector((state) => state.user.roles);
+  const leavableRoles = useSelector((state) => state.user.leavableRoles);
   const programmeType = useSelector((state) => state.user.programmeType);
   const accessibleModules = useSelector(
     (state) => state.user.currentAccessibleModules,
@@ -92,16 +95,35 @@ export function Layout({ children = null }) {
       .catch(() => {});
   }, [dispatch, role, profilePhoto]);
 
-  const navGroups = useMemo(
-    () =>
-      buildNavGroups({
-        role,
-        accessibleModules,
-        programmeType,
-        pluggedNavigation,
-      }),
-    [role, accessibleModules, programmeType, pluggedNavigation],
-  );
+  const navGroups = useMemo(() => {
+    if (isSystemAdmin) {
+      return [
+        {
+          section: "System administration",
+          items: [
+            {
+              code: "home",
+              label: "Role overview",
+              icon: "House",
+              to: "/dashboard",
+            },
+          ],
+        },
+      ];
+    }
+    return buildNavGroups({
+      role,
+      accessibleModules,
+      programmeType,
+      pluggedNavigation,
+    });
+  }, [
+    isSystemAdmin,
+    role,
+    accessibleModules,
+    programmeType,
+    pluggedNavigation,
+  ]);
 
   const bottomNavItems = useMemo(
     () => buildBottomNav({ role, navGroups }),
@@ -133,6 +155,7 @@ export function Layout({ children = null }) {
   }, [dispatch, moduleLabel]);
 
   const handleRoleChange = async (newRole) => {
+    if (isSystemAdmin) return;
     if (!newRole || newRole === role) return;
     const token = localStorage.getItem("authToken");
     try {
@@ -164,6 +187,40 @@ export function Layout({ children = null }) {
     }
   };
 
+  const handleLeaveRole = async (roleToLeave) => {
+    const token = localStorage.getItem("authToken");
+    try {
+      const { data } = await axios.post(
+        leaveRoleRoute,
+        { role: roleToLeave },
+        { headers: { Authorization: `Token ${token}` } },
+      );
+      notifications.show({
+        title: "Role ended",
+        message: data.next_role
+          ? `${roleToLeave} ended at ${new Date(data.end_time).toLocaleString()}. Switched to ${data.next_role}.`
+          : `${roleToLeave} ended at ${new Date(data.end_time).toLocaleString()}. You have no other active role.`,
+        color: "blue",
+      });
+      window.location.assign("/dashboard");
+      return true;
+    } catch (error) {
+      notifications.show({
+        title: "Could not leave role",
+        message:
+          error.response?.data?.detail ||
+          error.response?.data?.error ||
+          "Please try again.",
+        color: "red",
+      });
+      return false;
+    }
+  };
+
+  if (isSystemAdmin && pathname !== "/dashboard") {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return (
     <AppShellLayout
       navGroups={navGroups}
@@ -172,13 +229,15 @@ export function Layout({ children = null }) {
       brandSubtitle="FUSION · ERP PORTAL"
       user={{
         name: username,
-        roleLabel: role,
+        roleLabel: isSystemAdmin ? "SYSTEM ADMIN" : role,
         photo: profilePhoto ? `${host}${profilePhoto}` : "",
       }}
       onLogout={() => handleLogout()}
-      roles={roles ?? []}
+      roles={isSystemAdmin ? [] : (roles ?? [])}
+      leavableRoles={isSystemAdmin ? [] : (leavableRoles ?? [])}
       role={role}
       onRoleChange={handleRoleChange}
+      onLeaveRole={handleLeaveRole}
       unreadCount={unreadCount}
       onBellClick={() => navigate("/notifications")}
       bottomNavItems={bottomNavItems}

@@ -7,9 +7,11 @@ import { buildNavGroups } from "../../ui/nav/navigation";
 import { flattenNavLinks } from "../../ui/nav/match";
 import PendingWork from "./PendingWork";
 import StudentCreditSummary from "./StudentCreditSummary";
+import SystemAdminHome from "./SystemAdminHome";
 
 export default function DashboardHome() {
   const role = useSelector((state) => state.user.role);
+  const isSystemAdmin = useSelector((state) => state.user.isSystemAdmin);
   const username = useSelector((state) => state.user.username);
   const programmeType = useSelector((state) => state.user.programmeType);
   const accessibleModules = useSelector(
@@ -23,6 +25,8 @@ export default function DashboardHome() {
       ).map((link) => link.to),
     [role, accessibleModules, programmeType],
   );
+
+  if (isSystemAdmin) return <SystemAdminHome />;
 
   if (role === "student") {
     return (
