@@ -58,9 +58,12 @@ export const feeStructureCertificatesRoute = `${host}/academic-procedures/api/ac
 export const feeStructureCertificateHistoryPdfRoute = (certificateId) =>
   `${feeStructureCertificatesRoute}${certificateId}/pdf/`;
 
-export const mediumOfInstructionStudentRoute = `${host}/academic-procedures/api/acad/medium-of-instruction/student/`;
-export const mediumOfInstructionPdfRoute = `${host}/academic-procedures/api/acad/medium-of-instruction/pdf/`;
-export const mediumOfInstructionCertificatesRoute = `${host}/academic-procedures/api/acad/medium-of-instruction/certificates/`;
+export const mediumOfInstructionStudentRoute = `${host}/academic-procedures/api/acad/medium-instruction/student/`;
+
+export const mediumOfInstructionPdfRoute = `${host}/academic-procedures/api/acad/medium-instruction/pdf/`;
+
+export const mediumOfInstructionCertificatesRoute = `${host}/academic-procedures/api/acad/medium-instruction/certificates/`;
+
 export const mediumOfInstructionCertificatePdfRoute = (certificateId) =>
   `${mediumOfInstructionCertificatesRoute}${certificateId}/pdf/`;
 export const pointerConversionStudentRoute = `${host}/academic-procedures/api/acad/pointer-conversion/student/`;

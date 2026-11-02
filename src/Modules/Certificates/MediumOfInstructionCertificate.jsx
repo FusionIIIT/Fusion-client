@@ -40,6 +40,7 @@ const authConfig = () => ({
 
 const responseMessage = async (error) => {
   const payload = error?.response?.data;
+
   if (payload instanceof Blob) {
     try {
       return JSON.parse(await payload.text()).error;
@@ -47,6 +48,7 @@ const responseMessage = async (error) => {
       return "Certificate generation failed.";
     }
   }
+
   return (
     payload?.error ||
     payload?.message ||
@@ -60,10 +62,11 @@ const filenameFrom = (header, fallback) => {
   return match?.[1] || fallback;
 };
 
-// Renders an ordinal such as "4th" with the suffix raised, as the PDF does.
 function ordinalWithSuperscript(value) {
   const match = /^(\d+)(st|nd|rd|th)$/.exec((value ?? "").trim());
+
   if (!match) return value;
+
   return (
     <>
       {match[1]}
@@ -89,16 +92,19 @@ export default function MediumOfInstructionCertificate() {
 
   const fetchStudent = async () => {
     const normalizedRollNumber = rollNumber.trim().toUpperCase();
+
     if (!normalizedRollNumber || fetchingStudent) return;
 
     clearStudent();
     setRollNumber(normalizedRollNumber);
     setFetchingStudent(true);
+
     try {
       const { data } = await axios.get(mediumOfInstructionStudentRoute, {
         ...authConfig(),
         params: { roll_number: normalizedRollNumber },
       });
+
       setSelectedStudent(data.student || null);
       setCertificateMeta(data.certificate || null);
     } catch (error) {
@@ -114,6 +120,7 @@ export default function MediumOfInstructionCertificate() {
 
   const showPreview = () => {
     if (!selectedStudent || !certificateMeta) return;
+
     setPreview({
       student: selectedStudent,
       meta: certificateMeta,
@@ -122,20 +129,28 @@ export default function MediumOfInstructionCertificate() {
 
   const download = async () => {
     if (!selectedStudent || downloading) return;
+
     setDownloading(true);
+
     try {
       const response = await axios.post(
         mediumOfInstructionPdfRoute,
         {
           student_id: selectedStudent.student_id,
         },
-        { ...authConfig(), responseType: "blob" },
+        {
+          ...authConfig(),
+          responseType: "blob",
+        },
       );
+
       const filename = filenameFrom(
         response.headers["content-disposition"],
         `${selectedStudent.roll_number}_Medium_of_Instruction_Certificate.pdf`,
       );
+
       saveAs(response.data, filename);
+
       notifications.show({
         color: "green",
         title: "Certificate downloaded",
@@ -154,6 +169,14 @@ export default function MediumOfInstructionCertificate() {
 
   const ready = Boolean(selectedStudent?.is_ready);
 
+  const fatherName = (preview?.student?.father_name || "").trim();
+
+  const validFatherName =
+    fatherName &&
+    !["null", "none", "n/a", "na", "-", "not available"].includes(
+      fatherName.toLowerCase(),
+    );
+
   return (
     <>
       <Grid gutter="lg" className={classes.layout}>
@@ -166,7 +189,9 @@ export default function MediumOfInstructionCertificate() {
                   Enter a roll number to fetch the student details.
                 </Text>
               </div>
+
               <Divider />
+
               <TextInput
                 label="Roll number"
                 placeholder="Enter roll number"
@@ -185,6 +210,7 @@ export default function MediumOfInstructionCertificate() {
                   fetchingStudent ? <Loader size={16} /> : undefined
                 }
               />
+
               <Button
                 variant="light"
                 leftSection={<MagnifyingGlass size={18} />}
@@ -195,18 +221,23 @@ export default function MediumOfInstructionCertificate() {
               >
                 Fetch student details
               </Button>
+
               {selectedStudent && (
                 <Paper withBorder p="md" radius="sm">
                   <Group justify="space-between" mb="xs">
                     <Text fw={600}>{selectedStudent.name}</Text>
+
                     <Badge color={selectedStudent.is_ready ? "green" : "red"}>
                       {selectedStudent.is_ready ? "Ready" : "Incomplete"}
                     </Badge>
                   </Group>
+
                   <Text size="sm">Roll No.: {selectedStudent.roll_number}</Text>
+
                   <Text size="sm">
                     {selectedStudent.programme} in {selectedStudent.discipline}
                   </Text>
+
                   <Text size="sm">
                     {selectedStudent.year_ordinal} Year,{" "}
                     {selectedStudent.semester_ordinal} Semester
@@ -233,6 +264,7 @@ export default function MediumOfInstructionCertificate() {
                 >
                   Preview
                 </Button>
+
                 <Button
                   leftSection={<DownloadSimple size={18} />}
                   onClick={download}
@@ -242,6 +274,7 @@ export default function MediumOfInstructionCertificate() {
                   Download
                 </Button>
               </Group>
+
               <Button
                 variant="light"
                 leftSection={<ClockCounterClockwise size={18} />}
@@ -263,29 +296,35 @@ export default function MediumOfInstructionCertificate() {
                     <div>{preview.meta.signatory_name}</div>
                     <div>{preview.meta.signatory_title}</div>
                   </div>
+
                   <div className={classes.reference}>
                     <div>{preview.meta.reference_preview}</div>
                     <div>Date: {preview.meta.issued_on}</div>
                   </div>
                 </header>
+
                 <h2 className={classes.heading}>
                   TO WHOM SO EVER IT MAY CONCERN
                 </h2>
+
                 <p className={classes.body}>
                   This is to certify that{" "}
                   <strong>
                     {preview.student.salutation} {preview.student.name}
                   </strong>{" "}
                   (Roll No. {preview.student.roll_number}),{" "}
-                  {preview.student.relation} Mr. {preview.student.father_name},
+                  {validFatherName
+                    ? `${preview.student.relation} ${fatherName}, `
+                    : ""}
                   is a student of{" "}
                   {ordinalWithSuperscript(preview.student.year_ordinal)} Year (
                   {ordinalWithSuperscript(preview.student.semester_ordinal)}{" "}
                   Semester) <strong>{preview.student.programme_short}</strong>{" "}
                   programme from <strong>{preview.student.discipline}</strong>{" "}
-                  discipline. Institute provides education mode of instruction
-                  to the students in English only.
+                  discipline. The institute provides education to students with
+                  English as the medium of instruction.
                 </p>
+
                 <div className={classes.signature}>
                   ({preview.meta.signatory_name})
                 </div>
@@ -303,6 +342,7 @@ export default function MediumOfInstructionCertificate() {
           )}
         </Grid.Col>
       </Grid>
+
       <GeneratedCertificatesModal
         opened={historyOpened}
         onClose={() => setHistoryOpened(false)}
