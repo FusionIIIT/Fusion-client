@@ -10,6 +10,7 @@ export const notificationClearRoute = `${host}/api/notificationclear`;
 export const notificationUnreadRoute = `${host}/api/notificationunread`;
 export const getProfileDataRoute = `${host}/api/profile/`;
 export const updateProfileDataRoute = `${host}/api/profile_update/`;
+export const studentBankDetailsRoute = `${host}/api/profile/bank-details/`;
 export const createAnnouncementRoute = `${host}/api/announcements/create/`;
 export const announcementAudienceOptionsRoute = `${host}/api/announcements/audience-options/`;
 export const announcementSearchUsersRoute = `${host}/api/announcements/search-users/`;

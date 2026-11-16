@@ -16,6 +16,7 @@ import { showNotification } from "@mantine/notifications";
 import axios from "axios";
 import PropTypes from "prop-types";
 import RPCCommitteeTable from "./RPCCommitteeTable";
+import ProposeCommitteeChangeModal from "./ProposeCommitteeChangeModal";
 import {
   supervisorReviewRoute,
   facultyListRoute,
@@ -26,6 +27,7 @@ export default function SupervisorReviewModal({ thesis, onClose, refresh }) {
   const [facOpts, setFacOpts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [initialCoConsented, setInitialCoConsented] = useState(false);
+  const [changingCommittee, setChangingCommittee] = useState(false);
 
   const token = localStorage.getItem("authToken");
   const headers = token ? { Authorization: `Token ${token}` } : {};
@@ -335,7 +337,28 @@ export default function SupervisorReviewModal({ thesis, onClose, refresh }) {
             {is_supervisor ? "Forward to HOD" : "Submit Consent"}
           </Button>
         </Group>
+
+        {is_supervisor && status === "dean_approved" && (
+          <Button
+            fullWidth
+            variant="outline"
+            onClick={() => setChangingCommittee(true)}
+          >
+            Propose Committee Change
+          </Button>
+        )}
       </Stack>
+
+      {changingCommittee && (
+        <ProposeCommitteeChangeModal
+          thesis={form}
+          onClose={() => setChangingCommittee(false)}
+          refresh={() => {
+            setChangingCommittee(false);
+            refresh();
+          }}
+        />
+      )}
     </Modal>
   );
 }
