@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   MIN_ACADEMIC_YEAR,
   academicYearLabel,
+  allocationTermLabel,
+  allocationYear,
   buildSessionLabels,
   buildSessionOptions,
   buildYearOptions,
@@ -46,5 +48,31 @@ describe("buildYearOptions", () => {
       },
       { value: String(MIN_ACADEMIC_YEAR), label: String(MIN_ACADEMIC_YEAR) },
     ]);
+  });
+});
+
+describe("allocationYear", () => {
+  it("puts an Odd semester in the year it starts", () => {
+    expect(allocationYear(2024, 1)).toBe(2024);
+    expect(allocationYear("2024", "5")).toBe(2026);
+  });
+
+  it("puts an Even semester in the next calendar year", () => {
+    expect(allocationYear(2024, 2)).toBe(2025);
+    expect(allocationYear("2024", "6")).toBe(2027);
+  });
+});
+
+describe("allocationTermLabel", () => {
+  it("names the session an Even semester belongs to", () => {
+    expect(allocationTermLabel("6", "2027")).toBe(
+      "Even Semester of 2026-27 (January–May 2027)",
+    );
+  });
+
+  it("names the session an Odd semester belongs to", () => {
+    expect(allocationTermLabel(5, 2026)).toBe(
+      "Odd Semester of 2026-27 (from August 2026)",
+    );
   });
 });

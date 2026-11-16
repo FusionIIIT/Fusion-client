@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Card,
   Text,
@@ -28,7 +28,11 @@ import { useSelector } from "react-redux";
 import { allowedProgrammeChoices } from "../../ui/nav/roles";
 import { courseLabel } from "../../lib/course";
 import { MAX_ADMIN_SEMESTER } from "../../lib/semester";
-import { buildYearOptions } from "../../lib/academicYear";
+import {
+  allocationTermLabel,
+  allocationYear,
+  buildYearOptions,
+} from "../../lib/academicYear";
 import {
   checkAllocationRoute,
   startAllocationRoute,
@@ -41,7 +45,11 @@ import {
 /* ── helpers ── */
 const CURRENT_YEAR = new Date().getFullYear();
 
-const yearOptions = buildYearOptions(CURRENT_YEAR);
+const batchOptions = buildYearOptions(CURRENT_YEAR);
+// An Even semester starts in January, so next year must be choosable from
+// November and December onward.
+const yearOptions = buildYearOptions(CURRENT_YEAR + 1);
+const YEAR_CHECKED = new Set(["UG", "PG"]);
 
 const semesterOptions = Array.from({ length: MAX_ADMIN_SEMESTER }, (_, i) => ({
   value: String(i + 1),
@@ -62,6 +70,15 @@ function AllocateCourses() {
   const [programmeType, setProgrammeType] = useState(
     programmeChoices[0]?.value ?? "UG",
   );
+  // UG and PG batches have one intake, so their year follows from batch and
+  // semester; PhD batches have more than one, so the admin chooses.
+  const expectedYear =
+    batch && semester && YEAR_CHECKED.has(programmeType)
+      ? allocationYear(batch, semester)
+      : null;
+  useEffect(() => {
+    if (expectedYear) setYear(String(expectedYear));
+  }, [expectedYear]);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
@@ -701,7 +718,7 @@ function AllocateCourses() {
           placeholder="Select batch"
           value={batch}
           onChange={setBatch}
-          data={yearOptions}
+          data={batchOptions}
           searchable
         />
         <Select
@@ -718,6 +735,14 @@ function AllocateCourses() {
           onChange={setYear}
           data={yearOptions}
           searchable
+          description={
+            semester && year ? allocationTermLabel(semester, year) : undefined
+          }
+          error={
+            expectedYear && year && Number(year) !== expectedYear
+              ? `Semester ${semester} of Batch ${batch} runs in ${expectedYear}.`
+              : undefined
+          }
         />
       </div>
 
