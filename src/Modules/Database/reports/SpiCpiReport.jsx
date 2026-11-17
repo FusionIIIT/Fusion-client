@@ -160,7 +160,7 @@ export default function SpiCpiReport({ filters }) {
             {
               label: result.semester
                 ? `Semester ${result.semester}`
-                : "Latest graded semester",
+                : "Latest graded term",
               color: "teal",
             },
           ]}
@@ -168,8 +168,9 @@ export default function SpiCpiReport({ filters }) {
       ) : (
         <Text size="sm" c="dimmed">
           Choose a batch, and a discipline or semester if you want one, then
-          fetch. Without a semester, each student&apos;s latest semester with
-          grades is used.
+          fetch. Without a semester, each student&apos;s latest term with grades
+          is used, as the last row of their transcript: a summer term after
+          their latest semester shows as &quot;Summer 2&quot; and so on.
         </Text>
       )}
     </Stack>

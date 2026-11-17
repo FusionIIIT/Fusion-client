@@ -22,6 +22,14 @@ const FILTERS = {
 
 const ROWS = [
   {
+    roll_no: "24BCS003",
+    student_name: "Summer Student",
+    discipline: "B.Tech CSE",
+    semester: "Summer 2",
+    spi: 9,
+    cpi: 6.25,
+  },
+  {
     roll_no: "24BCS001",
     student_name: "First Student",
     discipline: "B.Tech CSE",
@@ -60,7 +68,7 @@ describe("SpiCpiReport", () => {
     Element.prototype.scrollIntoView = vi.fn();
     axios.get.mockReset();
     axios.get.mockResolvedValue({
-      data: { count: 2, students: 2, with_grades: 1, rows: ROWS },
+      data: { count: 3, students: 3, with_grades: 2, rows: ROWS },
     });
     render(
       <MantineProvider theme={theme}>
@@ -90,6 +98,9 @@ describe("SpiCpiReport", () => {
     const first = screen.getByText("24BCS001").closest("tr");
     expect(within(first).getByText("7.5")).toBeInTheDocument();
     expect(within(first).getByText("8.0")).toBeInTheDocument();
+    const summer = screen.getByText("24BCS003").closest("tr");
+    expect(within(summer).getByText("Summer 2")).toBeInTheDocument();
+    expect(within(summer).getByText("9.0")).toBeInTheDocument();
     const second = screen.getByText("24BEC001").closest("tr");
     expect(within(second).getAllByText("-")).toHaveLength(3);
   });

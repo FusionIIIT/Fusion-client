@@ -110,7 +110,7 @@ export const DATABASE_REPORTS = [
     id: "spi-cpi",
     title: "SPI and CPI",
     summary:
-      "Each student's SPI and CPI for a semester, or for their latest semester with grades, as on the transcript",
+      "Each student's SPI and CPI for a semester, or for their latest term with grades, as on the transcript",
     filters: "Batch, discipline (optional), semester (optional)",
     Component: SpiCpiReport,
   },
