@@ -17,6 +17,11 @@ import { IconDownload, IconSearch } from "@tabler/icons-react";
 const SERIAL_LABEL = "S. No.";
 const HEADER_FILL = "FF366092";
 
+// A column may give `format` for how a value reads on screen and `numFmt` for
+// the same in Excel, so a number can show as "7.0" yet export as a number.
+const shown = (column, row) =>
+  column.format ? column.format(row[column.key]) : row[column.key];
+
 // A workbook rather than a csv, so the export carries the ruled grid and
 // header the office's other exports have. exceljs is lazy-loaded.
 async function writeWorkbook(columns, rows, filename, sheetName) {
@@ -30,6 +35,7 @@ async function writeWorkbook(columns, rows, filename, sheetName) {
       header: column.label,
       key: column.key,
       width: Math.max(12, Math.min(45, column.label.length + 6)),
+      ...(column.numFmt ? { style: { numFmt: column.numFmt } } : {}),
     })),
   ];
 
@@ -84,7 +90,7 @@ export default function ReportTable({ columns, rows, filename, badges = [] }) {
     if (!needle) return rows;
     return rows.filter((row) =>
       columns.some((column) =>
-        String(row[column.key] ?? "")
+        String(shown(column, row) ?? "")
           .toLowerCase()
           .includes(needle),
       ),
@@ -161,7 +167,7 @@ export default function ReportTable({ columns, rows, filename, badges = [] }) {
                 >
                   <Table.Td>{index + 1}</Table.Td>
                   {columns.map((column) => (
-                    <Table.Td key={column.key}>{row[column.key]}</Table.Td>
+                    <Table.Td key={column.key}>{shown(column, row)}</Table.Td>
                   ))}
                 </Table.Tr>
               ))}
@@ -175,7 +181,12 @@ export default function ReportTable({ columns, rows, filename, badges = [] }) {
 
 ReportTable.propTypes = {
   columns: PropTypes.arrayOf(
-    PropTypes.shape({ key: PropTypes.string, label: PropTypes.string }),
+    PropTypes.shape({
+      key: PropTypes.string,
+      label: PropTypes.string,
+      format: PropTypes.func,
+      numFmt: PropTypes.string,
+    }),
   ).isRequired,
   rows: PropTypes.arrayOf(PropTypes.objectOf(PropTypes.any)).isRequired,
   filename: PropTypes.string.isRequired,

@@ -10,6 +10,7 @@ import CoreCourseGradesReport from "./reports/CoreCourseGradesReport";
 import RemainingCoreGradesReport from "./reports/RemainingCoreGradesReport";
 import BatchWiseStudentCountReport from "./reports/BatchWiseStudentCountReport";
 import BranchWiseStudentCountReport from "./reports/BranchWiseStudentCountReport";
+import SpiCpiReport from "./reports/SpiCpiReport";
 
 // One entry per report. Adding a report means adding an entry here; the list
 // page and the report page both read from this.
@@ -104,6 +105,14 @@ export const DATABASE_REPORTS = [
       "Students in each programme and discipline of every batch from 2020, with male and female counts from the 2025 batch",
     filters: "None",
     Component: BranchWiseStudentCountReport,
+  },
+  {
+    id: "spi-cpi",
+    title: "SPI and CPI",
+    summary:
+      "Each student's SPI and CPI for a semester, or for their latest semester with grades, as on the transcript",
+    filters: "Batch, discipline (optional), semester (optional)",
+    Component: SpiCpiReport,
   },
 ];
 
