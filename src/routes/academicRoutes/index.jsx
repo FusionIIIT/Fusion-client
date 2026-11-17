@@ -111,6 +111,7 @@ export const databaseCoreCourseGradesRoute = `${host}/aims/api/database/core-cou
 export const databaseRemainingCoreGradesRoute = `${host}/aims/api/database/remaining-core-grades/`;
 export const databaseBatchWiseStudentCountRoute = `${host}/aims/api/database/batch-wise-student-count/`;
 export const databaseBranchWiseStudentCountRoute = `${host}/aims/api/database/branch-wise-student-count/`;
+export const databaseSpiCpiRoute = `${host}/aims/api/database/spi-cpi/`;
 export const academicProceduresFaculty = `${host}/academic-procedures/api/fac/academic_procedures_faculty`;
 export const getAllCourses = `${host}/academic-procedures/api/acad/get_all_courses`;
 export const generateprereport = `${host}/aims/api/generate_preregistration_report/`;
