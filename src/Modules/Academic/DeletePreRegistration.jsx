@@ -41,11 +41,12 @@ function RegistrationSearch() {
       throw new Error("No token found"); // Handle the case where the token is not available
     }
 
+    const roll = rollNo.trim().toUpperCase();
     try {
       const response = await axios.post(
         searchPreRegistrationRoute,
         {
-          roll_no: rollNo,
+          roll_no: roll,
           sem_no: semester,
         },
         {
@@ -55,8 +56,14 @@ function RegistrationSearch() {
         },
       );
 
-      if (response.data.student_registration_check) {
-        setSearchResults(response.data);
+      const {
+        student_registration_check: registrationCheck,
+        initial_registration: choices,
+      } = response.data;
+      // A submission that stopped part way saved course choices without the
+      // pre-registration record; it still has to be found here to be deleted.
+      if (registrationCheck || choices?.length) {
+        setSearchResults({ ...response.data, roll, semester });
       } else {
         setError("No Registration Found!");
       }
@@ -78,9 +85,8 @@ function RegistrationSearch() {
       const response = await axios.post(
         deletePreRegistrationRoute,
         {
-          roll_no: searchResults.student_registration_check.student_id,
-          sem_no:
-            searchResults.initial_registration[0]?.semester_id?.semester_no,
+          roll_no: searchResults.roll,
+          sem_no: searchResults.semester,
         },
         {
           headers: {
@@ -99,6 +105,7 @@ function RegistrationSearch() {
   };
 
   const columnNames = ["Course", "Semester", "Course Slot", "Type", "Priority"];
+  const check = searchResults?.student_registration_check;
 
   const mappedResults = searchResults
     ? searchResults.initial_registration.map((result) => ({
@@ -167,6 +174,14 @@ function RegistrationSearch() {
             Student Registration Check:
           </Text>
 
+          {!check && (
+            <Alert color="yellow" mb="md">
+              These course choices were saved without the pre-registration
+              record, so the student&apos;s submission did not finish. Delete
+              them so the student can submit again.
+            </Alert>
+          )}
+
           <Card
             shadow="sm"
             p="md"
@@ -175,40 +190,21 @@ function RegistrationSearch() {
           >
             <Group gap="xs" mb={4}>
               <Text fw={500}>Student Roll No:</Text>
-              <Text style={{ fontWeight: 600 }}>
-                {searchResults.student_registration_check.student_id}
-              </Text>
+              <Text style={{ fontWeight: 600 }}>{searchResults.roll}</Text>
             </Group>
             <Group gap="xs" mb={4}>
               <Text fw={500}>Pre-Registration Flag:</Text>
-              <Text
-                c={
-                  searchResults.student_registration_check.pre_registration_flag
-                    ? "green"
-                    : "red"
-                }
-                fw={600}
-              >
-                {searchResults.student_registration_check.pre_registration_flag
-                  ? "True"
-                  : "False"}
+              <Text c={check?.pre_registration_flag ? "green" : "red"} fw={600}>
+                {check?.pre_registration_flag ? "True" : "False"}
               </Text>
             </Group>
             <Group gap="xs">
               <Text fw={500}>Final Registration Flag:</Text>
               <Text
-                c={
-                  searchResults.student_registration_check
-                    .final_registration_flag
-                    ? "green"
-                    : "red"
-                }
+                c={check?.final_registration_flag ? "green" : "red"}
                 fw={600}
               >
-                {searchResults.student_registration_check
-                  .final_registration_flag
-                  ? "True"
-                  : "False"}
+                {check?.final_registration_flag ? "True" : "False"}
               </Text>
             </Group>
             <Group justify="flex-end" mt="md">
