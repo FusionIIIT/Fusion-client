@@ -74,7 +74,9 @@ export default function SpiCpiReport({ filters }) {
         headers: token ? { Authorization: `Token ${token}` } : {},
       });
       const label = disciplines.find((d) => d.value === batchId)?.label;
-      setResult({ ...data, discipline: label, semester });
+      // What was fetched, so the columns and file name do not follow later
+      // changes to the filters.
+      setResult({ ...data, batch, discipline: label, semester });
       if (!data.count) {
         showNotification({
           title: "Nothing found",
@@ -96,7 +98,7 @@ export default function SpiCpiReport({ filters }) {
   const filename = result
     ? [
         "spi_cpi",
-        batch,
+        result.batch,
         result.discipline?.replace(/\W+/g, "_"),
         result.semester ? `sem${result.semester}` : "latest",
       ]

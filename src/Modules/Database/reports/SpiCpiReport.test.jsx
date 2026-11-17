@@ -106,6 +106,11 @@ describe("SpiCpiReport", () => {
       headers: { Authorization: "Token token" },
     });
     expect(headers()).toEqual(["S. No.", "Roll No", "Name", "SPI", "CPI"]);
+
+    // Changing the filters after fetching leaves the shown report as fetched.
+    choose("Batch", "2023");
+    expect(headers()).toEqual(["S. No.", "Roll No", "Name", "SPI", "CPI"]);
+    expect(screen.getByText("Semester 4")).toBeInTheDocument();
   });
 
   it("offers only the chosen batch's disciplines", () => {
