@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { notificationsStore } from "@mantine/notifications";
+import { pendingWrites } from "./pendingWrites";
 
 // A tab that is already open keeps running the build it loaded, even after a
 // new one is deployed. This hook asks the server for index.html now and then
@@ -8,7 +9,8 @@ import { notificationsStore } from "@mantine/notifications";
 // opens fresh. It never reloads the page being worked on, so nothing typed is
 // lost: in-app navigation drops the old page anyway. It also waits while a
 // message is on screen ("Saved", "Session expired", ...), which a reload would
-// wipe, and on the way to the login page; a later page change loads fresh.
+// wipe, while a save or upload is still being sent, which a reload would
+// cancel, and on the way to the login page; a later page change loads fresh.
 
 const CHECK_EVERY_MS = 5 * 60 * 1000;
 const MIN_GAP_MS = 60 * 1000;
@@ -120,7 +122,12 @@ export default function useReloadOnNewBuild({
 
   // Runs when the path changes. On the first render no new build is known yet.
   useEffect(() => {
-    if (!newBuild.current || pathname === LOGIN_PATH || messageShowing()) {
+    if (
+      !newBuild.current ||
+      pathname === LOGIN_PATH ||
+      messageShowing() ||
+      pendingWrites() > 0
+    ) {
       return;
     }
     rememberReload(running.current, newBuild.current);

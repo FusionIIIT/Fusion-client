@@ -5,6 +5,9 @@ import { notifications } from "@mantine/notifications";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import useReloadOnNewBuild, { buildSignature } from "./useReloadOnNewBuild";
+import { pendingWrites } from "./pendingWrites";
+
+vi.mock("./pendingWrites", () => ({ pendingWrites: vi.fn(() => 0) }));
 
 const OLD_JS = "/assets/index-old.js";
 const OLD_CSS = "/assets/index-old.css";
@@ -100,6 +103,7 @@ const fire = (target, type) =>
 beforeEach(() => {
   document.head.innerHTML = `<script type="module" src="${OLD_JS}"></script><link rel="stylesheet" href="${OLD_CSS}">`;
   sessionStorage.clear();
+  pendingWrites.mockReturnValue(0);
 });
 
 afterEach(() => {
@@ -189,7 +193,7 @@ describe("useReloadOnNewBuild", () => {
       JSON.stringify({
         from: RUNNING,
         to: sig(NEW_JS, OLD_CSS),
-        at: Date.now() - 5 * MINUTE,
+        at: Date.now() - 29 * MINUTE,
       }),
     );
     serve(indexHtml(NEW_JS, OLD_CSS));
@@ -203,7 +207,7 @@ describe("useReloadOnNewBuild", () => {
   it.each([
     [
       "half an hour has passed",
-      { from: RUNNING, at: Date.now() - 31 * MINUTE },
+      { from: RUNNING, at: Date.now() - 30 * MINUTE },
     ],
     [
       "the earlier reload was from another build (e.g. a rollback since)",
@@ -255,6 +259,20 @@ describe("useReloadOnNewBuild", () => {
     expect(reload).not.toHaveBeenCalled();
 
     act(() => notifications.clean());
+    openPage("another page");
+    expect(reload).toHaveBeenCalledTimes(1);
+  });
+
+  it("waits while a save is still being sent, so a reload doesn't cancel it", async () => {
+    serve(indexHtml(NEW_JS, OLD_CSS));
+    const reload = renderApp();
+
+    await focusTab();
+    pendingWrites.mockReturnValue(1);
+    openPage("next page");
+    expect(reload).not.toHaveBeenCalled();
+
+    pendingWrites.mockReturnValue(0);
     openPage("another page");
     expect(reload).toHaveBeenCalledTimes(1);
   });
