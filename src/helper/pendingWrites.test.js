@@ -67,12 +67,15 @@ describe("pendingWrites", () => {
 
   it("doesn't count reads", async () => {
     const { win, replies } = fakeWindow();
-    xhr(win, "GET").end();
+    const get = xhr(win, "GET");
+    const head = xhr(win, "head");
     const read = win.fetch("/");
     const readWithInit = win.fetch("/", { cache: "no-cache" });
     const lowerCaseRead = win.fetch("/", { method: "get" });
-    xhr(win, "head").end();
+    // Still open: counting reads would show here.
     expect(pendingWrites()).toBe(0);
+    get.end();
+    head.end();
     replies.forEach(({ resolve }) => resolve({ ok: true }));
     await Promise.all([read, readWithInit, lowerCaseRead]);
   });
@@ -83,25 +86,35 @@ describe("pendingWrites", () => {
     expect(pendingWrites()).toBe(0);
   });
 
-  it.each([
-    ["is answered", (reply) => reply.resolve({ ok: true })],
-    ["fails", (reply) => reply.reject(new TypeError("network"))],
-  ])("counts a fetch POST until it %s", async (_, finish) => {
+  it("counts a fetch POST until it is answered, and hands back the reply", async () => {
     const { win, replies } = fakeWindow();
+    const answer = { ok: true };
     const request = win.fetch("/api/x", { method: "post", body: "{}" });
     expect(pendingWrites()).toBe(1);
 
-    finish(replies[0]);
-    await settle(request);
+    replies[0].resolve(answer);
+    await expect(request).resolves.toBe(answer);
+    expect(pendingWrites()).toBe(0);
+  });
+
+  it("counts a fetch POST until it fails, and passes the error on", async () => {
+    const { win, replies } = fakeWindow();
+    const failure = new TypeError("network");
+    const request = win.fetch("/api/x", { method: "post", body: "{}" });
+    expect(pendingWrites()).toBe(1);
+
+    replies[0].reject(failure);
+    await expect(request).rejects.toBe(failure);
     expect(pendingWrites()).toBe(0);
   });
 
   it("reads the method from a Request object", async () => {
     const { win, replies } = fakeWindow();
+    const answer = { ok: true };
     const request = win.fetch({ url: "/api/x", method: "DELETE" });
     expect(pendingWrites()).toBe(1);
-    replies[0].resolve({ ok: true });
-    await settle(request);
+    replies[0].resolve(answer);
+    await expect(request).resolves.toBe(answer);
     expect(pendingWrites()).toBe(0);
   });
 
