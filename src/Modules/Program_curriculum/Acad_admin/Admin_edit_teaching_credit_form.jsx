@@ -41,8 +41,7 @@ function Admin_edit_teaching_credit_form() {
           ? null
           : "Version must look like 1.0 or 1.1",
       discipline: (value) => (!value ? "Discipline is required" : null),
-      programme_type: (value) =>
-        !value ? "Programme type is required" : null,
+      programme_type: (value) => (!value ? "Programme type is required" : null),
     },
   });
 
@@ -90,7 +89,7 @@ function Admin_edit_teaching_credit_form() {
   }, [id]);
 
   const programmeTypeOptions = [
-    { value: "PG", label: "Postgraduate (M.Tech)" },
+    { value: "PG", label: "Postgraduate (PG)" },
     { value: "PHD", label: "Doctor of Philosophy (PhD)" },
   ];
 
@@ -283,7 +282,7 @@ function Admin_edit_teaching_credit_form() {
                           onChange={(event) =>
                             form.setFieldValue(
                               "code",
-                              event.currentTarget.value
+                              event.currentTarget.value,
                             )
                           }
                           error={form.errors.code}
@@ -321,7 +320,7 @@ function Admin_edit_teaching_credit_form() {
                           onChange={(event) =>
                             form.setFieldValue(
                               "name",
-                              event.currentTarget.value
+                              event.currentTarget.value,
                             )
                           }
                           error={form.errors.name}
