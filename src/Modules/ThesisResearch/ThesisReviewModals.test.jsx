@@ -60,6 +60,7 @@ describe("HODReviewModal", () => {
     );
 
     expect(await screen.findByText("Narrow the scope.")).toBeInTheDocument();
+    expect(screen.getByText("Sent back by Dean Academic.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Approve" })).toBeEnabled();
     fireEvent.change(
       screen.getByLabelText("Remarks (if sending back to supervisor)"),
@@ -77,12 +78,24 @@ describe("HODReviewModal", () => {
     );
   });
 
+  it("says a topic came back from the Dean even without remarks", async () => {
+    open(HODReviewModal, topic("dean_rejected"));
+
+    expect(
+      await screen.findByText("Sent back by Dean Academic."),
+    ).toBeInTheDocument();
+    expect(screen.getByText("No remarks were given.")).toBeInTheDocument();
+  });
+
   it("still acts on a topic the supervisor forwarded", async () => {
     open(HODReviewModal, topic("hod_pending"));
 
     expect(
       await screen.findByRole("button", { name: "Approve" }),
     ).toBeInTheDocument();
+    expect(
+      screen.queryByText("Sent back by Dean Academic."),
+    ).not.toBeInTheDocument();
   });
 
   it.each(["hod_rejected", "hod_approved", "dean_approved"])(
@@ -125,6 +138,9 @@ describe("DeanReviewModal", () => {
     expect(await screen.findByText("Graph learning")).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "Send Back to HOD" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByLabelText("Remarks (if sending back to HOD)"),
     ).not.toBeInTheDocument();
   });
 });

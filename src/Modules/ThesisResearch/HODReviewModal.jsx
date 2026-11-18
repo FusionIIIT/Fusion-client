@@ -213,15 +213,24 @@ export default function HODReviewModal({ thesis, onClose, refresh }) {
           </tbody>
         </Table>
 
-        {form.dean_remarks && form.status === "dean_rejected" && (
+        {form.status === "dean_rejected" && (
           <Text
             c="blue"
             style={{ backgroundColor: "#e6f0ff", padding: 10, borderRadius: 4 }}
           >
             <Text fw={500} component="span">
-              Dean's Remarks:
+              Sent back by Dean Academic.
             </Text>{" "}
-            {form.dean_remarks}
+            {form.dean_remarks ? (
+              <>
+                <Text fw={500} component="span">
+                  Dean&apos;s Remarks:
+                </Text>{" "}
+                {form.dean_remarks}
+              </>
+            ) : (
+              "No remarks were given."
+            )}
           </Text>
         )}
 
