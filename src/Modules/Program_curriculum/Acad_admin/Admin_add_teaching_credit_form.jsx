@@ -40,8 +40,7 @@ function Admin_add_teaching_credit_form() {
           ? null
           : "Version must look like 1.0 or 1.1",
       discipline: (value) => (!value ? "Discipline is required" : null),
-      programme_type: (value) =>
-        !value ? "Programme type is required" : null,
+      programme_type: (value) => (!value ? "Programme type is required" : null),
     },
   });
 
@@ -71,7 +70,7 @@ function Admin_add_teaching_credit_form() {
   }, []);
 
   const programmeTypeOptions = [
-    { value: "PG", label: "Postgraduate (M.Tech)" },
+    { value: "PG", label: "Postgraduate (PG)" },
     { value: "PHD", label: "Doctor of Philosophy (PhD)" },
   ];
 
@@ -100,7 +99,7 @@ function Admin_add_teaching_credit_form() {
       });
 
       if (response.ok) {
-        const data = await response.json();
+        await response.json();
 
         notifications.show({
           title: "Teaching Credit Added Successfully!",
@@ -160,7 +159,9 @@ function Admin_add_teaching_credit_form() {
         message: (
           <div>
             <Text size="sm" mb={8}>
-              <strong>Connection error occurred while adding teaching credit.</strong>
+              <strong>
+                Connection error occurred while adding teaching credit.
+              </strong>
             </Text>
             <Text size="xs" c="gray.7">
               Please check your internet connection and try again.
@@ -249,7 +250,7 @@ function Admin_add_teaching_credit_form() {
                           onChange={(event) =>
                             form.setFieldValue(
                               "code",
-                              event.currentTarget.value
+                              event.currentTarget.value,
                             )
                           }
                           error={form.errors.code}
@@ -287,7 +288,7 @@ function Admin_add_teaching_credit_form() {
                           onChange={(event) =>
                             form.setFieldValue(
                               "name",
-                              event.currentTarget.value
+                              event.currentTarget.value,
                             )
                           }
                           error={form.errors.name}
