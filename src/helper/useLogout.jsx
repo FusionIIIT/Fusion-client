@@ -4,6 +4,7 @@ import { showNotification } from "@mantine/notifications";
 import { CheckCircle, XCircle } from "@phosphor-icons/react";
 import axios from "axios";
 import { logoutRoute } from "../routes/dashboardRoutes";
+import { RELOADED_KEY } from "./useReloadOnNewBuild";
 
 const useLogout = () => {
   const navigate = useNavigate();
@@ -29,7 +30,10 @@ const useLogout = () => {
       console.error("Logout error:", err);
     } finally {
       localStorage.clear();
+      // Keep the new-build reload guard, which belongs to the tab, not the session.
+      const reloadGuard = sessionStorage.getItem(RELOADED_KEY);
       sessionStorage.clear();
+      if (reloadGuard) sessionStorage.setItem(RELOADED_KEY, reloadGuard);
       dispatch({ type: "RESET_STORE" });
 
       showNotification(

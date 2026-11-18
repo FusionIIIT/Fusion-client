@@ -22,11 +22,11 @@ function Probe() {
   return <div data-testid="address">{location.pathname + location.search}</div>;
 }
 
-function renderAt(path) {
+function renderAt(path, role = "student") {
   const store = configureStore({
     reducer: { user: userReducer, module: moduleReducer },
   });
-  store.dispatch(setRole("student"));
+  store.dispatch(setRole(role));
   render(
     <Provider store={store}>
       <MantineProvider theme={theme}>
@@ -70,6 +70,12 @@ describe("AcademicPage on a fresh load", () => {
       await waitFor(() => expect(address()).toBe(expected));
     },
   );
+
+  it("doesn't hold staff, who have no programme, behind the loader", async () => {
+    const { address } = renderAt("/academics/no-such-page", "acadadmin");
+
+    await waitFor(() => expect(address()).not.toBe("/academics/no-such-page"));
+  });
 
   it("still sends a UG student off a PG-only address", async () => {
     const { address, programmeLoads } = renderAt(
