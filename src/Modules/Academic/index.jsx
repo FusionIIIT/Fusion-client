@@ -1,4 +1,5 @@
 import { lazy, useEffect, useMemo } from "react";
+import { Center, Loader } from "@mantine/core";
 import { useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -66,15 +67,28 @@ export default function AcademicPage() {
     [role, programmeType],
   );
 
+  // A student's PG/PhD pages exist only once programmeType has loaded, which
+  // happens after the page opens (always on a fresh load). Until then, wait:
+  // otherwise a PG/PhD address is replaced with a UG page and lost.
+  const waitingForProgramme = role === "student" && !programmeType;
+
   const requestedTab = searchParams.get("tab");
   useEffect(() => {
-    if (!requestedTab) return;
+    if (!requestedTab || waitingForProgramme) return;
     const candidates = ACADEMIC_NOTIFICATION_SLUGS[requestedTab] ?? [];
     const target =
       pages.find((p) => candidates.includes(p.slug)) ??
       pages.find((p) => p.title.toLowerCase() === requestedTab.toLowerCase());
     if (target) navigate(`/academics/${target.slug}`, { replace: true });
-  }, [requestedTab, pages, navigate]);
+  }, [requestedTab, pages, navigate, waitingForProgramme]);
+
+  if (waitingForProgramme) {
+    return (
+      <Center mt="xl">
+        <Loader size="sm" />
+      </Center>
+    );
+  }
 
   return (
     <ModuleRoutes

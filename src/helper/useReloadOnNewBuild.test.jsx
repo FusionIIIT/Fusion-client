@@ -10,6 +10,9 @@ const OLD_CSS = "/assets/index-old.css";
 const NEW_JS = "/assets/index-new.js";
 const NEW_CSS = "/assets/index-new.css";
 const KEY = "fusion:reloadedForBuild";
+const sig = (...files) => files.sort().join(" ");
+const RUNNING = sig(OLD_JS, OLD_CSS);
+const MINUTE = 60 * 1000;
 
 const indexHtml = (js, css) =>
   `<!doctype html><html><head>
@@ -34,6 +37,7 @@ function Harness({ reload }) {
     <>
       <button onClick={() => navigate("/academics/next")}>next page</button>
       <button onClick={() => navigate("?tab=2")}>other tab</button>
+      <button onClick={() => navigate("/accounts/login")}>login page</button>
     </>
   );
 }
@@ -42,7 +46,10 @@ Harness.propTypes = { reload: PropTypes.func.isRequired };
 function renderApp() {
   const reload = vi.fn();
   render(
-    <MemoryRouter initialEntries={["/academics/current"]}>
+    <MemoryRouter
+      initialEntries={["/academics/current"]}
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
       <Harness reload={reload} />
     </MemoryRouter>,
   );
@@ -72,6 +79,7 @@ beforeEach(() => {
 afterEach(() => {
   document.head.innerHTML = "";
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
   vi.useRealTimers();
 });
 
@@ -109,7 +117,10 @@ describe("useReloadOnNewBuild", () => {
 
       openPage("next page");
       expect(reload).toHaveBeenCalledTimes(1);
-      expect(sessionStorage.getItem(KEY)).toBe([js, css].sort().join(" "));
+      expect(JSON.parse(sessionStorage.getItem(KEY))).toMatchObject({
+        from: RUNNING,
+        to: sig(js, css),
+      });
     },
   );
 
@@ -145,14 +156,54 @@ describe("useReloadOnNewBuild", () => {
     expect(reload).not.toHaveBeenCalled();
   });
 
-  it("doesn't reload again for a build a reload already failed to bring", async () => {
-    sessionStorage.setItem(KEY, [NEW_JS, OLD_CSS].sort().join(" "));
+  it("doesn't reload again soon for a build a reload already failed to bring", async () => {
+    sessionStorage.setItem(
+      KEY,
+      JSON.stringify({
+        from: RUNNING,
+        to: sig(NEW_JS, OLD_CSS),
+        at: Date.now() - 5 * MINUTE,
+      }),
+    );
     serve(indexHtml(NEW_JS, OLD_CSS));
     const reload = renderApp();
 
     await focusTab();
     openPage("next page");
     expect(reload).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    [
+      "half an hour has passed",
+      { from: RUNNING, at: Date.now() - 31 * MINUTE },
+    ],
+    [
+      "the earlier reload was from another build (e.g. a rollback since)",
+      { from: sig("/assets/index-older.js", OLD_CSS), at: Date.now() },
+    ],
+  ])("tries that build again once %s", async (_, earlier) => {
+    sessionStorage.setItem(
+      KEY,
+      JSON.stringify({ ...earlier, to: sig(NEW_JS, OLD_CSS) }),
+    );
+    serve(indexHtml(NEW_JS, OLD_CSS));
+    const reload = renderApp();
+
+    await focusTab();
+    openPage("next page");
+    expect(reload).toHaveBeenCalledTimes(1);
+  });
+
+  it("leaves the way to the login page alone, so its message stays", async () => {
+    serve(indexHtml(NEW_JS, OLD_CSS));
+    const reload = renderApp();
+
+    await focusTab();
+    openPage("login page");
+    expect(reload).not.toHaveBeenCalled();
+    openPage("next page");
+    expect(reload).toHaveBeenCalledTimes(1);
   });
 
   it.each([
@@ -174,25 +225,27 @@ describe("useReloadOnNewBuild", () => {
     expect(reload).not.toHaveBeenCalled();
   });
 
-  it("checks at most once a minute, and not while the tab is hidden", async () => {
+  it("checks at most once a minute", async () => {
     const fetchMock = serve(indexHtml(OLD_JS, OLD_CSS));
     renderApp();
 
     await focusTab();
     await focusTab();
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
 
-    fetchMock.mockClear();
-    const visibility = vi
-      .spyOn(document, "visibilityState", "get")
-      .mockReturnValue("hidden");
+  it("doesn't check while the tab is hidden", async () => {
     vi.useFakeTimers();
+    vi.spyOn(document, "visibilityState", "get").mockReturnValue("hidden");
+    const fetchMock = serve(indexHtml(NEW_JS, OLD_CSS));
+    renderApp();
+
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(10 * 60 * 1000);
+      await vi.advanceTimersByTimeAsync(11 * MINUTE);
+      window.dispatchEvent(new Event("focus"));
       document.dispatchEvent(new Event("visibilitychange"));
     });
     expect(fetchMock).not.toHaveBeenCalled();
-    visibility.mockRestore();
   });
 
   it("checks every five minutes while the tab stays open", async () => {
@@ -201,7 +254,11 @@ describe("useReloadOnNewBuild", () => {
     const reload = renderApp();
 
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(5 * 60 * 1000);
+      await vi.advanceTimersByTimeAsync(4 * MINUTE);
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(MINUTE);
     });
     expect(fetchMock).toHaveBeenCalledTimes(1);
     openPage("next page");

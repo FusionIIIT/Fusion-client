@@ -5,11 +5,16 @@ import { useLocation } from "react-router-dom";
 // new one is deployed. This hook asks the server for index.html now and then
 // and, once that names different build files, loads the next page the user
 // opens fresh. It never reloads the page being worked on, so nothing typed is
-// lost: in-app navigation drops the old page anyway.
+// lost: in-app navigation drops the old page anyway. The way to the login page
+// is left alone, so its "session expired" or "logged out" message stays; the
+// page after login loads fresh instead.
 
 const CHECK_EVERY_MS = 5 * 60 * 1000;
 const MIN_GAP_MS = 60 * 1000;
-const RELOADED_FOR_KEY = "fusion:reloadedForBuild";
+const RELOADED_KEY = "fusion:reloadedForBuild";
+// A reload that didn't bring the new build isn't retried for this long.
+const RETRY_AFTER_MS = 30 * 60 * 1000;
+const LOGIN_PATH = "/accounts/login";
 const BUILD_FILES =
   'script[src*="/assets/"], link[rel="stylesheet"][href*="/assets/"]';
 
@@ -30,17 +35,28 @@ export async function fetchLatestSignature() {
   return buildSignature(new DOMParser().parseFromString(html, "text/html"));
 }
 
-function readReloadedFor() {
+// True when this tab already reloaded from `running` to get `latest` a short
+// while ago and still runs `running`: something between it and the server
+// served the old page, so another reload now would only repeat that.
+function reloadAlreadyFailed(running, latest) {
   try {
-    return sessionStorage.getItem(RELOADED_FOR_KEY);
+    const last = JSON.parse(sessionStorage.getItem(RELOADED_KEY));
+    return (
+      last?.from === running &&
+      last?.to === latest &&
+      Date.now() - last.at < RETRY_AFTER_MS
+    );
   } catch {
-    return null;
+    return false;
   }
 }
 
-function rememberReloadFor(signature) {
+function rememberReload(from, to) {
   try {
-    sessionStorage.setItem(RELOADED_FOR_KEY, signature);
+    sessionStorage.setItem(
+      RELOADED_KEY,
+      JSON.stringify({ from, to, at: Date.now() }),
+    );
   } catch {
     // Storage blocked: the reload still happens, only the loop guard is lost.
   }
@@ -50,15 +66,14 @@ export default function useReloadOnNewBuild({
   reload = () => window.location.reload(),
 } = {}) {
   const { pathname } = useLocation();
+  const running = useRef("");
   const newBuild = useRef("");
-  const previousPath = useRef(pathname);
 
   useEffect(() => {
-    const running = buildSignature(document);
-    if (!running) return undefined;
+    running.current = buildSignature(document);
+    if (!running.current) return undefined;
 
     let lastCheck = 0;
-    let stopped = false;
     const check = async () => {
       const now = Date.now();
       if (
@@ -71,14 +86,10 @@ export default function useReloadOnNewBuild({
       lastCheck = now;
       try {
         const latest = await fetchLatestSignature();
-        // Skip a build this tab already reloaded for and still didn't get
-        // (something between us and the server served the old page), so it
-        // can't reload on every page change.
         if (
-          stopped ||
           !latest ||
-          latest === running ||
-          readReloadedFor() === latest
+          latest === running.current ||
+          reloadAlreadyFailed(running.current, latest)
         ) {
           return;
         }
@@ -95,18 +106,16 @@ export default function useReloadOnNewBuild({
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("focus", check);
     return () => {
-      stopped = true;
       clearInterval(timer);
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("focus", check);
     };
   }, []);
 
+  // Runs when the path changes. On the first render no new build is known yet.
   useEffect(() => {
-    if (pathname === previousPath.current) return;
-    previousPath.current = pathname;
-    if (!newBuild.current) return;
-    rememberReloadFor(newBuild.current);
+    if (!newBuild.current || pathname === LOGIN_PATH) return;
+    rememberReload(running.current, newBuild.current);
     reload();
   }, [pathname]);
 }
