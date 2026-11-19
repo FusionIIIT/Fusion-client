@@ -15,18 +15,31 @@ const pointer = {
   numFmt: "0.0",
 };
 
-// The discipline and semester columns only appear when the report spans more
-// than one of them, i.e. when that filter was left empty.
-export const spiCpiColumns = ({ discipline, semester }) => [
+// TU and TP (total credits and total points behind the CPI, as on the result
+// sheet) read as numbers, with no trailing zeros: 148, 1000.3.
+const total = {
+  format: (value) =>
+    value === null || value === undefined
+      ? "-"
+      : String(Number(value.toFixed(2))),
+};
+
+// The discipline column is always shown. The semester column only appears when
+// the report spans more than one semester, i.e. when none was chosen.
+export const spiCpiColumns = ({ semester }) => [
   { key: "roll_no", label: "Roll No" },
   { key: "student_name", label: "Name" },
-  ...(discipline ? [] : [{ key: "discipline", label: "Discipline" }]),
+  { key: "discipline", label: "Discipline" },
   ...(semester
     ? []
     : [{ key: "semester", label: "Semester", format: (v) => v ?? "-" }]),
   { key: "spi", label: "SPI", ...pointer },
   { key: "cpi", label: "CPI", ...pointer },
+  { key: "tu", label: "TU", ...total },
+  { key: "tp", label: "TP", ...total },
 ];
+
+const PROGRAMME_LABELS = { UG: "UG", PG: "PG", PHD: "PhD" };
 
 const asOptions = (values) =>
   (values || []).map((v) => ({ value: String(v), label: String(v) }));
@@ -42,6 +55,7 @@ const optional = (text) => (
 
 export default function SpiCpiReport({ filters }) {
   const [batch, setBatch] = useState(null);
+  const [programme, setProgramme] = useState(null);
   const [batchId, setBatchId] = useState(null);
   const [semester, setSemester] = useState(null);
   const [result, setResult] = useState(null);
@@ -50,13 +64,29 @@ export default function SpiCpiReport({ filters }) {
   const disciplines = useMemo(
     () =>
       (filters.discipline_batches || [])
-        .filter((b) => String(b.year) === batch)
+        .filter(
+          (b) =>
+            String(b.year) === batch &&
+            (!programme || b.category === programme),
+        )
         .map((b) => ({ value: String(b.id), label: b.label })),
-    [filters, batch],
+    [filters, batch, programme],
   );
 
+  const programmes = (filters.programme_categories || []).map((c) => ({
+    value: c,
+    label: PROGRAMME_LABELS[c] || c,
+  }));
+
+  // A chosen discipline belongs to one batch and programme, so it is cleared
+  // when either changes.
   const pickBatch = (value) => {
     setBatch(value);
+    setBatchId(null);
+  };
+
+  const pickProgramme = (value) => {
+    setProgramme(value);
     setBatchId(null);
   };
 
@@ -66,6 +96,7 @@ export default function SpiCpiReport({ filters }) {
       const token = localStorage.getItem("authToken");
       const params = {
         batch,
+        ...(programme ? { programme_type: programme } : {}),
         ...(batchId ? { batch_id: batchId } : {}),
         ...(semester ? { semester } : {}),
       };
@@ -76,7 +107,7 @@ export default function SpiCpiReport({ filters }) {
       const label = disciplines.find((d) => d.value === batchId)?.label;
       // What was fetched, so the columns and file name do not follow later
       // changes to the filters.
-      setResult({ ...data, batch, discipline: label, semester });
+      setResult({ ...data, batch, programme, discipline: label, semester });
       if (!data.count) {
         showNotification({
           title: "Nothing found",
@@ -99,6 +130,7 @@ export default function SpiCpiReport({ filters }) {
     ? [
         "spi_cpi",
         result.batch,
+        result.programme && PROGRAMME_LABELS[result.programme],
         result.discipline?.replace(/\W+/g, "_"),
         result.semester ? `sem${result.semester}` : "latest",
       ]
@@ -116,6 +148,15 @@ export default function SpiCpiReport({ filters }) {
           value={batch}
           onChange={pickBatch}
           style={{ flex: 1, minWidth: 130 }}
+        />
+        <Select
+          label={optional("Programme")}
+          placeholder="All programmes"
+          data={programmes}
+          value={programme}
+          onChange={pickProgramme}
+          clearable
+          style={{ flex: 1, minWidth: 140 }}
         />
         <Select
           label={optional("Discipline")}
@@ -167,10 +208,11 @@ export default function SpiCpiReport({ filters }) {
         />
       ) : (
         <Text size="sm" c="dimmed">
-          Choose a batch, and a discipline or semester if you want one, then
-          fetch. Without a semester, each student&apos;s latest term with grades
-          is used, as the last row of their transcript: a summer term after
-          their latest semester shows as &quot;Summer 2&quot; and so on.
+          Choose a batch, and a programme, discipline or semester if you want
+          one, then fetch. Without a semester, each student&apos;s latest term
+          with grades is used, as the last row of their transcript: a summer
+          term after their latest semester shows as &quot;Summer 2&quot; and so
+          on.
         </Text>
       )}
     </Stack>
@@ -181,11 +223,13 @@ SpiCpiReport.propTypes = {
   filters: PropTypes.shape({
     batches: PropTypes.arrayOf(PropTypes.number),
     semesters: PropTypes.arrayOf(PropTypes.number),
+    programme_categories: PropTypes.arrayOf(PropTypes.string),
     discipline_batches: PropTypes.arrayOf(
       PropTypes.shape({
         id: PropTypes.number,
         year: PropTypes.number,
         label: PropTypes.string,
+        category: PropTypes.string,
       }),
     ),
   }).isRequired,
