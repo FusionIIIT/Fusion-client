@@ -11,6 +11,8 @@ import RemainingCoreGradesReport from "./reports/RemainingCoreGradesReport";
 import BatchWiseStudentCountReport from "./reports/BatchWiseStudentCountReport";
 import BranchWiseStudentCountReport from "./reports/BranchWiseStudentCountReport";
 import SpiCpiReport from "./reports/SpiCpiReport";
+import ToppersReport from "./reports/ToppersReport";
+import CategoryCountReport from "./reports/CategoryCountReport";
 
 // One entry per report. Adding a report means adding an entry here; the list
 // page and the report page both read from this.
@@ -113,6 +115,23 @@ export const DATABASE_REPORTS = [
       "Each student's SPI and CPI for a semester, or for their latest term with grades, as on the transcript",
     filters: "Batch, discipline (optional), semester (optional)",
     Component: SpiCpiReport,
+  },
+  {
+    id: "toppers",
+    title: "Toppers",
+    summary:
+      "The top 5, 10, 15 or 20 students by CPI or SPI, in each discipline or across the batch, with SPI, CPI, TU and TP",
+    filters:
+      "Batch, top 5/10/15/20, programme, discipline and semester (optional)",
+    Component: ToppersReport,
+  },
+  {
+    id: "category-wise-student-count",
+    title: "Category Wise Student Count",
+    summary:
+      "Students of a batch in each category (General, EWS, OBC, SC, ST) and with PwD, for each programme and discipline",
+    filters: "Batch, programme, discipline and gender (optional)",
+    Component: CategoryCountReport,
   },
 ];
 

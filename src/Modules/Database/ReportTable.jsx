@@ -79,9 +79,27 @@ const SORT_ICON = {
   none: IconSelector,
 };
 
+// The total row of a report that sums some of its columns: each summed column
+// adds up the rows given, and the first column not summed reads "Total".
+export function totalRow(columns, rows, keys) {
+  if (!keys?.length) return null;
+  const label = columns.find((column) => !keys.includes(column.key))?.key;
+  return Object.fromEntries(
+    columns.map((column) => {
+      if (keys.includes(column.key)) {
+        return [
+          column.key,
+          rows.reduce((sum, row) => sum + (Number(row[column.key]) || 0), 0),
+        ];
+      }
+      return [column.key, column.key === label ? "Total" : ""];
+    }),
+  );
+}
+
 // A workbook rather than a csv, so the export carries the ruled grid and
 // header the office's other exports have. exceljs is lazy-loaded.
-async function writeWorkbook(columns, rows, filename, sheetName) {
+async function writeWorkbook(columns, rows, filename, sheetName, total) {
   const ExcelJS = (await import("exceljs")).default;
   const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet(sheetName.slice(0, 31) || "Report");
@@ -104,6 +122,10 @@ async function writeWorkbook(columns, rows, filename, sheetName) {
       ),
     });
   });
+
+  if (total) {
+    sheet.addRow({ __serial__: "", ...total }).font = { bold: true };
+  }
 
   const thin = { style: "thin", color: { argb: "FF9AA5B1" } };
   sheet.eachRow((row, rowNumber) => {
@@ -139,7 +161,15 @@ async function writeWorkbook(columns, rows, filename, sheetName) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-export default function ReportTable({ columns, rows, filename, badges = [] }) {
+const NO_TOTALS = [];
+
+export default function ReportTable({
+  columns,
+  rows,
+  filename,
+  badges = [],
+  totals = NO_TOTALS,
+}) {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState({ key: null, direction: "none" });
 
@@ -170,12 +200,24 @@ export default function ReportTable({ columns, rows, filename, badges = [] }) {
     return sortKey ? sortRows(found, sortKey, sort.direction) : found;
   }, [columns, rows, query, sortKey, sort.direction]);
 
+  // Totals add up the rows shown, so a search gives the total of what it found.
+  const total = useMemo(
+    () => totalRow(columns, visible, totals),
+    [columns, visible, totals],
+  );
+
   const [exporting, setExporting] = useState(false);
 
   const download = async () => {
     setExporting(true);
     try {
-      await writeWorkbook(columns, visible, `${filename}.xlsx`, filename);
+      await writeWorkbook(
+        columns,
+        visible,
+        `${filename}.xlsx`,
+        filename,
+        total,
+      );
     } finally {
       setExporting(false);
     }
@@ -271,6 +313,16 @@ export default function ReportTable({ columns, rows, filename, badges = [] }) {
                 </Table.Tr>
               ))}
             </Table.Tbody>
+            {total && (
+              <Table.Tfoot style={{ position: "sticky", bottom: 0 }}>
+                <Table.Tr>
+                  <Table.Td />
+                  {columns.map((column) => (
+                    <Table.Td key={column.key}>{total[column.key]}</Table.Td>
+                  ))}
+                </Table.Tr>
+              </Table.Tfoot>
+            )}
           </Table>
         </ScrollArea.Autosize>
       )}
@@ -292,4 +344,6 @@ ReportTable.propTypes = {
   badges: PropTypes.arrayOf(
     PropTypes.shape({ label: PropTypes.string, color: PropTypes.string }),
   ),
+  // Keys of columns to add up in a total row under the table and the Excel.
+  totals: PropTypes.arrayOf(PropTypes.string),
 };
