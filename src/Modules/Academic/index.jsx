@@ -33,6 +33,7 @@ const COMPONENTS = {
   adminPhdCourseRequests: lazy(() => import("./AdminPhDCourseRequests")),
 
   studentAlumniHome: lazy(() => import("./AlumniHome")),
+  studentWithdrawnHome: lazy(() => import("./AlumniHome")),
   studentRegisteredCourses: lazy(() => import("./RegisteredCourses")),
   studentAvailableCourses: lazy(() => import("./AvailableCourses")),
   studentPreRegistration: lazy(() => import("./PreRegistration")),

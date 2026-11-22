@@ -471,4 +471,25 @@ describe("an alumnus's sidebar", () => {
       "/examination/result",
     ]);
   });
+
+  it("gives a withdrawn student their own page", () => {
+    const links = linksOf(
+      buildNavGroups({
+        role: "student",
+        accessibleModules: {
+          course_registration: true,
+          examinations: true,
+        },
+        programmeType: "UG",
+        studentStatus: "WITHDRAWN",
+      }),
+    );
+    expect(links.map((l) => [l.to, l.label])).toEqual([
+      ["/dashboard", "Home"],
+      ["/academics/withdrawn", "Withdrawn"],
+      // A group with one page is shown under the group's name.
+      ["/academics/registered-courses", "Registration"],
+      ["/examination/result", "Results"],
+    ]);
+  });
 });

@@ -23,14 +23,16 @@ const WITHIN = [
 ];
 
 // The top ``top`` students by ``by`` (cpi or spi), in each discipline or
-// across all the rows. Students without grades are left out. Equal values
+// across all the rows. Students without grades, and withdrawn students, are
+// left out. Equal values
 // share a rank and the next rank skips (1, 1, 3), so everyone tied at the
 // last place is kept and a list can be longer than ``top``. Disciplines come
 // in name order, each best first, ties by roll number.
 export function rankToppers(rows, { by, top, within }) {
   const groups = new Map();
   rows
-    .filter((row) => typeof row[by] === "number")
+    // Withdrawn students are not ranked with their batch.
+    .filter((row) => typeof row[by] === "number" && row.status !== "Withdrawn")
     .forEach((row) => {
       const key = within === "discipline" ? (row.discipline ?? "") : "";
       if (!groups.has(key)) groups.set(key, []);

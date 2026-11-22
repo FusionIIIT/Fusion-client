@@ -76,6 +76,20 @@ describe("rankToppers", () => {
     ]);
   });
 
+  it("leaves withdrawn students out", () => {
+    const rows = [
+      { ...row("24BCS010", "B.Tech CSE", 9.9), status: "Withdrawn" },
+      { ...row("24BCS011", "B.Tech CSE", 9.0), status: "Present" },
+      { ...row("24BCS012", "B.Tech CSE", 8.0), status: "Alumni" },
+    ];
+    expect(
+      pick(rankToppers(rows, { by: "cpi", top: 5, within: "all" })),
+    ).toEqual([
+      ["24BCS011", 1],
+      ["24BCS012", 2],
+    ]);
+  });
+
   it("ranks across the whole selection, or by SPI", () => {
     expect(
       pick(rankToppers(ROWS, { by: "cpi", top: 2, within: "all" })),
