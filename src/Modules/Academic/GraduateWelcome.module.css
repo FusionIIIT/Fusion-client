@@ -1,0 +1,90 @@
+/* A degree-certificate page: white paper, a navy edge, a gold inner
+   frame, a serif headline. The frame is the one ornament; the rest stays
+   quiet. */
+.paper {
+  --gw-navy: #1f3a6e;
+  --gw-gold: #a8822e;
+  --gw-ink: #1c2433;
+  --gw-muted: #5a6273;
+
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 10px;
+  background: #ffffff;
+  border: 1px solid var(--gw-navy);
+  border-radius: 4px;
+}
+
+.frame {
+  border: 5px double var(--gw-gold);
+  padding: clamp(28px, 6vw, 56px) clamp(16px, 5vw, 64px);
+  text-align: center;
+  color: var(--gw-ink);
+}
+
+.crest {
+  display: block;
+  width: clamp(64px, 12vw, 96px);
+  height: auto;
+  margin: 0 auto 20px;
+}
+
+.headline {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-weight: 700;
+  font-size: clamp(28px, 4.4vw, 44px);
+  line-height: 1.15;
+  color: var(--gw-navy);
+  overflow-wrap: anywhere;
+}
+
+.citation {
+  max-width: 34em;
+  margin: 14px auto 0;
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-size: clamp(17px, 2.2vw, 21px);
+  line-height: 1.55;
+}
+
+.rule {
+  width: 120px;
+  height: 0;
+  margin: 28px auto;
+  border: 0;
+  border-top: 2px solid var(--gw-gold);
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px 48px;
+  margin: 0;
+}
+
+.fact dt {
+  font-size: 13px;
+  color: var(--gw-muted);
+}
+
+.fact dd {
+  margin: 2px 0 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.wish {
+  max-width: 34em;
+  margin: 32px auto 0;
+  color: var(--gw-muted);
+  line-height: 1.6;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+}

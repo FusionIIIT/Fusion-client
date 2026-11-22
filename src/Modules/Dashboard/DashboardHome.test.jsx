@@ -37,10 +37,19 @@ const READ_ONLY =
   "Your account is read-only. You can view your registered courses and results.";
 
 describe("DashboardHome for a student", () => {
-  it("opens on the Alumni page for an alumnus", () => {
+  it("congratulates an alumnus and leaves out the credit summary", () => {
     show("ALUMNI");
+    expect(
+      screen.getByRole("heading", { name: "Congratulations, Asha Rao" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("credit summary")).not.toBeInTheDocument();
+  });
+
+  it("shows a withdrawn student the read-only card and their credits", () => {
+    show("WITHDRAWN");
     expect(screen.getByText(READ_ONLY)).toBeInTheDocument();
     expect(screen.getByText("credit summary")).toBeInTheDocument();
+    expect(screen.queryByText(/Congratulations/)).not.toBeInTheDocument();
   });
 
   it("shows a present student only their credit standing", () => {
