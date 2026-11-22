@@ -192,6 +192,9 @@ export const listBatchesRoute = `${host}/academic-procedures/api/acad/batch_chan
 export const listStudentsRoute = `${host}/academic-procedures/api/acad/batch_change/students/`;
 export const applyBatchRoute = `${host}/academic-procedures/api/acad/batch_change/apply/`;
 
+export const studentStatusRoute = `${host}/aims/api/student-status/`;
+export const withdrawStudentRoute = `${host}/aims/api/student-status/withdraw/`;
+export const readmitStudentRoute = `${host}/aims/api/student-status/readmit/`;
 export const listStudentsPromoteRoute = `${host}/academic-procedures/api/acad/promote/students/`;
 export const applyPromoteRoute = `${host}/academic-procedures/api/acad/promote/apply/`;
 export const applyDemoteRoute = `${host}/academic-procedures/api/acad/demote/apply/`;

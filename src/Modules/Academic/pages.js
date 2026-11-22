@@ -162,6 +162,14 @@ export const ACADEMIC_PAGES = [
     roles: SCOPED_ADMIN_ROLES,
     desktopOnly: true,
   },
+  {
+    key: "adminStudentStatus",
+    slug: "student-status",
+    title: "Student Status",
+    icon: "UserCheck",
+    group: "Student Records",
+    roles: SCOPED_ADMIN_ROLES,
+  },
 
   {
     key: "adminAcademicCalendar",

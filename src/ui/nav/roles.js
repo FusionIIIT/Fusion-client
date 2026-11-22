@@ -58,6 +58,14 @@ export function isLockedStatus(status) {
   );
 }
 
+// "ALUMNI" -> "Alumni"
+export function statusLabel(status) {
+  const s = String(status ?? "")
+    .trim()
+    .toLowerCase();
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 export function pagesForRole(pages, role, flags = {}) {
   const locked =
     matchesRole(role, STUDENT_ROLES) && isLockedStatus(flags.studentStatus);
