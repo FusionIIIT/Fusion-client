@@ -81,10 +81,11 @@ const COMPONENTS = {
 export default function ThesisResearchPage() {
   const role = useSelector((state) => state.user.role);
   const programmeType = useSelector((state) => state.user.programmeType);
+  const studentStatus = useSelector((state) => state.user.studentStatus);
 
   const pages = useMemo(
-    () => pagesForRole(THESIS_PAGES, role, { programmeType }),
-    [role, programmeType],
+    () => pagesForRole(THESIS_PAGES, role, { programmeType, studentStatus }),
+    [role, programmeType, studentStatus],
   );
 
   if (role === "student" && !programmeType) {

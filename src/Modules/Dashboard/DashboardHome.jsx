@@ -7,11 +7,14 @@ import { buildNavGroups } from "../../ui/nav/navigation";
 import { flattenNavLinks } from "../../ui/nav/match";
 import PendingWork from "./PendingWork";
 import StudentCreditSummary from "./StudentCreditSummary";
+import AlumniHome from "../Academic/AlumniHome";
+import { isLockedStatus } from "../../ui/nav/roles";
 
 export default function DashboardHome() {
   const role = useSelector((state) => state.user.role);
   const username = useSelector((state) => state.user.username);
   const programmeType = useSelector((state) => state.user.programmeType);
+  const studentStatus = useSelector((state) => state.user.studentStatus);
   const accessibleModules = useSelector(
     (state) => state.user.currentAccessibleModules,
   );
@@ -19,18 +22,28 @@ export default function DashboardHome() {
   const reachablePaths = useMemo(
     () =>
       flattenNavLinks(
-        buildNavGroups({ role, accessibleModules, programmeType }),
+        buildNavGroups({
+          role,
+          accessibleModules,
+          programmeType,
+          studentStatus,
+        }),
       ).map((link) => link.to),
-    [role, accessibleModules, programmeType],
+    [role, accessibleModules, programmeType, studentStatus],
   );
 
   if (role === "student") {
+    // An alumnus (or other stopped student) lands on their Alumni page first.
+    const locked = isLockedStatus(studentStatus);
     return (
       <ModulePage
         title="Dashboard"
         subtitle="Your credit standing towards the degree"
       >
-        <StudentCreditSummary />
+        <Stack gap="lg">
+          {locked && <AlumniHome />}
+          <StudentCreditSummary />
+        </Stack>
       </ModulePage>
     );
   }

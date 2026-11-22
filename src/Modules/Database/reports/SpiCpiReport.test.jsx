@@ -189,4 +189,28 @@ describe("SpiCpiReport", () => {
       screen.getAllByRole("option").map((option) => option.textContent),
     ).toEqual(["UG", "PG", "PhD"]);
   });
+
+  it("adds a Status column only when the batch has alumni", async () => {
+    axios.get.mockResolvedValueOnce({
+      data: {
+        count: 2,
+        students: 2,
+        with_grades: 2,
+        rows: [
+          { ...ROWS[1], status: "Present" },
+          { ...ROWS[0], roll_no: "24BCS009", status: "Alumni" },
+        ],
+      },
+    });
+    choose("Batch", "2024");
+    fireEvent.click(screen.getByRole("button", { name: "Fetch" }));
+    expect(await screen.findByText("24BCS009")).toBeInTheDocument();
+    expect(headers().slice(1, 5)).toEqual([
+      "Roll No",
+      "Name",
+      "Discipline",
+      "Status",
+    ]);
+    expect(screen.getByText("Alumni")).toBeInTheDocument();
+  });
 });

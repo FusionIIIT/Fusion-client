@@ -90,8 +90,9 @@ import "./programCurriculum.shared.css";
 
 function NavTab() {
   const role = useSelector((state) => state.user.role);
+  const studentStatus = useSelector((state) => state.user.studentStatus);
   const { pathname } = useLocation();
-  const pages = pagesForRole(CURRICULUM_PAGES, role);
+  const pages = pagesForRole(CURRICULUM_PAGES, role, { studentStatus });
   const options = { base: CURRICULUM_BASE, pages };
   const current = sidebarPageFor(pathname, options);
 

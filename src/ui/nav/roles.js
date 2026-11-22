@@ -46,9 +46,24 @@ export function matchesRole(role, allowed) {
   );
 }
 
+// A student with one of these statuses has stopped (alumni, withdrawn, ...):
+// the account is read-only and keeps only the pages marked keepWhenLocked.
+export const LOCKED_STATUSES = ["ALUMNI", "WITHDRAWN", "ARCHIVED", "LEFT"];
+
+export function isLockedStatus(status) {
+  return LOCKED_STATUSES.includes(
+    String(status ?? "")
+      .trim()
+      .toUpperCase(),
+  );
+}
+
 export function pagesForRole(pages, role, flags = {}) {
+  const locked =
+    matchesRole(role, STUDENT_ROLES) && isLockedStatus(flags.studentStatus);
   return pages.filter((p) => {
     if (!matchesRole(role, p.roles)) return false;
+    if (locked && !p.keepWhenLocked) return false;
     return p.when ? p.when(flags) : true;
   });
 }

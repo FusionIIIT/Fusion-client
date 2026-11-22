@@ -5,6 +5,7 @@ import reducer, {
   setCurrentAccessibleModules,
   setPluggedNavigation,
   setRole,
+  setStudentStatus,
 } from "./userslice";
 
 const placement = [
@@ -32,5 +33,14 @@ describe("the acting role's own sidebar", () => {
   it("draws nothing for a role that was granted nothing", () => {
     expect(stateFor("faculty").currentPluggedNavigation).toEqual([]);
     expect(stateFor("faculty").currentAccessibleModules).toEqual({});
+  });
+});
+
+describe("the student's status", () => {
+  it("starts unknown and keeps what auth/me says", () => {
+    expect(reducer(undefined, { type: "init" }).studentStatus).toBeNull();
+    expect(reducer(undefined, setStudentStatus("ALUMNI")).studentStatus).toBe(
+      "ALUMNI",
+    );
   });
 });
