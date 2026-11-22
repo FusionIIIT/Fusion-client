@@ -278,7 +278,7 @@ export default function MediumOfInstructionCertificate() {
                   </strong>{" "}
                   (Roll No. {preview.student.roll_number}),{" "}
                   {preview.student.relation} Mr. {preview.student.father_name},
-                  is a student of{" "}
+                  {preview.student.verb || "is"} a student of{" "}
                   {ordinalWithSuperscript(preview.student.year_ordinal)} Year (
                   {ordinalWithSuperscript(preview.student.semester_ordinal)}{" "}
                   Semester) <strong>{preview.student.programme_short}</strong>{" "}
