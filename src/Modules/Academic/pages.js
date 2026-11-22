@@ -1,5 +1,6 @@
 import {
   FACULTY_ROLES,
+  isLockedStatus,
   programmesForRole,
   SCOPED_ADMIN_ROLES,
   STUDENT_ROLES,
@@ -190,6 +191,16 @@ export const ACADEMIC_PAGES = [
     desktopOnly: true,
   },
 
+  {
+    // A locked student's landing page, first so the module opens on it.
+    key: "studentAlumniHome",
+    slug: "alumni",
+    title: "Alumni",
+    icon: "GraduationCap",
+    roles: STUDENT_ROLES,
+    keepWhenLocked: true,
+    when: (flags) => isLockedStatus(flags.studentStatus),
+  },
   {
     key: "studentRegisteredCourses",
     slug: "registered-courses",

@@ -33,10 +33,14 @@ const total = {
 
 // The discipline column is always shown. The semester column only appears when
 // the report spans more than one semester, i.e. when none was chosen.
-export const spiCpiColumns = ({ semester }) => [
+// Status (Present, Alumni, ...) is shown only when someone is not present.
+export const spiCpiColumns = ({ semester, rows = [] }) => [
   { key: "roll_no", label: "Roll No" },
   { key: "student_name", label: "Name" },
   { key: "discipline", label: "Discipline" },
+  ...(rows.some((row) => row.status && row.status !== "Present")
+    ? [{ key: "status", label: "Status" }]
+    : []),
   ...(semester
     ? []
     : [{ key: "semester", label: "Semester", format: (v) => v ?? "-" }]),

@@ -466,6 +466,7 @@ describe("an alumnus's sidebar", () => {
     );
     expect(links.map((l) => l.to)).toEqual([
       "/dashboard",
+      "/academics/alumni",
       "/academics/registered-courses",
       "/examination/result",
     ]);

@@ -31,6 +31,7 @@ const COMPONENTS = {
   adminFeedbackView: lazy(() => import("./FeedbackForm/AdminFeedbackView")),
   adminPhdCourseRequests: lazy(() => import("./AdminPhDCourseRequests")),
 
+  studentAlumniHome: lazy(() => import("./AlumniHome")),
   studentRegisteredCourses: lazy(() => import("./RegisteredCourses")),
   studentAvailableCourses: lazy(() => import("./AvailableCourses")),
   studentPreRegistration: lazy(() => import("./PreRegistration")),
