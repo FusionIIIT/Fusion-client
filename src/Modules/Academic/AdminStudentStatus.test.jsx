@@ -5,7 +5,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import AdminStudentStatus from "./AdminStudentStatus";
 import {
+  cancelSemesterDropRoute,
   readmitStudentRoute,
+  recordSemesterDropRoute,
   studentStatusRoute,
   withdrawStudentRoute,
 } from "../../routes/academicRoutes";
@@ -20,7 +22,7 @@ const NO_BLOCKERS = {
   final_registration: [],
 };
 
-const record = (status, history = []) => ({
+const record = (status, history = [], drops = []) => ({
   roll_no: "23BEC020",
   name: "Asha Rao",
   discipline: "B.Tech ECE",
@@ -29,7 +31,21 @@ const record = (status, history = []) => ({
   status,
   blockers: NO_BLOCKERS,
   history,
+  semesters: [1, 2, 3, 4, 5, 6, 7, 8],
+  drops,
 });
+
+const LIVE_DROP = {
+  id: 7,
+  semester_no: 5,
+  academic_year: "2025-26",
+  reason: "Medical leave",
+  recorded_by: "skjain",
+  recorded_at: "2026-11-22T10:00:00+05:30",
+  cancelled_by: null,
+  cancelled_at: null,
+  cancel_reason: "",
+};
 
 const WITHDRAWN_ENTRY = {
   action: "withdraw",
@@ -211,5 +227,122 @@ describe("AdminStudentStatus", () => {
     expect(screen.getByText("Alumni")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Withdraw" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Re-admit" })).toBeNull();
+  });
+
+  it("says when no semester was dropped", async () => {
+    axios.get.mockResolvedValue({ data: record("PRESENT") });
+    await lookUp();
+    expect(screen.getByText("No semester dropped.")).toBeInTheDocument();
+  });
+
+  it("records a semester drop, the academic year following the batch", async () => {
+    axios.get.mockResolvedValue({ data: record("PRESENT") });
+    axios.post.mockResolvedValue({
+      data: record("PRESENT", [], [LIVE_DROP]),
+    });
+    await lookUp();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Record semester drop" }),
+    );
+    fireEvent.change(
+      await screen.findByRole("combobox", { name: "Semester" }),
+      { target: { value: "5" } },
+    );
+    expect(screen.getByRole("textbox", { name: "Academic year" })).toHaveValue(
+      "2025-26",
+    );
+    await give("Medical leave", "Record drop");
+    await waitFor(() =>
+      expect(axios.post).toHaveBeenCalledWith(
+        recordSemesterDropRoute,
+        {
+          roll_no: "23BEC020",
+          semester_no: 5,
+          academic_year: "2025-26",
+          reason: "Medical leave",
+        },
+        HEADERS,
+      ),
+    );
+    expect(await screen.findByText("Medical leave")).toBeInTheDocument();
+    expect(screen.getByText("Dropped")).toBeInTheDocument();
+  });
+
+  it("lists what is in the way of a drop", async () => {
+    axios.get.mockResolvedValue({ data: record("PRESENT") });
+    axios.post.mockRejectedValue({
+      response: {
+        data: {
+          detail:
+            "Semester 5 of 23BEC020 is not empty. Clear these first, then drop it.",
+          blockers: {
+            registrations: ["EC5001"],
+            pre_registration: true,
+            final_registration: false,
+          },
+        },
+      },
+    });
+    await lookUp();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Record semester drop" }),
+    );
+    fireEvent.change(
+      await screen.findByRole("combobox", { name: "Semester" }),
+      { target: { value: "5" } },
+    );
+    await give("Medical leave", "Record drop");
+    expect(
+      await screen.findByText(
+        "Semester 5 of 23BEC020 is not empty. Clear these first, then drop it.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Course registrations: EC5001"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Pre-registration choices")).toBeInTheDocument();
+    expect(screen.queryByText("Final registration")).toBeNull();
+  });
+
+  it("cancels a drop with a reason, keeping it as cancelled", async () => {
+    axios.get.mockResolvedValue({
+      data: record("PRESENT", [], [LIVE_DROP]),
+    });
+    axios.post.mockResolvedValue({
+      data: record(
+        "PRESENT",
+        [],
+        [
+          {
+            ...LIVE_DROP,
+            cancelled_by: "skjain",
+            cancelled_at: "2026-11-23T10:00:00+05:30",
+            cancel_reason: "Recorded by mistake",
+          },
+        ],
+      ),
+    });
+    await lookUp();
+    fireEvent.click(screen.getByRole("button", { name: "Cancel drop" }));
+    await give("Recorded by mistake", "Cancel the drop");
+    await waitFor(() =>
+      expect(axios.post).toHaveBeenCalledWith(
+        cancelSemesterDropRoute,
+        { roll_no: "23BEC020", drop_id: 7, reason: "Recorded by mistake" },
+        HEADERS,
+      ),
+    );
+    expect(
+      await screen.findByText(/Cancelled by skjain .*: Recorded by mistake/),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Cancel drop" })).toBeNull();
+  });
+
+  it("offers no drop for a withdrawn student", async () => {
+    axios.get.mockResolvedValue({ data: record("WITHDRAWN") });
+    await lookUp();
+    expect(
+      screen.queryByRole("button", { name: "Record semester drop" }),
+    ).toBeNull();
   });
 });
