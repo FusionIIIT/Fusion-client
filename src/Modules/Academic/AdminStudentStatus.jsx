@@ -7,6 +7,7 @@ import {
   Card,
   Group,
   Modal,
+  NativeSelect,
   Stack,
   Table,
   Text,
@@ -15,7 +16,9 @@ import {
   Title,
 } from "@mantine/core";
 import {
+  cancelSemesterDropRoute,
   readmitStudentRoute,
+  recordSemesterDropRoute,
   studentStatusRoute,
   withdrawStudentRoute,
 } from "../../routes/academicRoutes";
@@ -27,22 +30,13 @@ const authHeaders = () => ({
 
 const STATUS_COLORS = { PRESENT: "green", WITHDRAWN: "orange" };
 
-const ACTIONS = {
-  withdraw: {
-    button: "Withdraw",
-    confirm: "Withdraw student",
-    route: withdrawStudentRoute,
-    text: "They keep their login but can only view their courses and results. Their records stay as they are, and nothing about them can be changed until they are re-admitted.",
-  },
-  readmit: {
-    button: "Re-admit",
-    confirm: "Re-admit student",
-    route: readmitStudentRoute,
-    text: "They become a present student again and can register as before.",
-  },
-};
+const when = (iso) => new Date(iso).toLocaleString("en-IN");
 
-const ACTION_LABELS = { withdraw: "Withdrawn", readmit: "Re-admitted" };
+// The session a batch spends a semester in: batch 2023, semester 5 -> 2025-26.
+function sessionFor(batch, semesterNo) {
+  const start = Number(batch) + Math.floor((Number(semesterNo) - 1) / 2);
+  return `${start}-${String((start + 1) % 100).padStart(2, "0")}`;
+}
 
 // What the office has to clear before a withdrawal, one line each.
 function blockerLines(blockers) {
@@ -60,15 +54,69 @@ function blockerLines(blockers) {
   ].filter(Boolean);
 }
 
+// What the office has to clear before a semester can be dropped.
+function dropBlockerLines(blockers) {
+  if (!blockers) return [];
+  return [
+    blockers.registrations?.length &&
+      `Course registrations: ${blockers.registrations.join(", ")}`,
+    blockers.pre_registration && "Pre-registration choices",
+    blockers.final_registration && "Final registration",
+  ].filter(Boolean);
+}
+
+const ACTIONS = {
+  withdraw: {
+    title: (s) => `Withdraw ${s.roll_no}`,
+    confirm: "Withdraw student",
+    color: "orange",
+    route: withdrawStudentRoute,
+    text: "They keep their login but can only view their courses and results. Their records stay as they are, and nothing about them can be changed until they are re-admitted.",
+    lines: blockerLines,
+  },
+  readmit: {
+    title: (s) => `Re-admit ${s.roll_no}`,
+    confirm: "Re-admit student",
+    color: "blue",
+    route: readmitStudentRoute,
+    text: "They become a present student again and can register as before.",
+    lines: blockerLines,
+  },
+  drop: {
+    title: (s) => `Record a semester drop for ${s.roll_no}`,
+    confirm: "Record drop",
+    color: "orange",
+    route: recordSemesterDropRoute,
+    text: "For that semester they take part in nothing: no pre-registration, registration or allocation, and its lists leave them out. They move on with their batch. Its courses are added later with Add course, as Backlog.",
+    lines: dropBlockerLines,
+  },
+  cancelDrop: {
+    title: (s, drop) =>
+      `Cancel the semester ${drop.semester_no} drop of ${s.roll_no}`,
+    confirm: "Cancel the drop",
+    dismiss: "Keep it",
+    color: "blue",
+    route: cancelSemesterDropRoute,
+    text: "The semester is open to them again. The drop stays listed as cancelled.",
+    lines: dropBlockerLines,
+  },
+};
+
+const ACTION_LABELS = { withdraw: "Withdrawn", readmit: "Re-admitted" };
+
 // Withdraw a student (read-only from then on, records kept) or re-admit one
-// withdrawn by mistake. Every change is kept with who did it and why.
+// withdrawn by mistake, and record or cancel semester drops. Every change is
+// kept with who did it and why.
 export default function AdminStudentStatus() {
   const [rollNo, setRollNo] = useState("");
   const [student, setStudent] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  // { kind, drop } of the change being confirmed.
   const [pending, setPending] = useState(null);
   const [reason, setReason] = useState("");
+  const [semesterNo, setSemesterNo] = useState("");
+  const [academicYear, setAcademicYear] = useState("");
 
   const lookUp = async () => {
     setLoading(true);
@@ -86,25 +134,49 @@ export default function AdminStudentStatus() {
           e.response?.data?.detail ||
           e.response?.data?.error ||
           "Could not find that student.",
+        lines: [],
       });
     } finally {
       setLoading(false);
     }
   };
 
+  const open = (kind, drop = null) => {
+    setReason("");
+    setSemesterNo("");
+    setAcademicYear("");
+    setPending({ kind, drop });
+  };
+
+  const chooseSemester = (value) => {
+    setSemesterNo(value);
+    setAcademicYear(value ? sessionFor(student.batch, value) : "");
+  };
+
+  const body = () => {
+    const base = { roll_no: student.roll_no };
+    if (pending.kind === "drop") {
+      return {
+        ...base,
+        semester_no: Number(semesterNo),
+        academic_year: academicYear.trim(),
+        reason: reason.trim(),
+      };
+    }
+    if (pending.kind === "cancelDrop") {
+      return { ...base, drop_id: pending.drop.id, reason: reason.trim() };
+    }
+    return { ...base, reason: reason.trim() };
+  };
+
   const submit = async () => {
-    const action = ACTIONS[pending];
+    const action = ACTIONS[pending.kind];
     setLoading(true);
     setError(null);
     try {
-      const { data } = await axios.post(
-        action.route,
-        { roll_no: student.roll_no, reason: reason.trim() },
-        authHeaders(),
-      );
+      const { data } = await axios.post(action.route, body(), authHeaders());
       setStudent(data);
       setPending(null);
-      setReason("");
     } catch (e) {
       setPending(null);
       setError({
@@ -112,7 +184,8 @@ export default function AdminStudentStatus() {
           e.response?.data?.detail ||
           e.response?.data?.error ||
           "The change could not be made.",
-        blockers: e.response?.data?.blockers,
+        lines: action.lines(e.response?.data?.blockers),
+        blocked: Boolean(e.response?.data?.blockers),
       });
     } finally {
       setLoading(false);
@@ -128,6 +201,17 @@ export default function AdminStudentStatus() {
         : null;
   // A present student with an open semester cannot be withdrawn yet.
   const openWork = status === "PRESENT" ? blockerLines(student?.blockers) : [];
+  const drops = student?.drops ?? [];
+  const liveDropped = new Set(
+    drops.filter((d) => !d.cancelled_at).map((d) => d.semester_no),
+  );
+  const droppable = (student?.semesters ?? []).filter(
+    (n) => !liveDropped.has(n),
+  );
+  const action = pending ? ACTIONS[pending.kind] : null;
+  const ready =
+    reason.trim() &&
+    (pending?.kind !== "drop" || (semesterNo && academicYear.trim()));
 
   return (
     <Stack gap="md" maw={900}>
@@ -145,9 +229,9 @@ export default function AdminStudentStatus() {
       </Group>
 
       {error && (
-        <Alert color={error.blockers ? "yellow" : "red"}>
+        <Alert color={error.blocked ? "yellow" : "red"}>
           <Text size="sm">{error.detail}</Text>
-          {blockerLines(error.blockers).map((line) => (
+          {error.lines.map((line) => (
             <Text size="sm" key={line}>
               {line}
             </Text>
@@ -180,12 +264,12 @@ export default function AdminStudentStatus() {
               </Group>
               {available && (
                 <Button
-                  color={available === "withdraw" ? "orange" : "blue"}
+                  color={ACTIONS[available].color}
                   variant="light"
-                  onClick={() => setPending(available)}
+                  onClick={() => open(available)}
                   disabled={openWork.length > 0}
                 >
-                  {ACTIONS[available].button}
+                  {available === "withdraw" ? "Withdraw" : "Re-admit"}
                 </Button>
               )}
             </Group>
@@ -215,13 +299,77 @@ export default function AdminStudentStatus() {
                 <Table.Tbody>
                   {student.history.map((h) => (
                     <Table.Tr key={`${h.created_at}-${h.action}`}>
-                      <Table.Td>
-                        {new Date(h.created_at).toLocaleString("en-IN")}
-                      </Table.Td>
+                      <Table.Td>{when(h.created_at)}</Table.Td>
                       <Table.Td>{ACTION_LABELS[h.action] ?? h.action}</Table.Td>
                       <Table.Td>{h.semester_no ?? "-"}</Table.Td>
                       <Table.Td>{h.reason}</Table.Td>
                       <Table.Td>{h.performed_by ?? "-"}</Table.Td>
+                    </Table.Tr>
+                  ))}
+                </Table.Tbody>
+              </Table>
+            )}
+
+            <Group justify="space-between" mt="md">
+              <Title order={5}>Semester drops</Title>
+              {status === "PRESENT" && (
+                <Button
+                  size="xs"
+                  variant="light"
+                  color="orange"
+                  onClick={() => open("drop")}
+                  disabled={droppable.length === 0}
+                >
+                  Record semester drop
+                </Button>
+              )}
+            </Group>
+            {drops.length === 0 ? (
+              <Text size="sm" c="dimmed">
+                No semester dropped.
+              </Text>
+            ) : (
+              <Table>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>Semester</Table.Th>
+                    <Table.Th>Academic year</Table.Th>
+                    <Table.Th>Reason</Table.Th>
+                    <Table.Th>Recorded</Table.Th>
+                    <Table.Th>Status</Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {drops.map((d) => (
+                    <Table.Tr key={d.id}>
+                      <Table.Td>{d.semester_no}</Table.Td>
+                      <Table.Td>{d.academic_year}</Table.Td>
+                      <Table.Td>{d.reason}</Table.Td>
+                      <Table.Td>
+                        {`${d.recorded_by ?? "-"}, ${when(d.recorded_at)}`}
+                      </Table.Td>
+                      <Table.Td>
+                        {d.cancelled_at ? (
+                          <Text size="sm" c="dimmed">
+                            {`Cancelled by ${d.cancelled_by ?? "-"} on ${when(d.cancelled_at)}: ${d.cancel_reason}`}
+                          </Text>
+                        ) : (
+                          <Group gap="xs">
+                            <Badge color="orange" variant="light">
+                              Dropped
+                            </Badge>
+                            {status === "PRESENT" && (
+                              <Button
+                                size="xs"
+                                variant="subtle"
+                                onClick={() => open("cancelDrop", d)}
+                              >
+                                Cancel drop
+                              </Button>
+                            )}
+                          </Group>
+                        )}
+                      </Table.Td>
                     </Table.Tr>
                   ))}
                 </Table.Tbody>
@@ -234,12 +382,36 @@ export default function AdminStudentStatus() {
       <Modal
         opened={Boolean(pending)}
         onClose={() => setPending(null)}
-        title={pending ? `${ACTIONS[pending].button} ${student?.roll_no}` : ""}
+        title={pending ? action.title(student, pending.drop) : ""}
         centered
       >
         {pending && (
           <Stack>
-            <Text size="sm">{ACTIONS[pending].text}</Text>
+            <Text size="sm">{action.text}</Text>
+            {pending.kind === "drop" && (
+              <>
+                <NativeSelect
+                  label="Semester"
+                  required
+                  value={semesterNo}
+                  onChange={(e) => chooseSemester(e.currentTarget.value)}
+                  data={[
+                    { value: "", label: "Choose a semester" },
+                    ...droppable.map((n) => ({
+                      value: String(n),
+                      label: `Semester ${n}`,
+                    })),
+                  ]}
+                />
+                <TextInput
+                  label="Academic year"
+                  required
+                  placeholder="2025-26"
+                  value={academicYear}
+                  onChange={(e) => setAcademicYear(e.currentTarget.value)}
+                />
+              </>
+            )}
             <Textarea
               label="Reason"
               required
@@ -250,15 +422,15 @@ export default function AdminStudentStatus() {
             />
             <Group justify="flex-end">
               <Button variant="default" onClick={() => setPending(null)}>
-                Cancel
+                {action.dismiss ?? "Cancel"}
               </Button>
               <Button
-                color={pending === "withdraw" ? "orange" : "blue"}
+                color={action.color}
                 onClick={submit}
                 loading={loading}
-                disabled={!reason.trim()}
+                disabled={!ready}
               >
-                {ACTIONS[pending].confirm}
+                {action.confirm}
               </Button>
             </Group>
           </Stack>
