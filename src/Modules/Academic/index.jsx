@@ -27,11 +27,13 @@ const COMPONENTS = {
   adminSectionAssignment: lazy(() => import("./SectionAssignment")),
   adminBatchChange: lazy(() => import("./AdminBatchChange")),
   adminPromoteSemester: lazy(() => import("./AdminPromoteSemester")),
+  adminStudentStatus: lazy(() => import("./AdminStudentStatus")),
   adminAcademicCalendar: lazy(() => import("./AcademicCalendar")),
   adminFeedbackView: lazy(() => import("./FeedbackForm/AdminFeedbackView")),
   adminPhdCourseRequests: lazy(() => import("./AdminPhDCourseRequests")),
 
   studentAlumniHome: lazy(() => import("./AlumniHome")),
+  studentWithdrawnHome: lazy(() => import("./AlumniHome")),
   studentRegisteredCourses: lazy(() => import("./RegisteredCourses")),
   studentAvailableCourses: lazy(() => import("./AvailableCourses")),
   studentPreRegistration: lazy(() => import("./PreRegistration")),

@@ -2,14 +2,7 @@ import { Badge, Button, Card, Group, Stack, Text, Title } from "@mantine/core";
 import { Book, Scroll } from "@phosphor-icons/react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-
-// "ALUMNI" -> "Alumni"
-const statusLabel = (status) => {
-  const s = String(status ?? "")
-    .trim()
-    .toLowerCase();
-  return s.charAt(0).toUpperCase() + s.slice(1);
-};
+import { statusLabel } from "../../ui/nav/roles";
 
 // The landing page of a locked student (alumni, withdrawn, ...): who they
 // are, that the account is read-only, and the two pages they keep.

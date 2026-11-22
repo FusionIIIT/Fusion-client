@@ -20,15 +20,7 @@ import {
   applyPromoteRoute,
   applyDemoteRoute,
 } from "../../routes/academicRoutes";
-import { isLockedStatus } from "../../ui/nav/roles";
-
-// "ALUMNI" -> "Alumni"
-const statusLabel = (status) => {
-  const s = String(status ?? "")
-    .trim()
-    .toLowerCase();
-  return s.charAt(0).toUpperCase() + s.slice(1);
-};
+import { isLockedStatus, statusLabel } from "../../ui/nav/roles";
 
 export default function AdminPromoteSemester() {
   const [batches, setBatches] = useState([]);
