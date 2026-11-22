@@ -68,15 +68,20 @@ describe("GraduateWelcome", () => {
     expect(screen.getByText("21BCS001")).toBeInTheDocument();
   });
 
-  it("keeps the links to courses and results", () => {
+  it("is a moment, not a menu: no links or buttons", () => {
+    show();
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+  });
+
+  it("speaks to the graduate and signs off from the institute", () => {
     show();
     expect(
-      screen.getByRole("link", { name: "Registered Courses" }),
-    ).toHaveAttribute("href", "/academics/registered-courses");
-    expect(screen.getByRole("link", { name: "Results" })).toHaveAttribute(
-      "href",
-      "/examination/result",
-    );
+      screen.getByText(/you will always be part of ours/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("With pride and every good wish,"),
+    ).toBeInTheDocument();
   });
 
   it("keeps hyphenated and apostrophe names readable", () => {
