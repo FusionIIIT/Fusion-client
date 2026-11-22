@@ -1,4 +1,4 @@
-import { Button, Card, Group, Stack, Text, Title } from "@mantine/core";
+import { Badge, Button, Card, Group, Stack, Text, Title } from "@mantine/core";
 import { Book, Scroll } from "@phosphor-icons/react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
@@ -22,8 +22,12 @@ export default function AlumniHome() {
   return (
     <Card withBorder radius="md" p="lg" maw={640}>
       <Stack gap="xs">
-        <Title order={2}>{statusLabel(status)}</Title>
-        <Text fw={600}>{name}</Text>
+        <Group gap="sm">
+          <Title order={3}>{name}</Title>
+          <Badge color="gray" variant="light">
+            {statusLabel(status)}
+          </Badge>
+        </Group>
         <Text c="dimmed">{rollNo}</Text>
         {info && (
           <Text c="dimmed">{`${info.discipline}, batch ${info.batch}`}</Text>

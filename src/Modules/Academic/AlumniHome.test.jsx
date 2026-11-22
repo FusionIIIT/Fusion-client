@@ -34,8 +34,11 @@ function show(status) {
 describe("AlumniHome", () => {
   it("tells an alumnus who they are and that the account is read-only", () => {
     show("ALUMNI");
-    expect(screen.getByRole("heading", { name: "Alumni" })).toBeInTheDocument();
-    expect(screen.getByText("Asha Rao")).toBeInTheDocument();
+    // The page title already says Alumni: the card leads with the name.
+    expect(
+      screen.getByRole("heading", { name: "Asha Rao" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Alumni")).toBeInTheDocument();
     expect(screen.getByText("21BCS001")).toBeInTheDocument();
     expect(screen.getByText("B.Tech CSE, batch 2021")).toBeInTheDocument();
     expect(
@@ -58,8 +61,6 @@ describe("AlumniHome", () => {
 
   it("names a withdrawn student's status", () => {
     show("WITHDRAWN");
-    expect(
-      screen.getByRole("heading", { name: "Withdrawn" }),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Withdrawn")).toBeInTheDocument();
   });
 });
