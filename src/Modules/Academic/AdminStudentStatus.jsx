@@ -51,6 +51,8 @@ function blockerLines(blockers) {
   return [
     blockers.ungraded?.length &&
       `Courses without a grade: ${blockers.ungraded.join(", ")}`,
+    blockers.unverified?.length &&
+      `Grades not yet verified: ${blockers.unverified.join(", ")}`,
     blockers.pre_registration?.length &&
       `Pre-registration choices: ${sems(blockers.pre_registration)}`,
     blockers.final_registration?.length &&
@@ -80,7 +82,10 @@ export default function AdminStudentStatus() {
       setStudent(data);
     } catch (e) {
       setError({
-        detail: e.response?.data?.detail || "Could not find that student.",
+        detail:
+          e.response?.data?.detail ||
+          e.response?.data?.error ||
+          "Could not find that student.",
       });
     } finally {
       setLoading(false);
@@ -103,7 +108,10 @@ export default function AdminStudentStatus() {
     } catch (e) {
       setPending(null);
       setError({
-        detail: e.response?.data?.detail || "The change could not be made.",
+        detail:
+          e.response?.data?.detail ||
+          e.response?.data?.error ||
+          "The change could not be made.",
         blockers: e.response?.data?.blockers,
       });
     } finally {
@@ -118,6 +126,8 @@ export default function AdminStudentStatus() {
       : status === "WITHDRAWN"
         ? "readmit"
         : null;
+  // A present student with an open semester cannot be withdrawn yet.
+  const openWork = status === "PRESENT" ? blockerLines(student?.blockers) : [];
 
   return (
     <Stack gap="md" maw={900}>
@@ -145,6 +155,19 @@ export default function AdminStudentStatus() {
         </Alert>
       )}
 
+      {!error && openWork.length > 0 && (
+        <Alert color="yellow">
+          <Text size="sm">
+            Before withdrawing, clear these with the usual tools:
+          </Text>
+          {openWork.map((line) => (
+            <Text size="sm" key={line}>
+              {line}
+            </Text>
+          ))}
+        </Alert>
+      )}
+
       {student && (
         <Card withBorder radius="md" p="lg">
           <Stack gap="xs">
@@ -160,6 +183,7 @@ export default function AdminStudentStatus() {
                   color={available === "withdraw" ? "orange" : "blue"}
                   variant="light"
                   onClick={() => setPending(available)}
+                  disabled={openWork.length > 0}
                 >
                   {ACTIONS[available].button}
                 </Button>

@@ -7,6 +7,7 @@ import {
   filterStudentsBySpecialization,
   getCurrentProgrammeType,
 } from "../AdminUpcomingBatchesUtils";
+import { bulkFailureNote, failureMessage } from "./statusChangeMessages";
 
 // Owns the student-list modal: per-batch students, report-status, bulk ops,
 // selection, delete. Batch setters + refresh fns injected from useBatchData.
@@ -279,7 +280,14 @@ export function useStudentList({
 
         forceRefreshData();
       } else {
-        throw new Error(result.message || "Failed to update student status");
+        notifications.show({
+          title: "Not changed",
+          message: failureMessage(
+            result,
+            "Failed to update student status. Please try again.",
+          ),
+          color: "red",
+        });
       }
     } catch (error) {
       notifications.show({
@@ -346,6 +354,7 @@ export function useStudentList({
 
     setIsBulkReporting(true);
 
+    const refusals = [];
     try {
       const results = await Promise.all(
         Array.from(selectedStudents).map(async (studentId) => {
@@ -359,7 +368,10 @@ export function useStudentList({
               reportedStatus: newStatus,
               batchId: selectedBatch.id,
             });
-            if (!result.success) return false;
+            if (!result.success) {
+              refusals.push(failureMessage(result, null));
+              return false;
+            }
 
             setStudentList((prevList) =>
               prevList.map((s) =>
@@ -414,7 +426,7 @@ export function useStudentList({
       } else if (successCount > 0 && failureCount > 0) {
         notifications.show({
           title: "Partial Success",
-          message: `Updated ${successCount} students to ${statusLabel} successfully. ${failureCount} failed.`,
+          message: `Updated ${successCount} students to ${statusLabel} successfully. ${failureCount} failed.${bulkFailureNote(refusals)}`,
           color: "yellow",
         });
 
@@ -422,7 +434,7 @@ export function useStudentList({
       } else {
         notifications.show({
           title: "Bulk Status Update Failed",
-          message: `Failed to update students to ${statusLabel}. Please try again.`,
+          message: `Failed to update students to ${statusLabel}.${bulkFailureNote(refusals) || " Please try again."}`,
           color: "red",
         });
       }

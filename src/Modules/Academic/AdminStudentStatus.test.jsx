@@ -15,6 +15,7 @@ vi.mock("axios", () => ({ default: { get: vi.fn(), post: vi.fn() } }));
 
 const NO_BLOCKERS = {
   ungraded: [],
+  unverified: [],
   pre_registration: [],
   final_registration: [],
 };
@@ -164,6 +165,44 @@ describe("AdminStudentStatus", () => {
       ),
     );
     expect(await screen.findByText("Present")).toBeInTheDocument();
+  });
+
+  it("shows what is in the way as soon as the student is looked up", async () => {
+    axios.get.mockResolvedValue({
+      data: {
+        ...record("PRESENT"),
+        blockers: {
+          ...NO_BLOCKERS,
+          unverified: ["EC4001"],
+          pre_registration: [5],
+        },
+      },
+    });
+    await lookUp();
+    expect(
+      screen.getByText("Grades not yet verified: EC4001"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Pre-registration choices: semester 5"),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Withdraw" })).toBeDisabled();
+  });
+
+  it("shows the server's reason when the role is refused", async () => {
+    axios.get.mockRejectedValue({
+      response: {
+        data: { error: "Permission denied: one of ['acadadmin'] required" },
+      },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: "Roll number" }), {
+      target: { value: "23BEC020" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Look up" }));
+    expect(
+      await screen.findByText(
+        "Permission denied: one of ['acadadmin'] required",
+      ),
+    ).toBeInTheDocument();
   });
 
   it("offers nothing to change for an alumnus", async () => {
