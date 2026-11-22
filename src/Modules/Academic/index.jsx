@@ -59,12 +59,13 @@ const COMPONENTS = {
 export default function AcademicPage() {
   const role = useSelector((state) => state.user.role);
   const programmeType = useSelector((state) => state.user.programmeType);
+  const studentStatus = useSelector((state) => state.user.studentStatus);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   const pages = useMemo(
-    () => pagesForRole(ACADEMIC_PAGES, role, { programmeType }),
-    [role, programmeType],
+    () => pagesForRole(ACADEMIC_PAGES, role, { programmeType, studentStatus }),
+    [role, programmeType, studentStatus],
   );
 
   // A student's PG/PhD pages exist only once programmeType has loaded, which

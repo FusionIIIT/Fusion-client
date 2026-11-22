@@ -84,6 +84,7 @@ export const EXAMINATION_PAGES = [
     icon: "Scroll",
     group: "Results",
     roles: STUDENT_ROLES,
+    keepWhenLocked: true,
   },
   {
     key: "announceResult",

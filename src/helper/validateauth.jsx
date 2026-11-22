@@ -12,6 +12,7 @@ import {
   setPluggedNavigation,
   setCurrentAccessibleModules,
   setMustCompleteProfile,
+  setStudentStatus,
   setAuthChecked,
   clearUserName,
   clearRoles,
@@ -50,6 +51,7 @@ function ValidateAuth() {
         roll_no,
         must_complete_profile = false,
         plugged_navigation = {},
+        student_status = null,
       } = data;
 
       dispatch(setUserName(name));
@@ -63,6 +65,7 @@ function ValidateAuth() {
       dispatch(setPluggedNavigation(plugged_navigation));
       dispatch(setCurrentAccessibleModules());
       dispatch(setMustCompleteProfile(must_complete_profile));
+      dispatch(setStudentStatus(student_status));
       dispatch(setAuthChecked(true));
     } catch (error) {
       console.error("User validation failed:", error);

@@ -197,6 +197,7 @@ export const ACADEMIC_PAGES = [
     icon: "Book",
     group: "Registration",
     roles: STUDENT_ROLES,
+    keepWhenLocked: true,
   },
   {
     key: "studentAvailableCourses",

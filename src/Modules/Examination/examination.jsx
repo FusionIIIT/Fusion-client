@@ -52,10 +52,11 @@ const DETAIL_ROUTES = [
 
 export default function Examination() {
   const userRole = useSelector((state) => state.user.role);
+  const studentStatus = useSelector((state) => state.user.studentStatus);
 
   const pages = useMemo(
-    () => pagesForRole(EXAMINATION_PAGES, userRole),
-    [userRole],
+    () => pagesForRole(EXAMINATION_PAGES, userRole, { studentStatus }),
+    [userRole, studentStatus],
   );
 
   if (userRole === undefined || userRole === null) return null;

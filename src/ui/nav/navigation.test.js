@@ -450,3 +450,24 @@ describe("a plugged module's own screens", () => {
     expect(item.links).toBeUndefined();
   });
 });
+
+describe("an alumnus's sidebar", () => {
+  it("gives an alumnus only their courses and results", () => {
+    const links = linksOf(
+      buildNavGroups({
+        role: "student",
+        accessibleModules: {
+          course_registration: true,
+          examinations: true,
+        },
+        programmeType: "UG",
+        studentStatus: "ALUMNI",
+      }),
+    );
+    expect(links.map((l) => l.to)).toEqual([
+      "/dashboard",
+      "/academics/registered-courses",
+      "/examination/result",
+    ]);
+  });
+});

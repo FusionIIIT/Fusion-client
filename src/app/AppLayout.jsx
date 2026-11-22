@@ -43,6 +43,7 @@ export function Layout({ children = null }) {
   const role = useSelector((state) => state.user.role);
   const roles = useSelector((state) => state.user.roles);
   const programmeType = useSelector((state) => state.user.programmeType);
+  const studentStatus = useSelector((state) => state.user.studentStatus);
   const accessibleModules = useSelector(
     (state) => state.user.currentAccessibleModules,
   );
@@ -99,8 +100,9 @@ export function Layout({ children = null }) {
         accessibleModules,
         programmeType,
         pluggedNavigation,
+        studentStatus,
       }),
-    [role, accessibleModules, programmeType, pluggedNavigation],
+    [role, accessibleModules, programmeType, pluggedNavigation, studentStatus],
   );
 
   const bottomNavItems = useMemo(
