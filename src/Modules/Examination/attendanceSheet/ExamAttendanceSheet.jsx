@@ -28,6 +28,8 @@ import {
   buildSessionOptions,
 } from "../../../lib/academicYear";
 import {
+  INSTRUCTOR_TEXT_MAX,
+  ROOM_MAX,
   buildSheets,
   checkRooms,
   defaultInstructorText,
@@ -116,6 +118,9 @@ const toPayload = (r) => ({
   instructor_text: r.instructor_text.trim(),
 });
 
+// What the rooms on screen hold, for telling whether they changed.
+const roomsText = (rooms) => JSON.stringify(rooms.map(toPayload));
+
 // reload: offer to fetch the sheet again (after a failed load, or when
 // someone else saved first and the plan on screen is out of date).
 function problemFrom(e, fallback, reload = false) {
@@ -187,6 +192,10 @@ export default function ExamAttendanceSheet() {
   const [problem, setProblem] = useState(null);
   const [preview, setPreview] = useState(null);
   const [reloads, setReloads] = useState(0);
+  // The rooms as last loaded or saved; anything else on screen is unsaved.
+  const [loadedRooms, setLoadedRooms] = useState(null);
+  // A filter or course change waiting for "Discard unsaved changes?".
+  const [pendingChange, setPendingChange] = useState(null);
 
   // Which course / exam / term the sheet on screen is for.
   const loadedKey = useRef(null);
@@ -195,10 +204,14 @@ export default function ExamAttendanceSheet() {
   const previewUrl = useRef(null);
   const mounted = useRef(true);
   const roomKey = useRef(0);
+  // What the preview on screen was drawn from, and what the page holds now.
+  const previewDrawnFrom = useRef(null);
+  const currentDrawing = useRef(null);
 
   const showPreview = (next) => {
     if (previewUrl.current) URL.revokeObjectURL(previewUrl.current);
     previewUrl.current = next ? next.url : null;
+    previewDrawnFrom.current = next ? next.drawnFrom : null;
     setPreview(next);
   };
 
@@ -254,12 +267,20 @@ export default function ExamAttendanceSheet() {
     );
     if (key !== loadedKey.current) showPreview(null);
     loadedKey.current = key;
+    // A saved text that is still the suggestion for its range is not the
+    // user's own, so a range change re-suggests it.
+    const loaded = data.plan
+      ? data.plan.rooms.map((r) =>
+          editorRoom(
+            r,
+            (r.instructor_text || "") !==
+              instructorDefault(data, r.from_sno, r.to_sno),
+          ),
+        )
+      : [freshRoom(data, null)];
     setSheet(data);
-    setRooms(
-      data.plan
-        ? data.plan.rooms.map((r) => editorRoom(r, true))
-        : [freshRoom(data, null)],
-    );
+    setRooms(loaded);
+    setLoadedRooms(roomsText(loaded));
     setProblem(null);
   };
 
@@ -301,6 +322,7 @@ export default function ExamAttendanceSheet() {
     showPreview(null);
     setSheet(null);
     setRooms([]);
+    setLoadedRooms(null);
     if (!key) return;
 
     let live = true;
@@ -341,6 +363,26 @@ export default function ExamAttendanceSheet() {
   const payload = useMemo(() => rooms.map(toPayload), [rooms]);
   const check = useMemo(() => checkRooms(payload, total), [payload, total]);
   const blocked = check.errors.length > 0;
+  const previewBlocked = check.previewErrors.length > 0;
+  const dirty = Boolean(sheet) && JSON.stringify(payload) !== loadedRooms;
+
+  // Everything the PDF is drawn from. When it changes, a preview already made
+  // is out of date: drop it, so Download cannot hand over the old sheets.
+  const drawing = useMemo(
+    () =>
+      JSON.stringify([
+        payload,
+        sheet ? sheet.students : null,
+        sheet ? sheet.sectioned : null,
+      ]),
+    [payload, sheet],
+  );
+  useEffect(() => {
+    currentDrawing.current = drawing;
+    if (previewUrl.current && previewDrawnFrom.current !== drawing) {
+      showPreview(null);
+    }
+  }, [drawing]);
 
   const courseOptions = useMemo(
     () =>
@@ -354,6 +396,19 @@ export default function ExamAttendanceSheet() {
   const changeTerm = (setter) => (value) => {
     setter(value);
     setCourseId(null);
+  };
+
+  // A filter or course change replaces the rooms on screen: ask first when
+  // they hold changes that are not saved.
+  const guarded = (apply) => (value) => {
+    if (dirty) setPendingChange({ apply: () => apply(value) });
+    else apply(value);
+  };
+
+  const discardAndChange = () => {
+    const change = pendingChange;
+    setPendingChange(null);
+    if (change) change.apply();
   };
 
   // A range change re-suggests the instructors unless they were typed in.
@@ -452,6 +507,7 @@ export default function ExamAttendanceSheet() {
 
   const makePreview = async () => {
     const key = loadedKey.current;
+    const drawnFrom = drawing;
     setPreviewing(true);
     setProblem(null);
     try {
@@ -469,14 +525,20 @@ export default function ExamAttendanceSheet() {
         logo,
       });
       const url = URL.createObjectURL(doc.output("blob"));
-      // The page moved on to another course (or closed) while drawing.
-      if (!mounted.current || loadedKey.current !== key) {
+      // The page moved on to another course, the rooms changed, or the page
+      // closed while drawing.
+      if (
+        !mounted.current ||
+        loadedKey.current !== key ||
+        currentDrawing.current !== drawnFrom
+      ) {
         URL.revokeObjectURL(url);
         return;
       }
       showPreview({
         url,
         name: fileName(sheet.course.code, sheet.exam, sheet.academic_year),
+        drawnFrom,
       });
     } catch {
       setProblem({ detail: "Could not make the PDF.", errors: [] });
@@ -527,7 +589,7 @@ export default function ExamAttendanceSheet() {
           label="Academic year"
           data={sessionOptions}
           value={academicYear}
-          onChange={changeTerm(setAcademicYear)}
+          onChange={guarded(changeTerm(setAcademicYear))}
           allowDeselect={false}
           w={140}
         />
@@ -535,7 +597,7 @@ export default function ExamAttendanceSheet() {
           label="Semester"
           data={SEMESTER_OPTIONS}
           value={semesterType}
-          onChange={changeTerm(setSemesterType)}
+          onChange={guarded(changeTerm(setSemesterType))}
           allowDeselect={false}
           w={120}
         />
@@ -543,7 +605,7 @@ export default function ExamAttendanceSheet() {
           label="Exam"
           data={EXAM_OPTIONS}
           value={exam}
-          onChange={setExam}
+          onChange={guarded(setExam)}
           allowDeselect={false}
           w={120}
         />
@@ -552,7 +614,7 @@ export default function ExamAttendanceSheet() {
           placeholder="Choose a course"
           data={courseOptions}
           value={courseId}
-          onChange={setCourseId}
+          onChange={guarded(setCourseId)}
           searchable
           allowDeselect={false}
           nothingFoundMessage="No courses in this term"
@@ -571,9 +633,11 @@ export default function ExamAttendanceSheet() {
               {`${sheet.course.code} - ${sheet.course.name}, ${EXAM_LABELS[sheet.exam]}`}
             </Title>
             <Text size="sm" c="dimmed">
-              {plan
-                ? `Saved by ${plan.updated_by}, ${when(plan.updated_at)}`
-                : "Not saved yet."}
+              {!plan && "Not saved yet."}
+              {plan &&
+                (plan.updated_by
+                  ? `Saved by ${plan.updated_by}, ${when(plan.updated_at)}`
+                  : `Saved ${when(plan.updated_at)}`)}
             </Text>
           </Group>
 
@@ -659,6 +723,7 @@ export default function ExamAttendanceSheet() {
                             <TextInput
                               aria-label={`${name} room`}
                               value={r.room}
+                              maxLength={ROOM_MAX}
                               onChange={(e) =>
                                 updateRoom(i, { room: e.currentTarget.value })
                               }
@@ -694,6 +759,7 @@ export default function ExamAttendanceSheet() {
                             <TextInput
                               aria-label={`${name} instructors`}
                               value={r.instructor_text}
+                              maxLength={INSTRUCTOR_TEXT_MAX}
                               onChange={(e) =>
                                 updateRoom(i, {
                                   instructor_text: e.currentTarget.value,
@@ -753,15 +819,21 @@ export default function ExamAttendanceSheet() {
                     variant="default"
                     onClick={() => copy(false)}
                     loading={copying}
+                    disabled={dirty}
                   >
                     {`Copy to ${EXAM_LABELS[target]}`}
                   </Button>
+                )}
+                {plan && dirty && (
+                  <Text size="sm" c="dimmed">
+                    Save first to copy your changes.
+                  </Text>
                 )}
                 <Button
                   variant="default"
                   onClick={makePreview}
                   loading={previewing}
-                  disabled={blocked}
+                  disabled={previewBlocked}
                 >
                   Preview
                 </Button>
@@ -794,6 +866,26 @@ export default function ExamAttendanceSheet() {
           )}
         </>
       )}
+
+      <Modal
+        opened={pendingChange !== null}
+        onClose={() => setPendingChange(null)}
+        title="Discard unsaved changes?"
+      >
+        <Stack>
+          <Text size="sm">
+            The rooms on screen have changes that are not saved.
+          </Text>
+          <Group justify="flex-end">
+            <Button variant="default" onClick={() => setPendingChange(null)}>
+              Keep editing
+            </Button>
+            <Button color="red" onClick={discardAndChange}>
+              Discard
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
 
       <Modal
         opened={confirmReplace}

@@ -419,6 +419,222 @@ describe("ExamAttendanceSheet", () => {
     expect(instructors()).toHaveValue("Dr. X");
   });
 
+  it("drops a preview once the rooms change, so Download is never stale", async () => {
+    await openCourse();
+    fireEvent.click(screen.getByRole("button", { name: "Preview" }));
+    await screen.findByTitle("Attendance sheet preview");
+    expect(screen.getByRole("link", { name: "Download PDF" })).toHaveAttribute(
+      "href",
+      "blob:pdf-1",
+    );
+
+    fireEvent.change(screen.getByLabelText("Room 1 date"), {
+      target: { value: "2026-12-02" },
+    });
+    await waitFor(() =>
+      expect(screen.queryByTitle("Attendance sheet preview")).toBeNull(),
+    );
+    expect(screen.queryByRole("link", { name: "Download PDF" })).toBeNull();
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:pdf-1");
+
+    fireEvent.click(screen.getByRole("button", { name: "Preview" }));
+    const frame = await screen.findByTitle("Attendance sheet preview");
+    expect(frame.getAttribute("src")).toBe("blob:pdf-2");
+    expect(renderAttendancePdf.mock.calls.at(-1)[0][0].dateText).toBe(
+      "DATE: 02.12.2026",
+    );
+  });
+
+  it("throws away a preview whose rooms changed while it was drawn", async () => {
+    let logoReady;
+    loadLogo.mockReturnValue(
+      new Promise((resolve) => {
+        logoReady = resolve;
+      }),
+    );
+    await openCourse();
+    fireEvent.click(screen.getByRole("button", { name: "Preview" }));
+    fireEvent.change(screen.getByLabelText("Room 1 date"), {
+      target: { value: "2026-12-02" },
+    });
+    await waitFor(() =>
+      expect(screen.getByLabelText("Room 1 date")).toHaveValue("2026-12-02"),
+    );
+    await act(async () => {
+      logoReady(null);
+    });
+    await waitFor(() =>
+      expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:pdf-1"),
+    );
+    expect(screen.queryByTitle("Attendance sheet preview")).toBeNull();
+    expect(screen.queryByRole("link", { name: "Download PDF" })).toBeNull();
+  });
+
+  it("re-suggests instructors on a saved room whose text was the suggestion", async () => {
+    const sectioned = {
+      sectioned: true,
+      sectionOf: (sno) => (sno <= 20 ? "A" : "B"),
+      instructors: { by_section: { A: "Dr. A", B: "Dr. B" }, all: [] },
+    };
+    sheet = sheetBody({
+      ...sectioned,
+      plan: {
+        ...PLAN,
+        rooms: [{ ...ROOM, instructor_text: "A: Dr. A, B: Dr. B" }],
+      },
+    });
+    await openCourse();
+    const instructors = () =>
+      screen.getByRole("textbox", { name: "Room 1 instructors" });
+    fireEvent.change(screen.getByRole("textbox", { name: "Room 1 to S.No" }), {
+      target: { value: "20" },
+    });
+    await waitFor(() => expect(instructors()).toHaveValue("Dr. A"));
+  });
+
+  it("keeps a saved room's own instructor text when the range changes", async () => {
+    sheet = sheetBody({
+      sectioned: true,
+      sectionOf: (sno) => (sno <= 20 ? "A" : "B"),
+      instructors: { by_section: { A: "Dr. A", B: "Dr. B" }, all: [] },
+      plan: { ...PLAN, rooms: [{ ...ROOM, instructor_text: "Dr. X" }] },
+    });
+    await openCourse();
+    const to = () => screen.getByRole("textbox", { name: "Room 1 to S.No" });
+    fireEvent.change(to(), { target: { value: "20" } });
+    await waitFor(() => expect(to()).toHaveValue("20"));
+    expect(
+      screen.getByRole("textbox", { name: "Room 1 instructors" }),
+    ).toHaveValue("Dr. X");
+  });
+
+  it("will not copy unsaved changes", async () => {
+    await openCourse();
+    const copy = () => screen.getByRole("button", { name: "Copy to End Sem" });
+    expect(copy()).toBeEnabled();
+    expect(screen.queryByText("Save first to copy your changes.")).toBeNull();
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Room 1 room" }), {
+      target: { value: "LT-2" },
+    });
+    await waitFor(() => expect(copy()).toBeDisabled());
+    expect(
+      screen.getByText("Save first to copy your changes."),
+    ).toBeInTheDocument();
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Room 1 room" }), {
+      target: { value: "LT-1" },
+    });
+    await waitFor(() => expect(copy()).toBeEnabled());
+  });
+
+  it("asks before a filter change drops unsaved changes", async () => {
+    await openCourse();
+    const roomName = () => screen.getByRole("textbox", { name: "Room 1 room" });
+    fireEvent.change(roomName(), { target: { value: "LT-2" } });
+    await waitFor(() => expect(roomName()).toHaveValue("LT-2"));
+
+    await pick("Exam", "End Sem");
+    expect(
+      await screen.findByText("Discard unsaved changes?"),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Keep editing" }));
+    await waitFor(() =>
+      expect(screen.queryByText("Discard unsaved changes?")).toBeNull(),
+    );
+    expect(screen.getByRole("textbox", { name: "Exam" })).toHaveValue(
+      "Mid Sem",
+    );
+    expect(roomName()).toHaveValue("LT-2");
+    const loads = () =>
+      axios.get.mock.calls.filter(([url]) => url === attendanceSheetRoute);
+    expect(loads()).toHaveLength(1);
+
+    sheet = sheetBody({ exam: "END", plan: null });
+    await pick("Exam", "End Sem");
+    await screen.findByText("Discard unsaved changes?");
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Discard" }));
+    });
+    await waitFor(() => expect(loads()).toHaveLength(2));
+    expect(loads()[1][1].params.exam).toBe("END");
+    expect(screen.getByRole("textbox", { name: "Exam" })).toHaveValue(
+      "End Sem",
+    );
+    expect(await screen.findByText("Not saved yet.")).toBeInTheDocument();
+  });
+
+  it("asks before a course change drops unsaved changes", async () => {
+    await openCourse();
+    fireEvent.change(screen.getByRole("textbox", { name: "Room 1 room" }), {
+      target: { value: "LT-2" },
+    });
+    await pick("Course", "CS1001 - Programming");
+    await screen.findByText("Discard unsaved changes?");
+    fireEvent.click(screen.getByRole("button", { name: "Keep editing" }));
+    await waitFor(() =>
+      expect(screen.queryByText("Discard unsaved changes?")).toBeNull(),
+    );
+    expect(screen.getByRole("textbox", { name: "Course" })).toHaveValue(
+      "CS8004 - Machine Learning (Mid Sem saved)",
+    );
+    expect(screen.getByText("23BCS001")).toBeInTheDocument();
+  });
+
+  it("switches without asking when nothing changed", async () => {
+    await openCourse();
+    await pick("Exam", "End Sem");
+    expect(screen.queryByText("Discard unsaved changes?")).toBeNull();
+    expect(screen.getByRole("textbox", { name: "Exam" })).toHaveValue(
+      "End Sem",
+    );
+  });
+
+  it("previews a plan whose range now runs past a shorter roll list", async () => {
+    sheet = sheetBody({
+      plan: { ...PLAN, roll_count: 46, rooms: [{ ...ROOM, to_sno: 46 }] },
+    });
+    await openCourse();
+    expect(
+      screen.getByText("Roll list was 46 when saved, now 45."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Room 1 goes past S.No 45, the last on the roll list."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Room 1: S.No must be between 1 and 45."),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
+    const preview = screen.getByRole("button", { name: "Preview" });
+    expect(preview).toBeEnabled();
+    fireEvent.click(preview);
+    await screen.findByTitle("Attendance sheet preview");
+    const [sheets] = renderAttendancePdf.mock.calls.at(-1);
+    expect(sheets).toHaveLength(1);
+    expect(sheets[0].total).toBe(45);
+  });
+
+  it("caps the room name and instructor text at their saved sizes", async () => {
+    await openCourse();
+    expect(
+      screen.getByRole("textbox", { name: "Room 1 room" }),
+    ).toHaveAttribute("maxlength", "30");
+    expect(
+      screen.getByRole("textbox", { name: "Room 1 instructors" }),
+    ).toHaveAttribute("maxlength", "500");
+  });
+
+  it("says when it was saved even if the saving user is gone", async () => {
+    sheet = sheetBody({ plan: { ...PLAN, updated_by: null } });
+    await openCourse();
+    expect(
+      screen.getByText(
+        `Saved ${new Date(PLAN.updated_at).toLocaleString("en-IN")}`,
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Saved by/)).toBeNull();
+  });
+
   it("shows the course picked last when an earlier answer arrives late", async () => {
     let answerFirst;
     axios.get.mockImplementation((url, { params }) => {
