@@ -15,12 +15,9 @@ import { theme } from "../../ui/theme/theme";
 
 vi.mock("axios", () => ({ default: { get: vi.fn(), post: vi.fn() } }));
 
-const NO_BLOCKERS = {
-  ungraded: [],
-  unverified: [],
-  pre_registration: [],
-  final_registration: [],
-};
+const NO_BLOCKERS = { ungraded: [], unverified: [] };
+const NOTHING_TO_REMOVE = { pre_registration: [], final_registration: [] };
+const EC4001 = { code: "EC4001", semester: 4, session: "2024-25" };
 
 const record = (status, history = [], drops = []) => ({
   roll_no: "23BEC020",
@@ -30,6 +27,7 @@ const record = (status, history = [], drops = []) => ({
   semester: 4,
   status,
   blockers: NO_BLOCKERS,
+  withdrawal_removes: NOTHING_TO_REMOVE,
   history,
   semesters: [1, 2, 3, 4, 5, 6, 7, 8],
   drops,
@@ -138,11 +136,7 @@ describe("AdminStudentStatus", () => {
         data: {
           detail:
             "23BEC020 still has an open semester. Remove these first, then withdraw.",
-          blockers: {
-            ungraded: ["EC4001"],
-            pre_registration: [5],
-            final_registration: [5],
-          },
+          blockers: { ungraded: [EC4001], unverified: [] },
         },
       },
     });
@@ -155,13 +149,7 @@ describe("AdminStudentStatus", () => {
       ),
     ).toBeInTheDocument();
     expect(
-      screen.getByText("Courses without a grade: EC4001"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Pre-registration choices: semester 5"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Final registration not verified: semester 5"),
+      screen.getByText("Courses without a grade, semester 4 (2024-25): EC4001"),
     ).toBeInTheDocument();
   });
 
@@ -188,20 +176,46 @@ describe("AdminStudentStatus", () => {
       data: {
         ...record("PRESENT"),
         blockers: {
-          ...NO_BLOCKERS,
-          unverified: ["EC4001"],
-          pre_registration: [5],
+          ungraded: [],
+          unverified: [
+            EC4001,
+            { code: "EC4002", semester: 4, session: "2024-25" },
+            { code: "EC5001", semester: 5, session: "2025-26" },
+          ],
         },
       },
     });
     await lookUp();
     expect(
-      screen.getByText("Grades not yet verified: EC4001"),
+      screen.getByText(
+        "Grades not yet verified, semester 4 (2024-25): EC4001, EC4002",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Grades not yet verified, semester 5 (2025-26): EC5001"),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Withdraw" })).toBeDisabled();
+  });
+
+  it("lets a student with only a stale allotment be withdrawn, saying what goes", async () => {
+    axios.get.mockResolvedValue({
+      data: {
+        ...record("PRESENT"),
+        withdrawal_removes: { pre_registration: [5], final_registration: [5] },
+      },
+    });
+    await lookUp();
+    expect(screen.queryByText(/Before withdrawing/)).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Withdraw" }));
+    expect(
+      await screen.findByText("Withdrawing also removes:"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Course allotment never verified: semester 5"),
     ).toBeInTheDocument();
     expect(
       screen.getByText("Pre-registration choices: semester 5"),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Withdraw" })).toBeDisabled();
   });
 
   it("shows the server's reason when the role is refused", async () => {
