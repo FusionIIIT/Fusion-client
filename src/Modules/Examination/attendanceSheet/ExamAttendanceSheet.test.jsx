@@ -10,7 +10,7 @@ import axios from "axios";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import ExamAttendanceSheet from "./ExamAttendanceSheet";
-import { renderAttendancePdf } from "./drawAttendanceSheet";
+import { loadLogo, renderAttendancePdf } from "./drawAttendanceSheet";
 import { EXAMINATION_PAGES } from "../pages";
 import {
   attendanceSheetCopyRoute,
@@ -38,14 +38,14 @@ const COURSES = [
   { id: 10, code: "ME3001", name: "Machines", plans: ["MID", "END"] },
 ];
 
-const studentsOf = (count) =>
+const studentsOf = (count, prefix = "23BCS", sectionOf = () => "A") =>
   Array.from({ length: count }, (_, i) => ({
     sno: i + 1,
-    roll_no: `23BCS${String(i + 1).padStart(3, "0")}`,
+    roll_no: `${prefix}${String(i + 1).padStart(3, "0")}`,
     name: `Student ${i + 1}`,
     discipline: "CSE",
     programme: "B.Tech",
-    section: "A",
+    section: sectionOf(i + 1),
   }));
 
 const ROOM = {
@@ -66,17 +66,30 @@ const PLAN = {
   rooms: [ROOM],
 };
 
-const sheetBody = ({ plan = PLAN, count = 45, exam = "MID" } = {}) => ({
-  course: { id: 7, code: "CS8004", name: "Machine Learning" },
+const ML = { id: 7, code: "CS8004", name: "Machine Learning" };
+const PROGRAMMING = { id: 8, code: "CS1001", name: "Programming" };
+
+const sheetBody = ({
+  plan = PLAN,
+  count = 45,
+  exam = "MID",
+  course = ML,
+  prefix = "23BCS",
+  sectioned = false,
+  sectionOf,
+  instructors = { by_section: {}, all: ["Dr. A Kumar"] },
+} = {}) => ({
+  course,
   ...TERM,
   exam,
-  sectioned: false,
-  students: studentsOf(count),
-  instructors: { by_section: {}, all: ["Dr. A Kumar"] },
+  sectioned,
+  students: studentsOf(count, prefix, sectionOf),
+  instructors,
   plan,
 });
 
 let sheet;
+let view;
 
 // Choosing a course starts a request; act lets its answer land inside it.
 async function pick(label, option) {
@@ -103,6 +116,9 @@ describe("ExamAttendanceSheet", () => {
       return `blob:pdf-${made}`;
     });
     URL.revokeObjectURL = vi.fn();
+    loadLogo.mockReset();
+    loadLogo.mockResolvedValue("data:image/png;base64,");
+    renderAttendancePdf.mockClear();
     Element.prototype.scrollIntoView = vi.fn();
     sheet = sheetBody();
     axios.get.mockReset();
@@ -112,7 +128,7 @@ describe("ExamAttendanceSheet", () => {
         data: url === attendanceSheetCoursesRoute ? COURSES : sheet,
       }),
     );
-    render(
+    view = render(
       <MantineProvider theme={theme}>
         <ExamAttendanceSheet />
       </MantineProvider>,
@@ -364,6 +380,164 @@ describe("ExamAttendanceSheet", () => {
       ).toBe("blob:pdf-2"),
     );
     expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:pdf-1");
+  });
+
+  it("draws the PDF without the logo when the logo cannot load", async () => {
+    loadLogo.mockRejectedValue(new Event("error"));
+    await openCourse();
+    fireEvent.click(screen.getByRole("button", { name: "Preview" }));
+    const frame = await screen.findByTitle("Attendance sheet preview");
+    expect(frame.getAttribute("src")).toBe("blob:pdf-1");
+    expect(
+      screen.getByRole("link", { name: "Download PDF" }).getAttribute("href"),
+    ).toBe("blob:pdf-1");
+    expect(renderAttendancePdf.mock.calls.at(-1)[1]).toEqual({
+      sectioned: false,
+      logo: null,
+    });
+  });
+
+  it("re-suggests instructors when the range changes, unless they were typed in", async () => {
+    sheet = sheetBody({
+      plan: null,
+      sectioned: true,
+      sectionOf: (sno) => (sno <= 20 ? "A" : "B"),
+      instructors: { by_section: { A: "Dr. A", B: "Dr. B" }, all: [] },
+    });
+    await openCourse();
+    const instructors = () =>
+      screen.getByRole("textbox", { name: "Room 1 instructors" });
+    const to = () => screen.getByRole("textbox", { name: "Room 1 to S.No" });
+    expect(instructors()).toHaveValue("A: Dr. A, B: Dr. B");
+
+    fireEvent.change(to(), { target: { value: "20" } });
+    await waitFor(() => expect(instructors()).toHaveValue("Dr. A"));
+
+    fireEvent.change(instructors(), { target: { value: "Dr. X" } });
+    fireEvent.change(to(), { target: { value: "30" } });
+    await waitFor(() => expect(to()).toHaveValue("30"));
+    expect(instructors()).toHaveValue("Dr. X");
+  });
+
+  it("shows the course picked last when an earlier answer arrives late", async () => {
+    let answerFirst;
+    axios.get.mockImplementation((url, { params }) => {
+      if (url === attendanceSheetCoursesRoute) {
+        return Promise.resolve({ data: COURSES });
+      }
+      if (params.course === "7") {
+        return new Promise((resolve) => {
+          answerFirst = resolve;
+        });
+      }
+      return Promise.resolve({
+        data: sheetBody({ course: PROGRAMMING, prefix: "23BEC", plan: null }),
+      });
+    });
+    await pick("Course", "CS8004 - Machine Learning (Mid Sem saved)");
+    await pick("Course", "CS1001 - Programming");
+    await screen.findByText("23BEC001");
+
+    await act(async () => {
+      answerFirst({ data: sheetBody() });
+    });
+    expect(screen.getByText("23BEC001")).toBeInTheDocument();
+    expect(screen.queryByText("23BCS001")).toBeNull();
+    expect(screen.queryByText(/^Saved by/)).toBeNull();
+  });
+
+  it("frees the PDF when the course changes and when the page closes", async () => {
+    axios.get.mockImplementation((url, { params }) =>
+      Promise.resolve({
+        data:
+          url === attendanceSheetCoursesRoute
+            ? COURSES
+            : params.course === "7"
+              ? sheet
+              : sheetBody({ course: PROGRAMMING, prefix: "23BEC" }),
+      }),
+    );
+    await openCourse();
+    fireEvent.click(screen.getByRole("button", { name: "Preview" }));
+    await screen.findByTitle("Attendance sheet preview");
+
+    await pick("Course", "CS1001 - Programming");
+    await screen.findByText("23BEC001");
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:pdf-1");
+    expect(screen.queryByTitle("Attendance sheet preview")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Preview" }));
+    await screen.findByTitle("Attendance sheet preview");
+    expect(URL.revokeObjectURL).not.toHaveBeenCalledWith("blob:pdf-2");
+    view.unmount();
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:pdf-2");
+  });
+
+  it("reloads the plan after someone else saved first", async () => {
+    await openCourse();
+    axios.post.mockRejectedValueOnce({
+      response: {
+        status: 409,
+        data: { detail: "Someone saved this plan after you opened it." },
+      },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    await screen.findByText("Someone saved this plan after you opened it.");
+
+    const newer = "2026-11-23T12:00:00+05:30";
+    sheet = sheetBody({
+      plan: {
+        ...PLAN,
+        updated_at: newer,
+        updated_by: "acadug",
+        rooms: [{ ...ROOM, room: "LT-9" }],
+      },
+    });
+    const loads = () =>
+      axios.get.mock.calls.filter(([url]) => url === attendanceSheetRoute)
+        .length;
+    expect(loads()).toBe(1);
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Reload" }));
+    });
+    expect(loads()).toBe(2);
+    expect(
+      await screen.findByRole("textbox", { name: "Room 1 room" }),
+    ).toHaveValue("LT-9");
+    expect(
+      screen.queryByText("Someone saved this plan after you opened it."),
+    ).toBeNull();
+
+    axios.post.mockResolvedValueOnce({ data: sheet });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(axios.post).toHaveBeenCalledTimes(2));
+    const body = axios.post.mock.calls[1][1];
+    expect(body.updated_at).toBe(newer);
+    expect(body.rooms[0].room).toBe("LT-9");
+    await screen.findByText(
+      `Saved by acadug, ${new Date(newer).toLocaleString("en-IN")}`,
+    );
+  });
+
+  it("offers to reload when the course fails to load", async () => {
+    axios.get.mockImplementation((url) =>
+      url === attendanceSheetCoursesRoute
+        ? Promise.resolve({ data: COURSES })
+        : Promise.reject(new Error("Network Error")),
+    );
+    await pick("Course", "CS8004 - Machine Learning (Mid Sem saved)");
+    await screen.findByText("Could not load this course.");
+
+    axios.get.mockImplementation((url) =>
+      Promise.resolve({
+        data: url === attendanceSheetCoursesRoute ? COURSES : sheet,
+      }),
+    );
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Reload" }));
+    });
+    expect(await screen.findByText("23BCS001")).toBeInTheDocument();
+    expect(screen.queryByText("Could not load this course.")).toBeNull();
   });
 });
 

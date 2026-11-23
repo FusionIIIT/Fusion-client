@@ -116,10 +116,13 @@ const toPayload = (r) => ({
   instructor_text: r.instructor_text.trim(),
 });
 
-function problemFrom(e, fallback) {
+// reload: offer to fetch the sheet again (after a failed load, or when
+// someone else saved first and the plan on screen is out of date).
+function problemFrom(e, fallback, reload = false) {
   return {
     detail: e.response?.data?.detail || fallback,
     errors: e.response?.data?.errors || [],
+    reload,
   };
 }
 
@@ -183,9 +186,12 @@ export default function ExamAttendanceSheet() {
   const [confirmReplace, setConfirmReplace] = useState(false);
   const [problem, setProblem] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [reloads, setReloads] = useState(0);
 
   // Which course / exam / term the sheet on screen is for.
   const loadedKey = useRef(null);
+  // Set by Reload: fetch even though this sheet is already on screen.
+  const forceLoad = useRef(false);
   const previewUrl = useRef(null);
   const mounted = useRef(true);
   const roomKey = useRef(0);
@@ -289,7 +295,8 @@ export default function ExamAttendanceSheet() {
     const key = courseId
       ? keyOf(courseId, exam, academicYear, semesterType)
       : null;
-    if (key === loadedKey.current) return;
+    if (key === loadedKey.current && !forceLoad.current) return;
+    forceLoad.current = false;
     loadedKey.current = null;
     showPreview(null);
     setSheet(null);
@@ -317,12 +324,18 @@ export default function ExamAttendanceSheet() {
       .catch((e) => {
         if (!live) return;
         setLoading(false);
-        setProblem(problemFrom(e, "Could not load this course."));
+        setProblem(problemFrom(e, "Could not load this course.", true));
       });
     return () => {
       live = false;
     };
-  }, [courseId, exam, academicYear, semesterType]);
+  }, [courseId, exam, academicYear, semesterType, reloads]);
+
+  // Drops the rooms on screen for what the server has now.
+  const reload = () => {
+    forceLoad.current = true;
+    setReloads((n) => n + 1);
+  };
 
   const total = sheet ? sheet.students.length : 0;
   const payload = useMemo(() => rooms.map(toPayload), [rooms]);
@@ -393,7 +406,8 @@ export default function ExamAttendanceSheet() {
       if (loadedKey.current === key) applySheet(data);
     } catch (e) {
       if (loadedKey.current === key) {
-        setProblem(problemFrom(e, "Could not save the plan."));
+        const stale = e.response?.status === 409;
+        setProblem(problemFrom(e, "Could not save the plan.", stale));
       }
     } finally {
       setSaving(false);
@@ -491,6 +505,18 @@ export default function ExamAttendanceSheet() {
           {line}
         </Text>
       ))}
+      {problem.reload && courseId && (
+        <Group gap="xs" mt="xs">
+          <Button size="xs" variant="light" color="red" onClick={reload}>
+            Reload
+          </Button>
+          {sheet && (
+            <Text size="xs" c="dimmed">
+              Your unsaved changes will be lost.
+            </Text>
+          )}
+        </Group>
+      )}
     </Alert>
   );
 
