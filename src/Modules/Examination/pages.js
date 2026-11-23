@@ -111,4 +111,12 @@ export const EXAMINATION_PAGES = [
     group: null,
     roles: [...ACAD, ...PROGRAMME_ADMIN_ROLES],
   },
+  {
+    key: "examAttendanceSheet",
+    slug: "attendance-sheet",
+    title: "Exam Attendance Sheet",
+    icon: "ClipboardText",
+    group: null,
+    roles: [...ACAD, ...PROGRAMME_ADMIN_ROLES],
+  },
 ];

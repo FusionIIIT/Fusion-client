@@ -1,0 +1,386 @@
+import { MantineProvider } from "@mantine/core";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
+import axios from "axios";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import ExamAttendanceSheet from "./ExamAttendanceSheet";
+import { renderAttendancePdf } from "./drawAttendanceSheet";
+import { EXAMINATION_PAGES } from "../pages";
+import {
+  attendanceSheetCopyRoute,
+  attendanceSheetCoursesRoute,
+  attendanceSheetRoute,
+  attendanceSheetSaveRoute,
+} from "../routes/examinationRoutes";
+import { theme } from "../../../ui/theme/theme";
+
+vi.mock("axios", () => ({ default: { get: vi.fn(), post: vi.fn() } }));
+vi.mock("./drawAttendanceSheet", () => ({
+  renderAttendancePdf: vi.fn(async () => ({
+    output: () => new Blob(["%PDF"]),
+  })),
+  loadLogo: vi.fn(async () => "data:image/png;base64,"),
+}));
+
+const HEADERS = { headers: { Authorization: "Token token" } };
+const TERM = { academic_year: "2026-27", semester_type: "Odd Semester" };
+
+const COURSES = [
+  { id: 7, code: "CS8004", name: "Machine Learning", plans: ["MID"] },
+  { id: 8, code: "CS1001", name: "Programming", plans: [] },
+  { id: 9, code: "EC2001", name: "Signals", plans: ["END"] },
+  { id: 10, code: "ME3001", name: "Machines", plans: ["MID", "END"] },
+];
+
+const studentsOf = (count) =>
+  Array.from({ length: count }, (_, i) => ({
+    sno: i + 1,
+    roll_no: `23BCS${String(i + 1).padStart(3, "0")}`,
+    name: `Student ${i + 1}`,
+    discipline: "CSE",
+    programme: "B.Tech",
+    section: "A",
+  }));
+
+const ROOM = {
+  from_sno: 1,
+  to_sno: 45,
+  room: "LT-1",
+  date: "2026-12-01",
+  start_time: "09:00",
+  end_time: "17:00",
+  instructor_text: "Dr. A Kumar",
+};
+
+const PLAN = {
+  exam: "MID",
+  roll_count: 45,
+  updated_at: "2026-11-20T10:00:00+05:30",
+  updated_by: "skjain",
+  rooms: [ROOM],
+};
+
+const sheetBody = ({ plan = PLAN, count = 45, exam = "MID" } = {}) => ({
+  course: { id: 7, code: "CS8004", name: "Machine Learning" },
+  ...TERM,
+  exam,
+  sectioned: false,
+  students: studentsOf(count),
+  instructors: { by_section: {}, all: ["Dr. A Kumar"] },
+  plan,
+});
+
+let sheet;
+
+// Choosing a course starts a request; act lets its answer land inside it.
+async function pick(label, option) {
+  fireEvent.click(screen.getByRole("textbox", { name: label }));
+  const choice = await screen.findByRole("option", { name: option });
+  await act(async () => {
+    fireEvent.click(choice);
+  });
+}
+
+async function openCourse() {
+  await pick("Course", "CS8004 - Machine Learning (Mid Sem saved)");
+  await screen.findByText("23BCS001");
+}
+
+describe("ExamAttendanceSheet", () => {
+  beforeEach(async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-11-23T10:00:00+05:30"));
+    vi.stubGlobal("localStorage", { getItem: vi.fn(() => "token") });
+    let made = 0;
+    URL.createObjectURL = vi.fn(() => {
+      made += 1;
+      return `blob:pdf-${made}`;
+    });
+    URL.revokeObjectURL = vi.fn();
+    Element.prototype.scrollIntoView = vi.fn();
+    sheet = sheetBody();
+    axios.get.mockReset();
+    axios.post.mockReset();
+    axios.get.mockImplementation((url) =>
+      Promise.resolve({
+        data: url === attendanceSheetCoursesRoute ? COURSES : sheet,
+      }),
+    );
+    render(
+      <MantineProvider theme={theme}>
+        <ExamAttendanceSheet />
+      </MantineProvider>,
+    );
+    // Let the course list for the default term arrive.
+    await waitFor(() =>
+      expect(axios.get).toHaveBeenCalledWith(attendanceSheetCoursesRoute, {
+        params: TERM,
+        ...HEADERS,
+      }),
+    );
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("lists courses for the chosen term and marks saved plans", async () => {
+    expect(axios.get).toHaveBeenCalledWith(attendanceSheetCoursesRoute, {
+      params: TERM,
+      ...HEADERS,
+    });
+    fireEvent.click(screen.getByRole("textbox", { name: "Course" }));
+    expect(
+      await screen.findByRole("option", {
+        name: "CS8004 - Machine Learning (Mid Sem saved)",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("option", { name: "CS1001 - Programming" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("option", { name: "EC2001 - Signals (End Sem saved)" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("option", {
+        name: "ME3001 - Machines (Mid and End Sem saved)",
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it("loads a saved plan and shows who saved it", async () => {
+    await openCourse();
+    expect(axios.get).toHaveBeenCalledWith(attendanceSheetRoute, {
+      params: { course: "7", ...TERM, exam: "MID" },
+      ...HEADERS,
+    });
+    expect(
+      screen.getByText(
+        `Saved by skjain, ${new Date(PLAN.updated_at).toLocaleString("en-IN")}`,
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Room 1 room" })).toHaveValue(
+      "LT-1",
+    );
+    expect(screen.getByLabelText("Room 1 date")).toHaveValue("2026-12-01");
+    expect(
+      screen.getByRole("textbox", { name: "Room 1 end hour" }),
+    ).toHaveValue("05");
+    expect(
+      screen.getByRole("textbox", { name: "Room 1 end period" }),
+    ).toHaveValue("PM");
+  });
+
+  it("starts a new plan with one room for the whole roll list", async () => {
+    sheet = sheetBody({ plan: null });
+    await openCourse();
+    expect(
+      screen.getByRole("textbox", { name: "Room 1 from S.No" }),
+    ).toHaveValue("1");
+    expect(screen.getByRole("textbox", { name: "Room 1 to S.No" })).toHaveValue(
+      "45",
+    );
+    expect(
+      screen.getByRole("textbox", { name: "Room 1 instructors" }),
+    ).toHaveValue("Dr. A Kumar");
+    expect(screen.queryByText(/^Saved by/)).toBeNull();
+    expect(screen.queryByRole("button", { name: /^Copy to/ })).toBeNull();
+  });
+
+  it("prefills the next room from the previous one", async () => {
+    sheet = sheetBody({ plan: { ...PLAN, rooms: [{ ...ROOM, to_sno: 20 }] } });
+    await openCourse();
+    fireEvent.click(screen.getByRole("button", { name: "Add room" }));
+    expect(
+      screen.getByRole("textbox", { name: "Room 2 from S.No" }),
+    ).toHaveValue("21");
+    expect(screen.getByRole("textbox", { name: "Room 2 to S.No" })).toHaveValue(
+      "45",
+    );
+    expect(screen.getByLabelText("Room 2 date")).toHaveValue("2026-12-01");
+    expect(
+      screen.getByRole("textbox", { name: "Room 2 instructors" }),
+    ).toHaveValue("Dr. A Kumar");
+  });
+
+  it("blocks saving overlapping ranges", async () => {
+    sheet = sheetBody({
+      plan: {
+        ...PLAN,
+        rooms: [
+          { ...ROOM, to_sno: 20 },
+          { ...ROOM, from_sno: 21, room: "LT-2" },
+        ],
+      },
+    });
+    await openCourse();
+    expect(screen.getByRole("button", { name: "Save" })).toBeEnabled();
+    fireEvent.change(
+      screen.getByRole("textbox", { name: "Room 2 from S.No" }),
+      {
+        target: { value: "20" },
+      },
+    );
+    expect(
+      await screen.findByText("Rooms 1 and 2 overlap."),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
+  });
+
+  it("warns when the roll list changed since saving", async () => {
+    sheet = sheetBody({ count: 46 });
+    await openCourse();
+    expect(
+      screen.getByText("Roll list was 45 when saved, now 46."),
+    ).toBeInTheDocument();
+    expect(screen.getByText("No room for S.No 46.")).toBeInTheDocument();
+  });
+
+  it("saves and shows server errors", async () => {
+    await openCourse();
+    await pick("Room 1 start hour", "03");
+    await pick("Room 1 start period", "PM");
+    axios.post.mockRejectedValue({
+      response: {
+        status: 400,
+        data: {
+          detail: "Fix these, then save.",
+          errors: ["Room 1: LT-1 is not a room."],
+        },
+      },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    expect(
+      await screen.findByText("Room 1: LT-1 is not a room."),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Fix these, then save.")).toBeInTheDocument();
+    const [url, body, config] = axios.post.mock.calls[0];
+    expect(url).toBe(attendanceSheetSaveRoute);
+    expect(config).toEqual(HEADERS);
+    expect(body).toEqual({
+      course: 7,
+      ...TERM,
+      exam: "MID",
+      updated_at: PLAN.updated_at,
+      rooms: [{ ...ROOM, start_time: "15:00" }],
+    });
+  });
+
+  it("shows who saved it once the save goes through", async () => {
+    await openCourse();
+    axios.post.mockResolvedValue({
+      data: sheetBody({
+        plan: {
+          ...PLAN,
+          updated_at: "2026-11-23T11:00:00+05:30",
+          updated_by: "acadadmin",
+        },
+      }),
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    expect(
+      await screen.findByText(
+        `Saved by acadadmin, ${new Date("2026-11-23T11:00:00+05:30").toLocaleString("en-IN")}`,
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("says so when someone else saved first", async () => {
+    await openCourse();
+    axios.post.mockRejectedValue({
+      response: {
+        status: 409,
+        data: { detail: "Someone saved this plan after you opened it." },
+      },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    expect(
+      await screen.findByText("Someone saved this plan after you opened it."),
+    ).toBeInTheDocument();
+  });
+
+  it("copies Mid Sem to End Sem, asking before replacing", async () => {
+    await openCourse();
+    axios.post
+      .mockRejectedValueOnce({
+        response: {
+          status: 409,
+          data: { detail: "An End Sem plan exists.", exists: true },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: sheetBody({ exam: "END", plan: { ...PLAN, exam: "END" } }),
+      });
+    fireEvent.click(screen.getByRole("button", { name: "Copy to End Sem" }));
+    expect(
+      await screen.findByText("An End Sem plan already exists. Replace it?"),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Replace" }));
+    expect(
+      await screen.findByRole("button", { name: "Copy to Mid Sem" }),
+    ).toBeInTheDocument();
+    const copy = {
+      course: 7,
+      ...TERM,
+      from_exam: "MID",
+      to_exam: "END",
+    };
+    expect(axios.post.mock.calls).toEqual([
+      [attendanceSheetCopyRoute, { ...copy, replace: false }, HEADERS],
+      [attendanceSheetCopyRoute, { ...copy, replace: true }, HEADERS],
+    ]);
+    expect(screen.getByRole("textbox", { name: "Exam" })).toHaveValue(
+      "End Sem",
+    );
+  });
+
+  it("preview and download use the same PDF", async () => {
+    await openCourse();
+    fireEvent.click(screen.getByRole("button", { name: "Preview" }));
+    const frame = await screen.findByTitle("Attendance sheet preview");
+    const link = screen.getByRole("link", { name: "Download PDF" });
+    expect(frame.getAttribute("src")).toBe("blob:pdf-1");
+    expect(link.getAttribute("href")).toBe(frame.getAttribute("src"));
+    expect(link).toHaveAttribute("download", "CS8004_MidSem_2026-27.pdf");
+    expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
+    const [sheets, options] = renderAttendancePdf.mock.calls.at(-1);
+    expect(options).toEqual({
+      sectioned: false,
+      logo: "data:image/png;base64,",
+    });
+    expect(sheets).toHaveLength(1);
+    expect(sheets[0].timeText).toBe("Time : 09:00 AM To 05:00 PM");
+
+    fireEvent.click(screen.getByRole("button", { name: "Preview" }));
+    await waitFor(() =>
+      expect(
+        screen.getByTitle("Attendance sheet preview").getAttribute("src"),
+      ).toBe("blob:pdf-2"),
+    );
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:pdf-1");
+  });
+});
+
+describe("Exam attendance sheet menu entry", () => {
+  it("offers the page to acadadmin and programme admins only", () => {
+    const page = EXAMINATION_PAGES.find((p) => p.key === "examAttendanceSheet");
+    expect(page).toMatchObject({
+      slug: "attendance-sheet",
+      title: "Exam Attendance Sheet",
+      icon: "ClipboardText",
+      group: null,
+    });
+    expect(page.roles).toEqual([
+      "acadadmin",
+      "Acad UG",
+      "Acad PG",
+      "Acad Ph.D.",
+    ]);
+  });
+});
