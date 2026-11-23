@@ -38,19 +38,37 @@ function sessionFor(batch, semesterNo) {
   return `${start}-${String((start + 1) % 100).padStart(2, "0")}`;
 }
 
+// Courses grouped by the semester and session they were taken in:
+// "Grades not yet verified, semester 4 (2024-25): EC2005, EC2006".
+function perSemester(label, items = []) {
+  const groups = new Map();
+  items.forEach(({ code, semester, session }) => {
+    const key = `semester ${semester}${session ? ` (${session})` : ""}`;
+    groups.set(key, [...(groups.get(key) ?? []), code]);
+  });
+  return [...groups].map(
+    ([key, codes]) => `${label}, ${key}: ${codes.join(", ")}`,
+  );
+}
+
 // What the office has to clear before a withdrawal, one line each.
 function blockerLines(blockers) {
   if (!blockers) return [];
+  return [
+    ...perSemester("Courses without a grade", blockers.ungraded),
+    ...perSemester("Grades not yet verified", blockers.unverified),
+  ];
+}
+
+// What a withdrawal removes by itself: leftovers of a semester never entered.
+function removalLines(removes) {
+  if (!removes) return [];
   const sems = (list) => list.map((n) => `semester ${n}`).join(", ");
   return [
-    blockers.ungraded?.length &&
-      `Courses without a grade: ${blockers.ungraded.join(", ")}`,
-    blockers.unverified?.length &&
-      `Grades not yet verified: ${blockers.unverified.join(", ")}`,
-    blockers.pre_registration?.length &&
-      `Pre-registration choices: ${sems(blockers.pre_registration)}`,
-    blockers.final_registration?.length &&
-      `Final registration not verified: ${sems(blockers.final_registration)}`,
+    removes.final_registration?.length &&
+      `Course allotment never verified: ${sems(removes.final_registration)}`,
+    removes.pre_registration?.length &&
+      `Pre-registration choices: ${sems(removes.pre_registration)}`,
   ].filter(Boolean);
 }
 
@@ -201,6 +219,8 @@ export default function AdminStudentStatus() {
         : null;
   // A present student with an open semester cannot be withdrawn yet.
   const openWork = status === "PRESENT" ? blockerLines(student?.blockers) : [];
+  const removals =
+    status === "PRESENT" ? removalLines(student?.withdrawal_removes) : [];
   const drops = student?.drops ?? [];
   const liveDropped = new Set(
     drops.filter((d) => !d.cancelled_at).map((d) => d.semester_no),
@@ -242,7 +262,8 @@ export default function AdminStudentStatus() {
       {!error && openWork.length > 0 && (
         <Alert color="yellow">
           <Text size="sm">
-            Before withdrawing, clear these with the usual tools:
+            Before withdrawing, these grades have to be given and verified in
+            Examination:
           </Text>
           {openWork.map((line) => (
             <Text size="sm" key={line}>
@@ -302,7 +323,9 @@ export default function AdminStudentStatus() {
                       <Table.Td>{when(h.created_at)}</Table.Td>
                       <Table.Td>{ACTION_LABELS[h.action] ?? h.action}</Table.Td>
                       <Table.Td>{h.semester_no ?? "-"}</Table.Td>
-                      <Table.Td>{h.reason}</Table.Td>
+                      <Table.Td style={{ whiteSpace: "pre-line" }}>
+                        {h.reason}
+                      </Table.Td>
                       <Table.Td>{h.performed_by ?? "-"}</Table.Td>
                     </Table.Tr>
                   ))}
@@ -388,6 +411,16 @@ export default function AdminStudentStatus() {
         {pending && (
           <Stack>
             <Text size="sm">{action.text}</Text>
+            {pending.kind === "withdraw" && removals.length > 0 && (
+              <Alert color="gray">
+                <Text size="sm">Withdrawing also removes:</Text>
+                {removals.map((line) => (
+                  <Text size="sm" key={line}>
+                    {line}
+                  </Text>
+                ))}
+              </Alert>
+            )}
             {pending.kind === "drop" && (
               <>
                 <NativeSelect
