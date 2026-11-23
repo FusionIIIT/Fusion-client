@@ -182,7 +182,17 @@ function drawHeader(doc, sheet, logo) {
   if (logo) {
     const size = h(7) + h(8) + h(9) + h(10);
     const width = (size * LOGO_SOURCE.width) / LOGO_SOURCE.height;
-    doc.addImage(logo, "PNG", x.a + (A + B - width) / 2, top(7), width, size);
+    // One alias: the image is stored (deflated) once, not re-hashed per sheet.
+    doc.addImage(
+      logo,
+      "PNG",
+      x.a + (A + B - width) / 2,
+      top(7),
+      width,
+      size,
+      "logo",
+      "FAST",
+    );
   }
 
   const right = { align: "right", bold: true, size: header };
@@ -279,10 +289,11 @@ function drawRow(doc, columns, row, y) {
   return y + h;
 }
 
-function drawPageLabel(doc, n, m) {
+// "CS8004 · L201 · Page 2 of 2": a loose page still names its course and room.
+function drawPageLabel(doc, sheet, n, m) {
   setFont(doc, false, LAYOUT.font.footer);
   doc.text(
-    `Page ${n} of ${m}`,
+    `${sheet.code} · ${sheet.room} · Page ${n} of ${m}`,
     LAYOUT.page.width / 2,
     LAYOUT.page.height - LAYOUT.margin - LAYOUT.footerHeight / 2,
     { align: "center", baseline: "middle" },
@@ -305,7 +316,7 @@ export async function renderAttendancePdf(sheets, { sectioned, logo } = {}) {
       pageRows.forEach((row) => {
         y = drawRow(doc, columns, row, y);
       });
-      if (pages.length > 1) drawPageLabel(doc, i + 1, pages.length);
+      if (pages.length > 1) drawPageLabel(doc, sheet, i + 1, pages.length);
     });
   });
 

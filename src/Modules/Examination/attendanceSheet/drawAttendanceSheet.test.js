@@ -1,3 +1,4 @@
+import { deflateSync } from "node:zlib";
 import { describe, expect, it, vi } from "vitest";
 import {
   LAYOUT,
@@ -26,6 +27,63 @@ vi.mock("jspdf", async (importOriginal) => {
 
 const LOGO =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+
+// PNG chunk checksums; a CRC is bit arithmetic by nature.
+/* eslint-disable no-bitwise */
+const CRC_TABLE = Array.from({ length: 256 }, (_, n) => {
+  let c = n;
+  for (let k = 0; k < 8; k += 1) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+  return c >>> 0;
+});
+
+const crc32 = (bytes) => {
+  let c = 0xffffffff;
+  bytes.forEach((b) => {
+    c = CRC_TABLE[(c ^ b) & 0xff] ^ (c >>> 8);
+  });
+  return (c ^ 0xffffffff) >>> 0;
+};
+/* eslint-enable no-bitwise */
+
+const pngChunk = (type, data) => {
+  const body = Buffer.concat([Buffer.from(type, "ascii"), data]);
+  const out = Buffer.alloc(body.length + 8);
+  out.writeUInt32BE(data.length, 0);
+  body.copy(out, 4);
+  out.writeUInt32BE(crc32(body), body.length + 4);
+  return out;
+};
+
+// An RGBA PNG the size of the logo the page draws (570x566), in flat
+// colours with a transparent background, as the real mark is.
+function logoSizedPng() {
+  const width = 570;
+  const height = 566;
+  const header = Buffer.alloc(13);
+  header.writeUInt32BE(width, 0);
+  header.writeUInt32BE(height, 4);
+  header[8] = 8; // bit depth
+  header[9] = 6; // RGBA
+  const stride = width * 4 + 1;
+  const raw = Buffer.alloc(stride * height);
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const o = y * stride + 1 + x * 4;
+      const inMark = (x - 285) ** 2 + (y - 283) ** 2 < 250 ** 2;
+      raw[o] = x < width / 2 ? 0x2e : 0x1f;
+      raw[o + 1] = x < width / 2 ? 0x8b : 0x4e;
+      raw[o + 2] = x < width / 2 ? 0x57 : 0x9a;
+      raw[o + 3] = inMark ? 255 : 0;
+    }
+  }
+  const png = Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    pngChunk("IHDR", header),
+    pngChunk("IDAT", deflateSync(raw)),
+    pngChunk("IEND", Buffer.alloc(0)),
+  ]);
+  return `data:image/png;base64,${png.toString("base64")}`;
+}
 
 const sheet = (n, over = {}) => ({
   room: "L201",
@@ -124,8 +182,11 @@ describe("renderAttendancePdf", () => {
       logo: LOGO,
     });
     expect(doc.getNumberOfPages()).toBe(2);
-    expect(texts(doc)).toContain("Page 1 of 2");
-    expect(texts(doc)).toContain("Page 2 of 2");
+    // A loose continuation page still says which course and room it is.
+    expect(texts(doc)).toContain("CS8004 · L201 · Page 1 of 2");
+    expect(texts(doc)).toContain("CS8004 · L201 · Page 2 of 2");
+    // The middle dot is in the standard fonts' encoding (one byte, 0xB7).
+    expect(doc.output()).toContain("(CS8004 \xb7 L201 \xb7 Page 2 of 2)");
 
     const short = await renderAttendancePdf([sheet(3)], {
       sectioned: false,
@@ -189,6 +250,26 @@ describe("renderAttendancePdf", () => {
       logo: LOGO,
     });
     expect(doc.addImage).toHaveBeenCalledTimes(3);
+  });
+
+  it("stores the logo once, compressed, under a fixed alias", async () => {
+    const doc = await renderAttendancePdf([sheet(2), sheet(3)], {
+      sectioned: false,
+      logo: LOGO,
+    });
+    doc.addImage.mock.calls.forEach((args) => {
+      expect(args[0]).toBe(LOGO);
+      expect(args[1]).toBe("PNG");
+      expect(args.slice(6, 8)).toEqual(["logo", "FAST"]);
+    });
+  });
+
+  it("keeps a six-sheet PDF with a logo-sized image small", async () => {
+    const doc = await renderAttendancePdf(
+      Array.from({ length: 6 }, () => sheet(30)),
+      { sectioned: false, logo: logoSizedPng() },
+    );
+    expect(doc.output().length).toBeLessThan(400 * 1024);
   });
 });
 
