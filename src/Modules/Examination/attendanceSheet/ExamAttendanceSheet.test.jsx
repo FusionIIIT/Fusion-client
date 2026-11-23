@@ -356,6 +356,20 @@ describe("ExamAttendanceSheet", () => {
     );
   });
 
+  it("puts the rooms, then the preview, above the roll list", async () => {
+    await openCourse();
+    fireEvent.click(screen.getByRole("button", { name: "Preview" }));
+    const frame = await screen.findByTitle("Attendance sheet preview");
+    const rooms = screen.getByRole("heading", { name: "Rooms" });
+    const students = screen.getByRole("heading", { name: "Students (45)" });
+    const before = (a, b) =>
+      // eslint-disable-next-line no-bitwise
+      Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(before(rooms, frame)).toBe(true);
+    expect(before(frame, students)).toBe(true);
+    expect(before(students, screen.getByText("23BCS001"))).toBe(true);
+  });
+
   it("preview and download use the same PDF", async () => {
     await openCourse();
     fireEvent.click(screen.getByRole("button", { name: "Preview" }));

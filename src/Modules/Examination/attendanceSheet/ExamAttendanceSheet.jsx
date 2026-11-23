@@ -641,38 +641,10 @@ export default function ExamAttendanceSheet() {
             </Text>
           </Group>
 
-          <Title order={5}>{`Students (${total})`}</Title>
-          {total === 0 ? (
+          {total === 0 && (
             <Text size="sm" c="dimmed">
               No students are registered in this course for this term.
             </Text>
-          ) : (
-            <Box mah={360} style={{ overflowY: "auto" }}>
-              <Table striped stickyHeader>
-                <Table.Thead>
-                  <Table.Tr>
-                    <Table.Th>S.No</Table.Th>
-                    <Table.Th>Roll No</Table.Th>
-                    <Table.Th>Name</Table.Th>
-                    <Table.Th>Discipline</Table.Th>
-                    {sheet.sectioned && <Table.Th>Section</Table.Th>}
-                    <Table.Th>Programme</Table.Th>
-                  </Table.Tr>
-                </Table.Thead>
-                <Table.Tbody>
-                  {sheet.students.map((s) => (
-                    <Table.Tr key={s.sno}>
-                      <Table.Td>{s.sno}</Table.Td>
-                      <Table.Td>{s.roll_no}</Table.Td>
-                      <Table.Td>{s.name}</Table.Td>
-                      <Table.Td>{s.discipline}</Table.Td>
-                      {sheet.sectioned && <Table.Td>{s.section}</Table.Td>}
-                      <Table.Td>{s.programme}</Table.Td>
-                    </Table.Tr>
-                  ))}
-                </Table.Tbody>
-              </Table>
-            </Box>
           )}
 
           {total > 0 && (
@@ -863,6 +835,38 @@ export default function ExamAttendanceSheet() {
                 }}
               />
             </Stack>
+          )}
+
+          {total > 0 && (
+            <>
+              <Title order={5}>{`Students (${total})`}</Title>
+              <Box mah={360} style={{ overflowY: "auto" }}>
+                <Table striped stickyHeader>
+                  <Table.Thead>
+                    <Table.Tr>
+                      <Table.Th>S.No</Table.Th>
+                      <Table.Th>Roll No</Table.Th>
+                      <Table.Th>Name</Table.Th>
+                      <Table.Th>Discipline</Table.Th>
+                      {sheet.sectioned && <Table.Th>Section</Table.Th>}
+                      <Table.Th>Programme</Table.Th>
+                    </Table.Tr>
+                  </Table.Thead>
+                  <Table.Tbody>
+                    {sheet.students.map((s) => (
+                      <Table.Tr key={s.sno}>
+                        <Table.Td>{s.sno}</Table.Td>
+                        <Table.Td>{s.roll_no}</Table.Td>
+                        <Table.Td>{s.name}</Table.Td>
+                        <Table.Td>{s.discipline}</Table.Td>
+                        {sheet.sectioned && <Table.Td>{s.section}</Table.Td>}
+                        <Table.Td>{s.programme}</Table.Td>
+                      </Table.Tr>
+                    ))}
+                  </Table.Tbody>
+                </Table>
+              </Box>
+            </>
           )}
         </>
       )}
