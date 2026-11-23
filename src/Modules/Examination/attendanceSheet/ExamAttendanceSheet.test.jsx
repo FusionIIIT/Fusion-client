@@ -15,6 +15,7 @@ import { EXAMINATION_PAGES } from "../pages";
 import {
   attendanceSheetCopyRoute,
   attendanceSheetCoursesRoute,
+  attendanceSheetOverviewRoute,
   attendanceSheetRoute,
   attendanceSheetSaveRoute,
 } from "../routes/examinationRoutes";
@@ -354,6 +355,82 @@ describe("ExamAttendanceSheet", () => {
     expect(screen.getByRole("textbox", { name: "Exam" })).toHaveValue(
       "End Sem",
     );
+  });
+
+  it("shows every course's rooms on the Overview tab and opens one from there", async () => {
+    axios.get.mockImplementation((url) => {
+      if (url === attendanceSheetCoursesRoute)
+        return Promise.resolve({ data: COURSES });
+      if (url === attendanceSheetOverviewRoute)
+        return Promise.resolve({
+          data: {
+            courses: 4,
+            planned: 2,
+            rooms: [
+              {
+                course: ML,
+                ...ROOM,
+                students: 45,
+                roll_changed: false,
+                shares_with: [],
+              },
+            ],
+            unplanned: [PROGRAMMING],
+          },
+        });
+      return Promise.resolve({ data: sheet });
+    });
+    fireEvent.click(screen.getByRole("tab", { name: "Overview" }));
+    expect(await screen.findByText("LT-1")).toBeInTheDocument();
+    expect(axios.get).toHaveBeenCalledWith(attendanceSheetOverviewRoute, {
+      params: { ...TERM, exam: "MID" },
+      ...HEADERS,
+    });
+    // The course picker belongs to the planner only.
+    expect(screen.queryByRole("textbox", { name: "Course" })).toBeNull();
+
+    sheet = sheetBody({ plan: null, course: PROGRAMMING });
+    await act(async () => {
+      fireEvent.click(
+        screen.getByRole("button", { name: "CS1001 - Programming" }),
+      );
+    });
+    expect(screen.getByRole("tab", { name: "Plan rooms" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    expect(await screen.findByText("23BCS001")).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Course" })).toHaveValue(
+      "CS1001 - Programming",
+    );
+    expect(axios.get).toHaveBeenCalledWith(
+      attendanceSheetRoute,
+      expect.objectContaining({
+        params: expect.objectContaining({ course: "8", exam: "MID" }),
+      }),
+    );
+  });
+
+  it("asks before opening another course from the overview over unsaved rooms", async () => {
+    await openCourse();
+    fireEvent.change(screen.getByRole("textbox", { name: "Room 1 room" }), {
+      target: { value: "L999" },
+    });
+    axios.get.mockImplementation((url) =>
+      Promise.resolve({
+        data:
+          url === attendanceSheetOverviewRoute
+            ? { courses: 4, planned: 0, rooms: [], unplanned: [PROGRAMMING] }
+            : COURSES,
+      }),
+    );
+    fireEvent.click(screen.getByRole("tab", { name: "Overview" }));
+    fireEvent.click(
+      await screen.findByRole("button", { name: "CS1001 - Programming" }),
+    );
+    expect(
+      await screen.findByText("Discard unsaved changes?"),
+    ).toBeInTheDocument();
   });
 
   it("puts the rooms, then the preview, above the roll list", async () => {

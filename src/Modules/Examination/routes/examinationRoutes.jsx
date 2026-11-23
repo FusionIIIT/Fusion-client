@@ -42,6 +42,7 @@ export const generate_full_gradesheet_form = `${host}/examination/api/generate_f
 export const generate_full_gradesheet_data = `${host}/examination/api/generate_full_gradesheet_data/`;
 
 export const attendanceSheetCoursesRoute = `${host}/examination/api/attendance-sheet/courses/`;
+export const attendanceSheetOverviewRoute = `${host}/examination/api/attendance-sheet/overview/`;
 export const attendanceSheetRoute = `${host}/examination/api/attendance-sheet/`;
 export const attendanceSheetSaveRoute = `${host}/examination/api/attendance-sheet/save/`;
 export const attendanceSheetCopyRoute = `${host}/examination/api/attendance-sheet/copy/`;
