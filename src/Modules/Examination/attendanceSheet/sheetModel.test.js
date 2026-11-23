@@ -121,6 +121,18 @@ describe("defaultInstructorText", () => {
       ),
     ).toBe("PROF. X, PROF. Z");
   });
+  it("students with no named section get all the instructors", () => {
+    const loose = mk(3, "B.Tech", "").map((s, i) => ({ ...s, sno: i + 1 }));
+    expect(
+      defaultInstructorText(
+        loose,
+        1,
+        3,
+        { by_section: { A: "PROF. X" }, all: ["PROF. X", "PROF. Y"] },
+        true,
+      ),
+    ).toBe("PROF. X, PROF. Y");
+  });
   it("none", () => {
     expect(
       defaultInstructorText(sec, 1, 6, { by_section: {}, all: [] }, true),
@@ -155,6 +167,52 @@ describe("checkRooms", () => {
     expect(
       checkRooms([room({ end_time: "14:00", to_sno: 30 })], 30).errors,
     ).toEqual(["Room 1: the exam must end after it starts."]);
+  });
+  it("lengths", () => {
+    expect(
+      checkRooms(
+        [
+          room({
+            room: "L".repeat(31),
+            instructor_text: "P".repeat(501),
+            to_sno: 30,
+          }),
+        ],
+        30,
+      ).errors,
+    ).toEqual([
+      "Room 1: room name must be at most 30 characters.",
+      "Room 1: instructor text must be at most 500 characters.",
+    ]);
+    expect(
+      checkRooms(
+        [
+          room({
+            room: "L".repeat(30),
+            instructor_text: "P".repeat(500),
+            to_sno: 30,
+          }),
+        ],
+        30,
+      ).errors,
+    ).toEqual([]);
+  });
+  it("a range past the end blocks saving but not the preview", () => {
+    const past = checkRooms([room({ to_sno: 46 })], 45);
+    expect(past.errors).toEqual(["Room 1: S.No must be between 1 and 45."]);
+    expect(past.previewErrors).toEqual([]);
+    expect(past.beyond).toEqual([1]);
+
+    const both = checkRooms([room({ to_sno: 46, room: "" })], 45);
+    expect(both.previewErrors).toEqual([
+      "Room 1: room, date, start and end time are required.",
+    ]);
+    expect(
+      checkRooms([room({ from_sno: 0, to_sno: 46 })], 45).previewErrors,
+    ).toEqual(["Room 1: S.No must be between 1 and 45."]);
+    expect(
+      checkRooms([room({ from_sno: 9, to_sno: 5 })], 45).previewErrors,
+    ).toEqual(["Room 1: from S.No must not be after to S.No."]);
   });
   it("uncovered", () => {
     const r = checkRooms(

@@ -41,7 +41,8 @@ export function defaultInstructorText(
   instructors,
   sectioned,
 ) {
-  if (!sectioned) return (instructors.all || []).join(", ");
+  const everyone = (instructors.all || []).join(", ");
+  if (!sectioned) return everyone;
   const sections = [];
   students.forEach((s) => {
     if (s.sno >= fromSno && s.sno <= toSno && !sections.includes(s.section)) {
@@ -50,28 +51,49 @@ export function defaultInstructorText(
   });
   const bySection = instructors.by_section || {};
   const named = sections.filter((sec) => bySection[sec]);
-  if (named.length === 0) return "";
+  // No student in the room is in a section with an offering.
+  if (named.length === 0) return everyone;
   if (named.length === 1) return bySection[named[0]];
   return named.map((sec) => `${sec}: ${bySection[sec]}`).join(", ");
 }
 
+// Column sizes of the saved room (ExamAttendanceRoom).
+export const ROOM_MAX = 30;
+export const INSTRUCTOR_TEXT_MAX = 500;
+
+// errors block saving. previewErrors (a subset) also block the preview: a
+// range that only runs past the end of a shrunken roll list still previews,
+// the S.No that no longer exist simply have no row.
 export function checkRooms(rooms, total) {
   const errors = [];
-  if (rooms.length === 0) errors.push("Add at least one room.");
+  const previewErrors = [];
+  const fail = (line, preview = true) => {
+    errors.push(line);
+    if (preview) previewErrors.push(line);
+  };
+  if (rooms.length === 0) fail("Add at least one room.");
 
   rooms.forEach((r, i) => {
     const n = i + 1;
     const from = Number(r.from_sno);
     const to = Number(r.to_sno);
     if (from > to) {
-      errors.push(`Room ${n}: from S.No must not be after to S.No.`);
+      fail(`Room ${n}: from S.No must not be after to S.No.`);
     } else if (!(from >= 1 && to <= total)) {
-      errors.push(`Room ${n}: S.No must be between 1 and ${total}.`);
+      fail(`Room ${n}: S.No must be between 1 and ${total}.`, !(from >= 1));
     }
     if (!r.room || !r.date || !r.start_time || !r.end_time) {
-      errors.push(`Room ${n}: room, date, start and end time are required.`);
+      fail(`Room ${n}: room, date, start and end time are required.`);
     } else if (r.end_time <= r.start_time) {
-      errors.push(`Room ${n}: the exam must end after it starts.`);
+      fail(`Room ${n}: the exam must end after it starts.`);
+    }
+    if ((r.room || "").length > ROOM_MAX) {
+      fail(`Room ${n}: room name must be at most ${ROOM_MAX} characters.`);
+    }
+    if ((r.instructor_text || "").length > INSTRUCTOR_TEXT_MAX) {
+      fail(
+        `Room ${n}: instructor text must be at most ${INSTRUCTOR_TEXT_MAX} characters.`,
+      );
     }
   });
 
@@ -81,7 +103,7 @@ export function checkRooms(rooms, total) {
         Number(rooms[i].from_sno) <= Number(rooms[j].to_sno) &&
         Number(rooms[j].from_sno) <= Number(rooms[i].to_sno)
       ) {
-        errors.push(`Rooms ${i + 1} and ${j + 1} overlap.`);
+        fail(`Rooms ${i + 1} and ${j + 1} overlap.`);
       }
     }
   }
@@ -104,7 +126,7 @@ export function checkRooms(rooms, total) {
     if (Number(r.to_sno) > total) beyond.push(i + 1);
   });
 
-  return { errors, uncovered, beyond };
+  return { errors, previewErrors, uncovered, beyond };
 }
 
 export function nextRoom(previous, total) {
