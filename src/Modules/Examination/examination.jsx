@@ -20,6 +20,9 @@ const COMPONENTS = {
   announceResult: lazy(() => import("./AnnounceResult.jsx")),
   generateTranscript: lazy(() => import("./generateTranscript.jsx")),
   gradeSheet: lazy(() => import("./gradeSheet.jsx")),
+  examAttendanceSheet: lazy(
+    () => import("./attendanceSheet/ExamAttendanceSheet.jsx"),
+  ),
 };
 
 const StudentTranscript = lazy(
