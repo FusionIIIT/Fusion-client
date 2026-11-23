@@ -12,6 +12,7 @@ import {
   Select,
   Stack,
   Table,
+  Tabs,
   Text,
   TextInput,
   Title,
@@ -39,6 +40,7 @@ import {
   to24h,
 } from "./sheetModel";
 import { loadLogo, renderAttendancePdf } from "./drawAttendanceSheet";
+import ExamAttendanceOverview from "./ExamAttendanceOverview";
 
 const authHeaders = () => ({
   headers: { Authorization: `Token ${localStorage.getItem("authToken")}` },
@@ -181,6 +183,7 @@ export default function ExamAttendanceSheet() {
   const [exam, setExam] = useState("MID");
   const [courses, setCourses] = useState([]);
   const [courseId, setCourseId] = useState(null);
+  const [tab, setTab] = useState("plan");
 
   const [sheet, setSheet] = useState(null);
   const [rooms, setRooms] = useState([]);
@@ -393,6 +396,7 @@ export default function ExamAttendanceSheet() {
     [courses],
   );
 
+  // A course picked on the Overview opens in the planner.
   const changeTerm = (setter) => (value) => {
     setter(value);
     setCourseId(null);
@@ -404,6 +408,11 @@ export default function ExamAttendanceSheet() {
     if (dirty) setPendingChange({ apply: () => apply(value) });
     else apply(value);
   };
+
+  const openFromOverview = guarded((id) => {
+    setCourseId(String(id));
+    setTab("plan");
+  });
 
   const discardAndChange = () => {
     const change = pendingChange;
@@ -584,288 +593,329 @@ export default function ExamAttendanceSheet() {
 
   return (
     <Stack gap="md">
-      <Group align="flex-end">
-        <Select
-          label="Academic year"
-          data={sessionOptions}
-          value={academicYear}
-          onChange={guarded(changeTerm(setAcademicYear))}
-          allowDeselect={false}
-          w={140}
-        />
-        <Select
-          label="Semester"
-          data={SEMESTER_OPTIONS}
-          value={semesterType}
-          onChange={guarded(changeTerm(setSemesterType))}
-          allowDeselect={false}
-          w={120}
-        />
-        <Select
-          label="Exam"
-          data={EXAM_OPTIONS}
-          value={exam}
-          onChange={guarded(setExam)}
-          allowDeselect={false}
-          w={120}
-        />
-        <Select
-          label="Course"
-          placeholder="Choose a course"
-          data={courseOptions}
-          value={courseId}
-          onChange={guarded(setCourseId)}
-          searchable
-          allowDeselect={false}
-          nothingFoundMessage="No courses in this term"
-          miw={280}
-          style={{ flex: 1 }}
-        />
-      </Group>
-
-      {!(sheet && total > 0) && problemAlert}
-      {loading && <Loader size="sm" />}
-
-      {sheet && (
-        <>
-          <Group justify="space-between">
-            <Title order={4}>
-              {`${sheet.course.code} - ${sheet.course.name}, ${EXAM_LABELS[sheet.exam]}`}
-            </Title>
-            <Text size="sm" c="dimmed">
-              {!plan && "Not saved yet."}
-              {plan &&
-                (plan.updated_by
-                  ? `Saved by ${plan.updated_by}, ${when(plan.updated_at)}`
-                  : `Saved ${when(plan.updated_at)}`)}
-            </Text>
-          </Group>
-
-          <Title order={5}>{`Students (${total})`}</Title>
-          {total === 0 ? (
-            <Text size="sm" c="dimmed">
-              No students are registered in this course for this term.
-            </Text>
-          ) : (
-            <Box mah={360} style={{ overflowY: "auto" }}>
-              <Table striped stickyHeader>
-                <Table.Thead>
-                  <Table.Tr>
-                    <Table.Th>S.No</Table.Th>
-                    <Table.Th>Roll No</Table.Th>
-                    <Table.Th>Name</Table.Th>
-                    <Table.Th>Discipline</Table.Th>
-                    {sheet.sectioned && <Table.Th>Section</Table.Th>}
-                    <Table.Th>Programme</Table.Th>
-                  </Table.Tr>
-                </Table.Thead>
-                <Table.Tbody>
-                  {sheet.students.map((s) => (
-                    <Table.Tr key={s.sno}>
-                      <Table.Td>{s.sno}</Table.Td>
-                      <Table.Td>{s.roll_no}</Table.Td>
-                      <Table.Td>{s.name}</Table.Td>
-                      <Table.Td>{s.discipline}</Table.Td>
-                      {sheet.sectioned && <Table.Td>{s.section}</Table.Td>}
-                      <Table.Td>{s.programme}</Table.Td>
-                    </Table.Tr>
-                  ))}
-                </Table.Tbody>
-              </Table>
-            </Box>
+      <Tabs value={tab} onChange={setTab} keepMounted={false}>
+        <Tabs.List mb="md">
+          <Tabs.Tab value="plan">Plan rooms</Tabs.Tab>
+          <Tabs.Tab value="overview">Overview</Tabs.Tab>
+        </Tabs.List>
+        <Group align="flex-end">
+          <Select
+            label="Academic year"
+            data={sessionOptions}
+            value={academicYear}
+            onChange={guarded(changeTerm(setAcademicYear))}
+            allowDeselect={false}
+            w={140}
+          />
+          <Select
+            label="Semester"
+            data={SEMESTER_OPTIONS}
+            value={semesterType}
+            onChange={guarded(changeTerm(setSemesterType))}
+            allowDeselect={false}
+            w={120}
+          />
+          <Select
+            label="Exam"
+            data={EXAM_OPTIONS}
+            value={exam}
+            onChange={guarded(setExam)}
+            allowDeselect={false}
+            w={120}
+          />
+          {tab === "plan" && (
+            <Select
+              label="Course"
+              placeholder="Choose a course"
+              data={courseOptions}
+              value={courseId}
+              onChange={guarded(setCourseId)}
+              searchable
+              allowDeselect={false}
+              nothingFoundMessage="No courses in this term"
+              miw={280}
+              style={{ flex: 1 }}
+            />
           )}
+        </Group>
 
-          {total > 0 && (
-            <>
-              <Title order={5}>Rooms</Title>
-              <Box style={{ overflowX: "auto" }}>
-                <Table verticalSpacing="xs" miw={1180}>
-                  <Table.Thead>
-                    <Table.Tr>
-                      <Table.Th>From S.No</Table.Th>
-                      <Table.Th>To S.No</Table.Th>
-                      <Table.Th>Room</Table.Th>
-                      <Table.Th>Date</Table.Th>
-                      <Table.Th>Start</Table.Th>
-                      <Table.Th>End</Table.Th>
-                      <Table.Th>Instructor(s)</Table.Th>
-                      <Table.Th />
-                    </Table.Tr>
-                  </Table.Thead>
-                  <Table.Tbody>
-                    {rooms.map((r, i) => {
-                      const name = `Room ${i + 1}`;
-                      return (
-                        <Table.Tr key={r.key}>
-                          <Table.Td>
-                            <NumberInput
-                              aria-label={`${name} from S.No`}
-                              value={r.from_sno}
-                              onChange={(v) => updateRoom(i, { from_sno: v })}
-                              allowDecimal={false}
-                              allowNegative={false}
-                              hideControls
-                              w={80}
-                            />
-                          </Table.Td>
-                          <Table.Td>
-                            <NumberInput
-                              aria-label={`${name} to S.No`}
-                              value={r.to_sno}
-                              onChange={(v) => updateRoom(i, { to_sno: v })}
-                              allowDecimal={false}
-                              allowNegative={false}
-                              hideControls
-                              w={80}
-                            />
-                          </Table.Td>
-                          <Table.Td>
-                            <TextInput
-                              aria-label={`${name} room`}
-                              value={r.room}
-                              maxLength={ROOM_MAX}
-                              onChange={(e) =>
-                                updateRoom(i, { room: e.currentTarget.value })
-                              }
-                              w={110}
-                            />
-                          </Table.Td>
-                          <Table.Td>
-                            <TextInput
-                              type="date"
-                              aria-label={`${name} date`}
-                              value={r.date}
-                              onChange={(e) =>
-                                updateRoom(i, { date: e.currentTarget.value })
-                              }
-                              w={150}
-                            />
-                          </Table.Td>
-                          <Table.Td>
-                            <TimeSelect
-                              name={`${name} start`}
-                              value={r.start}
-                              onChange={(start) => updateRoom(i, { start })}
-                            />
-                          </Table.Td>
-                          <Table.Td>
-                            <TimeSelect
-                              name={`${name} end`}
-                              value={r.end}
-                              onChange={(end) => updateRoom(i, { end })}
-                            />
-                          </Table.Td>
-                          <Table.Td>
-                            <TextInput
-                              aria-label={`${name} instructors`}
-                              value={r.instructor_text}
-                              maxLength={INSTRUCTOR_TEXT_MAX}
-                              onChange={(e) =>
-                                updateRoom(i, {
-                                  instructor_text: e.currentTarget.value,
-                                  instructorEdited: true,
-                                })
-                              }
-                              miw={200}
-                            />
-                          </Table.Td>
-                          <Table.Td>
-                            <Button
-                              variant="subtle"
-                              color="red"
-                              size="xs"
-                              aria-label={`Remove room ${i + 1}`}
-                              onClick={() => removeRoom(i)}
-                            >
-                              Remove
-                            </Button>
-                          </Table.Td>
-                        </Table.Tr>
-                      );
-                    })}
-                  </Table.Tbody>
-                </Table>
-              </Box>
+        <Tabs.Panel value="overview" pt="md">
+          <ExamAttendanceOverview
+            academicYear={academicYear}
+            semesterType={semesterType}
+            exam={exam}
+            onOpen={openFromOverview}
+          />
+        </Tabs.Panel>
 
-              {blocked && (
-                <Alert color="red" title="Fix these before saving">
-                  {check.errors.map((line) => (
-                    <Text size="sm" key={line}>
-                      {line}
-                    </Text>
-                  ))}
-                </Alert>
-              )}
-              {notes.length > 0 && (
-                <Alert color="yellow">
-                  {notes.map((line) => (
-                    <Text size="sm" key={line}>
-                      {line}
-                    </Text>
-                  ))}
-                </Alert>
-              )}
-              {problemAlert}
+        <Tabs.Panel value="plan" pt="md">
+          <Stack gap="md">
+            {!(sheet && total > 0) && problemAlert}
+            {loading && <Loader size="sm" />}
 
-              <Group>
-                <Button variant="light" onClick={addRoom}>
-                  Add room
-                </Button>
-                <Button onClick={save} loading={saving} disabled={blocked}>
-                  Save
-                </Button>
-                {plan && (
-                  <Button
-                    variant="default"
-                    onClick={() => copy(false)}
-                    loading={copying}
-                    disabled={dirty}
-                  >
-                    {`Copy to ${EXAM_LABELS[target]}`}
-                  </Button>
-                )}
-                {plan && dirty && (
+            {sheet && (
+              <>
+                <Group justify="space-between">
+                  <Title order={4}>
+                    {`${sheet.course.code} - ${sheet.course.name}, ${EXAM_LABELS[sheet.exam]}`}
+                  </Title>
                   <Text size="sm" c="dimmed">
-                    Save first to copy your changes.
+                    {!plan && "Not saved yet."}
+                    {plan &&
+                      (plan.updated_by
+                        ? `Saved by ${plan.updated_by}, ${when(plan.updated_at)}`
+                        : `Saved ${when(plan.updated_at)}`)}
+                  </Text>
+                </Group>
+
+                {total === 0 && (
+                  <Text size="sm" c="dimmed">
+                    No students are registered in this course for this term.
                   </Text>
                 )}
-                <Button
-                  variant="default"
-                  onClick={makePreview}
-                  loading={previewing}
-                  disabled={previewBlocked}
-                >
-                  Preview
-                </Button>
-              </Group>
-            </>
-          )}
 
-          {preview && (
-            <Stack gap="xs">
-              <Group justify="space-between">
-                <Title order={5}>Preview</Title>
-                <Button
-                  component="a"
-                  href={preview.url}
-                  download={preview.name}
-                >
-                  Download PDF
-                </Button>
-              </Group>
-              <iframe
-                title="Attendance sheet preview"
-                src={preview.url}
-                style={{
-                  width: "100%",
-                  height: "80vh",
-                  border: "1px solid var(--mantine-color-gray-3)",
-                }}
-              />
-            </Stack>
-          )}
-        </>
-      )}
+                {total > 0 && (
+                  <>
+                    <Title order={5}>Rooms</Title>
+                    <Box style={{ overflowX: "auto" }}>
+                      <Table verticalSpacing="xs" miw={1180}>
+                        <Table.Thead>
+                          <Table.Tr>
+                            <Table.Th>From S.No</Table.Th>
+                            <Table.Th>To S.No</Table.Th>
+                            <Table.Th>Room</Table.Th>
+                            <Table.Th>Date</Table.Th>
+                            <Table.Th>Start</Table.Th>
+                            <Table.Th>End</Table.Th>
+                            <Table.Th>Instructor(s)</Table.Th>
+                            <Table.Th />
+                          </Table.Tr>
+                        </Table.Thead>
+                        <Table.Tbody>
+                          {rooms.map((r, i) => {
+                            const name = `Room ${i + 1}`;
+                            return (
+                              <Table.Tr key={r.key}>
+                                <Table.Td>
+                                  <NumberInput
+                                    aria-label={`${name} from S.No`}
+                                    value={r.from_sno}
+                                    onChange={(v) =>
+                                      updateRoom(i, { from_sno: v })
+                                    }
+                                    allowDecimal={false}
+                                    allowNegative={false}
+                                    hideControls
+                                    w={80}
+                                  />
+                                </Table.Td>
+                                <Table.Td>
+                                  <NumberInput
+                                    aria-label={`${name} to S.No`}
+                                    value={r.to_sno}
+                                    onChange={(v) =>
+                                      updateRoom(i, { to_sno: v })
+                                    }
+                                    allowDecimal={false}
+                                    allowNegative={false}
+                                    hideControls
+                                    w={80}
+                                  />
+                                </Table.Td>
+                                <Table.Td>
+                                  <TextInput
+                                    aria-label={`${name} room`}
+                                    value={r.room}
+                                    maxLength={ROOM_MAX}
+                                    onChange={(e) =>
+                                      updateRoom(i, {
+                                        room: e.currentTarget.value,
+                                      })
+                                    }
+                                    w={110}
+                                  />
+                                </Table.Td>
+                                <Table.Td>
+                                  <TextInput
+                                    type="date"
+                                    aria-label={`${name} date`}
+                                    value={r.date}
+                                    onChange={(e) =>
+                                      updateRoom(i, {
+                                        date: e.currentTarget.value,
+                                      })
+                                    }
+                                    w={150}
+                                  />
+                                </Table.Td>
+                                <Table.Td>
+                                  <TimeSelect
+                                    name={`${name} start`}
+                                    value={r.start}
+                                    onChange={(start) =>
+                                      updateRoom(i, { start })
+                                    }
+                                  />
+                                </Table.Td>
+                                <Table.Td>
+                                  <TimeSelect
+                                    name={`${name} end`}
+                                    value={r.end}
+                                    onChange={(end) => updateRoom(i, { end })}
+                                  />
+                                </Table.Td>
+                                <Table.Td>
+                                  <TextInput
+                                    aria-label={`${name} instructors`}
+                                    value={r.instructor_text}
+                                    maxLength={INSTRUCTOR_TEXT_MAX}
+                                    onChange={(e) =>
+                                      updateRoom(i, {
+                                        instructor_text: e.currentTarget.value,
+                                        instructorEdited: true,
+                                      })
+                                    }
+                                    miw={200}
+                                  />
+                                </Table.Td>
+                                <Table.Td>
+                                  <Button
+                                    variant="subtle"
+                                    color="red"
+                                    size="xs"
+                                    aria-label={`Remove room ${i + 1}`}
+                                    onClick={() => removeRoom(i)}
+                                  >
+                                    Remove
+                                  </Button>
+                                </Table.Td>
+                              </Table.Tr>
+                            );
+                          })}
+                        </Table.Tbody>
+                      </Table>
+                    </Box>
+
+                    {blocked && (
+                      <Alert color="red" title="Fix these before saving">
+                        {check.errors.map((line) => (
+                          <Text size="sm" key={line}>
+                            {line}
+                          </Text>
+                        ))}
+                      </Alert>
+                    )}
+                    {notes.length > 0 && (
+                      <Alert color="yellow">
+                        {notes.map((line) => (
+                          <Text size="sm" key={line}>
+                            {line}
+                          </Text>
+                        ))}
+                      </Alert>
+                    )}
+                    {problemAlert}
+
+                    <Group>
+                      <Button variant="light" onClick={addRoom}>
+                        Add room
+                      </Button>
+                      <Button
+                        onClick={save}
+                        loading={saving}
+                        disabled={blocked}
+                      >
+                        Save
+                      </Button>
+                      {plan && (
+                        <Button
+                          variant="default"
+                          onClick={() => copy(false)}
+                          loading={copying}
+                          disabled={dirty}
+                        >
+                          {`Copy to ${EXAM_LABELS[target]}`}
+                        </Button>
+                      )}
+                      {plan && dirty && (
+                        <Text size="sm" c="dimmed">
+                          Save first to copy your changes.
+                        </Text>
+                      )}
+                      <Button
+                        variant="default"
+                        onClick={makePreview}
+                        loading={previewing}
+                        disabled={previewBlocked}
+                      >
+                        Preview
+                      </Button>
+                    </Group>
+                  </>
+                )}
+
+                {preview && (
+                  <Stack gap="xs">
+                    <Group justify="space-between">
+                      <Title order={5}>Preview</Title>
+                      <Button
+                        component="a"
+                        href={preview.url}
+                        download={preview.name}
+                      >
+                        Download PDF
+                      </Button>
+                    </Group>
+                    <iframe
+                      title="Attendance sheet preview"
+                      src={preview.url}
+                      style={{
+                        width: "100%",
+                        height: "80vh",
+                        border: "1px solid var(--mantine-color-gray-3)",
+                      }}
+                    />
+                  </Stack>
+                )}
+
+                {total > 0 && (
+                  <>
+                    <Title order={5}>{`Students (${total})`}</Title>
+                    <Box mah={360} style={{ overflowY: "auto" }}>
+                      <Table striped stickyHeader>
+                        <Table.Thead>
+                          <Table.Tr>
+                            <Table.Th>S.No</Table.Th>
+                            <Table.Th>Roll No</Table.Th>
+                            <Table.Th>Name</Table.Th>
+                            <Table.Th>Discipline</Table.Th>
+                            {sheet.sectioned && <Table.Th>Section</Table.Th>}
+                            <Table.Th>Programme</Table.Th>
+                          </Table.Tr>
+                        </Table.Thead>
+                        <Table.Tbody>
+                          {sheet.students.map((s) => (
+                            <Table.Tr key={s.sno}>
+                              <Table.Td>{s.sno}</Table.Td>
+                              <Table.Td>{s.roll_no}</Table.Td>
+                              <Table.Td>{s.name}</Table.Td>
+                              <Table.Td>{s.discipline}</Table.Td>
+                              {sheet.sectioned && (
+                                <Table.Td>{s.section}</Table.Td>
+                              )}
+                              <Table.Td>{s.programme}</Table.Td>
+                            </Table.Tr>
+                          ))}
+                        </Table.Tbody>
+                      </Table>
+                    </Box>
+                  </>
+                )}
+              </>
+            )}
+          </Stack>
+        </Tabs.Panel>
+      </Tabs>
 
       <Modal
         opened={pendingChange !== null}

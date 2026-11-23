@@ -285,6 +285,21 @@ describe("buildSheets", () => {
       section: "",
     });
   });
+  it("marks only the last sheet of each room for the invigilators' signatures", () => {
+    const sheets = buildSheets({
+      ...base,
+      rooms: [
+        room({ from_sno: 21, to_sno: 66, room: "L104" }),
+        room({ from_sno: 1, to_sno: 20, room: "L201" }),
+      ],
+    });
+    expect(sheets.map((s) => [s.room, s.lastOfRoom])).toEqual([
+      ["L104", false],
+      ["L104", false],
+      ["L104", true],
+      ["L201", true],
+    ]);
+  });
   it("single sheet", () => {
     const sheets = buildSheets({ ...base, rooms: [room()] });
     expect(sheets).toHaveLength(1);
