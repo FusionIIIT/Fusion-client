@@ -7,13 +7,15 @@ export const LAYOUT = {
   margin: 7.62,
   columns: { A: 27.2, B: 27.2, C: 71.1, D: 31.0, E: 38.1 },
   sectionWidth: 16,
-  // Sample rows 1-15: 1-6 blank / invigilation, 7-12 institute block, 13-15 course grid.
-  headerRows: [
-    5.3, 5.3, 5.3, 5.3, 5.3, 5.3, 5.6, 5.6, 5.8, 11.9, 5.6, 6.8, 7.0, 7.0, 7.0,
-  ],
+  // Sample rows 7-15 (rows 1-6 held the invigilation boxes, now at the end
+  // of each room): 1-6 institute block, 7-9 course grid.
+  headerRows: [5.6, 5.6, 5.8, 11.9, 5.6, 6.8, 7.0, 7.0, 7.0],
   headingHeight: 10.85,
   rowHeight: 10.85,
   footerHeight: 6,
+  // Below a room's last row: space to sign, then the invigilation boxes.
+  signGap: 22,
+  signBox: 7,
   padding: 1.5,
   font: { header: 12, body: 11, small: 9, room: 36, footer: 9 },
   grey: "#BFBFBF",
@@ -27,20 +29,31 @@ const sum = (list) => list.reduce((a, b) => a + b, 0);
 const usableHeight = () => LAYOUT.page.height - 2 * LAYOUT.margin;
 const headerHeight = () => sum(LAYOUT.headerRows);
 
-export function rowsPerPage({ first }) {
+const signOffHeight = () => LAYOUT.signGap + LAYOUT.signBox;
+
+export function rowsPerPage({ first, reserve = 0 }) {
   const above = first
     ? headerHeight() + LAYOUT.headingHeight
     : LAYOUT.headingHeight;
-  const room = usableHeight() - above - LAYOUT.footerHeight;
+  const room = usableHeight() - above - LAYOUT.footerHeight - reserve;
   return Math.max(1, Math.floor(room / LAYOUT.rowHeight + 1e-9));
 }
 
-function paginate(rows) {
+// `signOff`: the last page must also hold the invigilation boxes. If it
+// can't, its last row moves to a new page so the boxes never stand alone.
+function paginate(rows, signOff) {
   const first = rowsPerPage({ first: true });
   const later = rowsPerPage({ first: false });
   const pages = [rows.slice(0, first)];
   for (let i = first; i < rows.length; i += later) {
     pages.push(rows.slice(i, i + later));
+  }
+  const n = pages.length - 1;
+  const last = pages[n];
+  const fits = rowsPerPage({ first: n === 0, reserve: signOffHeight() });
+  if (signOff && last.length > 1 && last.length > fits) {
+    pages[n] = last.slice(0, -1);
+    pages.push(last.slice(-1));
   }
   return pages;
 }
@@ -166,28 +179,16 @@ function drawHeader(doc, sheet, logo) {
 
   doc.setDrawColor(0);
   doc.setLineWidth(LAYOUT.thick);
-  doc.rect(x.a, top(4), A + B, h(4));
-  doc.rect(x.d, top(4), D + E, h(4));
-  boxText(doc, "1st Invigilation", x.a, top(4), A + B, h(4), {
-    align: "center",
-    bold: true,
-    size: header,
-  });
-  boxText(doc, "2nd Invigilation", x.d, top(4), D + E, h(4), {
-    align: "center",
-    bold: true,
-    size: header,
-  });
 
   if (logo) {
-    const size = h(7) + h(8) + h(9) + h(10);
+    const size = h(1) + h(2) + h(3) + h(4);
     const width = (size * LOGO_SOURCE.width) / LOGO_SOURCE.height;
     // One alias: the image is stored (deflated) once, not re-hashed per sheet.
     doc.addImage(
       logo,
       "PNG",
       x.a + (A + B - width) / 2,
-      top(7),
+      top(1),
       width,
       size,
       "logo",
@@ -196,46 +197,46 @@ function drawHeader(doc, sheet, logo) {
   }
 
   const right = { align: "right", bold: true, size: header };
-  boxText(doc, "PDPM", x.e, top(7), E, h(7), right);
+  boxText(doc, "PDPM", x.e, top(1), E, h(1), right);
   boxText(
     doc,
     "INDIAN INSTITUTE OF INFORMATION TECHNOLOGY,",
     x.c,
-    top(8),
+    top(2),
     C + D + E,
-    h(8),
+    h(2),
     right,
   );
   boxText(
     doc,
     "DESIGN AND MANUFACTURING JABALPUR",
     x.c,
-    top(9),
+    top(3),
     C + D + E,
-    h(9),
+    h(3),
     right,
   );
 
-  doc.rect(x.d, top(10), D + E, h(10));
+  doc.rect(x.d, top(4), D + E, h(4));
   const centred = { align: "center", bold: true, size: header };
-  boxText(doc, sheet.dateText, x.d, top(10), D + E, h(10) / 2, centred);
+  boxText(doc, sheet.dateText, x.d, top(4), D + E, h(4) / 2, centred);
   boxText(
     doc,
     sheet.timeText,
     x.d,
-    top(10) + h(10) / 2,
+    top(4) + h(4) / 2,
     D + E,
-    h(10) / 2,
+    h(4) / 2,
     centred,
   );
 
-  boxText(doc, sheet.examLine, x.c, top(11), C, h(11), centred);
+  boxText(doc, sheet.examLine, x.c, top(5), C, h(5), centred);
 
   const room = String(sheet.room ?? "");
   if (room) {
     setFont(doc, true, LAYOUT.font.room);
     fitSize(doc, room, D + E - 2 * LAYOUT.padding, LAYOUT.font.room, 16);
-    doc.text(room, x.right - LAYOUT.padding, top(12) + h(12) - 1.2, {
+    doc.text(room, x.right - LAYOUT.padding, top(6) + h(6) - 1.2, {
       align: "right",
     });
   }
@@ -246,8 +247,8 @@ function drawHeader(doc, sheet, logo) {
     ["Course Title:", sheet.title, "Present", ""],
     ["Instructor(s):", sheet.instructorText, "Absent", ""],
   ].forEach(([label, value, countLabel, count], i) => {
-    const y = top(13 + i);
-    const rh = h(13 + i);
+    const y = top(7 + i);
+    const rh = h(7 + i);
     boxText(doc, label, x.a, y, A, rh, { bold: true, min: 8 });
     valueText(doc, value, x.b, y, B + C, rh);
     doc.rect(x.d, y, D, rh);
@@ -257,6 +258,22 @@ function drawHeader(doc, sheet, logo) {
   });
 
   return LAYOUT.margin + headerHeight();
+}
+
+// Space to sign, then the two invigilation boxes, as the sample's top rows.
+function drawSignOff(doc, y) {
+  const { A, B, D, E } = LAYOUT.columns;
+  const x = columnX();
+  const top = y + LAYOUT.signGap;
+  const h = LAYOUT.signBox;
+  const label = { align: "center", bold: true, size: LAYOUT.font.header };
+  doc.setDrawColor(0);
+  doc.setLineWidth(LAYOUT.thick);
+  doc.rect(x.a, top, A + B, h);
+  doc.rect(x.d, top, D + E, h);
+  boxText(doc, "1st Invigilation", x.a, top, A + B, h, label);
+  boxText(doc, "2nd Invigilation", x.d, top, D + E, h, label);
+  doc.setLineWidth(LAYOUT.thin);
 }
 
 function drawTableHeading(doc, columns, y) {
@@ -307,7 +324,7 @@ export async function renderAttendancePdf(sheets, { sectioned, logo } = {}) {
   let fresh = true;
 
   sheets.forEach((sheet) => {
-    const pages = paginate(sheet.rows || []);
+    const pages = paginate(sheet.rows || [], sheet.lastOfRoom);
     pages.forEach((pageRows, i) => {
       if (!fresh) doc.addPage();
       fresh = false;
@@ -316,6 +333,7 @@ export async function renderAttendancePdf(sheets, { sectioned, logo } = {}) {
       pageRows.forEach((row) => {
         y = drawRow(doc, columns, row, y);
       });
+      if (sheet.lastOfRoom && i === pages.length - 1) drawSignOff(doc, y);
       if (pages.length > 1) drawPageLabel(doc, sheet, i + 1, pages.length);
     });
   });

@@ -13,10 +13,13 @@ vi.mock("jspdf", async (importOriginal) => {
     const { jsPDF: RealPdf } = real;
     const doc = new RealPdf(...args);
     const realText = doc.text;
-    // Font size in effect at each text call, aligned with text.mock.calls.
+    // Font size and page in effect at each text call, aligned with
+    // text.mock.calls.
     doc.textSizes = [];
+    doc.textPages = [];
     doc.text = vi.fn((...a) => {
       doc.textSizes.push(doc.getFontSize());
+      doc.textPages.push(doc.getCurrentPageInfo().pageNumber);
       return realText.apply(doc, a);
     });
     vi.spyOn(doc, "addImage");
@@ -121,8 +124,6 @@ describe("renderAttendancePdf", () => {
     });
     const seen = texts(doc);
     [
-      "1st Invigilation",
-      "2nd Invigilation",
       "PDPM",
       "INDIAN INSTITUTE OF INFORMATION TECHNOLOGY,",
       "DESIGN AND MANUFACTURING JABALPUR",
@@ -146,6 +147,78 @@ describe("renderAttendancePdf", () => {
       "Discipline",
       "Signature",
     ].forEach((t) => expect(seen).toContain(t));
+  });
+
+  it("leaves the invigilation boxes off a sheet that is not the room's last", async () => {
+    const doc = await renderAttendancePdf([sheet(20)], {
+      sectioned: false,
+      logo: LOGO,
+    });
+    expect(texts(doc)).not.toContain("1st Invigilation");
+    expect(texts(doc)).not.toContain("2nd Invigilation");
+  });
+
+  it("puts the invigilation boxes once per room, below the last roll number, with room to sign above", async () => {
+    // One room printed as three programme sheets, then a second room.
+    const doc = await renderAttendancePdf(
+      [
+        sheet(6),
+        sheet(38),
+        sheet(2, { lastOfRoom: true }),
+        sheet(5, { room: "L202", lastOfRoom: true }),
+      ],
+      { sectioned: false, logo: LOGO },
+    );
+    const calls = doc.text.mock.calls.map(([t, , y], i) => ({
+      t,
+      y,
+      page: doc.textPages[i],
+    }));
+    const boxes = (label) => calls.filter((c) => c.t === label);
+    expect(boxes("1st Invigilation")).toHaveLength(2);
+    expect(boxes("2nd Invigilation")).toHaveLength(2);
+
+    const lastRowOn = (page) =>
+      Math.max(
+        ...calls
+          .filter((c) => c.page === page && /^23BCS\d{3}$/.test(c.t))
+          .map((c) => c.y),
+      );
+    boxes("1st Invigilation").forEach((box, i) => {
+      // Each pair is on the room's last page, level with its partner ...
+      const roomLastPage = [
+        pagesFor(6) + pagesFor(38) + 1,
+        doc.getNumberOfPages(),
+      ][i];
+      expect(box.page).toBe(roomLastPage);
+      expect(boxes("2nd Invigilation")[i]).toMatchObject({
+        page: box.page,
+        y: box.y,
+      });
+      // ... below the last row, leaving the signing gap above the box.
+      const rowBottom = lastRowOn(box.page) + LAYOUT.rowHeight / 2;
+      expect(box.y - rowBottom).toBeGreaterThanOrEqual(LAYOUT.signGap);
+      expect(box.y + LAYOUT.signBox / 2).toBeLessThanOrEqual(
+        LAYOUT.page.height - LAYOUT.margin - LAYOUT.footerHeight,
+      );
+    });
+  });
+
+  it("carries the last row to a new page when the signing space would not fit", async () => {
+    const full = rowsPerPage({ first: true });
+    const doc = await renderAttendancePdf([sheet(full, { lastOfRoom: true })], {
+      sectioned: false,
+      logo: LOGO,
+    });
+    expect(doc.getNumberOfPages()).toBe(2);
+    const onPage2 = doc.text.mock.calls
+      .map(([t], i) => ({ t, page: doc.textPages[i] }))
+      .filter((c) => c.page === 2)
+      .map((c) => c.t);
+    expect(onPage2).toContain(`23BCS${String(full).padStart(3, "0")}`);
+    expect(onPage2).not.toContain(`23BCS${String(full - 1).padStart(3, "0")}`);
+    expect(onPage2).toContain("1st Invigilation");
+    expect(onPage2).toContain("CS8004 · L201 · Page 2 of 2");
   });
 
   it("adds a Section column only when sectioned", async () => {

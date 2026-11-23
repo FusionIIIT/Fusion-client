@@ -160,9 +160,11 @@ export function buildSheets({
       if (last && last[0].programme === s.programme) last.push(s);
       else runs.push([s]);
     });
-    runs.forEach((run) => {
+    runs.forEach((run, k) => {
       sheets.push({
         room: r.room,
+        // The invigilators sign once per room, below its last sheet.
+        lastOfRoom: k === runs.length - 1,
         dateText: `DATE: ${formatDate(r.date)}`,
         timeText: `Time : ${formatTime(r.start_time)} To ${formatTime(r.end_time)}`,
         examLine: examLine(exam, semesterType, academicYear),
