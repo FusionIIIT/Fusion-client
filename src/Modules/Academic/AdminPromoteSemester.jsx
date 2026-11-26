@@ -4,8 +4,6 @@ import {
   Card,
   Text,
   Select,
-  Loader,
-  Center,
   Alert,
   ScrollArea,
   Table,
@@ -14,6 +12,7 @@ import {
   Group,
   Checkbox,
   LoadingOverlay,
+  Badge,
 } from "@mantine/core";
 import {
   listBatchesRoute,
@@ -21,6 +20,7 @@ import {
   applyPromoteRoute,
   applyDemoteRoute,
 } from "../../routes/academicRoutes";
+import { isLockedStatus, statusLabel } from "../../ui/nav/roles";
 
 export default function AdminPromoteSemester() {
   const [batches, setBatches] = useState([]);
@@ -94,10 +94,11 @@ export default function AdminPromoteSemester() {
     setSelected((prev) => ({ ...prev, [sid]: !prev[sid] }));
   };
 
+  // Alumni and other stopped students cannot be promoted or moved back.
   const selectAll = () => {
     const all = {};
     students.forEach((st) => {
-      all[st.id] = true;
+      all[st.id] = !isLockedStatus(st.status);
     });
     setSelected(all);
   };
@@ -217,12 +218,19 @@ export default function AdminPromoteSemester() {
                       <Checkbox
                         checked={selected[st.id]}
                         onChange={() => toggleSelect(st.id)}
-                        disabled={loadingApply}
+                        disabled={loadingApply || isLockedStatus(st.status)}
                       />
                     </td>
                     <td>{index + 1}</td>
                     <td>{st.username}</td>
-                    <td>{st.name || "—"}</td>
+                    <td>
+                      {st.name || "—"}
+                      {isLockedStatus(st.status) && (
+                        <Badge ml="xs" size="sm" color="gray" variant="light">
+                          {statusLabel(st.status)}
+                        </Badge>
+                      )}
+                    </td>
                     <td>{st.discipline || "—"}</td>
                     <td>{st.current_semester_no}</td>
                   </tr>

@@ -28,6 +28,10 @@ import {
   feeCertificatesRoute,
   feeStructureCertificateHistoryPdfRoute,
   feeStructureCertificatesRoute,
+  mediumOfInstructionCertificatePdfRoute,
+  mediumOfInstructionCertificatesRoute,
+  pointerConversionCertificatePdfRoute,
+  pointerConversionCertificatesRoute,
 } from "../../routes/academicRoutes";
 import classes from "./GeneratedCertificatesModal.module.css";
 
@@ -69,6 +73,14 @@ const ROUTES_BY_VARIANT = {
   feeStructure: {
     list: feeStructureCertificatesRoute,
     pdf: feeStructureCertificateHistoryPdfRoute,
+  },
+  mediumOfInstruction: {
+    list: mediumOfInstructionCertificatesRoute,
+    pdf: mediumOfInstructionCertificatePdfRoute,
+  },
+  pointerConversion: {
+    list: pointerConversionCertificatesRoute,
+    pdf: pointerConversionCertificatePdfRoute,
   },
 };
 
@@ -145,7 +157,7 @@ export default function GeneratedCertificatesModal({
       });
       setPdfPreview({
         url: URL.createObjectURL(response.data),
-        title: `${certificate.roll_number} — ${certificate.purpose}`,
+        title: `${certificate.roll_number} — ${certificate.purpose || "Medium of Instruction"}`,
       });
     } catch (error) {
       notifications.show({
@@ -166,12 +178,13 @@ export default function GeneratedCertificatesModal({
         params: { download: 1 },
         responseType: "blob",
       });
+      const defaultName =
+        variant === "mediumOfInstruction"
+          ? `${certificate.roll_number}_Medium_of_Instruction_Certificate_${certificate.serial_number}.pdf`
+          : `${certificate.roll_number}_Bonafide_Certificate_${certificate.serial_number}.pdf`;
       saveAs(
         response.data,
-        filenameFrom(
-          response.headers["content-disposition"],
-          `${certificate.roll_number}_Bonafide_Certificate_${certificate.serial_number}.pdf`,
-        ),
+        filenameFrom(response.headers["content-disposition"], defaultName),
       );
     } catch (error) {
       notifications.show({
@@ -194,7 +207,10 @@ export default function GeneratedCertificatesModal({
       <Table.Td>{certificate.serial_number}</Table.Td>
       <Table.Td>{certificate.roll_number}</Table.Td>
       <Table.Td>{certificate.name}</Table.Td>
-      <Table.Td>{certificate.purpose}</Table.Td>
+      <Table.Td>
+        {certificate.purpose ||
+          (variant === "mediumOfInstruction" ? "Medium of Instruction" : "—")}
+      </Table.Td>
       <Table.Td>{certificate.issued_on}</Table.Td>
       <Table.Td>
         <Group gap="xs" wrap="nowrap">
@@ -325,7 +341,14 @@ export default function GeneratedCertificatesModal({
 GeneratedCertificatesModal.propTypes = {
   opened: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  variant: PropTypes.oneOf(["bonafide", "fee", "demand", "feeStructure"]),
+  variant: PropTypes.oneOf([
+    "bonafide",
+    "fee",
+    "demand",
+    "feeStructure",
+    "mediumOfInstruction",
+    "pointerConversion",
+  ]),
 };
 
 GeneratedCertificatesModal.defaultProps = {

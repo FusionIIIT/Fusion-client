@@ -403,21 +403,16 @@ export default function FeeCertificate() {
                   </strong>{" "}
                   (Roll No. {preview.student.roll_number}){" "}
                   {preview.student.relation}{" "}
-                  <strong>MR. {preview.student.father_name}</strong> is a
-                  student of{" "}
-                  <strong>
-                    {ordinalWithSuperscript(preview.student.year_ordinal)} Year
-                  </strong>{" "}
-                  ({ordinalWithSuperscript(preview.student.semester_ordinal)}{" "}
-                  Semester) <strong>{preview.student.programme}</strong> in{" "}
-                  <strong>{preview.student.discipline}</strong> ({" "}
-                  {preview.student.duration_text} course duration:{" "}
-                  <strong>{preview.student.start_year}</strong> to{" "}
-                  <strong>{preview.student.end_year}</strong>) at{" "}
-                  {preview.meta.institute_name}. The fee details of{" "}
+                  <strong>Mr. {preview.student.father_name}</strong> is a
+                  bonafide student of{" "}
+                  {ordinalWithSuperscript(preview.student.year_ordinal)} year (
+                  {ordinalWithSuperscript(preview.student.semester_ordinal)}{" "}
+                  Semester) of{" "}
                   <strong>{preview.student.programme_short}</strong> Programme
-                  for the purpose of applying for{" "}
-                  <strong>{preview.purpose}</strong> are given below:
+                  in <strong>{preview.student.discipline}</strong> at this
+                  Institute. The fee details of{" "}
+                  {preview.student.programme_short_abbr} Programme for the
+                  purpose of applying for {preview.purpose} are given below:
                 </p>
                 <ul className={classes.body}>
                   <li>

@@ -34,8 +34,7 @@ function Admin_edit_seminar_form() {
           ? "Credits must be 0 or more"
           : null,
       discipline: (value) => (!value ? "Discipline is required" : null),
-      programme_type: (value) =>
-        !value ? "Programme type is required" : null,
+      programme_type: (value) => (!value ? "Programme type is required" : null),
     },
   });
 
@@ -81,7 +80,7 @@ function Admin_edit_seminar_form() {
   }, [id]);
 
   const programmeTypeOptions = [
-    { value: "PG", label: "Postgraduate (M.Tech)" },
+    { value: "PG", label: "Postgraduate (PG)" },
     { value: "PHD", label: "Doctor of Philosophy (PhD)" },
   ];
 
@@ -114,8 +113,7 @@ function Admin_edit_seminar_form() {
             <div>
               <Text size="sm" mb={8}>
                 <strong>
-                  Seminar "{values.name}" ({values.code}) has been
-                  updated.
+                  Seminar "{values.name}" ({values.code}) has been updated.
                 </strong>
               </Text>
               <Text size="xs" c="gray.7">
@@ -165,9 +163,7 @@ function Admin_edit_seminar_form() {
         message: (
           <div>
             <Text size="sm" mb={8}>
-              <strong>
-                Connection error occurred while updating seminar.
-              </strong>
+              <strong>Connection error occurred while updating seminar.</strong>
             </Text>
             <Text size="xs" c="gray.7">
               Please check your internet connection and try again.
@@ -272,7 +268,7 @@ function Admin_edit_seminar_form() {
                           onChange={(event) =>
                             form.setFieldValue(
                               "code",
-                              event.currentTarget.value
+                              event.currentTarget.value,
                             )
                           }
                           error={form.errors.code}
@@ -310,7 +306,7 @@ function Admin_edit_seminar_form() {
                           onChange={(event) =>
                             form.setFieldValue(
                               "name",
-                              event.currentTarget.value
+                              event.currentTarget.value,
                             )
                           }
                           error={form.errors.name}

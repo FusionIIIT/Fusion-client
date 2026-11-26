@@ -168,8 +168,9 @@ export function buildNavGroups({
   accessibleModules = {},
   programmeType = null,
   pluggedNavigation = [],
+  studentStatus = null,
 } = {}) {
-  const flags = { programmeType, role };
+  const flags = { programmeType, role, studentStatus };
   const groups = [
     {
       section: "Overview",

@@ -28,10 +28,12 @@ import AssistantshipPage from "./Modules/Scholarship/AssistantshipPage";
 import ProgrammeCurriculumRoutes from "./Modules/Program_curriculum/programmCurriculum";
 import Certificates from "./Modules/Certificates";
 import NotFoundPage from "./components/NotFoundPage";
+import useReloadOnNewBuild from "./helper/useReloadOnNewBuild";
 import { theme } from "./ui/theme/theme";
 
 export default function App() {
   const location = useLocation();
+  useReloadOnNewBuild();
   const mustCompleteProfile = useSelector(
     (state) => state.user.mustCompleteProfile,
   );

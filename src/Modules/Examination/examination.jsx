@@ -20,6 +20,9 @@ const COMPONENTS = {
   announceResult: lazy(() => import("./AnnounceResult.jsx")),
   generateTranscript: lazy(() => import("./generateTranscript.jsx")),
   gradeSheet: lazy(() => import("./gradeSheet.jsx")),
+  examAttendanceSheet: lazy(
+    () => import("./attendanceSheet/ExamAttendanceSheet.jsx"),
+  ),
 };
 
 const StudentTranscript = lazy(
@@ -52,10 +55,11 @@ const DETAIL_ROUTES = [
 
 export default function Examination() {
   const userRole = useSelector((state) => state.user.role);
+  const studentStatus = useSelector((state) => state.user.studentStatus);
 
   const pages = useMemo(
-    () => pagesForRole(EXAMINATION_PAGES, userRole),
-    [userRole],
+    () => pagesForRole(EXAMINATION_PAGES, userRole, { studentStatus }),
+    [userRole, studentStatus],
   );
 
   if (userRole === undefined || userRole === null) return null;

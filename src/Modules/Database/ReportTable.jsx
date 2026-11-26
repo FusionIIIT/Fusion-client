@@ -9,17 +9,97 @@ import {
   Table,
   Text,
   TextInput,
+  UnstyledButton,
 } from "@mantine/core";
-import { IconDownload, IconSearch } from "@tabler/icons-react";
+import {
+  IconChevronDown,
+  IconChevronUp,
+  IconDownload,
+  IconSearch,
+  IconSelector,
+} from "@tabler/icons-react";
 
 // Every report shows a serial number, searches across all its columns and
 // exports what is on screen, so that behaviour lives here rather than in each.
 const SERIAL_LABEL = "S. No.";
 const HEADER_FILL = "FF366092";
 
+// A column may give `format` for how a value reads on screen and `numFmt` for
+// the same in Excel, so a number can show as "7.0" yet export as a number.
+const shown = (column, row) =>
+  column.format ? column.format(row[column.key]) : row[column.key];
+
+// Sorting compares the stored value, not the text on screen, so 10 comes after
+// 9 and 7.25 before 7.5. A number kept as text ("148") sorts as a number; any
+// other text sorts by letters, with digit runs in order ("Summer 2" before
+// "Summer 10"). Empty cells and "-" go last in either direction.
+const NUMBER = /^-?\d+(\.\d+)?$/;
+const asNumber = (value) => {
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value === "string" && NUMBER.test(value.trim())) {
+    return Number(value);
+  }
+  return null;
+};
+const isEmpty = (value) =>
+  value === null ||
+  value === undefined ||
+  (typeof value === "string" && ["", "-"].includes(value.trim()));
+
+export function compareValues(a, b) {
+  const x = asNumber(a);
+  const y = asNumber(b);
+  if (x !== null && y !== null) return x - y;
+  if (x !== null) return -1; // numbers before text, e.g. 4 before "Summer 2"
+  if (y !== null) return 1;
+  return String(a).localeCompare(String(b), undefined, {
+    numeric: true,
+    sensitivity: "base",
+  });
+}
+
+export function sortRows(rows, key, direction) {
+  const sign = direction === "desc" ? -1 : 1;
+  // Array.prototype.sort is stable, so ties keep the order the server sent.
+  return [...rows].sort((p, q) => {
+    const a = p[key];
+    const b = q[key];
+    if (isEmpty(a) || isEmpty(b)) return isEmpty(a) - isEmpty(b);
+    return sign * compareValues(a, b);
+  });
+}
+
+// Each click on a header goes ascending, then descending, then back to the
+// order the report came in.
+const NEXT = { none: "asc", asc: "desc", desc: "none" };
+const ARIA = { asc: "ascending", desc: "descending", none: "none" };
+const SORT_ICON = {
+  asc: IconChevronUp,
+  desc: IconChevronDown,
+  none: IconSelector,
+};
+
+// The total row of a report that sums some of its columns: each summed column
+// adds up the rows given, and the first column not summed reads "Total".
+export function totalRow(columns, rows, keys) {
+  if (!keys?.length) return null;
+  const label = columns.find((column) => !keys.includes(column.key))?.key;
+  return Object.fromEntries(
+    columns.map((column) => {
+      if (keys.includes(column.key)) {
+        return [
+          column.key,
+          rows.reduce((sum, row) => sum + (Number(row[column.key]) || 0), 0),
+        ];
+      }
+      return [column.key, column.key === label ? "Total" : ""];
+    }),
+  );
+}
+
 // A workbook rather than a csv, so the export carries the ruled grid and
 // header the office's other exports have. exceljs is lazy-loaded.
-async function writeWorkbook(columns, rows, filename, sheetName) {
+async function writeWorkbook(columns, rows, filename, sheetName, total) {
   const ExcelJS = (await import("exceljs")).default;
   const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet(sheetName.slice(0, 31) || "Report");
@@ -30,6 +110,7 @@ async function writeWorkbook(columns, rows, filename, sheetName) {
       header: column.label,
       key: column.key,
       width: Math.max(12, Math.min(45, column.label.length + 6)),
+      ...(column.numFmt ? { style: { numFmt: column.numFmt } } : {}),
     })),
   ];
 
@@ -41,6 +122,10 @@ async function writeWorkbook(columns, rows, filename, sheetName) {
       ),
     });
   });
+
+  if (total) {
+    sheet.addRow({ __serial__: "", ...total }).font = { bold: true };
+  }
 
   const thin = { style: "thin", color: { argb: "FF9AA5B1" } };
   sheet.eachRow((row, rowNumber) => {
@@ -76,27 +161,63 @@ async function writeWorkbook(columns, rows, filename, sheetName) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-export default function ReportTable({ columns, rows, filename, badges = [] }) {
-  const [query, setQuery] = useState("");
+const NO_TOTALS = [];
 
+export default function ReportTable({
+  columns,
+  rows,
+  filename,
+  badges = [],
+  totals = NO_TOTALS,
+}) {
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState({ key: null, direction: "none" });
+
+  // A sort on a column the report no longer shows (e.g. Semester after one
+  // semester is fetched) is ignored rather than applied to hidden data.
+  const sortKey = columns.some((column) => column.key === sort.key)
+    ? sort.key
+    : null;
+  const directionOf = (key) => (key === sortKey ? sort.direction : "none");
+
+  const toggleSort = (key) => {
+    const direction = NEXT[directionOf(key)];
+    setSort({ key: direction === "none" ? null : key, direction });
+  };
+
+  // Search first, then sort; S. No. and the Excel file follow what is shown.
   const visible = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    if (!needle) return rows;
-    return rows.filter((row) =>
-      columns.some((column) =>
-        String(row[column.key] ?? "")
-          .toLowerCase()
-          .includes(needle),
-      ),
-    );
-  }, [columns, rows, query]);
+    const found = needle
+      ? rows.filter((row) =>
+          columns.some((column) =>
+            String(shown(column, row) ?? "")
+              .toLowerCase()
+              .includes(needle),
+          ),
+        )
+      : rows;
+    return sortKey ? sortRows(found, sortKey, sort.direction) : found;
+  }, [columns, rows, query, sortKey, sort.direction]);
+
+  // Totals add up the rows shown, so a search gives the total of what it found.
+  const total = useMemo(
+    () => totalRow(columns, visible, totals),
+    [columns, visible, totals],
+  );
 
   const [exporting, setExporting] = useState(false);
 
   const download = async () => {
     setExporting(true);
     try {
-      await writeWorkbook(columns, visible, `${filename}.xlsx`, filename);
+      await writeWorkbook(
+        columns,
+        visible,
+        `${filename}.xlsx`,
+        filename,
+        total,
+      );
     } finally {
       setExporting(false);
     }
@@ -149,9 +270,35 @@ export default function ReportTable({ columns, rows, filename, badges = [] }) {
             >
               <Table.Tr>
                 <Table.Th w={70}>{SERIAL_LABEL}</Table.Th>
-                {columns.map((column) => (
-                  <Table.Th key={column.key}>{column.label}</Table.Th>
-                ))}
+                {columns.map((column) => {
+                  const direction = directionOf(column.key);
+                  const Icon = SORT_ICON[direction];
+                  return (
+                    <Table.Th key={column.key} aria-sort={ARIA[direction]}>
+                      <UnstyledButton
+                        onClick={() => toggleSort(column.key)}
+                        title={`Sort by ${column.label}`}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 4,
+                          font: "inherit",
+                          color: "inherit",
+                        }}
+                      >
+                        {column.label}
+                        <Icon
+                          size={14}
+                          aria-hidden
+                          style={{
+                            flexShrink: 0,
+                            opacity: direction === "none" ? 0.45 : 1,
+                          }}
+                        />
+                      </UnstyledButton>
+                    </Table.Th>
+                  );
+                })}
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -161,11 +308,21 @@ export default function ReportTable({ columns, rows, filename, badges = [] }) {
                 >
                   <Table.Td>{index + 1}</Table.Td>
                   {columns.map((column) => (
-                    <Table.Td key={column.key}>{row[column.key]}</Table.Td>
+                    <Table.Td key={column.key}>{shown(column, row)}</Table.Td>
                   ))}
                 </Table.Tr>
               ))}
             </Table.Tbody>
+            {total && (
+              <Table.Tfoot style={{ position: "sticky", bottom: 0 }}>
+                <Table.Tr>
+                  <Table.Td />
+                  {columns.map((column) => (
+                    <Table.Td key={column.key}>{total[column.key]}</Table.Td>
+                  ))}
+                </Table.Tr>
+              </Table.Tfoot>
+            )}
           </Table>
         </ScrollArea.Autosize>
       )}
@@ -175,11 +332,18 @@ export default function ReportTable({ columns, rows, filename, badges = [] }) {
 
 ReportTable.propTypes = {
   columns: PropTypes.arrayOf(
-    PropTypes.shape({ key: PropTypes.string, label: PropTypes.string }),
+    PropTypes.shape({
+      key: PropTypes.string,
+      label: PropTypes.string,
+      format: PropTypes.func,
+      numFmt: PropTypes.string,
+    }),
   ).isRequired,
   rows: PropTypes.arrayOf(PropTypes.objectOf(PropTypes.any)).isRequired,
   filename: PropTypes.string.isRequired,
   badges: PropTypes.arrayOf(
     PropTypes.shape({ label: PropTypes.string, color: PropTypes.string }),
   ),
+  // Keys of columns to add up in a total row under the table and the Excel.
+  totals: PropTypes.arrayOf(PropTypes.string),
 };

@@ -10,6 +10,7 @@ import ReportTable from "../ReportTable";
 const COLUMNS = [
   { key: "roll_no", label: "Roll No" },
   { key: "student_name", label: "Student Name" },
+  { key: "branch", label: "Branch" },
   { key: "regular_credits", label: "Regular Credits" },
   { key: "backlog_improvement_credits", label: "Backlog/Improvement Credits" },
   { key: "swayam_credits", label: "Swayam Credits" },

@@ -37,6 +37,7 @@ import {
   adminTeachingCreditEnrollmentListRoute,
 } from "../../routes/academicRoutes";
 import { getApiErrorMessage } from "../../helper/apiError";
+import { addCourseMessage } from "./lib/addCourseMessage";
 
 function authHeaders() {
   return { Authorization: `Token ${localStorage.getItem("authToken")}` };
@@ -354,16 +355,14 @@ export default function StudentCourses() {
         });
         showNotification({
           title: "Course Added",
-          message: "Course has been added successfully",
+          message: addCourseMessage(res.data),
           color: "green",
         });
         setAddModalOpen(false);
         await handleGetCourses();
       }
     } catch (err) {
-      setError(
-        getApiErrorMessage(err, "Add failed"),
-      );
+      setError(getApiErrorMessage(err, "Add failed"));
     } finally {
       setLoading(false);
     }

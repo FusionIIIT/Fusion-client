@@ -29,8 +29,12 @@ const COMPONENTS = {
 
 export default function FacultyProfessionalProfile() {
   const role = useSelector((state) => state.user.role);
+  const studentStatus = useSelector((state) => state.user.studentStatus);
 
-  const pages = useMemo(() => pagesForRole(FPS_PAGES, role), [role]);
+  const pages = useMemo(
+    () => pagesForRole(FPS_PAGES, role, { studentStatus }),
+    [role, studentStatus],
+  );
 
   return (
     <ModuleRoutes

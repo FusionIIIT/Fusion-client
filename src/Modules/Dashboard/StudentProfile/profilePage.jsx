@@ -18,7 +18,7 @@ import { Camera } from "@phosphor-icons/react";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { PageTabs } from "../../../ui/components/PageTabs";
 import avatarImage from "../../../assets/avatar.png";
 import ProfileComponent from "./profileComponent";
@@ -34,6 +34,7 @@ import {
   studentProfileImageRoute,
 } from "../../../routes/globalRoutes";
 import { setProfilePhoto } from "../../../redux/userslice";
+import { isLockedStatus } from "../../../ui/nav/roles";
 
 const PHOTO_MAX_KB = 200;
 
@@ -166,6 +167,7 @@ function InfoCard({ data, photo, onPhotoChange, width }) {
 
 function Profile() {
   const dispatch = useDispatch();
+  const studentStatus = useSelector((state) => state.user.studentStatus);
   const [activeTab, setActiveTab] = useState("0");
   const [profileData, setProfileData] = useState(null);
   const [record, setRecord] = useState(null);
@@ -226,7 +228,10 @@ function Profile() {
   // an account.
   const showBankDetails = Boolean(record?.wants_bank_details);
 
-  const tabItems = isStudent
+  // An alumnus (or other stopped student) keeps only the read-only profile.
+  const editable = isStudent && !isLockedStatus(studentStatus);
+
+  const tabItems = editable
     ? [
         { title: "Profile" },
         ...(showBankDetails ? [{ title: "Bank Details" }] : []),
@@ -237,7 +242,7 @@ function Profile() {
       ]
     : [{ title: "Profile" }];
 
-  const tabToDisplay = isStudent
+  const tabToDisplay = editable
     ? [
         <ProfileComponent
           key="profile"
@@ -270,7 +275,14 @@ function Profile() {
           achievements={profileData?.achievement}
         />,
       ]
-    : [<ProfileComponent key="profile" data={profileData} />];
+    : [
+        <ProfileComponent
+          key="profile"
+          data={profileData}
+          record={isStudent ? record : undefined}
+          readOnly={isStudent}
+        />,
+      ];
 
   return (
     <Stack>
@@ -286,7 +298,7 @@ function Profile() {
         <InfoCard
           data={profileData}
           photo={photo}
-          onPhotoChange={changePhoto}
+          onPhotoChange={editable ? changePhoto : undefined}
           width="100%"
         />
       </Box>
@@ -303,7 +315,7 @@ function Profile() {
           <InfoCard
             data={profileData}
             photo={photo}
-            onPhotoChange={changePhoto}
+            onPhotoChange={editable ? changePhoto : undefined}
           />
         </Box>
       </Flex>

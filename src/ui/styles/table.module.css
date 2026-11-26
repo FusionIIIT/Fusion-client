@@ -47,6 +47,22 @@
   border-right: none;
 }
 
+/* A total row under the body reads like it, in bold on the header's tint. */
+.table tfoot td {
+  font-size: clamp(0.78rem, 0.5vw + 0.56rem, 0.9rem);
+  font-weight: 700;
+  color: #212529;
+  text-align: center;
+  padding: 14px clamp(6px, 0.9vw, 14px);
+  background: #eef7fd;
+  border-top: 2px solid #b9d8ef;
+  border-right: 1px solid #e3edf6;
+}
+
+.table tfoot td:last-child {
+  border-right: none;
+}
+
 /* Label/value tables: the row's own heading cell reads as the label column. */
 .table tbody th {
   background: #eef7fd;
