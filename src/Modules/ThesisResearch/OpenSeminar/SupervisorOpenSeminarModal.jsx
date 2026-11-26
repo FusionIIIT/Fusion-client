@@ -21,6 +21,7 @@ import PropTypes from "prop-types";
 import {
   supervisorOpenSeminarDetailRoute,
   supervisorResubmitOpenSeminarRoute,
+  openSeminarEligibilityPreviewRoute,
 } from "../../../routes/academicRoutes";
 import {
   SEMINAR_STATUS_LABEL,
@@ -45,6 +46,7 @@ export default function SupervisorOpenSeminarModal({
   const [busy, setBusy] = useState(false);
   const [resubmitForm, setResubmitForm] = useState(null);
   const [firstDraftFile, setFirstDraftFile] = useState(null);
+  const [eligibilityErrors, setEligibilityErrors] = useState([]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -72,6 +74,22 @@ export default function SupervisorOpenSeminarModal({
   useEffect(() => {
     load();
   }, [load]);
+
+  // Same eligibility check as the propose form: fetched fresh (the student's
+  // credits/CPI may have changed since the original proposal) so the
+  // supervisor sees what's missing before clicking Resubmit.
+  const isRejected =
+    seminar?.status === "hod_rejected" || seminar?.status === "dean_rejected";
+  const studentRoll = seminar?.student_roll;
+  useEffect(() => {
+    if (!viewerIsSupervisor || !isRejected || !studentRoll) return;
+    axios
+      .get(openSeminarEligibilityPreviewRoute(studentRoll), {
+        headers: authHeaders(),
+      })
+      .then((res) => setEligibilityErrors(res.data.errors || []))
+      .catch(() => setEligibilityErrors([]));
+  }, [viewerIsSupervisor, isRejected, studentRoll]);
 
   if (loading)
     return (
@@ -246,6 +264,15 @@ export default function SupervisorOpenSeminarModal({
               <Alert color="red" title="Rejected — edit and resubmit">
                 {seminar.hod_remarks || seminar.dean_remarks}
               </Alert>
+              {eligibilityErrors.length > 0 && (
+                <Alert color="red" title="Not eligible for Open Seminar">
+                  {eligibilityErrors.map((r) => (
+                    <Text key={r} size="sm">
+                      {r}
+                    </Text>
+                  ))}
+                </Alert>
+              )}
               <TextInput
                 label="Thesis Title"
                 value={resubmitForm.possible_thesis_title}
@@ -280,7 +307,11 @@ export default function SupervisorOpenSeminarModal({
                 value={firstDraftFile}
                 onChange={setFirstDraftFile}
               />
-              <Button onClick={handleResubmit} loading={busy}>
+              <Button
+                onClick={handleResubmit}
+                loading={busy}
+                disabled={eligibilityErrors.length > 0}
+              >
                 Resubmit
               </Button>
             </>

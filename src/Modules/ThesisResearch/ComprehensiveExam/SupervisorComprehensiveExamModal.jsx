@@ -204,7 +204,9 @@ export default function SupervisorComprehensiveExamModal({
               <td>
                 <Text fw={500}>Current CPI</Text>
               </td>
-              <td>{academicInfo?.current_cpi ?? "—"} (min 7.0 required)</td>
+              <td>
+                {academicInfo?.current_cpi ?? "—"} (min {exam.min_cpi} required)
+              </td>
             </tr>
           </tbody>
         </Table>

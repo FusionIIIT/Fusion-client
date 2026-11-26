@@ -13,6 +13,7 @@ import { IconAlertCircle } from "@tabler/icons-react";
 import axios from "axios";
 import FusionTable from "../../components/FusionTable";
 import SupervisorReviewModal from "./SupervisorReviewModal";
+import ThesisChangeRequestsConsentSection from "./ThesisChangeRequestsConsentSection";
 import { supervisorDashboardRoute } from "../../routes/academicRoutes";
 
 export default function SupervisorDashboard() {
@@ -137,6 +138,8 @@ export default function SupervisorDashboard() {
       <Title order={3} mb="md" ta="center">
         Supervisor Dashboard
       </Title>
+
+      <ThesisChangeRequestsConsentSection />
 
       <Tabs defaultValue="pending">
         <Tabs.List>

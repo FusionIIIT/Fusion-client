@@ -24,7 +24,7 @@ export default function AcademicOfficeVerifyModal({ exam, onClose, refresh }) {
     exam.credits_completed >= exam.required_credits,
   );
   const [cpiVerified, setCpiVerified] = useState(
-    Number(exam.current_cpi) >= 7.0,
+    Number(exam.current_cpi) >= Number(exam.min_cpi),
   );
   const [rmVerified, setRmVerified] = useState(false);
   const [remarks, setRemarks] = useState("");
@@ -142,7 +142,9 @@ export default function AcademicOfficeVerifyModal({ exam, onClose, refresh }) {
               <td>
                 <Text fw={500}>Current CPI</Text>
               </td>
-              <td>{exam.current_cpi ?? "—"} (min 7.0 required)</td>
+              <td>
+                {exam.current_cpi ?? "—"} (min {exam.min_cpi} required)
+              </td>
             </tr>
           </tbody>
         </Table>
@@ -178,7 +180,7 @@ export default function AcademicOfficeVerifyModal({ exam, onClose, refresh }) {
           onChange={(e) => setCreditsVerified(e.target.checked)}
         />
         <Checkbox
-          label="Minimum CPI of 7.0 fulfilled"
+          label={`Minimum CPI of ${exam.min_cpi} fulfilled`}
           checked={cpiVerified}
           onChange={(e) => setCpiVerified(e.target.checked)}
         />

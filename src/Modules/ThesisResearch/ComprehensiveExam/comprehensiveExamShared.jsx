@@ -105,6 +105,7 @@ export const EXAM_SHAPE = PropTypes.shape({
   entry_qualification: PropTypes.string,
   credits_completed: PropTypes.number,
   required_credits: PropTypes.number,
+  min_cpi: PropTypes.string,
   current_cpi: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   academic_office_remarks: PropTypes.string,
   dpgc_remarks: PropTypes.string,
