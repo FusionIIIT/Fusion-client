@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
+  Alert,
   Modal,
   Select,
   TextInput,
@@ -57,6 +58,23 @@ export default function SupervisorProposeExamModal({
     };
     load();
   }, [thesis.student_roll]);
+
+  // Mirrors the backend's hard check (credits for the chosen entry
+  // qualification AND CPI >= min); the backend still enforces it regardless.
+  const ineligibleReasons = [];
+  if (academicInfo) {
+    if (!academicInfo.cpi_ok) {
+      ineligibleReasons.push(
+        `Current CPI (${academicInfo.current_cpi}) is below the required minimum of ${academicInfo.min_cpi}.`,
+      );
+    }
+    const requiredCredits = academicInfo.required_credits?.[entryQualification];
+    if (requiredCredits && academicInfo.credits_completed < requiredCredits) {
+      ineligibleReasons.push(
+        `Credits completed (${academicInfo.credits_completed}) are below the ${requiredCredits} required for this entry qualification.`,
+      );
+    }
+  }
 
   const handleSubmit = useCallback(async () => {
     if (!entryQualification) {
@@ -163,10 +181,23 @@ export default function SupervisorProposeExamModal({
                 <td>
                   <Text fw={500}>Current CPI</Text>
                 </td>
-                <td>{academicInfo?.current_cpi ?? "—"}</td>
+                <td>
+                  {academicInfo?.current_cpi ?? "—"} (min{" "}
+                  {academicInfo?.min_cpi} required)
+                </td>
               </tr>
             </tbody>
           </Table>
+
+          {ineligibleReasons.length > 0 && (
+            <Alert color="red" title="Not eligible for Comprehensive Exam">
+              {ineligibleReasons.map((r) => (
+                <Text key={r} size="sm">
+                  {r}
+                </Text>
+              ))}
+            </Alert>
+          )}
 
           <Text fw={500}>Examination Committee (RPC)</Text>
           <Table striped highlightOnHover>
@@ -219,7 +250,11 @@ export default function SupervisorProposeExamModal({
             <Button variant="default" onClick={onClose}>
               Cancel
             </Button>
-            <Button onClick={handleSubmit} loading={loading}>
+            <Button
+              onClick={handleSubmit}
+              loading={loading}
+              disabled={ineligibleReasons.length > 0}
+            >
               Submit Proposal
             </Button>
           </Group>

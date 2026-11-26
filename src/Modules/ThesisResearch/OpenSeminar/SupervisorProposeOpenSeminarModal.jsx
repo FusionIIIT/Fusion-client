@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
+  Alert,
   Modal,
   FileInput,
   TextInput,
@@ -57,7 +58,20 @@ export default function SupervisorProposeOpenSeminarModal({
 
   const set = (key) => (value) => setForm((f) => ({ ...f, [key]: value }));
 
+  const requirementSuffix = (key) =>
+    eligibility?.required_credits
+      ? ` (min ${eligibility.required_credits[key]} required)`
+      : "";
+
   const handleSubmit = useCallback(async () => {
+    if (!firstDraftFile) {
+      showNotification({
+        title: "Missing fields",
+        message: "The 1st draft of the thesis is required.",
+        color: "yellow",
+      });
+      return;
+    }
     if (!form.proposed_date) {
       showNotification({
         title: "Missing fields",
@@ -150,25 +164,46 @@ export default function SupervisorProposeOpenSeminarModal({
                 <td>
                   <Text fw={500}>Credit through Course Work</Text>
                 </td>
-                <td>{eligibility?.course_work_credits ?? "—"}</td>
+                <td>
+                  {eligibility?.course_work_credits ?? "—"}
+                  {requirementSuffix("course_work")}
+                </td>
               </tr>
               <tr>
                 <td>
                   <Text fw={500}>Credit through Progress Seminar</Text>
                 </td>
-                <td>{eligibility?.progress_seminar_credits ?? "—"}</td>
+                <td>
+                  {eligibility?.progress_seminar_credits ?? "—"}
+                  {requirementSuffix("progress_seminar")}
+                </td>
               </tr>
               <tr>
                 <td>
                   <Text fw={500}>Credit earned through Thesis Research</Text>
                 </td>
-                <td>{eligibility?.thesis_research_credits ?? "—"}</td>
+                <td>
+                  {eligibility?.thesis_research_credits ?? "—"}
+                  {requirementSuffix("thesis_research")}
+                </td>
               </tr>
               <tr>
                 <td>
                   <Text fw={500}>Credit earned through Teaching</Text>
                 </td>
-                <td>{eligibility?.teaching_credits ?? "—"}</td>
+                <td>
+                  {eligibility?.teaching_credits ?? "—"}
+                  {requirementSuffix("teaching")}
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <Text fw={500}>Current CPI</Text>
+                </td>
+                <td>
+                  {eligibility?.current_cpi ?? "—"} (min {eligibility?.min_cpi}{" "}
+                  required)
+                </td>
               </tr>
               <tr>
                 <td>
@@ -186,6 +221,16 @@ export default function SupervisorProposeOpenSeminarModal({
               </tr>
             </tbody>
           </Table>
+
+          {(eligibility?.errors || []).length > 0 && (
+            <Alert color="red" title="Not eligible for Open Seminar">
+              {eligibility.errors.map((r) => (
+                <Text key={r} size="sm">
+                  {r}
+                </Text>
+              ))}
+            </Alert>
+          )}
 
           <Text fw={500}>Examination Committee (RPC)</Text>
           <Table striped highlightOnHover>
@@ -225,12 +270,17 @@ export default function SupervisorProposeOpenSeminarModal({
             accept="application/pdf"
             value={firstDraftFile}
             onChange={setFirstDraftFile}
+            required
           />
           <Group justify="flex-end">
             <Button variant="default" onClick={onClose}>
               Cancel
             </Button>
-            <Button onClick={handleSubmit} loading={loading}>
+            <Button
+              onClick={handleSubmit}
+              loading={loading}
+              disabled={(eligibility?.errors || []).length > 0}
+            >
               Submit Proposal
             </Button>
           </Group>

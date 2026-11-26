@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useForm } from "@mantine/form";
 import {
+  Alert,
   Card,
   Title,
   FileInput,
@@ -52,6 +53,8 @@ export default function StudentThesisSubmissionUploadForm() {
   const [loading, setLoading] = useState(true);
   const [thesis, setThesis] = useState(null);
   const [submission, setSubmission] = useState(null);
+  // 90-day window from Open Seminar approval: { deadline, days_remaining, expired }
+  const [deadlineInfo, setDeadlineInfo] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [revisedFile, setRevisedFile] = useState(null);
@@ -70,6 +73,15 @@ export default function StudentThesisSubmissionUploadForm() {
       ]);
       setThesis(thesisRes.data?.id ? thesisRes.data : null);
       setSubmission(subRes.data.submission || null);
+      setDeadlineInfo(
+        subRes.data.deadline
+          ? {
+              deadline: subRes.data.deadline,
+              daysRemaining: subRes.data.days_remaining,
+              expired: subRes.data.expired,
+            }
+          : null,
+      );
     } catch (e) {
       showNotification({
         message: e.response?.data?.error || "Failed to load submission status",
@@ -359,6 +371,18 @@ export default function StudentThesisSubmissionUploadForm() {
         </Table>
       )}
 
+      {deadlineInfo && (
+        <Alert
+          mb="md"
+          color={deadlineInfo.expired ? "red" : "blue"}
+          title="Submission deadline"
+        >
+          {deadlineInfo.expired
+            ? `The 90-day window after your Open Seminar approval ended on ${new Date(deadlineInfo.deadline).toLocaleDateString()}. Thesis submission is closed.`
+            : `Thesis must be submitted within 90 days of Open Seminar approval: by ${new Date(deadlineInfo.deadline).toLocaleDateString()} (${deadlineInfo.daysRemaining} day(s) remaining).`}
+        </Alert>
+      )}
+
       <Text size="sm" c="dimmed" mb="md">
         Upload your synopsis and full thesis report below. Both must be PDFs and
         cannot be resubmitted once uploaded, so double-check the files before
@@ -403,7 +427,11 @@ export default function StudentThesisSubmissionUploadForm() {
           mt="lg"
           type="submit"
           loading={submitting}
-          disabled={!form.values.synopsis || !form.values.thesis_report}
+          disabled={
+            !form.values.synopsis ||
+            !form.values.thesis_report ||
+            deadlineInfo?.expired
+          }
         >
           Upload Thesis
         </Button>
