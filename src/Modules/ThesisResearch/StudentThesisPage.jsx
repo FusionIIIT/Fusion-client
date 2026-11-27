@@ -29,6 +29,9 @@ import {
 
 const TOPIC_COLOR = {
   supervisor_pending: "yellow",
+  hod_pending: "blue",
+  hod_rejected: "orange",
+  dean_rejected: "orange",
   supervisor_approved: "blue",
   hod_approved: "teal",
   dean_pending: "orange",
@@ -37,8 +40,11 @@ const TOPIC_COLOR = {
 };
 const TOPIC_LABEL = {
   supervisor_pending: "Submitted — Pending Supervisor",
+  hod_pending: "Supervisor Approved — Pending HOD",
+  hod_rejected: "Sent Back by HOD to Supervisor",
+  dean_rejected: "Sent Back by Dean to HOD",
   supervisor_approved: "Supervisor Approved",
-  hod_approved: "HOD Approved",
+  hod_approved: "HOD Approved — Pending Dean",
   dean_pending: "Pending Dean",
   dean_approved: "Dean Approved",
   rejected: "Rejected",

@@ -258,7 +258,8 @@ function Admin_view_all_courses() {
       tc.code.toLowerCase().includes(searchLower) ||
       tc.name.toLowerCase().includes(searchLower) ||
       tc.discipline.toLowerCase().includes(searchLower) ||
-      tc.credits.toString().includes(searchLower)
+      tc.credits.toString().includes(searchLower) ||
+      (tc.version || "").includes(searchLower)
     );
   });
 
@@ -1203,6 +1204,7 @@ function Admin_view_all_courses() {
                       }}
                     >
                       {tc.code}
+                      {tc.version ? ` v${tc.version}` : ""}
                     </td>
                     <td
                       style={{

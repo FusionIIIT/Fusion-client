@@ -84,6 +84,7 @@ export const EXAMINATION_PAGES = [
     icon: "Scroll",
     group: "Results",
     roles: STUDENT_ROLES,
+    keepWhenLocked: true,
   },
   {
     key: "announceResult",
@@ -107,6 +108,14 @@ export const EXAMINATION_PAGES = [
     slug: "grade-sheet",
     title: "Grade Sheet",
     icon: "FileText",
+    group: null,
+    roles: [...ACAD, ...PROGRAMME_ADMIN_ROLES],
+  },
+  {
+    key: "examAttendanceSheet",
+    slug: "attendance-sheet",
+    title: "Exam Attendance Sheet",
+    icon: "ClipboardText",
     group: null,
     roles: [...ACAD, ...PROGRAMME_ADMIN_ROLES],
   },

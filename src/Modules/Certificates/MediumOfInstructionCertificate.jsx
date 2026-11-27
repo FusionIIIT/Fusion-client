@@ -316,7 +316,7 @@ export default function MediumOfInstructionCertificate() {
                   {validFatherName
                     ? `${preview.student.relation} ${fatherName}, `
                     : ""}
-                  is a student of{" "}
+                  {preview.student.verb || "is"} a student of{" "}
                   {ordinalWithSuperscript(preview.student.year_ordinal)} Year (
                   {ordinalWithSuperscript(preview.student.semester_ordinal)}{" "}
                   Semester) <strong>{preview.student.programme_short}</strong>{" "}

@@ -281,7 +281,7 @@ export default function DeanReviewModal({ thesis, onClose, refresh }) {
           </Text>
         )}
 
-        {form.status === "dean_pending" && (
+        {(form.status === "dean_pending" || form.status === "hod_approved") && (
           <Textarea
             label="Remarks (if sending back to HOD)"
             placeholder="Enter your remarks here"

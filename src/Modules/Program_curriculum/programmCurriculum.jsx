@@ -1,12 +1,17 @@
-import React, { useState, useEffect } from "react";
-import { Route, Routes, Navigate, useLocation } from "react-router-dom";
+import React from "react";
+import { Route, Routes, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
-import PropTypes from "prop-types";
 import { PageHeader } from "../../ui/components/PageHeader";
 import { RouteTrail } from "../../ui/components/RouteTrail";
 import { pagesForRole } from "../../ui/nav/roles";
 import { sidebarPageFor, trailFor } from "../../lib/routeTrail";
 import { CURRICULUM_BASE, CURRICULUM_PAGES, CURRICULUM_TRAILS } from "./pages";
+import {
+  ADMIN_ROLES,
+  FACULTY_ROLES,
+  ProtectedRoute,
+  STUDENT_ROLES,
+} from "./ProtectedRoute";
 import AdminViewAllCourses from "./Acad_admin/Admin_view_all_courses";
 import AdminViewACourse from "./Acad_admin/Admin_view_a_course";
 import AdminViewAllBatches from "./Acad_admin/Admin_view_all_batches";
@@ -83,58 +88,11 @@ import "./programCurriculum.shared.css";
 
 // breadcrumb
 
-// Define role groups outside component
-const ADMIN_ROLES = ["acadadmin", "studentacadadmin"];
-const FACULTY_ROLES = [
-  "Professor",
-  "Assistant Professor",
-  "Associate Professor",
-  "Dean Academic",
-  "HOD (CSE)",
-  "HOD (ECE)",
-  "HOD (ME)",
-  "HOD (NS)",
-  "HOD (Design)",
-  "HOD (Liberal Arts)",
-];
-const STUDENT_ROLES = ["student", "Guest-User"];
-
-// Protected route component moved outside
-function ProtectedRoute({ allowedRoles, children }) {
-  const role = useSelector((state) => state.user.role);
-  const [isLoading, setIsLoading] = useState(role === "Guest-User");
-  const [hasAccess, setHasAccess] = useState(allowedRoles.includes(role));
-
-  useEffect(() => {
-    let timer;
-    if (role === "Guest-User") {
-      timer = setTimeout(() => {
-        setHasAccess(allowedRoles.includes(role));
-        setIsLoading(false);
-      }, 2000);
-    } else {
-      setHasAccess(allowedRoles.includes(role));
-      setIsLoading(false);
-    }
-
-    return () => {
-      if (timer) clearTimeout(timer);
-    };
-  }, [role, allowedRoles]);
-
-  if (isLoading) return <div>Loading...</div>;
-  return hasAccess ? children : <Navigate to="/dashboard" />;
-}
-
-ProtectedRoute.propTypes = {
-  allowedRoles: PropTypes.arrayOf(PropTypes.string).isRequired,
-  children: PropTypes.node.isRequired,
-};
-
 function NavTab() {
   const role = useSelector((state) => state.user.role);
+  const studentStatus = useSelector((state) => state.user.studentStatus);
   const { pathname } = useLocation();
-  const pages = pagesForRole(CURRICULUM_PAGES, role);
+  const pages = pagesForRole(CURRICULUM_PAGES, role, { studentStatus });
   const options = { base: CURRICULUM_BASE, pages };
   const current = sidebarPageFor(pathname, options);
 

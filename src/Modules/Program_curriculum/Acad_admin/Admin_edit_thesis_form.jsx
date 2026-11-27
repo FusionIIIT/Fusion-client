@@ -34,8 +34,7 @@ function Admin_edit_thesis_form() {
           ? "Credits must be 0 or more"
           : null,
       discipline: (value) => (!value ? "Discipline is required" : null),
-      programme_type: (value) =>
-        !value ? "Programme type is required" : null,
+      programme_type: (value) => (!value ? "Programme type is required" : null),
     },
   });
 
@@ -81,7 +80,7 @@ function Admin_edit_thesis_form() {
   }, [id]);
 
   const programmeTypeOptions = [
-    { value: "PG", label: "Postgraduate (M.Tech)" },
+    { value: "PG", label: "Postgraduate (PG)" },
     { value: "PHD", label: "Doctor of Philosophy (PhD)" },
   ];
 
@@ -269,7 +268,7 @@ function Admin_edit_thesis_form() {
                           onChange={(event) =>
                             form.setFieldValue(
                               "code",
-                              event.currentTarget.value
+                              event.currentTarget.value,
                             )
                           }
                           error={form.errors.code}
@@ -307,7 +306,7 @@ function Admin_edit_thesis_form() {
                           onChange={(event) =>
                             form.setFieldValue(
                               "name",
-                              event.currentTarget.value
+                              event.currentTarget.value,
                             )
                           }
                           error={form.errors.name}

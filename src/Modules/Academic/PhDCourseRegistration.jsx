@@ -117,12 +117,19 @@ function PhDCourseRegisterForm() {
         myRequestsRes,
       ] = await Promise.all([
         axios.get(phdCourseSlotsRoute, { headers: authHeaders() }),
-        axios.get(studentThesisEnrollmentRoute, { headers: authHeaders() }),
+        // The semester being registered into, which for PG can be ahead of
+        // the current one (whichever "PG Registration" window is open).
+        axios.get(studentThesisEnrollmentRoute, {
+          headers: authHeaders(),
+          params: { registration: 1 },
+        }),
         axios.get(studentProgressSeminarEnrollmentRoute, {
           headers: authHeaders(),
+          params: { registration: 1 },
         }),
         axios.get(studentTeachingCreditEnrollmentRoute, {
           headers: authHeaders(),
+          params: { registration: 1 },
         }),
         axios.get(phdMyCourseRequestsRoute, { headers: authHeaders() }),
       ]);
@@ -758,33 +765,53 @@ function PhDCourseRegisterForm() {
 // ─────────────────────────────────────────────────────────────────────────────
 // My Requests tab: status across all four registration types.
 // ─────────────────────────────────────────────────────────────────────────────
+
+// The enrollment responses that hold a registration, one per semester: the
+// current and the registration semester are often the same one.
+function withRegistration(infos) {
+  const seen = new Set();
+  return infos.filter((info) => {
+    const semester = info?.registration?.semester_no;
+    if (semester === undefined || seen.has(semester)) return false;
+    seen.add(semester);
+    return true;
+  });
+}
+
 function PhDMyCourseRequests() {
   const [requests, setRequests] = useState([]);
-  const [thesisInfo, setThesisInfo] = useState(null);
-  const [seminarInfo, setSeminarInfo] = useState(null);
-  const [teachingCreditInfo, setTeachingCreditInfo] = useState(null);
+  const [thesisInfos, setThesisInfos] = useState([]);
+  const [seminarInfos, setSeminarInfos] = useState([]);
+  const [teachingCreditInfos, setTeachingCreditInfos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const fetchRequests = useCallback(async () => {
     setLoading(true);
     setError(null);
+    // A PG student can register ahead into the semester the calendar opens,
+    // so read each registration for the current semester and for the
+    // registration semester.
+    const bothSemesters = (route) =>
+      Promise.all([
+        axios.get(route, { headers: authHeaders() }),
+        axios.get(route, {
+          headers: authHeaders(),
+          params: { registration: 1 },
+        }),
+      ]).then((responses) => responses.map((res) => res.data));
     try {
-      const [coursesRes, thesisRes, seminarRes, teachingCreditRes] =
+      const [coursesRes, thesisData, seminarData, teachingCreditData] =
         await Promise.all([
           axios.get(phdMyCourseRequestsRoute, { headers: authHeaders() }),
-          axios.get(studentThesisEnrollmentRoute, { headers: authHeaders() }),
-          axios.get(studentProgressSeminarEnrollmentRoute, {
-            headers: authHeaders(),
-          }),
-          axios.get(studentTeachingCreditEnrollmentRoute, {
-            headers: authHeaders(),
-          }),
+          bothSemesters(studentThesisEnrollmentRoute),
+          bothSemesters(studentProgressSeminarEnrollmentRoute),
+          bothSemesters(studentTeachingCreditEnrollmentRoute),
         ]);
       setRequests(coursesRes.data.requests || []);
-      setThesisInfo(thesisRes.data);
-      setSeminarInfo(seminarRes.data);
-      setTeachingCreditInfo(teachingCreditRes.data);
+      setThesisInfos(thesisData);
+      setSeminarInfos(seminarData);
+      setTeachingCreditInfos(teachingCreditData);
     } catch (err) {
       setError(getApiErrorMessage(err));
     } finally {
@@ -812,66 +839,49 @@ function PhDMyCourseRequests() {
       remarks: r.remarks,
       requestedAt: r.requested_at,
     })),
-    ...(thesisInfo?.registration
-      ? [
-          {
-            key: "thesis",
-            type: "Thesis",
-            slot: thesisInfo.thesis_slot?.name || "—",
-            detail: (() => {
-              const t = thesisInfo.thesis_slot?.resolved_thesis;
-              return t ? `${t.code} – ${t.name}` : "Thesis";
-            })(),
-            credits: thesisInfo.registration.credits,
-            semester: thesisInfo.registration.semester_no,
-            status: thesisInfo.registration.status,
-            remarks: thesisInfo.registration.remarks,
-            requestedAt: thesisInfo.registration.registered_on,
-          },
-        ]
-      : []),
-    ...(seminarInfo?.registration
-      ? [
-          {
-            key: "seminar",
-            type: "Progress Seminar",
-            slot: seminarInfo.progress_seminar_slot?.name || "—",
-            detail: (() => {
-              const s = seminarInfo.progress_seminar_slot?.resolved_seminar;
-              return s ? `${s.code} – ${s.name}` : "—";
-            })(),
-            credits:
-              seminarInfo.progress_seminar_slot?.resolved_seminar?.credit ??
-              "—",
-            semester: seminarInfo.registration.semester_no,
-            status: seminarInfo.registration.status,
-            remarks: seminarInfo.registration.remarks,
-            requestedAt: seminarInfo.registration.registered_on,
-          },
-        ]
-      : []),
-    ...(teachingCreditInfo?.registration
-      ? [
-          {
-            key: "teaching-credit",
-            type: "Teaching Credit",
-            slot: teachingCreditInfo.teaching_credit_slot?.name || "—",
-            detail: (() => {
-              const t =
-                teachingCreditInfo.teaching_credit_slot
-                  ?.resolved_teaching_credit;
-              return t ? `${t.code} – ${t.name}` : "—";
-            })(),
-            credits:
-              teachingCreditInfo.teaching_credit_slot?.resolved_teaching_credit
-                ?.credit ?? "—",
-            semester: teachingCreditInfo.registration.semester_no,
-            status: teachingCreditInfo.registration.status,
-            remarks: teachingCreditInfo.registration.remarks,
-            requestedAt: teachingCreditInfo.registration.registered_on,
-          },
-        ]
-      : []),
+    ...withRegistration(thesisInfos).map((info) => ({
+      key: `thesis-${info.registration.semester_no}`,
+      type: "Thesis",
+      slot: info.thesis_slot?.name || "—",
+      detail: (() => {
+        const t = info.thesis_slot?.resolved_thesis;
+        return t ? `${t.code} – ${t.name}` : "Thesis";
+      })(),
+      credits: info.registration.credits,
+      semester: info.registration.semester_no,
+      status: info.registration.status,
+      remarks: info.registration.remarks,
+      requestedAt: info.registration.registered_on,
+    })),
+    ...withRegistration(seminarInfos).map((info) => ({
+      key: `seminar-${info.registration.semester_no}`,
+      type: "Progress Seminar",
+      slot: info.progress_seminar_slot?.name || "—",
+      detail: (() => {
+        const sem = info.progress_seminar_slot?.resolved_seminar;
+        return sem ? `${sem.code} – ${sem.name}` : "—";
+      })(),
+      credits: info.progress_seminar_slot?.resolved_seminar?.credit ?? "—",
+      semester: info.registration.semester_no,
+      status: info.registration.status,
+      remarks: info.registration.remarks,
+      requestedAt: info.registration.registered_on,
+    })),
+    ...withRegistration(teachingCreditInfos).map((info) => ({
+      key: `teaching-credit-${info.registration.semester_no}`,
+      type: "Teaching Credit",
+      slot: info.teaching_credit_slot?.name || "—",
+      detail: (() => {
+        const t = info.teaching_credit_slot?.resolved_teaching_credit;
+        return t ? `${t.code} – ${t.name}` : "—";
+      })(),
+      credits:
+        info.teaching_credit_slot?.resolved_teaching_credit?.credit ?? "—",
+      semester: info.registration.semester_no,
+      status: info.registration.status,
+      remarks: info.registration.remarks,
+      requestedAt: info.registration.registered_on,
+    })),
   ];
 
   const rowsBySemester = new Map();

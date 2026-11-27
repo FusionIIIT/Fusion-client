@@ -14,11 +14,19 @@ const userSlice = createSlice({
     mustCompleteProfile: false, // first-login student must finish profile popup
     authChecked: false, // /api/auth/me has resolved (gates route rendering)
     programmeType: null, // UG | PG | PHD — decides which academic pages exist
+    studentStatus: null, // PRESENT | ALUMNI | WITHDRAWN …, null for staff
+    studentInfo: null, // {discipline, batch} for a student, null for staff
     profilePhoto: "", // student's own photo, shown on the sidebar avatar
     pluggedNavigation: {}, // Format---> {role: [section]}, from other services
     currentPluggedNavigation: [], // the acting role's share of the above
   },
   reducers: {
+    setStudentStatus: (state, action) => {
+      state.studentStatus = action.payload ?? null;
+    },
+    setStudentInfo: (state, action) => {
+      state.studentInfo = action.payload ?? null;
+    },
     setProgrammeType: (state, action) => {
       state.programmeType = action.payload;
     },
@@ -76,6 +84,8 @@ export const {
   setAuthChecked,
   setProgrammeType,
   setProfilePhoto,
+  setStudentStatus,
+  setStudentInfo,
   clearUserName,
   clearRoles,
 } = userSlice.actions;

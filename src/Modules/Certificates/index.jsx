@@ -13,11 +13,18 @@ const COMPONENTS = {
   mediumOfInstructionCertificate: lazy(
     () => import("./MediumOfInstructionCertificate"),
   ),
+  pointerConversionCertificate: lazy(
+    () => import("./PointerConversionCertificate"),
+  ),
 };
 
 export default function Certificates() {
   const role = useSelector((state) => state.user.role);
-  const pages = useMemo(() => pagesForRole(CERTIFICATE_PAGES, role), [role]);
+  const studentStatus = useSelector((state) => state.user.studentStatus);
+  const pages = useMemo(
+    () => pagesForRole(CERTIFICATE_PAGES, role, { studentStatus }),
+    [role, studentStatus],
+  );
 
   return (
     <ModuleRoutes
