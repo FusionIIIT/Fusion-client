@@ -38,3 +38,11 @@ export const grade_status = `${host}/examination/api/grade_status/`;
 export const grade_summary = `${host}/examination/api/grade_summary/`;
 export const grade_validation = `${host}/examination/api/grade_validation/`;
 export const submit_phd_milestone_grades = `${host}/examination/api/submit_phd_milestone_grades/`;
+export const generate_full_gradesheet_form = `${host}/examination/api/generate_full_gradesheet_form/`;
+export const generate_full_gradesheet_data = `${host}/examination/api/generate_full_gradesheet_data/`;
+
+export const attendanceSheetCoursesRoute = `${host}/examination/api/attendance-sheet/courses/`;
+export const attendanceSheetOverviewRoute = `${host}/examination/api/attendance-sheet/overview/`;
+export const attendanceSheetRoute = `${host}/examination/api/attendance-sheet/`;
+export const attendanceSheetSaveRoute = `${host}/examination/api/attendance-sheet/save/`;
+export const attendanceSheetCopyRoute = `${host}/examination/api/attendance-sheet/copy/`;

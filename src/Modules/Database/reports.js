@@ -4,6 +4,15 @@ import StudentCreditTotalsReport from "./reports/StudentCreditTotalsReport";
 import CourseRegistrationCountsReport from "./reports/CourseRegistrationCountsReport";
 import SwayamRegistrationsReport from "./reports/SwayamRegistrationsReport";
 import SemesterRegistrationsReport from "./reports/SemesterRegistrationsReport";
+import CreditsEarnedReport from "./reports/CreditsEarnedReport";
+import ActiveBacklogsReport from "./reports/ActiveBacklogsReport";
+import CoreCourseGradesReport from "./reports/CoreCourseGradesReport";
+import RemainingCoreGradesReport from "./reports/RemainingCoreGradesReport";
+import BatchWiseStudentCountReport from "./reports/BatchWiseStudentCountReport";
+import BranchWiseStudentCountReport from "./reports/BranchWiseStudentCountReport";
+import SpiCpiReport from "./reports/SpiCpiReport";
+import ToppersReport from "./reports/ToppersReport";
+import CategoryCountReport from "./reports/CategoryCountReport";
 
 // One entry per report. Adding a report means adding an entry here; the list
 // page and the report page both read from this.
@@ -50,6 +59,79 @@ export const DATABASE_REPORTS = [
     summary: "Every course a batch registered in one semester, with credits",
     filters: "Batch, semester",
     Component: SemesterRegistrationsReport,
+  },
+  {
+    id: "credits-earned",
+    title: "Total credits earned",
+    summary:
+      "Regular, backlog/improvement and swayam credits each student of a batch has earned so far",
+    filters: "Batch",
+    Component: CreditsEarnedReport,
+  },
+  {
+    id: "active-backlogs",
+    title: "Active Backlogs Batch Wise",
+    summary:
+      "Courses each student failed and has not cleared yet, with the semester, grade and instructor",
+    filters: "Batch (optional)",
+    Component: ActiveBacklogsReport,
+  },
+  {
+    id: "core-course-grades",
+    title: "Common Courses Grades Inter-disciplinary",
+    summary:
+      "Credits each student of a batch has earned, with their grade in each common course you add",
+    filters: "Batch, discipline (optional), courses",
+    Component: CoreCourseGradesReport,
+  },
+  {
+    id: "remaining-core-grades",
+    title: "Remaining Core Courses Grades",
+    summary:
+      "Credits each student of a batch has earned, with their grade in each remaining core course you add",
+    filters: "Batch, discipline (optional), courses",
+    Component: RemainingCoreGradesReport,
+  },
+  {
+    id: "batch-wise-student-count",
+    title: "Batch Wise Student Count",
+    summary:
+      "Students in each batch from 2020, with male and female counts from the 2025 batch",
+    filters: "None",
+    Component: BatchWiseStudentCountReport,
+  },
+  {
+    id: "branch-wise-student-count",
+    title: "Branch Wise Student Count",
+    summary:
+      "Students in each programme and discipline of every batch from 2020, with male and female counts from the 2025 batch",
+    filters: "None",
+    Component: BranchWiseStudentCountReport,
+  },
+  {
+    id: "spi-cpi",
+    title: "SPI and CPI",
+    summary:
+      "Each student's SPI and CPI for a semester, or for their latest term with grades, as on the transcript",
+    filters: "Batch, discipline (optional), semester (optional)",
+    Component: SpiCpiReport,
+  },
+  {
+    id: "toppers",
+    title: "Toppers",
+    summary:
+      "The top 5, 10, 15 or 20 students by CPI or SPI, in each discipline or across the batch, with SPI, CPI, TU and TP",
+    filters:
+      "Batch, top 5/10/15/20, programme, discipline and semester (optional)",
+    Component: ToppersReport,
+  },
+  {
+    id: "category-wise-student-count",
+    title: "Category Wise Student Count",
+    summary:
+      "Students of a batch in each category (General, EWS, OBC, SC, ST) and with PwD, for each programme and discipline",
+    filters: "Batch, programme, discipline and gender (optional)",
+    Component: CategoryCountReport,
   },
 ];
 

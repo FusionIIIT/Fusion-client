@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => ({
         "/aims",
         "/academic-procedures",
         "/programme_curriculum",
-        "/examination",
+        "/examination/api",
         "/eis",
         "/spacs",
         "/media",

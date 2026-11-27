@@ -64,6 +64,10 @@ export default function HODReviewModal({ thesis, onClose, refresh }) {
 
   if (!form) return null;
 
+  // The HOD acts on a topic forwarded by the supervisor, and again on one the
+  // Dean sent back.
+  const canAct = ["hod_pending", "dean_rejected"].includes(form.status);
+
   const handle = async (approve) => {
     setLoading(true);
     try {
@@ -75,8 +79,8 @@ export default function HODReviewModal({ thesis, onClose, refresh }) {
       notifications.show({
         title: "Success",
         message: approve
-          ? "Thesis approved successfully."
-          : "Thesis rejected and sent back to Dean.",
+          ? "Thesis approved and forwarded to Dean Academic."
+          : "Thesis sent back to the supervisor.",
         color: approve ? "green" : "yellow",
       });
       refresh();
@@ -209,15 +213,24 @@ export default function HODReviewModal({ thesis, onClose, refresh }) {
           </tbody>
         </Table>
 
-        {form.dean_remarks && form.status === "dean_rejected" && (
+        {form.status === "dean_rejected" && (
           <Text
             c="blue"
             style={{ backgroundColor: "#e6f0ff", padding: 10, borderRadius: 4 }}
           >
             <Text fw={500} component="span">
-              Dean's Remarks:
+              Sent back by Dean Academic.
             </Text>{" "}
-            {form.dean_remarks}
+            {form.dean_remarks ? (
+              <>
+                <Text fw={500} component="span">
+                  Dean&apos;s Remarks:
+                </Text>{" "}
+                {form.dean_remarks}
+              </>
+            ) : (
+              "No remarks were given."
+            )}
           </Text>
         )}
 
@@ -233,7 +246,7 @@ export default function HODReviewModal({ thesis, onClose, refresh }) {
           </Text>
         )}
 
-        {form.status === "hod_pending" && (
+        {canAct && (
           <Textarea
             label="Remarks (if sending back to supervisor)"
             placeholder="Enter your remarks here"
@@ -243,7 +256,7 @@ export default function HODReviewModal({ thesis, onClose, refresh }) {
           />
         )}
 
-        {form.status === "hod_pending" && (
+        {canAct && (
           <Group grow>
             <Button fullWidth onClick={() => handle(true)} loading={loading}>
               Approve

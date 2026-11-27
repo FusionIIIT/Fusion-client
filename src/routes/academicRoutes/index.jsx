@@ -58,6 +58,17 @@ export const feeStructureCertificatesRoute = `${host}/academic-procedures/api/ac
 export const feeStructureCertificateHistoryPdfRoute = (certificateId) =>
   `${feeStructureCertificatesRoute}${certificateId}/pdf/`;
 
+export const mediumOfInstructionStudentRoute = `${host}/academic-procedures/api/acad/medium-of-instruction/student/`;
+export const mediumOfInstructionPdfRoute = `${host}/academic-procedures/api/acad/medium-of-instruction/pdf/`;
+export const mediumOfInstructionCertificatesRoute = `${host}/academic-procedures/api/acad/medium-of-instruction/certificates/`;
+export const mediumOfInstructionCertificatePdfRoute = (certificateId) =>
+  `${mediumOfInstructionCertificatesRoute}${certificateId}/pdf/`;
+export const pointerConversionStudentRoute = `${host}/academic-procedures/api/acad/pointer-conversion/student/`;
+export const pointerConversionPdfRoute = `${host}/academic-procedures/api/acad/pointer-conversion/pdf/`;
+export const pointerConversionCertificatesRoute = `${host}/academic-procedures/api/acad/pointer-conversion/certificates/`;
+export const pointerConversionCertificatePdfRoute = (certificateId) =>
+  `${pointerConversionCertificatesRoute}${certificateId}/pdf/`;
+
 export const feeStructuresRoute = `${host}/academic-procedures/api/acad/fee-structures/`;
 export const feeStructureTemplateRoute = `${feeStructuresRoute}template/`;
 export const feeStructureDetailRoute = (structureId) =>
@@ -93,6 +104,15 @@ export const databaseStudentCreditTotalsRoute = `${host}/aims/api/database/stude
 export const databaseCourseRegistrationCountsRoute = `${host}/aims/api/database/course-registration-counts/`;
 export const databaseSwayamRegistrationsRoute = `${host}/aims/api/database/swayam-registrations/`;
 export const databaseSemesterRegistrationsRoute = `${host}/aims/api/database/semester-registrations/`;
+export const databaseCreditsEarnedRoute = `${host}/aims/api/database/credits-earned/`;
+export const databaseActiveBacklogsRoute = `${host}/aims/api/database/active-backlogs/`;
+export const databaseReportCoursesRoute = `${host}/aims/api/database/report-courses/`;
+export const databaseCoreCourseGradesRoute = `${host}/aims/api/database/core-course-grades/`;
+export const databaseRemainingCoreGradesRoute = `${host}/aims/api/database/remaining-core-grades/`;
+export const databaseBatchWiseStudentCountRoute = `${host}/aims/api/database/batch-wise-student-count/`;
+export const databaseBranchWiseStudentCountRoute = `${host}/aims/api/database/branch-wise-student-count/`;
+export const databaseSpiCpiRoute = `${host}/aims/api/database/spi-cpi/`;
+export const databaseCategoryWiseStudentCountRoute = `${host}/aims/api/database/category-wise-student-count/`;
 export const academicProceduresFaculty = `${host}/academic-procedures/api/fac/academic_procedures_faculty`;
 export const getAllCourses = `${host}/academic-procedures/api/acad/get_all_courses`;
 export const generateprereport = `${host}/aims/api/generate_preregistration_report/`;
@@ -172,6 +192,11 @@ export const listBatchesRoute = `${host}/academic-procedures/api/acad/batch_chan
 export const listStudentsRoute = `${host}/academic-procedures/api/acad/batch_change/students/`;
 export const applyBatchRoute = `${host}/academic-procedures/api/acad/batch_change/apply/`;
 
+export const studentStatusRoute = `${host}/aims/api/student-status/`;
+export const withdrawStudentRoute = `${host}/aims/api/student-status/withdraw/`;
+export const readmitStudentRoute = `${host}/aims/api/student-status/readmit/`;
+export const recordSemesterDropRoute = `${host}/aims/api/student-status/drop/`;
+export const cancelSemesterDropRoute = `${host}/aims/api/student-status/drop/cancel/`;
 export const listStudentsPromoteRoute = `${host}/academic-procedures/api/acad/promote/students/`;
 export const applyPromoteRoute = `${host}/academic-procedures/api/acad/promote/apply/`;
 export const applyDemoteRoute = `${host}/academic-procedures/api/acad/demote/apply/`;

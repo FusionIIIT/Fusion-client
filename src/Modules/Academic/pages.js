@@ -1,11 +1,17 @@
 import {
   FACULTY_ROLES,
+  isLockedStatus,
   programmesForRole,
   SCOPED_ADMIN_ROLES,
   STUDENT_ROLES,
 } from "../../ui/nav/roles";
 
 export const ACADEMIC_BASE = "/academics";
+
+const isWithdrawn = (status) =>
+  String(status ?? "")
+    .trim()
+    .toUpperCase() === "WITHDRAWN";
 
 const isNotUg = ({ programmeType }) => programmeType && programmeType !== "UG";
 const isUg = ({ programmeType }) => !programmeType || programmeType === "UG";
@@ -135,8 +141,8 @@ export const ACADEMIC_PAGES = [
     slug: "generate-student-list",
     title: "Generate Student List",
     icon: "ListNumbers",
-    group: "Student Records",
-    roles: SCOPED_ADMIN_ROLES,
+    group: "Courses Roll List",
+    roles: [...SCOPED_ADMIN_ROLES, ...FACULTY_ROLES, ...STUDENT_ROLES],
     desktopOnly: true,
   },
   {
@@ -165,6 +171,14 @@ export const ACADEMIC_PAGES = [
     group: "Student Records",
     roles: SCOPED_ADMIN_ROLES,
     desktopOnly: true,
+  },
+  {
+    key: "adminStudentStatus",
+    slug: "student-status",
+    title: "Student Status",
+    icon: "UserCheck",
+    group: "Student Records",
+    roles: SCOPED_ADMIN_ROLES,
   },
 
   {
@@ -204,12 +218,34 @@ export const ACADEMIC_PAGES = [
   },
 
   {
+    // A locked student's landing page, first so the module opens on it.
+    key: "studentAlumniHome",
+    slug: "alumni",
+    title: "Alumni",
+    icon: "GraduationCap",
+    roles: STUDENT_ROLES,
+    keepWhenLocked: true,
+    when: (flags) =>
+      isLockedStatus(flags.studentStatus) && !isWithdrawn(flags.studentStatus),
+  },
+  {
+    // The same page for a withdrawn student, under their own name.
+    key: "studentWithdrawnHome",
+    slug: "withdrawn",
+    title: "Withdrawn",
+    icon: "IdentificationBadge",
+    roles: STUDENT_ROLES,
+    keepWhenLocked: true,
+    when: (flags) => isWithdrawn(flags.studentStatus),
+  },
+  {
     key: "studentRegisteredCourses",
     slug: "registered-courses",
     title: "Registered Courses",
     icon: "Book",
     group: "Registration",
     roles: STUDENT_ROLES,
+    keepWhenLocked: true,
   },
   {
     key: "studentAvailableCourses",

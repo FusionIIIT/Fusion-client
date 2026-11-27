@@ -26,6 +26,7 @@ import {
   deleteDropRequestsRoute,
 } from "../../routes/academicRoutes";
 import { buildSessionOptions } from "../../lib/academicYear";
+import { getApiErrorMessage } from "../../helper/apiError";
 
 const SEMESTER_CHOICES = [
   { value: "Odd Semester", label: "Odd Semester" },
@@ -71,7 +72,7 @@ export default function AdminDropDashboard() {
       setRequests(Array.isArray(data) ? data : []);
     } catch (err) {
       const errorMsg =
-        err.response?.data?.error || err.response?.data?.detail || err.message;
+        getApiErrorMessage(err);
       setError(errorMsg || "Failed to load requests");
     } finally {
       setLoading(false);
@@ -184,7 +185,7 @@ export default function AdminDropDashboard() {
         setSelectedIds(new Set());
         await fetchRequests();
       } catch (err) {
-        const errorMsg = err.response?.data?.error || err.message;
+        const errorMsg = getApiErrorMessage(err);
         showNotification({
           title: `${action === "approve" ? "Approval" : "Rejection"} Error`,
           message: errorMsg || `Failed to ${action} requests`,
@@ -253,7 +254,7 @@ export default function AdminDropDashboard() {
     } catch (err) {
       showNotification({
         title: "Delete Failed",
-        message: err.response?.data?.error || err.message,
+        message: getApiErrorMessage(err),
         color: "red",
       });
     } finally {

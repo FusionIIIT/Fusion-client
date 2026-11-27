@@ -33,6 +33,7 @@ import {
   listBatchesRoute,
   generateprereport,
 } from "../../routes/academicRoutes";
+import { getApiErrorMessage } from "../../helper/apiError";
 
 const generateAcademicYears = () =>
   buildSessionLabels(new Date().getFullYear());
@@ -130,7 +131,7 @@ export default function GenerateStudentList({ view = "rolllist" }) {
       );
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.detail || err.message);
+      setError(getApiErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -194,7 +195,7 @@ export default function GenerateStudentList({ view = "rolllist" }) {
         showNotification({
           title: "Error",
           message: `Failed to fetch preview data: ${
-            err.response?.data?.detail || err.message
+            getApiErrorMessage(err)
           }`,
           color: "red",
         });
@@ -243,7 +244,7 @@ export default function GenerateStudentList({ view = "rolllist" }) {
     } catch (err) {
       showNotification({
         title: "Export failed",
-        message: err.response?.data?.error || err.message,
+        message: getApiErrorMessage(err),
         color: "red",
       });
     } finally {
@@ -325,7 +326,7 @@ export default function GenerateStudentList({ view = "rolllist" }) {
       console.error("Generate List Error:", err);
       showNotification({
         title: "Error",
-        message: err.response?.data?.detail || err.message,
+        message: getApiErrorMessage(err),
         color: "red",
       });
     } finally {
@@ -393,7 +394,7 @@ export default function GenerateStudentList({ view = "rolllist" }) {
       setPreRegData(res.data);
     } catch (err) {
       const msg =
-        err.response?.data?.detail || err.message || "Failed to fetch report";
+        getApiErrorMessage(err, "Failed to fetch report");
       setPreRegError(msg);
       showNotification({ title: "Error", message: msg, color: "red" });
     } finally {
@@ -450,7 +451,7 @@ export default function GenerateStudentList({ view = "rolllist" }) {
     } catch (err) {
       showNotification({
         title: "Export failed",
-        message: err.response?.data?.detail || err.message,
+        message: getApiErrorMessage(err),
         color: "red",
       });
     } finally {

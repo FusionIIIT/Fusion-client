@@ -9,6 +9,7 @@ import {
   TextInput,
   Table,
   Select,
+  Checkbox,
   Loader,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
@@ -23,6 +24,8 @@ function Admin_edit_teaching_credit_form() {
       code: "",
       name: "",
       credit: 0,
+      version: "1.0",
+      latest_version: true,
       discipline: "",
       programme_type: "",
     },
@@ -33,9 +36,12 @@ function Admin_edit_teaching_credit_form() {
         value === null || value === undefined || value < 0
           ? "Credits must be 0 or more"
           : null,
+      version: (value) =>
+        /^\d+(\.\d)?$/.test(String(value).trim()) && Number(value) >= 1
+          ? null
+          : "Version must look like 1.0 or 1.1",
       discipline: (value) => (!value ? "Discipline is required" : null),
-      programme_type: (value) =>
-        !value ? "Programme type is required" : null,
+      programme_type: (value) => (!value ? "Programme type is required" : null),
     },
   });
 
@@ -62,6 +68,8 @@ function Admin_edit_teaching_credit_form() {
           code: tcData.code || "",
           name: tcData.name || "",
           credit: tcData.credit || 0,
+          version: tcData.version || "1.0",
+          latest_version: tcData.latest_version ?? true,
           discipline: tcData.discipline?.toString() || "",
           programme_type: tcData.programme_type || "",
         });
@@ -81,7 +89,7 @@ function Admin_edit_teaching_credit_form() {
   }, [id]);
 
   const programmeTypeOptions = [
-    { value: "PG", label: "Postgraduate (M.Tech)" },
+    { value: "PG", label: "Postgraduate (PG)" },
     { value: "PHD", label: "Doctor of Philosophy (PhD)" },
   ];
 
@@ -93,6 +101,8 @@ function Admin_edit_teaching_credit_form() {
       code: values.code,
       name: values.name,
       credit: values.credit,
+      version: String(values.version).trim(),
+      latest_version: values.latest_version,
       discipline: values.discipline,
       programme_type: values.programme_type,
     };
@@ -119,7 +129,7 @@ function Admin_edit_teaching_credit_form() {
                 </strong>
               </Text>
               <Text size="xs" c="gray.7">
-                Credits: {values.credit}
+                Credits: {values.credit} | Version: {values.version}
               </Text>
             </div>
           ),
@@ -272,7 +282,7 @@ function Admin_edit_teaching_credit_form() {
                           onChange={(event) =>
                             form.setFieldValue(
                               "code",
-                              event.currentTarget.value
+                              event.currentTarget.value,
                             )
                           }
                           error={form.errors.code}
@@ -310,7 +320,7 @@ function Admin_edit_teaching_credit_form() {
                           onChange={(event) =>
                             form.setFieldValue(
                               "name",
-                              event.currentTarget.value
+                              event.currentTarget.value,
                             )
                           }
                           error={form.errors.name}
@@ -359,6 +369,72 @@ function Admin_edit_teaching_credit_form() {
                               border: "none",
                             },
                           }}
+                        />
+                      </td>
+                    </tr>
+
+                    {/* Version */}
+                    <tr>
+                      <td
+                        style={{
+                          border: "2px solid #1976d2",
+                          padding: "10px",
+                          fontWeight: "bold",
+                          color: "#1976d2",
+                        }}
+                      >
+                        Version:
+                      </td>
+                      <td
+                        style={{ border: "2px solid #1976d2", padding: "10px" }}
+                      >
+                        <TextInput
+                          placeholder="1.0"
+                          value={form.values.version}
+                          onChange={(event) =>
+                            form.setFieldValue(
+                              "version",
+                              event.currentTarget.value,
+                            )
+                          }
+                          error={form.errors.version}
+                          required
+                          styles={{
+                            input: {
+                              borderRadius: "4px",
+                              height: "30px",
+                              fontSize: "14px",
+                              border: "none",
+                            },
+                          }}
+                        />
+                      </td>
+                    </tr>
+
+                    {/* Latest version */}
+                    <tr>
+                      <td
+                        style={{
+                          border: "2px solid #1976d2",
+                          padding: "10px",
+                          fontWeight: "bold",
+                          color: "#1976d2",
+                        }}
+                      >
+                        Latest Version:
+                      </td>
+                      <td
+                        style={{ border: "2px solid #1976d2", padding: "10px" }}
+                      >
+                        <Checkbox
+                          label="Offered now. Untick for an older version kept for past semesters, such as a 2-credit ME795 v1.1 beside the current 1-credit v1.0."
+                          checked={form.values.latest_version}
+                          onChange={(event) =>
+                            form.setFieldValue(
+                              "latest_version",
+                              event.currentTarget.checked,
+                            )
+                          }
                         />
                       </td>
                     </tr>

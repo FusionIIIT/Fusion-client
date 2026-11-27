@@ -12,6 +12,7 @@ import {
   studentAvailableAddCoursesRoute,
   studentAddCourseRoute,
 } from "../../routes/academicRoutes";
+import { getApiErrorMessage } from "../../helper/apiError";
 
 export default function StudentAddCourse() {
   const [slots, setSlots] = useState([]);
@@ -55,7 +56,7 @@ export default function StudentAddCourse() {
 
         setSlots(enrichedSlots);
       })
-      .catch((err) => setError(err.response?.data?.error || err.message))
+      .catch((err) => setError(getApiErrorMessage(err)))
       .finally(() => setLoading(false));
   }, []);
 
@@ -161,7 +162,7 @@ export default function StudentAddCourse() {
     } catch (err) {
       showNotification({
         title: "Submit failed",
-        message: err.response?.data?.error || err.message,
+        message: getApiErrorMessage(err),
         color: "red",
       });
     } finally {

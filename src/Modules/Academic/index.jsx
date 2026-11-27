@@ -1,4 +1,5 @@
 import { lazy, useEffect, useMemo } from "react";
+import { Center, Loader } from "@mantine/core";
 import { useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -26,11 +27,14 @@ const COMPONENTS = {
   adminSectionAssignment: lazy(() => import("./SectionAssignment")),
   adminBatchChange: lazy(() => import("./AdminBatchChange")),
   adminPromoteSemester: lazy(() => import("./AdminPromoteSemester")),
+  adminStudentStatus: lazy(() => import("./AdminStudentStatus")),
   adminAcademicCalendar: lazy(() => import("./AcademicCalendar")),
   adminSemesterTimetable: lazy(() => import("./AdminSemesterTimetable")),
   adminFeedbackView: lazy(() => import("./FeedbackForm/AdminFeedbackView")),
   adminPhdCourseRequests: lazy(() => import("./AdminPhDCourseRequests")),
 
+  studentAlumniHome: lazy(() => import("./AlumniHome")),
+  studentWithdrawnHome: lazy(() => import("./AlumniHome")),
   studentRegisteredCourses: lazy(() => import("./RegisteredCourses")),
   studentAvailableCourses: lazy(() => import("./AvailableCourses")),
   studentPreRegistration: lazy(() => import("./PreRegistration")),
@@ -59,23 +63,37 @@ const COMPONENTS = {
 export default function AcademicPage() {
   const role = useSelector((state) => state.user.role);
   const programmeType = useSelector((state) => state.user.programmeType);
+  const studentStatus = useSelector((state) => state.user.studentStatus);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   const pages = useMemo(
-    () => pagesForRole(ACADEMIC_PAGES, role, { programmeType }),
-    [role, programmeType],
+    () => pagesForRole(ACADEMIC_PAGES, role, { programmeType, studentStatus }),
+    [role, programmeType, studentStatus],
   );
+
+  // A student's PG/PhD pages exist only once programmeType has loaded, which
+  // happens after the page opens (always on a fresh load). Until then, wait:
+  // otherwise a PG/PhD address is replaced with a UG page and lost.
+  const waitingForProgramme = role === "student" && !programmeType;
 
   const requestedTab = searchParams.get("tab");
   useEffect(() => {
-    if (!requestedTab) return;
+    if (!requestedTab || waitingForProgramme) return;
     const candidates = ACADEMIC_NOTIFICATION_SLUGS[requestedTab] ?? [];
     const target =
       pages.find((p) => candidates.includes(p.slug)) ??
       pages.find((p) => p.title.toLowerCase() === requestedTab.toLowerCase());
     if (target) navigate(`/academics/${target.slug}`, { replace: true });
-  }, [requestedTab, pages, navigate]);
+  }, [requestedTab, pages, navigate, waitingForProgramme]);
+
+  if (waitingForProgramme) {
+    return (
+      <Center mt="xl">
+        <Loader size="sm" />
+      </Center>
+    );
+  }
 
   return (
     <ModuleRoutes

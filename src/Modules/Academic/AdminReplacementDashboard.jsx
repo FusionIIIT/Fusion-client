@@ -16,6 +16,7 @@ import {
   deleteReplacementRequestsRoute,
 } from '../../routes/academicRoutes';
 import { buildSessionLabels } from '../../lib/academicYear';
+import { getApiErrorMessage } from "../../helper/apiError";
 
 const SEMESTER_CHOICES = [
   { value: 'Odd Semester', label: 'Odd Semester' },
@@ -99,7 +100,7 @@ export default function AdminReplacementDashboard() {
       headers: { Authorization: `Token ${token}` },
     })
     .then(({ data }) => setRequests(Array.isArray(data) ? data : []))
-    .catch(err => setError(err.response?.data?.detail || err.message))
+    .catch(err => setError(getApiErrorMessage(err)))
     .finally(() => setLoading(false));
   }, [year, semester]);
 
@@ -150,7 +151,7 @@ export default function AdminReplacementDashboard() {
     .catch(err => {
       showNotification({
         title: 'Allocation Error',
-        message: err.response?.data?.detail || err.message,
+        message: getApiErrorMessage(err),
         color: 'red',
       });
     })
@@ -251,7 +252,7 @@ export default function AdminReplacementDashboard() {
     } catch (err) {
       showNotification({
         title: 'Delete Failed',
-        message: err.response?.data?.error || err.message,
+        message: getApiErrorMessage(err),
         color: 'red',
       });
     } finally {
@@ -308,7 +309,7 @@ export default function AdminReplacementDashboard() {
     } catch (err) {
       showNotification({
         title: 'Revert Failed',
-        message: err.response?.data?.error || err.message,
+        message: getApiErrorMessage(err),
         color: 'red',
       });
     } finally {

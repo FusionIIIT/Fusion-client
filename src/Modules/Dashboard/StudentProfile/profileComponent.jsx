@@ -15,7 +15,7 @@ import AdmissionDetails, { RECORD_SHAPE } from "./admissionDetails";
 import { Field, FULL, ReadOnlyValue, SectionCard } from "./profileUi";
 import ResumeCard from "./resumeCard";
 
-function ProfileComponent({ data, record, onRecordChange }) {
+function ProfileComponent({ data, record, onRecordChange, readOnly = false }) {
   const [isEditing, setIsEditing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [profileData, setProfileData] = useState({
@@ -78,7 +78,8 @@ function ProfileComponent({ data, record, onRecordChange }) {
     setProfileData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const aboutActions = isEditing ? (
+  // An alumnus's profile can be read but not changed.
+  const aboutActions = readOnly ? null : isEditing ? (
     <Group gap="xs" wrap="nowrap">
       <Button
         size="xs"
@@ -127,7 +128,7 @@ function ProfileComponent({ data, record, onRecordChange }) {
         )}
       </SectionCard>
 
-      {record && (
+      {record && !readOnly && (
         <ResumeCard link={record.resume_link} onSaved={onRecordChange} />
       )}
 
@@ -185,6 +186,7 @@ function ProfileComponent({ data, record, onRecordChange }) {
 }
 
 ProfileComponent.propTypes = {
+  readOnly: PropTypes.bool,
   data: PropTypes.shape({
     profile: PropTypes.shape({
       about_me: PropTypes.string,

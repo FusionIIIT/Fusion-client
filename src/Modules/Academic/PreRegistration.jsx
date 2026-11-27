@@ -9,6 +9,7 @@ import {
   Modal,
 } from "@mantine/core";
 import axios from "axios";
+import PropTypes from "prop-types";
 import {
   preCourseRegistrationRoute,
   preCourseRegistrationSubmitRoute,
@@ -21,8 +22,19 @@ import SlotSelect from "./components/SlotSelect";
 
 const slotMeta = (slot) => `${slot.slot_type} · Semester ${slot.semester}`;
 
+// The server lists only what may be repeated, with its grade and whether the
+// repeat is a backlog or an improvement.
 const prevRegLabel = (reg) =>
-  `${courseLabel(reg.course_id)} · Semester ${reg.semester_id?.semester_no ?? "—"}`;
+  [
+    courseLabel(reg.course_id),
+    `Semester ${reg.semester_id?.semester_no ?? "—"}`,
+    reg.grade && `Grade ${reg.grade} → ${reg.repeat_as}`,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+const REPEAT_RULE =
+  "Only your latest attempt at a course, once its result is out, can be repeated: grade F, X or CD as a backlog, or C, D+ or D as an improvement.";
 
 const PriorityRow = memo(
   ({
@@ -74,6 +86,25 @@ const PriorityRow = memo(
     prev.readOnly === next.readOnly &&
     JSON.stringify(prev.slotPriorities) === JSON.stringify(next.slotPriorities),
 );
+
+const courseShape = PropTypes.shape({
+  id: PropTypes.number.isRequired,
+  code: PropTypes.string,
+  name: PropTypes.string,
+  credits: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+});
+
+PriorityRow.propTypes = {
+  slotId: PropTypes.number.isRequired,
+  course: courseShape.isRequired,
+  slotLength: PropTypes.number.isRequired,
+  priorityValue: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  slotPriorities: PropTypes.objectOf(
+    PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  ).isRequired,
+  onPriorityChange: PropTypes.func.isRequired,
+  readOnly: PropTypes.bool,
+};
 
 function BacklogCourseRow({
   slot,
@@ -142,6 +173,28 @@ function BacklogCourseRow({
     </SlotCard>
   );
 }
+
+BacklogCourseRow.propTypes = {
+  slot: PropTypes.shape({
+    sno: PropTypes.number.isRequired,
+    slot_name: PropTypes.string.isRequired,
+    course_choices: PropTypes.arrayOf(courseShape).isRequired,
+    prev_registrations: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        grade: PropTypes.string,
+        repeat_as: PropTypes.string,
+      }),
+    ).isRequired,
+  }).isRequired,
+  selectedCourseId: PropTypes.string.isRequired,
+  selectedPrevRegId: PropTypes.string.isRequired,
+  onSelectCourse: PropTypes.func.isRequired,
+  onSelectPrevReg: PropTypes.func.isRequired,
+  usedCourseIds: PropTypes.arrayOf(PropTypes.string).isRequired,
+  usedPrevRegIds: PropTypes.arrayOf(PropTypes.string).isRequired,
+  readOnly: PropTypes.bool,
+};
 
 function PreRegistration() {
   const [coursesData, setCoursesData] = useState([]);
@@ -279,13 +332,13 @@ function PreRegistration() {
 
     const backlogRegistrations = Object.entries(backlogSelections)
       .filter(
-        ([_, { courseId, prevRegistrationId }]) =>
+        ([, { courseId, prevRegistrationId }]) =>
           courseId && prevRegistrationId,
       )
       .map(([slotId, { courseId, prevRegistrationId }]) => ({
-        slot_id: parseInt(slotId),
-        course_id: parseInt(courseId),
-        prev_registration_id: parseInt(prevRegistrationId),
+        slot_id: parseInt(slotId, 10),
+        course_id: parseInt(courseId, 10),
+        prev_registration_id: parseInt(prevRegistrationId, 10),
         priority: 1,
       }));
 
@@ -319,6 +372,10 @@ function PreRegistration() {
   const usedPrevRegIds = Object.values(backlogSelections)
     .map((s) => s.prevRegistrationId)
     .filter(Boolean);
+  // Every backlog slot carries the same list of registrations to repeat.
+  const nothingToRepeat = backlogSlots.every(
+    (slot) => !slot.prev_registrations?.length,
+  );
 
   if (loading)
     return (
@@ -395,22 +452,30 @@ function PreRegistration() {
             <Text mt="xl" size="lg" fw={600} c="blue">
               Backlog Course Registration
             </Text>
+            <Text size="sm" c="dimmed" mb="sm">
+              {nothingToRepeat
+                ? `You have no course to repeat. ${REPEAT_RULE}`
+                : REPEAT_RULE}
+            </Text>
             <div>
-              {backlogSlots.map((slot) => (
-                <BacklogCourseRow
-                  key={slot.sno}
-                  slot={slot}
-                  selectedCourseId={backlogSelections[slot.sno]?.courseId || ""}
-                  selectedPrevRegId={
-                    backlogSelections[slot.sno]?.prevRegistrationId || ""
-                  }
-                  onSelectCourse={handleBacklogCourseChange}
-                  onSelectPrevReg={handleBacklogPrevRegChange}
-                  usedCourseIds={usedCourseIds}
-                  usedPrevRegIds={usedPrevRegIds}
-                  readOnly={alreadyRegistered}
-                />
-              ))}
+              {!nothingToRepeat &&
+                backlogSlots.map((slot) => (
+                  <BacklogCourseRow
+                    key={slot.sno}
+                    slot={slot}
+                    selectedCourseId={
+                      backlogSelections[slot.sno]?.courseId || ""
+                    }
+                    selectedPrevRegId={
+                      backlogSelections[slot.sno]?.prevRegistrationId || ""
+                    }
+                    onSelectCourse={handleBacklogCourseChange}
+                    onSelectPrevReg={handleBacklogPrevRegChange}
+                    usedCourseIds={usedCourseIds}
+                    usedPrevRegIds={usedPrevRegIds}
+                    readOnly={alreadyRegistered}
+                  />
+                ))}
             </div>
           </>
         )}

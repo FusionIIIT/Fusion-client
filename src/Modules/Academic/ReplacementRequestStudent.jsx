@@ -13,6 +13,7 @@ import {
   studentDropRequestsRoute,
   studentAddRequestsRoute,
 } from "../../routes/academicRoutes";
+import { getApiErrorMessage } from "../../helper/apiError";
 
 const REPLACEMENT_COLUMNS = [
   "Old course",
@@ -79,7 +80,7 @@ export default function ReplacementRequestStudent() {
         setDropRequests(dropRes.data);
         setAddRequests(addRes.data);
       })
-      .catch((err) => setError(err.response?.data?.detail || err.message))
+      .catch((err) => setError(getApiErrorMessage(err)))
       .finally(() => setLoading(false));
   }, []);
 

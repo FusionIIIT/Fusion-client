@@ -24,6 +24,7 @@ import {
   allotTeachingCreditRoute,
   listBatchesRoute,
 } from "../../routes/academicRoutes";
+import { getApiErrorMessage } from "../../helper/apiError";
 
 // Course needs a per-row slot/course lookup + academic year + semester type.
 // Thesis/Seminar/Teaching Credit each have at most one slot per semester, so
@@ -140,8 +141,7 @@ export default function AllotCourses() {
         console.error("API Error:", err);
         const errorMsg =
           err.response?.data?.message ||
-          err.response?.data?.error ||
-          err.message;
+          getApiErrorMessage(err);
         showNotification({
           title: "Error fetching batches",
           message: errorMsg,

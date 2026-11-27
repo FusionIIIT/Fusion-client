@@ -71,6 +71,7 @@ describe("buildNavGroups", () => {
       "Registration",
       "Course Changes",
       "Student Records",
+      "Courses Roll List",
       "Calendar & Feedback",
       "Fee Structure",
     ]);
@@ -109,6 +110,20 @@ describe("buildNavGroups", () => {
     expect(pathsFor("Dean Academic")).toContain(timetablePath);
     expect(pathsFor("studentacadadmin")).not.toContain(timetablePath);
     expect(pathsFor("Acad UG")).not.toContain(timetablePath);
+  });
+
+  it("shows generate student list for faculty in the academics sidebar", () => {
+    const groups = buildNavGroups({
+      role: "Professor",
+      accessibleModules: ALL_MODULES,
+    });
+
+    const academics = groups.find((g) => g.section === "Academics");
+    expect(
+      linksOf([academics]).some(
+        (link) => link.to === "/academics/generate-student-list",
+      ),
+    ).toBe(true);
   });
 
   it("swaps the UG registration pipeline for the research one", () => {
@@ -167,6 +182,14 @@ describe("buildNavGroups", () => {
           expect.objectContaining({
             label: "Fee Structure Certificate",
             to: "/certificates/fee-structure-certificate",
+          }),
+          expect.objectContaining({
+            label: "Medium of Instruction",
+            to: "/certificates/medium-of-instruction",
+          }),
+          expect.objectContaining({
+            label: "Pointer Conversion Certificate",
+            to: "/certificates/pointer-conversion-certificate",
           }),
         ],
       }),
@@ -441,5 +464,48 @@ describe("a plugged module's own screens", () => {
     const item = groups.find((g) => g.section === "Placement").items[0];
     expect(item.to).toBe("/placement");
     expect(item.links).toBeUndefined();
+  });
+});
+
+describe("an alumnus's sidebar", () => {
+  it("gives an alumnus only their courses and results", () => {
+    const links = linksOf(
+      buildNavGroups({
+        role: "student",
+        accessibleModules: {
+          course_registration: true,
+          examinations: true,
+        },
+        programmeType: "UG",
+        studentStatus: "ALUMNI",
+      }),
+    );
+    expect(links.map((l) => l.to)).toEqual([
+      "/dashboard",
+      "/academics/alumni",
+      "/academics/registered-courses",
+      "/examination/result",
+    ]);
+  });
+
+  it("gives a withdrawn student their own page", () => {
+    const links = linksOf(
+      buildNavGroups({
+        role: "student",
+        accessibleModules: {
+          course_registration: true,
+          examinations: true,
+        },
+        programmeType: "UG",
+        studentStatus: "WITHDRAWN",
+      }),
+    );
+    expect(links.map((l) => [l.to, l.label])).toEqual([
+      ["/dashboard", "Home"],
+      ["/academics/withdrawn", "Withdrawn"],
+      // A group with one page is shown under the group's name.
+      ["/academics/registered-courses", "Registration"],
+      ["/examination/result", "Results"],
+    ]);
   });
 });
