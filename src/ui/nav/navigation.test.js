@@ -96,6 +96,22 @@ describe("buildNavGroups", () => {
     expect(registration.links).toHaveLength(6);
   });
 
+  it("shows semester timetable only to roles accepted by its backend", () => {
+    const timetablePath = "/academics/semester-timetable";
+    const pathsFor = (role) =>
+      linksOf(
+        buildNavGroups({
+          role,
+          accessibleModules: ALL_MODULES,
+        }),
+      ).map((link) => link.to);
+
+    expect(pathsFor("acadadmin")).toContain(timetablePath);
+    expect(pathsFor("Dean Academic")).toContain(timetablePath);
+    expect(pathsFor("studentacadadmin")).not.toContain(timetablePath);
+    expect(pathsFor("Acad UG")).not.toContain(timetablePath);
+  });
+
   it("shows generate student list for faculty in the academics sidebar", () => {
     const groups = buildNavGroups({
       role: "Professor",

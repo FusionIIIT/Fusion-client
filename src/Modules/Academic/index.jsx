@@ -29,6 +29,7 @@ const COMPONENTS = {
   adminPromoteSemester: lazy(() => import("./AdminPromoteSemester")),
   adminStudentStatus: lazy(() => import("./AdminStudentStatus")),
   adminAcademicCalendar: lazy(() => import("./AcademicCalendar")),
+  adminSemesterTimetable: lazy(() => import("./AdminSemesterTimetable")),
   adminFeedbackView: lazy(() => import("./FeedbackForm/AdminFeedbackView")),
   adminPhdCourseRequests: lazy(() => import("./AdminPhDCourseRequests")),
 
